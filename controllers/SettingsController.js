@@ -28,7 +28,128 @@ class SettingsController {
   }
 
   /**
-   * Load current settings from config.yaml
+   * @swagger
+   * /api/settings:
+   *   get:
+   *     summary: Get ZoneWeaver system settings (Super-admin only)
+   *     description: Retrieve current system configuration settings from config.yaml
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Settings retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 settings:
+   *                   type: object
+   *                   properties:
+   *                     appName:
+   *                       type: string
+   *                       example: "ZoneWeaver"
+   *                     appVersion:
+   *                       type: string
+   *                       example: "2.0.0"
+   *                     maxServersPerUser:
+   *                       type: integer
+   *                       example: 10
+   *                     autoRefreshInterval:
+   *                       type: integer
+   *                       example: 5
+   *                     enableNotifications:
+   *                       type: boolean
+   *                       example: true
+   *                     enableDarkMode:
+   *                       type: boolean
+   *                       example: true
+   *                     sessionTimeout:
+   *                       type: integer
+   *                       example: 24
+   *                     allowNewOrganizations:
+   *                       type: boolean
+   *                       example: true
+   *                     enableLogging:
+   *                       type: boolean
+   *                       example: true
+   *                     debugMode:
+   *                       type: boolean
+   *                       example: false
+   *                     serverHostname:
+   *                       type: string
+   *                       example: "localhost"
+   *                     serverPort:
+   *                       type: integer
+   *                       example: 3001
+   *                     frontendPort:
+   *                       type: integer
+   *                       example: 443
+   *                     sslEnabled:
+   *                       type: boolean
+   *                       example: true
+   *                     corsWhitelist:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                       example: ["https://localhost:3000"]
+   *                     backendServers:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           hostname:
+   *                             type: string
+   *                           port:
+   *                             type: integer
+   *                           protocol:
+   *                             type: string
+   *                     databasePath:
+   *                       type: string
+   *                       example: "./data/zoneweaver.db"
+   *                     gravatarApiKey:
+   *                       type: string
+   *                       example: ""
+   *                     mailSmtpHost:
+   *                       type: string
+   *                       example: "smtp.gmail.com"
+   *                     mailSmtpPort:
+   *                       type: integer
+   *                       example: 587
+   *                     mailSmtpSecure:
+   *                       type: boolean
+   *                       example: false
+   *                     mailSmtpUser:
+   *                       type: string
+   *                       example: "noreply@example.com"
+   *                     mailSmtpPassword:
+   *                       type: string
+   *                       example: ""
+   *                     mailFromAddress:
+   *                       type: string
+   *                       example: "noreply@example.com"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getSettings(req, res) {
     try {
@@ -78,7 +199,132 @@ class SettingsController {
   }
 
   /**
-   * Update settings and save to config.yaml
+   * @swagger
+   * /api/settings:
+   *   put:
+   *     summary: Update ZoneWeaver system settings (Super-admin only)
+   *     description: Update system configuration settings and save to config.yaml
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               appName:
+   *                 type: string
+   *                 example: "ZoneWeaver"
+   *               appVersion:
+   *                 type: string
+   *                 example: "2.0.0"
+   *               maxServersPerUser:
+   *                 type: integer
+   *                 example: 10
+   *               autoRefreshInterval:
+   *                 type: integer
+   *                 example: 5
+   *               enableNotifications:
+   *                 type: boolean
+   *                 example: true
+   *               enableDarkMode:
+   *                 type: boolean
+   *                 example: true
+   *               sessionTimeout:
+   *                 type: integer
+   *                 example: 24
+   *               allowNewOrganizations:
+   *                 type: boolean
+   *                 example: true
+   *               enableLogging:
+   *                 type: boolean
+   *                 example: true
+   *               debugMode:
+   *                 type: boolean
+   *                 example: false
+   *               serverHostname:
+   *                 type: string
+   *                 example: "localhost"
+   *               serverPort:
+   *                 type: integer
+   *                 example: 3001
+   *               frontendPort:
+   *                 type: integer
+   *                 example: 443
+   *               sslEnabled:
+   *                 type: boolean
+   *                 example: true
+   *               corsWhitelist:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 example: ["https://localhost:3000"]
+   *               databasePath:
+   *                 type: string
+   *                 example: "./data/zoneweaver.db"
+   *               gravatarApiKey:
+   *                 type: string
+   *                 example: ""
+   *               mailSmtpHost:
+   *                 type: string
+   *                 example: "smtp.gmail.com"
+   *               mailSmtpPort:
+   *                 type: integer
+   *                 example: 587
+   *               mailSmtpSecure:
+   *                 type: boolean
+   *                 example: false
+   *               mailSmtpUser:
+   *                 type: string
+   *                 example: "noreply@example.com"
+   *               mailSmtpPassword:
+   *                 type: string
+   *                 example: "password123"
+   *               mailFromAddress:
+   *                 type: string
+   *                 example: "noreply@example.com"
+   *     responses:
+   *       200:
+   *         description: Settings updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Settings updated successfully. Some changes may require a server restart to take effect."
+   *                 requiresRestart:
+   *                   type: boolean
+   *                   description: Whether the changes require a server restart
+   *                   example: false
+   *                 backupPath:
+   *                   type: string
+   *                   description: Path to backup file created before update
+   *                   example: "./config.yaml.backup.1641234567890"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async updateSettings(req, res) {
     try {
@@ -186,7 +432,50 @@ class SettingsController {
   }
 
   /**
-   * Reset settings to defaults
+   * @swagger
+   * /api/settings/reset:
+   *   post:
+   *     summary: Reset system settings to defaults (Super-admin only)
+   *     description: Reset all ZoneWeaver system settings to default values while preserving critical server configurations
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Settings reset successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Settings reset to defaults successfully."
+   *                 backupPath:
+   *                   type: string
+   *                   description: Path to backup file created before reset
+   *                   example: "./config.yaml.backup.1641234567890"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async resetSettings(req, res) {
     try {
@@ -251,7 +540,46 @@ class SettingsController {
   }
 
   /**
-   * Restart the server (requires process manager like PM2)
+   * @swagger
+   * /api/settings/restart:
+   *   post:
+   *     summary: Restart ZoneWeaver server (Super-admin only)
+   *     description: Restart the ZoneWeaver application server (requires process manager like PM2)
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Server restart initiated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Server restart initiated. Please wait for the application to reload."
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async restartServer(req, res) {
     try {
@@ -293,7 +621,61 @@ class SettingsController {
   }
 
   /**
-   * Get list of config backups
+   * @swagger
+   * /api/settings/backups:
+   *   get:
+   *     summary: Get list of configuration backups (Super-admin only)
+   *     description: Retrieve list of available configuration backup files with timestamps and sizes
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Backup list retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 backups:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       filename:
+   *                         type: string
+   *                         description: Backup filename
+   *                         example: "config.yaml.backup.1641234567890"
+   *                       created:
+   *                         type: string
+   *                         format: date-time
+   *                         description: Backup creation timestamp
+   *                         example: "2025-01-04T17:18:00.324Z"
+   *                       size:
+   *                         type: integer
+   *                         description: File size in bytes
+   *                         example: 2048
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getBackups(req, res) {
     try {
