@@ -1,0 +1,208 @@
+import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useServers } from "../contexts/ServerContext";
+import ServiceManagement from "./Host/ServiceManagement";
+import NetworkHostnameManagement from "./Host/NetworkHostnameManagement";
+import PackageManagement from "./Host/PackageManagement";
+import BootEnvironmentManagement from "./Host/BootEnvironmentManagement";
+
+const HostManage = () => {
+  const [activeTab, setActiveTab] = useState('services');
+
+  const { user } = useAuth();
+  const { currentServer } = useServers();
+  const navigate = useNavigate();
+
+  if (!user || (user.role !== 'admin' && user.role !== 'super-admin')) {
+    return (
+      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+        <Helmet>
+          <meta charSet='utf-8' />
+          <title>Access Denied - ZoneWeaver</title>
+        </Helmet>
+        <div className='container is-fluid m-2'>
+          <div className='notification is-danger'>
+            Admin privileges are required to manage servers.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no server is selected
+  if (!currentServer) {
+    return (
+      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+        <Helmet>
+          <meta charSet='utf-8' />
+          <title>No Server Selected - ZoneWeaver</title>
+        </Helmet>
+        <div className='container is-fluid m-2'>
+          <div className='box p-0'>
+            <div className='titlebar box active level is-mobile mb-0 p-3'>
+              <div className='level-left'>
+                <strong>Host Management</strong>
+              </div>
+              <div className='level-right'>
+                <button className='button' onClick={() => navigate('/ui/hosts')}>
+                  <span className='icon'>
+                    <i className='fas fa-arrow-left'></i>
+                  </span>
+                  <span>Back to Hosts</span>
+                </button>
+              </div>
+            </div>
+            <div className='p-4'>
+              <div className='notification is-info'>
+                <p>Please select a server from the navbar to manage its services.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <Helmet>
+        <meta charSet='utf-8' />
+        <title>{`Manage ${currentServer.hostname} - ZoneWeaver`}</title>
+      </Helmet>
+      <div className='container is-fluid m-2'>
+        <div className='box p-0'>
+          {/* Server Header */}
+          <div className='titlebar box active level is-mobile mb-0 p-3'>
+            <div className='level-left'>
+              <div>
+                <strong>Host Management: {currentServer.hostname}</strong>
+              </div>
+            </div>
+            <div className='level-right'>
+              <div className='tags has-addons'>
+                <span className='tag'>Status</span>
+                <span className={`tag ${currentServer.status === 'online' || currentServer.status === 'up' ? 'is-success' : 'is-danger'}`}>
+                  {currentServer.status || currentServer.state || 'Unknown'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className='tabs is-boxed'>
+            <ul>
+              <li className={activeTab === 'services' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('services')}>
+                  <span className='icon is-small'><i className='fas fa-cogs'></i></span>
+                  <span>Services</span>
+                </a>
+              </li>
+              <li className={activeTab === 'network' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('network')}>
+                  <span className='icon is-small'><i className='fas fa-network-wired'></i></span>
+                  <span>Network & Hostname</span>
+                </a>
+              </li>
+              <li className={activeTab === 'packages' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('packages')}>
+                  <span className='icon is-small'><i className='fas fa-box'></i></span>
+                  <span>Package Management</span>
+                </a>
+              </li>
+              <li className={activeTab === 'boot-environments' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('boot-environments')}>
+                  <span className='icon is-small'><i className='fas fa-layer-group'></i></span>
+                  <span>Boot Environments</span>
+                </a>
+              </li>
+              <li className='is-disabled'>
+                <a>
+                  <span className='icon is-small'><i className='fas fa-database'></i></span>
+                  <span>Storage Management</span>
+                </a>
+              </li>
+              <li className='is-disabled'>
+                <a>
+                  <span className='icon is-small'><i className='fas fa-clock'></i></span>
+                  <span>Time & NTP</span>
+                </a>
+              </li>
+              <li className='is-disabled'>
+                <a>
+                  <span className='icon is-small'><i className='fas fa-exclamation-triangle'></i></span>
+                  <span>Fault Management</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className='p-4'>
+            {/* Services Tab */}
+            {activeTab === 'services' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Service Management</h2>
+                  <p className='content'>
+                    Manage OmniOS services on <strong>{currentServer.hostname}</strong>. 
+                    You can view, start, stop, restart, and refresh services running on this host.
+                  </p>
+                </div>
+                
+                <ServiceManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Network & Hostname Tab */}
+            {activeTab === 'network' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Network & Hostname Management</h2>
+                  <p className='content'>
+                    Manage network configuration and hostname settings on <strong>{currentServer.hostname}</strong>. 
+                    Configure VNICs, IP addresses, link aggregates, and system hostname.
+                  </p>
+                </div>
+                
+                <NetworkHostnameManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Package Management Tab */}
+            {activeTab === 'packages' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Package Management</h2>
+                  <p className='content'>
+                    Manage packages, repositories, and system updates on <strong>{currentServer.hostname}</strong>. 
+                    Install, uninstall, and search for packages, manage publishers and repositories.
+                  </p>
+                </div>
+                
+                <PackageManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Boot Environments Tab */}
+            {activeTab === 'boot-environments' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Boot Environment Management</h2>
+                  <p className='content'>
+                    Manage boot environments on <strong>{currentServer.hostname}</strong>. 
+                    Create, activate, mount, and delete boot environments for system administration and recovery.
+                  </p>
+                </div>
+                
+                <BootEnvironmentManagement server={currentServer} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HostManage;

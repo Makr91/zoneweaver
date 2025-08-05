@@ -1,0 +1,146 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { VitePWA } from 'vite-plugin-pwa';
+import { NodePackageImporter } from "sass";
+import fs from "fs";
+import YAML from "yaml";
+
+// Load configuration from YAML file
+const configFile = fs.readFileSync('../config.yaml', 'utf8');
+const config = YAML.parse(configFile);
+
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern",
+        importers: [new NodePackageImporter()],
+      },
+    },
+  },
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'images/*.png', 'images/*.svg'],
+      manifest: {
+        name: 'ZoneWeaver',
+        short_name: 'ZoneWeaver',
+        description: 'Server and Zone Management System',
+        theme_color: '#ffffff',
+        start_url: '/ui/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        icons: [
+          {
+            src: 'images/logo192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'images/logo512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 5 // 5 minutes
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'local-api-cache',
+              networkTimeoutSeconds: 10
+            }
+          }
+        ]
+      }
+    })
+  ],
+  base: '/ui/',
+  publicDir: "public",
+  server: {
+    port: config.frontend.port,
+    host: "0.0.0.0",
+    https: config.server.ssl.enabled ? {
+      key: fs.readFileSync(config.server.ssl.key),
+      cert: fs.readFileSync(config.server.ssl.cert),
+    } : false,
+    hmr: {
+      port: config.frontend.port,
+      host: config.server.hostname,
+    },
+    proxy: {
+      "/api": {
+        target: `${config.server.ssl.enabled ? 'https' : 'http'}://${config.server.hostname}:${config.server.port}`,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  build: {
+    sourcemap: false, // Disable source maps for production to avoid source map errors
+    chunkSizeWarningLimit: 1000, // Increase warning limit to 1MB for complex applications
+    rollupOptions: {
+      external: ["rollup"],
+      output: {
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: (assetInfo) => {
+          // Keep favicons at root level
+          if (assetInfo.name === 'favicon.ico' || assetInfo.name === 'dark-favicon.ico') {
+            return '[name][extname]';
+          }
+          return `assets/[name].[ext]`;
+        },
+        manualChunks: (id) => {
+          // Only split out the largest, most independent libraries
+          // Keep React ecosystem together with charts to avoid dependency issues
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') ||
+              id.includes('node_modules/scheduler') ||
+              id.includes('node_modules/react-router') ||
+              id.includes('node_modules/@remix-run') ||
+              id.includes('node_modules/highcharts') ||
+              id.includes('highcharts-react-official')) {
+            return 'vendor';
+          }
+          
+          // Only split out completely independent libraries
+          if (id.includes('node_modules/@fortawesome')) {
+            return 'fontawesome';
+          }
+          
+          if (id.includes('node_modules/bulma') ||
+              id.includes('node_modules/@creativebulma')) {
+            return 'bulma';
+          }
+          
+          // All other node_modules go to vendor
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    },
+  },
+  optimizeDeps: {
+    exclude: ["rollup"]
+  },
+});

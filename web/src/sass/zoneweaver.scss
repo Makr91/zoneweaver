@@ -1,0 +1,727 @@
+@charset "utf-8";
+
+// Set your brand colors
+$orange: #ff6600;
+$yellow: #ffe600;
+
+// ALL @use statements must come first, before any @forward statements
+// Override global Sass variables from the /utilities folder
+@use "bulma/sass/utilities" with (
+  $primary: $orange,
+  $warning: $yellow
+);
+
+
+// Import theme utilities for dark mode implementation
+@use "bulma/sass/utilities/css-variables" as cv;
+@use "bulma/sass/themes/dark";
+@use "bulma/sass/themes/setup";
+
+// Import the entire Bulma framework (simpler approach)
+@forward "bulma";
+
+// Implement Bulma's dark theme system
+// System theme (follows OS preference)
+@include cv.system-theme($name: "dark") {
+  @include dark.dark-theme;
+}
+
+// Manual theme control via data-theme attributes and CSS classes
+@include cv.bulma-theme($name: "dark") {
+  @include dark.dark-theme;
+  @include setup.setup-theme;
+}
+
+@include cv.bulma-theme($name: "light") {
+  @include setup.setup-theme;
+}
+
+// Remove all box shadows globally
+* {
+  --bulma-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+// Custom CSS that doesn't interfere with theming
+.z-index-set-behind {
+  z-index: 9;
+}
+
+// Only apply max-height: 0 to collapsible sections within the sidebar
+.sidebar .is-collapsible.is-minimized,
+#accordion .is-collapsible.is-minimized {
+  max-height: 0;
+}
+
+.side-bar-footer-dropdown {
+  left: -40% !important;
+}
+
+// Ensure dropdown container allows overflow - ONLY for sidebar footer
+.react-resizable .hero.column.is-narrow .hero-footer .dropdown {
+  position: relative !important;
+  
+  .dropdown-menu {
+    position: fixed !important;
+    z-index: 9999 !important;
+    left: auto !important;
+    right: auto !important;
+  }
+}
+
+.footer-copyright {
+  align-items: flex-end !important;
+  overflow-y: auto;
+}
+
+.log-footer {
+  align-items: flex-end !important;
+  overflow-y: auto;
+}
+
+.log-console {
+  height: 100%;
+  align-items: flex-start !important;
+  overflow-y: auto;
+}
+
+.log-console::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+.log-console::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+.log-console::-webkit-scrollbar-thumb {
+  background: #4f4f4f;
+  border-radius: 10px;
+}
+
+.log-console::-webkit-scrollbar-thumb:hover {
+  background: #454545;
+}
+
+.content-footer {
+  min-height: 0 !important;
+}
+
+.vertical-is-thin {
+  min-height: 0 !important;
+}
+
+.hero-content-body {
+  align-items: flex-start !important;
+  overflow-y: auto;
+  height: 65vh;
+}
+
+.hero-content-body::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+.hero-content-body::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+.hero-content-body::-webkit-scrollbar-thumb {
+  background: #4f4f4f;
+  border-radius: 10px;
+}
+
+.hero-content-body::-webkit-scrollbar-thumb:hover {
+  background: #454545;
+}
+
+.sidebar {
+  width: 100%;
+  align-items: flex-start !important;
+}
+
+.sidebar::-webkit-scrollbar {
+  background: transparent;
+  width: 0px;
+}
+
+.mainbody {
+  height: 1vh;
+  align-items: flex-start !important;
+  overflow-y: auto;
+}
+
+.mainbody::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+.mainbody::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+.mainbody::-webkit-scrollbar-thumb {
+  background: #4f4f4f;
+  border-radius: 10px;
+}
+
+.mainbody::-webkit-scrollbar-thumb:hover {
+  background: #454545;
+}
+
+.sidebarbody {
+  height: 23vh;
+  align-items: flex-start !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebarbody::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+.sidebarbody::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+.sidebarbody::-webkit-scrollbar-thumb {
+  background: #4f4f4f;
+  border-radius: 10px;
+}
+
+.sidebarbody::-webkit-scrollbar-thumb:hover {
+  background: #454545;
+}
+
+.active {
+  border-color: transparent !important;
+}
+
+.react-resizable {
+  position: relative;
+  min-height: 1.9rem;
+}
+
+.react-resizable-handle {
+  position: absolute;
+  width: 100%;
+}
+
+.react-resizable-handle.content {
+  padding-top: 2vh;
+}
+
+.react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+  transform: rotate(90deg);
+}
+
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+
+.react-resizable-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+  transform: rotate(180deg);
+}
+
+.react-resizable-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+  transform: rotate(270deg);
+}
+
+.react-resizable-handle-w,
+.react-resizable-handle-e {
+  top: 50%;
+  margin-top: -10px;
+  cursor: ew-resize;
+}
+
+.react-resizable-handle-w {
+  left: 0;
+  transform: rotate(135deg);
+}
+
+.react-resizable-handle-e {
+  right: 0;
+  transform: rotate(315deg);
+}
+
+.react-resizable-handle-n,
+.react-resizable-handle-s {
+  align-items: center;
+}
+
+.react-resizable-handle-n-icon {
+  cursor: ns-resize;
+}
+
+.react-resizable-handle-n {
+  top: 0;
+}
+
+.react-resizable-handle-s {
+  bottom: 0;
+  transform: rotate(45deg);
+}
+
+span[data-tooltip] {
+  border-bottom: none;
+}
+
+.is-collapsible {
+  overflow-y: hidden;
+  transition: height 0.2s ease;
+  overflow-x: hidden;
+}
+
+.is-submenu {
+  padding-left: 2rem !important;
+}
+
+.is-submenu-collapsed {
+  .icon {
+    color: #888 !important;
+  }
+}
+
+// Clean dropdown styling that respects themes
+.dropdown-content {
+  border-radius: 6px !important;
+}
+
+.dropdown-menu {
+  .dropdown-content {
+    border-radius: 6px !important;
+  }
+}
+
+// Remove gaps between dropdown elements but let theme handle colors
+.dropdown-content .button,
+.dropdown-menu .button,
+.dropdown-content a,
+.dropdown-menu a,
+.dropdown-content .tag,
+.dropdown-menu .tag,
+.dropdown-content .menu-list a,
+.dropdown-menu .menu-list a,
+.dropdown-content .menu-list li,
+.dropdown-menu .menu-list li,
+.dropdown-content > *,
+.dropdown-menu > * {
+  border-radius: 0 !important;
+  margin: 0 !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  border: none !important;
+  
+  &:first-child {
+    border-top-left-radius: 6px !important;
+    border-top-right-radius: 6px !important;
+  }
+  
+  &:last-child {
+    border-bottom-left-radius: 6px !important;
+    border-bottom-right-radius: 6px !important;
+  }
+  
+  // Handle single element case
+  &:first-child:last-child {
+    border-radius: 6px !important;
+  }
+}
+
+// Remove any global button margins that might interfere
+.dropdown-content, .dropdown-menu {
+  .button.mb-1,
+  .button.is-fullwidth {
+    margin-bottom: 0 !important;
+  }
+}
+
+// AGGRESSIVE border-radius removal for ALL button cases
+.button,
+button,
+.dropdown-content .button,
+.dropdown-menu .button,
+.dropdown-content button,
+.dropdown-menu button,
+.navbar .button,
+.navbar button,
+.sidebar .button,
+.sidebar button {
+  border-radius: 0 !important;
+  border: none !important;
+  --bulma-button-border-style: none !important;
+  --bulma-box-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  
+  &:focus,
+  &:active,
+  &:hover {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    --bulma-box-shadow: none !important;
+  }
+}
+
+// Specifically target navbar buttons to ensure no rounded corners
+.navbar .button,
+.navbar button,
+.level .button,
+.level button {
+  border-radius: 0 !important;
+}
+
+// Fix navbar background to match dropdown background in both themes
+.level.hero-head,
+.navbar,
+.level {
+  background-color: var(--bulma-scheme-main) !important;
+}
+
+// ResizableBox styling for sidebar
+.react-resizable {
+  position: relative;
+  
+  // Ensure the sidebar content takes full height
+  .hero.column.is-narrow {
+    height: 100vh;
+  }
+}
+
+// Style the default react-resizable-handle-e for sidebar
+.react-resizable .react-resizable-handle-e {
+  position: absolute !important;
+  right: 0;
+  top: 0;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 1000;
+  background: var(--bulma-scheme-main-bis);
+  border-left: 1px solid var(--bulma-border);
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  transform: none !important; // Remove the default rotation
+  margin-top: 0 !important; // Remove default margin
+  
+  &:hover {
+    opacity: 1;
+    background: var(--bulma-scheme-main-ter);
+  }
+  
+  // Add grip lines using CSS
+  &::before {
+    content: '||';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: var(--bulma-text);
+    opacity: 0.6;
+    letter-spacing: 1px;
+  }
+  
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+// When sidebar is minimized or very narrow, hide the resize handle
+.hero.is-minimized .react-resizable-handle-e,
+.react-resizable[style*="width: 60px"] .react-resizable-handle-e {
+  display: none;
+}
+
+// Dark theme adjustments for resize handle
+[data-theme="dark"] .react-resizable .react-resizable-handle-e {
+  background: var(--bulma-scheme-main);
+  
+  &:hover {
+    background: var(--bulma-scheme-main-ter);
+  }
+}
+
+// The components handle collapsed state themselves - just ensure proper sizing
+.hero.is-minimized {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  
+  .button.is-fullwidth {
+    justify-content: center !important;
+  }
+}
+
+// Ensure ResizableBox respects the collapsed width
+.react-resizable[style*="width: 60px"] .hero {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  
+  .button.is-fullwidth {
+    justify-content: center !important;
+  }
+}
+
+// Ensure the ResizableBox allows proper resizing
+.react-resizable {
+  .react-resizable-handle-e {
+    pointer-events: auto !important;
+    user-select: none !important;
+  }
+}
+
+// Ensure icons display properly
+.icon i {
+  font-style: normal !important;
+}
+
+// Fix for custom icon fonts
+.icon-zoneweaver-logo {
+  font-family: 'fontello' !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+}
+
+
+
+@font-face {
+  font-family: "fontello";
+  src: url("data:application/octet-stream;base64,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")
+      format("woff"),
+    url("data:application/octet-stream;base64,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")
+      format("truetype");
+}
+
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
+  font-family: "fontello";
+  font-style: normal;
+  font-variant: normal;
+  text-transform: none;
+  font-size: 200%;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-zoneweaver-logo:before {
+  content: '\e801';
+}
+
+
+// Fix sidebar footer dropdown positioning when sidebar is narrow
+.side-bar-footer-dropdown {
+  left: -40% !important;
+  z-index: 9999 !important;
+  position: fixed !important;
+  bottom: auto !important;
+  top: auto !important;
+}
+
+// Ensure dropdown container allows overflow - ONLY for sidebar footer
+.react-resizable .hero.column.is-narrow .hero-footer .dropdown {
+  position: relative !important;
+  
+  .dropdown-menu {
+    position: fixed !important;
+    z-index: 9999 !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: 60px !important;
+    top: auto !important;
+    
+    .dropdown-content {
+      width: fit-content !important;
+      min-width: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      
+      // Override .is-fullwidth behavior in sidebar footer dropdown
+      .button.is-fullwidth {
+        width: 100% !important;
+        min-width: auto !important;
+        flex: none !important;
+        display: block !important;
+        margin-bottom: 0 !important;
+      }
+    }
+  }
+  
+  // When dropdown is active, position it properly centered over the button
+  &.is-active .dropdown-menu {
+    display: block !important;
+  }
+}
+
+// Ensure sidebar doesn't clip the dropdown
+.react-resizable .hero.column.is-narrow {
+  overflow: visible !important;
+  
+  .hero-footer {
+    overflow: visible !important;
+    position: relative !important;
+    z-index: 1001 !important;
+  }
+}
+
+
+// Only allow rounded corners on dropdown containers and first/last items
+.dropdown-content,
+.dropdown-menu .dropdown-content {
+  border-radius: 6px !important;
+  
+  .button:first-child,
+  button:first-child,
+  > *:first-child {
+    border-top-left-radius: 6px !important;
+    border-top-right-radius: 6px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+  
+  .button:last-child,
+  button:last-child,
+  > *:last-child {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 6px !important;
+    border-bottom-right-radius: 6px !important;
+  }
+  
+  .button:first-child:last-child,
+  button:first-child:last-child,
+  > *:first-child:last-child {
+    border-radius: 6px !important;
+  }
+}
+
+// Dashboard placeholder styling for cells
+.dashboard-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  min-height: 120px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+// Ensure dashboard cells fit on screen without scrolling
+.grid .cell.notification {
+  min-height: 150px;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+  
+  .content {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  // Smaller title and subtitle for better space usage
+  .title {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .subtitle {
+    font-size: 1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+// Task status row styling
+.task-failed {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+}
+
+.task-running {
+  background-color: rgba(255, 255, 0, 0.1) !important;
+}
+
+// Toggle switch styling
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bulma-grey-light);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--bulma-primary);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--bulma-primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+// Dark theme toggle switch adjustments
+[data-theme="dark"] .slider:before {
+  background-color: var(--bulma-scheme-main);
+}
+
+[data-theme="dark"] input:checked + .slider {
+  background-color: var(--bulma-primary);
+}

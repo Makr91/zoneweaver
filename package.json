@@ -1,0 +1,43 @@
+{
+  "name": "zoneweaver",
+  "version": "0.0.1",
+  "description": "ZoneWeaver API - NodeJS backend and Vite based frontend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "cd web && npm run build",
+    "start": "npm run build && node index.js",
+    "dev": "npm run build && nodemon index.js",
+    "local-api": "nodemon index.js"
+  },
+  "keywords": [
+    "bhyve",
+    "react",
+    "nodejs"
+  ],
+  "author": "Makr91",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "http-proxy-middleware": "^2.0.6",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.7",
+    "nodemon": "^3.1.7",
+    "sqlite3": "^5.1.6",
+    "ws": "^8.17.1",
+    "yaml": "^2.3.4"
+  },
+  "overrides": {
+    "rollup": "@rollup/wasm-node"
+  },
+  "devDependencies": {
+    "@rollup/wasm-node": "^4.21.0",
+    "concurrently": "^7.6.0"
+  }
+}
