@@ -2031,9 +2031,74 @@ class AuthController {
   // ============================================================================
 
   /**
-   * Get organization details (admin only - org admin can only see their org)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/{id}:
+   *   get:
+   *     summary: Get organization details (Admin only)
+   *     description: Retrieve detailed information about a specific organization
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Organization ID
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Organization details retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 organization:
+   *                   $ref: '#/components/schemas/Organization'
+   *                 stats:
+   *                   type: object
+   *                   properties:
+   *                     userCount:
+   *                       type: integer
+   *                       description: Number of users in organization
+   *                       example: 15
+   *                     serverCount:
+   *                       type: integer
+   *                       description: Number of servers assigned
+   *                       example: 3
+   *                     activeUsers:
+   *                       type: integer
+   *                       description: Number of active users
+   *                       example: 12
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Organization not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getOrganization(req, res) {
     try {
@@ -2081,9 +2146,87 @@ class AuthController {
   }
 
   /**
-   * Update organization details (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/{id}:
+   *   put:
+   *     summary: Update organization details (Admin only)
+   *     description: Update name and description of an organization. Admins can only update their own organization.
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Organization ID
+   *         example: 1
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *                 description: New organization name
+   *                 example: "Updated Corporation"
+   *               description:
+   *                 type: string
+   *                 description: New organization description
+   *                 example: "Updated description for the organization"
+   *             minProperties: 1
+   *     responses:
+   *       200:
+   *         description: Organization updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Organization updated successfully"
+   *       400:
+   *         description: Validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "At least one field (name or description) is required"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied to this organization
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Organization not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       409:
+   *         description: Organization name already exists
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async updateOrganization(req, res) {
     try {
@@ -2145,9 +2288,62 @@ class AuthController {
   }
 
   /**
-   * Get users in organization (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/{id}/users:
+   *   get:
+   *     summary: Get users in organization (Admin only)
+   *     description: Retrieve all users belonging to a specific organization. Admins can only view users in their own organization.
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Organization ID
+   *         example: 1
+   *       - in: query
+   *         name: includeInactive
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *         description: Include deactivated users in results
+   *         example: false
+   *     responses:
+   *       200:
+   *         description: Organization users retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 users:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/User'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied to this organization
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getOrganizationUsers(req, res) {
     try {
@@ -2186,9 +2382,81 @@ class AuthController {
   }
 
   /**
-   * Get organization statistics (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/{id}/stats:
+   *   get:
+   *     summary: Get organization statistics (Admin only)
+   *     description: Retrieve detailed statistics for a specific organization including user counts and invitations
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Organization ID
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Organization statistics retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 stats:
+   *                   type: object
+   *                   properties:
+   *                     userCount:
+   *                       type: integer
+   *                       description: Total number of users in organization
+   *                       example: 15
+   *                     activeUsers:
+   *                       type: integer
+   *                       description: Number of active users
+   *                       example: 12
+   *                     adminCount:
+   *                       type: integer
+   *                       description: Number of admin users
+   *                       example: 2
+   *                     invitations:
+   *                       type: object
+   *                       properties:
+   *                         pending:
+   *                           type: integer
+   *                           description: Number of pending invitations
+   *                           example: 3
+   *                         used:
+   *                           type: integer
+   *                           description: Number of used invitations
+   *                           example: 8
+   *                         expired:
+   *                           type: integer
+   *                           description: Number of expired invitations
+   *                           example: 1
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied to this organization
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getOrganizationStats(req, res) {
     try {
@@ -2231,9 +2499,113 @@ class AuthController {
   // ============================================================================
 
   /**
-   * Create invitation (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/invitations:
+   *   post:
+   *     summary: Create invitation (Admin only)
+   *     description: Create and send an invitation to join the current user's organization
+   *     tags: [Invitation Management]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [email]
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 description: Email address to send invitation to
+   *                 example: "newuser@example.com"
+   *               expirationDays:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 30
+   *                 description: Number of days until invitation expires
+   *                 example: 7
+   *                 default: 7
+   *     responses:
+   *       201:
+   *         description: Invitation created and sent successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Invitation created and sent successfully"
+   *                 invitation:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: integer
+   *                       example: 15
+   *                     email:
+   *                       type: string
+   *                       example: "newuser@example.com"
+   *                     organizationName:
+   *                       type: string
+   *                       example: "Acme Corporation"
+   *                     expiresAt:
+   *                       type: string
+   *                       format: date-time
+   *                       example: "2025-01-11T17:18:00.324Z"
+   *                     invitedBy:
+   *                       type: string
+   *                       example: "admin"
+   *       400:
+   *         description: Validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingEmail:
+   *                 summary: Missing email
+   *                 value:
+   *                   success: false
+   *                   message: "Email address is required"
+   *               invalidEmail:
+   *                 summary: Invalid email format
+   *                 value:
+   *                   success: false
+   *                   message: "Invalid email format"
+   *               noOrganization:
+   *                 summary: Must belong to organization
+   *                 value:
+   *                   success: false
+   *                   message: "You must belong to an organization to send invitations"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       409:
+   *         description: User already exists or is already a member
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async createInvitation(req, res) {
     try {

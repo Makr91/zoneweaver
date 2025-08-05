@@ -410,9 +410,294 @@ class ServerController {
   }
 
   /**
-   * Proxy request to WebHyve backend
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/webhyve/{protocol}/{hostname}/{port}/{path}:
+   *   get:
+   *     summary: Proxy request to WebHyve backend (General API proxy)
+   *     description: Forward API requests to a specific WebHyve backend server with authentication
+   *     tags: [WebHyve Proxy]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: WebHyve server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: WebHyve server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: WebHyve server port
+   *         example: 5001
+   *       - in: path
+   *         name: path
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: API path to proxy to WebHyve backend
+   *         example: "zones"
+   *     responses:
+   *       200:
+   *         description: Successful proxy response from WebHyve backend
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               description: Response from WebHyve backend (varies by endpoint)
+   *       400:
+   *         description: Bad request or validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found or endpoint not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Proxy error or WebHyve backend error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *   post:
+   *     summary: Proxy POST request to WebHyve backend
+   *     description: Forward POST requests to WebHyve backend with authentication
+   *     tags: [WebHyve Proxy]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: WebHyve server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: WebHyve server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: WebHyve server port
+   *         example: 5001
+   *       - in: path
+   *         name: path
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: API path to proxy to WebHyve backend
+   *         example: "zones/create"
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             description: Request body to forward to WebHyve backend
+   *     responses:
+   *       200:
+   *         description: Successful proxy response from WebHyve backend
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               description: Response from WebHyve backend (varies by endpoint)
+   *       400:
+   *         description: Bad request or validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found or endpoint not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Proxy error or WebHyve backend error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *   put:
+   *     summary: Proxy PUT request to WebHyve backend
+   *     description: Forward PUT requests to WebHyve backend with authentication
+   *     tags: [WebHyve Proxy]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: WebHyve server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: WebHyve server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: WebHyve server port
+   *         example: 5001
+   *       - in: path
+   *         name: path
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: API path to proxy to WebHyve backend
+   *         example: "zones/zone-name/update"
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             description: Request body to forward to WebHyve backend
+   *     responses:
+   *       200:
+   *         description: Successful proxy response from WebHyve backend
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               description: Response from WebHyve backend (varies by endpoint)
+   *       400:
+   *         description: Bad request or validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found or endpoint not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Proxy error or WebHyve backend error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *   delete:
+   *     summary: Proxy DELETE request to WebHyve backend
+   *     description: Forward DELETE requests to WebHyve backend with authentication
+   *     tags: [WebHyve Proxy]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: WebHyve server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: WebHyve server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: WebHyve server port
+   *         example: 5001
+   *       - in: path
+   *         name: path
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: API path to proxy to WebHyve backend
+   *         example: "zones/zone-name"
+   *     responses:
+   *       200:
+   *         description: Successful proxy response from WebHyve backend
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               description: Response from WebHyve backend (varies by endpoint)
+   *       400:
+   *         description: Bad request or validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found or endpoint not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Proxy error or WebHyve backend error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async proxyToWebHyve(req, res) {
     try {
@@ -470,10 +755,87 @@ class ServerController {
   }
 
   /**
-   * General VNC proxy for all VNC-related requests (WebSocket, static assets, etc.)
-   * Enhanced to work with the new WebHyve backend implementation
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverAddress}/zones/{zoneName}/vnc/{path}:
+   *   get:
+   *     summary: Proxy VNC assets and requests
+   *     description: General VNC proxy for static assets, WebSocket connections, and other VNC-related requests
+   *     tags: [VNC Console]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "webhyve-host.example.com:5001"
+   *       - in: path
+   *         name: zoneName
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Name of the zone
+   *         example: "my-zone"
+   *       - in: path
+   *         name: path
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: VNC asset path (CSS, JS, images, WebSocket, etc.)
+   *         example: "app/ui.js"
+   *     responses:
+   *       200:
+   *         description: VNC asset served successfully
+   *         content:
+   *           text/css:
+   *             schema:
+   *               type: string
+   *               description: CSS stylesheets (scoped for ZoneWeaver)
+   *           application/javascript:
+   *             schema:
+   *               type: string
+   *               description: JavaScript files
+   *           image/*:
+   *             schema:
+   *               type: string
+   *               format: binary
+   *               description: Image assets
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               description: API responses
+   *       401:
+   *         description: Not authenticated (optional auth)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Server, zone, or asset not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               serverNotFound:
+   *                 summary: Server not found
+   *                 value:
+   *                   success: false
+   *                   message: "WebHyve server hostname:port not found in ZoneWeaver configuration"
+   *               assetNotFound:
+   *                 summary: Asset not found
+   *                 value:
+   *                   success: false
+   *                   message: "Asset not found"
+   *                   asset_path: "app/missing.js"
+   *       500:
+   *         description: Proxy error or WebHyve backend error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async proxyVncGeneral(req, res) {
     try {
@@ -696,9 +1058,80 @@ class ServerController {
   }
 
   /**
-   * Proxy VNC console requests with authentication and enhanced error handling
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverAddress}/zones/{zoneName}/vnc/console:
+   *   get:
+   *     summary: Access VNC console for zone
+   *     description: Proxy to WebHyve VNC console with URL rewriting for seamless integration in ZoneWeaver
+   *     tags: [VNC Console]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "webhyve-host.example.com:5001"
+   *       - in: path
+   *         name: zoneName
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Name of the zone
+   *         example: "my-zone"
+   *       - in: query
+   *         name: autoconnect
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *         description: Auto-connect to VNC (noVNC parameter)
+   *         example: true
+   *       - in: query
+   *         name: resize
+   *         required: false
+   *         schema:
+   *           type: string
+   *           enum: [scale, remote]
+   *         description: Resize method (noVNC parameter)
+   *         example: "scale"
+   *     responses:
+   *       200:
+   *         description: VNC console HTML page
+   *         content:
+   *           text/html:
+   *             schema:
+   *               type: string
+   *               description: noVNC client HTML with rewritten URLs for ZoneWeaver integration
+   *       401:
+   *         description: Not authenticated (optional auth for iframe compatibility)
+   *         content:
+   *           text/html:
+   *             schema:
+   *               type: string
+   *               description: HTML error page
+   *       404:
+   *         description: Server or zone not found
+   *         content:
+   *           text/html:
+   *             schema:
+   *               type: string
+   *               description: HTML error page with user-friendly message
+   *             examples:
+   *               serverNotFound:
+   *                 summary: Server not found
+   *                 value: '<html><body><h2>Server Not Found</h2><p>WebHyve server not found in ZoneWeaver configuration.</p></body></html>'
+   *               configError:
+   *                 summary: Configuration error
+   *                 value: '<html><body><h2>Configuration Error</h2><p>No API key configured for WebHyve server</p></body></html>'
+   *       500:
+   *         description: Proxy error or WebHyve backend error
+   *         content:
+   *           text/html:
+   *             schema:
+   *               type: string
+   *               description: HTML error page with retry button
    */
   static async proxyVncConsole(req, res) {
     try {

@@ -128,11 +128,20 @@ router.delete("/api/admin/users/:userId/delete", authenticate, requireSuperAdmin
 
 // Organization endpoints (super-admin only)
 router.get("/api/organizations", authenticate, requireSuperAdmin, AuthController.getAllOrganizations);
+router.get("/api/organizations/:id", authenticate, requireAdmin, AuthController.getOrganization);
+router.put("/api/organizations/:id", authenticate, requireAdmin, AuthController.updateOrganization);
+router.get("/api/organizations/:id/users", authenticate, requireAdmin, AuthController.getOrganizationUsers);
+router.get("/api/organizations/:id/stats", authenticate, requireAdmin, AuthController.getOrganizationStats);
+router.get("/api/organizations/check/:name", AuthController.checkOrganizationExists);
 router.put("/api/organizations/:orgId/deactivate", authenticate, requireSuperAdmin, AuthController.deactivateOrganization);
 router.delete("/api/organizations/:orgId", authenticate, requireSuperAdmin, AuthController.deleteOrganization);
 
 // Invitation endpoints
 router.post("/api/invitations/send", authenticate, requireAdmin, AuthController.sendInvitation);
+router.post("/api/invitations", authenticate, requireAdmin, AuthController.createInvitation);
+router.get("/api/invitations", authenticate, requireAdmin, AuthController.getInvitations);
+router.post("/api/invitations/:id/resend", authenticate, requireAdmin, AuthController.resendInvitation);
+router.delete("/api/invitations/:id", authenticate, requireAdmin, AuthController.revokeInvitation);
 router.get("/api/invitations/validate/:code", AuthController.validateInvitation);
 
 // Server management endpoints
@@ -173,6 +182,9 @@ router.put("/api/settings", authenticate, requireSuperAdmin, SettingsController.
 router.post("/api/settings/reset", authenticate, requireSuperAdmin, SettingsController.resetSettings);
 router.post("/api/settings/restart", authenticate, requireSuperAdmin, SettingsController.restartServer);
 router.get("/api/settings/backups", authenticate, requireSuperAdmin, SettingsController.getBackups);
+
+// Mail testing endpoint (super-admin only)
+router.post("/api/mail/test", authenticate, requireSuperAdmin, AuthController.testMail);
 
 // Serve static files from the Vite app build directory
 router.use('/ui', express.static(path.join(process.cwd(), 'web/dist')));
