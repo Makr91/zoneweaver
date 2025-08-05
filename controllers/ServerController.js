@@ -984,9 +984,66 @@ class ServerController {
   }
 
   /**
-   * Start a new terminal session
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/terminal/start:
+   *   post:
+   *     summary: Start a new terminal session
+   *     description: Create a new terminal session on the default WebHyve server
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Terminal session started successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 session:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       description: Terminal session ID
+   *                       example: "term_abc123def456"
+   *                     status:
+   *                       type: string
+   *                       description: Session status
+   *                       example: "active"
+   *                     created:
+   *                       type: string
+   *                       format: date-time
+   *                       description: Session creation timestamp
+   *                       example: "2025-01-04T17:18:00.324Z"
+   *                     websocketUrl:
+   *                       type: string
+   *                       description: WebSocket URL for terminal connection
+   *                       example: "wss://localhost:3000/term/term_abc123def456"
+   *       400:
+   *         description: No servers configured
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "No servers configured."
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async startTerminalSession(req, res) {
     try {
@@ -1027,9 +1084,85 @@ class ServerController {
   }
 
   /**
-   * Start a new zlogin session
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverAddress}/zones/{zoneName}/zlogin/start:
+   *   post:
+   *     summary: Start a new zlogin session for zone
+   *     description: Create a new zlogin (zone login) shell session for the specified zone on a WebHyve server
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "webhyve-host.example.com:5001"
+   *       - in: path
+   *         name: zoneName
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Name of the zone to login to
+   *         example: "my-zone"
+   *     responses:
+   *       200:
+   *         description: Zlogin session started successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 session:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       description: Zlogin session ID
+   *                       example: "zlogin_abc123def456"
+   *                     zone_name:
+   *                       type: string
+   *                       description: Zone name
+   *                       example: "my-zone"
+   *                     status:
+   *                       type: string
+   *                       description: Session status
+   *                       example: "active"
+   *                     created:
+   *                       type: string
+   *                       format: date-time
+   *                       description: Session creation timestamp
+   *                       example: "2025-01-04T17:18:00.324Z"
+   *                     websocketUrl:
+   *                       type: string
+   *                       description: WebSocket URL for shell connection
+   *                       example: "wss://localhost:3000/zlogin/zlogin_abc123def456"
+   *       404:
+   *         description: Server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Server not found"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error or zone not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async startZloginSession(req, res) {
     try {
@@ -1157,9 +1290,78 @@ class ServerController {
   }
 
   /**
-   * Get all zlogin sessions
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverAddress}/zlogin/sessions:
+   *   get:
+   *     summary: Get all zlogin sessions
+   *     description: Retrieve all active zlogin sessions on the specified WebHyve server
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "webhyve-host.example.com:5001"
+   *     responses:
+   *       200:
+   *         description: Zlogin sessions retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 sessions:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id:
+   *                         type: string
+   *                         description: Zlogin session ID
+   *                         example: "zlogin_abc123def456"
+   *                       zone_name:
+   *                         type: string
+   *                         description: Zone name
+   *                         example: "my-zone"
+   *                       status:
+   *                         type: string
+   *                         description: Session status
+   *                         example: "active"
+   *                       created:
+   *                         type: string
+   *                         format: date-time
+   *                         description: Session creation timestamp
+   *                         example: "2025-01-04T17:18:00.324Z"
+   *                       last_activity:
+   *                         type: string
+   *                         format: date-time
+   *                         description: Last activity timestamp
+   *                         example: "2025-01-04T17:19:00.324Z"
+   *       404:
+   *         description: Server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getZloginSessions(req, res) {
     try {
@@ -1197,9 +1399,98 @@ class ServerController {
   }
 
   /**
-   * Get a specific zlogin session
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverAddress}/zlogin/sessions/{sessionId}:
+   *   get:
+   *     summary: Get a specific zlogin session
+   *     description: Retrieve details of a specific zlogin session by session ID
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "webhyve-host.example.com:5001"
+   *       - in: path
+   *         name: sessionId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Zlogin session ID
+   *         example: "zlogin_abc123def456"
+   *     responses:
+   *       200:
+   *         description: Zlogin session details retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 session:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       description: Zlogin session ID
+   *                       example: "zlogin_abc123def456"
+   *                     zone_name:
+   *                       type: string
+   *                       description: Zone name
+   *                       example: "my-zone"
+   *                     status:
+   *                       type: string
+   *                       description: Session status
+   *                       example: "active"
+   *                     created:
+   *                       type: string
+   *                       format: date-time
+   *                       description: Session creation timestamp
+   *                       example: "2025-01-04T17:18:00.324Z"
+   *                     last_activity:
+   *                       type: string
+   *                       format: date-time
+   *                       description: Last activity timestamp
+   *                       example: "2025-01-04T17:19:00.324Z"
+   *                     pid:
+   *                       type: integer
+   *                       description: Process ID of the session
+   *                       example: 12345
+   *       404:
+   *         description: Server or session not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               serverNotFound:
+   *                 summary: Server not found
+   *                 value:
+   *                   success: false
+   *                   message: "Server not found"
+   *               sessionNotFound:
+   *                 summary: Session not found
+   *                 value:
+   *                   success: false
+   *                   message: "Zlogin session not found"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getZloginSession(req, res) {
     try {
@@ -1237,9 +1528,68 @@ class ServerController {
   }
 
   /**
-   * Stop a zlogin session
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverAddress}/zlogin/sessions/{sessionId}/stop:
+   *   delete:
+   *     summary: Stop a zlogin session
+   *     description: Stop and terminate a zlogin session by session ID
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "webhyve-host.example.com:5001"
+   *       - in: path
+   *         name: sessionId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Zlogin session ID to stop
+   *         example: "zlogin_abc123def456"
+   *     responses:
+   *       200:
+   *         description: Zlogin session stopped successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Zlogin session stopped"
+   *       404:
+   *         description: Server or session not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               serverNotFound:
+   *                 summary: Server not found
+   *                 value:
+   *                   success: false
+   *                   message: "Server not found"
+   *               sessionNotFound:
+   *                 summary: Session not found
+   *                 value:
+   *                   success: false
+   *                   message: "Zlogin session not found"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async stopZloginSession(req, res) {
     try {

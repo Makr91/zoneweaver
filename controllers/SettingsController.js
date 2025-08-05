@@ -710,7 +710,96 @@ class SettingsController {
   }
 
   /**
-   * Get Webhyve settings
+   * @swagger
+   * /api/webhyve/{protocol}/{hostname}/{port}/settings:
+   *   get:
+   *     summary: Get WebHyve server settings (Super-admin only)
+   *     description: Retrieve configuration settings from a specific WebHyve backend server
+   *     tags: [WebHyve Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: Server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Server port
+   *         example: 5001
+   *     responses:
+   *       200:
+   *         description: WebHyve settings retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 settings:
+   *                   type: object
+   *                   properties:
+   *                     serverName:
+   *                       type: string
+   *                       example: "WebHyve Production"
+   *                     version:
+   *                       type: string
+   *                       example: "1.0.0"
+   *                     port:
+   *                       type: integer
+   *                       example: 5001
+   *                     debugMode:
+   *                       type: boolean
+   *                       example: false
+   *                     maxZones:
+   *                       type: integer
+   *                       example: 100
+   *                     autoBackup:
+   *                       type: boolean
+   *                       example: true
+   *                     backupRetention:
+   *                       type: integer
+   *                       example: 30
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error or WebHyve server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getWebhyveSettings(req, res) {
     try {
@@ -737,7 +826,97 @@ class SettingsController {
   }
 
   /**
-   * Update Webhyve settings
+   * @swagger
+   * /api/webhyve/{protocol}/{hostname}/{port}/settings:
+   *   put:
+   *     summary: Update WebHyve server settings (Super-admin only)
+   *     description: Update configuration settings on a specific WebHyve backend server
+   *     tags: [WebHyve Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: Server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Server port
+   *         example: 5001
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               serverName:
+   *                 type: string
+   *                 example: "WebHyve Production"
+   *               debugMode:
+   *                 type: boolean
+   *                 example: false
+   *               maxZones:
+   *                 type: integer
+   *                 example: 100
+   *               autoBackup:
+   *                 type: boolean
+   *                 example: true
+   *               backupRetention:
+   *                 type: integer
+   *                 example: 30
+   *               allow_insecure:
+   *                 type: boolean
+   *                 description: Allow insecure connections (updates ZoneWeaver config)
+   *                 example: false
+   *     responses:
+   *       200:
+   *         description: WebHyve settings updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Settings updated successfully"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error or WebHyve server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async updateWebhyveSettings(req, res) {
     try {
@@ -782,7 +961,90 @@ class SettingsController {
   }
 
   /**
-   * Get Webhyve backups
+   * @swagger
+   * /api/webhyve/{protocol}/{hostname}/{port}/settings/backups:
+   *   get:
+   *     summary: Get WebHyve configuration backups (Super-admin only)
+   *     description: Retrieve list of available configuration backup files from a specific WebHyve backend server
+   *     tags: [WebHyve Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: Server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Server port
+   *         example: 5001
+   *     responses:
+   *       200:
+   *         description: WebHyve backup list retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 backups:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       filename:
+   *                         type: string
+   *                         description: Backup filename
+   *                         example: "config.yaml.backup.1641234567890"
+   *                       created:
+   *                         type: string
+   *                         format: date-time
+   *                         description: Backup creation timestamp
+   *                         example: "2025-01-04T17:18:00.324Z"
+   *                       size:
+   *                         type: integer
+   *                         description: File size in bytes
+   *                         example: 2048
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error or WebHyve server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getWebhyveBackups(req, res) {
     try {
@@ -809,7 +1071,89 @@ class SettingsController {
   }
 
   /**
-   * Restore Webhyve backup
+   * @swagger
+   * /api/webhyve/{protocol}/{hostname}/{port}/settings/restore/{filename}:
+   *   post:
+   *     summary: Restore WebHyve configuration backup (Super-admin only)
+   *     description: Restore a WebHyve server configuration from a backup file
+   *     tags: [WebHyve Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: Server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Server port
+   *         example: 5001
+   *       - in: path
+   *         name: filename
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Backup filename to restore
+   *         example: "config.yaml.backup.1641234567890"
+   *     responses:
+   *       200:
+   *         description: Backup restored successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Backup restored successfully"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server or backup file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               serverNotFound:
+   *                 summary: Server not found
+   *                 value:
+   *                   success: false
+   *                   message: "WebHyve server not found"
+   *               backupNotFound:
+   *                 summary: Backup file not found
+   *                 value:
+   *                   success: false
+   *                   message: "Backup file not found"
+   *       500:
+   *         description: Internal server error or WebHyve server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async restoreWebhyveBackup(req, res) {
     try {
@@ -840,7 +1184,71 @@ class SettingsController {
   }
 
   /**
-   * Restart Webhyve server
+   * @swagger
+   * /api/webhyve/{protocol}/{hostname}/{port}/server/restart:
+   *   post:
+   *     summary: Restart WebHyve server (Super-admin only)
+   *     description: Restart a specific WebHyve backend server (requires process manager like PM2)
+   *     tags: [WebHyve Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: protocol
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [http, https]
+   *         description: Server protocol
+   *         example: "https"
+   *       - in: path
+   *         name: hostname
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server hostname
+   *         example: "webhyve-host.example.com"
+   *       - in: path
+   *         name: port
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Server port
+   *         example: 5001
+   *     responses:
+   *       200:
+   *         description: WebHyve server restart initiated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Server restart initiated"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: WebHyve server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error or WebHyve server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async restartWebhyveServer(req, res) {
     try {
