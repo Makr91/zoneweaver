@@ -2687,9 +2687,81 @@ class AuthController {
   }
 
   /**
-   * Get invitations for organization (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/invitations:
+   *   get:
+   *     summary: Get invitations for organization (Admin only)
+   *     description: Retrieve all invitations for the current user's organization with filtering options
+   *     tags: [Invitation Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: includePending
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *           default: true
+   *         description: Include pending invitations
+   *         example: true
+   *       - in: query
+   *         name: includeUsed
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *           default: false
+   *         description: Include used invitations
+   *         example: false
+   *       - in: query
+   *         name: includeExpired
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *           default: false
+   *         description: Include expired invitations
+   *         example: false
+   *     responses:
+   *       200:
+   *         description: Invitations retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 invitations:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Invitation'
+   *       400:
+   *         description: Must belong to organization
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "You must belong to an organization to view invitations"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getInvitations(req, res) {
     try {
@@ -2728,9 +2800,105 @@ class AuthController {
   }
 
   /**
-   * Resend invitation (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/invitations/{id}/resend:
+   *   post:
+   *     summary: Resend invitation (Admin only)
+   *     description: Resend an existing invitation with a new expiration date
+   *     tags: [Invitation Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Invitation ID to resend
+   *         example: 15
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               expirationDays:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 30
+   *                 description: Number of days until invitation expires
+   *                 example: 7
+   *                 default: 7
+   *     responses:
+   *       200:
+   *         description: Invitation resent successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Invitation resent successfully"
+   *                 invitation:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: integer
+   *                       example: 15
+   *                     email:
+   *                       type: string
+   *                       example: "newuser@example.com"
+   *                     organizationName:
+   *                       type: string
+   *                       example: "Acme Corporation"
+   *                     expiresAt:
+   *                       type: string
+   *                       format: date-time
+   *                       example: "2025-01-11T17:18:00.324Z"
+   *                     invitedBy:
+   *                       type: string
+   *                       example: "admin"
+   *       400:
+   *         description: Must belong to organization
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "You must belong to an organization to resend invitations"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Invitation not found or already used
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Invitation not found or already used"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async resendInvitation(req, res) {
     try {
@@ -2795,9 +2963,68 @@ class AuthController {
   }
 
   /**
-   * Revoke invitation (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/invitations/{id}:
+   *   delete:
+   *     summary: Revoke invitation (Admin only)
+   *     description: Revoke an existing invitation, preventing it from being used
+   *     tags: [Invitation Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Invitation ID to revoke
+   *         example: 15
+   *     responses:
+   *       200:
+   *         description: Invitation revoked successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Invitation revoked successfully"
+   *       400:
+   *         description: Must belong to organization
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "You must belong to an organization to revoke invitations"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Invitation not found or already used
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Invitation not found or already used"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async revokeInvitation(req, res) {
     try {
@@ -2882,9 +3109,55 @@ class AuthController {
   // ============================================================================
 
   /**
-   * Check if organization exists (public endpoint)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/check/{name}:
+   *   get:
+   *     summary: Check if organization exists (Public)
+   *     description: Check if an organization with the given name already exists (public endpoint for registration)
+   *     tags: [Organization Management]
+   *     parameters:
+   *       - in: path
+   *         name: name
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Organization name to check
+   *         example: "Acme Corporation"
+   *     responses:
+   *       200:
+   *         description: Organization existence check completed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 exists:
+   *                   type: boolean
+   *                   description: Whether organization exists
+   *                   example: true
+   *                 organizationName:
+   *                   type: string
+   *                   nullable: true
+   *                   description: Organization name if exists, null otherwise
+   *                   example: "Acme Corporation"
+   *       400:
+   *         description: Missing organization name
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Organization name is required"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async checkOrganizationExists(req, res) {
     try {
@@ -3113,9 +3386,78 @@ class AuthController {
   }
 
   /**
-   * Test mail configuration (super-admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/mail/test:
+   *   post:
+   *     summary: Test SMTP mail configuration (Super-admin only)
+   *     description: Test the SMTP configuration by attempting to connect to the mail server
+   *     tags: [Mail Testing]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: SMTP connection test completed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   description: Whether SMTP connection was successful
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   description: Result message
+   *                   example: "SMTP connection successful"
+   *                 details:
+   *                   type: object
+   *                   description: Connection details (if successful)
+   *                   properties:
+   *                     host:
+   *                       type: string
+   *                       example: "smtp.gmail.com"
+   *                     port:
+   *                       type: integer
+   *                       example: 587
+   *                     secure:
+   *                       type: boolean
+   *                       example: false
+   *       400:
+   *         description: SMTP connection failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "SMTP connection failed"
+   *                 error:
+   *                   type: string
+   *                   description: Detailed error message
+   *                   example: "Authentication failed"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async testMail(req, res) {
     await MailController.testSmtpConnection(req, res);
