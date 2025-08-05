@@ -131,8 +131,28 @@ app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   swaggerUi.setup(dynamicSpecs, {
     explorer: true,
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'ZoneWeaver API Documentation'
+    customSiteTitle: 'ZoneWeaver API Documentation',
+    swaggerOptions: {
+      url: `${protocol}://${host}/api-docs/swagger.json`
+    }
   })(req, res, next);
+});
+
+// Serve the OpenAPI spec JSON separately to avoid asset loading issues
+app.get('/api-docs/swagger.json', (req, res) => {
+  const protocol = req.protocol;
+  const host = req.get('host');
+  const dynamicSpecs = {
+    ...specs,
+    servers: [
+      {
+        url: `${protocol}://${host}`,
+        description: 'Current server (auto-detected)'
+      }
+    ]
+  };
+  res.setHeader('Content-Type', 'application/json');
+  res.send(dynamicSpecs);
 });
 
 // Handle React Router routes - serve index.html for all non-API routes
