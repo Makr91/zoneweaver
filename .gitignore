@@ -13,7 +13,7 @@ node_modules/*
 core/*
 
 Trash
-SWAGGER_PROGRESS.md
+
 core
 /.pnp
 .pnp.js
@@ -34,3 +34,4 @@ core
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+SWAGGER_PROGRESS.md
