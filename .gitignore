@@ -13,7 +13,7 @@ node_modules/*
 core/*
 
 Trash
-
+SWAGGER_PROGRESS.md
 core
 /.pnp
 .pnp.js

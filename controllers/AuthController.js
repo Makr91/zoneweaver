@@ -1028,9 +1028,76 @@ class AuthController {
   }
 
   /**
-   * Deactivate user (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/admin/users/{userId}:
+   *   delete:
+   *     summary: Deactivate user (Admin only)
+   *     description: Deactivate a user account (soft delete). Admins can only deactivate users in their organization.
+   *     tags: [Admin - User Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: userId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the user to deactivate
+   *         example: 5
+   *     responses:
+   *       200:
+   *         description: User deactivated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "User deactivated successfully"
+   *       400:
+   *         description: Cannot deactivate own account
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingUserId:
+   *                 summary: Missing user ID
+   *                 value:
+   *                   success: false
+   *                   message: "User ID is required"
+   *               ownAccount:
+   *                 summary: Cannot deactivate own account
+   *                 value:
+   *                   success: false
+   *                   message: "Cannot deactivate your own account"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "User not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async deactivateUser(req, res) {
     try {
@@ -1075,9 +1142,68 @@ class AuthController {
   }
 
   /**
-   * Reactivate user (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/admin/users/{userId}/reactivate:
+   *   put:
+   *     summary: Reactivate user (Admin only)
+   *     description: Reactivate a previously deactivated user account. Admins can only reactivate users in their organization.
+   *     tags: [Admin - User Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: userId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the user to reactivate
+   *         example: 5
+   *     responses:
+   *       200:
+   *         description: User reactivated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "User reactivated successfully"
+   *       400:
+   *         description: Missing user ID
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "User ID is required"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "User not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async reactivateUser(req, res) {
     try {
@@ -1113,9 +1239,79 @@ class AuthController {
   }
 
   /**
-   * Permanently delete user (super-admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/admin/users/{userId}/delete:
+   *   delete:
+   *     summary: Permanently delete user (Super-admin only)
+   *     description: Permanently delete a user account (hard delete). This action cannot be undone.
+   *     tags: [Admin - User Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: userId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the user to permanently delete
+   *         example: 5
+   *     responses:
+   *       200:
+   *         description: User permanently deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "User permanently deleted successfully"
+   *       400:
+   *         description: Cannot delete own account or missing user ID
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingUserId:
+   *                 summary: Missing user ID
+   *                 value:
+   *                   success: false
+   *                   message: "User ID is required"
+   *               ownAccount:
+   *                 summary: Cannot delete own account
+   *                 value:
+   *                   success: false
+   *                   message: "Cannot delete your own account"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Only super administrators can permanently delete users"
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "User not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async deleteUser(req, res) {
     try {
@@ -1221,9 +1417,124 @@ class AuthController {
   }
 
   /**
-   * Send invitation email (admin/super-admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/invitations/send:
+   *   post:
+   *     summary: Send invitation email (Admin only)
+   *     description: Send an invitation email to join an organization. Admins can only invite to their own organization.
+   *     tags: [Invitations]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [email]
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 description: Email address to send invitation to
+   *                 example: "newuser@example.com"
+   *               organizationId:
+   *                 type: integer
+   *                 description: Organization ID (super-admin only, admins use their own org)
+   *                 example: 2
+   *     responses:
+   *       200:
+   *         description: Invitation sent successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Invitation sent successfully to newuser@example.com"
+   *                 invitation:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: integer
+   *                       example: 15
+   *                     email:
+   *                       type: string
+   *                       example: "newuser@example.com"
+   *                     organizationName:
+   *                       type: string
+   *                       example: "Acme Corporation"
+   *                     expiresAt:
+   *                       type: string
+   *                       format: date-time
+   *                       example: "2025-01-11T17:18:00.324Z"
+   *       400:
+   *         description: Validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingEmail:
+   *                 summary: Missing email
+   *                 value:
+   *                   success: false
+   *                   message: "Email is required"
+   *               invalidEmail:
+   *                 summary: Invalid email format
+   *                 value:
+   *                   success: false
+   *                   message: "Invalid email format"
+   *               noOrganization:
+   *                 summary: Admin must belong to organization
+   *                 value:
+   *                   success: false
+   *                   message: "Admin user must belong to an organization to send invitations"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Organization not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       409:
+   *         description: User already exists or active invitation exists
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               userExists:
+   *                 summary: User already exists
+   *                 value:
+   *                   success: false
+   *                   message: "A user with this email already exists"
+   *               inviteExists:
+   *                 summary: Active invitation exists
+   *                 value:
+   *                   success: false
+   *                   message: "An active invitation for this email already exists"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async sendInvitation(req, res) {
     try {
@@ -1339,9 +1650,77 @@ class AuthController {
   }
 
   /**
-   * Validate invitation code
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/invitations/validate/{code}:
+   *   get:
+   *     summary: Validate invitation code
+   *     description: Check if an invitation code is valid and retrieve invitation details (public endpoint)
+   *     tags: [Invitations]
+   *     parameters:
+   *       - in: path
+   *         name: code
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Invitation code to validate
+   *         example: "inv_abc123def456"
+   *     responses:
+   *       200:
+   *         description: Invitation validation result
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               oneOf:
+   *                 - type: object
+   *                   properties:
+   *                     success:
+   *                       type: boolean
+   *                       example: true
+   *                     invitation:
+   *                       type: object
+   *                       properties:
+   *                         email:
+   *                           type: string
+   *                           example: "invited@example.com"
+   *                         organizationId:
+   *                           type: integer
+   *                           example: 1
+   *                         organizationName:
+   *                           type: string
+   *                           example: "Acme Corporation"
+   *                 - type: object
+   *                   properties:
+   *                     success:
+   *                       type: boolean
+   *                       example: false
+   *                     message:
+   *                       type: string
+   *                       example: "Invalid or expired invitation code"
+   *       400:
+   *         description: Missing invitation code
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Invitation code is required"
+   *       404:
+   *         description: Invalid or expired invitation code
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Invalid or expired invitation code"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async validateInvitation(req, res) {
     try {
@@ -1382,9 +1761,47 @@ class AuthController {
   }
 
   /**
-   * Get all organizations (super-admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations:
+   *   get:
+   *     summary: Get all organizations (Super-admin only)
+   *     description: Retrieve list of all organizations in the system
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Organizations retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 organizations:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Organization'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getAllOrganizations(req, res) {
     try {
@@ -1405,9 +1822,68 @@ class AuthController {
   }
 
   /**
-   * Deactivate organization (super-admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/{orgId}/deactivate:
+   *   put:
+   *     summary: Deactivate organization (Super-admin only)
+   *     description: Deactivate an organization (soft delete). All users in the organization will be affected.
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: orgId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the organization to deactivate
+   *         example: 2
+   *     responses:
+   *       200:
+   *         description: Organization deactivated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Organization deactivated successfully"
+   *       400:
+   *         description: Missing organization ID
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Organization ID is required"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Organization not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Organization not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async deactivateOrganization(req, res) {
     try {
@@ -1444,9 +1920,76 @@ class AuthController {
   }
 
   /**
-   * Delete organization (super-admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/organizations/{orgId}:
+   *   delete:
+   *     summary: Delete organization (Super-admin only)
+   *     description: Permanently delete an organization (hard delete). All users in the organization will be deleted.
+   *     tags: [Organization Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: orgId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID of the organization to delete
+   *         example: 2
+   *     responses:
+   *       200:
+   *         description: Organization deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Organization deleted successfully"
+   *       400:
+   *         description: Cannot delete organization with active users
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingOrgId:
+   *                 summary: Missing organization ID
+   *                 value:
+   *                   success: false
+   *                   message: "Organization ID is required"
+   *               hasActiveUsers:
+   *                 summary: Organization has active users
+   *                 value:
+   *                   success: false
+   *                   message: "Cannot delete organization with active users"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Organization not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Organization not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async deleteOrganization(req, res) {
     try {
@@ -1999,9 +2542,93 @@ class AuthController {
   }
 
   /**
-   * Delete own account (self-deletion)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/auth/delete-account:
+   *   delete:
+   *     summary: Delete own account (self-deletion)
+   *     description: Permanently delete the authenticated user's account with password confirmation
+   *     tags: [Authentication]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [password, confirmText]
+   *             properties:
+   *               password:
+   *                 type: string
+   *                 description: Current password for verification
+   *                 example: "currentPassword123"
+   *               confirmText:
+   *                 type: string
+   *                 description: Must be exactly "DELETE" to confirm deletion
+   *                 example: "DELETE"
+   *     responses:
+   *       200:
+   *         description: Account deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Account deleted successfully"
+   *                 organizationDeleted:
+   *                   type: boolean
+   *                   description: Whether user's organization was also deleted (if they were the last member)
+   *                   example: false
+   *       400:
+   *         description: Validation error or cannot delete last super-admin
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingFields:
+   *                 summary: Missing required fields
+   *                 value:
+   *                   success: false
+   *                   message: "Password and confirmation text are required"
+   *               wrongConfirm:
+   *                 summary: Wrong confirmation text
+   *                 value:
+   *                   success: false
+   *                   message: "Confirmation text must be \"DELETE\""
+   *               lastSuperAdmin:
+   *                 summary: Cannot delete last super-admin
+   *                 value:
+   *                   success: false
+   *                   message: "Cannot delete the last super administrator account"
+   *               invalidPassword:
+   *                 summary: Invalid password
+   *                 value:
+   *                   success: false
+   *                   message: "Invalid password"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async deleteSelfAccount(req, res) {
     try {
