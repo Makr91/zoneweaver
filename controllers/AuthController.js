@@ -414,9 +414,30 @@ class AuthController {
   }
 
   /**
-   * Logout user
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/auth/logout:
+   *   post:
+   *     summary: Logout user
+   *     description: Logout user and destroy session (for session-based auth)
+   *     tags: [Authentication]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Logout successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Logout successful"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async logout(req, res) {
     try {
@@ -443,9 +464,51 @@ class AuthController {
   }
 
   /**
-   * Get current user profile
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/auth/profile:
+   *   get:
+   *     summary: Get current user profile
+   *     description: Retrieve the authenticated user's profile information
+   *     tags: [Authentication]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Profile retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 user:
+   *                   $ref: '#/components/schemas/User'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Not authenticated"
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "User not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getProfile(req, res) {
     try {
@@ -489,9 +552,79 @@ class AuthController {
   }
 
   /**
-   * Change user password
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/auth/change-password:
+   *   post:
+   *     summary: Change user password
+   *     description: Change the authenticated user's password
+   *     tags: [Authentication]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [currentPassword, newPassword, confirmPassword]
+   *             properties:
+   *               currentPassword:
+   *                 type: string
+   *                 description: Current password for verification
+   *                 example: "oldPassword123"
+   *               newPassword:
+   *                 type: string
+   *                 minLength: 8
+   *                 description: New password (minimum 8 characters)
+   *                 example: "newSecurePassword456"
+   *               confirmPassword:
+   *                 type: string
+   *                 description: Confirm new password (must match newPassword)
+   *                 example: "newSecurePassword456"
+   *     responses:
+   *       200:
+   *         description: Password changed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Password changed successfully"
+   *       400:
+   *         description: Validation error or incorrect current password
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingFields:
+   *                 summary: Missing required fields
+   *                 value:
+   *                   success: false
+   *                   message: "All password fields are required"
+   *               passwordMismatch:
+   *                 summary: New passwords don't match
+   *                 value:
+   *                   success: false
+   *                   message: "New passwords do not match"
+   *               incorrectCurrent:
+   *                 summary: Incorrect current password
+   *                 value:
+   *                   success: false
+   *                   message: "Current password is incorrect"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async changePassword(req, res) {
     try {

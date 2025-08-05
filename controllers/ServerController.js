@@ -37,9 +37,87 @@ class ServerController {
     return server;
   }
   /**
-   * Add a new WebHyve server (Admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers:
+   *   post:
+   *     summary: Add a new WebHyve server
+   *     description: Add a WebHyve backend server for zone management (Admin only)
+   *     tags: [Server Management]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [hostname, port, protocol, entityName]
+   *             properties:
+   *               hostname:
+   *                 type: string
+   *                 description: Server hostname or IP address
+   *                 example: "webhyve-host.example.com"
+   *               port:
+   *                 type: integer
+   *                 description: Server port number
+   *                 example: 5001
+   *               protocol:
+   *                 type: string
+   *                 enum: [http, https]
+   *                 description: Connection protocol
+   *                 example: "https"
+   *               entityName:
+   *                 type: string
+   *                 description: Display name for the server
+   *                 example: "Production WebHyve Server"
+   *               description:
+   *                 type: string
+   *                 description: Optional server description
+   *                 example: "Main production server for zone management"
+   *               apiKey:
+   *                 type: string
+   *                 description: Existing WebHyve API key (optional - will bootstrap if not provided)
+   *                 example: "wh_abc123def456..."
+   *     responses:
+   *       200:
+   *         description: Server added successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Server added successfully"
+   *                 server:
+   *                   $ref: '#/components/schemas/Server'
+   *       400:
+   *         description: Validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async addServer(req, res) {
     try {
@@ -85,9 +163,41 @@ class ServerController {
   }
 
   /**
-   * Get all servers (Available to all users)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers:
+   *   get:
+   *     summary: Get all WebHyve servers
+   *     description: Retrieve list of all configured WebHyve backend servers
+   *     tags: [Server Management]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Servers retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 servers:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Server'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getAllServers(req, res) {
     try {
@@ -107,9 +217,73 @@ class ServerController {
   }
 
   /**
-   * Test server connectivity
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/test:
+   *   post:
+   *     summary: Test WebHyve server connectivity
+   *     description: Test connection to a WebHyve backend server
+   *     tags: [Server Management]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [hostname, port, protocol]
+   *             properties:
+   *               hostname:
+   *                 type: string
+   *                 description: Server hostname or IP address
+   *                 example: "webhyve-host.example.com"
+   *               port:
+   *                 type: integer
+   *                 description: Server port number
+   *                 example: 5001
+   *               protocol:
+   *                 type: string
+   *                 enum: [http, https]
+   *                 description: Connection protocol
+   *                 example: "https"
+   *     responses:
+   *       200:
+   *         description: Connection test results
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   description: Whether connection test succeeded
+   *                 message:
+   *                   type: string
+   *                   example: "Connection successful"
+   *                 serverInfo:
+   *                   type: object
+   *                   description: Server information (if successful)
+   *                 error:
+   *                   type: string
+   *                   description: Error message (if failed)
+   *       400:
+   *         description: Missing required parameters
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async testServer(req, res) {
     try {
@@ -142,9 +316,65 @@ class ServerController {
   }
 
   /**
-   * Remove a server (Admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/servers/{serverId}:
+   *   delete:
+   *     summary: Remove a WebHyve server
+   *     description: Remove a WebHyve backend server from ZoneWeaver (Admin only)
+   *     tags: [Server Management]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: Server ID to remove
+   *         example: 1
+   *     responses:
+   *       200:
+   *         description: Server removed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Server removed successfully"
+   *       400:
+   *         description: Server ID is required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Server not found or already removed"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async removeServer(req, res) {
     try {

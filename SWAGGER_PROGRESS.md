@@ -26,9 +26,9 @@ Adding comprehensive Swagger/OpenAPI 3.0.0 documentation to the ZoneWeaver Node.
 #### Authentication Endpoints (`/api/auth/*`)
 - [x] POST /api/auth/register
 - [x] POST /api/auth/login
-- [ ] POST /api/auth/logout
-- [ ] GET /api/auth/profile
-- [ ] POST /api/auth/change-password
+- [x] POST /api/auth/logout
+- [x] GET /api/auth/profile
+- [x] POST /api/auth/change-password
 - [ ] DELETE /api/auth/delete-account
 - [ ] GET /api/auth/verify
 - [ ] GET /api/auth/setup-status
@@ -46,10 +46,10 @@ Adding comprehensive Swagger/OpenAPI 3.0.0 documentation to the ZoneWeaver Node.
 - [ ] DELETE /api/organizations/:orgId
 
 #### Server Management Endpoints (`/api/servers/*`)
-- [ ] POST /api/servers
-- [ ] GET /api/servers
-- [ ] POST /api/servers/test
-- [ ] DELETE /api/servers/:serverId
+- [x] POST /api/servers
+- [x] GET /api/servers
+- [x] POST /api/servers/test
+- [x] DELETE /api/servers/:serverId
 
 #### Settings Endpoints (`/api/settings/*`)
 - [ ] GET /api/settings
