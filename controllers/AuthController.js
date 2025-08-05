@@ -692,9 +692,58 @@ class AuthController {
   }
 
   /**
-   * Verify JWT token
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/auth/verify:
+   *   get:
+   *     summary: Verify JWT token validity
+   *     description: Verify if the provided JWT token is valid and get user info
+   *     tags: [Authentication]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Token is valid
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 valid:
+   *                   type: boolean
+   *                   example: true
+   *                 user:
+   *                   $ref: '#/components/schemas/User'
+   *       401:
+   *         description: Token is invalid or expired
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               noToken:
+   *                 summary: No token provided
+   *                 value:
+   *                   success: false
+   *                   message: "No token provided"
+   *               invalidToken:
+   *                 summary: Invalid token
+   *                 value:
+   *                   success: false
+   *                   message: "Invalid token"
+   *               expiredToken:
+   *                 summary: Expired token
+   *                 value:
+   *                   success: false
+   *                   message: "Token expired"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async verifyToken(req, res) {
     try {
@@ -752,9 +801,52 @@ class AuthController {
   }
 
   /**
-   * Get users based on role permissions (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/admin/users:
+   *   get:
+   *     summary: Get all users (Admin only)
+   *     description: Retrieve all users. Super-admin sees all users, admin sees only users in their organization.
+   *     tags: [Admin - User Management]
+   *     security:
+   *       - JwtAuth: []
+   *     responses:
+   *       200:
+   *         description: Users retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 users:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/User'
+   *                 viewScope:
+   *                   type: string
+   *                   enum: [all, organization]
+   *                   description: Scope of users returned
+   *                   example: "organization"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getAllUsers(req, res) {
     try {
@@ -799,9 +891,90 @@ class AuthController {
   }
 
   /**
-   * Update user role (admin only)
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/admin/users/role:
+   *   put:
+   *     summary: Update user role (Admin only)
+   *     description: Change a user's role/permission level. Admins can only modify users in their organization.
+   *     tags: [Admin - User Management]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [userId, newRole]
+   *             properties:
+   *               userId:
+   *                 type: integer
+   *                 description: ID of the user to update
+   *                 example: 5
+   *               newRole:
+   *                 type: string
+   *                 enum: [user, admin, super-admin]
+   *                 description: New role to assign
+   *                 example: "admin"
+   *     responses:
+   *       200:
+   *         description: User role updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "User role updated successfully"
+   *       400:
+   *         description: Validation error or cannot change own role
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             examples:
+   *               missingFields:
+   *                 summary: Missing required fields
+   *                 value:
+   *                   success: false
+   *                   message: "User ID and new role are required"
+   *               ownRole:
+   *                 summary: Cannot change own role
+   *                 value:
+   *                   success: false
+   *                   message: "Cannot change your own role"
+   *               invalidRole:
+   *                 summary: Invalid role specified
+   *                 value:
+   *                   success: false
+   *                   message: "Invalid role specified"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "User not found"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async updateUserRole(req, res) {
     try {
@@ -996,9 +1169,37 @@ class AuthController {
   }
 
   /**
-   * Check if system needs initial setup
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * @swagger
+   * /api/auth/setup-status:
+   *   get:
+   *     summary: Check if system needs initial setup
+   *     description: Check if the system has been initialized with the first user (super-admin)
+   *     tags: [Authentication]
+   *     responses:
+   *       200:
+   *         description: Setup status retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 needsSetup:
+   *                   type: boolean
+   *                   description: Whether system needs initial setup (first user)
+   *                   example: false
+   *                 userCount:
+   *                   type: integer
+   *                   description: Total number of users in the system
+   *                   example: 3
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async checkSetupStatus(req, res) {
     try {

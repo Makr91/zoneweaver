@@ -29,9 +29,9 @@ Adding comprehensive Swagger/OpenAPI 3.0.0 documentation to the ZoneWeaver Node.
 - [x] POST /api/auth/logout
 - [x] GET /api/auth/profile
 - [x] POST /api/auth/change-password
+- [x] GET /api/auth/verify
+- [x] GET /api/auth/setup-status
 - [ ] DELETE /api/auth/delete-account
-- [ ] GET /api/auth/verify
-- [ ] GET /api/auth/setup-status
 
 #### Admin Endpoints (`/api/admin/*`)
 - [ ] GET /api/admin/users

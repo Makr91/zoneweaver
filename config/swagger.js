@@ -40,7 +40,7 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT token authentication. Login at /api/auth/login to get token, then use format: Bearer <jwt_token>',
+          description: 'JWT token authentication. First login at [/api/auth/login](./api/auth/login) to get your JWT token, then use format: Bearer <jwt_token>',
         },
       },
       schemas: {
