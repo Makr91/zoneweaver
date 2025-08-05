@@ -100,10 +100,10 @@ router.post("/api/settings/reset", authenticate, requireSuperAdmin, SettingsCont
 router.post("/api/settings/restart", authenticate, requireSuperAdmin, SettingsController.restartServer);
 router.get("/api/settings/backups", authenticate, requireSuperAdmin, SettingsController.getBackups);
 
-// Serve static files from the React app build directory
+// Serve static files from the Vite app build directory
 router.use('/ui', express.static(path.join(process.cwd(), 'web/dist')));
 
-// Catch all handler: send back React's index.html file for client-side routing
+// Catch all handler: send back Vite's index.html file for client-side routing
 router.get('/ui/*', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'web/dist/index.html'));
 });

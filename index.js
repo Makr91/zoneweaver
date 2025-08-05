@@ -9,6 +9,7 @@ import YAML from "yaml";
 import router from "./routes/index.js";
 import database from "./models/Database.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { specs, swaggerUi } from "./config/swagger.js";
 
 dotenv.config();
 
@@ -96,6 +97,43 @@ app.use('/api/servers/:serverAddress/zones/:zoneName/vnc/console', (req, res, ne
 });
 
 app.use(router);
+
+// Swagger API Documentation middleware
+app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+  // Dynamically set the server URL based on the current request
+  const protocol = req.protocol;
+  const host = req.get('host');
+  const dynamicSpecs = {
+    ...specs,
+    servers: [
+      {
+        url: `${protocol}://${host}`,
+        description: 'Current server (auto-detected)'
+      },
+      {
+        url: '{protocol}://{host}',
+        description: 'Custom server',
+        variables: {
+          protocol: {
+            enum: ['http', 'https'],
+            default: 'https',
+            description: 'The protocol used to access the server'
+          },
+          host: {
+            default: 'localhost:3000',
+            description: 'The hostname and port of the server'
+          }
+        }
+      }
+    ]
+  };
+  
+  swaggerUi.setup(dynamicSpecs, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'ZoneWeaver API Documentation'
+  })(req, res, next);
+});
 
 // Handle React Router routes - serve index.html for all non-API routes
 app.get('*', (req, res) => {
@@ -506,6 +544,7 @@ if (config.server.ssl.enabled) {
   
   httpServer.listen(port, () => {
     console.log(`HTTP Server running at port ${port}`);
+    console.log(`API Documentation: http://localhost:${port}/api-docs`);
   });
 }
 

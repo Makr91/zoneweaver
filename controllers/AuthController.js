@@ -10,6 +10,78 @@ import { config } from '../index.js';
  */
 class AuthController {
   /**
+   * @swagger
+   * /api/auth/register:
+   *   post:
+   *     summary: Register a new user
+   *     description: Create a new user account with organization support. First user becomes super-admin.
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/RegisterRequest'
+   *           examples:
+   *             firstUser:
+   *               summary: First user (becomes super-admin)
+   *               value:
+   *                 username: "admin"
+   *                 email: "admin@example.com"
+   *                 password: "securePassword123"
+   *                 confirmPassword: "securePassword123"
+   *                 organizationName: "Default Organization"
+   *             withInvite:
+   *               summary: User with invitation code
+   *               value:
+   *                 username: "john_doe"
+   *                 email: "john@example.com"
+   *                 password: "securePassword123"
+   *                 confirmPassword: "securePassword123"
+   *                 inviteCode: "inv_abc123def456"
+   *             newOrg:
+   *               summary: User creating new organization
+   *               value:
+   *                 username: "jane_admin"
+   *                 email: "jane@company.com"
+   *                 password: "securePassword123"
+   *                 confirmPassword: "securePassword123"
+   *                 organizationName: "Jane's Company"
+   *     responses:
+   *       201:
+   *         description: User registered successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "User registered successfully in organization: Acme Corp"
+   *                 user:
+   *                   $ref: '#/components/schemas/User'
+   *       400:
+   *         description: Validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *       409:
+   *         description: User already exists
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   * 
    * Register a new user with organization support
    * @param {Object} req - Express request object
    * @param {Object} res - Express response object
@@ -227,6 +299,61 @@ class AuthController {
   }
 
   /**
+   * @swagger
+   * /api/auth/login:
+   *   post:
+   *     summary: Authenticate user and get JWT token
+   *     description: Login with username/email and password to receive JWT authentication token
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/LoginRequest'
+   *           examples:
+   *             withUsername:
+   *               summary: Login with username
+   *               value:
+   *                 identifier: "admin"
+   *                 password: "securePassword123"
+   *             withEmail:
+   *               summary: Login with email
+   *               value:
+   *                 identifier: "admin@example.com"
+   *                 password: "securePassword123"
+   *     responses:
+   *       200:
+   *         description: Login successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/LoginResponse'
+   *       400:
+   *         description: Missing credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Username/email and password are required"
+   *       401:
+   *         description: Invalid credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               message: "Invalid credentials"
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   * 
    * Login user
    * @param {Object} req - Express request object
    * @param {Object} res - Express response object
