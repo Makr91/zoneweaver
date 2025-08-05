@@ -1,4 +1,30 @@
-# Getting Started with ZoneWeaver
+# ZoneWeaver
+
+ZoneWeaver API - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via WebHyve backend.
+
+## Platform Requirements
+
+### OmniOS/Illumos
+ZoneWeaver requires a C++ compiler to build native dependencies (bcrypt). Install the required packages:
+
+```bash
+# Install GCC 14 compiler
+pfexec pkg install developer/gcc14
+
+# Install dependencies with gmake
+MAKE=gmake npm install
+```
+
+### Debian/Ubuntu
+```bash
+# Install build essentials
+sudo apt-get install build-essential
+
+# Install dependencies normally
+npm install
+```
+
+## Getting Started
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

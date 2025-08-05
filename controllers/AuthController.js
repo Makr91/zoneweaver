@@ -81,10 +81,6 @@ class AuthController {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
-   * 
-   * Register a new user with organization support
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
    */
   static async register(req, res) {
     try {
@@ -353,10 +349,6 @@ class AuthController {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
-   * 
-   * Login user
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
    */
   static async login(req, res) {
     try {
