@@ -1,0 +1,22 @@
+# License file for ZoneWeaver
+license LICENSE.txt license=MIT
+
+# Set ownership and permissions for zoneweaver user/group files
+<transform file path=opt/zoneweaver/.* -> set owner zoneweaver>
+<transform file path=opt/zoneweaver/.* -> set group zoneweaver>
+<transform file path=var/lib/zoneweaver/.* -> set owner zoneweaver>
+<transform file path=var/lib/zoneweaver/.* -> set group zoneweaver>
+<transform file path=var/log/zoneweaver/.* -> set owner zoneweaver>
+<transform file path=var/log/zoneweaver/.* -> set group zoneweaver>
+
+# SMF method scripts should be executable by root
+<transform file path=opt/zoneweaver/startup.sh -> set owner root>
+<transform file path=opt/zoneweaver/startup.sh -> set group sys>
+<transform file path=opt/zoneweaver/startup.sh -> set mode 0755>
+<transform file path=opt/zoneweaver/shutdown.sh -> set owner root>
+<transform file path=opt/zoneweaver/shutdown.sh -> set group sys>
+<transform file path=opt/zoneweaver/shutdown.sh -> set mode 0755>
+
+# Make executable scripts executable
+<transform file path=opt/zoneweaver/node_modules/.*/bin/.* -> set mode 0755>
+<transform file path=opt/zoneweaver/scripts/.* -> set mode 0755>

@@ -1,0 +1,107 @@
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.illumos.org/license/CDDL.
+#
+
+set name=pkg.fmri value=system/virtualization/zoneweaver@@VERSION@
+set name=pkg.summary value="ZoneWeaver Zone Hypervisor Management Interface"
+set name=pkg.description value="Web-based management interface for WebHyve zone hypervisors. Provides intuitive control over zones, networking, and storage through a modern React frontend and Node.js API backend."
+set name=info.classification value=org.opensolaris.category.2008:System/Virtualization
+set name=info.upstream value="ZoneWeaver Project"
+set name=info.upstream-url value="https://github.com/Makr91/zoneweaver"
+
+# Dependencies
+depend fmri=ooce/runtime/node-22 type=require
+depend fmri=database/sqlite-3 type=require
+
+# Create zoneweaver user and group
+user username=zoneweaver uid=95 group=zoneweaver gcos-field="ZoneWeaver Service User" \
+    home-dir=/var/lib/zoneweaver login-shell=/usr/bin/pfksh
+group groupname=zoneweaver gid=95
+
+# Create directories with proper ownership
+dir path=opt owner=root group=sys mode=0755
+dir path=opt/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/controllers owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/models owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/routes owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/middleware owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/config owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/utils owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/scripts owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/web owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/web/dist owner=zoneweaver group=zoneweaver mode=0755
+dir path=opt/zoneweaver/node_modules owner=zoneweaver group=zoneweaver mode=0755
+
+# Configuration directory
+dir path=etc/zoneweaver owner=root group=sys mode=0755
+
+# Data and log directories  
+dir path=var/lib/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
+dir path=var/log/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
+
+# Main application files
+file index.js path=opt/zoneweaver/index.js owner=zoneweaver group=zoneweaver mode=0644
+file package.json path=opt/zoneweaver/package.json owner=zoneweaver group=zoneweaver mode=0644
+
+# SMF method scripts
+file packaging/omnios/startup.sh path=opt/zoneweaver/startup.sh owner=root group=sys mode=0755
+file packaging/omnios/shutdown.sh path=opt/zoneweaver/shutdown.sh owner=root group=sys mode=0755
+
+# SMF manifest
+file packaging/omnios/zoneweaver-smf.xml path=lib/svc/manifest/system/zoneweaver.xml owner=root group=sys mode=0644 \
+    restart_fmri=svc:/system/manifest-import:default
+
+# Configuration file
+file packaging/config/production-config.yaml path=etc/zoneweaver/config.yaml owner=root group=sys mode=0644 \
+    preserve=true
+
+# Application directories (generated files will be added by pkgsend generate)
+<transform file path=controllers/.* -> set owner zoneweaver>
+<transform file path=controllers/.* -> set group zoneweaver>
+<transform file path=controllers/.* -> set mode 0644>
+
+<transform file path=models/.* -> set owner zoneweaver>
+<transform file path=models/.* -> set group zoneweaver>
+<transform file path=models/.* -> set mode 0644>
+
+<transform file path=routes/.* -> set owner zoneweaver>
+<transform file path=routes/.* -> set group zoneweaver>
+<transform file path=routes/.* -> set mode 0644>
+
+<transform file path=middleware/.* -> set owner zoneweaver>
+<transform file path=middleware/.* -> set group zoneweaver>
+<transform file path=middleware/.* -> set mode 0644>
+
+<transform file path=config/.* -> set owner zoneweaver>
+<transform file path=config/.* -> set group zoneweaver>
+<transform file path=config/.* -> set mode 0644>
+
+<transform file path=utils/.* -> set owner zoneweaver>
+<transform file path=utils/.* -> set group zoneweaver>
+<transform file path=utils/.* -> set mode 0644>
+
+<transform file path=scripts/.* -> set owner zoneweaver>
+<transform file path=scripts/.* -> set group zoneweaver>
+<transform file path=scripts/.* -> set mode 0644>
+
+<transform file path=web/dist/.* -> set owner zoneweaver>
+<transform file path=web/dist/.* -> set group zoneweaver>
+<transform file path=web/dist/.* -> set mode 0644>
+
+<transform file path=node_modules/.* -> set owner zoneweaver>
+<transform file path=node_modules/.* -> set group zoneweaver>
+<transform file path=node_modules/.* -> set mode 0644>
+
+# Make executable scripts executable
+<transform file path=node_modules/.*/bin/.* -> set mode 0755>
+<transform file path=scripts/.* -> set mode 0755>
+
+# License
+license LICENSE.txt license="MIT License" must-accept=false
