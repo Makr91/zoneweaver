@@ -1,0 +1,16 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "zoneweaver",
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "web/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}

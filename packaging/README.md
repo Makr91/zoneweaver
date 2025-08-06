@@ -1,52 +1,41 @@
 # Building ZoneWeaver Debian Packages
 
-Based on real-world examples from flavienbwk/deb-package-tutorial and production workflows.
+Production-ready Debian package build process with automated CI/CD via Release Please.
 
 ## Prerequisites
 
 ```bash
 sudo apt update
-sudo apt install nodejs npm dpkg-dev
-```
-
-**Note**: If you don't have a `package-lock.json` file, the commands below will use `npm install` instead of `npm ci`. For production builds, it's recommended to generate and commit a lockfile first:
-
-```bash
-# Generate lockfile (optional but recommended)
-npm install
-cd web && npm install && cd ..
+sudo apt install nodejs npm dpkg-dev gdebi-core
 ```
 
 ## Quick Build Commands
 
 ### 1. Prepare Application
 ```bash
-# Clean any existing build artifacts (important after config changes)
+# Clean any existing build artifacts
+cd /mnt/g/Projects/zoneweaver/
+rm -rf ~/zoneweaver-build/
+mkdir  ~/zoneweaver-build/
+cp -r  ../zoneweaver/* ~/zoneweaver-build/
+cd  ~/zoneweaver-build/
+npm run sync-versions
 rm -rf web/dist web/.vite web/node_modules/.vite
 
-# Install dependencies (use install if no package-lock.json exists)
-if [ -f package-lock.json ]; then
-    npm ci
-else
-    npm install
-fi
+# Install dependencies
+npm ci
+cd web && npm ci && cd ..
 
-# Build frontend
-cd web
-if [ -f package-lock.json ]; then
-    npm ci
-else
-    npm install
-fi
+# Build frontend (this automatically syncs versions)
 npm run build
-cd ..
+
+# CRITICAL: Verify build files are fresh (must match current time)
+ls -la web/dist/assets/index.js
+echo "⚠️  VERIFY: The index.js timestamp above should match your build time!"
+echo "   If files are old, run: rm -rf web/dist && npm run build"
 
 # Install production dependencies only
-if [ -f package-lock.json ]; then
-    npm ci --omit=dev
-else
-    npm install --omit=dev
-fi
+npm ci --omit=dev
 ```
 
 ### 2. Create Package Structure
@@ -56,27 +45,25 @@ export VERSION=$(node -p "require('./package.json').version")
 export PACKAGE_NAME="zoneweaver"
 export ARCH="amd64"
 
-# Create directory structure (following flavienbwk's pattern)
+# Create directory structure
 mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,DEBIAN}
 ```
 
 ### 3. Copy Application Files
 ```bash
-# Application files to /opt/zoneweaver
-cp -r controllers models routes middleware config index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
+# Application files to /opt/zoneweaver (IMPORTANT: include utils and scripts!)
+cp -r controllers models routes middleware config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
 cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
 cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/"
 
 # Configuration files
 cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
 
-# Systemd service
+# Systemd service (with privileged port capabilities)
 cp packaging/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
 
 # DEBIAN control files
-cp packaging/DEBIAN/postinst "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
-cp packaging/DEBIAN/prerm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
-cp packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
+cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
 ```
 
 ### 4. Generate Control File
@@ -100,97 +87,101 @@ EOF
 
 ### 5. Set Permissions
 ```bash
-# Set proper permissions (from tutorials)
+# Set proper permissions
 find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type d -exec chmod 755 {} \;
 find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type f -exec chmod 644 {} \;
 chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"/{postinst,prerm,postrm}
-chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"
 ```
 
-### 6. Build Package
+### 6. Build & Install Package
 ```bash
-# Build .deb package (dpkg-deb from examples)
+# Build .deb package
 dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
-```
 
-### 7. Test Installation
-```bash
-# Test the package (requires gdebi-core)
+# Install package
 sudo gdebi -n "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
 
-# Or install directly
-sudo dpkg -i "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
-
-# Start the service
+# Start service
 sudo systemctl enable --now zoneweaver
 
 # Check status
 sudo systemctl status zoneweaver
 ```
 
-### 8. Uninstall
+## Critical Build Notes
+
+### ⚠️ Required Directories
+**Must include these directories in the copy command or the package will fail:**
+- `utils/` - Contains config loading utilities
+- `scripts/` - Contains version synchronization tools
+- `web/dist/` - Must build frontend first with `npm run build`
+
+### ✅ Version Synchronization
+The build process automatically keeps frontend and backend versions in sync:
+- `npm run build` triggers `npm run sync-versions` via prebuild hook
+- Vite config injects version from package.json into frontend
+- Frontend displays correct version (no more hardcoded fallbacks)
+
+### 🔧 Systemd Service
+The service includes:
+- **Privileged port capabilities** (`CAP_NET_BIND_SERVICE`) for ports 80/443
+- **Environment variables** (`CONFIG_PATH=/etc/zoneweaver/config.yaml`)
+- **Security restrictions** (NoNewPrivileges, ProtectSystem, etc.)
+
+## Automated CI/CD
+
+### Release Please Integration
+Every push to main triggers Release Please:
+1. **Creates release PR** with version bumps and changelog
+2. **Merges PR** → triggers package build
+3. **Creates GitHub release** with `.deb` package attached
+4. **Uses semantic versioning** based on conventional commits
+
+### Manual Release Trigger
 ```bash
-sudo systemctl stop zoneweaver
-sudo apt autoremove zoneweaver
-```
-
-## Development Package Build
-
-For development version with source files included:
-
-```bash
-export DEV_PACKAGE_NAME="zoneweaver-dev"
-
-# Create dev package structure
-mkdir -p "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,DEBIAN}
-
-# Copy everything including source files
-cp -r controllers models routes middleware config index.js package.json "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-cp -r web/src web/package.json web/vite.config.js "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/"
-cp -r node_modules "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-
-# Different control file for dev
-cat > "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
-Package: zoneweaver-dev
-Version: ${VERSION}
-Section: misc
-Priority: optional
-Architecture: ${ARCH}
-Maintainer: Makr91 <makr91@users.noreply.github.com>
-Depends: nodejs (>= 18.0.0), sqlite3, openssl, npm
-Conflicts: zoneweaver
-Description: ZoneWeaver - Zone Hypervisor Management Interface (Development)
- Development version with source files and build tools included.
-Homepage: https://github.com/Makr91/zoneweaver
-EOF
-
-# Build dev package
-dpkg-deb --build "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}" "${DEV_PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
-```
-
-## GitHub Actions Integration
-
-The package building is automated via GitHub Actions. See `.github/workflows/build-packages.yml` for the full workflow.
-
-Manual trigger:
-```bash
-gh workflow run build-packages.yml
+gh workflow run release-please.yml
 ```
 
 ## Package Information
 
-- **Production Package**: `zoneweaver` - Pre-built frontend, production dependencies only
-- **Development Package**: `zoneweaver-dev` - Includes source files and build tools
 - **Service User**: `zoneweaver` (created during installation)
 - **Configuration**: `/etc/zoneweaver/config.yaml`
-- **Data Directory**: `/var/lib/zoneweaver`
-- **Log Directory**: `/var/log/zoneweaver`
-- **Service**: `systemctl {start|stop|status} zoneweaver`
+- **Data Directory**: `/var/lib/zoneweaver/`
+- **Log Directory**: `/var/log/zoneweaver/`
+- **SSL Certificates**: `/etc/zoneweaver/ssl/` (auto-generated)
+- **JWT Secret**: `/etc/zoneweaver/.jwt-secret` (auto-generated)
+- **Service**: `systemctl {start|stop|status|restart} zoneweaver`
+- **Default Access**: `https://localhost:3443`
 
-## Notes
+## Troubleshooting
 
-- Based on flavienbwk's simple tutorial and Jon Spriggs' production patterns
-- Follows Debian Policy for package structure
-- Uses systemd for service management
-- Automatically generates SSL certificates and JWT secrets on install
-- Compatible with Ubuntu 18.04+ and Debian 10+
+### Common Build Errors
+1. **Cannot find module '/opt/zoneweaver/utils/config.js'**
+   - ❌ Missing `utils` in copy command
+   - ✅ Fix: Add `utils` to the cp command
+
+2. **Cannot stat 'web/dist'**
+   - ❌ Frontend not built
+   - ✅ Fix: Run `npm run build` before packaging
+
+3. **Version shows as 1.0.0 in frontend**
+   - ❌ Version sync issue
+   - ✅ Fix: Run `npm run sync-versions` or rebuild
+
+### Service Issues
+```bash
+# Check logs
+sudo journalctl -fu zoneweaver
+
+# Check config
+sudo cat /etc/zoneweaver/config.yaml
+
+# Restart service
+sudo systemctl restart zoneweaver
+```
+
+### Uninstall
+```bash
+sudo systemctl stop zoneweaver
+sudo apt remove zoneweaver
+sudo apt autoremove

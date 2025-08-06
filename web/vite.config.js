@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { NodePackageImporter } from "sass";
 import fs from "fs";
 import YAML from "yaml";
+import pkg from '../package.json';
 
 // Load configuration from YAML file
 // For vite.config.js, we need to handle the config path manually since we're in web/ directory
@@ -20,6 +21,11 @@ function loadViteConfig() {
 const config = loadViteConfig();
 
 export default defineConfig({
+  define: {
+    // Define global constants that get replaced at build time from root package.json
+    '__APP_VERSION__': JSON.stringify(pkg.version),
+    '__APP_NAME__': JSON.stringify(pkg.name),
+  },
   css: {
     preprocessorOptions: {
       scss: {

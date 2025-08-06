@@ -1,0 +1,102 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release Please
+        uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          release-type: node
+          package-name: zoneweaver
+          
+      # Build and create assets if there was a release
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          npm ci
+          cd web && npm ci
+          
+      - name: Build frontend
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm run build
+        
+      - name: Create Debian package
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          export VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
+          export PACKAGE_NAME="zoneweaver"
+          export ARCH="amd64"
+          
+          # Create package structure
+          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,DEBIAN}
+          
+          # Copy application files
+          cp -r controllers models routes middleware config utils index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
+          cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
+          cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/"
+          
+          # Configuration files
+          cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
+          cp packaging/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
+          
+          # DEBIAN files
+          cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
+          
+          # Create control file with dynamic version
+          cat > "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
+          Package: zoneweaver
+          Version: ${VERSION}
+          Section: misc
+          Priority: optional
+          Architecture: ${ARCH}
+          Maintainer: Makr91 <makr91@users.noreply.github.com>
+          Depends: nodejs (>= 18.0.0), sqlite3, openssl
+          Description: ZoneWeaver - Zone Hypervisor Management Interface
+           Web-based management interface for WebHyve zone hypervisors.
+           Provides intuitive control over zones, networking, and storage
+           through a modern React frontend and Node.js API backend.
+          Homepage: https://github.com/Makr91/zoneweaver
+          EOF
+          
+          # Set permissions
+          find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type d -exec chmod 755 {} \;
+          find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type f -exec chmod 644 {} \;
+          chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"/{postinst,prerm,postrm}
+          
+          # Build package
+          dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
+          
+      - name: Upload Release Assets
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
+          export PACKAGE_NAME="zoneweaver"
+          export ARCH="amd64"
+          
+          # Upload the .deb package to the release
+          gh release upload ${{ steps.release.outputs.tag_name }} "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber

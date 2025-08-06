@@ -5,6 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "sync-versions": "node scripts/sync-versions.js",
+    "prebuild": "npm run sync-versions",
     "build": "cd web && npm run build",
     "start": "npm run build && node index.js",
     "dev": "npm run build && nodemon index.js",

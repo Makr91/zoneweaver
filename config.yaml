@@ -1,7 +1,7 @@
 ## Last Working Commit with old version of AUTH system handled by host
 app:
   name: "ZoneWeaver"
-  version: "2.0.0"
+  version: "0.0.1"
   frontend_url: "https://hv-04.home.m4kr.net"
 
 # Mail configuration for sending invitations and notifications

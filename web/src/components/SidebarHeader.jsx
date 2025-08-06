@@ -46,7 +46,7 @@ const SidebarHeader = () => {
           <span className='icon'>
             <i className='icon-zoneweaver-logo'></i>
           </span>
-          <span>ZoneWeaver v{import.meta.env.VITE_APP_VERSION || '1.0.0'}</span>
+          <span>ZoneWeaver v{__APP_VERSION__ || '1.0.0'}</span>
           <span className='icon'>
             <i className='fa fa-angle-left'></i>
           </span>

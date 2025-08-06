@@ -12,7 +12,7 @@ import "@fortawesome/fontawesome-free/css/solid.css";
 
 axios.defaults.withCredentials = true;
 
-console.log(`${import.meta.env.VITE_APP_NAME || 'ZoneWeaver'} ${import.meta.env.VITE_APP_VERSION || '1.0.0'}`);
+console.log(`${__APP_NAME__ || 'ZoneWeaver'} ${__APP_VERSION__ || '1.0.0'}`);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

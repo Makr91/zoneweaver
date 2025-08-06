@@ -74,7 +74,7 @@ const Login = () => {
           <div className='columns is-centered'>
             <div className='column is-4-desktop'>
               <form onSubmit={handleLogin} className='box has-text-centered'>
-                <p className='is-size-1'>ZoneWeaver {import.meta.env.VITE_APP_VERSION || '1.0.0'}</p>
+                <p className='is-size-1'>ZoneWeaver {__APP_VERSION__ || '1.0.0'}</p>
                 <figure className='image container my-1 py-1 is-256x256'>
                   <Logo />
                 </figure>
