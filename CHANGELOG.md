@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/Makr91/zoneweaver/compare/v0.0.2...v0.0.3) (2025-08-06)
+
+
+### Bug Fixes
+
+* updating release workflows v3 ([e26934f](https://github.com/Makr91/zoneweaver/commit/e26934fa693dd5134e0cba7cb1896e3a752137de))
+
 ## [0.0.2](https://github.com/Makr91/zoneweaver/compare/v0.0.1...v0.0.2) (2025-08-06)
 
 
