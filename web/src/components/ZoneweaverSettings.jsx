@@ -69,9 +69,11 @@ const ZoneweaverSettings = () => {
   // Handle URL parameter for direct tab navigation
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'servers') {
-      setActiveTab('servers');
-      setShowAddForm(true);
+    if (tab) {
+      setActiveTab(tab);
+      if (tab === 'servers') {
+        setShowAddForm(true);
+      }
       setSearchParams({}); // Clear URL parameter after processing
     }
   }, [searchParams, setSearchParams]);
