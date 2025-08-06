@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/Makr91/zoneweaver/compare/v0.0.3...v0.0.4) (2025-08-06)
+
+
+### Bug Fixes
+
+* updating release workflows v4 ([6e5a955](https://github.com/Makr91/zoneweaver/commit/6e5a955232afeb9cade3545da004b0e61218afd9))
+
 ## [0.0.3](https://github.com/Makr91/zoneweaver/compare/v0.0.2...v0.0.3) (2025-08-06)
 
 
