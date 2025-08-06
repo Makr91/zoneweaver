@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
@@ -13,6 +13,7 @@ import ServerStatusCard from "./Host/ServerStatusCard";
 const ZoneweaverSettings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('application');
   const [settings, setSettings] = useState({
     appName: "ZoneWeaver",
@@ -64,6 +65,16 @@ const ZoneweaverSettings = () => {
   useEffect(() => {
     loadServers();
   }, [allServers]);
+
+  // Handle URL parameter for direct tab navigation
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'servers') {
+      setActiveTab('servers');
+      setShowAddForm(true);
+      setSearchParams({}); // Clear URL parameter after processing
+    }
+  }, [searchParams, setSearchParams]);
 
   const loadServers = () => {
     const serverList = getServers();

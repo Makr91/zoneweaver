@@ -15,11 +15,6 @@ sudo apt install nodejs npm dpkg-dev gdebi-core
 ```bash
 
 # Clean any existing build artifacts
-cd /mnt/g/Projects/zoneweaver/
-rm -rf ~/zoneweaver-build/
-mkdir  ~/zoneweaver-build/
-cp -r  ../zoneweaver/* ~/zoneweaver-build/
-cd  ~/zoneweaver-build/
 
 # Check Check and Sync Frontend and Backend Versions
 npm run sync-versions
@@ -192,5 +187,11 @@ sudo systemctl restart zoneweaver
 ### Uninstall
 ```bash
 sudo systemctl stop zoneweaver
+
 sudo apt remove zoneweaver
+
 sudo apt autoremove
+
+### Purge DB and Configs
+
+sudo apt purge zoneweaver

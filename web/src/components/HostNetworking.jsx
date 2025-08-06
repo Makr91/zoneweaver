@@ -89,7 +89,7 @@ const HostNetworking = () => {
                                 <h2 className='title is-4'>No WebHyve Servers</h2>
                                 <p>You haven't added any WebHyve servers yet. Add a server to start monitoring network interfaces.</p>
                                 <div className='mt-4'>
-                                    <a href='/ui/host-manage?action=add' className='button is-primary'>
+                                    <a href='/ui/settings/zoneweaver?tab=servers' className='button is-primary'>
                                         <span className='icon'>
                                             <i className='fas fa-plus'></i>
                                         </span>

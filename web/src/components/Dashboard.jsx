@@ -182,7 +182,7 @@ const Dashboard = () => {
   };
 
   const navigateToServerRegister = () => {
-    navigate('/ui/host-manage?action=add');
+    navigate('/ui/settings/zoneweaver?tab=servers');
   };
 
   const navigateToZoneRegister = () => {

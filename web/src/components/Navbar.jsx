@@ -756,7 +756,7 @@ const Navbar = () => {
               <div className='px-1 button'>{currentServer.hostname}</div>
             </div>
           ) : (
-            <a href='/ui/host-manage?action=add' className='px-1 button'>
+            <a href='/ui/settings/zoneweaver?tab=servers' className='px-1 button'>
               <span>Add Server</span>
               <span className='icon has-text-success'>
                 <i className='fas fa-plus'></i>
