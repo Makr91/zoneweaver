@@ -8,6 +8,7 @@ import AuthController from "../controllers/AuthController.js";
 import ServerController from "../controllers/ServerController.js";
 import SettingsController from "../controllers/SettingsController.js";
 import { authenticate, requireAdmin, requireSuperAdmin, optionalAuth } from "../middleware/auth.js";
+import { loadConfig } from "../utils/config.js";
 
 const router = express.Router();
 
@@ -99,8 +100,7 @@ router.get( '/api/profile/:identifier', async ( req, res ) => {
     const { identifier } = req.params;
  
     try {
-        const configFile = fs.readFileSync('./config.yaml', 'utf8');
-        const config = YAML.parse(configFile);
+        const config = loadConfig();
         const apiKey = config.gravatar.apiKey;
 
         const hash = crypto.createHash( 'sha256' ).update( identifier.trim().toLowerCase() ).digest( 'hex' );

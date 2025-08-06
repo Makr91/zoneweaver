@@ -6,8 +6,18 @@ import fs from "fs";
 import YAML from "yaml";
 
 // Load configuration from YAML file
-const configFile = fs.readFileSync('../config.yaml', 'utf8');
-const config = YAML.parse(configFile);
+// For vite.config.js, we need to handle the config path manually since we're in web/ directory
+function loadViteConfig() {
+  // Check environment variable first (set by systemd)
+  if (process.env.CONFIG_PATH) {
+    return YAML.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8'));
+  }
+  
+  // Fallback to parent directory config for development
+  return YAML.parse(fs.readFileSync('../config.yaml', 'utf8'));
+}
+
+const config = loadViteConfig();
 
 export default defineConfig({
   css: {
@@ -78,17 +88,14 @@ export default defineConfig({
   server: {
     port: config.frontend.port,
     host: "0.0.0.0",
-    https: config.server.ssl.enabled ? {
-      key: fs.readFileSync(config.server.ssl.key),
-      cert: fs.readFileSync(config.server.ssl.cert),
-    } : false,
+    https: false, // Disable HTTPS for dev server during build
     hmr: {
       port: config.frontend.port,
       host: config.server.hostname,
     },
     proxy: {
       "/api": {
-        target: `${config.server.ssl.enabled ? 'https' : 'http'}://${config.server.hostname}:${config.server.port}`,
+        target: `http://${config.server.hostname}:${config.server.port}`,
         changeOrigin: true,
         secure: false,
       },

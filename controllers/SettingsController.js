@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import * as YAML from 'yaml';
+import { loadConfig, getConfigFilePath } from '../utils/config.js';
 import ServerModel from '../models/ServerModel.js';
 
 /**
@@ -10,12 +11,11 @@ import ServerModel from '../models/ServerModel.js';
  */
 class SettingsController {
   static get configPath() {
-    return path.join(process.cwd(), 'config.yaml');
+    return getConfigFilePath();
   }
 
   static getWebhyveServerInfo() {
-    const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
-    const config = YAML.parse(configFile);
+    const config = loadConfig();
     const webhyve = config.backend_servers[0];
     if (!webhyve) {
       throw new Error('Webhyve backend server not found in config.yaml');
@@ -153,8 +153,7 @@ class SettingsController {
    */
   static async getSettings(req, res) {
     try {
-      const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
-      const config = YAML.parse(configFile);
+      const config = loadConfig();
       
       // Extract frontend-relevant settings
       const settings = {

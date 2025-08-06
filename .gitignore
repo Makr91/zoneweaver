@@ -23,6 +23,16 @@ core
 
 # production
 /build
+web/dist
+
+# Debian packaging artifacts
+zoneweaver_*_*/
+zoneweaver-dev_*_*/
+*.deb
+
+# Vite build cache
+web/.vite
+web/node_modules/.vite
 
 # misc
 .DS_Store

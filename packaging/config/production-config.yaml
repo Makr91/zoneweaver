@@ -1,0 +1,67 @@
+# ZoneWeaver Production Configuration
+# This file is installed to /etc/zoneweaver/config.yaml
+
+app:
+  name: ZoneWeaver
+  version: 2.0.0
+  frontend_url: https://localhost:3443
+
+mail:
+  # Configure SMTP settings for email notifications
+  smtp_connect:
+    host: localhost
+    port: 587
+    secure: false
+  smtp_auth:
+    user: ""
+    password: ""
+  smtp_settings:
+    from: ZoneWeaver <noreply@localhost>
+
+server:
+  hostname: localhost
+  port: 3443
+  ssl:
+    enabled: true
+    key: /etc/zoneweaver/ssl/key.pem
+    cert: /etc/zoneweaver/ssl/cert.pem
+
+frontend:
+  port: 3443
+  autoRefreshInterval: 5
+  enableNotifications: true
+  enableDarkMode: true
+
+cors:
+  whitelist:
+    - https://localhost:3443
+    - https://localhost
+  options:
+    origin: true
+    preflightContinue: true
+    credentials: true
+
+backend_servers: []
+
+environment:
+  trust_proxy: 1
+
+logging:
+  level: info
+  enabled: true
+
+limits:
+  maxServersPerUser: 10
+
+security:
+  jwt_secret: "__JWT_SECRET_FROM_FILE__"
+  bcrypt_rounds: 10
+  sessionTimeout: 24
+  allow_new_organizations: true
+
+database:
+  path: /var/lib/zoneweaver/database/zoneweaver.db
+
+gravatar:
+  # Get your API key from https://gravatar.com/
+  apiKey: ""

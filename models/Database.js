@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import * as YAML from 'yaml';
+import { loadConfig } from '../utils/config.js';
 
 /**
  * Database class for managing SQLite database operations
@@ -11,8 +12,7 @@ import * as YAML from 'yaml';
 class Database {
   constructor() {
     this.db = null;
-    const configFile = fs.readFileSync(path.join(process.cwd(), 'config.yaml'), 'utf8');
-    const config = YAML.parse(configFile);
+    const config = loadConfig();
     this.dbPath = config.database?.path || './data/zoneweaver.db';
   }
 

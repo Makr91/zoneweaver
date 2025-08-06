@@ -10,6 +10,7 @@ import router from "./routes/index.js";
 import database from "./models/Database.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { specs, swaggerUi } from "./config/swagger.js";
+import { loadConfig } from "./utils/config.js";
 
 dotenv.config();
 
@@ -21,8 +22,7 @@ process.on('uncaughtException', (err) => {
 });
 
 // Load configuration from YAML file
-const configFile = fs.readFileSync('./config.yaml', 'utf8');
-const config = YAML.parse(configFile);
+const config = loadConfig();
 
 const app = express();
 const port = process.env.PORT || config.frontend.port;

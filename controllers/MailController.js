@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 import * as YAML from 'yaml';
+import { loadConfig } from '../utils/config.js';
 
 /**
  * Mail controller for sending emails (invitations, notifications, etc.)
@@ -15,8 +16,7 @@ class MailController {
    */
   static init() {
     try {
-      const configFile = fs.readFileSync(path.join(process.cwd(), 'config.yaml'), 'utf8');
-      const fullConfig = YAML.parse(configFile);
+      const fullConfig = loadConfig();
       
       this.config = fullConfig.mail;
       this.appConfig = fullConfig.app;
