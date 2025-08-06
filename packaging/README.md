@@ -13,14 +13,16 @@ sudo apt install nodejs npm dpkg-dev gdebi-core
 
 ### 1. Prepare Application
 ```bash
+
 # Clean any existing build artifacts
 cd /mnt/g/Projects/zoneweaver/
 rm -rf ~/zoneweaver-build/
 mkdir  ~/zoneweaver-build/
 cp -r  ../zoneweaver/* ~/zoneweaver-build/
 cd  ~/zoneweaver-build/
+
+# Check Check and Sync Frontend and Backend Versions
 npm run sync-versions
-rm -rf web/dist web/.vite web/node_modules/.vite
 
 # Install dependencies
 npm ci
@@ -28,11 +30,6 @@ cd web && npm ci && cd ..
 
 # Build frontend (this automatically syncs versions)
 npm run build
-
-# CRITICAL: Verify build files are fresh (must match current time)
-ls -la web/dist/assets/index.js
-echo "⚠️  VERIFY: The index.js timestamp above should match your build time!"
-echo "   If files are old, run: rm -rf web/dist && npm run build"
 
 # Install production dependencies only
 npm ci --omit=dev
@@ -54,7 +51,7 @@ mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc
 # Application files to /opt/zoneweaver (IMPORTANT: include utils and scripts!)
 cp -r controllers models routes middleware config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
 cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/"
+cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"
 
 # Configuration files
 cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
@@ -116,11 +113,18 @@ sudo systemctl status zoneweaver
 - `scripts/` - Contains version synchronization tools
 - `web/dist/` - Must build frontend first with `npm run build`
 
-### ✅ Version Synchronization
-The build process automatically keeps frontend and backend versions in sync:
-- `npm run build` triggers `npm run sync-versions` via prebuild hook
-- Vite config injects version from package.json into frontend
-- Frontend displays correct version (no more hardcoded fallbacks)
+### ✅ Single Source of Truth Versioning
+**Root `package.json` is the ONLY place to change version numbers.**
+
+The `npm run sync-versions` script automatically synchronizes the version to:
+- ✅ `web/package.json` - Frontend package version
+- ✅ `config/swagger.js` - API documentation version  
+- ✅ `config.yaml` - Application config version
+- ✅ `packaging/config/production-config.yaml` - Production config version
+- ✅ `.release-please-manifest.json` - Release automation tracking
+- ✅ Vite build process - Injects version into frontend via `__APP_VERSION__`
+
+**To change version:** Only edit the `version` field in root `package.json`, then run `npm run sync-versions`
 
 ### 🔧 Systemd Service
 The service includes:
@@ -167,6 +171,11 @@ gh workflow run release-please.yml
 3. **Version shows as 1.0.0 in frontend**
    - ❌ Version sync issue
    - ✅ Fix: Run `npm run sync-versions` or rebuild
+
+4. **Files served from wrong location (web/assets instead of web/dist/assets)**
+   - ❌ Directory structure flattened during packaging
+   - ✅ Fix: Use `cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"` (not `/web/`)
+   - 🔍 Verify: Check that `/opt/zoneweaver/web/dist/assets/` exists after installation
 
 ### Service Issues
 ```bash
