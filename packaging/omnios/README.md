@@ -74,10 +74,7 @@ cp -r /path/to/zoneweaver-source/* .
 
 ### 1. Build Application (On OmniOS)
 ```bash
-## Instert git clone command here
-
-##
-cd zoneweaver
+cd /Array-0/zoneweaver/frontend
 
 # Build the frontend first  
 export PATH="/opt/ooce/bin:/opt/ooce/node-22/bin:$PATH"
@@ -103,14 +100,19 @@ pkgsend generate . | pkgfmt > zoneweaver.p5m.generated
 # Apply transforms and create final manifest
 pkgmogrify -DVERSION=${VERSION} packaging/omnios/zoneweaver.p5m zoneweaver.p5m.generated > zoneweaver.p5m.final
 
-# Publish to your repository
-pkgsend publish -d . -s /path/to/your/repo zoneweaver.p5m.final
+# Create a local repository for testing (if needed)
+mkdir -p /tmp/local-repo
+pkgrepo create /tmp/local-repo
+pkgrepo set -s /tmp/local-repo publisher/prefix=Makr91
+
+# Publish to local repository
+pkgsend publish -d . -s /tmp/local-repo zoneweaver.p5m.final
 ```
 
 ### 3. Install & Test Package
 ```bash
-# Add your repository if not already added
-pkg set-publisher -g file:///path/to/your/repo Makr91
+# Add your local repository
+pkg set-publisher -g file:///tmp/local-repo Makr91
 
 # Install the package
 pkg install system/virtualization/zoneweaver

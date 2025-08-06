@@ -104,4 +104,4 @@ file packaging/config/production-config.yaml path=etc/zoneweaver/config.yaml own
 <transform file path=scripts/.* -> set mode 0755>
 
 # License
-license LICENSE.txt license="MIT License" must-accept=false
+license LICENSE.md license="GPL-3.0" must-accept=false

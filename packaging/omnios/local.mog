@@ -1,5 +1,5 @@
 # License file for ZoneWeaver
-license LICENSE.txt license=MIT
+license LICENSE.md license="GPL-3.0"
 
 # Set ownership and permissions for zoneweaver user/group files
 <transform file path=opt/zoneweaver/.* -> set owner zoneweaver>
