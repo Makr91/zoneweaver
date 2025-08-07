@@ -28,6 +28,16 @@ group groupname=zoneweaver gid=95
 # License
 license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
 
+# Drop system directories that already exist (avoid conflicts with system packages)
+<transform dir path=^etc$ -> drop>
+<transform dir path=^var$ -> drop>
+<transform dir path=^lib$ -> drop>
+<transform dir path=lib/svc$ -> drop>
+<transform dir path=lib/svc/manifest$ -> drop>
+<transform dir path=lib/svc/manifest/system$ -> drop>
+<transform dir path=var/lib$ -> drop>
+<transform dir path=var/log$ -> drop>
+
 # Transform rules to set ownership and permissions for auto-generated files
 <transform dir path=opt$ -> set owner root>
 <transform dir path=opt$ -> set group sys>
