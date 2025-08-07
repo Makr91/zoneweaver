@@ -17,6 +17,12 @@ PIDFILE="/var/lib/zoneweaver/zoneweaver.pid"
 
 mkdir -p /var/log/zoneweaver
 
+# Run post-install setup if SSL certificates don't exist (first start)
+if [ ! -f "/etc/zoneweaver/ssl/cert.pem" ]; then
+    echo "Running first-time setup..."
+    /opt/zoneweaver/post-install.sh
+fi
+
 # Check if Node.js is available
 if ! command -v node >/dev/null 2>&1; then
     echo "Error: Node.js not found in PATH" >&2
