@@ -118,6 +118,8 @@ pfexec pkg set-publisher -g file:///tmp/local-repo Makr91
 pfexec pkg install system/virtualization/zoneweaver
 
 # Start the service
+pfexec svcadm disable system/virtualization/zoneweaver
+
 pfexec svcadm enable system/virtualization/zoneweaver
 
 # Check status

@@ -24,19 +24,23 @@
 # Copyright 2025 Makr91. All rights reserved.
 # Use is subject to license terms.
 #
-# Load support functions
-. ../../lib/functions.sh
 
-PROG=zoneweaver           # App name
-VER=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")  # App version from package.json
-VERHUMAN=$VER             # Human-readable version
-PKG=system/virtualization/zoneweaver  # Package name
-SUMMARY="ZoneWeaver Zone Hypervisor Management Interface"
-DESC="Web-based management interface for WebHyve zone hypervisors. Provides intuitive control over zones, networking, and storage through a modern React frontend and Node.js API backend."
-BUILDARCH=64
+set -e
 
-BUILD_DEPENDS_IPS="ooce/runtime/node-22"
-RUN_DEPENDS_IPS="ooce/runtime/node-22 database/sqlite-3"
+# Simple logging functions
+logmsg() { echo "=== $*"; }
+logcmd() { echo ">>> $*"; "$@"; }
+
+# Set up variables
+SRCDIR="$(pwd)"
+DESTDIR="${SRCDIR}/proto"
+PROG=zoneweaver
+VER=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+PKG=system/virtualization/zoneweaver
+
+# Clean and create staging directory
+rm -rf "$DESTDIR"
+mkdir -p "$DESTDIR"
 
 #### Build Structure
 # /opt/zoneweaver/
@@ -165,16 +169,31 @@ post_install() {
     logmsg "ZoneWeaver post-installation setup completed"
 }
 
-init
-download_source
-patch_source
-prep_build
+# Main build process
+logmsg "Starting ZoneWeaver build process"
 build_app
-make_isa_stub
 install_app
 post_install
-make_package
-clean_up
+
+# Create the package
+logmsg "Creating IPS package"
+cd "$SRCDIR"
+export VERSION="$VER"
+sed "s/@VERSION@/${VERSION}/g" packaging/omnios/zoneweaver.p5m > zoneweaver.p5m.tmp
+pkgsend generate proto | pkgfmt > zoneweaver.p5m.generated
+pkgmogrify -DVERSION="${VERSION}" zoneweaver.p5m.tmp zoneweaver.p5m.generated > zoneweaver.p5m.final
+
+# Publish to repository
+if [ ! -d /tmp/local-repo ]; then
+    pkgrepo create /tmp/local-repo
+    pkgrepo set -s /tmp/local-repo publisher/prefix=local
+fi
+
+pkgsend publish -d proto -s /tmp/local-repo zoneweaver.p5m.final
+
+logmsg "Package build completed. Install with:"
+logmsg "  pfexec pkg set-publisher -g /tmp/local-repo local"
+logmsg "  pfexec pkg install system/virtualization/zoneweaver"
 
 # Vim hints
 # vim:ts=4:sw=4:et:
