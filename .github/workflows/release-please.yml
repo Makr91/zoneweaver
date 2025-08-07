@@ -14,37 +14,47 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+      patch: ${{ steps.release.outputs.patch }}
     steps:
       - name: Release Please
         uses: googleapis/release-please-action@v4
         id: release
-          
-      # Build and create assets if there was a release
+
+  build-packages:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        package-type: [debian, omnios]
+      fail-fast: true  # Fail entire build if either package fails
+    steps:
       - name: Checkout
-        if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v4
         
       - name: Setup Node.js
-        if: ${{ steps.release.outputs.release_created }}
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           
       - name: Install dependencies
-        if: ${{ steps.release.outputs.release_created }}
         run: |
           npm ci
           cd web && npm ci
           
       - name: Build frontend
-        if: ${{ steps.release.outputs.release_created }}
         run: npm run build
         
       - name: Create Debian package
-        if: ${{ steps.release.outputs.release_created }}
+        if: matrix.package-type == 'debian'
         run: |
-          export VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
+          export VERSION=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
           export PACKAGE_NAME="zoneweaver"
           export ARCH="amd64"
           
@@ -86,15 +96,59 @@ jobs:
           
           # Build package
           dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
+
+      - name: Build OmniOS package
+        if: matrix.package-type == 'omnios'
+        run: |
+          export VERSION=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
           
+          # Sync source to OmniOS build machine
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='web/node_modules' \
+            ./ ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/
+          
+          # Build package on OmniOS
+          ssh ghrunner@hv04.home.m4kr.net "
+            cd /Array-0/zoneweaver/builds && 
+            export PATH=/opt/ooce/bin:/opt/ooce/node-22/bin:\$PATH &&
+            export MAKE=gmake &&
+            ./packaging/omnios/build.sh
+          "
+          
+          # Sync built packages back to Linux runner
+          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/*.p5p ./ || true
+          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/zoneweaver*.p5m.final ./ || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.package-type }}
+          path: |
+            *.deb
+            *.p5p
+            *.p5m.final
+          retention-days: 1
+
+  upload-release-assets:
+    needs: [release-please, build-packages]
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: self-hosted
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
       - name: Upload Release Assets
-        if: ${{ steps.release.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          export VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
-          export PACKAGE_NAME="zoneweaver"
-          export ARCH="amd64"
-          
-          # Upload the .deb package to the release
-          gh release upload ${{ steps.release.outputs.tag_name }} "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
+          # Upload all built packages to the release
+          for file in *.deb *.p5p *.p5m.final; do
+            if [ -f "$file" ]; then
+              echo "Uploading $file..."
+              gh release upload ${{ needs.release-please.outputs.tag_name }} "$file" --clobber
+            fi
+          done
