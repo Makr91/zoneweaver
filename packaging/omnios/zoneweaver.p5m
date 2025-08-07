@@ -25,90 +25,73 @@ user username=zoneweaver uid=95 group=zoneweaver gcos-field="ZoneWeaver Service 
     home-dir=/var/lib/zoneweaver login-shell=/usr/bin/pfksh
 group groupname=zoneweaver gid=95
 
-# Create directories with proper ownership
-dir path=opt owner=root group=sys mode=0755
-dir path=opt/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/controllers owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/models owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/routes owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/middleware owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/config owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/utils owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/scripts owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/web owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/web/dist owner=zoneweaver group=zoneweaver mode=0755
-dir path=opt/zoneweaver/node_modules owner=zoneweaver group=zoneweaver mode=0755
-
-# Configuration directory
-dir path=etc/zoneweaver owner=root group=sys mode=0755
-
-# Data and log directories  
-dir path=var/lib/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
-dir path=var/log/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
-
-# Main application files  
-file opt/zoneweaver/index.js path=opt/zoneweaver/index.js owner=zoneweaver group=zoneweaver mode=0644
-file opt/zoneweaver/package.json path=opt/zoneweaver/package.json owner=zoneweaver group=zoneweaver mode=0644
-
-# SMF method scripts
-file opt/zoneweaver/startup.sh path=opt/zoneweaver/startup.sh owner=root group=sys mode=0755
-file opt/zoneweaver/shutdown.sh path=opt/zoneweaver/shutdown.sh owner=root group=sys mode=0755
-
-# SMF manifest
-file lib/svc/manifest/system/zoneweaver.xml path=lib/svc/manifest/system/zoneweaver.xml owner=root group=sys mode=0644 \
-    restart_fmri=svc:/system/manifest-import:default
-
-# Configuration file
-file etc/zoneweaver/config.yaml path=etc/zoneweaver/config.yaml owner=root group=sys mode=0644 \
-    preserve=true
-
-# Application directories (generated files will be added by pkgsend generate)
-<transform file path=controllers/.* -> set owner zoneweaver>
-<transform file path=controllers/.* -> set group zoneweaver>
-<transform file path=controllers/.* -> set mode 0644>
-
-<transform file path=models/.* -> set owner zoneweaver>
-<transform file path=models/.* -> set group zoneweaver>
-<transform file path=models/.* -> set mode 0644>
-
-<transform file path=routes/.* -> set owner zoneweaver>
-<transform file path=routes/.* -> set group zoneweaver>
-<transform file path=routes/.* -> set mode 0644>
-
-<transform file path=middleware/.* -> set owner zoneweaver>
-<transform file path=middleware/.* -> set group zoneweaver>
-<transform file path=middleware/.* -> set mode 0644>
-
-<transform file path=config/.* -> set owner zoneweaver>
-<transform file path=config/.* -> set group zoneweaver>
-<transform file path=config/.* -> set mode 0644>
-
-<transform file path=utils/.* -> set owner zoneweaver>
-<transform file path=utils/.* -> set group zoneweaver>
-<transform file path=utils/.* -> set mode 0644>
-
-<transform file path=scripts/.* -> set owner zoneweaver>
-<transform file path=scripts/.* -> set group zoneweaver>
-<transform file path=scripts/.* -> set mode 0644>
-
-<transform file path=web/dist/.* -> set owner zoneweaver>
-<transform file path=web/dist/.* -> set group zoneweaver>
-<transform file path=web/dist/.* -> set mode 0644>
-
-<transform file path=node_modules/.* -> set owner zoneweaver>
-<transform file path=node_modules/.* -> set group zoneweaver>
-<transform file path=node_modules/.* -> set mode 0644>
-
-# Make executable scripts executable
-<transform file path=node_modules/.*/bin/.* -> set mode 0755>
-<transform file path=scripts/.* -> set mode 0755>
-
 # License
 license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
 
-# SSL directory and database directory (certificates generated on first startup)
-dir path=etc/zoneweaver/ssl owner=zoneweaver group=zoneweaver mode=0700
-dir path=var/lib/zoneweaver/database owner=zoneweaver group=zoneweaver mode=0755
+# Transform rules to set ownership and permissions for auto-generated files
+<transform dir path=opt$ -> set owner root>
+<transform dir path=opt$ -> set group sys>
+<transform dir path=opt$ -> set mode 0755>
 
-# Post-install script (for generating certificates and JWT secrets)
-file opt/zoneweaver/post-install.sh path=opt/zoneweaver/post-install.sh owner=root group=sys mode=0755
+<transform dir path=opt/zoneweaver$ -> set owner zoneweaver>
+<transform dir path=opt/zoneweaver$ -> set group zoneweaver>
+<transform dir path=opt/zoneweaver$ -> set mode 0755>
+
+<transform dir path=opt/zoneweaver/.* -> set owner zoneweaver>
+<transform dir path=opt/zoneweaver/.* -> set group zoneweaver>
+<transform dir path=opt/zoneweaver/.* -> set mode 0755>
+
+<transform file path=opt/zoneweaver/.* -> set owner zoneweaver>
+<transform file path=opt/zoneweaver/.* -> set group zoneweaver>
+<transform file path=opt/zoneweaver/.* -> set mode 0644>
+
+# SMF method scripts need to be executable by root
+<transform file path=opt/zoneweaver/startup.sh -> set owner root>
+<transform file path=opt/zoneweaver/startup.sh -> set group sys>
+<transform file path=opt/zoneweaver/startup.sh -> set mode 0755>
+
+<transform file path=opt/zoneweaver/shutdown.sh -> set owner root>
+<transform file path=opt/zoneweaver/shutdown.sh -> set group sys>
+<transform file path=opt/zoneweaver/shutdown.sh -> set mode 0755>
+
+<transform file path=opt/zoneweaver/post-install.sh -> set owner root>
+<transform file path=opt/zoneweaver/post-install.sh -> set group sys>
+<transform file path=opt/zoneweaver/post-install.sh -> set mode 0755>
+
+# Make scripts and node binaries executable
+<transform file path=opt/zoneweaver/scripts/.* -> set mode 0755>
+<transform file path=opt/zoneweaver/node_modules/.*/bin/.* -> set mode 0755>
+
+# Configuration directory and files
+<transform dir path=etc/zoneweaver$ -> set owner root>
+<transform dir path=etc/zoneweaver$ -> set group sys>
+<transform dir path=etc/zoneweaver$ -> set mode 0755>
+
+<transform file path=etc/zoneweaver/config.yaml -> set owner root>
+<transform file path=etc/zoneweaver/config.yaml -> set group sys>
+<transform file path=etc/zoneweaver/config.yaml -> set mode 0644>
+<transform file path=etc/zoneweaver/config.yaml -> set preserve true>
+
+# SSL directory (certificates generated at runtime)
+<transform dir path=etc/zoneweaver/ssl -> set owner zoneweaver>
+<transform dir path=etc/zoneweaver/ssl -> set group zoneweaver>
+<transform dir path=etc/zoneweaver/ssl -> set mode 0700>
+
+# Data and log directories
+<transform dir path=var/lib/zoneweaver$ -> set owner zoneweaver>
+<transform dir path=var/lib/zoneweaver$ -> set group zoneweaver>
+<transform dir path=var/lib/zoneweaver$ -> set mode 0755>
+
+<transform dir path=var/lib/zoneweaver/.* -> set owner zoneweaver>
+<transform dir path=var/lib/zoneweaver/.* -> set group zoneweaver>
+<transform dir path=var/lib/zoneweaver/.* -> set mode 0755>
+
+<transform dir path=var/log/zoneweaver -> set owner zoneweaver>
+<transform dir path=var/log/zoneweaver -> set group zoneweaver>
+<transform dir path=var/log/zoneweaver -> set mode 0755>
+
+# SMF manifest
+<transform file path=lib/svc/manifest/system/zoneweaver.xml -> set owner root>
+<transform file path=lib/svc/manifest/system/zoneweaver.xml -> set group sys>
+<transform file path=lib/svc/manifest/system/zoneweaver.xml -> set mode 0644>
+<transform file path=lib/svc/manifest/system/zoneweaver.xml -> set restart_fmri svc:/system/manifest-import:default>
