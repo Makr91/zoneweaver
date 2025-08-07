@@ -104,7 +104,7 @@ file etc/zoneweaver/config.yaml path=etc/zoneweaver/config.yaml owner=root group
 <transform file path=scripts/.* -> set mode 0755>
 
 # License
-license LICENSE.md license="GPL-3.0" must-accept=false
+license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
 
 # SSL directory and database directory (certificates generated on first startup)
 dir path=etc/zoneweaver/ssl owner=zoneweaver group=zoneweaver mode=0700
