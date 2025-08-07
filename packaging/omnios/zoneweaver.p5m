@@ -106,11 +106,6 @@ file packaging/config/production-config.yaml path=etc/zoneweaver/config.yaml own
 # License
 license LICENSE.md license="GPL-3.0" must-accept=false
 
-# Create SSL directory and certificates
+# SSL and database directories will be created during build
 dir path=etc/zoneweaver/ssl owner=zoneweaver group=zoneweaver mode=0700
-
-# Create database directory
 dir path=var/lib/zoneweaver/database owner=zoneweaver group=zoneweaver mode=0755
-
-# Post-install script to generate certificates and secrets
-file packaging/omnios/post-install.sh path=opt/zoneweaver/post-install.sh owner=root group=sys mode=0755

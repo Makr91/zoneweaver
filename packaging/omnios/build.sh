@@ -132,6 +132,39 @@ install_app() {
     popd >/dev/null # $DESTDIR
 }
 
+post_install() {
+    logmsg "--- Setting up ZoneWeaver post-installation"
+    
+    pushd $DESTDIR >/dev/null
+    
+    # Generate SSL certificates
+    logmsg "Generating SSL certificates"
+    logcmd mkdir -p etc/zoneweaver/ssl
+    logcmd openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout etc/zoneweaver/ssl/key.pem \
+        -out etc/zoneweaver/ssl/cert.pem \
+        -subj "/C=US/ST=State/L=City/O=ZoneWeaver/CN=localhost"
+    logcmd chmod 600 etc/zoneweaver/ssl/*
+
+    # Generate JWT secret
+    logmsg "Generating JWT secret"
+    JWT_SECRET=$(openssl rand -hex 32)
+    echo "$JWT_SECRET" > etc/zoneweaver/.jwt-secret
+    logcmd chmod 600 etc/zoneweaver/.jwt-secret
+
+    # Update config file with JWT secret
+    logmsg "Updating configuration with JWT secret"
+    logcmd sed -i "s/__JWT_SECRET_FROM_FILE__/${JWT_SECRET}/g" etc/zoneweaver/config.yaml
+
+    # Create database directory
+    logmsg "Creating database directory"
+    logcmd mkdir -p var/lib/zoneweaver/database
+
+    popd >/dev/null
+    
+    logmsg "ZoneWeaver post-installation setup completed"
+}
+
 init
 download_source
 patch_source
@@ -139,6 +172,7 @@ prep_build
 build_app
 make_isa_stub
 install_app
+post_install
 make_package
 clean_up
 

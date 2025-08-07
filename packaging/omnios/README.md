@@ -115,7 +115,7 @@ pkgsend publish -d . -s /tmp/local-repo zoneweaver.p5m.final
 pfexec pkg set-publisher -g file:///tmp/local-repo Makr91
 
 # Install the package
-pfexec svcadm pkg install system/virtualization/zoneweaver
+pfexec pkg install system/virtualization/zoneweaver
 
 # Start the service
 pfexec svcadm enable system/virtualization/zoneweaver
