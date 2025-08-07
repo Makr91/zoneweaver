@@ -51,15 +51,15 @@ file opt/zoneweaver/index.js path=opt/zoneweaver/index.js owner=zoneweaver group
 file opt/zoneweaver/package.json path=opt/zoneweaver/package.json owner=zoneweaver group=zoneweaver mode=0644
 
 # SMF method scripts
-file packaging/omnios/startup.sh path=opt/zoneweaver/startup.sh owner=root group=sys mode=0755
-file packaging/omnios/shutdown.sh path=opt/zoneweaver/shutdown.sh owner=root group=sys mode=0755
+file opt/zoneweaver/startup.sh path=opt/zoneweaver/startup.sh owner=root group=sys mode=0755
+file opt/zoneweaver/shutdown.sh path=opt/zoneweaver/shutdown.sh owner=root group=sys mode=0755
 
 # SMF manifest
-file packaging/omnios/zoneweaver-smf.xml path=lib/svc/manifest/system/zoneweaver.xml owner=root group=sys mode=0644 \
+file lib/svc/manifest/system/zoneweaver.xml path=lib/svc/manifest/system/zoneweaver.xml owner=root group=sys mode=0644 \
     restart_fmri=svc:/system/manifest-import:default
 
 # Configuration file
-file packaging/config/production-config.yaml path=etc/zoneweaver/config.yaml owner=root group=sys mode=0644 \
+file etc/zoneweaver/config.yaml path=etc/zoneweaver/config.yaml owner=root group=sys mode=0644 \
     preserve=true
 
 # Application directories (generated files will be added by pkgsend generate)
@@ -111,4 +111,4 @@ dir path=etc/zoneweaver/ssl owner=zoneweaver group=zoneweaver mode=0700
 dir path=var/lib/zoneweaver/database owner=zoneweaver group=zoneweaver mode=0755
 
 # Post-install script (for generating certificates and JWT secrets)
-file packaging/omnios/post-install.sh path=opt/zoneweaver/post-install.sh owner=root group=sys mode=0755
+file opt/zoneweaver/post-install.sh path=opt/zoneweaver/post-install.sh owner=root group=sys mode=0755
