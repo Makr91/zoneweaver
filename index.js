@@ -511,62 +511,118 @@ async function handleWebSocketUpgrade(request, socket, head) {
   }
 }
 
-// SSL/HTTPS Configuration
-if (config.server.ssl.enabled) {
+/**
+ * Generate SSL certificates if they don't exist and generate_ssl is enabled
+ */
+async function generateSSLCertificatesIfNeeded() {
+  if (!config.server.ssl.generate_ssl) {
+    return false; // SSL generation disabled
+  }
+
+  const keyPath = config.server.ssl.key;
+  const certPath = config.server.ssl.cert;
+
+  // Check if certificates already exist
+  if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    console.log('SSL certificates already exist, skipping generation');
+    return false; // Certificates exist, no need to generate
+  }
+
   try {
-    const privateKey = fs.readFileSync(config.server.ssl.key, 'utf8');
-    const certificate = fs.readFileSync(config.server.ssl.cert, 'utf8');
+    console.log('Generating SSL certificates...');
     
-    let credentials = { key: privateKey, cert: certificate };
+    // Import child_process for running openssl
+    const { execSync } = await import('child_process');
+    const path = await import('path');
     
-    // Add CA certificate if specified
-    if (config.server.ssl.ca) {
-      const ca = fs.readFileSync(config.server.ssl.ca, 'utf8');
-      credentials.ca = ca;
+    // Ensure SSL directory exists
+    const sslDir = path.dirname(keyPath);
+    if (!fs.existsSync(sslDir)) {
+      fs.mkdirSync(sslDir, { recursive: true, mode: 0o700 });
     }
 
-    const httpsServer = https.createServer(credentials, app);
+    // Generate SSL certificate using OpenSSL
+    const opensslCmd = `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -subj "/C=US/ST=State/L=City/O=ZoneWeaver/CN=localhost"`;
     
-    // Add WebSocket upgrade handling for VNC proxy
-    httpsServer.on('upgrade', handleWebSocketUpgrade);
+    execSync(opensslCmd, { stdio: 'pipe' });
     
-    httpsServer.listen(port, () => {
-      console.log(`HTTPS Server running at port ${port}`);
-    });
+    // Set proper permissions (readable by current user only)
+    fs.chmodSync(keyPath, 0o600);
+    fs.chmodSync(certPath, 0o600);
     
-    // Optional: Redirect HTTP to HTTPS
-    const httpApp = express();
-    httpApp.use((req, res) => {
-      res.redirect(`https://${req.headers.host}${req.url}`);
-    });
+    console.log('SSL certificates generated successfully');
+    console.log(`Key: ${keyPath}`);
+    console.log(`Certificate: ${certPath}`);
     
-    const httpServer = http.createServer(httpApp);
-    httpServer.listen(80, () => {
-      console.log('HTTP Server running at port 80 - redirecting to HTTPS');
-    });
-    
+    return true; // Certificates generated successfully
   } catch (error) {
-    console.error('SSL Certificate Error:', error.message);
-    console.log('Falling back to HTTP server...');
+    console.error('Failed to generate SSL certificates:', error.message);
+    console.error('Continuing with HTTP fallback...');
+    return false; // Generation failed
+  }
+}
+
+// SSL/HTTPS Configuration
+(async () => {
+  if (config.server.ssl.enabled) {
+    // Try to generate SSL certificates if needed
+    await generateSSLCertificatesIfNeeded();
     
-    // Fallback to HTTP if SSL certificates are not available
+    try {
+      const privateKey = fs.readFileSync(config.server.ssl.key, 'utf8');
+      const certificate = fs.readFileSync(config.server.ssl.cert, 'utf8');
+      
+      let credentials = { key: privateKey, cert: certificate };
+      
+      // Add CA certificate if specified
+      if (config.server.ssl.ca) {
+        const ca = fs.readFileSync(config.server.ssl.ca, 'utf8');
+        credentials.ca = ca;
+      }
+
+      const httpsServer = https.createServer(credentials, app);
+      
+      // Add WebSocket upgrade handling for VNC proxy
+      httpsServer.on('upgrade', handleWebSocketUpgrade);
+      
+      httpsServer.listen(port, () => {
+        console.log(`HTTPS Server running at port ${port}`);
+      });
+      
+      // Optional: Redirect HTTP to HTTPS
+      const httpApp = express();
+      httpApp.use((req, res) => {
+        res.redirect(`https://${req.headers.host}${req.url}`);
+      });
+      
+      const httpServer = http.createServer(httpApp);
+      httpServer.listen(80, () => {
+        console.log('HTTP Server running at port 80 - redirecting to HTTPS');
+      });
+      
+    } catch (error) {
+      console.error('SSL Certificate Error:', error.message);
+      console.log('Falling back to HTTP server...');
+      
+      // Fallback to HTTP if SSL certificates are not available
+      const httpServer = http.createServer(app);
+      httpServer.on('upgrade', handleWebSocketUpgrade);
+      
+      httpServer.listen(port, () => {
+        console.log(`HTTP Server running at port ${port} (SSL certificates not found)`);
+      });
+    }
+  } else {
+    // HTTP only mode
     const httpServer = http.createServer(app);
     httpServer.on('upgrade', handleWebSocketUpgrade);
     
     httpServer.listen(port, () => {
-      console.log(`HTTP Server running at port ${port} (SSL certificates not found)`);
+      console.log(`HTTP Server running at port ${port}`);
+      console.log(`API Documentation: http://localhost:${port}/api-docs`);
     });
   }
-} else {
-  // HTTP only mode
-  const httpServer = http.createServer(app);
-  httpServer.on('upgrade', handleWebSocketUpgrade);
-  
-  httpServer.listen(port, () => {
-    console.log(`HTTP Server running at port ${port}`);
-    console.log(`API Documentation: http://localhost:${port}/api-docs`);
-  });
-}
+})();
 
 // Export config for use in other modules
 export { config };

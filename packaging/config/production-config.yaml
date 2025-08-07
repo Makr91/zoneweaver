@@ -23,6 +23,7 @@ server:
   port: 3443
   ssl:
     enabled: true
+    generate_ssl: true  # Only applies if existing keys do not exist
     key: /etc/zoneweaver/ssl/key.pem
     cert: /etc/zoneweaver/ssl/cert.pem
 

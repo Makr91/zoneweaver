@@ -21,6 +21,7 @@ server:
   port: 3001
   ssl:
     enabled: true
+    generate_ssl: true  # Only applies if existing keys do not exist
     # Set paths to your SSL certificate files
     key: "./certs/private-key.pem"
     cert: "./certs/certificate.pem"

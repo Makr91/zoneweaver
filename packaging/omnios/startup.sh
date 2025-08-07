@@ -17,15 +17,9 @@ PIDFILE="/var/lib/zoneweaver/zoneweaver.pid"
 
 mkdir -p /var/log/zoneweaver
 
-# SSL certificates and JWT secrets should have been created during package installation
-if [ ! -f "/etc/zoneweaver/ssl/cert.pem" ]; then
-    echo "Error: SSL certificates not found. Package installation may have failed." >&2
-    exit 1
-fi
-
+# Check if JWT secret exists (SSL certificates will be handled by Node.js if needed)
 if [ ! -f "/etc/zoneweaver/.jwt-secret" ]; then
-    echo "Error: JWT secret not found. Package installation may have failed." >&2
-    exit 1
+    echo "Warning: JWT secret not found. Node.js may generate default secrets." >&2
 fi
 
 # Check if Node.js is available
