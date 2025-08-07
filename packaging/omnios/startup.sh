@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 # ZoneWeaver startup script for SMF
-# Based on the charlotte-webhyve startup pattern
 #
 
 set -e
@@ -12,15 +11,11 @@ export NODE_ENV="${NODE_ENV:-production}"
 export CONFIG_PATH="${CONFIG_PATH:-/etc/zoneweaver/config.yaml}"
 export HOME="${HOME:-/var/lib/zoneweaver}"
 
-# Working directory should be set by SMF, but ensure it
 cd /opt/zoneweaver
 
-# PID file location
-PIDFILE="/var/run/zoneweaver.pid"
+PIDFILE="/var/lib/zoneweaver/zoneweaver.pid"
 
-# Ensure log directory exists
 mkdir -p /var/log/zoneweaver
-chown zoneweaver:zoneweaver /var/log/zoneweaver
 
 # Check if Node.js is available
 if ! command -v node >/dev/null 2>&1; then

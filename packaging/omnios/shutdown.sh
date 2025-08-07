@@ -9,8 +9,8 @@ set -e
 # Environment
 export PATH="/opt/ooce/bin:/opt/ooce/node-22/bin:/usr/gnu/bin:/usr/bin:/usr/sbin:/sbin"
 
-# PID file location
-PIDFILE="/var/run/zoneweaver.pid"
+# PID file location (in user's home directory since we run as zoneweaver user)
+PIDFILE="/var/lib/zoneweaver/zoneweaver.pid"
 
 echo "Stopping ZoneWeaver Zone Hypervisor Management Interface..."
 

@@ -112,13 +112,13 @@ pkgsend publish -d . -s /tmp/local-repo zoneweaver.p5m.final
 ### 3. Install & Test Package
 ```bash
 # Add your local repository
-pkg set-publisher -g file:///tmp/local-repo Makr91
+pfexec pkg set-publisher -g file:///tmp/local-repo Makr91
 
 # Install the package
-pkg install system/virtualization/zoneweaver
+pfexec svcadm pkg install system/virtualization/zoneweaver
 
 # Start the service
-svcadm enable system/virtualization/zoneweaver
+pfexec svcadm enable system/virtualization/zoneweaver
 
 # Check status
 svcs -l system/virtualization/zoneweaver
