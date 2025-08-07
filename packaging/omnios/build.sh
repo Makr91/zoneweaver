@@ -66,20 +66,25 @@ mkdir -p "$DESTDIR"
 build_app() {
     logmsg "Building ZoneWeaver frontend"
     
+    # Set up environment for OmniOS/Solaris
+    export MAKE=gmake
+    export CC=gcc
+    export CXX=g++
+    
     # Sync versions
     logcmd npm run sync-versions
     
     # Install dependencies
-    logcmd npm ci
+    logcmd MAKE=gmake npm ci
     pushd web >/dev/null
-    logcmd npm ci
+    logcmd MAKE=gmake npm ci
     popd >/dev/null
     
     # Build frontend
     logcmd npm run build
     
     # Install production dependencies only
-    logcmd npm ci --omit=dev
+    logcmd MAKE=gmake npm ci --omit=dev
 }
 
 install_app() {
@@ -137,36 +142,22 @@ install_app() {
 }
 
 post_install() {
-    logmsg "--- Setting up ZoneWeaver post-installation"
+    logmsg "--- Setting up ZoneWeaver staging directory"
     
     pushd $DESTDIR >/dev/null
     
-    # Generate SSL certificates
-    logmsg "Generating SSL certificates"
+    # Create SSL directory (certificates will be generated during installation)
     logcmd mkdir -p etc/zoneweaver/ssl
-    logcmd openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout etc/zoneweaver/ssl/key.pem \
-        -out etc/zoneweaver/ssl/cert.pem \
-        -subj "/C=US/ST=State/L=City/O=ZoneWeaver/CN=localhost"
-    logcmd chmod 600 etc/zoneweaver/ssl/*
-
-    # Generate JWT secret
-    logmsg "Generating JWT secret"
-    JWT_SECRET=$(openssl rand -hex 32)
-    echo "$JWT_SECRET" > etc/zoneweaver/.jwt-secret
-    logcmd chmod 600 etc/zoneweaver/.jwt-secret
-
-    # Update config file with JWT secret
-    logmsg "Updating configuration with JWT secret"
-    logcmd sed -i "s/__JWT_SECRET_FROM_FILE__/${JWT_SECRET}/g" etc/zoneweaver/config.yaml
-
+    
     # Create database directory
-    logmsg "Creating database directory"
     logcmd mkdir -p var/lib/zoneweaver/database
+    
+    # Include post-install script in package
+    logcmd cp $SRCDIR/packaging/omnios/post-install.sh opt/zoneweaver/
 
     popd >/dev/null
     
-    logmsg "ZoneWeaver post-installation setup completed"
+    logmsg "ZoneWeaver staging setup completed"
 }
 
 # Main build process

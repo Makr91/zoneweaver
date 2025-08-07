@@ -18,7 +18,6 @@ PIDFILE="/var/lib/zoneweaver/zoneweaver.pid"
 mkdir -p /var/log/zoneweaver
 
 # SSL certificates and JWT secrets should have been created during package installation
-# If they don't exist, something went wrong with the package installation
 if [ ! -f "/etc/zoneweaver/ssl/cert.pem" ]; then
     echo "Error: SSL certificates not found. Package installation may have failed." >&2
     exit 1
