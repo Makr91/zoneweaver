@@ -75,16 +75,16 @@ build_app() {
     logcmd npm run sync-versions
     
     # Install dependencies
-    logcmd MAKE=gmake npm ci
+    MAKE=gmake logcmd npm ci
     pushd web >/dev/null
-    logcmd MAKE=gmake npm ci
+    MAKE=gmake logcmd npm ci
     popd >/dev/null
     
     # Build frontend
     logcmd npm run build
     
     # Install production dependencies only
-    logcmd MAKE=gmake npm ci --omit=dev
+    MAKE=gmake logcmd npm ci --omit=dev
 }
 
 install_app() {
