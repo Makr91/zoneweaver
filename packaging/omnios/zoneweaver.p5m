@@ -46,9 +46,9 @@ dir path=etc/zoneweaver owner=root group=sys mode=0755
 dir path=var/lib/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
 dir path=var/log/zoneweaver owner=zoneweaver group=zoneweaver mode=0755
 
-# Main application files
-file index.js path=opt/zoneweaver/index.js owner=zoneweaver group=zoneweaver mode=0644
-file package.json path=opt/zoneweaver/package.json owner=zoneweaver group=zoneweaver mode=0644
+# Main application files  
+file opt/zoneweaver/index.js path=opt/zoneweaver/index.js owner=zoneweaver group=zoneweaver mode=0644
+file opt/zoneweaver/package.json path=opt/zoneweaver/package.json owner=zoneweaver group=zoneweaver mode=0644
 
 # SMF method scripts
 file packaging/omnios/startup.sh path=opt/zoneweaver/startup.sh owner=root group=sys mode=0755
