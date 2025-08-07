@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.0.5](https://github.com/Makr91/zoneweaver/compare/v0.0.4...v0.0.5) (2025-08-07)
+
+
+### Features
+
+* add OmniOS Package and Build Scripts ([21dd25b](https://github.com/Makr91/zoneweaver/commit/21dd25b70ea3d8f606f1ce41ddadc6f08bc0fa8e))
+* add OmniOS Package and Build Scripts v10 ([da145da](https://github.com/Makr91/zoneweaver/commit/da145da3add4b7c729a94fa5c1d52af6b903f2ee))
+* add OmniOS Package and Build Scripts v10 ([b87ec41](https://github.com/Makr91/zoneweaver/commit/b87ec41ae5c636b1e36cf17fad812395fabd2461))
+* add OmniOS Package and Build Scripts v11 ([1f9f9f5](https://github.com/Makr91/zoneweaver/commit/1f9f9f518baa96fca921bb4bf98860bbd48cd3f5))
+* add OmniOS Package and Build Scripts v11 ([49a29aa](https://github.com/Makr91/zoneweaver/commit/49a29aa74340d2c7218f1d613ecd037e232f0e7e))
+* add OmniOS Package and Build Scripts v11 ([f168c0c](https://github.com/Makr91/zoneweaver/commit/f168c0cc1b0ff95100fce12728b0a9ea7fb18388))
+* add OmniOS Package and Build Scripts v12 - CI/CD ([dc962b9](https://github.com/Makr91/zoneweaver/commit/dc962b931d6f3bfaa60e4a49bb341cc978d96a8e))
+* add OmniOS Package and Build Scripts v2 ([3975721](https://github.com/Makr91/zoneweaver/commit/3975721bd8907a26ebae77264a2dd9769e60c613))
+* add OmniOS Package and Build Scripts v3 ([48bdad5](https://github.com/Makr91/zoneweaver/commit/48bdad560cf9a48401d3d2e7274a674aa880ad54))
+* add OmniOS Package and Build Scripts v4 ([82ae5a9](https://github.com/Makr91/zoneweaver/commit/82ae5a9e3cabdf979c07fe112a9aad59b1d5f616))
+* add OmniOS Package and Build Scripts v5 ([137e7dd](https://github.com/Makr91/zoneweaver/commit/137e7dde8c961d3c896943ebe1cb8a819b5aca30))
+* add OmniOS Package and Build Scripts v6 ([628db6e](https://github.com/Makr91/zoneweaver/commit/628db6e9162af40448293ce1b3572f399c41b8d7))
+* add OmniOS Package and Build Scripts v7 ([7577f5d](https://github.com/Makr91/zoneweaver/commit/7577f5d65a2caea2d8273b74f5ec8422eb40016b))
+* add OmniOS Package and Build Scripts v8 ([312d2f2](https://github.com/Makr91/zoneweaver/commit/312d2f2db452b45e4be0b17cf74498ede6d18d10))
+* add OmniOS Package and Build Scripts v9 ([81adfdb](https://github.com/Makr91/zoneweaver/commit/81adfdb2c2774265ac6a71f54c0ad7223048ff87))
+* add OmniOS Package and Build Scripts v9 ([65a08da](https://github.com/Makr91/zoneweaver/commit/65a08da5a3572ecf6e1c2116137f2bd71c469807))
+
+
+### Bug Fixes
+
+* unworking complicated tab navigation when going to specific tab ([75fcb34](https://github.com/Makr91/zoneweaver/commit/75fcb34633658059dc1d68f1e74eb7f1585c057d))
+
 ## [0.0.4](https://github.com/Makr91/zoneweaver/compare/v0.0.3...v0.0.4) (2025-08-06)
 
 
