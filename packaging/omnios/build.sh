@@ -167,7 +167,7 @@ build_app
 install_app
 post_install
 
-# Create the package
+# Create the complete package
 logmsg "Creating IPS package"
 cd "$SRCDIR"
 export VERSION="$VER"
@@ -175,17 +175,24 @@ sed "s/@VERSION@/${VERSION}/g" packaging/omnios/zoneweaver.p5m > zoneweaver.p5m.
 pkgsend generate proto | pkgfmt > zoneweaver.p5m.generated
 pkgmogrify -DVERSION="${VERSION}" zoneweaver.p5m.tmp zoneweaver.p5m.generated > zoneweaver.p5m.final
 
-# Publish to repository
-if [ ! -d /tmp/local-repo ]; then
-    pkgrepo create /tmp/local-repo
-    pkgrepo set -s /tmp/local-repo publisher/prefix=local
-fi
+# Create temporary local repository
+TEMP_REPO="${SRCDIR}/temp-repo"
+rm -rf "$TEMP_REPO"
+pkgrepo create "$TEMP_REPO"
+pkgrepo set -s "$TEMP_REPO" publisher/prefix=Makr91
 
-pkgsend publish -d proto -s /tmp/local-repo zoneweaver.p5m.final
+# Publish package to temporary repository
+pkgsend -s "file://${TEMP_REPO}" publish -d proto zoneweaver.p5m.final
 
-logmsg "Package build completed. Install with:"
-logmsg "  pfexec pkg set-publisher -g /tmp/local-repo local"
-logmsg "  pfexec pkg install system/virtualization/zoneweaver"
+# Create .p5p package archive
+PACKAGE_FILE="zoneweaver-${VERSION}.p5p"
+pkgrecv -s "file://${TEMP_REPO}" -a -d "${PACKAGE_FILE}" "${PKG}"
+
+# Clean up temporary repository
+rm -rf "$TEMP_REPO"
+
+logmsg "Package build completed: ${PACKAGE_FILE}"
+logmsg "Complete package ready for upload to GitHub artifacts"
 
 # Vim hints
 # vim:ts=4:sw=4:et:

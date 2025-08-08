@@ -125,10 +125,9 @@ jobs:
             ./packaging/omnios/build.sh
           "
 
-      - name: Transfer OmniOS packages back
+      - name: Transfer OmniOS package back
         run: |
           rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/*.p5p ./ || echo "No .p5p files found"
-          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/zoneweaver*.p5m.final ./ || echo "No .p5m.final files found"
 
       - name: Clean up OmniOS build directory
         run: |
@@ -140,11 +139,11 @@ jobs:
         run: |
           gh release upload ${{ needs.release-please.outputs.tag_name }} "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
 
-      - name: Upload OmniOS packages to release  
+      - name: Upload OmniOS package to release  
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for file in *.p5p *.p5m.final; do
+          for file in *.p5p; do
             if [ -f "$file" ]; then
               echo "Uploading $file..."
               gh release upload ${{ needs.release-please.outputs.tag_name }} "$file" --clobber
