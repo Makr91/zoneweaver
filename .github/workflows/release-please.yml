@@ -137,6 +137,16 @@ jobs:
         run: |
           ssh ghrunner@hv04.home.m4kr.net "rm -rf /Array-0/zoneweaver/builds/*"
 
+      - name: Install GitHub CLI
+        run: |
+          if ! command -v gh &> /dev/null; then
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+          fi
+
       - name: Upload Debian package to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
