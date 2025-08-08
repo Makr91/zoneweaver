@@ -105,9 +105,13 @@ jobs:
           path: omnios-source
           clean: true
         
+      - name: Clean OmniOS build directory
+        run: |
+          ssh ghrunner@hv04.home.m4kr.net "rm -rf /Array-0/zoneweaver/builds/* /Array-0/zoneweaver/builds/.*" || true
+
       - name: Sync source code to OmniOS
         run: |
-          rsync -av --delete \
+          rsync -av \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='web/node_modules' \
