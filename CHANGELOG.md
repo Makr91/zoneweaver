@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/Makr91/zoneweaver/compare/v0.0.6...v0.0.7) (2025-08-08)
+
+
+### Features
+
+* add OmniOS Package and Build Scripts - CI/CD - v14 ([de964f9](https://github.com/Makr91/zoneweaver/commit/de964f9c2d711c8808989226ca4f4b74528e3c4b))
+
 ## [0.0.6](https://github.com/Makr91/zoneweaver/compare/v0.0.5...v0.0.6) (2025-08-08)
 
 
