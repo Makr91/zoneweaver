@@ -29,12 +29,9 @@ jobs:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
     runs-on: self-hosted
-    strategy:
-      matrix:
-        package-type: [debian, omnios]
-      fail-fast: true  # Fail entire build if either package fails
     steps:
-      - name: Checkout
+      # Debian Build Steps
+      - name: Checkout for Debian build
         uses: actions/checkout@v4
         
       - name: Setup Node.js
@@ -43,37 +40,39 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
-      - name: Install dependencies
-        run: |
-          npm ci
-          cd web && npm ci
+      - name: Install Node.js dependencies
+        run: npm ci
+          
+      - name: Install web dependencies
+        run: cd web && npm ci
           
       - name: Build frontend
         run: npm run build
         
-      - name: Create Debian package
-        if: matrix.package-type == 'debian'
+      - name: Set Debian package variables
         run: |
-          export VERSION=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
-          export PACKAGE_NAME="zoneweaver"
-          export ARCH="amd64"
-          
-          # Create package structure
+          echo "VERSION=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=zoneweaver" >> $GITHUB_ENV
+          echo "ARCH=amd64" >> $GITHUB_ENV
+        
+      - name: Create Debian package structure
+        run: |
           mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver/web,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,DEBIAN}
-          
-          # Copy application files
+        
+      - name: Copy application files to Debian package
+        run: |
           cp -r controllers models routes middleware config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
           cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
           cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"
-          
-          # Configuration files
+        
+      - name: Copy configuration files to Debian package
+        run: |
           cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
           cp packaging/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
-          
-          # DEBIAN files
           cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
-          
-          # Create control file with dynamic version
+        
+      - name: Create Debian control file
+        run: |
           cat > "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
           Package: zoneweaver
           Version: ${VERSION}
@@ -88,65 +87,64 @@ jobs:
            through a modern React frontend and Node.js API backend.
           Homepage: https://github.com/Makr91/zoneweaver
           EOF
-          
-          # Set permissions
+        
+      - name: Set Debian package permissions
+        run: |
           find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type d -exec chmod 755 {} \;
           find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type f -exec chmod 644 {} \;
           chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"/{postinst,prerm,postrm}
-          
-          # Build package
+        
+      - name: Build Debian package
+        run: |
           dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
 
-      - name: Build OmniOS package
-        if: matrix.package-type == 'omnios'
+      # OmniOS Build Steps
+      - name: Fresh checkout for OmniOS build
+        uses: actions/checkout@v4
+        with:
+          path: omnios-source
+          clean: true
+        
+      - name: Sync source code to OmniOS
         run: |
-          export VERSION=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
-          
-          # Sync source to OmniOS build machine
           rsync -av --delete \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='web/node_modules' \
-            ./ ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/
-          
-          # Build package on OmniOS
+            --exclude='web/dist' \
+            --exclude='*.deb' \
+            omnios-source/ ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/
+
+      - name: Build package on OmniOS
+        run: |
           ssh ghrunner@hv04.home.m4kr.net "
             cd /Array-0/zoneweaver/builds && 
             export PATH=/opt/ooce/bin:/opt/ooce/node-22/bin:\$PATH &&
             export MAKE=gmake &&
+            chmod +x packaging/omnios/build.sh &&
             ./packaging/omnios/build.sh
           "
-          
-          # Sync built packages back to Linux runner
-          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/*.p5p ./ || true
-          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/zoneweaver*.p5m.final ./ || true
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: packages-${{ matrix.package-type }}
-          path: |
-            *.deb
-            *.p5p
-            *.p5m.final
-          retention-days: 1
+      - name: Transfer OmniOS packages back
+        run: |
+          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/*.p5p ./ || echo "No .p5p files found"
+          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/zoneweaver*.p5m.final ./ || echo "No .p5m.final files found"
 
-  upload-release-assets:
-    needs: [release-please, build-packages]
-    if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: self-hosted
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
+      - name: Clean up OmniOS build directory
+        run: |
+          ssh ghrunner@hv04.home.m4kr.net "rm -rf /Array-0/zoneweaver/builds/*"
 
-      - name: Upload Release Assets
+      - name: Upload Debian package to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Upload all built packages to the release
-          for file in *.deb *.p5p *.p5m.final; do
+          gh release upload ${{ needs.release-please.outputs.tag_name }} "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
+
+      - name: Upload OmniOS packages to release  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for file in *.p5p *.p5m.final; do
             if [ -f "$file" ]; then
               echo "Uploading $file..."
               gh release upload ${{ needs.release-please.outputs.tag_name }} "$file" --clobber
