@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/Makr91/zoneweaver/compare/v0.0.9...v0.0.10) (2025-08-08)
+
+
+### Features
+
+* add debian packages to repo ([a0b60ae](https://github.com/Makr91/zoneweaver/commit/a0b60ae164d7f5a01795bffc84ce3e1928139c5b))
+
 ## [0.0.9](https://github.com/Makr91/zoneweaver/compare/v0.0.8...v0.0.9) (2025-08-08)
 
 
