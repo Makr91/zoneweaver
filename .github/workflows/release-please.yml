@@ -163,3 +163,49 @@ jobs:
               gh release upload ${{ needs.release-please.outputs.tag_name }} "$file" --clobber
             fi
           done
+
+      - name: Upload Debian package to repository server
+        run: |
+          rsync -av zoneweaver_*.deb startcloud@172.17.204.177:/tmp/
+
+      - name: Add package to repository pool
+        run: |
+          ssh startcloud@172.17.204.177 "
+            mkdir -p /local/startcloud/public/debian/pool/main/z/zoneweaver
+            cp /tmp/zoneweaver_*.deb /local/startcloud/public/debian/pool/main/z/zoneweaver/
+          "
+
+      - name: Update repository Packages file
+        run: |
+          ssh startcloud@172.17.204.177 "
+            cd /local/startcloud/public/debian
+            dpkg-scanpackages --arch amd64 pool/ > dists/stable/main/binary-amd64/Packages
+          "
+
+      - name: Compress Packages file
+        run: |
+          ssh startcloud@172.17.204.177 "
+            cd /local/startcloud/public/debian
+            gzip -c dists/stable/main/binary-amd64/Packages > dists/stable/main/binary-amd64/Packages.gz
+          "
+
+      - name: Generate Release file
+        run: |
+          ssh startcloud@172.17.204.177 "
+            cd /local/startcloud/public/debian/dists/stable
+            /local/generate-release.sh > Release
+          "
+
+      - name: Sign repository
+        run: |
+          ssh startcloud@172.17.204.177 "
+            cd /local/startcloud/public/debian/dists/stable
+            export GNUPGHOME=\$(mktemp -d /local/pgp/pgpkeys-XXXXXX)
+            cat /local/pgp/pgp-key.private | gpg --import
+            cat Release | gpg --default-key startcloud -abs > Release.gpg
+            cat Release | gpg --default-key startcloud -abs --clearsign > InRelease
+          "
+
+      - name: Cleanup temporary files
+        run: |
+          ssh startcloud@172.17.204.177 "rm -f /tmp/zoneweaver_*.deb"
