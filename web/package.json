@@ -1,6 +1,6 @@
 {
   "name": "zoneweaver-frontend",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": true,
   "description": "ZoneWeaver Web Interface",
   "proxy": "http://localhost:3001/",
