@@ -107,7 +107,7 @@ jobs:
         
       - name: Clean OmniOS build directory
         run: |
-          ssh ghrunner@hv04.home.m4kr.net "rm -rf /Array-0/zoneweaver/builds/* /Array-0/zoneweaver/builds/.*" || true
+          ssh ghrunner@omnios.packages.startcloud.com "rm -rf /local/builds/zoneweaver/* /local/builds/zoneweaver/.*" || true
 
       - name: Sync source code to OmniOS
         run: |
@@ -117,12 +117,12 @@ jobs:
             --exclude='web/node_modules' \
             --exclude='web/dist' \
             --exclude='*.deb' \
-            omnios-source/ ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/
+            omnios-source/ ghrunner@omnios.packages.startcloud.com:/local/builds/zoneweaver/
 
       - name: Build package on OmniOS
         run: |
-          ssh ghrunner@hv04.home.m4kr.net "
-            cd /Array-0/zoneweaver/builds && 
+          ssh ghrunner@omnios.packages.startcloud.com "
+            cd /local/builds/zoneweaver && 
             export PATH=/opt/ooce/bin:/opt/ooce/node-22/bin:\$PATH &&
             export MAKE=gmake &&
             chmod +x packaging/omnios/build.sh &&
@@ -131,11 +131,11 @@ jobs:
 
       - name: Transfer OmniOS package back
         run: |
-          rsync -av ghrunner@hv04.home.m4kr.net:/Array-0/zoneweaver/builds/*.p5p ./ || echo "No .p5p files found"
+          rsync -av ghrunner@omnios.packages.startcloud.com:/local/builds/zoneweaver/*.p5p ./ || echo "No .p5p files found"
 
       - name: Clean up OmniOS build directory
         run: |
-          ssh ghrunner@hv04.home.m4kr.net "rm -rf /Array-0/zoneweaver/builds/*"
+          ssh ghrunner@omnios.packages.startcloud.com "rm -rf /local/builds/zoneweaver/*"
 
       - name: Install GitHub CLI
         run: |
@@ -163,6 +163,14 @@ jobs:
               gh release upload ${{ needs.release-please.outputs.tag_name }} "$file" --clobber
             fi
           done
+
+      - name: Publish OmniOS package to repository
+        run: |
+          ssh ghrunner@omnios.packages.startcloud.com "
+            cd /local/builds/zoneweaver &&
+            pkgsend publish -d proto -s file:///local/public/r151054/pkg zoneweaver.p5m.final &&
+            pkgrepo refresh -s /local/public/r151054/pkg
+          "
 
       - name: Upload Debian package to repository server
         run: |
