@@ -133,10 +133,6 @@ jobs:
         run: |
           rsync -av ghrunner@omnios.packages.startcloud.com:/local/builds/zoneweaver/*.p5p ./ || echo "No .p5p files found"
 
-      - name: Clean up OmniOS build directory
-        run: |
-          ssh ghrunner@omnios.packages.startcloud.com "rm -rf /local/builds/zoneweaver/*"
-
       - name: Install GitHub CLI
         run: |
           if ! command -v gh &> /dev/null; then
@@ -171,6 +167,10 @@ jobs:
             pkgsend publish -d proto -s file:///local/public/r151054/pkg zoneweaver.p5m.final &&
             pkgrepo refresh -s /local/public/r151054/pkg
           "
+
+      - name: Clean up OmniOS build directory
+        run: |
+          ssh ghrunner@omnios.packages.startcloud.com "rm -rf /local/builds/zoneweaver/*"
 
       - name: Upload Debian package to repository server
         run: |
