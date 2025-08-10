@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.12](https://github.com/Makr91/zoneweaver/compare/v0.0.11...v0.0.12) (2025-08-10)
+
+
+### Features
+
+* add omnios package to repo ([3db550a](https://github.com/Makr91/zoneweaver/commit/3db550a305635c521450138902f2a4d74cc19497))
+
 ## [0.0.11](https://github.com/Makr91/zoneweaver/compare/v0.0.10...v0.0.11) (2025-08-10)
 
 
