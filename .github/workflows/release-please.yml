@@ -164,8 +164,8 @@ jobs:
         run: |
           ssh ghrunner@omnios.packages.startcloud.com "
             cd /local/builds/zoneweaver &&
-            pkgsend publish -d proto -s file:///local/public/r151054/pkg zoneweaver.p5m.final &&
-            pkgrepo refresh -s /local/public/r151054/pkg
+            pfexec pkgsend publish -d proto -s file:///local/public/r151054/pkg zoneweaver.p5m.final &&
+            pfexec pkgrepo refresh -s /local/public/r151054/pkg
           "
 
       - name: Clean up OmniOS build directory
