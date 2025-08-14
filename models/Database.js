@@ -7,7 +7,7 @@ import { loadConfig } from '../utils/config.js';
 
 /**
  * Database class for managing SQLite database operations
- * Handles user authentication and API key storage for ZoneWeaver
+ * Handles user authentication and API key storage for Zoneweaver
  */
 class Database {
   constructor() {
@@ -77,7 +77,7 @@ class Database {
       )
     `;
 
-    // Users table for ZoneWeaver authentication
+    // Users table for Zoneweaver authentication
     const createUsersTable = `
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

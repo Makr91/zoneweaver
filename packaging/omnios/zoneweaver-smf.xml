@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
 <!--
-    SMF manifest for ZoneWeaver Zone Hypervisor Management Interface
+    SMF manifest for Zoneweaver Zone Hypervisor Management Interface
 -->
 <service_bundle type='manifest' name='zoneweaver'>
   <service name='system/virtualization/zoneweaver' type='service' version='1'>
@@ -50,7 +50,7 @@
     <!-- Service description -->
     <template>
       <common_name>
-        <loctext xml:lang='C'>ZoneWeaver Zone Hypervisor Management Interface</loctext>
+        <loctext xml:lang='C'>Zoneweaver Zone Hypervisor Management Interface</loctext>
       </common_name>
       <description>
         <loctext xml:lang='C'>
@@ -61,7 +61,7 @@
       </description>
       <documentation>
         <manpage title='zoneweaver' section='8' />
-        <doc_link name='ZoneWeaver Project'
+        <doc_link name='Zoneweaver Project'
                   uri='https://github.com/Makr91/zoneweaver' />
       </documentation>
     </template>

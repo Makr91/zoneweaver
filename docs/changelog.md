@@ -8,7 +8,7 @@ permalink: /docs/changelog/
 # Changelog
 {: .no_toc }
 
-Release history and changes for ZoneWeaver frontend.
+Release history and changes for Zoneweaver frontend.
 
 ## Table of contents
 {: .no_toc .text-delta }

@@ -109,7 +109,7 @@ const ServerForm = ({
             <input 
               type='text' 
               className='input' 
-              placeholder='ZoneWeaver-Production' 
+              placeholder='Zoneweaver-Production' 
               value={entityName} 
               onChange={(e) => setEntityName(e.target.value)}
               disabled={loading}
@@ -117,7 +117,7 @@ const ServerForm = ({
             />
           </div>
           <p className='help has-text-grey'>
-            This name will identify this ZoneWeaver instance on the Zoneweaver API Server
+            This name will identify this Zoneweaver instance on the Zoneweaver API Server
           </p>
         </div>
       )}

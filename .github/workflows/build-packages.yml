@@ -38,12 +38,12 @@ jobs:
           
           if [ "${{ matrix.package-type }}" = "production" ]; then
             echo "PACKAGE_NAME=zoneweaver" >> $GITHUB_ENV
-            echo "DESCRIPTION=ZoneWeaver - Zone Hypervisor Management Interface" >> $GITHUB_ENV
+            echo "DESCRIPTION=Zoneweaver - Zone Hypervisor Management Interface" >> $GITHUB_ENV
             echo "DEPENDS=nodejs (>= 18.0.0), sqlite3, openssl" >> $GITHUB_ENV
             echo "CONFLICTS=" >> $GITHUB_ENV
           else
             echo "PACKAGE_NAME=zoneweaver-dev" >> $GITHUB_ENV
-            echo "DESCRIPTION=ZoneWeaver - Zone Hypervisor Management Interface (Development)" >> $GITHUB_ENV
+            echo "DESCRIPTION=Zoneweaver - Zone Hypervisor Management Interface (Development)" >> $GITHUB_ENV
             echo "DEPENDS=nodejs (>= 18.0.0), sqlite3, openssl, npm" >> $GITHUB_ENV
             echo "CONFLICTS=zoneweaver" >> $GITHUB_ENV
           fi

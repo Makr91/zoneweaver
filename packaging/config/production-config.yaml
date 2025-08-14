@@ -1,8 +1,8 @@
-# ZoneWeaver Production Configuration
+# Zoneweaver Production Configuration
 # This file is installed to /etc/zoneweaver/config.yaml
 
 app:
-  name: ZoneWeaver
+  name: Zoneweaver
   version: 0.0.1
   frontend_url: https://localhost:3443
 
@@ -16,7 +16,7 @@ mail:
     user: ""
     password: ""
   smtp_settings:
-    from: ZoneWeaver <noreply@localhost>
+    from: Zoneweaver <noreply@localhost>
 
 server:
   hostname: localhost

@@ -656,7 +656,7 @@ const Zones = () => {
   };
 
   /**
-   * VNC console start - ALL connections go through ZoneWeaver proxy
+   * VNC console start - ALL connections go through Zoneweaver proxy
    */
   const handleVncConsole = async (zoneName, openInNewTab = false) => {
     if (!currentServer) return;
@@ -686,16 +686,16 @@ const Zones = () => {
         
         setVncSession(vncData);
         
-        // ONLY use ZoneWeaver proxy routes - NO direct connections
+        // ONLY use Zoneweaver proxy routes - NO direct connections
         const proxyUrl = `/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(zoneName)}/vnc/console`;
         
         if (openInNewTab) {
-          // Open console in new tab via ZoneWeaver proxy
-          console.log(`🔄 VNC START: Opening VNC console in new tab via ZoneWeaver proxy: ${proxyUrl}`);
+          // Open console in new tab via Zoneweaver proxy
+          console.log(`🔄 VNC START: Opening VNC console in new tab via Zoneweaver proxy: ${proxyUrl}`);
           window.open(proxyUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
         } else {
           // Show embedded console via VncViewer component
-          console.log(`🔄 VNC START: Opening embedded VNC console via ZoneWeaver proxy`);
+          console.log(`🔄 VNC START: Opening embedded VNC console via Zoneweaver proxy`);
           setShowVncConsole(true);
         }
         
@@ -903,7 +903,7 @@ const Zones = () => {
       <div className='hero-body mainbody p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>Zones - ZoneWeaver</title>
+          <title>Zones - Zoneweaver</title>
           <link rel='canonical' href={window.location.origin} />
         </Helmet>
         <div className='container is-fluid m-2'>
@@ -937,7 +937,7 @@ const Zones = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Zones - ZoneWeaver</title>
+        <title>Zones - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='container is-fluid m-2'>

@@ -16,7 +16,7 @@ const ZoneweaverSettings = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('application');
   const [settings, setSettings] = useState({
-    appName: "ZoneWeaver",
+    appName: "Zoneweaver",
     appVersion: "2.0.0",
     frontendUrl: "",
     maxServersPerUser: 10,
@@ -46,7 +46,7 @@ const ZoneweaverSettings = () => {
   const [hostname, setHostname] = useState("");
   const [port, setPort] = useState("5001");
   const [protocol, setProtocol] = useState("https");
-  const [entityName, setEntityName] = useState("ZoneWeaver-Production");
+  const [entityName, setEntityName] = useState("Zoneweaver-Production");
   const [apiKey, setApiKey] = useState("");
   const [useExistingApiKey, setUseExistingApiKey] = useState(false);
   const [testResult, setTestResult] = useState(null);
@@ -172,7 +172,7 @@ const ZoneweaverSettings = () => {
         hostname,
         port: parseInt(port),
         protocol,
-        entityName: entityName || 'ZoneWeaver-Production'
+        entityName: entityName || 'Zoneweaver-Production'
       };
       if (useExistingApiKey) {
         serverData.apiKey = apiKey;
@@ -200,7 +200,7 @@ const ZoneweaverSettings = () => {
     setHostname('');
     setPort('5001');
     setProtocol('https');
-    setEntityName('ZoneWeaver-Production');
+    setEntityName('Zoneweaver-Production');
     setApiKey('');
     setUseExistingApiKey(false);
     setTestResult(null);
@@ -231,7 +231,7 @@ const ZoneweaverSettings = () => {
       <div className='hero-body mainbody p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>System Settings - ZoneWeaver</title>
+          <title>System Settings - Zoneweaver</title>
           <link rel='canonical' href={window.location.origin} />
         </Helmet>
         <div className='container is-fluid m-2'>
@@ -244,7 +244,7 @@ const ZoneweaverSettings = () => {
             <div className='p-4'>
               <div className='notification is-danger'>
                 <h2 className='title is-4'>Super Admin Access Required</h2>
-                <p>Only super administrators can modify ZoneWeaver system settings.</p>
+                <p>Only super administrators can modify Zoneweaver system settings.</p>
                 <p className='mt-2'>Your current role: <span className='tag is-warning'>{user?.role || 'Unknown'}</span></p>
               </div>
             </div>
@@ -345,7 +345,7 @@ const ZoneweaverSettings = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Zoneweaver Settings - ZoneWeaver</title>
+        <title>Zoneweaver Settings - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='container is-fluid m-2'>
@@ -922,7 +922,7 @@ const ZoneweaverSettings = () => {
                       <input 
                         className='input'
                         type='email'
-                        placeholder='ZoneWeaver <noreply@yourdomain.com>'
+                        placeholder='Zoneweaver <noreply@yourdomain.com>'
                         value={settings.mailFromAddress}
                         onChange={(e) => handleSettingChange('mailFromAddress', e.target.value)}
                       />
@@ -1081,7 +1081,7 @@ const ZoneweaverSettings = () => {
             <div className='box mt-4'>
               <h2 className='title is-6'>Settings Information</h2>
               <div className='content is-size-7'>
-                <p><strong>Important:</strong> These settings affect the entire ZoneWeaver application for all users.</p>
+                <p><strong>Important:</strong> These settings affect the entire Zoneweaver application for all users.</p>
                 <ul>
                   <li>Changes require super-admin privileges and take effect immediately</li>
                   <li>Some settings may require users to refresh their browsers</li>

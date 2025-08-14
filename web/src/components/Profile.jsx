@@ -124,7 +124,7 @@ const Profile = () => {
     <div className="hero-body mainbody p-0 is-align-items-stretch">
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Profile - ZoneWeaver</title>
+        <title>Profile - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className="container is-fluid m-2">

@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../index.js';
 
 /**
- * Authentication controller for ZoneWeaver user management
+ * Authentication controller for Zoneweaver user management
  */
 class AuthController {
   /**

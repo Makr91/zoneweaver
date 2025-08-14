@@ -8,7 +8,7 @@ permalink: /docs/configuration/
 # Configuration Reference
 {: .no_toc }
 
-Complete reference for configuring the ZoneWeaver frontend using the configuration file.
+Complete reference for configuring the Zoneweaver frontend using the configuration file.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -30,7 +30,7 @@ The configuration uses YAML format with the following structure:
 
 ```yaml
 app:
-  name: "ZoneWeaver"
+  name: "Zoneweaver"
   version: "1.0.0"
   description: "Zone Hypervisor Management Interface"
 
@@ -51,7 +51,7 @@ mail:
   smtp_auth_user: ""
   smtp_auth_pass: ""
   from_email: "noreply@zoneweaver.local"
-  from_name: "ZoneWeaver"
+  from_name: "Zoneweaver"
 
 security:
   jwt_secret: "auto-generated-secret"
@@ -106,7 +106,7 @@ Basic application metadata and identification.
 
 ```yaml
 app:
-  name: "ZoneWeaver"
+  name: "Zoneweaver"
   version: "1.0.0" 
   description: "Zone Hypervisor Management Interface"
 ```
@@ -148,7 +148,7 @@ mail:
   smtp_auth_user: "zoneweaver@example.com"
   smtp_auth_pass: "password"
   from_email: "noreply@zoneweaver.example.com"
-  from_name: "ZoneWeaver System"
+  from_name: "Zoneweaver System"
 ```
 
 ### Security Configuration
@@ -208,7 +208,7 @@ cors:
 
 ### Backend Servers Configuration
 
-Settings for connecting to ZoneWeaver-API instances.
+Settings for connecting to Zoneweaver-API instances.
 
 ```yaml
 backend_servers:

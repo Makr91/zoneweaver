@@ -9,7 +9,7 @@ permalink: /docs/guides/installation/
 # Installation
 {: .no_toc }
 
-This guide covers different methods for installing and deploying ZoneWeaver frontend in various environments.
+This guide covers different methods for installing and deploying Zoneweaver frontend in various environments.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -47,7 +47,7 @@ For OmniOS systems, use the official package:
 # Update package repository
 pkg refresh
 
-# Install ZoneWeaver package
+# Install Zoneweaver package
 pkg install zoneweaver
 
 # Enable and start service
@@ -58,7 +58,7 @@ svcs zoneweaver
 ```
 
 Package installation includes:
-- ZoneWeaver application files
+- Zoneweaver application files
 - Configuration templates
 - SMF service manifest
 - Automatic dependency handling
@@ -142,7 +142,7 @@ server:
 
 # Application settings
 app:
-  name: ZoneWeaver
+  name: Zoneweaver
   version: 0.0.15
   frontend_url: https://localhost:3443
 
@@ -167,7 +167,7 @@ For testing and development:
 server:
   ssl:
     enabled: true
-    generate_ssl: true  # ZoneWeaver generates self-signed cert
+    generate_ssl: true  # Zoneweaver generates self-signed cert
 ```
 
 #### Production Certificates
@@ -233,7 +233,7 @@ Create service file `/etc/systemd/system/zoneweaver.service`:
 
 ```ini
 [Unit]
-Description=ZoneWeaver Frontend
+Description=Zoneweaver Frontend
 After=network.target
 
 [Service]
@@ -285,7 +285,7 @@ journalctl -u zoneweaver -f
 
 ## Database Setup
 
-ZoneWeaver uses SQLite for user/organization data:
+Zoneweaver uses SQLite for user/organization data:
 
 ### Automatic Setup
 
@@ -334,7 +334,7 @@ iptables-save > /etc/iptables/rules.v4
 ### Linux (firewalld)
 
 ```bash
-# Open port for ZoneWeaver
+# Open port for Zoneweaver
 firewall-cmd --permanent --add-port=3443/tcp
 firewall-cmd --reload
 ```

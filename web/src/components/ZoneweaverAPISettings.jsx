@@ -307,7 +307,7 @@ const ZoneweaverAPISettings = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Zoneweaver API Settings - ZoneWeaver</title>
+        <title>Zoneweaver API Settings - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <style>{`

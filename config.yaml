@@ -1,6 +1,6 @@
 ## Last Working Commit with old version of AUTH system handled by host
 app:
-  name: "ZoneWeaver"
+  name: "Zoneweaver"
   version: "0.0.1"
   frontend_url: "https://hv-04.home.m4kr.net"
 
@@ -14,7 +14,7 @@ mail:
     user: "your-email@gmail.com"  # Replace with your email
     password: "your-app-password"  # Replace with your app password
   smtp_settings:
-    from: "ZoneWeaver <noreply@yourdomain.com>"  # Replace with your from address
+    from: "Zoneweaver <noreply@yourdomain.com>"  # Replace with your from address
 
 server:
   hostname: "hv-04.home.m4kr.net"

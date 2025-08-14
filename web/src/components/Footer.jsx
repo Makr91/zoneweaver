@@ -120,7 +120,7 @@ const Footer = () => {
         <div className='level-item is-justify-content-flex-start'>
           <div className='pl-1'>
             <a href='https://STARTcloud.com'>
-              ZoneWeaver&#169; STARTcloud.com&#8482; {new Date().getFullYear()}
+              Zoneweaver&#169; STARTcloud.com&#8482; {new Date().getFullYear()}
             </a>
           </div>
         </div>

@@ -320,7 +320,7 @@ class ServerController {
    * /api/servers/{serverId}:
    *   delete:
    *     summary: Remove a Zoneweaver API Server
-   *     description: Remove a Zoneweaver API server from ZoneWeaver (Admin only)
+   *     description: Remove a Zoneweaver API server from Zoneweaver (Admin only)
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -792,7 +792,7 @@ class ServerController {
    *           text/css:
    *             schema:
    *               type: string
-   *               description: CSS stylesheets (scoped for ZoneWeaver)
+   *               description: CSS stylesheets (scoped for Zoneweaver)
    *           application/javascript:
    *             schema:
    *               type: string
@@ -823,7 +823,7 @@ class ServerController {
    *                 summary: Server not found
    *                 value:
    *                   success: false
-   *                   message: "Zoneweaver API Server hostname:port not found in ZoneWeaver configuration"
+   *                   message: "Zoneweaver API Server hostname:port not found in Zoneweaver configuration"
    *               assetNotFound:
    *                 summary: Asset not found
    *                 value:
@@ -852,7 +852,7 @@ class ServerController {
         console.error(`🔗 VNC Asset: Server not found - ${hostname}:${port}`);
         return res.status(404).json({
           success: false,
-          message: `Zoneweaver API Server ${hostname}:${port} not found in ZoneWeaver configuration`,
+          message: `Zoneweaver API Server ${hostname}:${port} not found in Zoneweaver configuration`,
           asset_path: vncPath
         });
       }
@@ -899,7 +899,7 @@ class ServerController {
         // Make authenticated request to Zoneweaver API
         const requestHeaders = {
           'Authorization': `Bearer ${server.api_key}`,
-          'User-Agent': 'ZoneWeaver-Proxy/1.0'
+          'User-Agent': 'Zoneweaver-Proxy/1.0'
         };
 
         // Forward relevant headers from original request
@@ -921,7 +921,7 @@ class ServerController {
           'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
           'Pragma': 'no-cache',
           'Expires': '0',
-          'X-Proxied-By': 'ZoneWeaver',
+          'X-Proxied-By': 'Zoneweaver',
           'X-Frame-Options': 'SAMEORIGIN'
         });
 
@@ -947,7 +947,7 @@ class ServerController {
             'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0',
-            'X-Proxied-By': 'ZoneWeaver-Iframe',
+            'X-Proxied-By': 'Zoneweaver-Iframe',
             'X-Frame-Options': 'SAMEORIGIN'
           });
 
@@ -992,7 +992,7 @@ class ServerController {
               'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
               'Pragma': 'no-cache',
               'Expires': '0',
-              'X-Proxied-By': 'ZoneWeaver',
+              'X-Proxied-By': 'Zoneweaver',
               'Content-Length': Buffer.byteLength(scopedCss)
             });
             
@@ -1062,7 +1062,7 @@ class ServerController {
    * /api/servers/{serverAddress}/zones/{zoneName}/vnc/console:
    *   get:
    *     summary: Access VNC console for zone
-   *     description: Proxy to Zoneweaver API VNC console with URL rewriting for seamless integration in ZoneWeaver
+   *     description: Proxy to Zoneweaver API VNC console with URL rewriting for seamless integration in Zoneweaver
    *     tags: [VNC Console]
    *     security:
    *       - JwtAuth: []
@@ -1103,7 +1103,7 @@ class ServerController {
    *           text/html:
    *             schema:
    *               type: string
-   *               description: noVNC client HTML with rewritten URLs for ZoneWeaver integration
+   *               description: noVNC client HTML with rewritten URLs for Zoneweaver integration
    *       401:
    *         description: Not authenticated (optional auth for iframe compatibility)
    *         content:
@@ -1121,7 +1121,7 @@ class ServerController {
    *             examples:
    *               serverNotFound:
    *                 summary: Server not found
-   *                 value: '<html><body><h2>Server Not Found</h2><p>Zoneweaver API Server not found in ZoneWeaver configuration.</p></body></html>'
+   *                 value: '<html><body><h2>Server Not Found</h2><p>Zoneweaver API Server not found in Zoneweaver configuration.</p></body></html>'
    *               configError:
    *                 summary: Configuration error
    *                 value: '<html><body><h2>Configuration Error</h2><p>No API key configured for Zoneweaver API Server</p></body></html>'
@@ -1149,8 +1149,8 @@ class ServerController {
           <html>
             <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
               <h2 style="color: #e74c3c;">Server Not Found</h2>
-              <p>Zoneweaver API Server ${hostname}:${port} not found in ZoneWeaver configuration.</p>
-              <p style="color: #7f8c8d; font-size: 0.9em;">Please add this server in ZoneWeaver settings.</p>
+              <p>Zoneweaver API Server ${hostname}:${port} not found in Zoneweaver configuration.</p>
+              <p style="color: #7f8c8d; font-size: 0.9em;">Please add this server in Zoneweaver settings.</p>
             </body>
           </html>
         `);
@@ -1164,7 +1164,7 @@ class ServerController {
               <h2 style="color: #e74c3c;">Configuration Error</h2>
               <p>No API key configured for Zoneweaver API Server ${hostname}:${port}</p>
               <p style="color: #7f8c8d; font-size: 0.9em;">
-                Please check the server configuration in ZoneWeaver settings.
+                Please check the server configuration in Zoneweaver settings.
               </p>
             </body>
           </html>
@@ -1191,7 +1191,7 @@ class ServerController {
         // Make authenticated request to Zoneweaver API
         const requestHeaders = {
           'Authorization': `Bearer ${server.api_key}`,
-          'User-Agent': 'ZoneWeaver-Proxy/1.0',
+          'User-Agent': 'Zoneweaver-Proxy/1.0',
           'Accept': req.headers.accept || '*/*'
         };
         
@@ -1233,7 +1233,7 @@ class ServerController {
             'Pragma': 'no-cache',
             'Expires': '0',
             'X-Frame-Options': 'SAMEORIGIN',
-            'X-Proxied-By': 'ZoneWeaver-Iframe'
+            'X-Proxied-By': 'Zoneweaver-Iframe'
           });
 
           // Forward other headers except caching ones
@@ -1318,7 +1318,7 @@ class ServerController {
               'Pragma': 'no-cache',
               'Expires': '0',
               'X-Frame-Options': 'SAMEORIGIN',
-              'X-Proxied-By': 'ZoneWeaver',
+              'X-Proxied-By': 'Zoneweaver',
               'Content-Length': Buffer.byteLength(rewrittenContent),
               // Content Security Policy to block direct backend access
               'Content-Security-Policy': `connect-src 'self' ${wsProtocol}://${frontendHost}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';`
@@ -1340,7 +1340,7 @@ class ServerController {
             'Pragma': 'no-cache',
             'Expires': '0',
             'X-Frame-Options': 'SAMEORIGIN',
-            'X-Proxied-By': 'ZoneWeaver'
+            'X-Proxied-By': 'Zoneweaver'
           });
 
           // Forward other headers except caching ones

@@ -218,12 +218,12 @@ const Dashboard = () => {
       <div className='hero-body mainbody p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>Infrastructure Overview - ZoneWeaver</title>
+          <title>Infrastructure Overview - Zoneweaver</title>
           <link rel='canonical' href={window.location.origin} />
         </Helmet>
         <div className='container p-6'>
           <div className='notification is-info'>
-            <h2 className='title is-4'>Welcome to ZoneWeaver</h2>
+            <h2 className='title is-4'>Welcome to Zoneweaver</h2>
             <p className='mb-4'>Get started by adding your first Zoneweaver API Server to begin managing your infrastructure.</p>
             <button 
               onClick={navigateToServerRegister}
@@ -246,7 +246,7 @@ const Dashboard = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Infrastructure Overview - ZoneWeaver</title>
+        <title>Infrastructure Overview - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
 

@@ -40,8 +40,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'images/*.png', 'images/*.svg'],
       manifest: {
-        name: 'ZoneWeaver',
-        short_name: 'ZoneWeaver',
+        name: 'Zoneweaver',
+        short_name: 'Zoneweaver',
         description: 'Server and Zone Management System',
         theme_color: '#ffffff',
         start_url: '/ui/',

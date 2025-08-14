@@ -9,7 +9,7 @@ permalink: /docs/api/
 # API Reference
 {: .no_toc }
 
-The ZoneWeaver Frontend API provides comprehensive RESTful endpoints for user management, organization control, and server configuration. This API handles authentication, authorization, and configuration management for the ZoneWeaver web interface.
+The Zoneweaver Frontend API provides comprehensive RESTful endpoints for user management, organization control, and server configuration. This API handles authentication, authorization, and configuration management for the Zoneweaver web interface.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -31,14 +31,14 @@ See the [Authentication Guide](../guides/authentication/) for detailed setup ins
 
 ## Base URL
 
-The API is served from your ZoneWeaver frontend server:
+The API is served from your Zoneweaver frontend server:
 
 - **HTTPS (Recommended)**: `https://your-server:3443`
 - **HTTP**: `http://your-server:3443`
 
 ## OpenAPI Specification
 
-The ZoneWeaver Frontend API is fully documented using OpenAPI 3.0 specification.
+The Zoneweaver Frontend API is fully documented using OpenAPI 3.0 specification.
 
 ### Interactive Documentation
 
@@ -47,7 +47,7 @@ The ZoneWeaver Frontend API is fully documented using OpenAPI 3.0 specification.
 
 ### API Categories
 
-The ZoneWeaver Frontend API is organized into the following categories:
+The Zoneweaver Frontend API is organized into the following categories:
 
 #### Authentication & Authorization
 - User registration and login
@@ -121,5 +121,5 @@ Successful responses follow this format:
 
 ## Related APIs
 
-- **[ZoneWeaver-API](https://zoneweaver-api.startcloud.com/)** - Zone management and hypervisor control
-- **[ZoneWeaver-API Reference](https://zoneweaver-api.startcloud.com/docs/api/)** - Backend API documentation
+- **[Zoneweaver-API](https://zoneweaver-api.startcloud.com/)** - Zone management and hypervisor control
+- **[Zoneweaver-API Reference](https://zoneweaver-api.startcloud.com/docs/api/)** - Backend API documentation

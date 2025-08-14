@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
 /**
- * Authentication context for ZoneWeaver local user management
+ * Authentication context for Zoneweaver local user management
  */
 const AuthContext = createContext();
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# ZoneWeaver startup script for SMF
+# Zoneweaver startup script for SMF
 #
 
 set -e
@@ -42,7 +42,7 @@ fi
 
 # Check if main application file exists
 if [ ! -f "/opt/zoneweaver/index.js" ]; then
-    echo "Error: ZoneWeaver application not found at /opt/zoneweaver/index.js" >&2
+    echo "Error: Zoneweaver application not found at /opt/zoneweaver/index.js" >&2
     exit 1
 fi
 
@@ -58,12 +58,12 @@ if [ -f "$PIDFILE" ]; then
         echo "Removing stale PID file $PIDFILE"
         rm -f "$PIDFILE"
     else
-        echo "Error: ZoneWeaver appears to be already running (PID $(cat "$PIDFILE"))" >&2
+        echo "Error: Zoneweaver appears to be already running (PID $(cat "$PIDFILE"))" >&2
         exit 1
     fi
 fi
 
-echo "Starting ZoneWeaver Zone Hypervisor Management Interface..."
+echo "Starting Zoneweaver Zone Hypervisor Management Interface..."
 echo "Node.js version: $(node --version)"
 echo "Configuration: $CONFIG_PATH"
 echo "Environment: $NODE_ENV"
@@ -79,12 +79,12 @@ echo $NODE_PID > "$PIDFILE"
 # Give it a moment to start and check if it's still running
 sleep 2
 if ! kill -0 $NODE_PID 2>/dev/null; then
-    echo "Error: ZoneWeaver failed to start" >&2
+    echo "Error: Zoneweaver failed to start" >&2
     rm -f "$PIDFILE"
     exit 1
 fi
 
-echo "ZoneWeaver started successfully with PID $NODE_PID"
+echo "Zoneweaver started successfully with PID $NODE_PID"
 echo "Log output will be available via SMF logging"
 echo "Access the web interface at https://localhost:3443"
 

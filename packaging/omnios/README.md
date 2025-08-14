@@ -1,13 +1,13 @@
-# Building ZoneWeaver OmniOS IPS Packages
+# Building Zoneweaver OmniOS IPS Packages
 
-Production-ready OmniOS IPS package build process for ZoneWeaver.
+Production-ready OmniOS IPS package build process for Zoneweaver.
 
 ## Build Methods
 
-There are two approaches for building ZoneWeaver OmniOS packages:
+There are two approaches for building Zoneweaver OmniOS packages:
 
 ### Method 1: OmniOS Build Framework (Recommended)
-If you're using the OmniOS build framework (omniosorg/omnios-build), place the ZoneWeaver source in the build tree and use the provided `build.sh` script.
+If you're using the OmniOS build framework (omniosorg/omnios-build), place the Zoneweaver source in the build tree and use the provided `build.sh` script.
 
 ### Method 2: Manual Build Process
 Traditional manual building using direct IPS commands.
@@ -35,12 +35,12 @@ If you're using the OmniOS build framework, follow these steps:
 
 ### Setup in Build Tree
 ```bash
-# Place ZoneWeaver in your build tree (example path)
+# Place Zoneweaver in your build tree (example path)
 cd /path/to/omnios-build/build
 mkdir zoneweaver
 cd zoneweaver
 
-# Copy ZoneWeaver source
+# Copy Zoneweaver source
 cp -r /path/to/zoneweaver-source/* .
 
 # The build.sh script expects these files:
@@ -281,7 +281,7 @@ The package version is automatically synchronized with the main `package.json` v
 
 ## Default Access
 
-After installation, ZoneWeaver will be available at:
+After installation, Zoneweaver will be available at:
 - **HTTPS:** `https://localhost:3443` (default)
 - **Configuration:** `/etc/zoneweaver/config.yaml`
 

@@ -1,7 +1,7 @@
 import { calculateNetworkBandwidth } from '../../utils';
 
 /**
- * Auto-map network topology from existing ZoneWeaver data sources
+ * Auto-map network topology from existing Zoneweaver data sources
  * Transforms the complex OmniOS networking data into React Flow format
  */
 export const autoMapTopology = ({

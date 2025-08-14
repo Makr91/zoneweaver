@@ -1,5 +1,5 @@
 [Unit]
-Description=ZoneWeaver Zone Hypervisor Management Interface
+Description=Zoneweaver Zone Hypervisor Management Interface
 After=network.target
 Wants=network.target
 

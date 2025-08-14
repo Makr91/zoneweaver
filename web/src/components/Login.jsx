@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Helmet } from "react-helmet-async";
 
 /**
- * Login component for ZoneWeaver authentication
+ * Login component for Zoneweaver authentication
  * @returns {JSX.Element} Login component
  */
 const Login = () => {
@@ -66,7 +66,7 @@ const Login = () => {
     <section className='hero is-fullheight is-fullwidth'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Login - ZoneWeaver</title>
+        <title>Login - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='hero-body'>
@@ -74,7 +74,7 @@ const Login = () => {
           <div className='columns is-centered'>
             <div className='column is-4-desktop'>
               <form onSubmit={handleLogin} className='box has-text-centered'>
-                <p className='is-size-1'>ZoneWeaver {__APP_VERSION__ || '1.0.0'}</p>
+                <p className='is-size-1'>Zoneweaver {__APP_VERSION__ || '1.0.0'}</p>
                 <figure className='image container my-1 py-1 is-256x256'>
                   <Logo />
                 </figure>
@@ -131,7 +131,7 @@ const Login = () => {
                   </p>
                 </div>
                 <div className='has-text-centered mt-3'>
-                  <a href='https://github.com/Makr91/ZoneWeaver' className='has-text-grey'>
+                  <a href='https://github.com/Makr91/Zoneweaver' className='has-text-grey'>
                     Documentation
                   </a>
                 </div>

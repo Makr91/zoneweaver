@@ -461,7 +461,7 @@ const Accounts = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>User Management - ZoneWeaver</title>
+        <title>User Management - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='container is-fluid m-2'>

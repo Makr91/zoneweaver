@@ -70,7 +70,7 @@ const Organizations = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Organization Management - ZoneWeaver</title>
+        <title>Organization Management - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='container is-fluid m-2'>

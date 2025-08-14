@@ -8,7 +8,7 @@ permalink: /docs/license/
 # License
 {: .no_toc }
 
-Licensing information for ZoneWeaver frontend.
+Licensing information for Zoneweaver frontend.
 
 ## Table of contents
 {: .no_toc .text-delta }

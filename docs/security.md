@@ -8,7 +8,7 @@ permalink: /docs/security/
 # Security
 {: .no_toc }
 
-Security policies and vulnerability reporting for ZoneWeaver frontend.
+Security policies and vulnerability reporting for Zoneweaver frontend.
 
 ## Table of contents
 {: .no_toc .text-delta }

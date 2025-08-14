@@ -5,7 +5,7 @@ import { Helmet } from "react-helmet-async";
 import axios from "axios";
 
 /**
- * Register component for ZoneWeaver user registration with organization support
+ * Register component for Zoneweaver user registration with organization support
  * @returns {JSX.Element} Register component
  */
 const Register = () => {
@@ -153,7 +153,7 @@ const Register = () => {
       <section className='hero is-fullheight is-fullwidth'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>Register - ZoneWeaver</title>
+          <title>Register - Zoneweaver</title>
           <link rel='canonical' href={window.location.origin} />
         </Helmet>
         <div className='hero-body'>
@@ -176,7 +176,7 @@ const Register = () => {
     <section className='hero is-fullheight is-fullwidth'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Register - ZoneWeaver</title>
+        <title>Register - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='hero-body'>
@@ -338,7 +338,7 @@ const Register = () => {
                     <div className='content is-size-7 has-text-left mt-2 p-3 '>
                       {needsSetup ? (
                         <>
-                          <p><strong>Setting up ZoneWeaver:</strong></p>
+                          <p><strong>Setting up Zoneweaver:</strong></p>
                           <ul>
                             <li>This is the initial system setup</li>
                             <li>Your account will have super admin privileges</li>

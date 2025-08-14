@@ -9,7 +9,7 @@ permalink: /docs/guides/backend-integration/
 # Backend Integration
 {: .no_toc }
 
-This guide covers connecting ZoneWeaver frontend to ZoneWeaver-API backend servers for zone management functionality.
+This guide covers connecting Zoneweaver frontend to Zoneweaver-API backend servers for zone management functionality.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -19,15 +19,15 @@ This guide covers connecting ZoneWeaver frontend to ZoneWeaver-API backend serve
 
 ---
 
-## ZoneWeaver-API Backend Overview
+## Zoneweaver-API Backend Overview
 
-The ZoneWeaver-API backend provides the core zone management functionality that the ZoneWeaver frontend connects to. Each frontend can connect to multiple backend servers for managing different hosts or environments.
+The Zoneweaver-API backend provides the core zone management functionality that the Zoneweaver frontend connects to. Each frontend can connect to multiple backend servers for managing different hosts or environments.
 
 ### Architecture
 
 ```mermaid
 graph TD
-    A[ZoneWeaver Frontend] --> B[Frontend API<br/>User/Org Management];
+    A[Zoneweaver Frontend] --> B[Frontend API<br/>User/Org Management];
     A --> C[Zoneweaver API 1<br/>Production Host];
     A --> D[Zoneweaver API 2<br/>Development Host];
     A --> E[Zoneweaver API N<br/>Other Hosts];
@@ -94,7 +94,7 @@ On your Zoneweaver API server:
    ```bash
    curl -X POST http://zoneweaver-api:5000/api/bootstrap \
      -H "Content-Type: application/json" \
-     -d '{"entity_name": "ZoneWeaver Frontend"}'
+     -d '{"entity_name": "Zoneweaver Frontend"}'
    ```
 
 2. **Admin Interface** (if available):
@@ -119,7 +119,7 @@ Always starts with `wh_` prefix followed by 32-character hex string.
 
 ### Built-in Connection Test
 
-1. Go to Settings → Servers in ZoneWeaver
+1. Go to Settings → Servers in Zoneweaver
 2. Find your server and click "Test Connection"
 3. Review test results:
    - ✅ **Success**: Connection working
@@ -168,7 +168,7 @@ Expected responses:
 
 ### Server Status Monitoring
 
-ZoneWeaver monitors server status:
+Zoneweaver monitors server status:
 - **Green**: Server responding normally
 - **Yellow**: Connection issues or slow response
 - **Red**: Server unavailable or authentication failed

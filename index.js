@@ -131,7 +131,7 @@ app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   swaggerUi.setup(dynamicSpecs, {
     explorer: true,
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'ZoneWeaver API Documentation',
+    customSiteTitle: 'Zoneweaver API Documentation',
     swaggerOptions: {
       url: `${protocol}://${host}/api-docs/swagger.json`
     }
@@ -229,7 +229,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
       const backendWs = new WebSocket(backendUrl, {
         headers: {
           'Authorization': `Bearer ${server.api_key}`,
-          'User-Agent': 'ZoneWeaver-Proxy/1.0'
+          'User-Agent': 'Zoneweaver-Proxy/1.0'
         }
       });
 
@@ -307,7 +307,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
       const backendWs = new WebSocket(backendUrl, {
         headers: {
           'Authorization': `Bearer ${server.api_key}`,
-          'User-Agent': 'ZoneWeaver-Proxy/1.0'
+          'User-Agent': 'Zoneweaver-Proxy/1.0'
         }
       });
 
@@ -438,7 +438,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
     const backendWs = new WebSocket(backendUrl, ['binary'], {
       headers: {
         'Authorization': `Bearer ${server.api_key}`,
-        'User-Agent': 'ZoneWeaver-Proxy/1.0'
+        'User-Agent': 'Zoneweaver-Proxy/1.0'
       },
       // Disable all extensions to prevent frame issues  
       perMessageDeflate: false,
@@ -542,7 +542,7 @@ async function generateSSLCertificatesIfNeeded() {
     }
 
     // Generate SSL certificate using OpenSSL
-    const opensslCmd = `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -subj "/C=US/ST=State/L=City/O=ZoneWeaver/CN=localhost"`;
+    const opensslCmd = `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -subj "/C=US/ST=State/L=City/O=Zoneweaver/CN=localhost"`;
     
     execSync(opensslCmd, { stdio: 'pipe' });
     

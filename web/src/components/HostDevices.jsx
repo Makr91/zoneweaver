@@ -40,7 +40,7 @@ const HostDevices = () => {
             <div className='hero-body mainbody p-0 is-align-items-stretch'>
                 <Helmet>
                     <meta charSet='utf-8' />
-                    <title>Device Monitoring - ZoneWeaver</title>
+                    <title>Device Monitoring - Zoneweaver</title>
                     <link rel='canonical' href={window.location.origin} />
                 </Helmet>
                 <div className='container is-fluid m-2'>
@@ -67,7 +67,7 @@ const HostDevices = () => {
             <div className='hero-body mainbody p-0 is-align-items-stretch'>
                 <Helmet>
                     <meta charSet='utf-8' />
-                    <title>Device Monitoring - ZoneWeaver</title>
+                    <title>Device Monitoring - Zoneweaver</title>
                     <link rel='canonical' href={window.location.origin} />
                 </Helmet>
                 <div className='container is-fluid m-2'>
@@ -103,7 +103,7 @@ const HostDevices = () => {
         <div className='hero-body mainbody p-0 is-align-items-stretch'>
             <Helmet>
                 <meta charSet='utf-8' />
-                <title>Device Monitoring - ZoneWeaver</title>
+                <title>Device Monitoring - Zoneweaver</title>
                 <link rel='canonical' href={window.location.origin} />
             </Helmet>
             <div className='container is-fluid m-2'>

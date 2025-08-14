@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="assets/images/logo192.png" alt="ZoneWeaver API Logo" width="25%">
+  <img src="assets/images/logo192.png" alt="Zoneweaver API Logo" width="25%">
 </p>
 
-# ZoneWeaver
+# Zoneweaver
 
-ZoneWeaver - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via Zoneweaver API.
+Zoneweaver - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via Zoneweaver API.
 
 ## Platform Requirements
 
 ### OmniOS/Illumos
-ZoneWeaver requires a C++ compiler to build native dependencies (bcrypt). Install the required packages:
+Zoneweaver requires a C++ compiler to build native dependencies (bcrypt). Install the required packages:
 
 ```bash
 # Install GCC 14 compiler

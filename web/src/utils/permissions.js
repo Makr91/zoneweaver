@@ -1,4 +1,4 @@
-// Permission utility functions for ZoneWeaver application
+// Permission utility functions for Zoneweaver application
 
 // Permission levels (higher number = more permissions)
 export const PERMISSION_LEVELS = {

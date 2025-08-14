@@ -20,7 +20,7 @@ const HostManage = () => {
       <div className='hero-body mainbody p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>Access Denied - ZoneWeaver</title>
+          <title>Access Denied - Zoneweaver</title>
         </Helmet>
         <div className='container is-fluid m-2'>
           <div className='notification is-danger'>
@@ -37,7 +37,7 @@ const HostManage = () => {
       <div className='hero-body mainbody p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>No Server Selected - ZoneWeaver</title>
+          <title>No Server Selected - Zoneweaver</title>
         </Helmet>
         <div className='container is-fluid m-2'>
           <div className='box p-0'>
@@ -69,7 +69,7 @@ const HostManage = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>{`Manage ${currentServer.hostname} - ZoneWeaver`}</title>
+        <title>{`Manage ${currentServer.hostname} - Zoneweaver`}</title>
       </Helmet>
       <div className='container is-fluid m-2'>
         <div className='box p-0'>

@@ -53,7 +53,7 @@ const Landing = () => {
       <section className='hero is-fullheight is-fullwidth'>
         <Helmet>
           <meta charSet='utf-8' />
-          <title>ZoneWeaver - Loading</title>
+          <title>Zoneweaver - Loading</title>
           <link rel='canonical' href={window.location.origin} />
         </Helmet>
         <div className='hero-body'>
@@ -73,12 +73,12 @@ const Landing = () => {
     <section className='hero is-fullheight is-fullwidth'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>ZoneWeaver</title>
+        <title>Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='hero-body'>
         <div className='container has-text-centered'>
-          <h1 className='title is-1'>Welcome to ZoneWeaver</h1>
+          <h1 className='title is-1'>Welcome to Zoneweaver</h1>
           <p className='subtitle'>Zone Management Made Simple</p>
           
           {setupStatus && (

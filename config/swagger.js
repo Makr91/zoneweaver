@@ -5,15 +5,15 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'ZoneWeaver API',
+      title: 'Zoneweaver API',
       version: '0.0.1',
-      description: 'API for ZoneWeaver - Web management interface for Bhyve virtual machines via Zoneweaver API',
+      description: 'API for Zoneweaver - Web management interface for Bhyve virtual machines via Zoneweaver API',
       license: {
         name: 'GPL-3.0',
         url: 'https://www.gnu.org/licenses/gpl-3.0.html',
       },
       contact: {
-        name: 'ZoneWeaver Project',
+        name: 'Zoneweaver Project',
         url: 'https://github.com/Makr91/zoneweaver',
       },
     },

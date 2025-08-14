@@ -12,7 +12,7 @@ const ServerSetup = () => {
   const [hostname, setHostname] = useState('');
   const [port, setPort] = useState('5001');
   const [protocol, setProtocol] = useState('https');
-  const [entityName, setEntityName] = useState('ZoneWeaver-Production');
+  const [entityName, setEntityName] = useState('Zoneweaver-Production');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -122,7 +122,7 @@ const ServerSetup = () => {
     <section className='hero is-fullheight is-fullwidth'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Server Setup - ZoneWeaver</title>
+        <title>Server Setup - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <div className='hero-body'>
@@ -208,13 +208,13 @@ const ServerSetup = () => {
                     <input 
                       type='text' 
                       className='input' 
-                      placeholder='ZoneWeaver-Production' 
+                      placeholder='Zoneweaver-Production' 
                       value={entityName} 
                       onChange={(e) => setEntityName(e.target.value)}
                       disabled={loading}
                     />
                   </div>
-                  <p className='help'>This name will identify this ZoneWeaver instance on the Zoneweaver API Server</p>
+                  <p className='help'>This name will identify this Zoneweaver instance on the Zoneweaver API Server</p>
                 </div>
 
                 <div className='field is-grouped'>

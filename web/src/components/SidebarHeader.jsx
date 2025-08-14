@@ -33,7 +33,7 @@ const SidebarHeader = () => {
           <span className='icon'>
             <i className='icon-zoneweaver-logo'></i>
           </span>
-          <span>ZoneWeaver</span>
+          <span>Zoneweaver</span>
           <span className='icon'>
             <i className='fa fa-angle-left'></i>
           </span>
@@ -46,7 +46,7 @@ const SidebarHeader = () => {
           <span className='icon'>
             <i className='icon-zoneweaver-logo'></i>
           </span>
-          <span>ZoneWeaver v{__APP_VERSION__ || '1.0.0'}</span>
+          <span>Zoneweaver v{__APP_VERSION__ || '1.0.0'}</span>
           <span className='icon'>
             <i className='fa fa-angle-left'></i>
           </span>

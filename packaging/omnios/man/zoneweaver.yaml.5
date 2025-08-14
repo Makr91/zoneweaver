@@ -3,11 +3,11 @@
 .Os
 .Sh NAME
 .Nm zoneweaver.yaml
-.Nd configuration file for ZoneWeaver frontend web interface
+.Nd configuration file for Zoneweaver frontend web interface
 .Sh DESCRIPTION
 The
 .Nm
-file is the main configuration file for the ZoneWeaver frontend web interface.
+file is the main configuration file for the Zoneweaver frontend web interface.
 It is written in YAML format and controls all aspects of the service
 operation including network settings, user authentication, organization
 management, email configuration, and Zoneweaver API integration.
@@ -21,7 +21,7 @@ different aspects of the frontend service operation.
 Basic application identification and settings.
 .Bl -tag -width "frontend_url"
 .It Cm name
-String specifying the application name (default: "ZoneWeaver")
+String specifying the application name (default: "Zoneweaver")
 .It Cm version
 String specifying the application version (e.g., "0.0.15")
 .It Cm frontend_url
@@ -77,7 +77,7 @@ SMTP password or application-specific password
 Email message settings:
 .Bl -tag -width "from" -offset indent
 .It Cm from
-From address for outgoing emails (e.g., "ZoneWeaver <noreply@example.com>")
+From address for outgoing emails (e.g., "Zoneweaver <noreply@example.com>")
 .El
 .El
 .Ss security
@@ -181,7 +181,7 @@ Log file directory
 Minimal configuration for testing:
 .Bd -literal -offset indent
 app:
-  name: ZoneWeaver
+  name: Zoneweaver
   version: 0.0.15
 .\" x-release-please-version
   frontend_url: https://localhost:3443
@@ -205,7 +205,7 @@ database:
 Production configuration with email and security hardening:
 .Bd -literal -offset indent
 app:
-  name: ZoneWeaver
+  name: Zoneweaver
   version: 0.0.15
 .\" x-release-please-version
   frontend_url: https://zoneweaver.example.com
@@ -229,7 +229,7 @@ mail:
     user: "noreply@example.com"
     password: "smtp-app-password"
   smtp_settings:
-    from: "ZoneWeaver <noreply@example.com>"
+    from: "Zoneweaver <noreply@example.com>"
 
 security:
   jwt_secret: "very-long-secure-random-string-here"

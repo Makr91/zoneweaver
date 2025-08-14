@@ -30,6 +30,7 @@ set -e
 # Simple logging functions
 logmsg() { echo "=== $*"; }
 logcmd() { echo ">>> $*"; "$@"; }
+logerr() { echo "ERROR: $*" >&2; }
 
 # Set up variables
 SRCDIR="$(pwd)"
@@ -64,7 +65,7 @@ mkdir -p "$DESTDIR"
 # /var/log/zoneweaver/
 
 build_app() {
-    logmsg "Building ZoneWeaver frontend"
+    logmsg "Building Zoneweaver frontend"
     
     # Set up environment for OmniOS/Solaris
     export MAKE=gmake
@@ -95,7 +96,7 @@ install_app() {
     pushd opt/zoneweaver >/dev/null
 
     # Copy application files
-    logmsg "Installing ZoneWeaver application files"
+    logmsg "Installing Zoneweaver application files"
     logcmd cp $SRCDIR/index.js .
     logcmd cp $SRCDIR/package.json .
     logcmd cp $SRCDIR/LICENSE.md .
@@ -139,11 +140,19 @@ install_app() {
     logcmd mkdir -p lib/svc/manifest/system
     logcmd cp $SRCDIR/packaging/omnios/zoneweaver-smf.xml lib/svc/manifest/system/zoneweaver.xml
 
+    # Install man pages in standard OOCE location
+    logmsg "Installing man pages"
+    logcmd mkdir -p opt/ooce/share/man/man8 opt/ooce/share/man/man5
+    logcmd cp $SRCDIR/packaging/omnios/man/zoneweaver.8 opt/ooce/share/man/man8/ || \
+        logerr "--- copying main man page failed"
+    logcmd cp $SRCDIR/packaging/omnios/man/zoneweaver.yaml.5 opt/ooce/share/man/man5/ || \
+        logerr "--- copying config man page failed"
+
     popd >/dev/null # $DESTDIR
 }
 
 post_install() {
-    logmsg "--- Setting up ZoneWeaver staging directory"
+    logmsg "--- Setting up Zoneweaver staging directory"
     
     pushd $DESTDIR >/dev/null
     
@@ -155,11 +164,11 @@ post_install() {
 
     popd >/dev/null
     
-    logmsg "ZoneWeaver staging setup completed"
+    logmsg "Zoneweaver staging setup completed"
 }
 
 # Main build process
-logmsg "Starting ZoneWeaver build process"
+logmsg "Starting Zoneweaver build process"
 build_app
 install_app
 post_install

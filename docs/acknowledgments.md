@@ -8,7 +8,7 @@ permalink: /docs/acknowledgments/
 # Acknowledgments
 {: .no_toc }
 
-Acknowledgments and credits for ZoneWeaver frontend.
+Acknowledgments and credits for Zoneweaver frontend.
 
 ## Table of contents
 {: .no_toc .text-delta }

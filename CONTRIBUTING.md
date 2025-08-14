@@ -1,10 +1,10 @@
-# Contributing to ZoneWeaver
+# Contributing to Zoneweaver
 
-Thank you for your interest in contributing to ZoneWeaver! We welcome contributions from the community as they are essential for the project's continued growth and development.
+Thank you for your interest in contributing to Zoneweaver! We welcome contributions from the community as they are essential for the project's continued growth and development.
 
 ## Important Note on Resources
 
-ZoneWeaver is maintained with limited development resources. **Community contributions directly impact the pace of feature development and bug fixes.** The more the community contributes, the faster the project can grow and improve.
+Zoneweaver is maintained with limited development resources. **Community contributions directly impact the pace of feature development and bug fixes.** The more the community contributes, the faster the project can grow and improve.
 
 ## How to Contribute
 
@@ -87,8 +87,8 @@ Please note that this project follows our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-By contributing to ZoneWeaver, you agree that your contributions will be licensed under the [GPL-3.0 License](LICENSE.md).
+By contributing to Zoneweaver, you agree that your contributions will be licensed under the [GPL-3.0 License](LICENSE.md).
 
 ---
 
-**Remember**: Your contributions directly influence the project's development speed and capabilities. Thank you for helping make ZoneWeaver better for everyone!
+**Remember**: Your contributions directly influence the project's development speed and capabilities. Thank you for helping make Zoneweaver better for everyone!

@@ -9,7 +9,7 @@ permalink: /docs/guides/authentication/
 # Authentication
 {: .no_toc }
 
-This guide covers setting up user authentication, managing organizations, and configuring security settings in ZoneWeaver frontend.
+This guide covers setting up user authentication, managing organizations, and configuring security settings in Zoneweaver frontend.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -21,7 +21,7 @@ This guide covers setting up user authentication, managing organizations, and co
 
 ## JWT Authentication
 
-ZoneWeaver uses JSON Web Tokens (JWT) for authentication. All API requests must include a valid JWT token in the Authorization header.
+Zoneweaver uses JSON Web Tokens (JWT) for authentication. All API requests must include a valid JWT token in the Authorization header.
 
 ### Token Format
 
@@ -91,7 +91,7 @@ mail:
     user: "noreply@company.com"
     password: "smtp-password"
   smtp_settings:
-    from: "ZoneWeaver <noreply@company.com>"
+    from: "Zoneweaver <noreply@company.com>"
 ```
 
 1. Go to Settings → Users
@@ -209,7 +209,7 @@ curl -X GET https://your-server:3443/api/user/profile \
 
 **Organization Creation Disabled**
 - Set `allow_new_organizations: true` in config
-- Restart ZoneWeaver service
+- Restart Zoneweaver service
 
 **Email Invitation Failed**
 - Check SMTP configuration

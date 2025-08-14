@@ -1,7 +1,7 @@
 {
-  "short_name": "ZoneWeaver",
-  "name": "ZoneWeaver",
-  "description": "Client Side Code using Vite, faciliates communication with the ZoneWeaver Backend",
+  "short_name": "Zoneweaver",
+  "name": "Zoneweaver",
+  "description": "Client Side Code using Vite, faciliates communication with the Zoneweaver Backend",
   "icons": [
     {
       "src": "favicon.ico",

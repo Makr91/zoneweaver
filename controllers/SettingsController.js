@@ -6,7 +6,7 @@ import { loadConfig, getConfigFilePath } from '../utils/config.js';
 import ServerModel from '../models/ServerModel.js';
 
 /**
- * Settings Controller - Manages ZoneWeaver system settings
+ * Settings Controller - Manages Zoneweaver system settings
  * Only accessible by super-admin users
  */
 class SettingsController {
@@ -31,7 +31,7 @@ class SettingsController {
    * @swagger
    * /api/settings:
    *   get:
-   *     summary: Get ZoneWeaver system settings (Super-admin only)
+   *     summary: Get Zoneweaver system settings (Super-admin only)
    *     description: Retrieve current system configuration settings from config.yaml
    *     tags: [System Settings]
    *     security:
@@ -52,7 +52,7 @@ class SettingsController {
    *                   properties:
    *                     appName:
    *                       type: string
-   *                       example: "ZoneWeaver"
+   *                       example: "Zoneweaver"
    *                     appVersion:
    *                       type: string
    *                       example: "2.0.0"
@@ -157,7 +157,7 @@ class SettingsController {
       
       // Extract frontend-relevant settings
       const settings = {
-        appName: config.app?.name || "ZoneWeaver",
+        appName: config.app?.name || "Zoneweaver",
         appVersion: config.app?.version || "2.0.0",
         maxServersPerUser: config.limits?.maxServersPerUser || 10,
         autoRefreshInterval: config.frontend?.autoRefreshInterval || 5,
@@ -201,7 +201,7 @@ class SettingsController {
    * @swagger
    * /api/settings:
    *   put:
-   *     summary: Update ZoneWeaver system settings (Super-admin only)
+   *     summary: Update Zoneweaver system settings (Super-admin only)
    *     description: Update system configuration settings and save to config.yaml
    *     tags: [System Settings]
    *     security:
@@ -215,7 +215,7 @@ class SettingsController {
    *             properties:
    *               appName:
    *                 type: string
-   *                 example: "ZoneWeaver"
+   *                 example: "Zoneweaver"
    *               appVersion:
    *                 type: string
    *                 example: "2.0.0"
@@ -435,7 +435,7 @@ class SettingsController {
    * /api/settings/reset:
    *   post:
    *     summary: Reset system settings to defaults (Super-admin only)
-   *     description: Reset all ZoneWeaver system settings to default values while preserving critical server configurations
+   *     description: Reset all Zoneweaver system settings to default values while preserving critical server configurations
    *     tags: [System Settings]
    *     security:
    *       - JwtAuth: []
@@ -488,7 +488,7 @@ class SettingsController {
 
       // Reset to defaults while preserving critical server settings
       config.app = {
-        name: "ZoneWeaver",
+        name: "Zoneweaver",
         version: "2.0.0"
       };
 
@@ -542,8 +542,8 @@ class SettingsController {
    * @swagger
    * /api/settings/restart:
    *   post:
-   *     summary: Restart ZoneWeaver server (Super-admin only)
-   *     description: Restart the ZoneWeaver application server (requires process manager like PM2)
+   *     summary: Restart Zoneweaver server (Super-admin only)
+   *     description: Restart the Zoneweaver application server (requires process manager like PM2)
    *     tags: [System Settings]
    *     security:
    *       - JwtAuth: []
@@ -880,7 +880,7 @@ class SettingsController {
    *                 example: 30
    *               allow_insecure:
    *                 type: boolean
-   *                 description: Allow insecure connections (updates ZoneWeaver config)
+   *                 description: Allow insecure connections (updates Zoneweaver config)
    *                 example: false
    *     responses:
    *       200:

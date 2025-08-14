@@ -9,7 +9,7 @@ permalink: /docs/guides/getting-started/
 # Getting Started
 {: .no_toc }
 
-This guide will walk you through setting up ZoneWeaver frontend for the first time, from initial installation to configuring your first Zoneweaver API connection.
+This guide will walk you through setting up Zoneweaver frontend for the first time, from initial installation to configuring your first Zoneweaver API connection.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -34,7 +34,7 @@ Before starting, ensure you have:
 
 #### Option A: From Package (Recommended)
 ```bash
-# Install ZoneWeaver package
+# Install Zoneweaver package
 pkg install zoneweaver
 
 # Enable service
@@ -123,7 +123,7 @@ mail:
     user: "your-email@example.com"
     password: "your-email-password"
   smtp_settings:
-    from: "ZoneWeaver <noreply@example.com>"
+    from: "Zoneweaver <noreply@example.com>"
 ```
 
 ### SSL/TLS Setup

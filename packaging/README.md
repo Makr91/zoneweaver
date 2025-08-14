@@ -1,4 +1,4 @@
-# Building ZoneWeaver Debian Packages
+# Building Zoneweaver Debian Packages
 
 Production-ready Debian package build process with automated CI/CD via Release Please.
 
@@ -69,7 +69,7 @@ Priority: optional
 Architecture: ${ARCH}
 Maintainer: Makr91 <makr91@users.noreply.github.com>
 Depends: nodejs (>= 18.0.0), sqlite3, openssl
-Description: ZoneWeaver - Zone Hypervisor Management Interface
+Description: Zoneweaver - Zone Hypervisor Management Interface
  Web-based management interface for Zoneweaver API hypervisors.
  Provides intuitive control over zones, networking, and storage
  through a modern React frontend and Node.js API backend.

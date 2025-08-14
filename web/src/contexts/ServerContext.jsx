@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext';
 /**
  * Server context for managing Zoneweaver API connections
  * 
- * - ZoneWeaver application manages shared server connections
+ * - Zoneweaver application manages shared server connections
  * - All users see the same servers (application-level, not per-user)
  * - Only admins can add/remove servers
  * - All authenticated users can use existing servers

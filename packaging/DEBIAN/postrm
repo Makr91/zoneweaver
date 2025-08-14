@@ -4,11 +4,11 @@ set -e
 case "$1" in
     remove)
         # Keep user, data, and config for potential reinstall
-        echo "ZoneWeaver removed but user and data preserved"
+        echo "Zoneweaver removed but user and data preserved"
         ;;
     purge)
         # Remove everything including user and data
-        echo "Purging ZoneWeaver completely..."
+        echo "Purging Zoneweaver completely..."
         
         # Remove system user
         if getent passwd zoneweaver > /dev/null 2>&1; then
@@ -20,7 +20,7 @@ case "$1" in
         rm -rf /var/log/zoneweaver
         rm -rf /etc/zoneweaver
         
-        echo "ZoneWeaver completely removed"
+        echo "Zoneweaver completely removed"
         ;;
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         # Do nothing for these cases
