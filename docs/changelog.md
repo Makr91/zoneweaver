@@ -1,7 +1,7 @@
 ---
 title: Changelog
 layout: default
-nav_order: 15
+nav_order: 5
 permalink: /docs/changelog/
 ---
 

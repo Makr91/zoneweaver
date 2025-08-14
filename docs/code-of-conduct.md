@@ -1,7 +1,7 @@
 ---
 title: Code of Conduct
 layout: default
-nav_order: 11
+nav_order: 10
 permalink: /docs/code-of-conduct/
 ---
 

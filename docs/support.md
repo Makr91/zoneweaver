@@ -1,7 +1,7 @@
 ---
 title: Support
 layout: default
-nav_order: 9
+nav_order: 8
 permalink: /docs/support/
 ---
 
