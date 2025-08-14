@@ -21,7 +21,7 @@
     <exec_method name='start' type='method' exec='/opt/zoneweaver/startup.sh' timeout_seconds='60'>
       <method_context working_directory='/opt/zoneweaver'>
         <method_credential user='zoneweaver' group='zoneweaver' 
-            privileges='basic,net_privaddr' />
+            privileges='basic,net_privaddr,file_dac_read' />
         <method_environment>
           <envvar name='PATH' value='/opt/ooce/bin:/opt/ooce/node-22/bin:/usr/gnu/bin:/usr/bin:/usr/sbin:/sbin'/>
           <envvar name='NODE_ENV' value='production'/>
@@ -36,7 +36,7 @@
       <method_context working_directory='/opt/zoneweaver'>
         <method_credential user='zoneweaver' group='zoneweaver' />
         <method_environment>
-          <envvar name='PATH' value='/opt/ooce/bin:/opt/ooce/node-22/bin:/usr/gnu/bin:/usr/bin:/usr/sbin:/sbin'/>
+          <envvar name='PATH' value='/opt/ooce/bin:/opt/ooce/node-22/bin:/usr/bin:/usr/sbin:/sbin'/>
         </method_environment>
       </method_context>
     </exec_method>

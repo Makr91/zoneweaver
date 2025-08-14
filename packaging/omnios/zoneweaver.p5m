@@ -29,6 +29,7 @@ group groupname=zoneweaver gid=302
 license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
 
 # Drop system directories that already exist (avoid conflicts with system packages)
+<transform dir path=^opt$ -> drop>
 <transform dir path=^etc$ -> drop>
 <transform dir path=^var$ -> drop>
 <transform dir path=^lib$ -> drop>
@@ -39,9 +40,6 @@ license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
 <transform dir path=var/log$ -> drop>
 
 # Transform rules to set ownership and permissions for auto-generated files
-<transform dir path=opt$ -> set owner root>
-<transform dir path=opt$ -> set group sys>
-<transform dir path=opt$ -> set mode 0755>
 
 <transform dir path=opt/zoneweaver$ -> set owner zoneweaver>
 <transform dir path=opt/zoneweaver$ -> set group zoneweaver>
@@ -72,30 +70,30 @@ license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
 <transform file path=opt/zoneweaver/scripts/.* -> set mode 0755>
 <transform file path=opt/zoneweaver/node_modules/.*/bin/.* -> set mode 0755>
 
-# Configuration directory and files
-<transform dir path=etc/zoneweaver$ -> set owner root>
-<transform dir path=etc/zoneweaver$ -> set group sys>
+# Configuration directory and files (config file preserved via preserve=true)
+<transform dir path=etc/zoneweaver$ -> set owner zoneweaver>
+<transform dir path=etc/zoneweaver$ -> set group zoneweaver>
 <transform dir path=etc/zoneweaver$ -> set mode 0755>
 
-<transform file path=etc/zoneweaver/config.yaml -> set owner root>
-<transform file path=etc/zoneweaver/config.yaml -> set group sys>
+<transform file path=etc/zoneweaver/config.yaml -> set owner zoneweaver>
+<transform file path=etc/zoneweaver/config.yaml -> set group zoneweaver>
 <transform file path=etc/zoneweaver/config.yaml -> set mode 0644>
 <transform file path=etc/zoneweaver/config.yaml -> set preserve true>
 
-# SSL directory (certificates generated at runtime)
+# SSL and database directories (empty) - keeps persistent data in place on uninstall
 <transform dir path=etc/zoneweaver/ssl -> set owner zoneweaver>
 <transform dir path=etc/zoneweaver/ssl -> set group zoneweaver>
 <transform dir path=etc/zoneweaver/ssl -> set mode 0700>
 
-# Data and log directories
 <transform dir path=var/lib/zoneweaver$ -> set owner zoneweaver>
 <transform dir path=var/lib/zoneweaver$ -> set group zoneweaver>
 <transform dir path=var/lib/zoneweaver$ -> set mode 0755>
 
-<transform dir path=var/lib/zoneweaver/.* -> set owner zoneweaver>
-<transform dir path=var/lib/zoneweaver/.* -> set group zoneweaver>
-<transform dir path=var/lib/zoneweaver/.* -> set mode 0755>
+<transform dir path=var/lib/zoneweaver/database -> set owner zoneweaver>
+<transform dir path=var/lib/zoneweaver/database -> set group zoneweaver>
+<transform dir path=var/lib/zoneweaver/database -> set mode 0755>
 
+# Log directory (packaged content to avoid permission issues)
 <transform dir path=var/log/zoneweaver -> set owner zoneweaver>
 <transform dir path=var/log/zoneweaver -> set group zoneweaver>
 <transform dir path=var/log/zoneweaver -> set mode 0755>

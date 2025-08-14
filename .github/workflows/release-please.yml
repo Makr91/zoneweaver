@@ -10,6 +10,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: write
 
 jobs:
   release-please:
@@ -218,3 +219,19 @@ jobs:
       - name: Cleanup temporary files
         run: |
           ssh startcloud@172.17.204.177 "rm -f /tmp/zoneweaver_*.deb"
+
+  build-docs:
+    needs: [release-please, build-packages]
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Documentation Build
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'docs.yml',
+              ref: 'main'
+            });

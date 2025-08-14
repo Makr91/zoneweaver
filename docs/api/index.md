@@ -2,7 +2,7 @@
 title: API Reference
 layout: default
 nav_order: 2
-has_children: true
+has_children: false
 permalink: /docs/api/
 ---
 
@@ -42,7 +42,7 @@ The ZoneWeaver Frontend API is fully documented using OpenAPI 3.0 specification.
 
 ### Interactive Documentation
 
-- **[Live API Reference](reference/)** - Complete interactive API documentation with examples and testing capabilities
+- **[Live API Reference](swagger-ui.html)** - Complete interactive API documentation with examples and testing capabilities
 - **[Download OpenAPI Spec](openapi.json)** - Raw OpenAPI specification for tools and integrations
 
 ### API Categories
