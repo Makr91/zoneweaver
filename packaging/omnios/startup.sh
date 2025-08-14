@@ -15,7 +15,19 @@ cd /opt/zoneweaver
 
 PIDFILE="/var/lib/zoneweaver/zoneweaver.pid"
 
+# Create runtime directories following IPS best practices
+# These are unpackaged content - preserved across package operations
+mkdir -p /var/lib/zoneweaver/database
+mkdir -p /etc/zoneweaver/ssl
 mkdir -p /var/log/zoneweaver
+
+# Set proper ownership for runtime directories
+chown -R zoneweaver:zoneweaver /var/lib/zoneweaver
+chown -R zoneweaver:zoneweaver /etc/zoneweaver/ssl
+chown -R zoneweaver:zoneweaver /var/log/zoneweaver
+
+# Set proper permissions for SSL directory (more restrictive)
+chmod 700 /etc/zoneweaver/ssl
 
 # Check if JWT secret exists (SSL certificates will be handled by Node.js if needed)
 if [ ! -f "/etc/zoneweaver/.jwt-secret" ]; then
@@ -57,8 +69,8 @@ echo "Configuration: $CONFIG_PATH"
 echo "Environment: $NODE_ENV"
 
 # Start the Node.js application in the background
-# Output goes to SMF log via stdout/stderr
-nohup node index.js </dev/null >/dev/null 2>&1 &
+# Output goes to log file so we can see SSL generation messages
+nohup node index.js </dev/null >>/var/log/zoneweaver/zoneweaver.log 2>&1 &
 NODE_PID=$!
 
 # Save the PID
