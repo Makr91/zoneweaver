@@ -92,7 +92,7 @@ On your Zoneweaver API server:
 
 1. **Bootstrap Method** (first-time setup):
    ```bash
-   curl -X POST http://backend:5000/api/bootstrap \
+   curl -X POST http://zoneweaver-api:5000/api/bootstrap \
      -H "Content-Type: application/json" \
      -d '{"entity_name": "ZoneWeaver Frontend"}'
    ```
