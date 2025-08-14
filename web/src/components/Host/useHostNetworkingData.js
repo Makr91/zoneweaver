@@ -522,6 +522,10 @@ export const useHostNetworkingData = () => {
     };
 
     const getSortIcon = (currentSortArray, column) => {
+        // Ensure we always have a valid array
+        if (!Array.isArray(currentSortArray)) {
+            return 'fa-sort';
+        }
         const sort = currentSortArray.find(s => s.column === column);
         if (!sort) return 'fa-sort';
         return sort.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
@@ -565,7 +569,7 @@ export const useHostNetworkingData = () => {
         resetBandwidthSort,
         getSortedInterfaces,
         getSortedBandwidthUsage,
-        getSortIcon: (column, sortArray) => getSortIcon(sortArray || interfaceSort, column),
+        getSortIcon: (currentSortArray, column) => getSortIcon(currentSortArray || interfaceSort, column),
         expandedChart,
         expandedChartType,
         expandChart,
