@@ -67,7 +67,7 @@ database:
 frontend:
   theme: "default"
   logo_url: "/web/public/images/logo.png"
-  favicon_url: "/web/public/images/favicon.ico"
+  favicon_url: "/web/public/favicon.ico"
   company_name: "Your Company"
 
 cors:
@@ -188,7 +188,7 @@ Web interface customization and branding.
 frontend:
   theme: "default"
   logo_url: "/web/public/images/logo.png"
-  favicon_url: "/web/public/images/favicon.ico"
+  favicon_url: "/web/public/favicon.ico"
   company_name: "Your Company"
   company_url: "https://example.com"
   footer_text: "© 2025 Your Company"
