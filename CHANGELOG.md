@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.20](https://github.com/Makr91/zoneweaver/compare/v0.0.19...v0.0.20) (2025-08-14)
+
+
+### Bug Fixes
+
+* Name references to Webhyve ([72d6bf6](https://github.com/Makr91/zoneweaver/commit/72d6bf67a32e0b6191871c79ca7061ca43a36559))
+
 ## [0.0.19](https://github.com/Makr91/zoneweaver/compare/v0.0.18...v0.0.19) (2025-08-14)
 
 
