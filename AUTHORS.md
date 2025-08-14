@@ -55,7 +55,7 @@ Special recognition for those who have helped the project in unique ways:
 - **Beta Testers**: Early users who helped identify issues and improve stability
 - **Documentation Reviewers**: Those who help improve our documentation through feedback and suggestions
 
----
+--- 
 
 **Want to see your name here?** Check out our [Contributing Guidelines](CONTRIBUTING.md) and start contributing!
 
