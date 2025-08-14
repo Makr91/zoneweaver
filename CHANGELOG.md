@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.23](https://github.com/Makr91/zoneweaver/compare/v0.0.22...v0.0.23) (2025-08-14)
+
+
+### Bug Fixes
+
+* add GH Pages to Profile Menu ([0adfb4d](https://github.com/Makr91/zoneweaver/commit/0adfb4dd60459a544b2be71be930feb7aa19b49b))
+
 ## [0.0.22](https://github.com/Makr91/zoneweaver/compare/v0.0.21...v0.0.22) (2025-08-14)
 
 
