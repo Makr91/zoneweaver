@@ -16,7 +16,7 @@ export const autoMapTopology = ({
   const nodes = [];
   const edges = [];
   
-  // Create a map for quick bandwidth lookups
+  // Create a map for quick bandwidth lookups - use pre-calculated values from API
   const bandwidthMap = new Map();
   console.log('🔍 TOPOLOGY: Processing bandwidth data:', bandwidthData.length, 'entries');
   console.log('🔍 TOPOLOGY: Raw bandwidth data sample:', bandwidthData.slice(0, 5));
@@ -24,16 +24,25 @@ export const autoMapTopology = ({
   bandwidthData.forEach((usage, index) => {
     console.log(`🔍 TOPOLOGY: Processing usage entry ${index}:`, {
       link: usage.link,
-      ipackets: usage.ipackets,
-      hasTimeData: !!usage.time_delta_seconds,
-      rbytes_delta: usage.rbytes_delta,
-      obytes_delta: usage.obytes_delta,
+      rx_mbps: usage.rx_mbps,
+      tx_mbps: usage.tx_mbps,
+      rx_bps: usage.rx_bps,
+      tx_bps: usage.tx_bps,
+      hasPreCalculated: !!(usage.rx_mbps !== undefined || usage.tx_mbps !== undefined),
       fullEntry: usage
     });
     
     if (usage.link && usage.ipackets !== 'IPACKETS') {
-      const bandwidth = calculateNetworkBandwidth(usage);
-      console.log('🔍 TOPOLOGY: Calculated bandwidth for', usage.link, ':', bandwidth);
+      // Use pre-calculated bandwidth from API instead of recalculating
+      const bandwidth = {
+        rxMbps: parseFloat(usage.rx_mbps) || 0,
+        txMbps: parseFloat(usage.tx_mbps) || 0,
+        totalMbps: (parseFloat(usage.rx_mbps) || 0) + (parseFloat(usage.tx_mbps) || 0),
+        rxBytesPerSecond: parseInt(usage.rx_bps) || 0,
+        txBytesPerSecond: parseInt(usage.tx_bps) || 0
+      };
+      
+      console.log('🔍 TOPOLOGY: Using pre-calculated bandwidth for', usage.link, ':', bandwidth);
       bandwidthMap.set(usage.link, bandwidth);
     } else {
       console.log('🔍 TOPOLOGY: Skipping entry - link:', usage.link, 'ipackets:', usage.ipackets);

@@ -360,21 +360,11 @@ export const useHostNetworkingData = () => {
                 const interfaceName = usage.interface || usage.name || usage.link;
                 
                 if (interfaceName) {
-                    // Calculate bandwidth from the usage data
-                    let rxMbps = 0;
-                    let txMbps = 0;
+                    // Use pre-calculated bandwidth values directly from API
+                    const rxMbps = parseFloat(usage.rx_mbps) || 0;
+                    const txMbps = parseFloat(usage.tx_mbps) || 0;
                     
-                    // Check if bandwidth is already calculated 
-                    if (usage.rxMbps !== undefined) {
-                        rxMbps = usage.rxMbps;
-                        txMbps = usage.txMbps || 0;
-                    } else if (usage.rbytes_delta !== undefined && usage.time_delta_seconds) {
-                        // Calculate from raw deltas if available
-                        const rxBytesPerSec = usage.rbytes_delta / usage.time_delta_seconds;
-                        const txBytesPerSec = (usage.obytes_delta || 0) / usage.time_delta_seconds;
-                        rxMbps = (rxBytesPerSec * 8) / (1024 * 1024); // Convert to Mbps
-                        txMbps = (txBytesPerSec * 8) / (1024 * 1024);
-                    }
+                    console.log(`📊 CHARTS: Processing ${interfaceName} - RX: ${rxMbps}Mbps, TX: ${txMbps}Mbps (from API pre-calculated values)`);
                     
                     // Initialize chart data for new interfaces
                     if (!newChartData[interfaceName]) {
