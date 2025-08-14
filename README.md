@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="assets/images/logo192.png" alt="ZoneWeaver API Logo" width="25%">
+</p>
+
 # ZoneWeaver
 
-ZoneWeaver API - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via WebHyve backend.
+ZoneWeaver - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via WebHyve backend.
 
 ## Platform Requirements
 

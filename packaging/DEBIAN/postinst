@@ -14,17 +14,6 @@ chown -R zoneweaver:zoneweaver /var/lib/zoneweaver
 chown -R zoneweaver:zoneweaver /var/log/zoneweaver
 chown -R zoneweaver:zoneweaver /etc/zoneweaver
 
-# Generate SSL certificates if they don't exist
-if [ ! -f /etc/zoneweaver/ssl/cert.pem ]; then
-    mkdir -p /etc/zoneweaver/ssl
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout /etc/zoneweaver/ssl/key.pem \
-        -out /etc/zoneweaver/ssl/cert.pem \
-        -subj "/C=US/ST=State/L=City/O=ZoneWeaver/CN=localhost"
-    chown zoneweaver:zoneweaver /etc/zoneweaver/ssl/*
-    chmod 600 /etc/zoneweaver/ssl/*
-    echo "Generated SSL certificates in /etc/zoneweaver/ssl/"
-fi
 
 # Generate JWT secret if it doesn't exist
 if [ ! -f /etc/zoneweaver/.jwt-secret ]; then

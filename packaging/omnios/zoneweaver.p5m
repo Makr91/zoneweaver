@@ -21,9 +21,9 @@ depend fmri=ooce/runtime/node-22 type=require
 depend fmri=database/sqlite-3 type=require
 
 # Create zoneweaver user and group
-user username=zoneweaver uid=95 group=zoneweaver gcos-field="ZoneWeaver Service User" \
+user username=zoneweaver uid=302 group=zoneweaver gcos-field="ZoneWeaver Service User" \
     home-dir=/var/lib/zoneweaver login-shell=/usr/bin/pfksh
-group groupname=zoneweaver gid=95
+group groupname=zoneweaver gid=302
 
 # License
 license opt/zoneweaver/LICENSE.md license="GPL-3.0" must-accept=false
