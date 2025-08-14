@@ -152,9 +152,6 @@ post_install() {
     
     # Create database directory
     logcmd mkdir -p var/lib/zoneweaver/database
-    
-    # Include post-install script in package
-    logcmd cp $SRCDIR/packaging/omnios/post-install.sh opt/zoneweaver/
 
     popd >/dev/null
     

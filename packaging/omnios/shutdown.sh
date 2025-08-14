@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 # ZoneWeaver shutdown script for SMF
-# Based on the charlotte-webhyve shutdown pattern
 #
 
 set -e

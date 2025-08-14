@@ -2,7 +2,6 @@
 <!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
 <!--
     SMF manifest for ZoneWeaver Zone Hypervisor Management Interface
-    Based on the charlotte-webhyve service pattern
 -->
 <service_bundle type='manifest' name='zoneweaver'>
   <service name='system/virtualization/zoneweaver' type='service' version='1'>
