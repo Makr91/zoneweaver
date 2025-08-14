@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.18](https://github.com/Makr91/zoneweaver/compare/v0.0.17...v0.0.18) (2025-08-14)
+
+
+### Bug Fixes
+
+* logging on omnios ([ec79b44](https://github.com/Makr91/zoneweaver/commit/ec79b4470fd2290e1d4583958dc36b080a40474f))
+
 ## [0.0.17](https://github.com/Makr91/zoneweaver/compare/v0.0.16...v0.0.17) (2025-08-14)
 
 
