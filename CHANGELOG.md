@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.22](https://github.com/Makr91/zoneweaver/compare/v0.0.21...v0.0.22) (2025-08-14)
+
+
+### Bug Fixes
+
+* favicon in docs ([1a67c99](https://github.com/Makr91/zoneweaver/commit/1a67c99e6f1fcaf69c75d2edfeb58a5f54079b15))
+
 ## [0.0.21](https://github.com/Makr91/zoneweaver/compare/v0.0.20...v0.0.21) (2025-08-14)
 
 
