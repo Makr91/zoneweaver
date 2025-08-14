@@ -43,6 +43,6 @@
   },
   "devDependencies": {
     "@rollup/wasm-node": "^4.21.0",
-    "concurrently": "^7.6.0"
+    "concurrently": "^9.2.0"
   }
 }
