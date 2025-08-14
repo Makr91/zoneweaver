@@ -232,8 +232,9 @@ export const useHostNetworkingData = () => {
             }
 
             // Process aggregates with deduplication
-            if (aggregatesResult.status === 'fulfilled' && aggregatesResult.value.success) {
-                const aggregates = aggregatesResult.value.data?.aggregates || [];
+            // TODO: Backend API Consistency - Standardize all endpoints to return { success: true, data: {...} } format
+            if (aggregatesResult.status === 'fulfilled') {
+                const aggregates = aggregatesResult.value?.data?.aggregates || aggregatesResult.value?.aggregates || [];
                 const deduplicatedAggregates = aggregates.reduce((acc, aggregate) => {
                     const aggregateId = aggregate.name || aggregate.link;
                     const existing = acc.find(existing => 
@@ -255,8 +256,9 @@ export const useHostNetworkingData = () => {
             }
 
             // Process etherstubs with deduplication
-            if (etherstubsResult.status === 'fulfilled' && etherstubsResult.value.success) {
-                const etherstubs = etherstubsResult.value.data?.etherstubs || [];
+            // TODO: Backend API Consistency - May need to standardize all endpoints to return { success: true, data: {...} } format
+            if (etherstubsResult.status === 'fulfilled') {
+                const etherstubs = etherstubsResult.value?.data?.etherstubs || etherstubsResult.value?.etherstubs || [];
                 const deduplicatedEtherstubs = etherstubs.reduce((acc, etherstub) => {
                     const etherstubId = etherstub.name || etherstub.link;
                     const existing = acc.find(existing => 
@@ -278,8 +280,9 @@ export const useHostNetworkingData = () => {
             }
 
             // Process VNICs with deduplication
-            if (vnicsResult.status === 'fulfilled' && vnicsResult.value.success) {
-                const vnics = vnicsResult.value.data?.vnics || [];
+            // TODO: Backend API Consistency - Currently /network/vnics returns { vnics: [...] } directly instead of { success: true, data: {...} } format
+            if (vnicsResult.status === 'fulfilled') {
+                const vnics = vnicsResult.value?.data?.vnics || vnicsResult.value?.vnics || [];
                 const deduplicatedVnics = vnics.reduce((acc, vnic) => {
                     const vnicId = vnic.name || vnic.link;
                     const existing = acc.find(existing => 
@@ -301,8 +304,9 @@ export const useHostNetworkingData = () => {
             }
 
             // Process zones with deduplication
-            if (zonesResult.status === 'fulfilled' && zonesResult.value.success) {
-                const zones = zonesResult.value.data?.zones || [];
+            // TODO: Backend API Consistency - Currently /zones returns { zones: [...] } directly instead of { success: true, data: {...} } format
+            if (zonesResult.status === 'fulfilled') {
+                const zones = zonesResult.value?.data?.zones || zonesResult.value?.zones || [];
                 const deduplicatedZones = zones.reduce((acc, zone) => {
                     const zoneId = zone.name || zone.zonename;
                     const existing = acc.find(existing => 
