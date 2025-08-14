@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.15](https://github.com/Makr91/zoneweaver/compare/v0.0.14...v0.0.15) (2025-08-14)
+
+
+### Bug Fixes
+
+* networking collection display ([4246051](https://github.com/Makr91/zoneweaver/commit/4246051c1b4641fdeff02544eb8e645896d30d56))
+
 ## [0.0.14](https://github.com/Makr91/zoneweaver/compare/v0.0.13...v0.0.14) (2025-08-10)
 
 
