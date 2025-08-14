@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.16](https://github.com/Makr91/zoneweaver/compare/v0.0.15...v0.0.16) (2025-08-14)
+
+
+### Bug Fixes
+
+* documentation ([74125e8](https://github.com/Makr91/zoneweaver/commit/74125e8b323e9d4f2cf1334e3933a505005597ba))
+
 ## [0.0.15](https://github.com/Makr91/zoneweaver/compare/v0.0.14...v0.0.15) (2025-08-14)
 
 
