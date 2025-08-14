@@ -51,6 +51,15 @@ const SidebarFooter = () => {
           </div>
           <div className='dropdown-menu' id='profile-management' role='menu'>
             <div className='dropdown-content'>
+              <a 
+                className='dropdown-item' 
+                href='https://zoneweaver.startcloud.com' 
+                target='_blank' 
+                rel='noopener noreferrer'
+              >
+                <span className='icon'><i className='fas fa-info-circle'></i></span>
+                <span>Help and Docs</span>
+              </a>
               <a onClick={toggleTheme} className='dropdown-item'>
                 <span className='icon'><i className='fas fa-palette'></i></span>
                 <span>Theme: {getThemeDisplay()}</span>
