@@ -9,7 +9,7 @@ permalink: /docs/guides/getting-started/
 # Getting Started
 {: .no_toc }
 
-This guide will walk you through setting up ZoneWeaver frontend for the first time, from initial installation to configuring your first WebHyve backend connection.
+This guide will walk you through setting up ZoneWeaver frontend for the first time, from initial installation to configuring your first Zoneweaver API connection.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -24,7 +24,7 @@ This guide will walk you through setting up ZoneWeaver frontend for the first ti
 Before starting, ensure you have:
 
 - **Node.js 18+** - Required for running the frontend server
-- **A WebHyve Backend Server** - The backend API that manages zones
+- **A Zoneweaver API Server** - The backend API that manages zones
 - **Network Access** - Frontend needs to communicate with backend servers
 - **SSL Certificates** (Recommended) - For secure HTTPS connections
 
@@ -87,17 +87,17 @@ database:
 3. **Register Admin User**: Create your first admin account
 4. **Login**: Use your new credentials to access the dashboard
 
-### 4. Add WebHyve Backend
+### 4. Add Zoneweaver API
 
 After logging in:
 
 1. Navigate to **Settings** → **Servers**
 2. Click **Add Server**
-3. Configure your WebHyve backend:
-   - **Hostname**: Your WebHyve server address
+3. Configure your Zoneweaver API:
+   - **Hostname**: Your Zoneweaver API Server address
    - **Port**: Usually 5001 (HTTPS) or 5000 (HTTP)  
    - **Protocol**: HTTPS recommended
-   - **API Key**: Your WebHyve API key
+   - **API Key**: Your Zoneweaver API API key
 
 ## Configuration Options
 
@@ -155,11 +155,11 @@ As an admin, you can:
 - **Admin**: Organization-specific admin rights
 - **User**: Standard user with limited permissions
 
-## WebHyve Integration
+## Zoneweaver API Integration
 
 ### Backend Requirements
 
-Your WebHyve backend must be:
+Your Zoneweaver API must be:
 - **Accessible**: Network connectivity from frontend
 - **Configured**: Proper API key authentication
 - **Running**: Service active and responding
@@ -183,7 +183,7 @@ Use the built-in connection test:
 **Backend Connection Failed**
 - Test network connectivity: `curl https://backend:5001/api/`
 - Verify API key is correct
-- Check WebHyve service status
+- Check Zoneweaver API service status
 
 **User Registration Issues**
 - Ensure `allow_new_organizations: true` in config
@@ -202,7 +202,7 @@ Once your basic setup is working:
 
 1. **[Configure Authentication](authentication/)** - Set up proper user management
 2. **[User Guide](../user-guide/)** - Learn the web interface
-3. **[Backend Integration](backend-integration/)** - Advanced WebHyve configuration
+3. **[Backend Integration](backend-integration/)** - Advanced Zoneweaver API configuration
 4. **[Installation Guide](installation/)** - Production deployment options
 
 ---

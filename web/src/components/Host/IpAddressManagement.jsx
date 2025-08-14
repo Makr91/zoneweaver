@@ -14,7 +14,7 @@ const IpAddressManagement = ({ server, onError }) => {
     state: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load IP addresses on component mount and when filters change
   useEffect(() => {
@@ -22,7 +22,7 @@ const IpAddressManagement = ({ server, onError }) => {
   }, [server, filters.interface, filters.ip_version, filters.type, filters.state]);
 
   const loadAddresses = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -34,7 +34,7 @@ const IpAddressManagement = ({ server, onError }) => {
       if (filters.type) params.type = filters.type;
       if (filters.state) params.state = filters.state;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -64,7 +64,7 @@ const IpAddressManagement = ({ server, onError }) => {
   };
 
   const handleDeleteAddress = async (addrobj) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     if (!window.confirm(`Are you sure you want to delete IP address "${addrobj}"?`)) {
       return;
@@ -75,7 +75,7 @@ const IpAddressManagement = ({ server, onError }) => {
       onError('');
       
       // Use query parameters instead of request body for DELETE request
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -102,13 +102,13 @@ const IpAddressManagement = ({ server, onError }) => {
   };
 
   const handleToggleAddress = async (address, action) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

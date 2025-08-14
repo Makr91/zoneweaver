@@ -8,7 +8,7 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
   });
   const [creating, setCreating] = useState(false);
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Generate next available etherstub name
   const generateNextEtherstubName = () => {
@@ -88,7 +88,7 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
         created_by: 'api'
       };
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

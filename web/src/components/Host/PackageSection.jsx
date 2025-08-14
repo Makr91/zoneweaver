@@ -21,7 +21,7 @@ const PackageSection = ({ server, onError }) => {
     searchQuery: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load packages on component mount and when filters change
   useEffect(() => {
@@ -33,7 +33,7 @@ const PackageSection = ({ server, onError }) => {
   }, [server, filters.pattern, filters.publisher, filters.status, filters.showAll]);
 
   const loadPackages = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -44,7 +44,7 @@ const PackageSection = ({ server, onError }) => {
       if (filters.pattern) params.filter = filters.pattern;
       if (filters.showAll) params.all = true;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -80,14 +80,14 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const searchPackages = async () => {
-    if (!server || !makeWebHyveRequest || !filters.searchQuery.trim()) return;
+    if (!server || !makeZoneweaverAPIRequest || !filters.searchQuery.trim()) return;
     
     try {
       setLoading(true);
       onError('');
       setIsSearchMode(true);
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -133,7 +133,7 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const handlePackageAction = async (packageName, action, options = {}) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -148,7 +148,7 @@ const PackageSection = ({ server, onError }) => {
         created_by: 'api'
       };
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -175,13 +175,13 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const handleViewDetails = async (pkg) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

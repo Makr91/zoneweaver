@@ -12,10 +12,10 @@ export const useNetworkTopologyData = (selectedServer) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   useEffect(() => {
-    if (selectedServer && makeWebHyveRequest) {
+    if (selectedServer && makeZoneweaverAPIRequest) {
       loadTopologyData();
     }
   }, [selectedServer]);
@@ -37,11 +37,11 @@ export const useNetworkTopologyData = (selectedServer) => {
         zonesResult,
         bridgesResult
       ] = await Promise.allSettled([
-        makeWebHyveRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/aggregates'),
-        makeWebHyveRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/etherstubs'),
-        makeWebHyveRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/vnics'),
-        makeWebHyveRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'zones'),
-        makeWebHyveRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/bridges')
+        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/aggregates'),
+        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/etherstubs'),
+        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/vnics'),
+        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'zones'),
+        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/bridges')
       ]);
 
       const newTopologyData = {

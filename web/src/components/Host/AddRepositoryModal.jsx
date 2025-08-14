@@ -17,7 +17,7 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
     proxy: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -94,7 +94,7 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
         requestData.proxy = formData.proxy.trim();
       }
 
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

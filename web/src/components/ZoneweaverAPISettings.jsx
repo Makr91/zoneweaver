@@ -5,9 +5,9 @@ import { useServers } from "../contexts/ServerContext";
 import { canManageSettings } from "../utils/permissions";
 import ApiKeysTab from "./ApiKeysTab";
 
-const WebhyveSettings = () => {
+const ZoneweaverAPISettings = () => {
   const { user } = useAuth();
-  const { currentServer, makeWebHyveRequest } = useServers();
+  const { currentServer, makeZoneweaverAPIRequest } = useServers();
   const [settings, setSettings] = useState(null);
   const [backups, setBackups] = useState([]);
   const [msg, setMsg] = useState("");
@@ -26,7 +26,7 @@ const WebhyveSettings = () => {
     if (!currentServer) return;
     try {
       setLoading(true);
-      const response = await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'settings');
+      const response = await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'settings');
       
       if (response.success) {
         setSettings(response.data);
@@ -49,7 +49,7 @@ const WebhyveSettings = () => {
   const loadBackups = async () => {
     if (!currentServer) return;
     try {
-      const response = await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'settings/backups');
+      const response = await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'settings/backups');
       if (response.success) {
         setBackups(response.data);
       }
@@ -76,7 +76,7 @@ const WebhyveSettings = () => {
     setMsg("");
     
     try {
-      const response = await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'settings', 'PUT', settings);
+      const response = await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'settings', 'PUT', settings);
       
       if (response.success) {
         setMsg("Settings saved successfully.");
@@ -102,7 +102,7 @@ const WebhyveSettings = () => {
       setLoading(true);
       setMsg("");
       
-      const response = await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `settings/restore/${filename}`, 'POST');
+      const response = await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `settings/restore/${filename}`, 'POST');
       
       if (response.success) {
         setMsg("Backup restored successfully.");
@@ -121,7 +121,7 @@ const WebhyveSettings = () => {
 
   const restartServer = async () => {
     if (!currentServer) return;
-    if (!window.confirm('Are you sure you want to restart the Webhyve server?')) {
+    if (!window.confirm('Are you sure you want to restart the Zoneweaver server?')) {
       return;
     }
     
@@ -129,7 +129,7 @@ const WebhyveSettings = () => {
       setLoading(true);
       setMsg("Initiating server restart...");
       
-      const response = await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'server/restart', 'POST');
+      const response = await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'server/restart', 'POST');
       
       if (response.success) {
         setMsg("Server restart initiated.");
@@ -155,7 +155,7 @@ const WebhyveSettings = () => {
       setLoading(true);
       setMsg("");
 
-      const response = await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `settings/backups/${filename}`, 'DELETE');
+      const response = await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `settings/backups/${filename}`, 'DELETE');
 
       if (response.success) {
         setMsg("Backup deleted successfully.");
@@ -307,7 +307,7 @@ const WebhyveSettings = () => {
     <div className='hero-body mainbody p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
-        <title>Webhyve Settings - ZoneWeaver</title>
+        <title>Zoneweaver API Settings - ZoneWeaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
       <style>{`
@@ -371,7 +371,7 @@ const WebhyveSettings = () => {
         <div className='box p-0'>
           <div className='titlebar box active level is-mobile mb-0 p-3'>
             <div className='level-left'>
-              <strong>Webhyve System Settings</strong>
+              <strong>Zoneweaver API System Settings</strong>
             </div>
             <div className='level-right'>
               <button 
@@ -536,4 +536,4 @@ const WebhyveSettings = () => {
   );
 };
 
-export default WebhyveSettings;
+export default ZoneweaverAPISettings;

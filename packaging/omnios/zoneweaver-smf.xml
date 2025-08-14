@@ -54,7 +54,7 @@
       </common_name>
       <description>
         <loctext xml:lang='C'>
-          Web-based management interface for WebHyve zone hypervisors.
+          Web-based management interface for Zoneweaver API hypervisors.
           Provides intuitive control over zones, networking, and storage
           through a modern React frontend and Node.js API backend.
         </loctext>

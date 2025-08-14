@@ -16,7 +16,7 @@ const RepositorySection = ({ server, onError }) => {
     type: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load repositories on component mount and when filters change
   useEffect(() => {
@@ -24,7 +24,7 @@ const RepositorySection = ({ server, onError }) => {
   }, [server, filters.enabledOnly, filters.publisher]);
 
   const loadRepositories = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -34,7 +34,7 @@ const RepositorySection = ({ server, onError }) => {
       if (filters.enabledOnly) params.enabled_only = true;
       if (filters.publisher) params.publisher = filters.publisher;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -65,14 +65,14 @@ const RepositorySection = ({ server, onError }) => {
   };
 
   const handleToggleRepository = async (publisherName, enable) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       onError('');
       
       const action = enable ? 'enable' : 'disable';
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -95,7 +95,7 @@ const RepositorySection = ({ server, onError }) => {
   };
 
   const handleDeleteRepository = async (publisherName) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     if (!window.confirm(`Are you sure you want to remove repository "${publisherName}"?`)) {
       return;
@@ -105,7 +105,7 @@ const RepositorySection = ({ server, onError }) => {
       setLoading(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

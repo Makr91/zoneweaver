@@ -40,7 +40,7 @@ export const useHostNetworkingData = () => {
     const { user } = useAuth();
     
     // Server context
-    const { currentServer, makeWebHyveRequest } = useServers();
+    const { currentServer, makeZoneweaverAPIRequest } = useServers();
     
     // Simplified section state
     const [sectionsCollapsed, setSectionsCollapsed] = useState({
@@ -57,9 +57,9 @@ export const useHostNetworkingData = () => {
     useEffect(() => {
         console.log('🔍 NETWORKING: Server changed effect triggered', {
             currentServer: currentServer?.hostname,
-            hasRequest: !!makeWebHyveRequest
+            hasRequest: !!makeZoneweaverAPIRequest
         });
-        if (currentServer && makeWebHyveRequest) {
+        if (currentServer && makeZoneweaverAPIRequest) {
             loadNetworkData();
         }
     }, [currentServer]);
@@ -100,14 +100,14 @@ export const useHostNetworkingData = () => {
                 vnicsResult,
                 zonesResult
             ] = await Promise.allSettled([
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/interfaces'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/usage'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/ipaddresses'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/routes'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/aggregates'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/etherstubs'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/vnics'),
-                makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'zones')
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/interfaces'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/usage'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/ipaddresses'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/routes'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/aggregates'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/etherstubs'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/vnics'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'zones')
             ]);
 
             // Process network interfaces with deduplication

@@ -107,7 +107,7 @@ const Navbar = () => {
     currentZone,
     selectZone,
     clearZone,
-    makeWebHyveRequest,
+    makeZoneweaverAPIRequest,
     startZone,
     stopZone,
     restartZone,
@@ -151,7 +151,7 @@ const Navbar = () => {
         // Refresh zones list after a delay
         setTimeout(() => {
           if (currentServer) {
-            makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'stats')
+            makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'stats')
               .then((res) => {
                 if (res.success) {
                   setZones({ data: res.data });
@@ -239,7 +239,7 @@ const Navbar = () => {
       console.log(`Killing zlogin session for zone: ${currentZone}`);
       
       // First get all active zlogin sessions to find the one for this zone
-      const sessionsResult = await makeWebHyveRequest(
+      const sessionsResult = await makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol,
@@ -257,7 +257,7 @@ const Navbar = () => {
 
         if (activeZoneSession) {
           // Kill the specific session by ID
-          const killResult = await makeWebHyveRequest(
+          const killResult = await makeZoneweaverAPIRequest(
             currentServer.hostname,
             currentServer.port,
             currentServer.protocol,
@@ -714,7 +714,7 @@ const Navbar = () => {
     if (currentServer && user) {
       const serverUrl = `${currentServer.protocol}://${currentServer.hostname}:${currentServer.port}`;
       axios
-        .get(`/api/webhyve/${currentServer.protocol}/${currentServer.hostname}/${currentServer.port}/stats`)
+        .get(`/api/zapi/${currentServer.protocol}/${currentServer.hostname}/${currentServer.port}/stats`)
         .then((res) => {
           setZones(res);
         })

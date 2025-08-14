@@ -8,7 +8,7 @@ const HostnameSettings = ({ server, onError }) => {
   const [changing, setChanging] = useState(false);
   const [applyImmediately, setApplyImmediately] = useState(false);
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load current hostname information
   useEffect(() => {
@@ -16,13 +16,13 @@ const HostnameSettings = ({ server, onError }) => {
   }, [server]);
 
   const loadHostnameInfo = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -60,7 +60,7 @@ const HostnameSettings = ({ server, onError }) => {
       setChanging(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

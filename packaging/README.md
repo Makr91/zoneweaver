@@ -70,7 +70,7 @@ Architecture: ${ARCH}
 Maintainer: Makr91 <makr91@users.noreply.github.com>
 Depends: nodejs (>= 18.0.0), sqlite3, openssl
 Description: ZoneWeaver - Zone Hypervisor Management Interface
- Web-based management interface for WebHyve zone hypervisors.
+ Web-based management interface for Zoneweaver API hypervisors.
  Provides intuitive control over zones, networking, and storage
  through a modern React frontend and Node.js API backend.
 Homepage: https://github.com/Makr91/zoneweaver

@@ -10,7 +10,7 @@ The
 file is the main configuration file for the ZoneWeaver frontend web interface.
 It is written in YAML format and controls all aspects of the service
 operation including network settings, user authentication, organization
-management, email configuration, and WebHyve backend integration.
+management, email configuration, and Zoneweaver API integration.
 .Pp
 The configuration file is typically located at:
 .Pa /etc/zoneweaver/config.yaml
@@ -128,11 +128,11 @@ Boolean to enable credential sharing (default: true)
 .El
 .El
 .Ss backend_servers
-Default WebHyve backend server configurations (optional).
+Default Zoneweaver API server configurations (optional).
 This is an array of server objects that can be pre-configured:
 .Bl -tag -width "protocol" -offset indent
 .It Cm hostname
-WebHyve backend server hostname or IP
+Zoneweaver API server hostname or IP
 .It Cm port
 Backend server port (usually 5000 or 5001)
 .It Cm protocol
@@ -158,7 +158,7 @@ Boolean enabling application logging (default: true)
 System resource limits and constraints.
 .Bl -tag -width "maxServersPerUser"
 .It Cm maxServersPerUser
-Maximum number of WebHyve backend servers per user or organization (default: 10)
+Maximum number of Zoneweaver API servers per user or organization (default: 10)
 .El
 .Ss gravatar
 Gravatar service integration for user avatars.

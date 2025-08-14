@@ -8,7 +8,7 @@ import { useServers } from "../contexts/ServerContext";
  * Multi-Host Application Overview Dashboard
  * 
  * This dashboard provides an infrastructure-wide view across all configured
- * WebHyve servers, showing aggregate data and health status rather than
+ * Zoneweaver API Servers, showing aggregate data and health status rather than
  * detailed single-host information (which is available in Hosts.jsx).
  */
 const Dashboard = () => {
@@ -21,7 +21,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { 
     getServers, 
-    makeWebHyveRequest, 
+    makeZoneweaverAPIRequest, 
     servers, 
     loading: serversLoading,
     selectServer,
@@ -32,7 +32,7 @@ const Dashboard = () => {
   // Fetch infrastructure data from all servers
   const fetchInfrastructureData = async () => {
     if (!servers || servers.length === 0) {
-      setError("No WebHyve servers configured. Please add a server first.");
+      setError("No Zoneweaver API Servers configured. Please add a server first.");
       return;
     }
 
@@ -42,7 +42,7 @@ const Dashboard = () => {
       
       const serverPromises = servers.map(async (server) => {
         try {
-          const result = await makeWebHyveRequest(
+          const result = await makeZoneweaverAPIRequest(
             server.hostname,
             server.port,
             server.protocol,
@@ -224,7 +224,7 @@ const Dashboard = () => {
         <div className='container p-6'>
           <div className='notification is-info'>
             <h2 className='title is-4'>Welcome to ZoneWeaver</h2>
-            <p className='mb-4'>Get started by adding your first WebHyve server to begin managing your infrastructure.</p>
+            <p className='mb-4'>Get started by adding your first Zoneweaver API Server to begin managing your infrastructure.</p>
             <button 
               onClick={navigateToServerRegister}
               className='button is-primary'
@@ -232,7 +232,7 @@ const Dashboard = () => {
               <span className='icon'>
                 <i className='fas fa-plus'></i>
               </span>
-              <span>Add WebHyve Server</span>
+              <span>Add Zoneweaver API Server</span>
             </button>
           </div>
         </div>

@@ -150,15 +150,15 @@ router.get("/api/servers", authenticate, ServerController.getAllServers);
 router.post("/api/servers/test", authenticate, ServerController.testServer);
 router.delete("/api/servers/:serverId", authenticate, requireAdmin, ServerController.removeServer);
 
-// WebHyve proxy endpoints
-router.all("/api/webhyve/:protocol/:hostname/:port/*", authenticate, ServerController.proxyToWebHyve);
+// Zoneweaver API proxy endpoints
+router.all("/api/zapi/:protocol/:hostname/:port/*", authenticate, ServerController.proxyToZoneweaverAPI);
 
-// WebHyve settings endpoints
-router.get("/api/webhyve/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.getWebhyveSettings);
-router.put("/api/webhyve/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.updateWebhyveSettings);
-router.get("/api/webhyve/:protocol/:hostname/:port/settings/backups", authenticate, requireSuperAdmin, SettingsController.getWebhyveBackups);
-router.post("/api/webhyve/:protocol/:hostname/:port/settings/restore/:filename", authenticate, requireSuperAdmin, SettingsController.restoreWebhyveBackup);
-router.post("/api/webhyve/:protocol/:hostname/:port/server/restart", authenticate, requireSuperAdmin, SettingsController.restartWebhyveServer);
+// Zoneweaver API settings endpoints
+router.get("/api/zapi/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPISettings);
+router.put("/api/zapi/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.updateZoneweaverAPISettings);
+router.get("/api/zapi/:protocol/:hostname/:port/settings/backups", authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPIBackups);
+router.post("/api/zapi/:protocol/:hostname/:port/settings/restore/:filename", authenticate, requireSuperAdmin, SettingsController.restoreZoneweaverAPIBackup);
+router.post("/api/zapi/:protocol/:hostname/:port/server/restart", authenticate, requireSuperAdmin, SettingsController.restartZoneweaverAPIServer);
 
 // VNC proxy endpoints (use optional auth for iframe compatibility)
 // Specific VNC Console proxy endpoint (must come BEFORE general route)

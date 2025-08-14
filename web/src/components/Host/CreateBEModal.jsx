@@ -14,7 +14,7 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
     createdBy: 'api'
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -102,7 +102,7 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
         requestData.properties = validProperties;
       }
 
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

@@ -38,7 +38,7 @@ const ServerForm = ({
               <input 
                 type='text' 
                 className='input' 
-                placeholder='webhyve.example.com' 
+                placeholder='zoneweaver-api.example.com' 
                 value={hostname} 
                 onChange={(e) => setHostname(e.target.value)}
                 disabled={loading}
@@ -97,7 +97,7 @@ const ServerForm = ({
             />
           </div>
           <p className='help has-text-grey'>
-            Enter the API key you received from your WebHyve server
+            Enter the API key you received from your Zoneweaver API Server
           </p>
         </div>
       )}
@@ -117,7 +117,7 @@ const ServerForm = ({
             />
           </div>
           <p className='help has-text-grey'>
-            This name will identify this ZoneWeaver instance on the WebHyve server
+            This name will identify this ZoneWeaver instance on the Zoneweaver API Server
           </p>
         </div>
       )}

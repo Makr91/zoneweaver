@@ -19,7 +19,7 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
     refresh: false
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Initialize form with repository data
   useEffect(() => {
@@ -124,7 +124,7 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
         requestData.proxy = formData.proxy.trim();
       }
 
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

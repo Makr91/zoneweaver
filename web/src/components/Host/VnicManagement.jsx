@@ -18,7 +18,7 @@ const VnicManagement = ({ server, onError }) => {
     state: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load VNICs on component mount and when filters change
   useEffect(() => {
@@ -27,13 +27,13 @@ const VnicManagement = ({ server, onError }) => {
   }, [server, filters.over, filters.zone, filters.state]);
 
   const loadFilterOptions = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       // Load links and zones for filter dropdowns
       const [linksResult, zonesResult] = await Promise.all([
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces', 'GET'),
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'zones', 'GET')
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces', 'GET'),
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'zones', 'GET')
       ]);
       
       // Process links
@@ -60,7 +60,7 @@ const VnicManagement = ({ server, onError }) => {
   };
 
   const loadVnics = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -71,7 +71,7 @@ const VnicManagement = ({ server, onError }) => {
       if (filters.zone) params.zone = filters.zone;
       if (filters.state) params.state = filters.state;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -101,7 +101,7 @@ const VnicManagement = ({ server, onError }) => {
   };
 
   const handleDeleteVnic = async (vnicName) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     if (!window.confirm(`Are you sure you want to delete VNIC "${vnicName}"?`)) {
       return;
@@ -112,7 +112,7 @@ const VnicManagement = ({ server, onError }) => {
       onError('');
       
       // Use query parameters instead of request body for DELETE request
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -139,13 +139,13 @@ const VnicManagement = ({ server, onError }) => {
   };
 
   const handleViewDetails = async (vnic) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

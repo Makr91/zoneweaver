@@ -12,7 +12,7 @@ import { FooterProvider } from "../contexts/FooterContext";
 // Lazy load heavy components to reduce main bundle size
 const Dashboard = React.lazy(() => import("./Dashboard"));
 const ZoneweaverSettings = React.lazy(() => import("./ZoneweaverSettings"));
-const WebhyveSettings = React.lazy(() => import("./WebhyveSettings"));
+const ZoneweaverAPISettings = React.lazy(() => import("./ZoneweaverAPISettings"));
 const Hosts = React.lazy(() => import("./Hosts"));
 const Zones = React.lazy(() => import("./Zones"));
 const HostManage = React.lazy(() => import("./HostManage"));
@@ -168,7 +168,7 @@ const LayoutContent = () => {
             <Route path='dashboard' element={<Dashboard />} />
             <Route path='accounts' element={<Accounts />} />
             <Route path='settings/zoneweaver' element={<ZoneweaverSettings />} />
-            <Route path='settings/webhyve' element={<WebhyveSettings />} />
+            <Route path='settings/zapi' element={<ZoneweaverAPISettings />} />
             <Route path='zones' element={<Zones />} />
             <Route path='hosts' element={<Hosts />} />
             <Route path='host-manage' element={<HostManage />} />

@@ -12,7 +12,7 @@ const ProvisioningStatus = ({ currentServer }) => {
             if (!currentServer) return;
             try {
                 setLoading(true);
-                const response = await axios.get(`/api/webhyve/${currentServer.protocol}/${currentServer.hostname}/${currentServer.port}/provisioning/status`);
+                const response = await axios.get(`/api/zapi/${currentServer.protocol}/${currentServer.hostname}/${currentServer.port}/provisioning/status`);
                 setStatus(response.data);
                 setLoading(false);
             } catch (err) {

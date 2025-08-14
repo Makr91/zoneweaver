@@ -14,16 +14,16 @@ class SettingsController {
     return getConfigFilePath();
   }
 
-  static getWebhyveServerInfo() {
+  static getZoneweaverAPIServerInfo() {
     const config = loadConfig();
-    const webhyve = config.backend_servers[0];
-    if (!webhyve) {
-      throw new Error('Webhyve backend server not found in config.yaml');
+    const zapi = config.backend_servers[0];
+    if (!zapi) {
+      throw new Error('Zoneweaver API server not found in config.yaml');
     }
     return {
-      hostname: webhyve.hostname,
-      port: webhyve.port,
-      protocol: webhyve.protocol
+      hostname: zapi.hostname,
+      port: zapi.port,
+      protocol: zapi.protocol
     };
   }
 
@@ -710,11 +710,11 @@ class SettingsController {
 
   /**
    * @swagger
-   * /api/webhyve/{protocol}/{hostname}/{port}/settings:
+   * /api/zapi/{protocol}/{hostname}/{port}/settings:
    *   get:
-   *     summary: Get WebHyve server settings (Super-admin only)
-   *     description: Retrieve configuration settings from a specific WebHyve backend server
-   *     tags: [WebHyve Settings]
+   *     summary: Get Zoneweaver API Server settings (Super-admin only)
+   *     description: Retrieve configuration settings from a specific Zoneweaver API server
+   *     tags: [Zoneweaver API Settings]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -732,7 +732,7 @@ class SettingsController {
    *         schema:
    *           type: string
    *         description: Server hostname
-   *         example: "webhyve-host.example.com"
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
@@ -742,7 +742,7 @@ class SettingsController {
    *         example: 5001
    *     responses:
    *       200:
-   *         description: WebHyve settings retrieved successfully
+   *         description: Zoneweaver API settings retrieved successfully
    *         content:
    *           application/json:
    *             schema:
@@ -756,7 +756,7 @@ class SettingsController {
    *                   properties:
    *                     serverName:
    *                       type: string
-   *                       example: "WebHyve Production"
+   *                       example: "Zoneweaver API Production"
    *                     version:
    *                       type: string
    *                       example: "1.0.0"
@@ -788,19 +788,19 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found
+   *         description: Zoneweaver API Server not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Internal server error or WebHyve server error
+   *         description: Internal server error or Zoneweaver API Server error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async getWebhyveSettings(req, res) {
+  static async getZoneweaverAPISettings(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
       const result = await ServerModel.makeRequest(
@@ -826,11 +826,11 @@ class SettingsController {
 
   /**
    * @swagger
-   * /api/webhyve/{protocol}/{hostname}/{port}/settings:
+   * /api/zapi/{protocol}/{hostname}/{port}/settings:
    *   put:
-   *     summary: Update WebHyve server settings (Super-admin only)
-   *     description: Update configuration settings on a specific WebHyve backend server
-   *     tags: [WebHyve Settings]
+   *     summary: Update Zoneweaver API Server settings (Super-admin only)
+   *     description: Update configuration settings on a specific Zoneweaver API server
+   *     tags: [Zoneweaver API Settings]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -848,7 +848,7 @@ class SettingsController {
    *         schema:
    *           type: string
    *         description: Server hostname
-   *         example: "webhyve-host.example.com"
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
@@ -865,7 +865,7 @@ class SettingsController {
    *             properties:
    *               serverName:
    *                 type: string
-   *                 example: "WebHyve Production"
+   *                 example: "Zoneweaver API Production"
    *               debugMode:
    *                 type: boolean
    *                 example: false
@@ -884,7 +884,7 @@ class SettingsController {
    *                 example: false
    *     responses:
    *       200:
-   *         description: WebHyve settings updated successfully
+   *         description: Zoneweaver API settings updated successfully
    *         content:
    *           application/json:
    *             schema:
@@ -905,19 +905,19 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found
+   *         description: Zoneweaver API Server not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Internal server error or WebHyve server error
+   *         description: Internal server error or Zoneweaver API Server error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async updateWebhyveSettings(req, res) {
+  static async updateZoneweaverAPISettings(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
       const { allow_insecure, ...settings } = req.body;
@@ -937,9 +937,9 @@ class SettingsController {
         // Update the allow_insecure setting in the config.yaml file
         const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
         let config = YAML.parse(configFile);
-        const webhyve = config.backend_servers.find(s => s.hostname === hostname && s.port === port && s.protocol === protocol);
-        if (webhyve && allow_insecure !== undefined) {
-          webhyve.allow_insecure = allow_insecure;
+        const zapi = config.backend_servers.find(s => s.hostname === hostname && s.port === port && s.protocol === protocol);
+        if (zapi && allow_insecure !== undefined) {
+          zapi.allow_insecure = allow_insecure;
           const updatedYaml = YAML.stringify(config, {
             indent: 2,
             lineWidth: 120
@@ -961,11 +961,11 @@ class SettingsController {
 
   /**
    * @swagger
-   * /api/webhyve/{protocol}/{hostname}/{port}/settings/backups:
+   * /api/zapi/{protocol}/{hostname}/{port}/settings/backups:
    *   get:
-   *     summary: Get WebHyve configuration backups (Super-admin only)
-   *     description: Retrieve list of available configuration backup files from a specific WebHyve backend server
-   *     tags: [WebHyve Settings]
+   *     summary: Get Zoneweaver API configuration backups (Super-admin only)
+   *     description: Retrieve list of available configuration backup files from a specific Zoneweaver API server
+   *     tags: [Zoneweaver API Settings]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -983,7 +983,7 @@ class SettingsController {
    *         schema:
    *           type: string
    *         description: Server hostname
-   *         example: "webhyve-host.example.com"
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
@@ -993,7 +993,7 @@ class SettingsController {
    *         example: 5001
    *     responses:
    *       200:
-   *         description: WebHyve backup list retrieved successfully
+   *         description: Zoneweaver API backup list retrieved successfully
    *         content:
    *           application/json:
    *             schema:
@@ -1033,19 +1033,19 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found
+   *         description: Zoneweaver API Server not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Internal server error or WebHyve server error
+   *         description: Internal server error or Zoneweaver API Server error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async getWebhyveBackups(req, res) {
+  static async getZoneweaverAPIBackups(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
       const result = await ServerModel.makeRequest(
@@ -1071,11 +1071,11 @@ class SettingsController {
 
   /**
    * @swagger
-   * /api/webhyve/{protocol}/{hostname}/{port}/settings/restore/{filename}:
+   * /api/zapi/{protocol}/{hostname}/{port}/settings/restore/{filename}:
    *   post:
-   *     summary: Restore WebHyve configuration backup (Super-admin only)
-   *     description: Restore a WebHyve server configuration from a backup file
-   *     tags: [WebHyve Settings]
+   *     summary: Restore Zoneweaver API configuration backup (Super-admin only)
+   *     description: Restore a Zoneweaver API Server configuration from a backup file
+   *     tags: [Zoneweaver API Settings]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -1093,7 +1093,7 @@ class SettingsController {
    *         schema:
    *           type: string
    *         description: Server hostname
-   *         example: "webhyve-host.example.com"
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
@@ -1131,7 +1131,7 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server or backup file not found
+   *         description: Zoneweaver API Server or backup file not found
    *         content:
    *           application/json:
    *             schema:
@@ -1141,20 +1141,20 @@ class SettingsController {
    *                 summary: Server not found
    *                 value:
    *                   success: false
-   *                   message: "WebHyve server not found"
+   *                   message: "Zoneweaver API Server not found"
    *               backupNotFound:
    *                 summary: Backup file not found
    *                 value:
    *                   success: false
    *                   message: "Backup file not found"
    *       500:
-   *         description: Internal server error or WebHyve server error
+   *         description: Internal server error or Zoneweaver API Server error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async restoreWebhyveBackup(req, res) {
+  static async restoreZoneweaverAPIBackup(req, res) {
     try {
       const { hostname, port, protocol, filename } = req.params;
       
@@ -1184,11 +1184,11 @@ class SettingsController {
 
   /**
    * @swagger
-   * /api/webhyve/{protocol}/{hostname}/{port}/server/restart:
+   * /api/zapi/{protocol}/{hostname}/{port}/server/restart:
    *   post:
-   *     summary: Restart WebHyve server (Super-admin only)
-   *     description: Restart a specific WebHyve backend server (requires process manager like PM2)
-   *     tags: [WebHyve Settings]
+   *     summary: Restart Zoneweaver API Server (Super-admin only)
+   *     description: Restart a specific Zoneweaver API server (requires process manager like PM2)
+   *     tags: [Zoneweaver API Settings]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -1206,7 +1206,7 @@ class SettingsController {
    *         schema:
    *           type: string
    *         description: Server hostname
-   *         example: "webhyve-host.example.com"
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
@@ -1216,7 +1216,7 @@ class SettingsController {
    *         example: 5001
    *     responses:
    *       200:
-   *         description: WebHyve server restart initiated
+   *         description: Zoneweaver API Server restart initiated
    *         content:
    *           application/json:
    *             schema:
@@ -1237,19 +1237,19 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found
+   *         description: Zoneweaver API Server not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Internal server error or WebHyve server error
+   *         description: Internal server error or Zoneweaver API Server error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async restartWebhyveServer(req, res) {
+  static async restartZoneweaverAPIServer(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
       

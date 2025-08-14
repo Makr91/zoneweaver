@@ -19,7 +19,7 @@ const BootEnvironmentManagement = ({ server }) => {
     showSnapshots: false
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load boot environments on component mount and when filters change
   useEffect(() => {
@@ -27,7 +27,7 @@ const BootEnvironmentManagement = ({ server }) => {
   }, [server, filters.showDetailed, filters.showSnapshots]);
 
   const loadBootEnvironments = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -38,7 +38,7 @@ const BootEnvironmentManagement = ({ server }) => {
       if (filters.showSnapshots) params.snapshots = true;
       if (filters.name) params.name = filters.name;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -73,7 +73,7 @@ const BootEnvironmentManagement = ({ server }) => {
   };
 
   const handleBEAction = async (beName, action, options = {}) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -116,7 +116,7 @@ const BootEnvironmentManagement = ({ server }) => {
           if (options.force) deleteParams.force = true;
           if (options.snapshots) deleteParams.snapshots = true;
           
-          const result = await makeWebHyveRequest(
+          const result = await makeZoneweaverAPIRequest(
             server.hostname,
             server.port,
             server.protocol,
@@ -137,7 +137,7 @@ const BootEnvironmentManagement = ({ server }) => {
           throw new Error(`Unknown action: ${action}`);
       }
 
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -185,7 +185,7 @@ const BootEnvironmentManagement = ({ server }) => {
     });
   };
 
-  if (!server || !makeWebHyveRequest) {
+  if (!server || !makeZoneweaverAPIRequest) {
     return (
       <div className='notification is-info'>
         <p>Please select a server to manage boot environments.</p>

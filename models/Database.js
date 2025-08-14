@@ -111,7 +111,7 @@ class Database {
       )
     `;
 
-    // Servers table for application-level WebHyve server management
+    // Servers table for application-level Zoneweaver API Server management
     const createServersTable = `
       CREATE TABLE IF NOT EXISTS servers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

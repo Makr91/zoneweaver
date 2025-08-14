@@ -5,7 +5,7 @@ import { useServers } from '../contexts/ServerContext';
 import { Helmet } from 'react-helmet-async';
 
 /**
- * Server Setup component for bootstrapping WebHyve servers
+ * Server Setup component for bootstrapping Zoneweaver API Servers
  * @returns {JSX.Element} ServerSetup component
  */
 const ServerSetup = () => {
@@ -130,15 +130,15 @@ const ServerSetup = () => {
           <div className='columns is-centered'>
             <div className='column is-6-desktop'>
               <form onSubmit={handleBootstrap} className='box'>
-                <h1 className='title has-text-centered'>WebHyve Server Setup</h1>
+                <h1 className='title has-text-centered'>Zoneweaver API Server Setup</h1>
                 <p className='subtitle has-text-centered'>
-                  Bootstrap a new WebHyve server for zone management
+                  Bootstrap a new Zoneweaver API Server for zone management
                 </p>
                 
                 {user && (
                   <div className='notification is-info'>
                     <p><strong>Welcome, {user.username}!</strong></p>
-                    <p>You can now add WebHyve servers to manage your zones.</p>
+                    <p>You can now add Zoneweaver API Servers to manage your zones.</p>
                   </div>
                 )}
 
@@ -177,7 +177,7 @@ const ServerSetup = () => {
                         <input 
                           type='text' 
                           className='input' 
-                          placeholder='webhyve.example.com' 
+                          placeholder='zoneweaver-api.example.com' 
                           value={hostname} 
                           onChange={(e) => setHostname(e.target.value)}
                           disabled={loading}
@@ -214,7 +214,7 @@ const ServerSetup = () => {
                       disabled={loading}
                     />
                   </div>
-                  <p className='help'>This name will identify this ZoneWeaver instance on the WebHyve server</p>
+                  <p className='help'>This name will identify this ZoneWeaver instance on the Zoneweaver API Server</p>
                 </div>
 
                 <div className='field is-grouped'>

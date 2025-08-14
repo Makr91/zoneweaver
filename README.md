@@ -4,7 +4,7 @@
 
 # ZoneWeaver
 
-ZoneWeaver - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via WebHyve backend.
+ZoneWeaver - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via Zoneweaver API.
 
 ## Platform Requirements
 

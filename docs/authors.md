@@ -1,7 +1,7 @@
 ---
 title: Authors
 layout: default
-nav_order: 14
+nav_order: 13
 permalink: /docs/authors/
 ---
 

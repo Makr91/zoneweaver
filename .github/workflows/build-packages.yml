@@ -124,7 +124,7 @@ jobs:
           Depends: ${DEPENDS}
           $([ -n "${CONFLICTS}" ] && echo "Conflicts: ${CONFLICTS}")
           Description: ${DESCRIPTION}
-           Web-based management interface for WebHyve zone hypervisors.
+           Web-based management interface for Zoneweaver API hypervisors.
            Provides intuitive control over zones, networking, and storage
            through a modern React frontend and Node.js API backend.
           Homepage: https://github.com/Makr91/zoneweaver

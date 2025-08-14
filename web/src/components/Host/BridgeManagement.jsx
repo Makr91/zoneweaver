@@ -11,7 +11,7 @@ const BridgeManagement = ({ server, onError }) => {
     name: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load bridges on component mount and when filters change
   useEffect(() => {
@@ -19,7 +19,7 @@ const BridgeManagement = ({ server, onError }) => {
   }, [server, filters.name]);
 
   const loadBridges = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -29,7 +29,7 @@ const BridgeManagement = ({ server, onError }) => {
       if (filters.name) params.name = filters.name;
       params.extended = true; // Include detailed bridge information
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -54,7 +54,7 @@ const BridgeManagement = ({ server, onError }) => {
   };
 
   const handleDeleteBridge = async (bridgeName) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     if (!window.confirm(`Are you sure you want to delete bridge "${bridgeName}"?`)) {
       return;
@@ -65,7 +65,7 @@ const BridgeManagement = ({ server, onError }) => {
       onError('');
       
       // Use query parameters instead of request body for DELETE request
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -92,13 +92,13 @@ const BridgeManagement = ({ server, onError }) => {
   };
 
   const handleViewDetails = async (bridge) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       onError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

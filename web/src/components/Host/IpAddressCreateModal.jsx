@@ -17,7 +17,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [interfaces, setInterfaces] = useState([]);
   const [loadingInterfaces, setLoadingInterfaces] = useState(false);
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load available interfaces when modal opens
   useEffect(() => {
@@ -25,15 +25,15 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
   }, [server]);
 
   const loadInterfaces = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoadingInterfaces(true);
       
       // Load VNICs and physical interfaces
       const [vnicsResult, interfacesResult] = await Promise.all([
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'network/vnics', 'GET'),
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces', 'GET')
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'network/vnics', 'GET'),
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces', 'GET')
       ]);
       
       const availableInterfaces = [];
@@ -181,7 +181,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
         requestData.address = `${formData.address.trim()}/${formData.netmask}`;
       }
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

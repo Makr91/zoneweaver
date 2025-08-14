@@ -27,7 +27,7 @@ export const FooterProvider = ({ children }) => {
     };
   }, []);
 
-  const { currentServer, makeWebHyveRequest } = useServers();
+  const { currentServer, makeZoneweaverAPIRequest } = useServers();
   const { footerActiveView, footerIsActive } = useContext(UserSettings);
   const [tasks, setTasks] = useState([]);
   const [tasksError, setTasksError] = useState('');
@@ -126,7 +126,7 @@ export const FooterProvider = ({ children }) => {
   }, [currentServer, footerIsActive, footerActiveView]);
 
   const fetchTasks = useCallback(async () => {
-    if (!currentServer || !makeWebHyveRequest) return;
+    if (!currentServer || !makeZoneweaverAPIRequest) return;
     
     try {
       // Get current tasks from ref to determine since parameter
@@ -136,7 +136,7 @@ export const FooterProvider = ({ children }) => {
         params.since = new Date(currentTasks[0].created_at).toISOString();
       }
 
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol,
@@ -203,7 +203,7 @@ export const FooterProvider = ({ children }) => {
     } catch (err) {
       console.error('An error occurred while fetching tasks:', err);
     }
-  }, [currentServer, makeWebHyveRequest]);
+  }, [currentServer, makeZoneweaverAPIRequest]);
 
   // Clean up persistent terminal when server changes
   useEffect(() => {

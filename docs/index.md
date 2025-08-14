@@ -9,7 +9,7 @@ permalink: /
 # ZoneWeaver Documentation
 {: .fs-9 }
 
-React-based web frontend for ZoneWeaver zone hypervisor management. Provides user management, organization control, and integration with WebHyve backend for managing Bhyve virtual machines on OmniOS/illumos.
+React-based web frontend for ZoneWeaver zone hypervisor management. Provides user management, organization control, and integration with Zoneweaver API for managing Bhyve virtual machines on OmniOS/illumos.
 {: .fs-6 .fw-300 }
 
 [Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
@@ -20,13 +20,13 @@ React-based web frontend for ZoneWeaver zone hypervisor management. Provides use
 
 ## Getting started
 
-ZoneWeaver is the web frontend component of the ZoneWeaver zone management system. It provides user authentication, organization management, and a comprehensive web interface for managing Bhyve virtual machines through the WebHyve backend API.
+ZoneWeaver is the web frontend component of the ZoneWeaver zone management system. It provides user authentication, organization management, and a comprehensive web interface for managing Bhyve virtual machines through the Zoneweaver API.
 
 ### Key Features
 
 - **User Management**: Complete user authentication and authorization system
 - **Multi-Organization Support**: Organization-based access control and management
-- **Server Management**: Configure and manage multiple WebHyve backend connections
+- **Server Management**: Configure and manage multiple Zoneweaver API connections
 - **Web Interface**: Modern React-based dashboard for zone management
 - **API Integration**: RESTful API for user/organization management and backend integration
 - **Responsive Design**: Mobile-friendly interface for on-the-go management
@@ -37,7 +37,7 @@ ZoneWeaver is the web frontend component of the ZoneWeaver zone management syste
 graph TD
     A[Web Browser] -- HTTPS --> B[ZoneWeaver Frontend];
     B -- User Auth API --> C[Frontend Node.js API];
-    B -- Zone Management --> D[WebHyve Backend API on OmniOS Host];
+    B -- Zone Management --> D[Zoneweaver API on OmniOS Host];
     D -- Manages --> E[Bhyve Zones / Virtual Machines];
     C -- Stores --> F[SQLite Database];
 ```
@@ -47,7 +47,7 @@ graph TD
 1. **Installation**: Install ZoneWeaver frontend via package or build from source
 2. **Configuration**: Configure settings in `/etc/zoneweaver/config.yaml`
 3. **Setup**: Create initial organization and admin user
-4. **Backend Connection**: Configure WebHyve backend server connections
+4. **Backend Connection**: Configure Zoneweaver API server connections
 5. **Access**: Open web interface and start managing zones
 
 ### Documentation
@@ -58,7 +58,7 @@ The ZoneWeaver frontend provides comprehensive documentation:
 - **[Getting Started Guide](docs/guides/getting-started/)** - Step-by-step setup instructions  
 - **[Installation Guide](docs/guides/installation/)** - Installation and deployment
 - **[User Guide](docs/user-guide/)** - Web interface usage and features
-- **[Backend Integration](docs/guides/backend-integration/)** - Connecting to WebHyve API
+- **[Backend Integration](docs/guides/backend-integration/)** - Connecting to Zoneweaver API API
 
 ---
 

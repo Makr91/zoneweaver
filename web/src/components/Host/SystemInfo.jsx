@@ -36,7 +36,7 @@ const SystemInfo = ({ serverStats, monitoringStatus, monitoringHealth, taskStats
                   <td>{serverStats.arch || 'N/A'}</td>
                 </tr>
                 <tr>
-                  <td><strong>WebHyve Version</strong></td>
+                  <td><strong>Zoneweaver API Version</strong></td>
                   <td>{serverStats.version || 'N/A'}</td>
                 </tr>
                 <tr>

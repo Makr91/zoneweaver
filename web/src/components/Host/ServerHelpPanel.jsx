@@ -7,7 +7,7 @@ const ServerHelpPanel = ({ useExistingApiKey }) => {
       <div className='content is-size-7'>
         <p><strong>Steps:</strong></p>
         <ol>
-          <li>Enter your WebHyve server details</li>
+          <li>Enter your Zoneweaver API Server details</li>
           <li>Choose bootstrap or existing API key</li>
           <li>Click "Test Connection" to verify connectivity</li>
           <li>Click "{useExistingApiKey ? 'Add Server' : 'Bootstrap Server'}" to complete setup</li>
@@ -16,10 +16,10 @@ const ServerHelpPanel = ({ useExistingApiKey }) => {
         
         <p className='mt-4'><strong>Requirements:</strong></p>
         <ul>
-          <li>WebHyve server must be running</li>
+          <li>Zoneweaver API Server must be running</li>
           {!useExistingApiKey && <li>Bootstrap endpoint must be enabled</li>}
           <li>Network connectivity to server</li>
-          {useExistingApiKey && <li>Valid API key from WebHyve server</li>}
+          {useExistingApiKey && <li>Valid API key from Zoneweaver API Server</li>}
         </ul>
 
         <p className='mt-4'><strong>Security:</strong></p>

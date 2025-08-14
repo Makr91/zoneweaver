@@ -573,7 +573,7 @@ const ZoneweaverSettings = () => {
               <>
                 <div className='level is-mobile mb-4'>
                   <div className='level-left'>
-                    <h2 className='title is-5'>WebHyve Backend Servers</h2>
+                    <h2 className='title is-5'>Zoneweaver API Servers</h2>
                   </div>
                   <div className='level-right'>
                     <button className='button is-primary' onClick={() => { setShowAddForm(!showAddForm); resetForm(); }}>
@@ -707,7 +707,7 @@ const ZoneweaverSettings = () => {
                             onChange={(e) => handleSettingChange('maxServersPerUser', parseInt(e.target.value))}
                           />
                         </div>
-                        <p className='help has-text-grey'>Maximum WebHyve servers per user</p>
+                        <p className='help has-text-grey'>Maximum Zoneweaver API Servers per user</p>
                       </div>
                     </div>
                     <div className='column'>

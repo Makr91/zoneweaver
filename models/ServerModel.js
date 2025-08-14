@@ -3,7 +3,7 @@ import axios from 'axios';
 import https from 'https';
 
 /**
- * Server model for managing WebHyve backend connections
+ * Server model for managing Zoneweaver API connections
  * This replaces the per-user API key system with application-level server management
  */
 class ServerModel {
@@ -40,7 +40,7 @@ class ServerModel {
   }
 
   /**
-   * Add a new WebHyve server connection
+   * Add a new Zoneweaver API Server connection
    * @param {Object} serverData - Server data
    * @param {string} serverData.hostname - Server hostname
    * @param {number} serverData.port - Server port
@@ -74,7 +74,7 @@ class ServerModel {
         }
         finalApiKey = apiKey;
       } else {
-        // Bootstrap API key from WebHyve server
+        // Bootstrap API key from Zoneweaver API Server
         const apiKeyResult = await this.bootstrapApiKey({ hostname, port, protocol, entityName });
         finalApiKey = apiKeyResult.apiKey;
       }
@@ -296,7 +296,7 @@ class ServerModel {
   }
 
   /**
-   * Bootstrap API key from WebHyve server
+   * Bootstrap API key from Zoneweaver API Server
    * @param {Object} serverData - Server data
    * @param {string} serverData.hostname - Server hostname
    * @param {number} serverData.port - Server port
@@ -308,7 +308,7 @@ class ServerModel {
     try {
       const serverUrl = `${protocol}://${hostname}:${port}`;
       
-      // Call bootstrap endpoint on WebHyve server
+      // Call bootstrap endpoint on Zoneweaver API Server
       const response = await axios.post(`${serverUrl}/api-keys/bootstrap`, {
         name: entityName
       }, {
@@ -325,7 +325,7 @@ class ServerModel {
           message: response.data.message
         };
       } else {
-        throw new Error('Invalid response from WebHyve server');
+        throw new Error('Invalid response from Zoneweaver API Server');
       }
     } catch (error) {
       console.error('Error bootstrapping API key:', error);
@@ -335,12 +335,12 @@ class ServerModel {
         
         // Handle bootstrap endpoint disabled case specifically
         if (error.response.status === 403 && errorMessage.includes('Bootstrap endpoint auto-disabled')) {
-          throw new Error('Bootstrap endpoint has been auto-disabled after first use for security. Please use the "I have an existing API key" option instead. You can get an API key from your WebHyve server\'s API key management interface.');
+          throw new Error('Bootstrap endpoint has been auto-disabled after first use for security. Please use the "I have an existing API key" option instead. You can get an API key from your Zoneweaver API Server\'s API key management interface.');
         }
         
-        throw new Error(`WebHyve server error: ${errorMessage}`);
+        throw new Error(`Zoneweaver API Server error: ${errorMessage}`);
       } else if (error.code === 'ECONNREFUSED') {
-        throw new Error('Cannot connect to WebHyve server. Please check if the server is running.');
+        throw new Error('Cannot connect to Zoneweaver API Server. Please check if the server is running.');
       } else {
         throw new Error(`Bootstrap failed: ${error.message}`);
       }
@@ -348,7 +348,7 @@ class ServerModel {
   }
 
   /**
-   * Make a request to a WebHyve server
+   * Make a request to a Zoneweaver API Server
    * @param {string} hostname - Server hostname
    * @param {number} port - Server port
    * @param {string} protocol - Server protocol
@@ -420,7 +420,7 @@ class ServerModel {
         'Content-Type': 'application/json'
       };
       
-      // All WebHyve backend routes use Authorization: Bearer
+      // All Zoneweaver API routes use Authorization: Bearer
       requestHeaders['Authorization'] = `Bearer ${apiKey}`;
       
       // Add any additional headers from options, but don't allow overwriting auth headers
@@ -463,9 +463,9 @@ class ServerModel {
       const status = error.response?.status;
       
       if (status) {
-        console.error(`WebHyve request failed: ${status} - ${errorMsg}`);
+        console.error(`Zoneweaver API request failed: ${status} - ${errorMsg}`);
       } else {
-        console.error(`WebHyve request failed: ${errorMsg}`);
+        console.error(`Zoneweaver API request failed: ${errorMsg}`);
       }
       
       return {

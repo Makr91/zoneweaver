@@ -5,7 +5,7 @@ const serverCache = new Map();
 const CACHE_TTL = 30000; // 30 seconds
 
 /**
- * Server controller for managing WebHyve backend connections
+ * Server controller for managing Zoneweaver API connections
  * This replaces the per-user API key system with application-level server management
  */
 class ServerController {
@@ -40,8 +40,8 @@ class ServerController {
    * @swagger
    * /api/servers:
    *   post:
-   *     summary: Add a new WebHyve server
-   *     description: Add a WebHyve backend server for zone management (Admin only)
+   *     summary: Add a new Zoneweaver API Server
+   *     description: Add a Zoneweaver API server for zone management (Admin only)
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -56,7 +56,7 @@ class ServerController {
    *               hostname:
    *                 type: string
    *                 description: Server hostname or IP address
-   *                 example: "webhyve-host.example.com"
+   *                 example: "zoneweaver-api-host.example.com"
    *               port:
    *                 type: integer
    *                 description: Server port number
@@ -69,14 +69,14 @@ class ServerController {
    *               entityName:
    *                 type: string
    *                 description: Display name for the server
-   *                 example: "Production WebHyve Server"
+   *                 example: "Production Zoneweaver API Server"
    *               description:
    *                 type: string
    *                 description: Optional server description
    *                 example: "Main production server for zone management"
    *               apiKey:
    *                 type: string
-   *                 description: Existing WebHyve API key (optional - will bootstrap if not provided)
+   *                 description: Existing Zoneweaver API API key (optional - will bootstrap if not provided)
    *                 example: "wh_abc123def456..."
    *     responses:
    *       200:
@@ -166,8 +166,8 @@ class ServerController {
    * @swagger
    * /api/servers:
    *   get:
-   *     summary: Get all WebHyve servers
-   *     description: Retrieve list of all configured WebHyve backend servers
+   *     summary: Get all Zoneweaver API Servers
+   *     description: Retrieve list of all configured Zoneweaver API servers
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -220,8 +220,8 @@ class ServerController {
    * @swagger
    * /api/servers/test:
    *   post:
-   *     summary: Test WebHyve server connectivity
-   *     description: Test connection to a WebHyve backend server
+   *     summary: Test Zoneweaver API Server connectivity
+   *     description: Test connection to a Zoneweaver API server
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -236,7 +236,7 @@ class ServerController {
    *               hostname:
    *                 type: string
    *                 description: Server hostname or IP address
-   *                 example: "webhyve-host.example.com"
+   *                 example: "zoneweaver-api-host.example.com"
    *               port:
    *                 type: integer
    *                 description: Server port number
@@ -319,8 +319,8 @@ class ServerController {
    * @swagger
    * /api/servers/{serverId}:
    *   delete:
-   *     summary: Remove a WebHyve server
-   *     description: Remove a WebHyve backend server from ZoneWeaver (Admin only)
+   *     summary: Remove a Zoneweaver API Server
+   *     description: Remove a Zoneweaver API server from ZoneWeaver (Admin only)
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -411,11 +411,11 @@ class ServerController {
 
   /**
    * @swagger
-   * /api/webhyve/{protocol}/{hostname}/{port}/{path}:
+   * /api/zapi/{protocol}/{hostname}/{port}/{path}:
    *   get:
-   *     summary: Proxy request to WebHyve backend (General API proxy)
-   *     description: Forward API requests to a specific WebHyve backend server with authentication
-   *     tags: [WebHyve Proxy]
+   *     summary: Proxy request to Zoneweaver API (General API proxy)
+   *     description: Forward API requests to a specific Zoneweaver API server with authentication
+   *     tags: [Zoneweaver API Server]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -425,37 +425,37 @@ class ServerController {
    *         schema:
    *           type: string
    *           enum: [http, https]
-   *         description: WebHyve server protocol
+   *         description: Zoneweaver API Server protocol
    *         example: "https"
    *       - in: path
    *         name: hostname
    *         required: true
    *         schema:
    *           type: string
-   *         description: WebHyve server hostname
-   *         example: "webhyve-host.example.com"
+   *         description: Zoneweaver API Server hostname
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
    *         schema:
    *           type: integer
-   *         description: WebHyve server port
+   *         description: Zoneweaver API Server port
    *         example: 5001
    *       - in: path
    *         name: path
    *         required: true
    *         schema:
    *           type: string
-   *         description: API path to proxy to WebHyve backend
+   *         description: API path to proxy to Zoneweaver API
    *         example: "zones"
    *     responses:
    *       200:
-   *         description: Successful proxy response from WebHyve backend
+   *         description: Successful proxy response from Zoneweaver API
    *         content:
    *           application/json:
    *             schema:
    *               type: object
-   *               description: Response from WebHyve backend (varies by endpoint)
+   *               description: Response from Zoneweaver API (varies by endpoint)
    *       400:
    *         description: Bad request or validation error
    *         content:
@@ -469,21 +469,21 @@ class ServerController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found or endpoint not found
+   *         description: Zoneweaver API Server not found or endpoint not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Proxy error or WebHyve backend error
+   *         description: Proxy error or Zoneweaver API error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *   post:
-   *     summary: Proxy POST request to WebHyve backend
-   *     description: Forward POST requests to WebHyve backend with authentication
-   *     tags: [WebHyve Proxy]
+   *     summary: Proxy POST request to Zoneweaver API
+   *     description: Forward POST requests to Zoneweaver API with authentication
+   *     tags: [Zoneweaver API Server]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -493,28 +493,28 @@ class ServerController {
    *         schema:
    *           type: string
    *           enum: [http, https]
-   *         description: WebHyve server protocol
+   *         description: Zoneweaver API Server protocol
    *         example: "https"
    *       - in: path
    *         name: hostname
    *         required: true
    *         schema:
    *           type: string
-   *         description: WebHyve server hostname
-   *         example: "webhyve-host.example.com"
+   *         description: Zoneweaver API Server hostname
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
    *         schema:
    *           type: integer
-   *         description: WebHyve server port
+   *         description: Zoneweaver API Server port
    *         example: 5001
    *       - in: path
    *         name: path
    *         required: true
    *         schema:
    *           type: string
-   *         description: API path to proxy to WebHyve backend
+   *         description: API path to proxy to Zoneweaver API
    *         example: "zones/create"
    *     requestBody:
    *       required: false
@@ -522,15 +522,15 @@ class ServerController {
    *         application/json:
    *           schema:
    *             type: object
-   *             description: Request body to forward to WebHyve backend
+   *             description: Request body to forward to Zoneweaver API
    *     responses:
    *       200:
-   *         description: Successful proxy response from WebHyve backend
+   *         description: Successful proxy response from Zoneweaver API
    *         content:
    *           application/json:
    *             schema:
    *               type: object
-   *               description: Response from WebHyve backend (varies by endpoint)
+   *               description: Response from Zoneweaver API (varies by endpoint)
    *       400:
    *         description: Bad request or validation error
    *         content:
@@ -544,21 +544,21 @@ class ServerController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found or endpoint not found
+   *         description: Zoneweaver API Server not found or endpoint not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Proxy error or WebHyve backend error
+   *         description: Proxy error or Zoneweaver API error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *   put:
-   *     summary: Proxy PUT request to WebHyve backend
-   *     description: Forward PUT requests to WebHyve backend with authentication
-   *     tags: [WebHyve Proxy]
+   *     summary: Proxy PUT request to Zoneweaver API
+   *     description: Forward PUT requests to Zoneweaver API with authentication
+   *     tags: [Zoneweaver API Server]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -568,28 +568,28 @@ class ServerController {
    *         schema:
    *           type: string
    *           enum: [http, https]
-   *         description: WebHyve server protocol
+   *         description: Zoneweaver API Server protocol
    *         example: "https"
    *       - in: path
    *         name: hostname
    *         required: true
    *         schema:
    *           type: string
-   *         description: WebHyve server hostname
-   *         example: "webhyve-host.example.com"
+   *         description: Zoneweaver API Server hostname
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
    *         schema:
    *           type: integer
-   *         description: WebHyve server port
+   *         description: Zoneweaver API Server port
    *         example: 5001
    *       - in: path
    *         name: path
    *         required: true
    *         schema:
    *           type: string
-   *         description: API path to proxy to WebHyve backend
+   *         description: API path to proxy to Zoneweaver API
    *         example: "zones/zone-name/update"
    *     requestBody:
    *       required: false
@@ -597,15 +597,15 @@ class ServerController {
    *         application/json:
    *           schema:
    *             type: object
-   *             description: Request body to forward to WebHyve backend
+   *             description: Request body to forward to Zoneweaver API
    *     responses:
    *       200:
-   *         description: Successful proxy response from WebHyve backend
+   *         description: Successful proxy response from Zoneweaver API
    *         content:
    *           application/json:
    *             schema:
    *               type: object
-   *               description: Response from WebHyve backend (varies by endpoint)
+   *               description: Response from Zoneweaver API (varies by endpoint)
    *       400:
    *         description: Bad request or validation error
    *         content:
@@ -619,21 +619,21 @@ class ServerController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found or endpoint not found
+   *         description: Zoneweaver API Server not found or endpoint not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Proxy error or WebHyve backend error
+   *         description: Proxy error or Zoneweaver API error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *   delete:
-   *     summary: Proxy DELETE request to WebHyve backend
-   *     description: Forward DELETE requests to WebHyve backend with authentication
-   *     tags: [WebHyve Proxy]
+   *     summary: Proxy DELETE request to Zoneweaver API
+   *     description: Forward DELETE requests to Zoneweaver API with authentication
+   *     tags: [Zoneweaver API Server]
    *     security:
    *       - JwtAuth: []
    *     parameters:
@@ -643,37 +643,37 @@ class ServerController {
    *         schema:
    *           type: string
    *           enum: [http, https]
-   *         description: WebHyve server protocol
+   *         description: Zoneweaver API Server protocol
    *         example: "https"
    *       - in: path
    *         name: hostname
    *         required: true
    *         schema:
    *           type: string
-   *         description: WebHyve server hostname
-   *         example: "webhyve-host.example.com"
+   *         description: Zoneweaver API Server hostname
+   *         example: "zoneweaver-api-host.example.com"
    *       - in: path
    *         name: port
    *         required: true
    *         schema:
    *           type: integer
-   *         description: WebHyve server port
+   *         description: Zoneweaver API Server port
    *         example: 5001
    *       - in: path
    *         name: path
    *         required: true
    *         schema:
    *           type: string
-   *         description: API path to proxy to WebHyve backend
+   *         description: API path to proxy to Zoneweaver API
    *         example: "zones/zone-name"
    *     responses:
    *       200:
-   *         description: Successful proxy response from WebHyve backend
+   *         description: Successful proxy response from Zoneweaver API
    *         content:
    *           application/json:
    *             schema:
    *               type: object
-   *               description: Response from WebHyve backend (varies by endpoint)
+   *               description: Response from Zoneweaver API (varies by endpoint)
    *       400:
    *         description: Bad request or validation error
    *         content:
@@ -687,27 +687,27 @@ class ServerController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: WebHyve server not found or endpoint not found
+   *         description: Zoneweaver API Server not found or endpoint not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       500:
-   *         description: Proxy error or WebHyve backend error
+   *         description: Proxy error or Zoneweaver API error
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async proxyToWebHyve(req, res) {
+  static async proxyToZoneweaverAPI(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
       const path = req.params[0] || ''; // Capture the rest of the path
 
-      // Create clean headers for WebHyve request - explicitly exclude problematic headers
+      // Create clean headers for Zoneweaver API request - explicitly exclude problematic headers
       const cleanHeaders = {};
       for (const [key, value] of Object.entries(req.headers)) {
-        // Skip headers that should not be forwarded to WebHyve
+        // Skip headers that should not be forwarded to Zoneweaver API
         if (!['host', 'authorization', 'cookie'].includes(key.toLowerCase())) {
           cleanHeaders[key] = value;
         }
@@ -746,7 +746,7 @@ class ServerController {
         });
       }
     } catch (error) {
-      console.error('WebHyve proxy error:', error.message);
+      console.error('Zoneweaver API proxy error:', error.message);
       res.status(500).json({
         success: false,
         message: 'Proxy request failed'
@@ -770,7 +770,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Server address in format hostname:port
-   *         example: "webhyve-host.example.com:5001"
+   *         example: "zoneweaver-api-host.example.com:5001"
    *       - in: path
    *         name: zoneName
    *         required: true
@@ -823,7 +823,7 @@ class ServerController {
    *                 summary: Server not found
    *                 value:
    *                   success: false
-   *                   message: "WebHyve server hostname:port not found in ZoneWeaver configuration"
+   *                   message: "Zoneweaver API Server hostname:port not found in ZoneWeaver configuration"
    *               assetNotFound:
    *                 summary: Asset not found
    *                 value:
@@ -831,7 +831,7 @@ class ServerController {
    *                   message: "Asset not found"
    *                   asset_path: "app/missing.js"
    *       500:
-   *         description: Proxy error or WebHyve backend error
+   *         description: Proxy error or Zoneweaver API error
    *         content:
    *           application/json:
    *             schema:
@@ -852,7 +852,7 @@ class ServerController {
         console.error(`🔗 VNC Asset: Server not found - ${hostname}:${port}`);
         return res.status(404).json({
           success: false,
-          message: `WebHyve server ${hostname}:${port} not found in ZoneWeaver configuration`,
+          message: `Zoneweaver API Server ${hostname}:${port} not found in ZoneWeaver configuration`,
           asset_path: vncPath
         });
       }
@@ -861,7 +861,7 @@ class ServerController {
         console.error(`🔗 VNC Asset: No API key for server ${hostname}:${port}`);
         return res.status(500).json({
           success: false,
-          message: `No API key configured for WebHyve server ${hostname}:${port}`,
+          message: `No API key configured for Zoneweaver API Server ${hostname}:${port}`,
           asset_path: vncPath
         });
       }
@@ -881,22 +881,22 @@ class ServerController {
       // Handle regular HTTP requests (static assets, API calls)
       const queryString = req.url.split('?')[1];
       
-      // Construct the WebHyve URL - aligned with backend's new asset routing
-      let webhyveUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
+      // Construct the Zoneweaver API URL - aligned with backend's new asset routing
+      let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
       
       // Append query parameters if present
       if (queryString) {
-        webhyveUrl += `?${queryString}`;
+        zapiUrl += `?${queryString}`;
       }
       
       // Only log CSS files and console requests to reduce noise
       const needsLogging = vncPath.includes('console') || vncPath.endsWith('.css');
       if (needsLogging) {
-        console.log(`🔗 VNC Asset: Proxying ${vncPath || 'root'} to ${webhyveUrl}`);
+        console.log(`🔗 VNC Asset: Proxying ${vncPath || 'root'} to ${zapiUrl}`);
       }
 
       try {
-        // Make authenticated request to WebHyve backend
+        // Make authenticated request to Zoneweaver API
         const requestHeaders = {
           'Authorization': `Bearer ${server.api_key}`,
           'User-Agent': 'ZoneWeaver-Proxy/1.0'
@@ -909,7 +909,7 @@ class ServerController {
 
         const response = await axios({
           method: req.method,
-          url: webhyveUrl,
+          url: zapiUrl,
           headers: requestHeaders,
           data: req.method !== 'GET' && req.method !== 'DELETE' ? req.body : undefined,
           responseType: 'stream',
@@ -1062,7 +1062,7 @@ class ServerController {
    * /api/servers/{serverAddress}/zones/{zoneName}/vnc/console:
    *   get:
    *     summary: Access VNC console for zone
-   *     description: Proxy to WebHyve VNC console with URL rewriting for seamless integration in ZoneWeaver
+   *     description: Proxy to Zoneweaver API VNC console with URL rewriting for seamless integration in ZoneWeaver
    *     tags: [VNC Console]
    *     security:
    *       - JwtAuth: []
@@ -1073,7 +1073,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Server address in format hostname:port
-   *         example: "webhyve-host.example.com:5001"
+   *         example: "zoneweaver-api-host.example.com:5001"
    *       - in: path
    *         name: zoneName
    *         required: true
@@ -1121,12 +1121,12 @@ class ServerController {
    *             examples:
    *               serverNotFound:
    *                 summary: Server not found
-   *                 value: '<html><body><h2>Server Not Found</h2><p>WebHyve server not found in ZoneWeaver configuration.</p></body></html>'
+   *                 value: '<html><body><h2>Server Not Found</h2><p>Zoneweaver API Server not found in ZoneWeaver configuration.</p></body></html>'
    *               configError:
    *                 summary: Configuration error
-   *                 value: '<html><body><h2>Configuration Error</h2><p>No API key configured for WebHyve server</p></body></html>'
+   *                 value: '<html><body><h2>Configuration Error</h2><p>No API key configured for Zoneweaver API Server</p></body></html>'
    *       500:
-   *         description: Proxy error or WebHyve backend error
+   *         description: Proxy error or Zoneweaver API error
    *         content:
    *           text/html:
    *             schema:
@@ -1149,7 +1149,7 @@ class ServerController {
           <html>
             <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
               <h2 style="color: #e74c3c;">Server Not Found</h2>
-              <p>WebHyve server ${hostname}:${port} not found in ZoneWeaver configuration.</p>
+              <p>Zoneweaver API Server ${hostname}:${port} not found in ZoneWeaver configuration.</p>
               <p style="color: #7f8c8d; font-size: 0.9em;">Please add this server in ZoneWeaver settings.</p>
             </body>
           </html>
@@ -1162,7 +1162,7 @@ class ServerController {
           <html>
             <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
               <h2 style="color: #e74c3c;">Configuration Error</h2>
-              <p>No API key configured for WebHyve server ${hostname}:${port}</p>
+              <p>No API key configured for Zoneweaver API Server ${hostname}:${port}</p>
               <p style="color: #7f8c8d; font-size: 0.9em;">
                 Please check the server configuration in ZoneWeaver settings.
               </p>
@@ -1174,21 +1174,21 @@ class ServerController {
       // Import axios for HTTP proxy requests
       const axios = (await import('axios')).default;
       
-      // Extract query parameters from the request URL to forward to WebHyve
+      // Extract query parameters from the request URL to forward to Zoneweaver API
       const queryString = req.url.split('?')[1];
       
-      // Construct the WebHyve VNC console URL - aligned with backend implementation
-      let webhyveUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/console`;
+      // Construct the Zoneweaver API VNC console URL - aligned with backend implementation
+      let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/console`;
       
       // Append query parameters if present (for noVNC configuration)
       if (queryString) {
-        webhyveUrl += `?${queryString}`;
+        zapiUrl += `?${queryString}`;
       }
       
-      console.log(`🔗 VNC Console: Proxying request to ${webhyveUrl}`);
+      console.log(`🔗 VNC Console: Proxying request to ${zapiUrl}`);
 
       try {
-        // Make authenticated request to WebHyve backend
+        // Make authenticated request to Zoneweaver API
         const requestHeaders = {
           'Authorization': `Bearer ${server.api_key}`,
           'User-Agent': 'ZoneWeaver-Proxy/1.0',
@@ -1203,7 +1203,7 @@ class ServerController {
 
         const response = await axios({
           method: req.method,
-          url: webhyveUrl,
+          url: zapiUrl,
           headers: requestHeaders,
           responseType: 'stream', // ✅ FIX: Enable streaming response
           timeout: 30000
@@ -1359,7 +1359,7 @@ class ServerController {
         console.error('VNC proxy request failed:', proxyError.message);
         
         if (proxyError.response) {
-          // Handle specific HTTP errors from WebHyve
+          // Handle specific HTTP errors from Zoneweaver API
           const statusCode = proxyError.response.status;
           const errorMessage = proxyError.response.data || proxyError.message;
           
@@ -1384,7 +1384,7 @@ class ServerController {
             <html>
               <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
                 <h2 style="color: #e74c3c;">Connection Error</h2>
-                <p>Failed to connect to WebHyve backend.</p>
+                <p>Failed to connect to Zoneweaver API.</p>
                 <p style="color: #7f8c8d; font-size: 0.9em;">
                   ${proxyError.message}
                 </p>
@@ -1421,7 +1421,7 @@ class ServerController {
    * /api/terminal/start:
    *   post:
    *     summary: Start a new terminal session
-   *     description: Create a new terminal session on the default WebHyve server
+   *     description: Create a new terminal session on the default Zoneweaver API Server
    *     tags: [Terminal & Shell]
    *     security:
    *       - JwtAuth: []
@@ -1521,7 +1521,7 @@ class ServerController {
    * /api/servers/{serverAddress}/zones/{zoneName}/zlogin/start:
    *   post:
    *     summary: Start a new zlogin session for zone
-   *     description: Create a new zlogin (zone login) shell session for the specified zone on a WebHyve server
+   *     description: Create a new zlogin (zone login) shell session for the specified zone on a Zoneweaver API Server
    *     tags: [Terminal & Shell]
    *     security:
    *       - JwtAuth: []
@@ -1532,7 +1532,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Server address in format hostname:port
-   *         example: "webhyve-host.example.com:5001"
+   *         example: "zoneweaver-api-host.example.com:5001"
    *       - in: path
    *         name: zoneName
    *         required: true
@@ -1727,7 +1727,7 @@ class ServerController {
    * /api/servers/{serverAddress}/zlogin/sessions:
    *   get:
    *     summary: Get all zlogin sessions
-   *     description: Retrieve all active zlogin sessions on the specified WebHyve server
+   *     description: Retrieve all active zlogin sessions on the specified Zoneweaver API Server
    *     tags: [Terminal & Shell]
    *     security:
    *       - JwtAuth: []
@@ -1738,7 +1738,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Server address in format hostname:port
-   *         example: "webhyve-host.example.com:5001"
+   *         example: "zoneweaver-api-host.example.com:5001"
    *     responses:
    *       200:
    *         description: Zlogin sessions retrieved successfully
@@ -1847,7 +1847,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Server address in format hostname:port
-   *         example: "webhyve-host.example.com:5001"
+   *         example: "zoneweaver-api-host.example.com:5001"
    *       - in: path
    *         name: sessionId
    *         required: true
@@ -1976,7 +1976,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Server address in format hostname:port
-   *         example: "webhyve-host.example.com:5001"
+   *         example: "zoneweaver-api-host.example.com:5001"
    *       - in: path
    *         name: sessionId
    *         required: true

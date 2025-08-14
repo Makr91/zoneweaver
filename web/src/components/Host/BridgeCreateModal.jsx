@@ -17,7 +17,7 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [availableLinks, setAvailableLinks] = useState([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load available links when modal opens
   useEffect(() => {
@@ -25,12 +25,12 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
   }, [server]);
 
   const loadAvailableLinks = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoadingLinks(true);
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -146,7 +146,7 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
         created_by: 'api'
       };
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

@@ -144,7 +144,7 @@ Current password policy:
 Each organization can configure:
 - **Name and Description**: Basic organization information
 - **User Management**: Control user access and roles
-- **Server Assignments**: Which WebHyve backend servers this organization can access
+- **Server Assignments**: Which Zoneweaver API servers this organization can access
 
 ### Multi-Tenant Isolation
 
@@ -240,4 +240,4 @@ curl -X GET https://your-server:3443/api/user/profile \
 
 ---
 
-Next: [Backend Integration](backend-integration/) - Connect to WebHyve servers
+Next: [Backend Integration](backend-integration/) - Connect to Zoneweaver API Servers

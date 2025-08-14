@@ -67,7 +67,7 @@ export const useHostStorageData = () => {
         getStoragePoolIO,
         getStorageDiskIO,
         getStorageARC,
-        makeWebHyveRequest
+        makeZoneweaverAPIRequest
     } = useServers();
 
     useEffect(() => {
@@ -658,7 +658,7 @@ export const useHostStorageData = () => {
             const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
             const sinceISO = sinceTime.toISOString();
 
-            const historicalResult = await makeWebHyveRequest(
+            const historicalResult = await makeZoneweaverAPIRequest(
                 server.hostname,
                 server.port,
                 server.protocol,
@@ -994,7 +994,7 @@ export const useHostStorageData = () => {
             const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
             const sinceISO = sinceTime.toISOString();
 
-            const historicalResult = await makeWebHyveRequest(
+            const historicalResult = await makeZoneweaverAPIRequest(
                 server.hostname,
                 server.port,
                 server.protocol,

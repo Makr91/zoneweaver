@@ -9,7 +9,7 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
         </div>
         <h3 className='title is-4 has-text-grey'>No Servers Configured</h3>
         <p className='has-text-grey mb-4'>
-          You haven't added any WebHyve servers yet. Add a server to start managing zones.
+          You haven't added any Zoneweaver API Servers yet. Add a server to start managing zones.
         </p>
       </div>
     );

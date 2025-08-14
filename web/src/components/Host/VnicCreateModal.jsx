@@ -16,7 +16,7 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [propertyKey, setPropertyKey] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Common VNIC properties dropdown options
   const commonProperties = [
@@ -121,7 +121,7 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
     
     try {
       // Get existing VNICs to check for conflicts
-      const vnicsResult = await makeWebHyveRequest(
+      const vnicsResult = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -182,17 +182,17 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
   };
 
   const loadAvailableLinks = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoadingLinks(true);
       
       // Load different types of links that VNICs can attach to
       const [linksResult, etherstubsResult, aggregatesResult, bridgesResult] = await Promise.all([
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces', 'GET'),
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'network/etherstubs', 'GET'),
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'network/aggregates', 'GET'),
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'network/bridges', 'GET')
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces', 'GET'),
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'network/etherstubs', 'GET'),
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'network/aggregates', 'GET'),
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'network/bridges', 'GET')
       ]);
       
       console.log('VNIC Link Loading Debug:', {
@@ -373,7 +373,7 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
         requestData.properties = formData.properties;
       }
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

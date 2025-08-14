@@ -45,7 +45,7 @@ cors:
     credentials: true
 
 backend_servers:
-  - hostname: "hv-04-webhyve.home.m4kr.net"
+  - hostname: "hv-04-zapi.home.m4kr.net"
     port: 5001
     protocol: "https"
     allow_insecure: false

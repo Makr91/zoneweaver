@@ -11,9 +11,9 @@ const NetworkHostnameManagement = ({ server }) => {
   const [activeSection, setActiveSection] = useState('hostname');
   const [error, setError] = useState('');
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
-  if (!server || !makeWebHyveRequest) {
+  if (!server || !makeZoneweaverAPIRequest) {
     return (
       <div className='notification is-info'>
         <p>Please select a server to manage network configuration.</p>

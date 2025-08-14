@@ -390,7 +390,7 @@ server {
 2. **Create Organization** (if enabled)
 3. **Register Admin User**
 4. **Configure Settings**
-5. **Add WebHyve Backend Servers**
+5. **Add Zoneweaver API Servers**
 
 ### Security Hardening
 

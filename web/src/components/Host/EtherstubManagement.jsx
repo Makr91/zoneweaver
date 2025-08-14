@@ -15,7 +15,7 @@ const EtherstubManagement = ({ server, onError }) => {
     name: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load etherstubs on component mount and when filters change
   useEffect(() => {
@@ -23,7 +23,7 @@ const EtherstubManagement = ({ server, onError }) => {
   }, [server, filters.name]);
 
   const loadEtherstubs = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -32,7 +32,7 @@ const EtherstubManagement = ({ server, onError }) => {
       const params = {};
       if (filters.name) params.name = filters.name;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -57,7 +57,7 @@ const EtherstubManagement = ({ server, onError }) => {
   };
 
   const handleDeleteEtherstub = async (etherstubName) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     if (!window.confirm(`Are you sure you want to delete etherstub "${etherstubName}"?`)) {
       return;
@@ -68,7 +68,7 @@ const EtherstubManagement = ({ server, onError }) => {
       onError('');
       
       // Use query parameters instead of request body for DELETE request
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -96,7 +96,7 @@ const EtherstubManagement = ({ server, onError }) => {
   };
 
   const handleViewDetails = async (etherstub) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -113,7 +113,7 @@ const EtherstubManagement = ({ server, onError }) => {
         return;
       }
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

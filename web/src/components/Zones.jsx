@@ -46,7 +46,7 @@ const Zones = () => {
   const { user } = useAuth();
   const { 
     getServers, 
-    makeWebHyveRequest, 
+    makeZoneweaverAPIRequest, 
     servers: allServers, 
     currentServer, 
     currentZone, 
@@ -117,7 +117,7 @@ const Zones = () => {
       setLoading(true);
       setError("");
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -145,7 +145,7 @@ const Zones = () => {
     try {
       setLoading(true);
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol,
@@ -270,7 +270,7 @@ const Zones = () => {
         console.log(`🔍 VNC VALIDATION: Attempt ${attempt}/${maxAttempts} for zone: ${zoneName}`);
         
         // Check VNC session status with cache bypass
-        const vncResult = await makeWebHyveRequest(
+        const vncResult = await makeZoneweaverAPIRequest(
           currentServer.hostname,
           currentServer.port,
           currentServer.protocol,
@@ -360,7 +360,7 @@ const Zones = () => {
       console.log(`🔍 VNC STATUS: Making request to path: ${apiPath}`);
       
       // Simple API call - backend returns active session or 404
-      const vncResult = await makeWebHyveRequest(
+      const vncResult = await makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol,
@@ -463,7 +463,7 @@ const Zones = () => {
       console.log(`🔍 ZLOGIN STATUS: Checking session status for zone: ${zoneName}`);
       
       // Get all zlogin sessions and find active ones for this zone
-      const sessionsResult = await makeWebHyveRequest(
+      const sessionsResult = await makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol,
@@ -857,7 +857,7 @@ const Zones = () => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Use DIFFERENT cache-busting parameter to avoid conflicts
-        const statusResult = await makeWebHyveRequest(
+        const statusResult = await makeZoneweaverAPIRequest(
           currentServer.hostname,
           currentServer.port,
           currentServer.protocol,
@@ -915,14 +915,14 @@ const Zones = () => {
             </div>
             <div className='p-4'>
               <div className='notification is-info'>
-                <h2 className='title is-4'>No WebHyve Servers</h2>
-                <p>You haven't added any WebHyve servers yet. Add a server to start managing zones.</p>
+                <h2 className='title is-4'>No Zoneweaver API Servers</h2>
+                <p>You haven't added any Zoneweaver API Servers yet. Add a server to start managing zones.</p>
                 <div className='mt-4'>
                   <a href='/ui/settings/zoneweaver?tab=servers' className='button is-primary'>
                     <span className='icon'>
                       <i className='fas fa-plus'></i>
                     </span>
-                    <span>Add WebHyve Server</span>
+                    <span>Add Zoneweaver API Server</span>
                   </a>
                 </div>
               </div>
@@ -1293,7 +1293,7 @@ const Zones = () => {
                                               console.log(`Killing zlogin session for zone: ${selectedZone}`);
                                               
                                               // Get all active zlogin sessions to find the one for this zone
-                                              const sessionsResult = await makeWebHyveRequest(
+                                              const sessionsResult = await makeZoneweaverAPIRequest(
                                                 currentServer.hostname,
                                                 currentServer.port,
                                                 currentServer.protocol,
@@ -1311,7 +1311,7 @@ const Zones = () => {
 
                                                 if (activeZoneSession) {
                                                   // Kill the specific session by ID
-                                                  const killResult = await makeWebHyveRequest(
+                                                  const killResult = await makeZoneweaverAPIRequest(
                                                     currentServer.hostname,
                                                     currentServer.port,
                                                     currentServer.protocol,
@@ -1795,7 +1795,7 @@ const Zones = () => {
                               <p>Zone configuration details are not available for this zone. This could be because:</p>
                               <ul>
                                 <li>The zone configuration hasn't been loaded yet</li>
-                                <li>The WebHyve backend doesn't have configuration data for this zone</li>
+                                <li>The Zoneweaver API doesn't have configuration data for this zone</li>
                                 <li>The zone might be in a transitional state</li>
                               </ul>
                             </div>
@@ -1814,7 +1814,7 @@ const Zones = () => {
                       <div className='notification is-info'>
                         <p>Zone details will appear here when available.</p>
                         <p className='is-size-7 has-text-grey'>
-                          Note: Zone detail fetching depends on WebHyve server API support.
+                          Note: Zone detail fetching depends on Zoneweaver API Server API support.
                         </p>
                       </div>
                     )}

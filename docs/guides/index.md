@@ -16,7 +16,7 @@ Step-by-step guides for setting up and using the ZoneWeaver frontend web interfa
 - [Getting Started](getting-started/) - Initial setup and configuration
 - [Installation](installation/) - Install ZoneWeaver frontend using packages or from source
 - [Authentication](authentication/) - User management and authentication setup
-- [Backend Integration](backend-integration/) - Connecting to WebHyve backend servers
+- [Backend Integration](backend-integration/) - Connecting to Zoneweaver API servers
 
 ---
 

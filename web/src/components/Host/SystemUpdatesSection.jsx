@@ -13,7 +13,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
   const [showRawOutput, setShowRawOutput] = useState(false);
   const [activeTab, setActiveTab] = useState('updates');
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Check for updates on component mount
   useEffect(() => {
@@ -26,7 +26,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
   const checkForUpdates = async () => {
     setCheckingUpdates(true);
     try {
-      const response = await makeWebHyveRequest(
+      const response = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -50,7 +50,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
   const refreshMetadata = async () => {
     setRefreshing(true);
     try {
-      const response = await makeWebHyveRequest(
+      const response = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -80,7 +80,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
   const installUpdates = async () => {
     setInstalling(true);
     try {
-      const response = await makeWebHyveRequest(
+      const response = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -114,7 +114,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
   const loadUpdateHistory = async () => {
     setHistoryLoading(true);
     try {
-      const response = await makeWebHyveRequest(
+      const response = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

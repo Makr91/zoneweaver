@@ -1,7 +1,7 @@
 ---
 title: License
 layout: default
-nav_order: 12
+nav_order: 7
 permalink: /docs/license/
 ---
 

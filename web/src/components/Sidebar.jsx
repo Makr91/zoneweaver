@@ -63,7 +63,7 @@ const Sidebar = () => {
           {settingsExpanded && (
             <div className="sidebar-submenu">
               <DashEntry title={"Zoneweaver"} link={"/ui/settings/zoneweaver"} icon={"fas fa-cogs"} isSubmenu={true} />
-              <DashEntry title={"Webhyve"} link={"/ui/settings/webhyve"} icon={"fas fa-database"} isSubmenu={true} />
+              <DashEntry title={"ZoneweaverAPI"} link={"/ui/settings/zapi"} icon={"fas fa-database"} isSubmenu={true} />
             </div>
           )}
         </div>

@@ -21,7 +21,7 @@ const ServiceManagement = ({ server }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showPropertiesModal, setShowPropertiesModal] = useState(false);
   
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load services on component mount and when filters change
   useEffect(() => {
@@ -30,10 +30,10 @@ const ServiceManagement = ({ server }) => {
   }, [server, filters.pattern, filters.zone, filters.showDisabled]); // Only reload for backend filters
 
   const loadZones = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -53,7 +53,7 @@ const ServiceManagement = ({ server }) => {
   };
 
   const loadServices = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -64,7 +64,7 @@ const ServiceManagement = ({ server }) => {
       if (filters.zone) params.zone = filters.zone;
       if (filters.showDisabled) params.all = true;
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -89,13 +89,13 @@ const ServiceManagement = ({ server }) => {
   };
 
   const handleServiceAction = async (fmri, action) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       setError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -122,13 +122,13 @@ const ServiceManagement = ({ server }) => {
   };
 
   const handleViewDetails = async (service) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       setError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -150,13 +150,13 @@ const ServiceManagement = ({ server }) => {
   };
 
   const handleViewProperties = async (service) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
       setError('');
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

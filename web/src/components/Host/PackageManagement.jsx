@@ -8,9 +8,9 @@ const PackageManagement = ({ server }) => {
   const [activeSection, setActiveSection] = useState('packages');
   const [error, setError] = useState('');
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
-  if (!server || !makeWebHyveRequest) {
+  if (!server || !makeZoneweaverAPIRequest) {
     return (
       <div className='notification is-info'>
         <p>Please select a server to manage packages and repositories.</p>

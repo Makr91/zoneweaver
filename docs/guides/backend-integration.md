@@ -9,7 +9,7 @@ permalink: /docs/guides/backend-integration/
 # Backend Integration
 {: .no_toc }
 
-This guide covers connecting ZoneWeaver frontend to WebHyve backend servers for zone management functionality.
+This guide covers connecting ZoneWeaver frontend to ZoneWeaver-API backend servers for zone management functionality.
 
 ## Table of contents
 {: .no_toc .text-delta }
@@ -19,18 +19,18 @@ This guide covers connecting ZoneWeaver frontend to WebHyve backend servers for 
 
 ---
 
-## WebHyve Backend Overview
+## ZoneWeaver-API Backend Overview
 
-The WebHyve backend (zoneweaver-api) provides the core zone management functionality that the ZoneWeaver frontend connects to. Each frontend can connect to multiple backend servers for managing different hosts or environments.
+The ZoneWeaver-API backend provides the core zone management functionality that the ZoneWeaver frontend connects to. Each frontend can connect to multiple backend servers for managing different hosts or environments.
 
 ### Architecture
 
 ```mermaid
 graph TD
     A[ZoneWeaver Frontend] --> B[Frontend API<br/>User/Org Management];
-    A --> C[WebHyve Backend 1<br/>Production Host];
-    A --> D[WebHyve Backend 2<br/>Development Host];
-    A --> E[WebHyve Backend N<br/>Other Hosts];
+    A --> C[Zoneweaver API 1<br/>Production Host];
+    A --> D[Zoneweaver API 2<br/>Development Host];
+    A --> E[Zoneweaver API N<br/>Other Hosts];
     C --> F[OmniOS Host 1<br/>Bhyve Zones];
     D --> G[OmniOS Host 2<br/>Bhyve Zones];
     E --> H[OmniOS Host N<br/>Bhyve Zones];
@@ -38,9 +38,9 @@ graph TD
 
 ## Backend Requirements
 
-### WebHyve API Server
+### Zoneweaver API API Server
 
-Your WebHyve backend must be:
+Your Zoneweaver API must be:
 
 - **Running**: Service active and responding to API requests
 - **Accessible**: Network connectivity from frontend server
@@ -72,9 +72,9 @@ Your WebHyve backend must be:
 ### Configuration Details
 
 **Hostname Examples:**
-- `webhyve.example.com` - DNS name
+- `zoneweaver-api.example.com` - DNS name
 - `192.168.1.100` - IP address
-- `webhyve.internal.local` - Internal DNS
+- `zapi.internal.local` - Internal DNS
 
 **Port Selection:**
 - `5001` - HTTPS (recommended)
@@ -84,11 +84,11 @@ Your WebHyve backend must be:
 - **HTTPS**: Production and secure environments
 - **HTTP**: Development and testing (not recommended for production)
 
-## WebHyve API Key Setup
+## Zoneweaver API API Key Setup
 
 ### Generating API Keys
 
-On your WebHyve backend server:
+On your Zoneweaver API server:
 
 1. **Bootstrap Method** (first-time setup):
    ```bash
@@ -98,17 +98,17 @@ On your WebHyve backend server:
    ```
 
 2. **Admin Interface** (if available):
-   - Login to WebHyve admin interface
+   - Login to Zoneweaver API admin interface
    - Navigate to API Keys section
    - Generate new key for frontend
 
 3. **Configuration File** (manual):
-   - Edit WebHyve config to add API key
-   - Restart WebHyve service
+   - Edit Zoneweaver API config to add API key
+   - Restart Zoneweaver API service
 
 ### API Key Format
 
-WebHyve API keys follow this format:
+Zoneweaver API API keys follow this format:
 ```
 wh_1234567890abcdef1234567890abcdef
 ```
@@ -247,7 +247,7 @@ Each organization can have different server assignments:
 ### Load Balancing
 
 For high availability, configure multiple backend servers:
-1. Add multiple WebHyve backends for same host
+1. Add multiple Zoneweaver APIs for same host
 2. Use different hostnames or IP addresses
 3. Frontend will attempt alternate servers on failure
 

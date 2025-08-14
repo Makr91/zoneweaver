@@ -7,7 +7,7 @@ const options = {
     info: {
       title: 'ZoneWeaver API',
       version: '0.0.1',
-      description: 'API for ZoneWeaver - Web management interface for Bhyve virtual machines via WebHyve backend',
+      description: 'API for ZoneWeaver - Web management interface for Bhyve virtual machines via Zoneweaver API',
       license: {
         name: 'GPL-3.0',
         url: 'https://www.gnu.org/licenses/gpl-3.0.html',
@@ -184,7 +184,7 @@ const options = {
             hostname: {
               type: 'string',
               description: 'Server hostname or IP address',
-              example: 'webhyve-host.example.com',
+              example: 'zoneweaver-api-host.example.com',
             },
             port: {
               type: 'integer',
@@ -200,7 +200,7 @@ const options = {
             entityName: {
               type: 'string',
               description: 'Display name for the server',
-              example: 'Production WebHyve Server',
+              example: 'Production Zoneweaver API Server',
             },
             description: {
               type: 'string',

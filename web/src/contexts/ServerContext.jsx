@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from './AuthContext';
 
 /**
- * Server context for managing WebHyve backend connections
+ * Server context for managing Zoneweaver API connections
  * 
  * - ZoneWeaver application manages shared server connections
  * - All users see the same servers (application-level, not per-user)
@@ -178,7 +178,7 @@ export const ServerProvider = ({ children }) => {
   }, []);
 
   /**
-   * Add a new WebHyve server (Admin only)
+   * Add a new Zoneweaver API Server (Admin only)
    * @param {Object} serverData - Server configuration
    * @param {string} serverData.hostname - Server hostname
    * @param {number} serverData.port - Server port
@@ -305,7 +305,7 @@ export const ServerProvider = ({ children }) => {
   };
 
   /**
-   * Make a request to a WebHyve backend through the proxy
+   * Make a request to a Zoneweaver API through the proxy
    * @param {string} hostname - Server hostname
    * @param {number} port - Server port
    * @param {string} protocol - Server protocol
@@ -316,9 +316,9 @@ export const ServerProvider = ({ children }) => {
    * @param {boolean} bypassCache - Force bypass cache for this request
    * @returns {Promise<Object>} Request result
    */
-  const makeWebHyveRequest = async (hostname, port, protocol, path, method = 'GET', data = null, params = null, bypassCache = false) => {
+  const makeZoneweaverAPIRequest = async (hostname, port, protocol, path, method = 'GET', data = null, params = null, bypassCache = false) => {
     try {
-      const proxyUrl = `/api/webhyve/${protocol}/${hostname}/${port}/${path}`;
+      const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
       const config = {
         url: proxyUrl,
         method: method,
@@ -355,7 +355,7 @@ export const ServerProvider = ({ children }) => {
       const response = await axios(config);
       return { success: true, data: response.data };
     } catch (error) {
-      console.error('WebHyve request error:', error);
+      console.error('Zoneweaver API request error:', error);
       
       // Handle 304 responses for VNC endpoints - should not happen with backend no-cache headers
       if (error.response?.status === 304 && (path.includes('/vnc/') || bypassCache)) {
@@ -364,7 +364,7 @@ export const ServerProvider = ({ children }) => {
         // Add cache-busting parameter and retry once
         if (!bypassCache) {
           const bustingPath = path.includes('?') ? `${path}&_cb=${Date.now()}` : `${path}?_cb=${Date.now()}`;
-          return await makeWebHyveRequest(hostname, port, protocol, bustingPath, method, data, params, true);
+          return await makeZoneweaverAPIRequest(hostname, port, protocol, bustingPath, method, data, params, true);
         }
       }
       
@@ -386,7 +386,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Start result
    */
   const startZone = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/start`, 'POST');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/start`, 'POST');
   };
 
   /**
@@ -400,7 +400,7 @@ export const ServerProvider = ({ children }) => {
    */
   const stopZone = async (hostname, port, protocol, zoneName, force = false) => {
     const params = force ? { force: true } : null;
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/stop`, 'POST', null, params);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/stop`, 'POST', null, params);
   };
 
   /**
@@ -412,7 +412,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Restart result
    */
   const restartZone = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/restart`, 'POST');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/restart`, 'POST');
   };
 
   /**
@@ -426,7 +426,7 @@ export const ServerProvider = ({ children }) => {
    */
   const deleteZone = async (hostname, port, protocol, zoneName, force = false) => {
     const params = force ? { force: true } : null;
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}`, 'DELETE', null, params);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}`, 'DELETE', null, params);
   };
 
   /**
@@ -438,7 +438,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zone details
    */
   const getZoneDetails = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}`);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}`);
   };
 
   /**
@@ -450,7 +450,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zones list
    */
   const getAllZones = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'zones', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'zones', 'GET', null, filters);
   };
 
   /**
@@ -461,7 +461,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Task stats
    */
   const getTaskStats = async (hostname, port, protocol) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'tasks/stats');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'tasks/stats');
   };
 
   /**
@@ -473,7 +473,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Tasks list
    */
   const getTasks = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'tasks', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'tasks', 'GET', null, filters);
   };
 
   /**
@@ -485,7 +485,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} VNC start result
    */
   const startVncSession = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/vnc/start`, 'POST');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/vnc/start`, 'POST');
   };
 
   /**
@@ -497,7 +497,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} VNC session info
    */
   const getVncSessionInfo = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/vnc/info`);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/vnc/info`);
   };
 
   /**
@@ -509,7 +509,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} VNC stop result
    */
   const stopVncSession = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/vnc/stop`, 'DELETE');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/vnc/stop`, 'DELETE');
   };
 
   /**
@@ -521,7 +521,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} VNC sessions list
    */
   const getAllVncSessions = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'vnc/sessions', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'vnc/sessions', 'GET', null, filters);
   };
 
   /**
@@ -533,7 +533,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zlogin start result
    */
   const startZloginSession = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/zlogin/start`, 'POST');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/zlogin/start`, 'POST');
   };
 
   /**
@@ -545,7 +545,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zlogin session info
    */
   const getZloginSessionInfo = async (hostname, port, protocol, sessionId) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zlogin/sessions/${sessionId}`);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zlogin/sessions/${sessionId}`);
   };
 
   /**
@@ -557,7 +557,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zlogin stop result
    */
   const stopZloginSession = async (hostname, port, protocol, sessionId) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zlogin/sessions/${sessionId}/stop`, 'DELETE');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zlogin/sessions/${sessionId}/stop`, 'DELETE');
   };
 
   /**
@@ -569,7 +569,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zlogin sessions list
    */
   const getAllZloginSessions = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'zlogin/sessions', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'zlogin/sessions', 'GET', null, filters);
   };
 
   /**
@@ -581,7 +581,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zone configuration
    */
   const getZoneConfig = async (hostname, port, protocol, zoneName) => {
-    return await makeWebHyveRequest(hostname, port, protocol, `zones/${zoneName}/config`);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/config`);
   };
 
   // ========================================
@@ -596,7 +596,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Monitoring service status
    */
   const getMonitoringStatus = async (hostname, port, protocol) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/status');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/status');
   };
 
   /**
@@ -607,7 +607,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Monitoring health information
    */
   const getMonitoringHealth = async (hostname, port, protocol) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/health');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/health');
   };
 
   /**
@@ -619,7 +619,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Collection result
    */
   const triggerMonitoringCollection = async (hostname, port, protocol, type = 'all') => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/collect', 'POST', { type });
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/collect', 'POST', { type });
   };
 
   /**
@@ -632,7 +632,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getMonitoringHost = async (hostname, port, protocol, host = null) => {
     const params = host ? { host } : null;
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/host', 'GET', null, params);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/host', 'GET', null, params);
   };
 
   /**
@@ -643,7 +643,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Monitoring summary
    */
   const getMonitoringSummary = async (hostname, port, protocol) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/summary');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/summary');
   };
 
   // ========================================
@@ -659,7 +659,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Network interface data
    */
   const getNetworkInterfaces = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/network/interfaces', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/interfaces', 'GET', null, filters);
   };
 
   /**
@@ -671,7 +671,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Network statistics data
    */
   const getNetworkStats = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/network/stats', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/stats', 'GET', null, filters);
   };
 
   /**
@@ -683,7 +683,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Network usage data
    */
   const getNetworkUsage = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/network/usage', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/usage', 'GET', null, filters);
   };
 
   /**
@@ -695,7 +695,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} IP address data
    */
   const getNetworkIPAddresses = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/network/ipaddresses', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/ipaddresses', 'GET', null, filters);
   };
 
   /**
@@ -707,7 +707,7 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Routing table data
    */
   const getNetworkRoutes = async (hostname, port, protocol, filters = {}) => {
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/network/routes', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/routes', 'GET', null, filters);
   };
 
   // ========================================
@@ -724,7 +724,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getHostDevices = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 DEVICES: Getting host devices from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'host/devices', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices', 'GET', null, filters);
   };
 
   /**
@@ -737,7 +737,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getAvailableDevices = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 DEVICES: Getting available devices from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'host/devices/available', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices/available', 'GET', null, filters);
   };
 
   /**
@@ -749,7 +749,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getDeviceCategories = async (hostname, port, protocol) => {
     console.log(`🔍 DEVICES: Getting device categories from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'host/devices/categories');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices/categories');
   };
 
   /**
@@ -761,7 +761,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getPPTStatus = async (hostname, port, protocol) => {
     console.log(`🔍 DEVICES: Getting PPT status from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'host/ppt-status');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/ppt-status');
   };
 
   /**
@@ -773,7 +773,7 @@ export const ServerProvider = ({ children }) => {
    */
   const refreshDeviceDiscovery = async (hostname, port, protocol) => {
     console.log(`🔄 DEVICES: Refreshing device discovery on ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'host/devices/refresh', 'POST');
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices/refresh', 'POST');
   };
 
   /**
@@ -786,7 +786,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getDeviceDetails = async (hostname, port, protocol, deviceId) => {
     console.log(`🔍 DEVICES: Getting device details for ${deviceId} from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, `host/devices/${deviceId}`);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, `host/devices/${deviceId}`);
   };
 
   // ========================================
@@ -803,7 +803,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getStoragePools = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage pools from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/storage/pools', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/pools', 'GET', null, filters);
   };
 
   /**
@@ -816,7 +816,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getStorageDatasets = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage datasets from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/storage/datasets', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/datasets', 'GET', null, filters);
   };
 
   /**
@@ -829,7 +829,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getStorageDisks = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage disks from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/storage/disks', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/disks', 'GET', null, filters);
   };
 
   /**
@@ -842,7 +842,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getStoragePoolIO = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage pool I/O from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/storage/pool-io', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/pool-io', 'GET', null, filters);
   };
 
   /**
@@ -855,7 +855,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getStorageDiskIO = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage disk I/O from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/storage/disk-io', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/disk-io', 'GET', null, filters);
   };
 
   /**
@@ -868,7 +868,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getStorageARC = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage ARC statistics from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/storage/arc', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/arc', 'GET', null, filters);
   };
 
   // ========================================
@@ -885,7 +885,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getSystemCPU = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 SYSTEM: Getting CPU statistics from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/system/cpu', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/system/cpu', 'GET', null, filters);
   };
 
   /**
@@ -898,7 +898,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getSystemCPUCores = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 SYSTEM: Getting per-core CPU statistics from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/system/cpu/cores', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/system/cpu/cores', 'GET', null, filters);
   };
 
   /**
@@ -911,7 +911,7 @@ export const ServerProvider = ({ children }) => {
    */
   const getSystemMemory = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 SYSTEM: Getting memory statistics from ${hostname}:${port}`);
-    return await makeWebHyveRequest(hostname, port, protocol, 'monitoring/system/memory', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/system/memory', 'GET', null, filters);
   };
 
   // ========================================
@@ -920,22 +920,22 @@ export const ServerProvider = ({ children }) => {
 
   const getApiKeys = async () => {
     if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys?include_key=true', 'GET');
+    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys?include_key=true', 'GET');
   };
 
   const generateApiKey = async (name, description) => {
     if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys/generate', 'POST', { name, description });
+    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys/generate', 'POST', { name, description });
   };
 
   const bootstrapApiKey = async () => {
     if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys/bootstrap', 'POST', { name: 'Initial-Setup', description: 'Initial bootstrap API key' });
+    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys/bootstrap', 'POST', { name: 'Initial-Setup', description: 'Initial bootstrap API key' });
   };
 
   const deleteApiKey = async (id) => {
     if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeWebHyveRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `api-keys/${id}`, 'DELETE');
+    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `api-keys/${id}`, 'DELETE');
   };
 
   const value = {
@@ -952,7 +952,7 @@ export const ServerProvider = ({ children }) => {
     selectServer,
     selectZone,
     clearZone,
-    makeWebHyveRequest,
+    makeZoneweaverAPIRequest,
     // Zone Management Functions
     startZone,
     stopZone,

@@ -68,7 +68,7 @@ The ZoneWeaver Frontend API is organized into the following categories:
 - Invitation management
 
 #### Server Configuration
-- WebHyve backend server management
+- Zoneweaver API server management
 - Connection configuration and testing
 - Server health monitoring
 - API endpoint management
@@ -121,5 +121,5 @@ Successful responses follow this format:
 
 ## Related APIs
 
-- **[WebHyve Backend API](https://zoneweaver-api.startcloud.com/)** - Zone management and hypervisor control
-- **[ZoneWeaver API Reference](https://zoneweaver-api.startcloud.com/docs/api/)** - Backend API documentation
+- **[ZoneWeaver-API](https://zoneweaver-api.startcloud.com/)** - Zone management and hypervisor control
+- **[ZoneWeaver-API Reference](https://zoneweaver-api.startcloud.com/docs/api/)** - Backend API documentation

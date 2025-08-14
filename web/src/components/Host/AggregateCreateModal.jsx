@@ -18,7 +18,7 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
   const [loadingLinks, setLoadingLinks] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Generate next available aggregate name
   const generateNextAggregateName = () => {
@@ -62,12 +62,12 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
   }, [server, existingAggregates]);
 
   const loadAvailableLinks = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoadingLinks(true);
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -157,7 +157,7 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
   const disableCdpService = async () => {
     setCurrentStep('Disabling CDP service...');
     
-    const result = await makeWebHyveRequest(
+    const result = await makeZoneweaverAPIRequest(
       server.hostname,
       server.port,
       server.protocol,
@@ -195,7 +195,7 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
       requestData.unicast_address = formData.unicast_address.trim();
     }
     
-    const result = await makeWebHyveRequest(
+    const result = await makeZoneweaverAPIRequest(
       server.hostname,
       server.port,
       server.protocol,

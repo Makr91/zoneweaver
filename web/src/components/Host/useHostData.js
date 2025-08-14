@@ -42,7 +42,7 @@ export const useHostData = (currentServer) => {
   const [maxDataPoints, setMaxDataPoints] = useState(180);
 
   const {
-    makeWebHyveRequest,
+    makeZoneweaverAPIRequest,
     getMonitoringHealth,
     getMonitoringStatus,
     getStoragePools,
@@ -235,7 +235,7 @@ export const useHostData = (currentServer) => {
     
     try {
       const config = getMaxDataPointsForWindow(timeWindow);
-      const historicalResult = await makeWebHyveRequest(
+      const historicalResult = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -304,7 +304,7 @@ export const useHostData = (currentServer) => {
     } catch (error) {
       console.error('Error loading historical pool I/O data:', error);
     }
-  }, [timeWindow, makeWebHyveRequest]);
+  }, [timeWindow, makeZoneweaverAPIRequest]);
 
   const loadHistoricalNetworkData = useCallback(async (server) => {
     if (!server) return;
@@ -312,13 +312,13 @@ export const useHostData = (currentServer) => {
     try {
       const config = getMaxDataPointsForWindow(timeWindow);
       const [historicalResult, interfacesResult] = await Promise.allSettled([
-        makeWebHyveRequest(
+        makeZoneweaverAPIRequest(
           server.hostname,
           server.port,
           server.protocol,
           `monitoring/network/usage?limit=${config.limit}`
         ),
-        makeWebHyveRequest(
+        makeZoneweaverAPIRequest(
           server.hostname,
           server.port,
           server.protocol,
@@ -398,7 +398,7 @@ export const useHostData = (currentServer) => {
     } catch (error) {
       console.error('Error loading historical network data:', error);
     }
-  }, [timeWindow, makeWebHyveRequest]);
+  }, [timeWindow, makeZoneweaverAPIRequest]);
 
   const loadHostData = useCallback(async (server) => {
     if (!server || loading) return;
@@ -428,19 +428,19 @@ export const useHostData = (currentServer) => {
       };
 
       const results = await Promise.allSettled([
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'stats'), // 0
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'stats'), // 0
         getMonitoringHealth(server.hostname, server.port, server.protocol), // 1
         getMonitoringStatus(server.hostname, server.port, server.protocol), // 2
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces'), // 3
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'monitoring/network/interfaces'), // 3
         getStoragePools(server.hostname, server.port, server.protocol), // 4
         getStorageDatasets(server.hostname, server.port, server.protocol), // 5
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'tasks/stats'), // 6
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'tasks/stats'), // 6
         getStoragePoolIO(server.hostname, server.port, server.protocol, diskIOFilters), // 7
         getStorageARC(server.hostname, server.port, server.protocol, diskIOFilters), // 8
         getNetworkUsage(server.hostname, server.port, server.protocol), // 9
         getSystemCPU(server.hostname, server.port, server.protocol, { since: sinceTime.toISOString(), include_cores: true }), // 10
         getSystemMemory(server.hostname, server.port, server.protocol, { since: sinceTime.toISOString() }), // 11
-        makeWebHyveRequest(server.hostname, server.port, server.protocol, 'system/swap/summary') // 12
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'system/swap/summary') // 12
       ]);
 
       const [
@@ -641,7 +641,7 @@ export const useHostData = (currentServer) => {
     } finally {
       setLoading(false);
     }
-  }, [timeWindow, makeWebHyveRequest, getMonitoringHealth, getMonitoringStatus, getStoragePools, getStorageDatasets, getStoragePoolIO, getStorageARC, getNetworkUsage, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateARCChartData, updateNetworkChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
+  }, [timeWindow, makeZoneweaverAPIRequest, getMonitoringHealth, getMonitoringStatus, getStoragePools, getStorageDatasets, getStoragePoolIO, getStorageARC, getNetworkUsage, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateARCChartData, updateNetworkChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
 
   useEffect(() => {
     if (currentServer) {

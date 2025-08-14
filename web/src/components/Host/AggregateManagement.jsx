@@ -18,7 +18,7 @@ const AggregateManagement = ({ server, onError }) => {
     policy: ''
   });
 
-  const { makeWebHyveRequest } = useServers();
+  const { makeZoneweaverAPIRequest } = useServers();
 
   // Load aggregates and CDP status on component mount and when filters change
   useEffect(() => {
@@ -27,7 +27,7 @@ const AggregateManagement = ({ server, onError }) => {
   }, [server, filters.state, filters.policy]);
 
   const loadAggregates = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -38,7 +38,7 @@ const AggregateManagement = ({ server, onError }) => {
       if (filters.policy) params.policy = filters.policy;
       params.extended = true; // Include detailed port information
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -63,12 +63,12 @@ const AggregateManagement = ({ server, onError }) => {
   };
 
   const checkCdpServiceStatus = async () => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoadingCdpStatus(true);
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -98,7 +98,7 @@ const AggregateManagement = ({ server, onError }) => {
   };
 
   const handleDeleteAggregate = async (aggregateName) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     if (!window.confirm(`Are you sure you want to delete link aggregate "${aggregateName}"?`)) {
       return;
@@ -109,7 +109,7 @@ const AggregateManagement = ({ server, onError }) => {
       onError('');
       
       // Use query parameters instead of request body for DELETE request
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
@@ -136,7 +136,7 @@ const AggregateManagement = ({ server, onError }) => {
   };
 
   const handleViewDetails = async (aggregate) => {
-    if (!server || !makeWebHyveRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
       setLoading(true);
@@ -153,7 +153,7 @@ const AggregateManagement = ({ server, onError }) => {
         return;
       }
       
-      const result = await makeWebHyveRequest(
+      const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,

@@ -12,7 +12,7 @@
 The
 .Nm
 utility provides a web-based frontend interface for managing Bhyve virtual
-machines and zones through WebHyve backend servers. It serves as the user-facing
+machines and zones through Zoneweaver API servers. It serves as the user-facing
 component of the ZoneWeaver zone hypervisor management platform.
 .Pp
 .Nm
@@ -24,7 +24,7 @@ User authentication and session management with JWT tokens
 .It
 Multi-tenant organization management and access control
 .It
-WebHyve backend server configuration and connection management
+Zoneweaver API server configuration and connection management
 .It
 Web-based dashboard for zone management operations
 .It
@@ -36,7 +36,7 @@ SSL/TLS encryption with automatic certificate generation
 .El
 .Pp
 The service uses JWT token authentication for web sessions and connects to
-WebHyve backend servers for actual zone management operations.
+Zoneweaver API servers for actual zone management operations.
 .Sh CONFIGURATION
 .Nm
 reads its configuration from
@@ -72,7 +72,7 @@ Key web interface features include:
 .It
 User login and registration with organization management
 .It
-Dashboard with zone overview from connected WebHyve servers
+Dashboard with zone overview from connected Zoneweaver API Servers
 .It
 Server configuration and connection management
 .It
@@ -97,7 +97,7 @@ User profile and account management
 .It Pa /api/organizations
 Organization creation and management
 .It Pa /api/servers
-WebHyve backend server configuration
+Zoneweaver API server configuration
 .It Pa /api/invitations
 User invitation and registration codes
 .It Pa /api/settings
@@ -162,7 +162,7 @@ Test network connectivity to port 3443
 .It
 Verify database permissions and disk space
 .It
-Check WebHyve backend server connectivity from web interface
+Check Zoneweaver API server connectivity from web interface
 .El
 .Sh SEE ALSO
 .Xr zoneweaver.yaml 5 ,

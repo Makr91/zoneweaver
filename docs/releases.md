@@ -1,7 +1,7 @@
 ---
 title: Releases
 layout: default
-nav_order: 4
+nav_order: 5
 permalink: /docs/releases/
 ---
 
@@ -33,7 +33,7 @@ Download the latest version of ZoneWeaver frontend.
 - **[Installation Guide](guides/installation/)** - Install using packages or from source
 - **[Getting Started](guides/getting-started/)** - Initial setup and configuration
 - **[Authentication Setup](guides/authentication/)** - Configure users and organizations
-- **[Backend Integration](guides/backend-integration/)** - Connect to WebHyve servers
+- **[Backend Integration](guides/backend-integration/)** - Connect to Zoneweaver API Servers
 
 ---
 
