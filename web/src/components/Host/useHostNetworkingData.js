@@ -344,22 +344,107 @@ export const useHostNetworkingData = () => {
         }));
     };
 
-    // Chart data processing function 
+    // Helper function to calculate historical timestamp based on time window
+    const getHistoricalTimestamp = (timeWindow) => {
+        const now = new Date();
+        const minutesAgo = {
+            '1min': 1, '5min': 5, '10min': 10, '15min': 15,
+            '30min': 30, '1hour': 60, '3hour': 180, 
+            '6hour': 360, '12hour': 720, '24hour': 1440
+        };
+        const minutes = minutesAgo[timeWindow] || 15;
+        return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
+    };
+
+    // Load historical chart data for the selected time window
+    const loadHistoricalChartData = async () => {
+        if (!currentServer || !makeZoneweaverAPIRequest) return;
+
+        try {
+            console.log('📊 HISTORICAL CHARTS: Loading historical data for time window:', timeWindow);
+            
+            const historicalTimestamp = getHistoricalTimestamp(timeWindow);
+            const limit = 1000; // Adjust based on expected data volume
+            
+            console.log('📊 HISTORICAL CHARTS: Requesting data since:', historicalTimestamp);
+            
+            const historicalResult = await makeZoneweaverAPIRequest(
+                currentServer.hostname, 
+                currentServer.port, 
+                currentServer.protocol, 
+                `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${limit}`
+            );
+
+            if (historicalResult?.usage && Array.isArray(historicalResult.usage)) {
+                console.log('📊 HISTORICAL CHARTS: Received', historicalResult.usage.length, 'historical records');
+                
+                // Group historical data by interface
+                const interfaceGroups = {};
+                
+                historicalResult.usage.forEach(record => {
+                    const interfaceName = record.interface || record.name || record.link;
+                    if (!interfaceName) return;
+                    
+                    if (!interfaceGroups[interfaceName]) {
+                        interfaceGroups[interfaceName] = [];
+                    }
+                    interfaceGroups[interfaceName].push(record);
+                });
+
+                // Build chart data from historical records
+                const newChartData = {};
+                
+                Object.entries(interfaceGroups).forEach(([interfaceName, records]) => {
+                    // Sort records by timestamp (oldest first)
+                    const sortedRecords = records.sort((a, b) => 
+                        new Date(a.scan_timestamp) - new Date(b.scan_timestamp)
+                    );
+
+                    newChartData[interfaceName] = {
+                        rxData: [],
+                        txData: [],
+                        totalData: []
+                    };
+
+                    sortedRecords.forEach(record => {
+                        const timestamp = new Date(record.scan_timestamp).getTime();
+                        const rxMbps = parseFloat(record.rx_mbps) || 0;
+                        const txMbps = parseFloat(record.tx_mbps) || 0;
+
+                        newChartData[interfaceName].rxData.push([timestamp, rxMbps]);
+                        newChartData[interfaceName].txData.push([timestamp, txMbps]);
+                        newChartData[interfaceName].totalData.push([timestamp, rxMbps + txMbps]);
+                    });
+
+                    console.log(`📊 HISTORICAL CHARTS: Built ${sortedRecords.length} historical points for ${interfaceName}`);
+                });
+
+                setChartData(newChartData);
+                console.log('📊 HISTORICAL CHARTS: Loaded historical data for', Object.keys(newChartData).length, 'interfaces');
+            } else {
+                console.warn('📊 HISTORICAL CHARTS: No historical usage data received');
+            }
+        } catch (error) {
+            console.error('📊 HISTORICAL CHARTS: Error loading historical data:', error);
+        }
+    };
+
+    // Chart data processing function (for real-time updates)
     const processChartData = () => {
-        console.log('📊 CHARTS: Processing chart data from current usage data...');
+        console.log('📊 CHARTS: Processing real-time chart data update...');
         
         if (networkUsage.length === 0) {
-            console.log('📊 CHARTS: No usage data available yet');
+            console.log('📊 CHARTS: No real-time usage data available yet');
             return;
         }
         
         const currentTime = Date.now();
-        const maxPoints = 50; // Maintain more data points for better charts
+        const maxPoints = 200; // Increased to handle more historical data
         
         setChartData(prevChartData => {
             const newChartData = { ...prevChartData };
             
-            // Process each interface's usage data
+            // Process each interface's current usage data
             networkUsage.forEach(usage => {
                 const interfaceName = usage.interface || usage.name || usage.link;
                 
@@ -368,9 +453,9 @@ export const useHostNetworkingData = () => {
                     const rxMbps = parseFloat(usage.rx_mbps) || 0;
                     const txMbps = parseFloat(usage.tx_mbps) || 0;
                     
-                    console.log(`📊 CHARTS: Processing ${interfaceName} - RX: ${rxMbps}Mbps, TX: ${txMbps}Mbps (from API pre-calculated values)`);
+                    console.log(`📊 CHARTS: Adding real-time point for ${interfaceName} - RX: ${rxMbps}Mbps, TX: ${txMbps}Mbps`);
                     
-                    // Initialize chart data for new interfaces
+                    // Initialize chart data for new interfaces if needed
                     if (!newChartData[interfaceName]) {
                         newChartData[interfaceName] = {
                             rxData: [],
@@ -393,21 +478,29 @@ export const useHostNetworkingData = () => {
                         interfaceData.totalData.shift();
                     }
                     
-                    console.log(`📊 CHARTS: Added data for ${interfaceName}: RX=${rxMbps.toFixed(3)}Mbps, TX=${txMbps.toFixed(3)}Mbps (${interfaceData.rxData.length} points)`);
+                    console.log(`📊 CHARTS: Updated ${interfaceName}: RX=${rxMbps.toFixed(3)}Mbps, TX=${txMbps.toFixed(3)}Mbps (${interfaceData.rxData.length} points)`);
                 }
             });
             
-            console.log('📊 CHARTS: Processed chart data for', Object.keys(newChartData).length, 'interfaces');
+            console.log('📊 CHARTS: Updated real-time chart data for', Object.keys(newChartData).length, 'interfaces');
             return newChartData;
         });
     };
 
-    // Process chart data when usage data changes
+    // Load historical chart data when time window changes or server changes
+    useEffect(() => {
+        if (currentServer && makeZoneweaverAPIRequest) {
+            console.log('📊 HISTORICAL CHARTS: Time window or server changed, loading historical data');
+            loadHistoricalChartData();
+        }
+    }, [timeWindow, currentServer, makeZoneweaverAPIRequest]);
+
+    // Process real-time chart data when usage data changes
     useEffect(() => {
         if (networkUsage.length > 0) {
             processChartData();
         }
-    }, [networkUsage, timeWindow]);
+    }, [networkUsage]);
 
     // Chart functionality
     const expandChart = (chartId, type) => {
@@ -584,6 +677,7 @@ export const useHostNetworkingData = () => {
         user,
         getServers: () => currentServer ? [currentServer] : [],
         handleServerChange,
-        loadNetworkData
+        loadNetworkData,
+        loadHistoricalChartData
     };
 };
