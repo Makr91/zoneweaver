@@ -115,8 +115,8 @@ export const useHostNetworkingData = () => {
             if (interfacesResult.status === 'fulfilled') {
                 console.log('🔍 NETWORKING: Interfaces response value:', interfacesResult.value);
                 
-                // Access interfaces directly from API response
-                const interfaces = interfacesResult.value?.interfaces || [];
+                // Access interfaces from nested data structure
+                const interfaces = interfacesResult.value?.data?.interfaces || interfacesResult.value?.interfaces || [];
                 console.log('🔍 NETWORKING: Raw interfaces count:', interfaces.length);
                 console.log('🔍 NETWORKING: Sample interface structure:', interfaces[0]);
                 
@@ -152,8 +152,8 @@ export const useHostNetworkingData = () => {
             if (usageResult.status === 'fulfilled') {
                 console.log('🔍 NETWORKING: Usage response value:', usageResult.value);
                 
-                // Access usage directly from API response
-                const usage = usageResult.value?.usage || [];
+                // Access usage from nested data structure
+                const usage = usageResult.value?.data?.usage || usageResult.value?.usage || [];
                 const deduplicatedUsage = usage.reduce((acc, entry) => {
                     const interfaceId = entry.interface || entry.name || entry.link;
                     const existing = acc.find(existing => 
@@ -179,8 +179,8 @@ export const useHostNetworkingData = () => {
 
             // Process IP addresses with deduplication
             if (ipResult.status === 'fulfilled') {
-                // Access addresses directly from API response
-                const ips = ipResult.value?.addresses || [];
+                // Access addresses from nested data structure
+                const ips = ipResult.value?.data?.addresses || ipResult.value?.addresses || [];
                 const deduplicatedIps = ips.reduce((acc, ip) => {
                     const ipId = ip.addrobj || `${ip.interface}-${ip.ip_address}`;
                     const existing = acc.find(existing => 
@@ -206,8 +206,8 @@ export const useHostNetworkingData = () => {
 
             // Process routes with deduplication
             if (routesResult.status === 'fulfilled') {
-                // Access routes directly from API response
-                const routes = routesResult.value?.routes || [];
+                // Access routes from nested data structure
+                const routes = routesResult.value?.data?.routes || routesResult.value?.routes || [];
                 const deduplicatedRoutes = routes.reduce((acc, route) => {
                     const routeId = `${route.destination}-${route.gateway}-${route.interface}`;
                     const existing = acc.find(existing => 
