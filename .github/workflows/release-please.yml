@@ -192,10 +192,6 @@ jobs:
             # Create suite directories if they don't exist
             mkdir -p dists/bookworm/main/binary-amd64
             mkdir -p dists/trixie/main/binary-amd64
-            
-            # Remove old stable directory if it exists and create symlink
-            rm -rf dists/stable 2>/dev/null || true
-            ln -sf trixie dists/stable
           "
 
       - name: Update repository Packages files for all suites
@@ -212,24 +208,38 @@ jobs:
       - name: Generate Release files for all suites
         run: |
           ssh startcloud@172.17.204.177 "
+            cd /local/public/debian
             # Generate Release files for each suite
             for suite in bookworm trixie; do
-              cd /local/public/debian/dists/\$suite
+              cd dists/\$suite
               /local/generate-release.sh \$suite > Release
+              cd ../..
             done
           "
 
-      - name: Sign repositories for all suites  
+      - name: Create stable distribution with proper Release file
         run: |
           ssh startcloud@172.17.204.177 "
-            # Sign each suite
-            for suite in bookworm trixie; do
-              cd /local/public/debian/dists/\$suite
+            cd /local/public/debian/dists
+            rm -rf stable 2>/dev/null || true
+            cp -r trixie stable
+            cd stable
+            /local/generate-release.sh stable > Release
+          "
+
+      - name: Sign repository for all suites including stable
+        run: |
+          ssh startcloud@172.17.204.177 "
+            cd /local/public/debian
+            # Sign each suite including stable
+            for suite in bookworm trixie stable; do
+              cd dists/\$suite
               export GNUPGHOME=\$(mktemp -d /local/pgp/pgpkeys-XXXXXX)
               cat /local/pgp/pgp-key.private | gpg --import
               cat Release | gpg --default-key startcloud -abs > Release.gpg
               cat Release | gpg --default-key startcloud -abs --clearsign > InRelease
               rm -rf \$GNUPGHOME
+              cd ../..
             done
           "
 
