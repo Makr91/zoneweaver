@@ -3,7 +3,7 @@
 
 app:
   name: Zoneweaver
-  version: 0.2.0
+  version: 0.3.0
   frontend_url: https://localhost:3443
 
 mail:

@@ -68,7 +68,7 @@ Section: misc
 Priority: optional
 Architecture: ${ARCH}
 Maintainer: Makr91 <makr91@users.noreply.github.com>
-Depends: nodejs (>= 18.0.0), sqlite3, openssl
+Depends: nodejs (>= 20.0.0), sqlite3, openssl
 Description: Zoneweaver - Zone Hypervisor Management Interface
  Web-based management interface for Zoneweaver API hypervisors.
  Provides intuitive control over zones, networking, and storage
