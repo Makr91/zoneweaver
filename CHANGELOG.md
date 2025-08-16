@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.9](https://github.com/Makr91/zoneweaver/compare/v0.1.8...v0.1.9) (2025-08-16)
+
+
+### Bug Fixes
+
+* remove unneeded packages ([c957502](https://github.com/Makr91/zoneweaver/commit/c957502d217f91a6150b831220c4429b36c91489))
+* remove unneeded packages ([6b414d1](https://github.com/Makr91/zoneweaver/commit/6b414d1e62bac39850f9a0639b698f9b45cc4715))
+
 ## [0.1.8](https://github.com/Makr91/zoneweaver/compare/v0.1.7...v0.1.8) (2025-08-16)
 
 
