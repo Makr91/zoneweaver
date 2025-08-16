@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Makr91/zoneweaver/compare/v0.2.0...v0.3.0) (2025-08-16)
+
+
+### Features
+
+* no deprecated packages ([575a188](https://github.com/Makr91/zoneweaver/commit/575a188d55e235bae7f4d001e16fd809e26c2447))
+
 ## [0.2.0](https://github.com/Makr91/zoneweaver/compare/v0.1.12...v0.2.0) (2025-08-16)
 
 
