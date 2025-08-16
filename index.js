@@ -71,15 +71,23 @@ try {
     sessionStore = new MySQLStore({}, sessionConnection);
     console.log('Using MySQL session store');
   } else {
-    // SQLite session store (default)
-    const SQLiteStore = (await import('connect-sqlite3')).default(session);
+    // SQLite session store (default) using better-sqlite3
+    const BetterSqlite3Store = (await import('better-sqlite3-session-store')).default(session);
+    const BetterSqlite3 = (await import('better-sqlite3')).default;
     const sessionPath = sessionConfig?.sqlite?.path || '/var/lib/zoneweaver/database/sessions.db';
     
-    sessionStore = new SQLiteStore({
-      db: sessionPath,
-      dir: null // Use the full path including filename
+    // Create better-sqlite3 database instance
+    const sessionDb = new BetterSqlite3(sessionPath);
+    sessionDb.pragma('journal_mode = WAL');
+    
+    sessionStore = new BetterSqlite3Store({
+      client: sessionDb,
+      expired: {
+        clear: true,
+        intervalMs: 900000 // 15 minutes
+      }
     });
-    console.log(`Using SQLite session store: ${sessionPath}`);
+    console.log(`Using better-sqlite3 session store: ${sessionPath}`);
   }
 } catch (error) {
   console.error('Failed to initialize session store:', error.message);

@@ -1,5 +1,4 @@
-import sqlite3 from 'sqlite3';
-import { promisify } from 'util';
+import BetterSqlite3 from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import * as YAML from 'yaml';
@@ -28,29 +27,11 @@ class Database {
         fs.mkdirSync(dataDir, { recursive: true });
       }
 
-      // Create database connection
-      this.db = new sqlite3.Database(this.dbPath);
+      // Create database connection (better-sqlite3 is synchronous)
+    this.db = new BetterSqlite3(this.dbPath);
       
-      // Store original methods
-      const originalRun = this.db.run.bind(this.db);
-      const originalGet = this.db.get.bind(this.db);
-      const originalAll = this.db.all.bind(this.db);
-      
-      // Promisify database methods with proper result handling
-      this.db.run = (sql, params = []) => {
-        return new Promise((resolve, reject) => {
-          originalRun(sql, params, function(err) {
-            if (err) {
-              reject(err);
-            } else {
-              resolve({ lastID: this.lastID, changes: this.changes });
-            }
-          });
-        });
-      };
-      
-      this.db.get = promisify(originalGet);
-      this.db.all = promisify(originalAll);
+      // Enable WAL mode for better performance and concurrency
+      this.db.pragma('journal_mode = WAL');
 
       await this.createTables();
       console.log('Database initialized successfully');
@@ -140,11 +121,11 @@ class Database {
       )
     `;
 
-    await this.db.run(createOrganizationsTable);
-    await this.db.run(createUsersTable);
-    await this.db.run(createInvitationsTable);
-    await this.db.run(createServersTable);
-    await this.db.run(createSessionsTable);
+    this.db.exec(createOrganizationsTable);
+    this.db.exec(createUsersTable);
+    this.db.exec(createInvitationsTable);
+    this.db.exec(createServersTable);
+    this.db.exec(createSessionsTable);
 
     // Handle migration - add organization_id column if it doesn't exist
     await this.addOrganizationIdToUsers();
@@ -160,12 +141,12 @@ class Database {
   async addOrganizationIdToUsers() {
     try {
       // Check if organization_id column exists
-      const tableInfo = await this.db.all("PRAGMA table_info(users)");
+      const tableInfo = this.db.prepare("PRAGMA table_info(users)").all();
       const hasOrgIdColumn = tableInfo.some(column => column.name === 'organization_id');
       
       if (!hasOrgIdColumn) {
         console.log('Adding organization_id column to users table...');
-        await this.db.run('ALTER TABLE users ADD COLUMN organization_id INTEGER REFERENCES organizations(id)');
+        this.db.exec('ALTER TABLE users ADD COLUMN organization_id INTEGER REFERENCES organizations(id)');
         console.log('Successfully added organization_id column');
       }
     } catch (error) {
@@ -181,40 +162,35 @@ class Database {
   async handleExistingUsersMigration() {
     try {
       // Check if users table exists and has data
-      const users = await this.db.all('SELECT COUNT(*) as count FROM users');
+      const users = this.db.prepare('SELECT COUNT(*) as count FROM users').all();
       const userCount = users[0].count;
 
       if (userCount > 0) {
         console.log(`Found ${userCount} existing users, checking migration...`);
         
         // Check if we need to create a default organization
-        const orgs = await this.db.all('SELECT COUNT(*) as count FROM organizations');
+        const orgs = this.db.prepare('SELECT COUNT(*) as count FROM organizations').all();
         const orgCount = orgs[0].count;
 
         if (orgCount === 0) {
           console.log('Creating default organization for existing users...');
           
           // Create a default organization
-          const result = await this.db.run(
-            'INSERT INTO organizations (name, description) VALUES (?, ?)',
-            ['Default Organization', 'Auto-created organization for existing users']
-          );
+          const insertOrg = this.db.prepare('INSERT INTO organizations (name, description) VALUES (?, ?)');
+          const result = insertOrg.run('Default Organization', 'Auto-created organization for existing users');
           
-          const defaultOrgId = result.lastID;
+          const defaultOrgId = result.lastInsertRowid;
           
           // Update all users without organization_id to use the default organization
-          const usersWithoutOrg = await this.db.all(
-            'SELECT id FROM users WHERE organization_id IS NULL'
-          );
+          const usersWithoutOrg = this.db.prepare('SELECT id FROM users WHERE organization_id IS NULL').all();
           
           if (usersWithoutOrg.length > 0) {
             console.log(`Migrating ${usersWithoutOrg.length} users to default organization...`);
             
+            const updateUser = this.db.prepare('UPDATE users SET organization_id = ? WHERE id = ?');
+            
             for (const user of usersWithoutOrg) {
-              await this.db.run(
-                'UPDATE users SET organization_id = ? WHERE id = ?',
-                [defaultOrgId, user.id]
-              );
+              updateUser.run(defaultOrgId, user.id);
             }
             
             console.log('Successfully migrated existing users to default organization');
@@ -229,7 +205,7 @@ class Database {
 
   /**
    * Get database instance
-   * @returns {sqlite3.Database} Database instance
+   * @returns {Database} Database instance
    */
   getDb() {
     if (!this.db) {
@@ -244,12 +220,7 @@ class Database {
    */
   async close() {
     if (this.db) {
-      await new Promise((resolve, reject) => {
-        this.db.close((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
+      this.db.close();
       this.db = null;
     }
   }
