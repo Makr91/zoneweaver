@@ -2,7 +2,6 @@ import express from "express";
 import https from "https";
 import http from "http";
 import fs from "fs";
-import dotenv from "dotenv";
 import cors from "cors";
 import session from "express-session";
 import YAML from "yaml";
@@ -11,8 +10,6 @@ import database from "./models/Database.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { specs, swaggerUi } from "./config/swagger.js";
 import { loadConfig } from "./utils/config.js";
-
-dotenv.config();
 
 // Prevent server crashes from unhandled WebSocket errors
 process.on('uncaughtException', (err) => {
