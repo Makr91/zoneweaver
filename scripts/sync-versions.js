@@ -30,11 +30,6 @@ try {
   swaggerConfig = swaggerConfig.replace(/version:\s*['"`][^'"`]*['"`]/g, `version: '${rootVersion}'`);
   fs.writeFileSync(swaggerConfigPath, swaggerConfig);
   
-  // 3. Update config.yaml
-  let configYaml = fs.readFileSync(configYamlPath, 'utf8');
-  configYaml = configYaml.replace(/version:\s*["']?[^"'\n]*["']?/g, `version: "${rootVersion}"`);
-  fs.writeFileSync(configYamlPath, configYaml);
-  
   // 4. Update production config (if exists)
   if (fs.existsSync(productionConfigPath)) {
     let productionConfig = fs.readFileSync(productionConfigPath, 'utf8');
@@ -53,7 +48,6 @@ try {
   console.log(`   - Root: ${rootVersion}`);
   console.log(`   - Web:  ${rootVersion}`);
   console.log(`   - Swagger: ${rootVersion}`);
-  console.log(`   - Config: ${rootVersion}`);
   console.log(`   - Production Config: ${rootVersion}`);
   console.log(`   - Release Please Manifest: ${rootVersion}`);
   console.log(`   - Vite: Using define to inject version at build time`);
