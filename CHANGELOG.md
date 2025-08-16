@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/Makr91/zoneweaver/compare/v0.1.3...v0.1.4) (2025-08-14)
+
+
+### Bug Fixes
+
+* networking visualizations ([c303377](https://github.com/Makr91/zoneweaver/commit/c3033777da9deb16bdf13d826bbbf2443a1b29af))
+
 ## [0.1.3](https://github.com/Makr91/zoneweaver/compare/v0.1.2...v0.1.3) (2025-08-14)
 
 
