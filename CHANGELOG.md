@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/Makr91/zoneweaver/compare/v0.1.4...v0.1.5) (2025-08-16)
+
+
+### Bug Fixes
+
+* debian package server path ([cd66914](https://github.com/Makr91/zoneweaver/commit/cd66914ae17e0a28309b5fea401e528778642f56))
+* debian package server path v2 ([eb39517](https://github.com/Makr91/zoneweaver/commit/eb395174cddb432a62b5e3c3d418da3b4772f64e))
+
 ## [0.1.4](https://github.com/Makr91/zoneweaver/compare/v0.1.3...v0.1.4) (2025-08-14)
 
 
