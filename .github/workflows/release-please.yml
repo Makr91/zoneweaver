@@ -215,7 +215,7 @@ jobs:
             # Generate Release files for each suite
             for suite in bookworm trixie; do
               cd /local/public/debian/dists/\$suite
-              /local/generate-release.sh > Release
+              /local/generate-release.sh \$suite > Release
             done
           "
 
