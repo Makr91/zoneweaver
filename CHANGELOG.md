@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/Makr91/zoneweaver/compare/v0.1.7...v0.1.8) (2025-08-16)
+
+
+### Bug Fixes
+
+* debian package server path v4 ([dc79f6b](https://github.com/Makr91/zoneweaver/commit/dc79f6b567655a0f6e2a0c0a66b8c41c4f91a164))
+
 ## [0.1.7](https://github.com/Makr91/zoneweaver/compare/v0.1.6...v0.1.7) (2025-08-16)
 
 
