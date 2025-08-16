@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.12](https://github.com/Makr91/zoneweaver/compare/v0.1.11...v0.1.12) (2025-08-16)
+
+
+### Bug Fixes
+
+* ssl on debian packages ([ca1da94](https://github.com/Makr91/zoneweaver/commit/ca1da94bac3690388a5253141cba5f0d75d8e31b))
+
 ## [0.1.11](https://github.com/Makr91/zoneweaver/compare/v0.1.10...v0.1.11) (2025-08-16)
 
 
