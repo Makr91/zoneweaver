@@ -34,6 +34,11 @@ fi
 mkdir -p /var/lib/zoneweaver/database
 chown zoneweaver:zoneweaver /var/lib/zoneweaver/database
 
+# Create SSL directory for certificate generation
+mkdir -p /etc/zoneweaver/ssl
+chown zoneweaver:zoneweaver /etc/zoneweaver/ssl
+chmod 700 /etc/zoneweaver/ssl
+
 # Reload systemd daemon
 systemctl daemon-reload
 
