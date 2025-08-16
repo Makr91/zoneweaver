@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import { NodePackageImporter } from "sass";
 import fs from "fs";
 import YAML from "yaml";
-import pkg from '../package.json';
+import pkg from '../package.json' with { type: 'json' };
 
 // Load configuration from YAML file
 // For vite.config.js, we need to handle the config path manually since we're in web/ directory
