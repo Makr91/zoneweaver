@@ -14,6 +14,22 @@ function loadViteConfig() {
     return YAML.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8'));
   }
   
+  // Fallback to local config for development
+  const localConfigPath = '../config.yaml';
+  if (fs.existsSync(localConfigPath)) {
+    return YAML.parse(fs.readFileSync(localConfigPath, 'utf8'));
+  }
+  
+  // Final fallback: return default configuration for build
+  return {
+    frontend: {
+      port: 3000,
+    },
+    server: {
+      hostname: 'localhost',
+      port: 3443,
+    }
+  };
 }
 
 const config = loadViteConfig();
@@ -90,16 +106,16 @@ export default defineConfig({
   base: '/ui/',
   publicDir: "public",
   server: {
-    port: config.frontend.port,
+    port: config.frontend?.port || 3000,
     host: "0.0.0.0",
     https: false, // Disable HTTPS for dev server during build
     hmr: {
-      port: config.frontend.port,
-      host: config.server.hostname,
+      port: config.frontend?.port || 3000,
+      host: config.server?.hostname || 'localhost',
     },
     proxy: {
       "/api": {
-        target: `http://${config.server.hostname}:${config.server.port}`,
+        target: `http://${config.server?.hostname || 'localhost'}:${config.server?.port || 3443}`,
         changeOrigin: true,
         secure: false,
       },
