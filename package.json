@@ -28,7 +28,7 @@
     "express-session": "^1.17.3",
     "http-proxy-middleware": "^2.0.6",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^6.9.7",
+    "nodemailer": "^7.0.5",
     "nodemon": "^3.1.9",
     "sqlite3": "^5.1.6",
     "swagger-jsdoc": "^6.2.8",
