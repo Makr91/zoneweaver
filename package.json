@@ -1,6 +1,6 @@
 {
   "name": "zoneweaver",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Zoneweaver API - NodeJS backend and Vite based frontend",
   "main": "index.js",
   "type": "module",
@@ -41,6 +41,6 @@
   },
   "devDependencies": {
     "@rollup/wasm-node": "^4.21.0",
-    "concurrently": "^7.6.0"
+    "concurrently": "^9.2.0"
   }
 }
