@@ -11,7 +11,6 @@ import path from 'path';
 const rootPackagePath = './package.json';
 const webPackagePath = './web/package.json';
 const swaggerConfigPath = './config/swagger.js';
-const configYamlPath = './config.yaml';
 const productionConfigPath = './packaging/config/production-config.yaml';
 const releasePleaseManifestPath = './.release-please-manifest.json';
 

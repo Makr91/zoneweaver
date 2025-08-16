@@ -14,8 +14,6 @@ function loadViteConfig() {
     return YAML.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8'));
   }
   
-  // Fallback to parent directory config for development
-  return YAML.parse(fs.readFileSync('../config.yaml', 'utf8'));
 }
 
 const config = loadViteConfig();
