@@ -185,35 +185,52 @@ jobs:
             cp /tmp/zoneweaver_*.deb /local/public/debian/pool/main/z/zoneweaver/
           "
 
-      - name: Update repository Packages file
+      - name: Create multi-suite directory structure
         run: |
           ssh startcloud@172.17.204.177 "
             cd /local/public/debian
-            dpkg-scanpackages --arch amd64 pool/ > dists/stable/main/binary-amd64/Packages
+            # Create suite directories if they don't exist
+            mkdir -p dists/bookworm/main/binary-amd64
+            mkdir -p dists/trixie/main/binary-amd64
+            
+            # Remove old stable directory if it exists and create symlink
+            rm -rf dists/stable 2>/dev/null || true
+            ln -sf trixie dists/stable
           "
 
-      - name: Compress Packages file
+      - name: Update repository Packages files for all suites
         run: |
           ssh startcloud@172.17.204.177 "
             cd /local/public/debian
-            gzip -c dists/stable/main/binary-amd64/Packages > dists/stable/main/binary-amd64/Packages.gz
+            # Generate Packages files for each suite
+            for suite in bookworm trixie; do
+              dpkg-scanpackages --arch amd64 pool/ > dists/\$suite/main/binary-amd64/Packages
+              gzip -c dists/\$suite/main/binary-amd64/Packages > dists/\$suite/main/binary-amd64/Packages.gz
+            done
           "
 
-      - name: Generate Release file
+      - name: Generate Release files for all suites
         run: |
           ssh startcloud@172.17.204.177 "
-            cd /local/public/debian/dists/stable
-            /local/generate-release.sh > Release
+            # Generate Release files for each suite
+            for suite in bookworm trixie; do
+              cd /local/public/debian/dists/\$suite
+              /local/generate-release.sh > Release
+            done
           "
 
-      - name: Sign repository
+      - name: Sign repositories for all suites  
         run: |
           ssh startcloud@172.17.204.177 "
-            cd /local/public/debian/dists/stable
-            export GNUPGHOME=\$(mktemp -d /local/pgp/pgpkeys-XXXXXX)
-            cat /local/pgp/pgp-key.private | gpg --import
-            cat Release | gpg --default-key startcloud -abs > Release.gpg
-            cat Release | gpg --default-key startcloud -abs --clearsign > InRelease
+            # Sign each suite
+            for suite in bookworm trixie; do
+              cd /local/public/debian/dists/\$suite
+              export GNUPGHOME=\$(mktemp -d /local/pgp/pgpkeys-XXXXXX)
+              cat /local/pgp/pgp-key.private | gpg --import
+              cat Release | gpg --default-key startcloud -abs > Release.gpg
+              cat Release | gpg --default-key startcloud -abs --clearsign > InRelease
+              rm -rf \$GNUPGHOME
+            done
           "
 
       - name: Cleanup temporary files
