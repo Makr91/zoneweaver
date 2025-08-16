@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useZoneTerminal } from '../contexts/ZoneTerminalContext';
-import 'xterm/css/xterm.css';
+import '@xterm/xterm/css/xterm.css';
 
 const ZoneShell = ({ zoneName, readOnly = false, style = {} }) => {
   const terminalRef = useRef(null);

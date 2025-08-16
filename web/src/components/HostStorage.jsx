@@ -1,5 +1,5 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { useHostStorageData } from "./Host/useHostStorageData";
 import StorageHeader from "./Host/StorageHeader";
 import StorageSummary from "./Host/StorageSummary";

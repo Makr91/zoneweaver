@@ -1,9 +1,9 @@
 import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useServers } from './ServerContext';
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import { WebLinksAddon } from 'xterm-addon-web-links';
-import 'xterm/css/xterm.css';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
+import '@xterm/xterm/css/xterm.css';
 import axios from 'axios';
 
 const ZoneTerminalContext = createContext();

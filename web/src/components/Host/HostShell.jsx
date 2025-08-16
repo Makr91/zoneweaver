@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useFooter } from '../../contexts/FooterContext';
-import 'xterm/css/xterm.css';
+import '@xterm/xterm/css/xterm.css';
 
 const HostShell = () => {
   const terminalRef = useRef(null);

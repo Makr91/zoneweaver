@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
 import { canManageSettings } from "../utils/permissions";

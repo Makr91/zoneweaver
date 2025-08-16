@@ -63,6 +63,18 @@ security:
 database:
   path: /var/lib/zoneweaver/database/zoneweaver.db
 
+session:
+  store: 
+    type: "sqlite"  # Default: "sqlite" | Alternative: "mysql"
+    sqlite:
+      path: "/var/lib/zoneweaver/database/sessions.db"
+    mysql:
+      host: "localhost"
+      port: 3306
+      user: "zoneweaver"
+      password: ""
+      database: "zoneweaver_sessions"
+
 gravatar:
   # Get your API key from https://gravatar.com/
   apiKey: ""

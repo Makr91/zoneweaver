@@ -49,8 +49,47 @@ app.use(express.json());
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));
 
+// Session store configuration
+let sessionStore;
+try {
+  const sessionConfig = config.session?.store;
+  
+  if (sessionConfig?.type === 'mysql' && sessionConfig.mysql) {
+    // MySQL session store
+    const MySQLStore = (await import('express-mysql-session')).default(session);
+    const mysql = await import('mysql2/promise');
+    
+    const sessionConnection = mysql.createPool({
+      host: sessionConfig.mysql.host,
+      port: sessionConfig.mysql.port,
+      user: sessionConfig.mysql.user,
+      password: sessionConfig.mysql.password,
+      database: sessionConfig.mysql.database,
+      createDatabaseTable: true
+    });
+    
+    sessionStore = new MySQLStore({}, sessionConnection);
+    console.log('Using MySQL session store');
+  } else {
+    // SQLite session store (default)
+    const SQLiteStore = (await import('connect-sqlite3')).default(session);
+    const sessionPath = sessionConfig?.sqlite?.path || '/var/lib/zoneweaver/database/sessions.db';
+    
+    sessionStore = new SQLiteStore({
+      db: sessionPath,
+      dir: null // Use the full path including filename
+    });
+    console.log(`Using SQLite session store: ${sessionPath}`);
+  }
+} catch (error) {
+  console.error('Failed to initialize session store:', error.message);
+  console.log('Falling back to MemoryStore (not recommended for production)');
+  sessionStore = null; // Will use default MemoryStore
+}
+
 // Session configuration
 app.use(session({
+  store: sessionStore,
   secret: config.security.jwt_secret || 'fallback-session-secret',
   resave: false,
   saveUninitialized: false,

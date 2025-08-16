@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { VitePWA } from 'vite-plugin-pwa';
 import { NodePackageImporter } from "sass";
 import fs from "fs";
 import YAML from "yaml";
@@ -49,59 +48,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'images/*.png', 'images/*.svg'],
-      manifest: {
-        name: 'Zoneweaver',
-        short_name: 'Zoneweaver',
-        description: 'Server and Zone Management System',
-        theme_color: '#ffffff',
-        start_url: '/ui/',
-        display: 'standalone',
-        background_color: '#ffffff',
-        icons: [
-          {
-            src: 'images/logo192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'images/logo512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 5 // 5 minutes
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'local-api-cache',
-              networkTimeoutSeconds: 10
-            }
-          }
-        ]
-      }
-    })
+    react()
   ],
   base: '/ui/',
   publicDir: "public",
@@ -137,29 +84,50 @@ export default defineConfig({
           return `assets/[name].[ext]`;
         },
         manualChunks: (id) => {
-          // Only split out the largest, most independent libraries
-          // Keep React ecosystem together with charts to avoid dependency issues
+          // Split React core into its own chunk
           if (id.includes('node_modules/react') || 
               id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/scheduler') ||
-              id.includes('node_modules/react-router') ||
-              id.includes('node_modules/@remix-run') ||
-              id.includes('node_modules/highcharts') ||
-              id.includes('highcharts-react-official')) {
-            return 'vendor';
+              id.includes('node_modules/scheduler')) {
+            return 'react';
           }
           
-          // Only split out completely independent libraries
+          // Split React Router into its own chunk
+          if (id.includes('node_modules/react-router') ||
+              id.includes('node_modules/@remix-run')) {
+            return 'react-router';
+          }
+          
+          // Split Highcharts into its own chunk (it's quite large)
+          if (id.includes('node_modules/highcharts') ||
+              id.includes('highcharts-react-official')) {
+            return 'highcharts';
+          }
+          
+          // Split FontAwesome into its own chunk
           if (id.includes('node_modules/@fortawesome')) {
             return 'fontawesome';
           }
           
+          // Split Bulma CSS framework into its own chunk
           if (id.includes('node_modules/bulma') ||
               id.includes('node_modules/@creativebulma')) {
             return 'bulma';
           }
           
-          // All other node_modules go to vendor
+          // Split xterm terminal libraries
+          if (id.includes('node_modules/@xterm')) {
+            return 'xterm';
+          }
+          
+          // Split other UI libraries
+          if (id.includes('node_modules/axios') ||
+              id.includes('node_modules/@xyflow') ||
+              id.includes('node_modules/elkjs') ||
+              id.includes('node_modules/dagre')) {
+            return 'ui-libs';
+          }
+          
+          // All remaining node_modules go to vendor (should be much smaller now)
           if (id.includes('node_modules')) {
             return 'vendor';
           }
