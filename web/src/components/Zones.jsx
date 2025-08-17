@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
 import { useZoneTerminal } from "../contexts/ZoneTerminalContext";
-import VncViewer from "./VncViewer";
+import VncViewerReact from "./VncViewerReact";
 import ZoneShell from "./ZoneShell";
 
 /**
@@ -1500,7 +1500,7 @@ const Zones = () => {
                                           transformOrigin: 'top left',
                                           pointerEvents: 'none'
                                         }}>
-                                          <VncViewer
+                                          <VncViewerReact
                                             serverHostname={currentServer.hostname}
                                             serverPort={currentServer.port}
                                             serverProtocol={currentServer.protocol}
@@ -1996,7 +1996,7 @@ const Zones = () => {
                   </div>
                 </div>
               ) : currentServer && selectedZone ? (
-                <VncViewer
+                <VncViewerReact
                   serverHostname={currentServer.hostname}
                   serverPort={currentServer.port}
                   serverProtocol={currentServer.protocol}

@@ -28,6 +28,7 @@
     "react-dom": "^19.1.1",
     "react-resizable": "^3.0.5",
     "react-router-dom": "^7.8.1",
+    "react-vnc": "^3.1.0",
     "register-service-worker": "^1.7.2",
     "web-vitals": "^5.1.0"
   },
