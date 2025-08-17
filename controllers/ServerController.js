@@ -1662,29 +1662,25 @@ class ServerController {
         }
       );
 
-      // Extract session data from the correct location (Zoneweaver API returns it under 'session' key)
-      const sessionData = result.data?.session || result.data;
-      
       console.log('📋 TERMINAL START: Session result', {
         success: result.success,
         status: result.status,
         hasData: !!result.data,
-        hasSession: !!sessionData,
-        sessionId: sessionData?.id,
-        reused: sessionData?.reused,
-        websocket_url: sessionData?.websocket_url,
+        sessionId: result.data?.id,
+        reused: result.data?.reused,
+        websocket_url: result.data?.websocket_url,
         error: result.error
       });
 
       if (result.success) {
         console.log('🎉 TERMINAL START: Session created/reused successfully', {
-          sessionId: sessionData.id,
-          reused: sessionData.reused ? '⚡ REUSED' : '🆕 NEW',
-          status: sessionData.status,
-          websocket_url: sessionData.websocket_url
+          sessionId: result.data.id,
+          reused: result.data.reused ? '⚡ REUSED' : '🆕 NEW',
+          status: result.data.status,
+          websocket_url: result.data.websocket_url
         });
 
-        res.json({ success: true, data: sessionData });
+        res.json({ success: true, data: result.data });
       } else {
         console.error('❌ TERMINAL START: Session creation failed', {
           status: result.status,

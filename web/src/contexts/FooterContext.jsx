@@ -265,8 +265,8 @@ export const FooterProvider = ({ children }) => {
       const res = await axios.post(`/api/servers/${currentServer.hostname}/terminal/start`, {
         terminal_cookie: terminalCookie
       });
-      // Backend controller now properly extracts session data
-      const sessionData = res.data.data;
+      // Handle double-nested response structure from backend
+      const sessionData = res.data.data?.data || res.data.data;
       console.log(`🔍 FOOTER: Parsed session data:`, {
         websocket_url: sessionData.websocket_url,
         id: sessionData.id,
