@@ -148,6 +148,9 @@ const Zones = () => {
     try {
       setLoading(true);
       
+      // 🚀 PERFORMANCE FIX: Load zone details immediately (non-blocking)
+      console.log(`⚡ PERF: Starting fast zone details load for ${zoneName}`);
+      
       const result = await makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
@@ -184,19 +187,44 @@ const Zones = () => {
           return newState;
         });
         
-        // Refresh both VNC and zlogin session statuses with real-time verification
-        await refreshVncSessionStatus(zoneName);
-        await refreshZloginSessionStatus(zoneName);
+        // 🚀 PERFORMANCE FIX: Set loading to false immediately to show UI
+        setLoading(false);
+        console.log(`⚡ PERF: Zone details loaded and UI shown (${performance.now()}ms)`);
         
-        // Load monitoring data for zone context
-        await loadMonitoringData(currentServer);
+        // 🚀 PERFORMANCE FIX: Run session checks in background (non-blocking)
+        console.log(`⚡ PERF: Starting background session status checks for ${zoneName}`);
+        
+        // Load session statuses in parallel without blocking UI
+        Promise.allSettled([
+          refreshVncSessionStatus(zoneName).catch(err => 
+            console.warn('Background VNC status check failed:', err)
+          ),
+          refreshZloginSessionStatus(zoneName).catch(err => 
+            console.warn('Background zlogin status check failed:', err)
+          ),
+          loadMonitoringData(currentServer).catch(err => 
+            console.warn('Background monitoring data load failed:', err)
+          )
+        ]).then((results) => {
+          const vncResult = results[0];
+          const zloginResult = results[1];
+          const monitoringResult = results[2];
+          
+          console.log(`⚡ PERF: Background session checks completed for ${zoneName}:`, {
+            vnc: vncResult.status,
+            zlogin: zloginResult.status, 
+            monitoring: monitoringResult.status,
+            totalTime: performance.now()
+          });
+        });
+        
       } else {
         setError(`Failed to fetch details for zone ${zoneName}: ${result.message}`);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching zone details:', error);
       setError(`Error fetching zone details for ${zoneName}`);
-    } finally {
       setLoading(false);
     }
   };
