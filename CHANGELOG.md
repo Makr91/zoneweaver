@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/Makr91/zoneweaver/compare/v0.5.4...v0.6.0) (2025-08-17)
+
+
+### Features
+
+* updating to sequelize ([96a1a5d](https://github.com/Makr91/zoneweaver/commit/96a1a5d5f07800cd2bac4f80ad04490b8e7fbaf0))
+
 ## [0.5.4](https://github.com/Makr91/zoneweaver/compare/v0.5.3...v0.5.4) (2025-08-17)
 
 
