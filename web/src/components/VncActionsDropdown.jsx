@@ -108,7 +108,7 @@ const VncActionsDropdown = ({
       <div className="dropdown-item">
         <div className="field is-grouped">
           <div className="control">
-            <span className="tag is-light is-small">F1-F12</span>
+            <span className="tag is-small">F1-F12</span>
           </div>
         </div>
         <div className="buttons are-small">
@@ -163,7 +163,7 @@ const VncActionsDropdown = ({
 
   if (variant === 'button') {
     return (
-      <div className={`dropdown ${isActive ? 'is-active' : ''} ${className}`} ref={dropdownRef}>
+      <div className={`dropdown is-right ${isActive ? 'is-active' : ''} ${className}`} ref={dropdownRef}>
         <div className="dropdown-trigger">
           <button 
             className="button is-small"
@@ -188,7 +188,7 @@ const VncActionsDropdown = ({
 
   // Default variant (text with arrow)
   return (
-    <div className={`dropdown ${isActive ? 'is-active' : ''} ${className}`} ref={dropdownRef}>
+    <div className={`dropdown is-right ${isActive ? 'is-active' : ''} ${className}`} ref={dropdownRef}>
       <div className="dropdown-trigger">
         <span 
           className="has-text-link is-clickable"

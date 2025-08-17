@@ -1563,28 +1563,6 @@ const Zones = () => {
                                         </div>
                                       )}
 
-                                      {/* Session Status Indicator */}
-                                      <div 
-                                        style={{
-                                          position: 'absolute',
-                                          top: '8px',
-                                          left: '8px',
-                                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                          color: 'white',
-                                          padding: '4px 8px',
-                                          borderRadius: '3px',
-                                          fontSize: '0.7rem',
-                                          fontWeight: 'bold'
-                                        }}
-                                      >
-                                        <span className='icon is-small' style={{marginRight: '3px'}}>
-                                          <i className='fas fa-circle' style={{
-                                            color: zoneDetails.vnc_session_info?.console_url ? '#48c78e' : '#6c757d', 
-                                            fontSize: '0.4rem'
-                                          }}></i>
-                                        </span>
-                                        {zoneDetails.vnc_session_info?.console_url ? 'Live' : 'Offline'}
-                                      </div>
                                     </div>
                                   </div>
                                 );
