@@ -148,84 +148,136 @@ const Zones = () => {
     try {
       setLoading(true);
       
-      // 🚀 PERFORMANCE FIX: Load zone details immediately (non-blocking)
-      console.log(`⚡ PERF: Starting fast zone details load for ${zoneName}`);
+      // 🚀 PRIORITY 3: API Parallelization - Break monolithic call into fast parallel calls
+      console.log(`⚡ PERF: Starting parallelized zone loading for ${zoneName}`);
+      const startTime = performance.now();
       
-      const result = await makeZoneweaverAPIRequest(
+      // 1. IMMEDIATE: Load basic zone info first (fastest - database query only)
+      console.log(`⚡ PERF: Loading basic zone info...`);
+      const basicInfoPromise = makeZoneweaverAPIRequest(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol,
-        `zones/${zoneName}`
-      );
+        `zones/${zoneName}/info` // Fast basic info endpoint
+      ).catch(err => {
+        console.warn('Basic info failed, falling back to full endpoint');
+        // Fallback to full endpoint if granular doesn't exist
+        return makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `zones/${zoneName}`
+        );
+      });
 
-      if (result.success) {
-        console.log(`🔍 ZONE LOAD: Raw zone data for ${zoneName}:`, {
-          configuration: result.data.configuration,
-          diskArray: result.data.configuration?.disk,
-          netArray: result.data.configuration?.net,
-          diskIsArray: Array.isArray(result.data.configuration?.disk),
-          netIsArray: Array.isArray(result.data.configuration?.net),
-          diskValue: result.data.configuration?.disk,
-          netValue: result.data.configuration?.net
-        });
+      // Wait for basic info to show UI immediately
+      const basicInfoResult = await basicInfoPromise;
+      
+      if (basicInfoResult.success) {
+        // Show basic zone information immediately
+        setZoneDetails(prev => ({
+          ...prev,
+          zone_info: basicInfoResult.data.zone_info || basicInfoResult.data,
+          system_status: basicInfoResult.data.system_status || 'loading...'
+        }));
         
-        setZoneDetails(prev => {
-          console.log(`🔍 ZONE STATE: Initial load - BEFORE:`, {
-            prevDisk: prev.configuration?.disk,
-            prevNet: prev.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          const newState = result.data;
-          
-          console.log(`🔍 ZONE STATE: Initial load - AFTER:`, {
-            newDisk: newState.configuration?.disk,
-            newNet: newState.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          return newState;
-        });
-        
-        // 🚀 PERFORMANCE FIX: Set loading to false immediately to show UI
+        // 🚀 CRITICAL: Show UI immediately after basic info (should be <500ms)
         setLoading(false);
-        console.log(`⚡ PERF: Zone details loaded and UI shown (${performance.now()}ms)`);
+        const basicLoadTime = performance.now() - startTime;
+        console.log(`⚡ PERF: Basic zone info loaded and UI shown (${basicLoadTime.toFixed(0)}ms)`);
         
-        // 🚀 PERFORMANCE FIX: Run session checks in background (non-blocking)
-        console.log(`⚡ PERF: Starting background session status checks for ${zoneName}`);
+        // 2. PARALLEL: Load detailed data in background without blocking UI
+        console.log(`⚡ PERF: Starting parallel background data loading...`);
         
-        // Load session statuses in parallel without blocking UI
         Promise.allSettled([
-          refreshVncSessionStatus(zoneName).catch(err => 
-            console.warn('Background VNC status check failed:', err)
-          ),
-          refreshZloginSessionStatus(zoneName).catch(err => 
-            console.warn('Background zlogin status check failed:', err)
-          ),
-          loadMonitoringData(currentServer).catch(err => 
-            console.warn('Background monitoring data load failed:', err)
-          )
-        ]).then((results) => {
-          const vncResult = results[0];
-          const zloginResult = results[1];
-          const monitoringResult = results[2];
+          // Zone configuration (may be slower - file reads)
+          loadZoneConfiguration(zoneName).catch(err => {
+            console.warn('Zone configuration load failed:', err);
+            return { success: false, error: err };
+          }),
           
-          console.log(`⚡ PERF: Background session checks completed for ${zoneName}:`, {
+          // VNC session status (separate fast call)
+          refreshVncSessionStatus(zoneName).catch(err => {
+            console.warn('VNC status check failed:', err);
+            return { success: false, error: err };
+          }),
+          
+          // zlogin session status (separate call)
+          refreshZloginSessionStatus(zoneName).catch(err => {
+            console.warn('zlogin status check failed:', err);
+            return { success: false, error: err };
+          }),
+          
+          // Monitoring data (host context)
+          loadMonitoringData(currentServer).catch(err => {
+            console.warn('Monitoring data load failed:', err);
+            return { success: false, error: err };
+          })
+        ]).then((results) => {
+          const [configResult, vncResult, zloginResult, monitoringResult] = results;
+          const totalTime = performance.now() - startTime;
+          
+          console.log(`⚡ PERF: All background data loading completed for ${zoneName}:`, {
+            config: configResult.status,
             vnc: vncResult.status,
             zlogin: zloginResult.status, 
             monitoring: monitoringResult.status,
-            totalTime: performance.now()
+            totalTime: totalTime.toFixed(0) + 'ms'
           });
+          
+          // Update UI with successful results
+          if (configResult.status === 'fulfilled' && configResult.value?.configuration) {
+            setZoneDetails(prev => ({
+              ...prev,
+              configuration: configResult.value.configuration
+            }));
+          }
         });
         
       } else {
-        setError(`Failed to fetch details for zone ${zoneName}: ${result.message}`);
+        setError(`Failed to fetch basic info for zone ${zoneName}: ${basicInfoResult.message}`);
         setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching zone details:', error);
       setError(`Error fetching zone details for ${zoneName}`);
       setLoading(false);
+    }
+  };
+
+  // Helper function to load zone configuration separately  
+  const loadZoneConfiguration = async (zoneName) => {
+    console.log(`⚡ PERF: Loading zone configuration for ${zoneName}...`);
+    
+    try {
+      const result = await makeZoneweaverAPIRequest(
+        currentServer.hostname,
+        currentServer.port,
+        currentServer.protocol,
+        `zones/${zoneName}/config` // Fast config-only endpoint
+      );
+      
+      if (result.success) {
+        return { success: true, configuration: result.data };
+      } else {
+        // Fallback to full endpoint for configuration
+        console.log(`⚡ PERF: Config endpoint failed, extracting from full data...`);
+        const fullResult = await makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `zones/${zoneName}`
+        );
+        
+        if (fullResult.success && fullResult.data.configuration) {
+          return { success: true, configuration: fullResult.data.configuration };
+        } else {
+          throw new Error('Failed to load configuration from both endpoints');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading zone configuration:', error);
+      throw error;
     }
   };
 
