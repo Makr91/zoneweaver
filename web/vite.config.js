@@ -84,47 +84,42 @@ export default defineConfig({
           return `assets/[name].[ext]`;
         },
         manualChunks: (id) => {
-          // Split React core into its own chunk
+          // Bundle React ecosystem together - ensures loading order and fixes Highcharts dependency issues
           if (id.includes('node_modules/react') || 
               id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/scheduler')) {
-            return 'react';
+              id.includes('node_modules/scheduler') ||
+              id.includes('node_modules/highcharts') ||
+              id.includes('highcharts-react-official')) {
+            return 'react-ecosystem';
           }
           
-          // Split React Router into its own chunk
+          // Group React Router separately (frequently changing)
           if (id.includes('node_modules/react-router') ||
               id.includes('node_modules/@remix-run')) {
-            return 'react-router';
+            return 'routing';
           }
           
-          // Split Highcharts into its own chunk (it's quite large)
-          if (id.includes('node_modules/highcharts') ||
-              id.includes('highcharts-react-official')) {
-            return 'highcharts';
-          }
-          
-          // Split FontAwesome into its own chunk
-          if (id.includes('node_modules/@fortawesome')) {
-            return 'fontawesome';
-          }
-          
-          // Split Bulma CSS framework into its own chunk
-          if (id.includes('node_modules/bulma') ||
+          // Group UI/CSS libraries
+          if (id.includes('node_modules/@fortawesome') ||
+              id.includes('node_modules/bulma') ||
               id.includes('node_modules/@creativebulma')) {
-            return 'bulma';
+            return 'ui-libs';
           }
           
-          // Split xterm terminal libraries
-          if (id.includes('node_modules/@xterm')) {
-            return 'xterm';
-          }
-          
-          // Split other UI libraries
-          if (id.includes('node_modules/axios') ||
+          // Group terminal and specialized libraries
+          if (id.includes('node_modules/@xterm') ||
               id.includes('node_modules/@xyflow') ||
               id.includes('node_modules/elkjs') ||
               id.includes('node_modules/dagre')) {
-            return 'ui-libs';
+            return 'specialized-libs';
+          }
+          
+          // Group utility libraries
+          if (id.includes('node_modules/axios') ||
+              id.includes('node_modules/jwt-decode') ||
+              id.includes('node_modules/re-resizable') ||
+              id.includes('node_modules/react-resizable')) {
+            return 'utilities';
           }
           
           // All remaining node_modules go to vendor (should be much smaller now)

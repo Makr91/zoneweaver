@@ -43,7 +43,7 @@ const corsOptions = {
 
 app.set("trust proxy", config.environment.trust_proxy);
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options("*splat", cors(corsOptions));
 app.use(express.json());
 
 // Serve static files from the React app build
@@ -200,7 +200,7 @@ app.get('/api-docs/swagger.json', (req, res) => {
 });
 
 // Handle React Router routes - serve index.html for all non-API routes
-app.get('*', (req, res) => {
+app.get('*splat', (req, res) => {
   res.sendFile('./web/dist/index.html', { root: '.' });
 });
 

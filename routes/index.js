@@ -151,7 +151,7 @@ router.post("/api/servers/test", authenticate, ServerController.testServer);
 router.delete("/api/servers/:serverId", authenticate, requireAdmin, ServerController.removeServer);
 
 // Zoneweaver API proxy endpoints
-router.all("/api/zapi/:protocol/:hostname/:port/*", authenticate, ServerController.proxyToZoneweaverAPI);
+router.all("/api/zapi/:protocol/:hostname/:port/*splat", authenticate, ServerController.proxyToZoneweaverAPI);
 
 // Zoneweaver API settings endpoints
 router.get("/api/zapi/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPISettings);
@@ -165,7 +165,7 @@ router.post("/api/zapi/:protocol/:hostname/:port/server/restart", authenticate, 
 router.get("/api/servers/:serverAddress/zones/:zoneName/vnc/console", optionalAuth, ServerController.proxyVncConsole);
 
 // General VNC proxy for all VNC-related paths (WebSocket, static assets, etc.)
-router.all("/api/servers/:serverAddress/zones/:zoneName/vnc/*", optionalAuth, ServerController.proxyVncGeneral);
+router.all("/api/servers/:serverAddress/zones/:zoneName/vnc/*splat", optionalAuth, ServerController.proxyVncGeneral);
 
 // Zlogin proxy endpoints
 router.post("/api/servers/:serverAddress/zones/:zoneName/zlogin/start", authenticate, ServerController.startZloginSession);
@@ -190,7 +190,7 @@ router.post("/api/mail/test", authenticate, requireSuperAdmin, AuthController.te
 router.use('/ui', express.static(path.join(process.cwd(), 'web/dist')));
 
 // Catch all handler: send back Vite's index.html file for client-side routing
-router.get('/ui/*', (req, res) => {
+router.get('/ui/*splat', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'web/dist/index.html'));
 });
 
