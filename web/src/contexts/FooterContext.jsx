@@ -223,7 +223,7 @@ export const FooterProvider = ({ children }) => {
     }
     if (persistentSession.current) {
       console.log('🔄 FOOTER: Cleaning up session:', persistentSession.current.id);
-      axios.delete(`/api/terminal/sessions/${persistentSession.current.id}/stop`).catch(console.error);
+      axios.delete(`/api/servers/${currentServer.hostname}/terminal/sessions/${persistentSession.current.id}/stop`).catch(console.error);
       persistentSession.current = null;
     }
     if (persistentTerminal.current) {
@@ -260,9 +260,12 @@ export const FooterProvider = ({ children }) => {
     terminalCreating.current = true;
 
     try {
-      // Create backend session
-      const res = await axios.post('/api/terminal/start');
-      const sessionData = res.data.session;
+      // Create backend session with terminal cookie
+      const terminalCookie = `terminal_${currentServer.hostname}_${currentServer.port}_${crypto.randomUUID()}_${Date.now()}`;
+      const res = await axios.post(`/api/servers/${currentServer.hostname}/terminal/start`, {
+        terminal_cookie: terminalCookie
+      });
+      const sessionData = res.data.data;
       
       // Create WebSocket connection
       const ws = new WebSocket(`wss://${window.location.host}/term/${sessionData.id}`);
@@ -465,7 +468,7 @@ export const FooterProvider = ({ children }) => {
         persistentWs.current = null;
       }
       if (persistentSession.current) {
-        await axios.delete(`/api/terminal/sessions/${persistentSession.current.id}/stop`).catch(console.error);
+        await axios.delete(`/api/servers/${currentServer.hostname}/terminal/sessions/${persistentSession.current.id}/stop`).catch(console.error);
         persistentSession.current = null;
       }
       if (persistentTerminal.current) {
