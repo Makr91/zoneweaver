@@ -1507,6 +1507,8 @@ const Zones = () => {
                                             zoneName={selectedZone}
                                             viewOnly={true}
                                             autoConnect={true}
+                                            showControls={false}
+                                            showConnectionStatus={true}
                                             style={{ width: '100%', height: '100%' }}
                                           />
                                         </div>
@@ -2003,6 +2005,7 @@ const Zones = () => {
                   zoneName={selectedZone}
                   viewOnly={false}
                   autoConnect={true}
+                  showControls={false}
                   onConnect={() => console.log('✅ VNC MODAL: Connected to VNC server')}
                   onDisconnect={(reason) => console.log('❌ VNC MODAL: Disconnected:', reason)}
                   style={{

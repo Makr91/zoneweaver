@@ -17,8 +17,11 @@ const VncViewerReact = ({
   compression = 2,
   resize = 'scale',
   showDot = false,
+  showControls = true,
+  showConnectionStatus = false,
   onConnect = null,
   onDisconnect = null,
+  onCtrlAltDel = null,
   style = {},
   className = ''
 }) => {
@@ -67,7 +70,22 @@ const VncViewerReact = ({
       console.log(`⌨️ REACT-VNC: Sending Ctrl+Alt+Del to ${zoneName}`);
       vncRef.current.sendCtrlAltDel();
     }
+    
+    // Call parent callback if provided
+    if (onCtrlAltDel) {
+      onCtrlAltDel();
+    }
   };
+
+  // Expose control functions to parent component
+  useEffect(() => {
+    if (onConnect && typeof onConnect === 'function') {
+      onConnect.connect = handleConnect;
+      onConnect.disconnect = handleDisconnect;
+      onConnect.ctrlAltDel = handleCtrlAltDel;
+      onConnect.refresh = handleRefresh;
+    }
+  }, [connected, connecting]);
 
   const handleRefresh = () => {
     if (vncRef.current) {
@@ -137,70 +155,72 @@ const VncViewerReact = ({
 
   return (
     <div className={`vnc-viewer-react ${className}`} style={style}>
-      {/* Custom VNC Control Bar */}
-      <div className="vnc-controls" style={{
-        backgroundColor: '#363636',
-        color: 'white',
-        padding: '8px 12px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderRadius: '6px 6px 0 0',
-        fontSize: '0.875rem'
-      }}>
-        <div className="vnc-status">
-          <span className="icon-text">
-            <span className="icon is-small">
-              <i className={`fas fa-circle ${connected ? 'has-text-success' : connecting ? 'has-text-warning' : 'has-text-danger'}`}></i>
-            </span>
-            <span className="ml-1">
-              {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'} 
-              {connected && ` • ${zoneName}`}
-            </span>
-          </span>
-        </div>
-        
-        <div className="vnc-actions">
-          <div className="buttons is-small" style={{margin: 0}}>
-            {/* Ctrl+Alt+Del Button */}
-            <button 
-              className="button is-small is-warning" 
-              onClick={handleCtrlAltDel}
-              disabled={!connected}
-              title="Send Ctrl+Alt+Del to guest system"
-              style={{boxShadow: '0 2px 4px rgba(0,0,0,0.2)'}}
-            >
+      {/* Conditional VNC Control Bar */}
+      {showControls && (
+        <div className="vnc-controls" style={{
+          backgroundColor: '#363636',
+          color: 'white',
+          padding: '8px 12px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderRadius: '6px 6px 0 0',
+          fontSize: '0.875rem'
+        }}>
+          <div className="vnc-status">
+            <span className="icon-text">
               <span className="icon is-small">
-                <i className="fas fa-keyboard"></i>
+                <i className={`fas fa-circle ${connected ? 'has-text-success' : connecting ? 'has-text-warning' : 'has-text-danger'}`}></i>
               </span>
-              <span>Ctrl+Alt+Del</span>
-            </button>
-            
-            {/* Connect/Disconnect Button */}
-            <button 
-              className={`button is-small ${connected ? 'is-danger' : 'is-success'}`}
-              onClick={connected ? handleDisconnect : handleConnect}
-              disabled={connecting}
-              title={connected ? 'Disconnect from VNC' : 'Connect to VNC'}
-              style={{boxShadow: '0 2px 4px rgba(0,0,0,0.2)'}}
-            >
-              <span className="icon is-small">
-                <i className={`fas ${connected ? 'fa-plug' : 'fa-play'}`}></i>
+              <span className="ml-1">
+                {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'} 
+                {connected && ` • ${zoneName}`}
               </span>
-              <span>{connected ? 'Disconnect' : connecting ? 'Connecting...' : 'Connect'}</span>
-            </button>
+            </span>
+          </div>
+          
+          <div className="vnc-actions">
+            <div className="buttons is-small" style={{margin: 0}}>
+              {/* Ctrl+Alt+Del Button */}
+              <button 
+                className="button is-small is-warning" 
+                onClick={handleCtrlAltDel}
+                disabled={!connected}
+                title="Send Ctrl+Alt+Del to guest system"
+                style={{boxShadow: '0 2px 4px rgba(0,0,0,0.2)'}}
+              >
+                <span className="icon is-small">
+                  <i className="fas fa-keyboard"></i>
+                </span>
+                <span>Ctrl+Alt+Del</span>
+              </button>
+              
+              {/* Connect/Disconnect Button */}
+              <button 
+                className={`button is-small ${connected ? 'is-danger' : 'is-success'}`}
+                onClick={connected ? handleDisconnect : handleConnect}
+                disabled={connecting}
+                title={connected ? 'Disconnect from VNC' : 'Connect to VNC'}
+                style={{boxShadow: '0 2px 4px rgba(0,0,0,0.2)'}}
+              >
+                <span className="icon is-small">
+                  <i className={`fas ${connected ? 'fa-plug' : 'fa-play'}`}></i>
+                </span>
+                <span>{connected ? 'Disconnect' : connecting ? 'Connecting...' : 'Connect'}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
       
       {/* VNC Display Area */}
       <div style={{
         position: 'relative',
-        height: 'calc(100% - 50px)', // Account for control bar
+        height: showControls ? 'calc(100% - 50px)' : '100%', // Account for control bar when shown
         backgroundColor: '#000',
-        border: '2px solid #dbdbdb',
-        borderTop: 'none',
-        borderRadius: '0 0 6px 6px',
+        border: showControls ? '2px solid #dbdbdb' : 'none',
+        borderTop: showControls ? 'none' : 'none',
+        borderRadius: showControls ? '0 0 6px 6px' : '0',
         overflow: 'hidden'
       }}>
         {connecting && !connected && (
@@ -249,6 +269,32 @@ const VncViewerReact = ({
           onCredentialsRequired={handleCredentialsRequired}
           onSecurityFailure={handleSecurityFailure}
         />
+        
+        {/* Optional Connection Status Overlay */}
+        {showConnectionStatus && (
+          <div 
+            style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '3px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              zIndex: 5
+            }}
+          >
+            <span className='icon is-small' style={{marginRight: '3px'}}>
+              <i className='fas fa-circle' style={{
+                color: connected ? '#48c78e' : connecting ? '#ffdd57' : '#f14668', 
+                fontSize: '0.4rem'
+              }}></i>
+            </span>
+            {connected ? 'Live' : connecting ? 'Connecting' : 'Offline'}
+          </div>
+        )}
       </div>
     </div>
   );
