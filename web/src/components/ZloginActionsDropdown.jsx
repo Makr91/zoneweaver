@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 /**
  * zlogin Console Actions Dropdown
@@ -16,6 +16,18 @@ const ZloginActionsDropdown = ({
   disabled = false 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -28,7 +40,7 @@ const ZloginActionsDropdown = ({
 
   if (variant === "button") {
     return (
-      <div className={`dropdown ${isOpen ? 'is-active' : ''}`} style={style}>
+      <div className={`dropdown is-right ${isOpen ? 'is-active' : ''}`} style={style} ref={dropdownRef}>
         <div className="dropdown-trigger">
           <button 
             className="button is-small"
@@ -109,7 +121,7 @@ const ZloginActionsDropdown = ({
 
   // Default dropdown variant
   return (
-    <div className={`dropdown ${isOpen ? 'is-active' : ''}`} style={style}>
+    <div className={`dropdown is-right ${isOpen ? 'is-active' : ''}`} style={style} ref={dropdownRef}>
       <div className="dropdown-trigger">
         <button 
           className="button is-small"

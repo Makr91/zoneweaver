@@ -190,9 +190,6 @@ const VncActionsDropdown = ({
             <span className="icon is-small">
               <i className="fas fa-ellipsis-v"></i>
             </span>
-            <span className="icon is-small">
-              <i className="fas fa-angle-down" aria-hidden="true"></i>
-            </span>
           </button>
         </div>
         <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu">
