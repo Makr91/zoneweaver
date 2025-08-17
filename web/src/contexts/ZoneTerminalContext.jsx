@@ -205,8 +205,8 @@ export const ZoneTerminalProvider = ({ children }) => {
         return null;
       }
 
-      // Handle double-nested response structure from backend
-      const sessionData = response.data.data?.data || response.data.data;
+      // Backend controller now properly extracts session data
+      const sessionData = response.data.data;
       console.log(`🔍 TERMINAL SESSION: Parsed session data for ${zoneKey}:`, {
         websocket_url: sessionData.websocket_url,
         id: sessionData.id,
