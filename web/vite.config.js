@@ -89,7 +89,8 @@ export default defineConfig({
               id.includes('node_modules/react-dom') ||
               id.includes('node_modules/scheduler') ||
               id.includes('node_modules/highcharts') ||
-              id.includes('highcharts-react-official')) {
+              id.includes('highcharts-react-official') ||
+              id.includes('@dr.pogodin/react-helmet')) {
             return 'react-ecosystem';
           }
           
