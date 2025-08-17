@@ -37,6 +37,7 @@ const Zones = () => {
   const [isVncFullScreen, setIsVncFullScreen] = useState(false);
   const [showFullScreenControls, setShowFullScreenControls] = useState(false);
   const [showZloginConsole, setShowZloginConsole] = useState(false);
+  const [isZloginFullScreen, setIsZloginFullScreen] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [killInProgress, setKillInProgress] = useState(false);
   const [monitoringHealth, setMonitoringHealth] = useState({});
@@ -748,6 +749,10 @@ const Zones = () => {
 
   const openVncFullScreen = () => {
     setIsVncFullScreen(!isVncFullScreen);
+  };
+
+  const openZloginFullScreen = () => {
+    setIsZloginFullScreen(!isZloginFullScreen);
   };
 
   const closeVncConsole = () => {
@@ -1841,20 +1846,24 @@ const Zones = () => {
           <div className='modal-background' onClick={() => setShowZloginConsole(false)}></div>
           <div 
             style={{
-              width: '90vw', 
-              height: '86vh',
+              width: isZloginFullScreen ? '99vw' : '90vw', 
+              height: isZloginFullScreen ? '100vh' : '86vh',
+              position: isZloginFullScreen ? 'fixed' : 'relative',
+              top: isZloginFullScreen ? '0' : 'auto',
+              left: isZloginFullScreen ? '0' : 'auto',
+              margin: isZloginFullScreen ? '0' : 'auto',
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
               backgroundColor: 'white',
               borderRadius: '0',
-              boxShadow: '0 8px 16px rgba(10, 10, 10, 0.1)'
+              boxShadow: isZloginFullScreen ? 'none' : '0 8px 16px rgba(10, 10, 10, 0.1)'
             }}
           >
             <header 
               className='modal-card-head' 
               style={{
-                padding: '0.75rem 1rem',
+                padding: isZloginFullScreen ? '0.25rem 0.5rem' : '0.75rem 1rem',
                 minHeight: 'auto',
                 flexShrink: 0,
                 '--bulma-modal-card-head-radius': '0',
@@ -1864,7 +1873,7 @@ const Zones = () => {
               <p 
                 className='modal-card-title' 
                 style={{
-                  fontSize: '1.1rem',
+                  fontSize: isZloginFullScreen ? '0.9rem' : '1.1rem',
                   margin: 0,
                   lineHeight: '1.2'
                 }}
@@ -1982,10 +1991,25 @@ const Zones = () => {
                   </button>
                 )}
                 <button 
-                  className='delete'
+                  className='button is-small is-info'
+                  onClick={openZloginFullScreen}
+                  title={isZloginFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
+                >
+                  <span className='icon'>
+                    <i className={`fas ${isZloginFullScreen ? 'fa-compress' : 'fa-expand'}`}></i>
+                  </span>
+                  <span>{isZloginFullScreen ? 'Exit' : 'Full'}</span>
+                </button>
+                <button 
+                  className='button is-small'
                   onClick={() => setShowZloginConsole(false)}
                   title="Close Console"
-                ></button>
+                >
+                  <span className='icon'>
+                    <i className='fas fa-times'></i>
+                  </span>
+                  <span>Exit</span>
+                </button>
               </div>
             </header>
             <section 
