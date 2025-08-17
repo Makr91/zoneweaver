@@ -72,6 +72,10 @@ build_app() {
     export CC=gcc
     export CXX=g++
     
+    # Set POSIX compilation flags for better-sqlite3 compatibility on Solaris
+    export CPPFLAGS="-D_POSIX_C_SOURCE=199309L -D__EXTENSIONS__"
+    export CFLAGS="-D_POSIX_C_SOURCE=199309L -D__EXTENSIONS__"
+    
     # Sync versions
     logcmd npm run sync-versions
     
