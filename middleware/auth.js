@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../index.js';
-import UserModel from '../models/UserModel.js';
+import db from '../models/index.js';
 
 /**
  * Authentication middleware for protecting routes
@@ -24,7 +24,8 @@ export const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, config.security.jwt_secret || 'fallback-secret');
     
     // Get fresh user data to ensure user is still active
-    const user = await UserModel.getUserById(decoded.userId);
+    const { user: UserModel } = db;
+    const user = await UserModel.findByPk(decoded.userId);
     
     if (!user) {
       return res.status(401).json({ 
@@ -80,7 +81,8 @@ export const authenticateSession = async (req, res, next) => {
     }
 
     // Get fresh user data
-    const user = await UserModel.getUserById(req.session.userId);
+    const { user: UserModel } = db;
+    const user = await UserModel.findByPk(req.session.userId);
     
     if (!user) {
       // Clear invalid session
@@ -227,7 +229,8 @@ export const optionalAuth = async (req, res, next) => {
     if (token) {
       try {
         const decoded = jwt.verify(token, config.security.jwt_secret || 'fallback-secret');
-        const user = await UserModel.getUserById(decoded.userId);
+        const { user: UserModel } = db;
+        const user = await UserModel.findByPk(decoded.userId);
         
         if (user) {
           req.user = {
@@ -243,7 +246,8 @@ export const optionalAuth = async (req, res, next) => {
     } else if (req.session && req.session.userId) {
       // Try session authentication
       try {
-        const user = await UserModel.getUserById(req.session.userId);
+        const { user: UserModel } = db;
+        const user = await UserModel.findByPk(req.session.userId);
         
         if (user) {
           req.user = {

@@ -1,4 +1,7 @@
-import ServerModel from '../models/ServerModel.js';
+import db from '../models/index.js';
+
+// Access Sequelize models
+const { server: ServerModel } = db;
 
 // Cache for server lookups to avoid database hits on every asset request
 const serverCache = new Map();

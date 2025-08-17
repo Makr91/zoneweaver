@@ -71,6 +71,9 @@ export default defineConfig({
   build: {
     sourcemap: false, // Disable source maps for production to avoid source map errors
     chunkSizeWarningLimit: 1000, // Increase warning limit to 1MB for complex applications
+    commonjsOptions: {
+      defaultIsModuleExports: true, // Fix for Vite 4.0.3+ CommonJS handling changes
+    },
     rollupOptions: {
       external: ["rollup"],
       output: {

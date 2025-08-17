@@ -3,7 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import * as YAML from 'yaml';
 import { loadConfig, getConfigFilePath } from '../utils/config.js';
-import ServerModel from '../models/ServerModel.js';
+import db from '../models/index.js';
+
+// Access Sequelize models
+const { server: ServerModel } = db;
 
 /**
  * Settings Controller - Manages Zoneweaver system settings

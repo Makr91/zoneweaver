@@ -6,7 +6,7 @@ import cors from "cors";
 import session from "express-session";
 import YAML from "yaml";
 import router from "./routes/index.js";
-import database from "./models/Database.js";
+import db from "./models/index.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { specs, swaggerUi } from "./config/swagger.js";
 import { loadConfig } from "./utils/config.js";
@@ -49,48 +49,25 @@ app.use(express.json());
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));
 
-// Session store configuration
+// Session store configuration using connect-session-sequelize
 let sessionStore;
 try {
-  const sessionConfig = config.session?.store;
+  const SequelizeStore = (await import('connect-session-sequelize')).default(session.Store);
+  const sessionTableName = config.session?.table?.value || 'sessions';
   
-  if (sessionConfig?.type === 'mysql' && sessionConfig.mysql) {
-    // MySQL session store
-    const MySQLStore = (await import('express-mysql-session')).default(session);
-    const mysql = await import('mysql2/promise');
-    
-    const sessionConnection = mysql.createPool({
-      host: sessionConfig.mysql.host,
-      port: sessionConfig.mysql.port,
-      user: sessionConfig.mysql.user,
-      password: sessionConfig.mysql.password,
-      database: sessionConfig.mysql.database,
-      createDatabaseTable: true
-    });
-    
-    sessionStore = new MySQLStore({}, sessionConnection);
-    console.log('Using MySQL session store');
-  } else {
-    // SQLite session store (default) using better-sqlite3
-    const BetterSqlite3Store = (await import('better-sqlite3-session-store')).default(session);
-    const BetterSqlite3 = (await import('better-sqlite3')).default;
-    const sessionPath = sessionConfig?.sqlite?.path || '/var/lib/zoneweaver/database/sessions.db';
-    
-    // Create better-sqlite3 database instance
-    const sessionDb = new BetterSqlite3(sessionPath);
-    sessionDb.pragma('journal_mode = WAL');
-    
-    sessionStore = new BetterSqlite3Store({
-      client: sessionDb,
-      expired: {
-        clear: true,
-        intervalMs: 900000 // 15 minutes
-      }
-    });
-    console.log(`Using better-sqlite3 session store: ${sessionPath}`);
-  }
+  sessionStore = new SequelizeStore({
+    db: db.sequelize,
+    tableName: sessionTableName,
+    checkExpirationInterval: 15 * 60 * 1000, // 15 minutes
+    expiration: 24 * 60 * 60 * 1000 // 24 hours
+  });
+  
+  // Sync session table
+  sessionStore.sync();
+  
+  console.log(`✅ Using Sequelize session store (table: ${sessionTableName})`);
 } catch (error) {
-  console.error('Failed to initialize session store:', error.message);
+  console.error('Failed to initialize Sequelize session store:', error.message);
   console.log('Falling back to MemoryStore (not recommended for production)');
   sessionStore = null; // Will use default MemoryStore
 }
@@ -108,19 +85,15 @@ app.use(session({
   }
 }));
 
-// Initialize database and server model
-let ServerModel = null;
-let serverModelReady = false;
-database.init().then(async () => {
-  // Import ServerModel after database is initialized
-  ServerModel = (await import('./models/ServerModel.js')).default;
-  await ServerModel.init();
-  serverModelReady = true;
-  console.log('ServerModel fully initialized and ready');
-}).catch(error => {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-});
+// Database and models are already initialized via models/index.js import
+// Access models via db.server, db.user, etc.
+const ServerModel = db.server;
+const UserModel = db.user;
+const OrganizationModel = db.organization;
+const InvitationModel = db.invitation;
+let serverModelReady = true; // Models are ready immediately after import
+
+console.log('✅ Sequelize models loaded and ready');
 
 // Middleware to track VNC console requests for WebSocket fallback
 app.use('/api/servers/:serverAddress/zones/:zoneName/vnc/console', (req, res, next) => {

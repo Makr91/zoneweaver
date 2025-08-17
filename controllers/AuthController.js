@@ -1,9 +1,10 @@
-import UserModel from '../models/UserModel.js';
-import OrganizationModel from '../models/OrganizationModel.js';
-import InvitationModel from '../models/InvitationModel.js';
+import db from '../models/index.js';
 import MailController from './MailController.js';
 import jwt from 'jsonwebtoken';
 import { config } from '../index.js';
+
+// Access Sequelize models
+const { user: UserModel, organization: OrganizationModel, invitation: InvitationModel } = db;
 
 /**
  * Authentication controller for Zoneweaver user management
@@ -1567,9 +1568,6 @@ class AuthController {
         });
       }
 
-      // Import models
-      const OrganizationModel = (await import('../models/OrganizationModel.js')).default;
-      const InvitationModel = (await import('../models/InvitationModel.js')).default;
       const MailController = (await import('./MailController.js')).default;
 
       // Determine target organization
@@ -1733,8 +1731,7 @@ class AuthController {
         });
       }
 
-      const InvitationModel = (await import('../models/InvitationModel.js')).default;
-      const invitation = await InvitationModel.validateInvitation(code);
+      const invitation = await InvitationModel.validateInvitationCode(code);
 
       if (!invitation) {
         return res.status(404).json({ 
@@ -1805,8 +1802,10 @@ class AuthController {
    */
   static async getAllOrganizations(req, res) {
     try {
-      const OrganizationModel = (await import('../models/OrganizationModel.js')).default;
-      const organizations = await OrganizationModel.getAllOrganizations();
+      const organizations = await OrganizationModel.findAll({
+        where: { is_active: true },
+        order: [['name', 'ASC']]
+      });
       
       res.json({
         success: true,
@@ -1896,8 +1895,10 @@ class AuthController {
         });
       }
 
-      const OrganizationModel = (await import('../models/OrganizationModel.js')).default;
-      const success = await OrganizationModel.deactivateOrganization(parseInt(orgId));
+      const success = await OrganizationModel.update(
+        { is_active: false },
+        { where: { id: parseInt(orgId), is_active: true } }
+      );
       
       if (!success) {
         return res.status(404).json({ 
@@ -2002,8 +2003,11 @@ class AuthController {
         });
       }
 
-      const OrganizationModel = (await import('../models/OrganizationModel.js')).default;
-      const result = await OrganizationModel.deleteOrganization(parseInt(orgId));
+      const [affectedRows] = await OrganizationModel.update(
+        { is_active: false },
+        { where: { id: parseInt(orgId), is_active: true } }
+      );
+      const result = { success: affectedRows > 0, message: affectedRows > 0 ? 'Success' : 'Organization not found' };
       
       if (!result.success) {
         return res.status(400).json({ 
