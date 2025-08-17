@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/Makr91/zoneweaver/compare/v0.5.0...v0.5.1) (2025-08-17)
+
+
+### Bug Fixes
+
+* update node version for runner ([d0be47f](https://github.com/Makr91/zoneweaver/commit/d0be47f9a7fbf09332899ebc562b822d7c629cf1))
+
 ## [0.5.0](https://github.com/Makr91/zoneweaver/compare/v0.4.0...v0.5.0) (2025-08-16)
 
 
