@@ -205,7 +205,13 @@ export const ZoneTerminalProvider = ({ children }) => {
         return null;
       }
 
-      const sessionData = response.data.data;
+      // Handle double-nested response structure from backend
+      const sessionData = response.data.data?.data || response.data.data;
+      console.log(`🔍 TERMINAL SESSION: Parsed session data for ${zoneKey}:`, {
+        websocket_url: sessionData.websocket_url,
+        id: sessionData.id,
+        reused: sessionData.reused
+      });
       
       // Step 3: Log performance tracking
       if (sessionData.reused) {

@@ -265,10 +265,16 @@ export const FooterProvider = ({ children }) => {
       const res = await axios.post(`/api/servers/${currentServer.hostname}/terminal/start`, {
         terminal_cookie: terminalCookie
       });
-      const sessionData = res.data.data;
+      // Handle double-nested response structure from backend
+      const sessionData = res.data.data?.data || res.data.data;
+      console.log(`🔍 FOOTER: Parsed session data:`, {
+        websocket_url: sessionData.websocket_url,
+        id: sessionData.id,
+        reused: sessionData.reused
+      });
       
-      // Create WebSocket connection
-      const ws = new WebSocket(`wss://${window.location.host}/term/${sessionData.id}`);
+      // Create WebSocket connection using backend-provided URL
+      const ws = new WebSocket(`wss://${window.location.host}${sessionData.websocket_url}`);
       
       // Single persistent message handler that forwards to current terminal
       const handlePersistentMessage = (event) => {
