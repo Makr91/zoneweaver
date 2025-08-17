@@ -18,7 +18,6 @@ const VncViewerReact = ({
   resize = 'scale',
   showDot = false,
   showControls = true,
-  showConnectionStatus = false,
   onConnect = null,
   onDisconnect = null,
   onCtrlAltDel = null,
@@ -269,32 +268,6 @@ const VncViewerReact = ({
           onCredentialsRequired={handleCredentialsRequired}
           onSecurityFailure={handleSecurityFailure}
         />
-        
-        {/* Optional Connection Status Overlay */}
-        {showConnectionStatus && (
-          <div 
-            style={{
-              position: 'absolute',
-              top: '8px',
-              left: '8px',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '3px',
-              fontSize: '0.7rem',
-              fontWeight: 'bold',
-              zIndex: 5
-            }}
-          >
-            <span className='icon is-small' style={{marginRight: '3px'}}>
-              <i className='fas fa-circle' style={{
-                color: connected ? '#48c78e' : connecting ? '#ffdd57' : '#f14668', 
-                fontSize: '0.4rem'
-              }}></i>
-            </span>
-            {connected ? 'Live' : connecting ? 'Connecting' : 'Offline'}
-          </div>
-        )}
       </div>
     </div>
   );

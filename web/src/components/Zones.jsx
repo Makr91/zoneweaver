@@ -1509,7 +1509,6 @@ const Zones = () => {
                                             viewOnly={true}
                                             autoConnect={true}
                                             showControls={false}
-                                            showConnectionStatus={true}
                                             style={{ width: '100%', height: '100%' }}
                                           />
                                         </div>

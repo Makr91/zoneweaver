@@ -114,11 +114,6 @@ const VncActionsDropdown = ({
       </a>
 
       <div className="dropdown-item">
-        <div className="field is-grouped mb-2">
-          <div className="control">
-            <span className="tag is-small">F1-F12 Function Keys</span>
-          </div>
-        </div>
         <div className="buttons are-small">
           {[...Array(12)].map((_, i) => (
             <button 
