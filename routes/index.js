@@ -176,6 +176,13 @@ router.delete("/api/servers/:serverAddress/zlogin/sessions/:sessionId/stop", aut
 // Terminal proxy endpoints
 router.post("/api/terminal/start", authenticate, ServerController.startTerminalSession);
 
+// Server-specific terminal proxy endpoints (matching zlogin pattern)
+router.post("/api/servers/:serverAddress/terminal/start", authenticate, ServerController.startServerTerminalSession);
+router.get("/api/servers/:serverAddress/terminal/sessions", authenticate, ServerController.getServerTerminalSessions);
+router.get("/api/servers/:serverAddress/terminal/sessions/:terminalCookie/health", authenticate, ServerController.checkServerTerminalHealth);
+router.get("/api/servers/:serverAddress/terminal/sessions/:sessionId", authenticate, ServerController.getServerTerminalSession);
+router.delete("/api/servers/:serverAddress/terminal/sessions/:sessionId/stop", authenticate, ServerController.stopServerTerminalSession);
+
 // Settings endpoints (super-admin only)
 router.get("/api/settings", authenticate, requireSuperAdmin, SettingsController.getSettings);
 router.put("/api/settings", authenticate, requireSuperAdmin, SettingsController.updateSettings);

@@ -51,7 +51,7 @@ const validateSessionHealth = async (server, terminalCookie) => {
   if (!server || !terminalCookie) return false;
   
   try {
-    const response = await axios.get(`/api/servers/${server.hostname}:${server.port}/terminal/sessions/${terminalCookie}/health`);
+    const response = await axios.get(`/api/servers/${server.hostname}/terminal/sessions/${terminalCookie}/health`);
     const isHealthy = response.data.healthy;
     console.log(`🏥 HEALTH CHECK: Session ${terminalCookie} health: ${isHealthy}`);
     return isHealthy;
@@ -192,7 +192,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       console.log(`🚀 TERMINAL SESSION: Starting session with cookie ${terminalCookie} for ${zoneKey}`);
 
       // Step 2: Call new backend API with terminal_cookie
-      const response = await axios.post(`/api/servers/${server.hostname}:${server.port}/terminal/start`, {
+      const response = await axios.post(`/api/servers/${server.hostname}/terminal/start`, {
         terminal_cookie: terminalCookie,
         zone_name: zoneName
       });

@@ -1524,6 +1524,519 @@ class ServerController {
 
   /**
    * @swagger
+   * /api/servers/{serverAddress}/terminal/start:
+   *   post:
+   *     summary: Start a new terminal session on specific server
+   *     description: Create a new terminal session on the specified Zoneweaver API Server
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "zoneweaver-api-host.example.com:5001"
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [terminal_cookie]
+   *             properties:
+   *               terminal_cookie:
+   *                 type: string
+   *                 description: Terminal session cookie for session reuse
+   *                 example: "terminal_host1_5001_browser123_1234567890"
+   *               zone_name:
+   *                 type: string
+   *                 description: Zone name (optional for host terminal)
+   *                 example: "my-zone"
+   *     responses:
+   *       200:
+   *         description: Terminal session started successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       description: Terminal session ID
+   *                       example: "term_abc123def456"
+   *                     status:
+   *                       type: string
+   *                       description: Session status
+   *                       example: "active"
+   *                     reused:
+   *                       type: boolean
+   *                       description: Whether session was reused
+   *                       example: true
+   *                     websocket_url:
+   *                       type: string
+   *                       description: WebSocket URL for terminal connection
+   *                       example: "/api/servers/host:5001/terminal/sessions/term_abc123def456/ws"
+   *                     buffer:
+   *                       type: string
+   *                       description: Terminal buffer content for reconnection
+   *                       example: "root@host:~# ls\nfile1.txt file2.txt\nroot@host:~# "
+   *       400:
+   *         description: Bad request - missing terminal_cookie
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: Server not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async startServerTerminalSession(req, res) {
+    try {
+      const { serverAddress } = req.params;
+      const { terminal_cookie, zone_name } = req.body;
+
+      console.log('🚀 TERMINAL START: Received request', {
+        serverAddress,
+        terminal_cookie,
+        zone_name,
+        timestamp: new Date().toISOString()
+      });
+
+      if (!terminal_cookie) {
+        return res.status(400).json({
+          success: false,
+          error: 'terminal_cookie is required'
+        });
+      }
+
+      const [hostname, port] = serverAddress.split(':');
+      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+
+      if (!server) {
+        console.error('❌ TERMINAL START: Server not found', { serverAddress, hostname, port });
+        return res.status(404).json({ success: false, message: 'Server not found' });
+      }
+
+      console.log('✅ TERMINAL START: Server found', {
+        hostname: server.hostname,
+        port: server.port,
+        protocol: server.protocol,
+        hasApiKey: !!server.api_key
+      });
+
+      console.log('🎬 TERMINAL START: Creating/reusing session', {
+        endpoint: 'terminal/start',
+        method: 'POST',
+        terminal_cookie
+      });
+
+      const result = await ServerModel.makeRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'terminal/start',
+        { 
+          method: 'POST',
+          data: {
+            terminal_cookie,
+            zone_name
+          }
+        }
+      );
+
+      console.log('📋 TERMINAL START: Session result', {
+        success: result.success,
+        status: result.status,
+        hasData: !!result.data,
+        sessionId: result.data?.id,
+        reused: result.data?.reused,
+        error: result.error
+      });
+
+      if (result.success) {
+        console.log('🎉 TERMINAL START: Session created/reused successfully', {
+          sessionId: result.data.id,
+          reused: result.data.reused ? '⚡ REUSED' : '🆕 NEW',
+          status: result.data.status
+        });
+
+        res.json({ success: true, data: result.data });
+      } else {
+        console.error('❌ TERMINAL START: Session creation failed', {
+          status: result.status,
+          error: result.error,
+          message: result.message
+        });
+
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to start terminal session'
+        });
+      }
+    } catch (error) {
+      console.error('💥 TERMINAL START: Exception occurred', {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to start terminal session'
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/servers/{serverAddress}/terminal/sessions:
+   *   get:
+   *     summary: Get all terminal sessions on specific server
+   *     description: Retrieve all active terminal sessions on the specified Zoneweaver API Server
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "zoneweaver-api-host.example.com:5001"
+   *     responses:
+   *       200:
+   *         description: Terminal sessions retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 sessions:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id:
+   *                         type: string
+   *                         example: "term_abc123def456"
+   *                       terminal_cookie:
+   *                         type: string
+   *                         example: "terminal_host1_5001_browser123_1234567890"
+   *                       status:
+   *                         type: string
+   *                         example: "active"
+   *                       created:
+   *                         type: string
+   *                         format: date-time
+   *                         example: "2025-01-04T17:18:00.324Z"
+   *       404:
+   *         description: Server not found
+   *       500:
+   *         description: Internal server error
+   */
+  static async getServerTerminalSessions(req, res) {
+    try {
+      const { serverAddress } = req.params;
+      const [hostname, port] = serverAddress.split(':');
+      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+
+      if (!server) {
+        return res.status(404).json({ success: false, message: 'Server not found' });
+      }
+
+      const result = await ServerModel.makeRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'terminal/sessions',
+        { method: 'GET' }
+      );
+
+      if (result.success) {
+        res.json({ success: true, sessions: result.data });
+      } else {
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to get terminal sessions'
+        });
+      }
+    } catch (error) {
+      console.error('Get terminal sessions error:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get terminal sessions'
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/servers/{serverAddress}/terminal/sessions/{terminalCookie}/health:
+   *   get:
+   *     summary: Check terminal session health
+   *     description: Check if a terminal session is healthy and active
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "zoneweaver-api-host.example.com:5001"
+   *       - in: path
+   *         name: terminalCookie
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Terminal session cookie
+   *         example: "terminal_host1_5001_browser123_1234567890"
+   *     responses:
+   *       200:
+   *         description: Health check result
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 healthy:
+   *                   type: boolean
+   *                   description: Whether session is healthy
+   *                   example: true
+   *       404:
+   *         description: Server or session not found
+   *       500:
+   *         description: Internal server error
+   */
+  static async checkServerTerminalHealth(req, res) {
+    try {
+      const { serverAddress, terminalCookie } = req.params;
+      const [hostname, port] = serverAddress.split(':');
+      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+
+      if (!server) {
+        return res.status(404).json({ success: false, message: 'Server not found' });
+      }
+
+      const result = await ServerModel.makeRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        `terminal/sessions/${terminalCookie}/health`,
+        { method: 'GET' }
+      );
+
+      if (result.success) {
+        res.json({ success: true, healthy: result.data.healthy });
+      } else {
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to check terminal session health'
+        });
+      }
+    } catch (error) {
+      console.error('Check terminal health error:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to check terminal session health'
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/servers/{serverAddress}/terminal/sessions/{sessionId}:
+   *   get:
+   *     summary: Get specific terminal session details
+   *     description: Retrieve details of a specific terminal session by session ID
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "zoneweaver-api-host.example.com:5001"
+   *       - in: path
+   *         name: sessionId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Terminal session ID
+   *         example: "term_abc123def456"
+   *     responses:
+   *       200:
+   *         description: Terminal session details
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 session:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       example: "term_abc123def456"
+   *                     terminal_cookie:
+   *                       type: string
+   *                       example: "terminal_host1_5001_browser123_1234567890"
+   *                     status:
+   *                       type: string
+   *                       example: "active"
+   *                     created:
+   *                       type: string
+   *                       format: date-time
+   *                       example: "2025-01-04T17:18:00.324Z"
+   *       404:
+   *         description: Server or session not found
+   *       500:
+   *         description: Internal server error
+   */
+  static async getServerTerminalSession(req, res) {
+    try {
+      const { serverAddress, sessionId } = req.params;
+      const [hostname, port] = serverAddress.split(':');
+      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+
+      if (!server) {
+        return res.status(404).json({ success: false, message: 'Server not found' });
+      }
+
+      const result = await ServerModel.makeRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        `terminal/sessions/${sessionId}`,
+        { method: 'GET' }
+      );
+
+      if (result.success) {
+        res.json({ success: true, session: result.data });
+      } else {
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to get terminal session'
+        });
+      }
+    } catch (error) {
+      console.error('Get terminal session error:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get terminal session'
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/servers/{serverAddress}/terminal/sessions/{sessionId}/stop:
+   *   delete:
+   *     summary: Stop a terminal session
+   *     description: Stop and terminate a terminal session by session ID
+   *     tags: [Terminal & Shell]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: serverAddress
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Server address in format hostname:port
+   *         example: "zoneweaver-api-host.example.com:5001"
+   *       - in: path
+   *         name: sessionId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Terminal session ID to stop
+   *         example: "term_abc123def456"
+   *     responses:
+   *       200:
+   *         description: Terminal session stopped successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *             example:
+   *               success: true
+   *               message: "Terminal session stopped"
+   *       404:
+   *         description: Server or session not found
+   *       500:
+   *         description: Internal server error
+   */
+  static async stopServerTerminalSession(req, res) {
+    try {
+      const { serverAddress, sessionId } = req.params;
+      const [hostname, port] = serverAddress.split(':');
+      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+
+      if (!server) {
+        return res.status(404).json({ success: false, message: 'Server not found' });
+      }
+
+      const result = await ServerModel.makeRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        `terminal/sessions/${sessionId}/stop`,
+        { method: 'DELETE' }
+      );
+
+      if (result.success) {
+        res.json({ success: true, message: 'Terminal session stopped' });
+      } else {
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to stop terminal session'
+        });
+      }
+    } catch (error) {
+      console.error('Stop terminal session error:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to stop terminal session'
+      });
+    }
+  }
+
+  /**
+   * @swagger
    * /api/servers/{serverAddress}/zones/{zoneName}/zlogin/start:
    *   post:
    *     summary: Start a new zlogin session for zone
