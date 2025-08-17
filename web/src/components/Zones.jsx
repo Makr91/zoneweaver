@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
 import { useZoneTerminal } from "../contexts/ZoneTerminalContext";
 import VncViewerReact from "./VncViewerReact";
+import VncActionsDropdown from "./VncActionsDropdown";
 import ZoneShell from "./ZoneShell";
 
 /**
@@ -1433,6 +1434,14 @@ const Zones = () => {
                                         )}
                                       </div>
                                       <div className='buttons' style={{margin: 0}}>
+                                        <VncActionsDropdown
+                                          variant="button"
+                                          onScreenshot={() => {
+                                            console.log('Screenshot requested for live preview');
+                                          }}
+                                          onNewTab={() => handleVncConsole(selectedZone, true)}
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        />
                                         <button 
                                           className='button is-small is-primary'
                                           onClick={() => handleVncConsole(selectedZone)}
@@ -1442,17 +1451,6 @@ const Zones = () => {
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-expand'></i>
-                                          </span>
-                                        </button>
-                                        <button 
-                                          className='button is-small is-info'
-                                          onClick={() => handleVncConsole(selectedZone, true)}
-                                          disabled={loading || loadingVnc}
-                                          title="Open Console in New Tab"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                                        >
-                                          <span className='icon is-small'>
-                                            <i className='fas fa-external-link-alt'></i>
                                           </span>
                                         </button>
                                         {hasZlogin && (
@@ -1467,17 +1465,6 @@ const Zones = () => {
                                             </span>
                                           </button>
                                         )}
-                                        <button 
-                                          className='button is-small is-danger'
-                                          onClick={() => handleKillVncSession(selectedZone)}
-                                          disabled={loading}
-                                          title="Kill VNC Session"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                                        >
-                                          <span className='icon is-small'>
-                                            <i className='fas fa-times'></i>
-                                          </span>
-                                        </button>
                                       </div>
                                     </div>
 
@@ -1945,6 +1932,14 @@ const Zones = () => {
                 </span>
               </p>
               <div className='buttons' style={{margin: 0}}>
+                <VncActionsDropdown
+                  variant="button"
+                  onScreenshot={() => {
+                    console.log('Screenshot requested for modal');
+                  }}
+                  onNewTab={() => handleVncConsole(selectedZone, true)}
+                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                />
                 <button 
                   className='button is-small is-info'
                   onClick={openVncFullScreen}
@@ -1963,7 +1958,7 @@ const Zones = () => {
                   <span className='icon'>
                     <i className='fas fa-times'></i>
                   </span>
-                  <span>Close</span>
+                  <span>Exit</span>
                 </button>
               </div>
             </header>
