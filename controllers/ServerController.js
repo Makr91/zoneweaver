@@ -705,7 +705,9 @@ class ServerController {
   static async proxyToZoneweaverAPI(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
-      const path = req.params.splat || ''; // Express 5.x: use splat instead of [0]
+      const path = Array.isArray(req.params.splat) 
+        ? req.params.splat.join('/') 
+        : (req.params.splat || ''); // Express 5.x compatibility fix
       // Create clean headers for Zoneweaver API request - explicitly exclude problematic headers
       const cleanHeaders = {};
       for (const [key, value] of Object.entries(req.headers)) {
@@ -842,7 +844,9 @@ class ServerController {
   static async proxyVncGeneral(req, res) {
     try {
       const { serverAddress, zoneName } = req.params;
-      const vncPath = req.params.splat || ''; // Express 5.x: use splat instead of [0]
+      const vncPath = Array.isArray(req.params.splat) 
+        ? req.params.splat.join('/') 
+        : (req.params.splat || ''); // Express 5.x compatibility fix
       
       // Parse hostname and port from serverAddress
       const [hostname, port] = serverAddress.split(':');

@@ -275,7 +275,7 @@ const NetworkTopologyViewer = ({
       }}
     >
       {/* Hide React Flow attribution and handles for floating edges */}
-      <style jsx>{`
+      <style>{`
         .react-flow__attribution {
           display: none !important;
         }

@@ -1,6 +1,6 @@
 import React from 'react';
 import Highcharts from '../../Highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import { HighchartsReact } from 'highcharts-react-official';
 
 const NetworkChart = ({ networkChartData, networkSeriesVisibility, setNetworkSeriesVisibility, expandChart }) => {
   return (

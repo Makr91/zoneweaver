@@ -87,46 +87,31 @@ export default defineConfig({
           return `assets/[name].[ext]`;
         },
         manualChunks: (id) => {
-          // Bundle React ecosystem together - ensures loading order and fixes Highcharts dependency issues
-          if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/scheduler') ||
-              id.includes('node_modules/highcharts') ||
+          // Simplify chunking to avoid dependency issues
+          // Only split out the largest, most independent libraries
+
+          // Highcharts (large, completely independent)
+          // Include custom Highcharts wrapper to ensure proper loading order
+          if (id.includes('node_modules/highcharts') ||
               id.includes('highcharts-react-official') ||
-              id.includes('@dr.pogodin/react-helmet')) {
-            return 'react-ecosystem';
+              id.includes('src/components/Highcharts.jsx')) {
+            return 'charts';
           }
-          
-          // Group React Router separately (frequently changing)
-          if (id.includes('node_modules/react-router') ||
-              id.includes('node_modules/@remix-run')) {
-            return 'routing';
+
+          // Terminal libraries (large, independent)
+          if (id.includes('node_modules/@xterm')) {
+            return 'terminal';
           }
-          
-          // Group UI/CSS libraries
-          if (id.includes('node_modules/@fortawesome') ||
-              id.includes('node_modules/bulma') ||
-              id.includes('node_modules/@creativebulma')) {
-            return 'ui-libs';
-          }
-          
-          // Group terminal and specialized libraries
-          if (id.includes('node_modules/@xterm') ||
-              id.includes('node_modules/@xyflow') ||
+
+          // Flow/diagram libraries (large, independent)
+          if (id.includes('node_modules/@xyflow') ||
               id.includes('node_modules/elkjs') ||
               id.includes('node_modules/dagre')) {
-            return 'specialized-libs';
+            return 'flow-diagrams';
           }
-          
-          // Group utility libraries
-          if (id.includes('node_modules/axios') ||
-              id.includes('node_modules/jwt-decode') ||
-              id.includes('node_modules/re-resizable') ||
-              id.includes('node_modules/react-resizable')) {
-            return 'utilities';
-          }
-          
-          // All remaining node_modules go to vendor (should be much smaller now)
+
+          // Everything else stays together in vendor to avoid dependency issues
+          // This includes React, Router, Axios, utilities, etc.
           if (id.includes('node_modules')) {
             return 'vendor';
           }

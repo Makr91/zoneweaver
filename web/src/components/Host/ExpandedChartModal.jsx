@@ -1,6 +1,6 @@
 import React from 'react';
 import Highcharts from '../Highcharts';
-import HighchartsReact from 'highcharts-react-official';
+import { HighchartsReact } from 'highcharts-react-official';
 
 const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, arcChartData }) => {
     if (!chartId) {
