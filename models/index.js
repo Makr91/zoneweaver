@@ -14,14 +14,18 @@ try {
 const dbConfig = config.database;
 
 // Configure Sequelize based on database dialect
+// Handle both flat format and UI metadata format
+const dialect = dbConfig.dialect?.value || dbConfig.dialect || 'sqlite';
+const logging = dbConfig.logging?.value || dbConfig.logging || false;
+
 let sequelizeConfig = {
-  logging: dbConfig.logging?.value || false,
-  dialect: dbConfig.dialect?.value || 'sqlite',
+  logging: logging,
+  dialect: dialect,
 };
 
-if (dbConfig.dialect?.value === 'sqlite') {
-  // SQLite configuration
-  sequelizeConfig.storage = dbConfig.storage?.value || './data/zoneweaver.db';
+if (dialect === 'sqlite') {
+  // SQLite configuration - use storage from config or fallback
+  sequelizeConfig.storage = dbConfig.storage?.value || dbConfig.path || './data/zoneweaver.db';
   
   // Ensure the directory exists for SQLite database file
   const storageDir = path.dirname(sequelizeConfig.storage);
@@ -31,26 +35,26 @@ if (dbConfig.dialect?.value === 'sqlite') {
   }
 } else {
   // MySQL/PostgreSQL/MariaDB configuration
-  sequelizeConfig.host = dbConfig.host?.value || 'localhost';
-  sequelizeConfig.port = dbConfig.port?.value || (dbConfig.dialect?.value === 'postgresql' ? 5432 : 3306);
+  sequelizeConfig.host = dbConfig.host?.value || dbConfig.host || 'localhost';
+  sequelizeConfig.port = dbConfig.port?.value || dbConfig.port || (dialect === 'postgresql' ? 5432 : 3306);
   
   // Connection pooling
-  if (dbConfig.pool) {
+  const poolConfig = dbConfig.pool;
+  if (poolConfig) {
     sequelizeConfig.pool = {
-      max: dbConfig.pool.max?.value || 5,
-      min: dbConfig.pool.min?.value || 0,
-      acquire: dbConfig.pool.acquire?.value || 30000,
-      idle: dbConfig.pool.idle?.value || 10000
+      max: poolConfig.max?.value || poolConfig.max || 5,
+      min: poolConfig.min?.value || poolConfig.min || 0,
+      acquire: poolConfig.acquire?.value || poolConfig.acquire || 30000,
+      idle: poolConfig.idle?.value || poolConfig.idle || 10000
     };
   }
 }
 
-const sequelize = new Sequelize(
-  dbConfig.dialect?.value === 'sqlite' ? null : dbConfig.database_name?.value || 'zoneweaver',
-  dbConfig.dialect?.value === 'sqlite' ? null : dbConfig.user?.value || 'zoneweaver',
-  dbConfig.dialect?.value === 'sqlite' ? null : dbConfig.password?.value || '',
-  sequelizeConfig
-);
+const databaseName = dialect === 'sqlite' ? null : (dbConfig.database_name?.value || dbConfig.database_name || 'zoneweaver');
+const username = dialect === 'sqlite' ? null : (dbConfig.user?.value || dbConfig.user || 'zoneweaver');
+const password = dialect === 'sqlite' ? null : (dbConfig.password?.value || dbConfig.password || '');
+
+const sequelize = new Sequelize(databaseName, username, password, sequelizeConfig);
 
 const db = {};
 

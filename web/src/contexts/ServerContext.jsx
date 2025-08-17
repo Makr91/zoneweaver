@@ -319,6 +319,18 @@ export const ServerProvider = ({ children }) => {
   const makeZoneweaverAPIRequest = async (hostname, port, protocol, path, method = 'GET', data = null, params = null, bypassCache = false) => {
     try {
       const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
+      
+      // Debug logging for API calls
+      console.log('🚀 FRONTEND API CALL:', {
+        hostname,
+        port, 
+        protocol,
+        path,
+        method,
+        proxyUrl,
+        timestamp: new Date().toISOString()
+      });
+      
       const config = {
         url: proxyUrl,
         method: method,

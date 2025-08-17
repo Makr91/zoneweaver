@@ -435,5 +435,71 @@ export default (sequelize, Sequelize) => {
     return server.makeRequest(path, options);
   };
 
+  // ===== MISSING METHODS FROM ORIGINAL SQLite ServerModel =====
+  // These methods were lost during the SQLite-to-Sequelize conversion
+
+  /**
+   * Get server by hostname, port, and protocol
+   * @param {string} hostname - Server hostname
+   * @param {number} port - Server port  
+   * @param {string} protocol - Server protocol
+   * @returns {Promise<Object|null>} Server record or null
+   */
+  Server.getServer = function(hostname, port, protocol) {
+    return this.findByHostPortProtocol(hostname, port, protocol);
+  };
+
+  /**
+   * Get API key for a server
+   * @param {string} hostname - Server hostname
+   * @param {number} port - Server port
+   * @param {string} protocol - Server protocol  
+   * @returns {Promise<string|null>} API key or null
+   */
+  Server.getApiKey = async function(hostname, port, protocol) {
+    const server = await this.findByHostPortProtocol(hostname, port, protocol);
+    return server?.api_key || null;
+  };
+
+  /**
+   * Update last used timestamp for a server (static version)
+   * @param {string} hostname - Server hostname
+   * @param {number} port - Server port
+   * @param {string} protocol - Server protocol
+   * @returns {Promise<boolean>} Success status  
+   */
+  Server.updateLastUsed = async function(hostname, port, protocol) {
+    const [updated] = await this.update(
+      { last_used: new Date() },
+      { where: { hostname, port, protocol } }
+    );
+    return updated > 0;
+  };
+
+  /**
+   * Remove a server by ID
+   * @param {number} serverId - Server ID
+   * @returns {Promise<boolean>} Success status
+   */
+  Server.removeServer = async function(serverId) {
+    const deleted = await this.destroy({ where: { id: serverId } });
+    return deleted > 0;
+  };
+
+  /**
+   * Test server connectivity (static version)
+   * @param {string} hostname - Server hostname
+   * @param {number} port - Server port
+   * @param {string} protocol - Server protocol
+   * @returns {Promise<Object>} Test result
+   */
+  Server.testServer = async function(hostname, port, protocol) {
+    const server = await this.findByHostPortProtocol(hostname, port, protocol);
+    if (!server) {
+      return { success: false, error: 'Server not found' };
+    }
+    return server.testConnection();
+  };
+
   return Server;
 };

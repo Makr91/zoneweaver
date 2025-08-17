@@ -131,7 +131,7 @@ class AuthController {
         console.log('Creating first user as super-admin');
         
         // Create Default Organization for the super admin
-        organization = await OrganizationModel.createOrganization({
+        organization = await OrganizationModel.create({
           name: 'Default Organization',
           description: 'Auto-created organization for system administrators'
         });
@@ -146,7 +146,7 @@ class AuthController {
           // User is registering with an invitation
           console.log('Processing registration with invite code');
           
-          const inviteValidation = await InvitationModel.validateInvitationCode(inviteCode);
+          const inviteValidation = await InvitationModel.validateCode(inviteCode);
           
           if (!inviteValidation.valid) {
             return res.status(400).json({
@@ -163,8 +163,8 @@ class AuthController {
             });
           }
 
-          organizationId = inviteValidation.invitation.organizationId;
-          organization = await OrganizationModel.getOrganizationById(organizationId);
+          organizationId = inviteValidation.invitation.organization_id;
+          organization = await OrganizationModel.findByPk(organizationId);
           
           if (!organization) {
             return res.status(400).json({
@@ -178,7 +178,7 @@ class AuthController {
           console.log('Processing registration with organization name:', organizationName);
           
           // Check if organization exists
-          const existingOrg = await OrganizationModel.getOrganizationByName(organizationName);
+          const existingOrg = await OrganizationModel.findByName(organizationName);
           
           if (existingOrg) {
             // Organization exists - user needs invitation to join
@@ -196,8 +196,10 @@ class AuthController {
             }
 
             // Check if user already exists BEFORE creating organization
-            const existingUser = await UserModel.checkUserExists(username, email);
-            if (existingUser) {
+            const existingUserByEmail = await UserModel.findByEmail(email);
+            const existingUserByUsername = await UserModel.findByUsername(username);
+            
+            if (existingUserByEmail || existingUserByUsername) {
               return res.status(409).json({
                 success: false,
                 message: 'User with this username or email already exists'
@@ -207,7 +209,7 @@ class AuthController {
             // Create new organization and make user the admin
             console.log('Creating new organization:', organizationName);
             
-            organization = await OrganizationModel.createOrganization({
+            organization = await OrganizationModel.create({
               name: organizationName,
               description: `Organization created by ${username}`
             });
@@ -228,18 +230,26 @@ class AuthController {
       // Create the user
       console.log('Creating user with organization ID:', organizationId);
       
-      const newUser = await UserModel.createUser({
+      // Hash password before creating user
+      const bcrypt = (await import('bcrypt')).default;
+      const saltRounds = 12;
+      const password_hash = await bcrypt.hash(password, saltRounds);
+      
+      const newUser = await UserModel.create({
         username,
         email,
-        password,
+        password_hash,
         role: userRole,
-        organizationId
+        organization_id: organizationId
       });
 
       // Mark invitation as used if applicable
       if (inviteCode) {
-        await InvitationModel.markInvitationAsUsed(inviteCode, newUser.id);
-        console.log('Marked invitation as used');
+        const invitation = await InvitationModel.findByCode(inviteCode);
+        if (invitation) {
+          await invitation.markAsUsed();
+          console.log('Marked invitation as used');
+        }
       }
 
       // Send welcome email (optional - don't fail registration if email fails)
@@ -363,8 +373,8 @@ class AuthController {
         });
       }
 
-      // Authenticate user
-      const user = await UserModel.authenticateUser(identifier, password);
+      // Authenticate user - find user with password hash
+      const user = await UserModel.scope('withPassword').findByIdentifier(identifier);
       
       if (!user) {
         return res.status(401).json({ 
@@ -372,6 +382,21 @@ class AuthController {
           message: 'Invalid credentials' 
         });
       }
+
+      // Verify password
+      const bcrypt = (await import('bcrypt')).default;
+      const isValidPassword = await bcrypt.compare(password, user.password_hash);
+      
+      if (!isValidPassword) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Invalid credentials' 
+        });
+      }
+
+      // Update last login
+      await user.update({ last_login: new Date() });
+      
 
       // Generate JWT token
       const token = jwt.sign(
@@ -522,7 +547,7 @@ class AuthController {
         });
       }
 
-      const user = await UserModel.getUserById(userId);
+      const user = await UserModel.findByPk(userId);
       
       if (!user) {
         return res.status(404).json({ 
@@ -661,15 +686,31 @@ class AuthController {
         });
       }
 
-      // Change password
-      const success = await UserModel.changePassword(userId, currentPassword, newPassword);
-      
-      if (!success) {
-        return res.status(400).json({ 
+      // Get user with password hash
+      const user = await UserModel.scope('withPassword').findByPk(userId);
+      if (!user) {
+        return res.status(404).json({ 
           success: false, 
-          message: 'Failed to change password' 
+          message: 'User not found' 
         });
       }
+
+      // Verify current password
+      const bcrypt = (await import('bcrypt')).default;
+      const isValidCurrentPassword = await bcrypt.compare(currentPassword, user.password_hash);
+      
+      if (!isValidCurrentPassword) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Current password is incorrect' 
+        });
+      }
+
+      // Hash and update new password
+      const saltRounds = 12;
+      const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+      
+      await user.update({ password_hash: newPasswordHash });
 
       res.json({
         success: true,
@@ -760,7 +801,7 @@ class AuthController {
       const decoded = jwt.verify(token, config.security.jwt_secret || 'fallback-secret');
       
       // Get fresh user data
-      const user = await UserModel.getUserById(decoded.userId);
+      const user = await UserModel.findByPk(decoded.userId);
       
       if (!user) {
         return res.status(401).json({ 
@@ -858,17 +899,24 @@ class AuthController {
       
       if (currentUserRole === 'super-admin') {
         // Super-admin can see all users
-        users = await UserModel.getAllUsers();
+        users = await UserModel.findAll({
+          include: [{
+            model: OrganizationModel,
+            as: 'organization',
+            attributes: ['id', 'name']
+          }],
+          order: [['created_at', 'DESC']]
+        });
       } else if (currentUserRole === 'admin') {
         // Admin can only see users in their organization
-        const currentUser = await UserModel.getUserById(currentUserId);
+        const currentUser = await UserModel.findByPk(currentUserId);
         if (!currentUser || !currentUser.organization_id) {
           return res.status(400).json({
             success: false,
             message: 'Admin user must belong to an organization'
           });
         }
-        users = await UserModel.getUsersByOrganization(currentUser.organization_id, true); // Include inactive
+        users = await UserModel.findByOrganization(currentUser.organization_id, true); // Include inactive
       } else {
         // Regular users shouldn't have access (but middleware should prevent this)
         return res.status(403).json({
@@ -1006,7 +1054,11 @@ class AuthController {
         });
       }
 
-      const success = await UserModel.updateUserRole(userId, newRole);
+      const [affectedRows] = await UserModel.update(
+        { role: newRole },
+        { where: { id: userId, is_active: true } }
+      );
+      const success = affectedRows > 0;
       
       if (!success) {
         return res.status(404).json({ 
@@ -1120,7 +1172,11 @@ class AuthController {
         });
       }
 
-      const success = await UserModel.deactivateUser(userId);
+      const [affectedRows] = await UserModel.update(
+        { is_active: false },
+        { where: { id: userId, is_active: true } }
+      );
+      const success = affectedRows > 0;
       
       if (!success) {
         return res.status(404).json({ 
@@ -1217,7 +1273,11 @@ class AuthController {
         });
       }
 
-      const success = await UserModel.reactivateUser(userId);
+      const [affectedRows] = await UserModel.update(
+        { is_active: true },
+        { where: { id: userId, is_active: false } }
+      );
+      const success = affectedRows > 0;
       
       if (!success) {
         return res.status(404).json({ 
@@ -1343,7 +1403,9 @@ class AuthController {
         });
       }
 
-      const success = await UserModel.deleteUser(userId);
+      const success = await UserModel.destroy({
+        where: { id: userId }
+      });
       
       if (!success) {
         return res.status(404).json({ 
@@ -1400,7 +1462,7 @@ class AuthController {
    */
   static async checkSetupStatus(req, res) {
     try {
-      const users = await UserModel.getAllUsers();
+      const users = await UserModel.findAll();
       const needsSetup = users.length === 0;
       
       res.json({
@@ -1560,7 +1622,7 @@ class AuthController {
       }
 
       // Check if user already exists
-      const existingUser = await UserModel.getUserByEmail(email);
+      const existingUser = await UserModel.findByEmail(email);
       if (existingUser) {
         return res.status(409).json({ 
           success: false, 
@@ -1575,7 +1637,7 @@ class AuthController {
       
       if (currentUserRole === 'admin') {
         // Admins can only invite to their own organization
-        const currentUser = await UserModel.getUserById(currentUserId);
+        const currentUser = await UserModel.findByPk(currentUserId);
         if (!currentUser || !currentUser.organization_id) {
           return res.status(400).json({ 
             success: false, 
@@ -1586,7 +1648,7 @@ class AuthController {
       } else if (currentUserRole === 'super-admin') {
         // Super-admins can specify organization or leave null for system-level invitation
         if (organizationId) {
-          const org = await OrganizationModel.getOrganizationById(organizationId);
+          const org = await OrganizationModel.findByPk(organizationId);
           if (!org) {
             return res.status(404).json({ 
               success: false, 
@@ -1597,7 +1659,9 @@ class AuthController {
       }
 
       // Check for existing active invitation
-      const existingInvitation = await InvitationModel.getActiveInvitationByEmail(email);
+      const existingInvitation = await InvitationModel.scope('pending').findOne({
+        where: { email }
+      });
       if (existingInvitation) {
         return res.status(409).json({ 
           success: false, 
@@ -1607,23 +1671,23 @@ class AuthController {
 
       // Create invitation
       const invitation = await InvitationModel.createInvitation({
-        email,
         organizationId: targetOrgId,
-        invitedBy: currentUserId,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        email,
+        invitedByUserId: currentUserId,
+        expirationDays: 7
       });
 
       // Get organization name for email
       let organizationName = 'the system';
       if (targetOrgId) {
-        const org = await OrganizationModel.getOrganizationById(targetOrgId);
+        const org = await OrganizationModel.findByPk(targetOrgId);
         organizationName = org?.name || 'the organization';
       }
 
       // Send invitation email
       await MailController.sendInvitationMail(
         email, 
-        invitation.code, 
+        invitation.invite_code, 
         organizationName, 
         invitation.expires_at
       );
@@ -1731,14 +1795,16 @@ class AuthController {
         });
       }
 
-      const invitation = await InvitationModel.validateInvitationCode(code);
+      const validation = await InvitationModel.validateCode(code);
 
-      if (!invitation) {
+      if (!validation.valid) {
         return res.status(404).json({ 
           success: false, 
           message: 'Invalid or expired invitation code' 
         });
       }
+
+      const invitation = validation.invitation;
 
       res.json({
         success: true,
@@ -2112,7 +2178,7 @@ class AuthController {
       // Super-admin can access any organization
       if (currentUser.role !== 'super-admin') {
         // Get current user's organization
-        const user = await UserModel.getUserById(currentUser.userId);
+        const user = await UserModel.findByPk(currentUser.userId);
         if (!user || user.organization_id !== parseInt(id)) {
           return res.status(403).json({
             success: false,
@@ -2121,7 +2187,7 @@ class AuthController {
         }
       }
 
-      const organization = await OrganizationModel.getOrganizationById(parseInt(id));
+      const organization = await OrganizationModel.findByPk(parseInt(id));
       
       if (!organization) {
         return res.status(404).json({
@@ -2131,7 +2197,7 @@ class AuthController {
       }
 
       // Get organization statistics
-      const stats = await OrganizationModel.getOrganizationStats(parseInt(id));
+      const stats = await OrganizationModel.getStats(parseInt(id));
 
       res.json({
         success: true,
@@ -2241,7 +2307,7 @@ class AuthController {
       // Super-admin can update any organization
       if (currentUser.role !== 'super-admin') {
         // Get current user's organization
-        const user = await UserModel.getUserById(currentUser.userId);
+        const user = await UserModel.findByPk(currentUser.userId);
         if (!user || user.organization_id !== parseInt(id)) {
           return res.status(403).json({
             success: false,
@@ -2261,7 +2327,10 @@ class AuthController {
       if (name) updates.name = name;
       if (description !== undefined) updates.description = description;
 
-      const success = await OrganizationModel.updateOrganization(parseInt(id), updates);
+      const [affectedRows] = await OrganizationModel.update(updates, {
+        where: { id: parseInt(id), is_active: true }
+      });
+      const success = affectedRows > 0;
       
       if (!success) {
         return res.status(404).json({
@@ -2358,7 +2427,7 @@ class AuthController {
       // Super-admin can access any organization
       if (currentUser.role !== 'super-admin') {
         // Get current user's organization
-        const user = await UserModel.getUserById(currentUser.userId);
+        const user = await UserModel.findByPk(currentUser.userId);
         if (!user || user.organization_id !== parseInt(id)) {
           return res.status(403).json({
             success: false,
@@ -2367,7 +2436,7 @@ class AuthController {
         }
       }
 
-      const users = await UserModel.getUsersByOrganization(
+      const users = await UserModel.findByOrganization(
         parseInt(id), 
         includeInactive === 'true'
       );
@@ -2470,7 +2539,7 @@ class AuthController {
       // Super-admin can access any organization
       if (currentUser.role !== 'super-admin') {
         // Get current user's organization
-        const user = await UserModel.getUserById(currentUser.userId);
+        const user = await UserModel.findByPk(currentUser.userId);
         if (!user || user.organization_id !== parseInt(id)) {
           return res.status(403).json({
             success: false,
@@ -2479,7 +2548,7 @@ class AuthController {
         }
       }
 
-      const stats = await OrganizationModel.getOrganizationStats(parseInt(id));
+      const stats = await OrganizationModel.getStats(parseInt(id));
       const inviteStats = await InvitationModel.getInvitationStats(parseInt(id));
 
       res.json({
@@ -2633,7 +2702,7 @@ class AuthController {
       }
 
       // Get current user's organization
-      const user = await UserModel.getUserById(currentUser.userId);
+      const user = await UserModel.findByPk(currentUser.userId);
       if (!user || (!user.organization_id && currentUser.role !== 'super-admin')) {
         return res.status(400).json({
           success: false,
@@ -2773,7 +2842,7 @@ class AuthController {
       const currentUser = req.user;
 
       // Get current user's organization
-      const user = await UserModel.getUserById(currentUser.userId);
+        const user = await UserModel.findByPk(currentUser.userId);
       if (!user || (!user.organization_id && currentUser.role !== 'super-admin')) {
         return res.status(400).json({
           success: false,
@@ -2911,7 +2980,7 @@ class AuthController {
       const currentUser = req.user;
 
       // Get current user's organization
-      const user = await UserModel.getUserById(currentUser.userId);
+      const user = await UserModel.findByPk(currentUser.userId);
       if (!user || (!user.organization_id && currentUser.role !== 'super-admin')) {
         return res.status(400).json({
           success: false,
@@ -3036,7 +3105,7 @@ class AuthController {
       const currentUser = req.user;
 
       // Get current user's organization
-      const user = await UserModel.getUserById(currentUser.userId);
+      const user = await UserModel.findByPk(currentUser.userId);
       if (!user || (!user.organization_id && currentUser.role !== 'super-admin')) {
         return res.status(400).json({
           success: false,
@@ -3174,7 +3243,7 @@ class AuthController {
         });
       }
 
-      const organization = await OrganizationModel.getOrganizationByName(name);
+      const organization = await OrganizationModel.findByName(name);
 
       res.json({
         success: true,
@@ -3308,7 +3377,7 @@ class AuthController {
       }
 
       // Verify password
-      const user = await UserModel.getUserById(userId);
+      const user = await UserModel.findByPk(userId);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -3327,7 +3396,7 @@ class AuthController {
 
       // Super-admins cannot delete themselves if they're the only super-admin
       if (currentUser.role === 'super-admin') {
-        const allSuperAdmins = await UserModel.getUsersByRole('super-admin');
+        const allSuperAdmins = await UserModel.findByRole('super-admin');
         if (allSuperAdmins.length === 1) {
           return res.status(400).json({
             success: false,
@@ -3339,7 +3408,7 @@ class AuthController {
       // Check if user is the last member of their organization
       let shouldDeleteOrganization = false;
       if (user.organization_id) {
-        const orgUsers = await UserModel.getUsersByOrganization(user.organization_id, false); // active users only
+        const orgUsers = await UserModel.findByOrganization(user.organization_id, false); // active users only
         if (orgUsers.length === 1) {
           shouldDeleteOrganization = true;
         }
