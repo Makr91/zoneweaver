@@ -1437,9 +1437,23 @@ const Zones = () => {
                                         <VncActionsDropdown
                                           variant="button"
                                           onScreenshot={() => {
-                                            console.log('Screenshot requested for live preview');
+                                            // Proper screenshot implementation
+                                            const vncContainer = document.querySelector('.vnc-viewer-react canvas');
+                                            if (vncContainer) {
+                                              vncContainer.toBlob((blob) => {
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `vnc-screenshot-${selectedZone}-${Date.now()}.png`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
+                                              });
+                                            }
                                           }}
                                           onNewTab={() => handleVncConsole(selectedZone, true)}
+                                          onKillSession={() => handleKillVncSession(selectedZone)}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
                                         <button 
@@ -1913,9 +1927,23 @@ const Zones = () => {
                 <VncActionsDropdown
                   variant="button"
                   onScreenshot={() => {
-                    console.log('Screenshot requested for modal');
+                    // Proper screenshot implementation for modal
+                    const vncContainer = document.querySelector('.vnc-viewer-react canvas');
+                    if (vncContainer) {
+                      vncContainer.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `vnc-screenshot-${selectedZone}-${Date.now()}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      });
+                    }
                   }}
                   onNewTab={() => handleVncConsole(selectedZone, true)}
+                  onKillSession={() => handleKillVncSession(selectedZone)}
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
                 <button 

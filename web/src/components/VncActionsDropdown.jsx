@@ -4,7 +4,8 @@ const VncActionsDropdown = ({
   vncRef, 
   onScreenshot, 
   onFullScreen, 
-  onNewTab, 
+  onNewTab,
+  onKillSession,
   className = '',
   variant = 'default' // 'default' or 'button'
 }) => {
@@ -74,10 +75,17 @@ const VncActionsDropdown = ({
     setIsActive(false);
   };
 
+  const handleKillSession = () => {
+    if (onKillSession) {
+      onKillSession();
+    }
+    setIsActive(false);
+  };
+
   const dropdownContent = (
     <div className="dropdown-content">
       <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-        <span className="icon is-small">
+        <span className="icon is-small mr-2">
           <i className="fas fa-keyboard"></i>
         </span>
         <span>Keyboard Shortcuts</span>
@@ -85,30 +93,30 @@ const VncActionsDropdown = ({
       <hr className="dropdown-divider" />
       
       <a className="dropdown-item" onClick={handleCtrlAltDel}>
-        <span className="icon is-small">
+        <span className="icon is-small mr-2">
           <i className="fas fa-power-off"></i>
         </span>
         <span>Ctrl+Alt+Del</span>
       </a>
       
       <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+Tab')}>
-        <span className="icon is-small">
+        <span className="icon is-small mr-2">
           <i className="fas fa-window-restore"></i>
         </span>
         <span>Alt+Tab</span>
       </a>
       
       <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+F4')}>
-        <span className="icon is-small">
+        <span className="icon is-small mr-2">
           <i className="fas fa-times"></i>
         </span>
         <span>Alt+F4</span>
       </a>
 
       <div className="dropdown-item">
-        <div className="field is-grouped">
+        <div className="field is-grouped mb-2">
           <div className="control">
-            <span className="tag is-small">F1-F12</span>
+            <span className="tag is-small">F1-F12 Function Keys</span>
           </div>
         </div>
         <div className="buttons are-small">
@@ -117,6 +125,7 @@ const VncActionsDropdown = ({
               key={i} 
               className="button is-outlined is-small"
               onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
+              title={`Send F${i + 1} key to guest`}
             >
               F{i + 1}
             </button>
@@ -127,7 +136,7 @@ const VncActionsDropdown = ({
       <hr className="dropdown-divider" />
       
       <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-        <span className="icon is-small">
+        <span className="icon is-small mr-2">
           <i className="fas fa-tools"></i>
         </span>
         <span>Actions</span>
@@ -135,7 +144,7 @@ const VncActionsDropdown = ({
       <hr className="dropdown-divider" />
       
       <a className="dropdown-item" onClick={handleScreenshot}>
-        <span className="icon is-small">
+        <span className="icon is-small mr-2">
           <i className="fas fa-camera"></i>
         </span>
         <span>Take Screenshot</span>
@@ -143,7 +152,7 @@ const VncActionsDropdown = ({
       
       {onFullScreen && (
         <a className="dropdown-item" onClick={handleFullScreen}>
-          <span className="icon is-small">
+          <span className="icon is-small mr-2">
             <i className="fas fa-expand"></i>
           </span>
           <span>Full Screen</span>
@@ -152,11 +161,23 @@ const VncActionsDropdown = ({
       
       {onNewTab && (
         <a className="dropdown-item" onClick={handleNewTab}>
-          <span className="icon is-small">
+          <span className="icon is-small mr-2">
             <i className="fas fa-external-link-alt"></i>
           </span>
           <span>Open in New Tab</span>
         </a>
+      )}
+      
+      {onKillSession && (
+        <>
+          <hr className="dropdown-divider" />
+          <a className="dropdown-item has-text-danger" onClick={handleKillSession}>
+            <span className="icon is-small mr-2">
+              <i className="fas fa-skull"></i>
+            </span>
+            <span>Kill VNC Session</span>
+          </a>
+        </>
       )}
     </div>
   );
