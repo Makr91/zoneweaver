@@ -1003,8 +1003,8 @@ const Zones = () => {
                                       <tr>
                                         <td style={{padding: '0.5rem 0.75rem'}}><strong>System Status</strong></td>
                                         <td style={{padding: '0.5rem 0.75rem'}}>
-                                          <span className={`has-text-weight-semibold ${zoneDetails.system_status === 'running' ? 'has-text-success' : 'has-text-warning'}`}>
-                                            {zoneDetails.system_status || zoneDetails.zone_info.status || 'Unknown'}
+                                          <span className={`has-text-weight-semibold ${getZoneStatus(selectedZone) === 'running' ? 'has-text-success' : 'has-text-danger'}`}>
+                                            {getZoneStatus(selectedZone) === 'running' ? 'Running' : 'Stopped'}
                                           </span>
                                         </td>
                                       </tr>
@@ -1494,24 +1494,16 @@ const Zones = () => {
                                     >
                                       {zoneDetails.vnc_session_info ? (
                                         // Active session - show live preview in read-only mode using VncViewer
-                                        <div style={{
-                                          width: '400%',
-                                          height: '400%',
-                                          transform: 'scale(0.25)',
-                                          transformOrigin: 'top left',
-                                          pointerEvents: 'none'
-                                        }}>
-                                          <VncViewerReact
-                                            serverHostname={currentServer.hostname}
-                                            serverPort={currentServer.port}
-                                            serverProtocol={currentServer.protocol}
-                                            zoneName={selectedZone}
-                                            viewOnly={true}
-                                            autoConnect={true}
-                                            showControls={false}
-                                            style={{ width: '100%', height: '100%' }}
-                                          />
-                                        </div>
+                                        <VncViewerReact
+                                          serverHostname={currentServer.hostname}
+                                          serverPort={currentServer.port}
+                                          serverProtocol={currentServer.protocol}
+                                          zoneName={selectedZone}
+                                          viewOnly={true}
+                                          autoConnect={true}
+                                          showControls={false}
+                                          style={{ width: '100%', height: '100%' }}
+                                        />
                                       ) : zoneDetails.configuration?.zonepath ? (
                                         // No active session - show static screenshot
                                         <img
@@ -1856,11 +1848,30 @@ const Zones = () => {
                   <span>zlogin Console - {selectedZone}</span>
                 </span>
               </p>
-              <button 
-                className='delete'
-                onClick={() => setShowZloginConsole(false)}
-                title="Close Console"
-              ></button>
+              <div className='buttons' style={{margin: 0}}>
+                {/* Switch to VNC Console Button - Modal */}
+                {zoneDetails.active_vnc_session && (
+                  <button 
+                    className='button is-small is-warning'
+                    onClick={() => {
+                      setShowZloginConsole(false);
+                      setTimeout(() => handleVncConsole(selectedZone), 100);
+                    }}
+                    title="Switch to VNC Console"
+                    style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-desktop'></i>
+                    </span>
+                    <span>VNC</span>
+                  </button>
+                )}
+                <button 
+                  className='delete'
+                  onClick={() => setShowZloginConsole(false)}
+                  title="Close Console"
+                ></button>
+              </div>
             </header>
             <section 
               className='modal-card-body p-0' 
@@ -1945,6 +1956,23 @@ const Zones = () => {
                   onKillSession={() => handleKillVncSession(selectedZone)}
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
+                {/* Switch to zlogin Console Button - Modal */}
+                {zoneDetails.zlogin_session && (
+                  <button 
+                    className='button is-small is-warning'
+                    onClick={() => {
+                      closeVncConsole();
+                      setTimeout(() => setShowZloginConsole(true), 100);
+                    }}
+                    title="Switch to zlogin Console"
+                    style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-terminal'></i>
+                    </span>
+                    <span>zlogin</span>
+                  </button>
+                )}
                 <button 
                   className='button is-small is-info'
                   onClick={openVncFullScreen}
