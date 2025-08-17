@@ -6,6 +6,7 @@ import { useServers } from "../contexts/ServerContext";
 import { useZoneTerminal } from "../contexts/ZoneTerminalContext";
 import VncViewerReact from "./VncViewerReact";
 import VncActionsDropdown from "./VncActionsDropdown";
+import ZloginActionsDropdown from "./ZloginActionsDropdown";
 import ZoneShell from "./ZoneShell";
 
 /**
@@ -1261,32 +1262,14 @@ const Zones = () => {
                                         )}
                                       </div>
                                       <div className='buttons' style={{margin: 0}}>
-                                        <button 
-                                          className='button is-small is-primary'
-                                          onClick={() => handleZloginConsole(selectedZone)}
-                                          disabled={loading}
-                                          title="Expand zlogin Console"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                                        >
-                                          <span className='icon is-small'>
-                                            <i className='fas fa-expand'></i>
-                                          </span>
-                                        </button>
-                                        {hasVnc && (
-                                          <button 
-                                            className='button is-small is-warning'
-                                            onClick={() => setActiveConsoleType('vnc')}
-                                            title="Switch to VNC Console"
-                                            style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                                          >
-                                            <span className='icon is-small'>
-                                              <i className='fas fa-desktop'></i>
-                                            </span>
-                                          </button>
-                                        )}
-                                        <button 
-                                          className='button is-small is-danger'
-                                          onClick={async () => {
+                                        <ZloginActionsDropdown
+                                          variant="button"
+                                          onToggleReadOnly={() => {
+                                            // Toggle read-only mode for ZoneShell
+                                            console.log('Toggle zlogin read-only mode');
+                                          }}
+                                          onNewSession={() => handleZloginConsole(selectedZone)}
+                                          onKillSession={async () => {
                                             if (!currentServer || !selectedZone) return;
                                             
                                             try {
@@ -1342,12 +1325,52 @@ const Zones = () => {
                                               setLoading(false);
                                             }
                                           }}
+                                          onScreenshot={() => {
+                                            // Capture terminal output as text
+                                            const terminalElement = document.querySelector('.xterm-screen');
+                                            if (terminalElement) {
+                                              const text = terminalElement.textContent || terminalElement.innerText;
+                                              const blob = new Blob([text], { type: 'text/plain' });
+                                              const url = URL.createObjectURL(blob);
+                                              const a = document.createElement('a');
+                                              a.href = url;
+                                              a.download = `zlogin-output-${selectedZone}-${Date.now()}.txt`;
+                                              document.body.appendChild(a);
+                                              a.click();
+                                              document.body.removeChild(a);
+                                              URL.revokeObjectURL(url);
+                                            }
+                                          }}
+                                          isReadOnly={true}
+                                          isAdmin={user?.role === 'admin'}
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        />
+                                        <button 
+                                          className='button is-small is-primary'
+                                          onClick={() => handleZloginConsole(selectedZone)}
                                           disabled={loading}
-                                          title="Kill zlogin Session"
+                                          title="Expand zlogin Console"
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
-                                            <i className='fas fa-times'></i>
+                                            <i className='fas fa-expand'></i>
+                                          </span>
+                                        </button>
+                                        {/* Always show VNC button - starts VNC if not active */}
+                                        <button 
+                                          className='button is-small is-warning'
+                                          onClick={() => {
+                                            if (hasVnc) {
+                                              setActiveConsoleType('vnc');
+                                            } else {
+                                              handleVncConsole(selectedZone);
+                                            }
+                                          }}
+                                          title={hasVnc ? "Switch to VNC Console" : "Start VNC Console"}
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        >
+                                          <span className='icon is-small'>
+                                            <i className={`fas ${hasVnc ? 'fa-desktop' : 'fa-play'}`}></i>
                                           </span>
                                         </button>
                                       </div>
@@ -1467,18 +1490,23 @@ const Zones = () => {
                                             <i className='fas fa-expand'></i>
                                           </span>
                                         </button>
-                                        {hasZlogin && (
-                                          <button 
-                                            className='button is-small is-warning'
-                                            onClick={() => setActiveConsoleType('zlogin')}
-                                            title="Switch to zlogin Console"
-                                            style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                                          >
-                                            <span className='icon is-small'>
-                                              <i className='fas fa-terminal'></i>
-                                            </span>
-                                          </button>
-                                        )}
+                                        {/* Always show zlogin button - starts zlogin if not active */}
+                                        <button 
+                                          className='button is-small is-warning'
+                                          onClick={() => {
+                                            if (hasZlogin) {
+                                              setActiveConsoleType('zlogin');
+                                            } else {
+                                              handleZloginConsole(selectedZone);
+                                            }
+                                          }}
+                                          title={hasZlogin ? "Switch to zlogin Console" : "Start zlogin Console"}
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        >
+                                          <span className='icon is-small'>
+                                            <i className={`fas ${hasZlogin ? 'fa-terminal' : 'fa-play'}`}></i>
+                                          </span>
+                                        </button>
                                       </div>
                                     </div>
 
@@ -1849,7 +1877,94 @@ const Zones = () => {
                 </span>
               </p>
               <div className='buttons' style={{margin: 0}}>
-                {/* Switch to VNC Console Button - Modal */}
+                {/* zlogin Actions Dropdown - Modal (leftmost for consistency) */}
+                <ZloginActionsDropdown
+                  variant="button"
+                  onToggleReadOnly={() => {
+                    // Toggle read-only mode for ZoneShell in modal
+                    console.log('Toggle zlogin read-only mode in modal');
+                  }}
+                  onNewSession={() => {
+                    setShowZloginConsole(false);
+                    setTimeout(() => handleZloginConsole(selectedZone), 100);
+                  }}
+                  onKillSession={async () => {
+                    if (!currentServer || !selectedZone) return;
+                    
+                    try {
+                      setLoading(true);
+                      console.log(`Killing zlogin session for zone: ${selectedZone}`);
+                      
+                      // Get all active zlogin sessions to find the one for this zone
+                      const sessionsResult = await makeZoneweaverAPIRequest(
+                        currentServer.hostname,
+                        currentServer.port,
+                        currentServer.protocol,
+                        'zlogin/sessions'
+                      );
+
+                      if (sessionsResult.success && sessionsResult.data) {
+                        const activeSessions = Array.isArray(sessionsResult.data) 
+                          ? sessionsResult.data 
+                          : (sessionsResult.data.sessions || []);
+                        
+                        const activeZoneSession = activeSessions.find(session => 
+                          session.zone_name === selectedZone && session.status === 'active'
+                        );
+
+                        if (activeZoneSession) {
+                          // Kill the specific session by ID
+                          const killResult = await makeZoneweaverAPIRequest(
+                            currentServer.hostname,
+                            currentServer.port,
+                            currentServer.protocol,
+                            `zlogin/sessions/${activeZoneSession.id}/stop`,
+                            'DELETE'
+                          );
+
+                          if (killResult.success) {
+                            console.log(`zlogin session killed for ${selectedZone}`);
+                            // Refresh status
+                            await refreshZloginSessionStatus(selectedZone);
+                          } else {
+                            console.error(`Failed to kill zlogin session for ${selectedZone}:`, killResult.message);
+                            setError(`Failed to kill zlogin session: ${killResult.message}`);
+                          }
+                        } else {
+                          console.log(`No active zlogin session found for ${selectedZone}`);
+                        }
+                      } else {
+                        console.error('Failed to get zlogin sessions:', sessionsResult.message);
+                        setError('Failed to get active sessions');
+                      }
+                    } catch (error) {
+                      console.error('Error killing zlogin session:', error);
+                      setError('Error killing zlogin session');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  onScreenshot={() => {
+                    // Capture terminal output as text in modal
+                    const terminalElement = document.querySelector('.xterm-screen');
+                    if (terminalElement) {
+                      const text = terminalElement.textContent || terminalElement.innerText;
+                      const blob = new Blob([text], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `zlogin-output-${selectedZone}-${Date.now()}.txt`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }
+                  }}
+                  isReadOnly={false}
+                  isAdmin={user?.role === 'admin'}
+                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                />
+                {/* Switch to VNC Console Button - Modal (second position for consistency) */}
                 {zoneDetails.active_vnc_session && (
                   <button 
                     className='button is-small is-warning'
