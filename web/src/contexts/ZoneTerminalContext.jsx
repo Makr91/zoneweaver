@@ -640,6 +640,32 @@ export const ZoneTerminalProvider = ({ children }) => {
     }
   }, [getZoneKey]);
 
+  // 🧹 CRITICAL SESSION CLEANUP - Called when sessions are explicitly killed
+  const forceZoneSessionCleanup = useCallback((server, zoneName) => {
+    if (!server || !zoneName) return;
+    
+    const zoneKey = getZoneKey(server, zoneName);
+    console.log(`🧹 ZLOGIN CLEANUP: Force cleaning up session state for ${zoneKey}`);
+    
+    // Close and clear WebSocket (most important!)
+    const ws = websocketsMap.current.get(zoneKey);
+    if (ws) {
+      console.log(`🔗 ZLOGIN CLEANUP: Closing WebSocket for ${zoneKey}`);
+      ws.close();
+    }
+    websocketsMap.current.delete(zoneKey);
+    
+    // Clear cached session and state
+    sessionsMap.current.delete(zoneKey);
+    initialPromptSentSet.current.delete(zoneKey);
+    
+    // Clear terminal state tracking
+    terminalModesMap.current.delete(zoneKey);
+    terminalContextsMap.current.delete(zoneKey);
+    
+    console.log(`✅ ZLOGIN CLEANUP: Complete cleanup finished for ${zoneKey}`);
+  }, [getZoneKey]);
+
   // ⚡ EXPLICIT SESSION CREATION - Only called by user actions (button clicks)
   const startZloginSessionExplicitly = useCallback(async (server, zoneName) => {
     if (!server || !zoneName) {
@@ -723,10 +749,11 @@ export const ZoneTerminalProvider = ({ children }) => {
     clearAllZoneSessions,
     getZoneSessionInfo,
     forceZoneSessionRefresh,
+    forceZoneSessionCleanup, // 🧹 CRITICAL: Cleanup function for killed sessions
     validateSessionHealth: (server, sessionId) => validateSessionHealth(server, sessionId),
     // Explicit session creation (only for user actions)
     startZloginSessionExplicitly
-  }), [term, attachTerminal, resizeTerminal, clearAllZoneSessions, getZoneSessionInfo, forceZoneSessionRefresh, startZloginSessionExplicitly]);
+  }), [term, attachTerminal, resizeTerminal, clearAllZoneSessions, getZoneSessionInfo, forceZoneSessionRefresh, forceZoneSessionCleanup, startZloginSessionExplicitly]);
 
   return (
     <ZoneTerminalContext.Provider value={value}>

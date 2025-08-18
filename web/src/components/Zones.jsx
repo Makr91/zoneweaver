@@ -77,7 +77,7 @@ const Zones = () => {
     getStorageDatasets
   } = useServers();
 
-  const { attachTerminal } = useZoneTerminal();
+  const { attachTerminal, forceZoneSessionCleanup } = useZoneTerminal();
 
   useEffect(() => {
     if (currentServer) {
@@ -2382,6 +2382,10 @@ const Zones = () => {
 
                           if (killResult.success) {
                             console.log(`zlogin session killed for ${selectedZone}`);
+                            
+                            // 🧹 CRITICAL: Force cleanup of terminal context state
+                            await forceZoneSessionCleanup(currentServer, selectedZone);
+                            
                             // Refresh status
                             await refreshZloginSessionStatus(selectedZone);
                           } else {
