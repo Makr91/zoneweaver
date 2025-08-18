@@ -1298,8 +1298,9 @@ const Zones = () => {
                                         <ZloginActionsDropdown
                                           variant="button"
                                           onToggleReadOnly={() => {
-                                            // Toggle read-only mode for ZoneShell
-                                            console.log('Toggle zlogin read-only mode');
+                                            // Toggle read-only mode for ZoneShell - switch to interactive mode
+                                            console.log('Toggling zlogin from read-only to interactive mode');
+                                            handleZloginConsole(selectedZone); // Open interactive modal
                                           }}
                                           onNewSession={() => handleZloginConsole(selectedZone)}
                                           onKillSession={async () => {
@@ -2049,7 +2050,12 @@ const Zones = () => {
                 overflow: 'hidden'
               }}
             >
-              <ZoneShell zoneName={selectedZone} readOnly={false} context="modal" />
+              <ZoneShell 
+                key={`zlogin-modal-${selectedZone}`} 
+                zoneName={selectedZone} 
+                readOnly={false} 
+                context="modal" 
+              />
             </section>
           </div>
         </div>
