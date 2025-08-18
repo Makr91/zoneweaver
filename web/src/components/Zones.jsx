@@ -559,6 +559,22 @@ const Zones = () => {
               vnc_session_info: prev.vnc_session_info || null
             };
 
+            // 🔵 ZLOGIN STATE CHANGE TRACKING
+            console.log(`🔵 ZLOGIN STATE CHANGE:`, {
+              zoneName: zoneName,
+              trigger: 'refreshZloginSessionStatus-found-active',
+              from: {
+                zlogin_session: prev.zlogin_session?.id || null,
+                active_zlogin_session: prev.active_zlogin_session
+              },
+              to: {
+                zlogin_session: activeZoneSession.id,
+                active_zlogin_session: true
+              },
+              sessionData: activeZoneSession,
+              timestamp: new Date().toISOString()
+            });
+
             console.log(`🔍 ZONE STATE: ZLOGIN update - AFTER:`, {
               hasVncSession: !!newState.active_vnc_session,
               hasVncSessionInfo: !!newState.vnc_session_info,
@@ -586,6 +602,22 @@ const Zones = () => {
               vnc_session_info: prev.vnc_session_info || null
             };
 
+            // 🔵 ZLOGIN STATE CHANGE TRACKING
+            console.log(`🔵 ZLOGIN STATE CHANGE:`, {
+              zoneName: zoneName,
+              trigger: 'refreshZloginSessionStatus-no-active-found',
+              from: {
+                zlogin_session: prev.zlogin_session?.id || null,
+                active_zlogin_session: prev.active_zlogin_session
+              },
+              to: {
+                zlogin_session: null,
+                active_zlogin_session: false
+              },
+              reason: 'No active session found in API response',
+              timestamp: new Date().toISOString()
+            });
+
             console.log(`🔍 ZONE STATE: ZLOGIN clear - AFTER:`, {
               hasVncSession: !!newState.active_vnc_session,
               hasVncSessionInfo: !!newState.vnc_session_info,
@@ -599,6 +631,23 @@ const Zones = () => {
         // No sessions or API error
         console.log(`❌ ZLOGIN STATUS: No sessions found or API error for ${zoneName}`);
         setZoneDetails(prev => {
+          // 🔵 ZLOGIN STATE CHANGE TRACKING
+          console.log(`🔵 ZLOGIN STATE CHANGE:`, {
+            zoneName: zoneName,
+            trigger: 'refreshZloginSessionStatus-api-error-no-sessions',
+            from: {
+              zlogin_session: prev.zlogin_session?.id || null,
+              active_zlogin_session: prev.active_zlogin_session
+            },
+            to: {
+              zlogin_session: null,
+              active_zlogin_session: false
+            },
+            reason: 'API error or no sessions in response',
+            apiResponse: sessionsResult,
+            timestamp: new Date().toISOString()
+          });
+
           // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
           const newState = {
             ...prev,
@@ -614,6 +663,23 @@ const Zones = () => {
     } catch (error) {
       console.error('💥 ZLOGIN STATUS: Error checking session status:', error);
       setZoneDetails(prev => {
+        // 🔵 ZLOGIN STATE CHANGE TRACKING
+        console.log(`🔵 ZLOGIN STATE CHANGE:`, {
+          zoneName: zoneName,
+          trigger: 'refreshZloginSessionStatus-catch-error',
+          from: {
+            zlogin_session: prev.zlogin_session?.id || null,
+            active_zlogin_session: prev.active_zlogin_session
+          },
+          to: {
+            zlogin_session: null,
+            active_zlogin_session: false
+          },
+          error: error.message,
+          errorStack: error.stack,
+          timestamp: new Date().toISOString()
+        });
+
         // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
         const newState = {
           ...prev,
@@ -2138,7 +2204,19 @@ const Zones = () => {
                 </button>
                 <button 
                   className='button is-small'
-                  onClick={() => setShowZloginConsole(false)}
+                  onClick={() => {
+                    // 🟡 MODAL LIFECYCLE TRACKING
+                    console.log(`🟡 MODAL LIFECYCLE:`, {
+                      action: 'close',
+                      modalType: 'zlogin',
+                      zoneName: selectedZone,
+                      sessionStateBefore: zoneDetails.zlogin_session?.id || null,
+                      activeZloginSession: zoneDetails.active_zlogin_session,
+                      trigger: 'exit-button-click',
+                      timestamp: new Date().toISOString()
+                    });
+                    setShowZloginConsole(false);
+                  }}
                   title="Close Console"
                 >
                   <span className='icon'>
