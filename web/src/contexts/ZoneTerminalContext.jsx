@@ -41,6 +41,7 @@ export const ZoneTerminalProvider = ({ children }) => {
   const websocketsMap = useRef(new Map());          // zoneKey -> websocket
   const fitAddonsMap = useRef(new Map());           // zoneKey -> fit addon
   const terminalModesMap = useRef(new Map());       // zoneKey -> readOnly mode
+  const terminalContextsMap = useRef(new Map());    // zoneKey -> UI context (preview/modal)
   const creatingSessionsSet = useRef(new Set());    // zoneKey -> creating flag
   const attachingTerminalsSet = useRef(new Set());  // zoneKey -> attaching flag
   const initialPromptSentSet = useRef(new Set());   // zoneKey -> prompt sent flag
@@ -96,6 +97,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       websocketsMap.current.clear();
       fitAddonsMap.current.clear();
       terminalModesMap.current.clear();
+      terminalContextsMap.current.clear();
       creatingSessionsSet.current.clear();
       attachingTerminalsSet.current.clear();
       initialPromptSentSet.current.clear();
@@ -289,7 +291,7 @@ export const ZoneTerminalProvider = ({ children }) => {
     }
   }, [getZoneKey, findExistingSession, startZloginSession, currentServer]);
 
-  const attachTerminal = useCallback((terminalRef, zoneName, readOnly = false) => {
+  const attachTerminal = useCallback((terminalRef, zoneName, readOnly = false, context = 'preview') => {
     if (!terminalRef.current || !currentServer || !zoneName) {
       console.error('🚫 ZONE TERMINAL: Invalid terminal ref, server, or zone name');
       return () => {};
@@ -310,10 +312,21 @@ export const ZoneTerminalProvider = ({ children }) => {
     // Check if we already have a terminal for this zone
     if (terminalsMap.current.has(zoneKey)) {
       const existingMode = terminalModesMap.current.get(zoneKey);
+      const existingContext = terminalContextsMap.current.get(zoneKey);
       
-      // Check if the existing terminal's readOnly mode matches the requested mode
-      if (existingMode === readOnly) {
-        console.log(`♻️ ZONE TERMINAL: Reusing existing terminal for ${zoneKey} (readOnly: ${readOnly})`);
+      // Smart context detection - check if we're switching contexts
+      const isContextSwitch = existingContext && existingContext !== context;
+      const isModeChange = existingMode !== readOnly;
+      
+      if (isContextSwitch) {
+        console.log(`🔄 ZONE TERMINAL: Context switch detected for ${zoneKey} (${existingContext} -> ${context}), forcing fresh terminal`);
+      } else if (isModeChange) {
+        console.log(`🔄 ZONE TERMINAL: ReadOnly mode changed for ${zoneKey} (${existingMode} -> ${readOnly}), creating new terminal`);
+      }
+      
+      // Only reuse terminal if same context AND same mode
+      if (!isContextSwitch && !isModeChange) {
+        console.log(`♻️ ZONE TERMINAL: Reusing existing terminal for ${zoneKey} (readOnly: ${readOnly}, context: ${context})`);
         const existingTerminal = terminalsMap.current.get(zoneKey);
         const existingFitAddon = fitAddonsMap.current.get(zoneKey);
         
@@ -323,6 +336,9 @@ export const ZoneTerminalProvider = ({ children }) => {
           if (existingFitAddon) {
             setTimeout(() => existingFitAddon.fit(), 100);
           }
+          
+          // Update context (same terminal, potentially different DOM location)
+          terminalContextsMap.current.set(zoneKey, context);
           
           // Update global state if this is the current zone
           setTerm(existingTerminal);
@@ -338,27 +354,27 @@ export const ZoneTerminalProvider = ({ children }) => {
             }
           };
         } catch (error) {
-          console.error(`Error reusing terminal for ${zoneKey}:`, error);
+          console.error(`🚨 ZONE TERMINAL: Error reusing terminal for ${zoneKey} (context switch may be needed):`, error);
           // Fall through to create new terminal
         }
-      } else {
-        console.log(`🔄 ZONE TERMINAL: ReadOnly mode changed for ${zoneKey} (${existingMode} -> ${readOnly}), creating new terminal`);
-        
-        // Dispose the existing terminal since the mode has changed
-        const existingTerminal = terminalsMap.current.get(zoneKey);
-        if (existingTerminal) {
-          try {
-            existingTerminal.dispose();
-          } catch (error) {
-            console.warn(`Error disposing existing terminal for ${zoneKey}:`, error);
-          }
-        }
-        
-        // Clean up existing terminal references
-        terminalsMap.current.delete(zoneKey);
-        fitAddonsMap.current.delete(zoneKey);
-        terminalModesMap.current.delete(zoneKey);
       }
+      
+      // Context switch or mode change detected - dispose existing terminal
+      const existingTerminal = terminalsMap.current.get(zoneKey);
+      if (existingTerminal) {
+        try {
+          console.log(`🗑️ ZONE TERMINAL: Disposing existing terminal for context/mode change ${zoneKey}`);
+          existingTerminal.dispose();
+        } catch (error) {
+          console.warn(`Error disposing existing terminal for ${zoneKey}:`, error);
+        }
+      }
+      
+      // Clean up existing terminal references
+      terminalsMap.current.delete(zoneKey);
+      fitAddonsMap.current.delete(zoneKey);
+      terminalModesMap.current.delete(zoneKey);
+      terminalContextsMap.current.delete(zoneKey);
     }
 
     attachingTerminalsSet.current.add(zoneKey);
@@ -392,10 +408,11 @@ export const ZoneTerminalProvider = ({ children }) => {
           newTerm.write('\r\n\x1b[33m[READ-ONLY MODE - Console output only]\x1b[0m\r\n');
         }
 
-        // Step 3: Store terminal, fit addon, and readOnly mode for this zone
+        // Step 3: Store terminal, fit addon, readOnly mode, and context for this zone
         terminalsMap.current.set(zoneKey, newTerm);
         fitAddonsMap.current.set(zoneKey, fitAddon);
         terminalModesMap.current.set(zoneKey, readOnly);
+        terminalContextsMap.current.set(zoneKey, context);
         
         // Update global state if this is the current zone
         setTerm(newTerm);

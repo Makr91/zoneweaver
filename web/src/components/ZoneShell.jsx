@@ -2,18 +2,18 @@ import React, { useEffect, useRef } from 'react';
 import { useZoneTerminal } from '../contexts/ZoneTerminalContext';
 import '@xterm/xterm/css/xterm.css';
 
-const ZoneShell = ({ zoneName, readOnly = false, style = {} }) => {
+const ZoneShell = ({ zoneName, readOnly = false, context = 'preview', style = {} }) => {
   const terminalRef = useRef(null);
   const { attachTerminal } = useZoneTerminal();
 
   useEffect(() => {
     if (terminalRef.current) {
-      const cleanup = attachTerminal(terminalRef, zoneName, readOnly);
+      const cleanup = attachTerminal(terminalRef, zoneName, readOnly, context);
       return () => {
         cleanup();
       };
     }
-  }, [attachTerminal, zoneName, readOnly]);
+  }, [attachTerminal, zoneName, readOnly, context]);
 
   return (
     <div style={{ height: '100%', width: '100%', boxSizing: 'border-box', ...style }}>

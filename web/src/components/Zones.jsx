@@ -1422,6 +1422,7 @@ const Zones = () => {
                                       <ZoneShell 
                                         zoneName={selectedZone} 
                                         readOnly={true}
+                                        context="preview"
                                         style={{
                                           height: '100%',
                                           width: '100%',
@@ -2048,7 +2049,7 @@ const Zones = () => {
                 overflow: 'hidden'
               }}
             >
-              <ZoneShell zoneName={selectedZone} readOnly={false} />
+              <ZoneShell zoneName={selectedZone} readOnly={false} context="modal" />
             </section>
           </div>
         </div>
