@@ -1796,7 +1796,7 @@ const Zones = () => {
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
-                                            <i className={`fas ${hasZlogin ? 'fa-terminal' : (loading ? 'fa-spinner fa-pulse' : 'fa-play')}`}></i>
+                                            <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
                                           </span>
                                         </button>
                                       </div>
