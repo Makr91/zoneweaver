@@ -117,6 +117,10 @@ export const ZoneTerminalProvider = ({ children }) => {
     newTerm.loadAddon(new WebLinksAddon());
     newTerm.open(terminalRef.current);
 
+    if (readOnly) {
+        newTerm.write('\r\n\x1b[33m[READ-ONLY MODE]\x1b[0m\r\n');
+    }
+
     terminalsMap.current.set(zoneKey, newTerm);
     fitAddonsMap.current.set(zoneKey, fitAddon);
     if (getZoneKey(currentServer, zoneName) === zoneKey) {
@@ -212,12 +216,55 @@ export const ZoneTerminalProvider = ({ children }) => {
     return await createOrReuseTerminalSession(server, zoneName);
   }, [createOrReuseTerminalSession]);
 
+  const initializeSessionFromExisting = useCallback((server, zoneName, sessionData) => {
+    const zoneKey = getZoneKey(server, zoneName);
+    if (!zoneKey || !sessionData || !sessionData.websocket_url) {
+      console.error(`❌ ZLOGIN RECONNECT: Invalid data provided for ${zoneKey}`);
+      return;
+    }
+
+    if (websocketsMap.current.has(zoneKey)) {
+      console.log(`✅ ZLOGIN RECONNECT: WebSocket already exists for ${zoneKey}`);
+      return;
+    }
+
+    console.log(`🔄 ZLOGIN RECONNECT: Initializing session from existing data for ${zoneKey}`);
+
+    const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => console.log(`🔗 ZLOGIN RECONNECT: WebSocket connected for ${zoneKey}`);
+    ws.onclose = () => {
+      console.log(`🔗 ZLOGIN RECONNECT: WebSocket closed for ${zoneKey}`);
+      websocketsMap.current.delete(zoneKey);
+    };
+    ws.onerror = (error) => console.error(`🚨 ZLOGIN RECONNECT: WebSocket error for ${zoneKey}:`, error);
+
+    ws.onmessage = (event) => {
+      const terminal = terminalsMap.current.get(zoneKey);
+      if (terminal) {
+        const data = event.data;
+        if (data instanceof Blob) {
+          data.text().then(text => terminal.write(text));
+        } else {
+          terminal.write(data);
+        }
+      }
+    };
+
+    sessionsMap.current.set(zoneKey, sessionData);
+    websocketsMap.current.set(zoneKey, ws);
+
+    console.log(`🎉 ZLOGIN RECONNECT: Session initialized successfully for ${zoneKey}`);
+  }, [getZoneKey]);
+
   const value = React.useMemo(() => ({
     term,
     attachTerminal,
     forceZoneSessionCleanup,
-    startZloginSessionExplicitly
-  }), [term, attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly]);
+    startZloginSessionExplicitly,
+    initializeSessionFromExisting
+  }), [term, attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting]);
 
   return (
     <ZoneTerminalContext.Provider value={value}>
