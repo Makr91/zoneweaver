@@ -359,7 +359,7 @@ export const ZoneTerminalProvider = ({ children }) => {
         }
       }
       
-      // Context switch or mode change detected - dispose existing terminal
+      // Context switch or mode change detected - dispose existing terminal BUT PRESERVE SESSION STATE
       const existingTerminal = terminalsMap.current.get(zoneKey);
       if (existingTerminal) {
         try {
@@ -370,11 +370,14 @@ export const ZoneTerminalProvider = ({ children }) => {
         }
       }
       
-      // Clean up existing terminal references
+      // Clean up ONLY terminal UI references - PRESERVE session/websocket state for context switching
       terminalsMap.current.delete(zoneKey);
       fitAddonsMap.current.delete(zoneKey);
       terminalModesMap.current.delete(zoneKey);
       terminalContextsMap.current.delete(zoneKey);
+      
+      // IMPORTANT: Do NOT delete sessionsMap or websocketsMap - they should persist across contexts!
+      console.log(`🔄 ZONE TERMINAL: Context switch preserving session/websocket state for ${zoneKey}`);
     }
 
     attachingTerminalsSet.current.add(zoneKey);
@@ -434,37 +437,46 @@ export const ZoneTerminalProvider = ({ children }) => {
             sessionData.websocket_url = `/zlogin/${sessionData.id}`;
           }
           
-          // Create WebSocket connection for existing session
-          const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
-          console.log(`🔗 ZONE TERMINAL: Creating WebSocket for existing session: ${wsUrl}`);
-          const ws = new WebSocket(wsUrl);
+          // Check if WebSocket already exists for this session - REUSE instead of creating duplicate
+          let existingWs = websocketsMap.current.get(zoneKey);
+          
+          if (existingWs && existingWs.readyState === WebSocket.OPEN) {
+            console.log(`♻️ ZONE TERMINAL: Reusing existing WebSocket connection for ${zoneKey}`);
+            // Store session data (in case it was missing)
+            sessionsMap.current.set(zoneKey, sessionData);
+          } else {
+            // Only create new WebSocket if none exists or existing one is closed
+            console.log(`🔗 ZONE TERMINAL: Creating new WebSocket for existing session: ${sessionData.websocket_url}`);
+            const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
+            const ws = new WebSocket(wsUrl);
 
-          const handleZoneMessage = (event) => {
-            const terminal = terminalsMap.current.get(zoneKey);
-            if (terminal) {
-              if (event.data instanceof Blob) {
-                event.data.text().then(text => terminal.write(text));
-              } else {
-                terminal.write(event.data);
+            const handleZoneMessage = (event) => {
+              const terminal = terminalsMap.current.get(zoneKey);
+              if (terminal) {
+                if (event.data instanceof Blob) {
+                  event.data.text().then(text => terminal.write(text));
+                } else {
+                  terminal.write(event.data);
+                }
               }
-            }
-          };
+            };
 
-          ws.onopen = () => {
-            console.log(`🔗 ZONE TERMINAL: WebSocket connected for existing session ${sessionData.id}`);
-          };
-          ws.onmessage = handleZoneMessage;
-          ws.onclose = (event) => {
-            console.log(`🔗 ZONE TERMINAL: WebSocket closed for existing session ${sessionData.id}`);
-            websocketsMap.current.delete(zoneKey);
-          };
-          ws.onerror = (error) => {
-            console.error(`🚨 ZONE TERMINAL: WebSocket error for existing session ${sessionData.id}:`, error);
-          };
+            ws.onopen = () => {
+              console.log(`🔗 ZONE TERMINAL: WebSocket connected for existing session ${sessionData.id}`);
+            };
+            ws.onmessage = handleZoneMessage;
+            ws.onclose = (event) => {
+              console.log(`🔗 ZONE TERMINAL: WebSocket closed for existing session ${sessionData.id}`);
+              websocketsMap.current.delete(zoneKey);
+            };
+            ws.onerror = (error) => {
+              console.error(`🚨 ZONE TERMINAL: WebSocket error for existing session ${sessionData.id}:`, error);
+            };
 
-          // Store session and WebSocket
-          sessionsMap.current.set(zoneKey, sessionData);
-          websocketsMap.current.set(zoneKey, ws);
+            // Store session and WebSocket
+            sessionsMap.current.set(zoneKey, sessionData);
+            websocketsMap.current.set(zoneKey, ws);
+          }
         }
         }
 
