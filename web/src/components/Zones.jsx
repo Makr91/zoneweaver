@@ -1438,8 +1438,18 @@ const Zones = () => {
                               const hasVnc = zoneDetails.active_vnc_session;
                               const hasZlogin = zoneDetails.zlogin_session;
                               
+                              console.log(`🔍 CONSOLE DISPLAY: Determining which console to show:`, {
+                                hasVnc,
+                                hasZlogin,
+                                activeConsoleType,
+                                zloginSessionId: hasZlogin?.id,
+                                vncSessionInfo: hasVnc ? 'present' : 'absent',
+                                timestamp: Date.now()
+                              });
+                              
                               // Show the selected console type
                               if ((activeConsoleType === 'zlogin' && hasZlogin) || (hasZlogin && !hasVnc)) {
+                                console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console`);
                                 return (
                                   <div 
                                     style={{
@@ -1990,14 +2000,35 @@ const Zones = () => {
                                               
                                               if (result.success) {
                                                 console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview for ${selectedZone}`, result);
-                                                // Update state to show zlogin session active
-                                                setZoneDetails(prev => ({
-                                                  ...prev,
-                                                  zlogin_session: result.session,
-                                                  active_zlogin_session: true
-                                                }));
-                                                // FIXED: Force immediate console switch to zlogin
-                                                setActiveConsoleType('zlogin');
+                                                console.log(`🔍 START ZLOGIN: Session details:`, result.session);
+                                                
+                                                // FIXED: Force immediate state update and console switch
+                                                setZoneDetails(prev => {
+                                                  console.log(`🔍 ZLOGIN STATE: Updating state - BEFORE:`, {
+                                                    prevZloginSession: prev.zlogin_session?.id,
+                                                    prevActiveZloginSession: prev.active_zlogin_session
+                                                  });
+                                                  
+                                                  const newState = {
+                                                    ...prev,
+                                                    zlogin_session: result.session,
+                                                    active_zlogin_session: true
+                                                  };
+                                                  
+                                                  console.log(`🔍 ZLOGIN STATE: Updating state - AFTER:`, {
+                                                    newZloginSession: newState.zlogin_session?.id,
+                                                    newActiveZloginSession: newState.active_zlogin_session
+                                                  });
+                                                  
+                                                  return newState;
+                                                });
+                                                
+                                                // Force immediate console switch with delay to ensure state update
+                                                setTimeout(() => {
+                                                  console.log(`🔧 ZLOGIN SWITCH: Forcing console switch to zlogin for ${selectedZone}`);
+                                                  setActiveConsoleType('zlogin');
+                                                }, 100);
+                                                
                                               } else {
                                                 console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
                                                 setError(`Failed to start zlogin console: ${result.message}`);
