@@ -1994,10 +1994,14 @@ const Zones = () => {
                                               setLoading(true);
                                               const result = await startZloginSessionExplicitly(currentServer, selectedZone);
                                               
-                                              if (result.success) {
+                                              if (result) { // Check for the session object directly
                                                 console.log(`✅ START ZLOGIN: Session started, updating UI for ${selectedZone}`);
-                                                // The context now manages the session state, so we just need to refresh the UI
-                                                await refreshZloginSessionStatus(selectedZone);
+                                                // Directly update the state with the returned session object
+                                                setZoneDetails(prev => ({
+                                                  ...prev,
+                                                  zlogin_session: result,
+                                                  active_zlogin_session: true
+                                                }));
                                                 setActiveConsoleType('zlogin');
                                               } else {
                                                 console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
