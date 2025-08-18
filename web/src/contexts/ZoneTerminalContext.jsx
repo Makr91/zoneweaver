@@ -200,9 +200,22 @@ export const ZoneTerminalProvider = ({ children }) => {
         });
       };
 
-      // 🔧 CRITICAL FIX: Do NOT attach message handler here - let attachTerminal handle it synchronously
-      // This prevents race condition where messages arrive before terminal is in terminalsMap
-      console.log(`🔧 ZONE TERMINAL: WebSocket created WITHOUT message handler for ${zoneKey} - attachTerminal will handle it synchronously`);
+      // 🔧 REFACTOR: Attach a generic message handler here, tied to the session lifecycle
+      const handleZoneMessage = (event) => {
+        const terminal = terminalsMap.current.get(zoneKey);
+        if (terminal) {
+          if (event.data instanceof Blob) {
+            event.data.text().then(text => terminal.write(text));
+          } else {
+            terminal.write(event.data);
+          }
+        } else {
+          console.warn(`📨 ZONE TERMINAL: Message received for ${zoneKey} but no terminal is attached.`);
+        }
+      };
+
+      ws.onmessage = handleZoneMessage;
+      console.log(`📨 ZONE TERMINAL: Generic message handler attached for ${zoneKey}`);
 
       ws.onclose = (event) => {
         console.log(`🔗 ZONE TERMINAL: WebSocket closed for ${zoneKey}:`, sessionData.id, {
@@ -343,240 +356,32 @@ export const ZoneTerminalProvider = ({ children }) => {
         // Step 4: FORCE refresh session data to avoid stale cache after kill->start cycles
         console.log(`🔄 ZONE TERMINAL: Force refreshing session data for ${zoneKey} to avoid stale cache`);
         
-        // Always check for fresh session data from server instead of using cache
-        let sessionData = await findExistingSession(currentServer, zoneName);
-        
-        if (sessionData) {
-          console.log(`🔄 ZONE TERMINAL: Found active session for ${zoneKey}:`, sessionData.id);
-          
-          // Add websocket_url to existing sessions that don't have it (for backward compatibility)
-          if (!sessionData.websocket_url) {
-            console.log(`🔧 ZONE TERMINAL: Adding missing websocket_url to session for ${zoneKey}`);
-            sessionData.websocket_url = `/zlogin/${sessionData.id}`;
-          }
-          
-          // Update cache with fresh session data
-          sessionsMap.current.set(zoneKey, sessionData);
-          
-          console.log(`💾 ZONE TERMINAL: Updated cache with fresh session data for ${zoneKey}:`, sessionData.id);
-        } else {
-          // Clear any stale cached session if no active session found
-          console.log(`🧹 ZONE TERMINAL: No active session found, clearing stale cache for ${zoneKey}`);
-          sessionsMap.current.delete(zoneKey);
-        }
+        // 🔧 REFACTOR: Session/WebSocket state is now managed by createOrReuseTerminalSession
+        const sessionData = sessionsMap.current.get(zoneKey);
+        const ws = websocketsMap.current.get(zoneKey);
 
-        if (sessionData) {
-          // 🔄 SIMPLIFIED FIX: Always close old WebSocket and create fresh one (like fresh page load)
-          let existingWs = websocketsMap.current.get(zoneKey);
-          if (existingWs) {
-            console.log(`🔄 ZONE TERMINAL: Closing existing WebSocket for fresh recreation for ${zoneKey}`, {
-              oldReadyState: existingWs.readyState,
-              oldUrl: existingWs.url,
-              reason: 'fresh_recreation_like_page_load'
-            });
-            
-            try {
-              if (existingWs.readyState === WebSocket.OPEN || existingWs.readyState === WebSocket.CONNECTING) {
-                existingWs.close(1000, 'Fresh recreation');
-              }
-            } catch (error) {
-              console.warn(`⚠️ ZONE TERMINAL: Error closing old WebSocket for ${zoneKey}:`, error);
-            }
-            
-            // Clean up old WebSocket references
-            websocketsMap.current.delete(zoneKey);
-            websocketSessionMap.current.delete(zoneKey);
-          }
+        if (sessionData && ws) {
+          console.log(`✅ ZONE TERMINAL: Connecting UI to existing session for ${zoneKey}`);
 
-          // 🆕 ALWAYS CREATE FRESH WEBSOCKET (like fresh page load or read-only toggle)
-          console.log(`🔗 ZONE TERMINAL: Creating fresh WebSocket for session: ${sessionData.websocket_url}`, {
-            sessionId: sessionData.id,
-            approach: 'fresh_recreation_every_time',
-            timestamp: new Date().toISOString()
-          });
-          
-          const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
-          const ws = new WebSocket(wsUrl);
-
-          // Simple message handler - no complex reuse logic
-          const handleZoneMessage = (event) => {
-            console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey}`, {
-              sessionId: sessionData.id,
-              dataType: typeof event.data,
-              isBlob: event.data instanceof Blob,
-              dataLength: event.data.length || (event.data.size || 'unknown'),
-              timestamp: new Date().toISOString()
-            });
-
-            const terminal = terminalsMap.current.get(zoneKey);
-            if (terminal) {
-              console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message`);
-              
-              if (event.data instanceof Blob) {
-                console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey}`);
-                event.data.text().then(text => {
-                  console.log(`📝 ZONE TERMINAL: Blob converted to text for ${zoneKey}:`, {
-                    textLength: text.length,
-                    textPreview: text.substring(0, 100)
-                  });
-                  try {
-                    terminal.write(text);
-                    console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey}`);
-                  } catch (error) {
-                    console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
-                  }
-                }).catch(error => {
-                  console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
-                });
-              } else {
-                console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey}:`, {
-                  dataLength: event.data.length,
-                  dataPreview: event.data.substring(0, 100)
-                });
-                try {
-                  terminal.write(event.data);
-                  console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey}`);
-                } catch (error) {
-                  console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
-                }
-              }
-            } else {
-              console.error(`❌ ZONE TERMINAL: Cannot write to terminal for ${zoneKey} - terminal not found!`, {
-                sessionId: sessionData.id,
-                dataLost: event.data.substring ? event.data.substring(0, 100) : '[Blob data]',
-                availableTerminals: Array.from(terminalsMap.current.keys())
-              });
-            }
-          };
-
-          ws.onopen = () => {
-            console.log(`🔗 ZONE TERMINAL: WebSocket connected for session ${sessionData.id}`, {
-              readyState: ws.readyState,
-              url: ws.url,
-              zoneKey: zoneKey,
-              timestamp: new Date().toISOString()
-            });
-          };
-          
-          // Attach message handler
-          ws.onmessage = handleZoneMessage;
-          console.log(`📨 ZONE TERMINAL: Message handler attached to fresh WebSocket for ${zoneKey}`, {
-            sessionId: sessionData.id,
-            handlerAttached: !!ws.onmessage,
-            timestamp: new Date().toISOString()
-          });
-          
-          ws.onclose = (event) => {
-            console.log(`🔗 ZONE TERMINAL: WebSocket closed for session ${sessionData.id}`, {
-              code: event.code,
-              reason: event.reason,
-              wasClean: event.wasClean,
-              zoneKey: zoneKey,
-              timestamp: new Date().toISOString()
-            });
-            websocketsMap.current.delete(zoneKey);
-          };
-          
-          ws.onerror = (error) => {
-            console.error(`🚨 ZONE TERMINAL: WebSocket error for session ${sessionData.id}:`, {
-              error: error,
-              readyState: ws.readyState,
-              url: ws.url,
-              zoneKey: zoneKey,
-              timestamp: new Date().toISOString()
-            });
-          };
-
-          // Store WebSocket connection and track session ID
-          websocketsMap.current.set(zoneKey, ws);
-          websocketSessionMap.current.set(zoneKey, sessionData.id);
-          console.log(`💾 ZONE TERMINAL: Stored fresh WebSocket for ${zoneKey}`, {
-            sessionId: sessionData.id,
-            wsStored: websocketsMap.current.has(zoneKey),
-            sessionTracked: websocketSessionMap.current.has(zoneKey),
-            timestamp: new Date().toISOString()
-          });
-
-          // Wait for WebSocket to be OPEN then attach input
-          console.log(`⏳ ZONE TERMINAL: Waiting for fresh WebSocket to be OPEN for ${zoneKey}...`);
-          let attempts = 0;
-          const maxAttempts = 50;
-          
-          while (ws.readyState !== WebSocket.OPEN && attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            console.log(`🔍 ZONE TERMINAL: Fresh WebSocket state check for ${zoneKey}:`, {
-              attempt: attempts + 1,
-              readyState: ws.readyState,
-              states: {
-                CONNECTING: WebSocket.CONNECTING,
-                OPEN: WebSocket.OPEN,
-                CLOSING: WebSocket.CLOSING,
-                CLOSED: WebSocket.CLOSED
-              }
-            });
-            attempts++;
-          }
-
-          if (ws.readyState !== WebSocket.OPEN) {
-            console.error(`🚫 ZONE TERMINAL: Fresh WebSocket failed to open for ${zoneKey}`, {
-              finalReadyState: ws.readyState,
-              attemptsUsed: attempts
-            });
-            return;
-          }
-
-          console.log(`✅ ZONE TERMINAL: Fresh WebSocket is OPEN for ${zoneKey}, connecting terminal input (readOnly: ${readOnly})`);
-          
-          // Connect input to fresh WebSocket
+          // Connect terminal input to the existing WebSocket
           if (!readOnly) {
-            // 🔧 FIX: Dispose of any old onData listener before attaching a new one
             if (onDataListenersMap.current.has(zoneKey)) {
-              try {
-                console.log(`🗑️ ZONE TERMINAL: Disposing old onData listener for ${zoneKey}`);
-                onDataListenersMap.current.get(zoneKey).dispose();
-                onDataListenersMap.current.delete(zoneKey);
-              } catch (error) {
-                console.warn(`⚠️ ZONE TERMINAL: Error disposing old onData listener for ${zoneKey}:`, error);
-              }
+              onDataListenersMap.current.get(zoneKey).dispose();
             }
-
-            console.log(`🔌 ZONE TERMINAL: Attaching input handler to fresh WebSocket for ${zoneKey}`);
             const onDataListener = newTerm.onData((data) => {
-              const currentWs = websocketsMap.current.get(zoneKey);
-              if (currentWs && currentWs.readyState === WebSocket.OPEN) {
-                console.log(`⌨️ ZONE TERMINAL: Sending input data for ${zoneKey}:`, {
-                  dataLength: data.length,
-                  dataPreview: data.substring(0, 20),
-                  wsReadyState: currentWs.readyState
-                });
-                currentWs.send(data);
-              } else {
-                console.warn(`⚠️ ZONE TERMINAL: Cannot send input - WebSocket not ready for ${zoneKey}`, {
-                  wsExists: !!currentWs,
-                  wsReadyState: currentWs?.readyState
-                });
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(data);
               }
             });
-
-            // 🔧 FIX: Store the new disposable listener
             onDataListenersMap.current.set(zoneKey, onDataListener);
-            console.log(`✅ ZONE TERMINAL: Input handler attached and stored for ${zoneKey}`);
+            console.log(`🔌 ZONE TERMINAL: Input handler attached for ${zoneKey}`);
           } else {
-            // 🔧 FIX: Also dispose of listener when switching to read-only mode
             if (onDataListenersMap.current.has(zoneKey)) {
-              try {
-                console.log(`🗑️ ZONE TERMINAL: Disposing onData listener for read-only mode for ${zoneKey}`);
-                onDataListenersMap.current.get(zoneKey).dispose();
-                onDataListenersMap.current.delete(zoneKey);
-              } catch (error) {
-                console.warn(`⚠️ ZONE TERMINAL: Error disposing onData listener for read-only mode for ${zoneKey}:`, error);
-              }
+              onDataListenersMap.current.get(zoneKey).dispose();
+              onDataListenersMap.current.delete(zoneKey);
             }
-            console.log(`👁️ ZONE TERMINAL: Skipping input connection for read-only fresh WebSocket ${zoneKey}`);
           }
-        }
-
-        if (!sessionData) {
+        } else {
           console.log(`📋 ZONE TERMINAL: No existing session for ${zoneKey} - showing no session state`);
           // Display "No Session" indicator in terminal
           newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
