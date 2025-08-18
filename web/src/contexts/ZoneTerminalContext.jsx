@@ -188,57 +188,6 @@ export const ZoneTerminalProvider = ({ children }) => {
       console.log(`🔗 TERMINAL SESSION: Connecting WebSocket to ${wsUrl}`);
       const ws = new WebSocket(wsUrl);
 
-      const handleZoneMessage = (event) => {
-        console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey}`, {
-          sessionId: sessionData.id,
-          dataType: typeof event.data,
-          isBlob: event.data instanceof Blob,
-          dataLength: event.data.length || (event.data.size || 'unknown'),
-          timestamp: new Date().toISOString()
-        });
-
-        const terminal = terminalsMap.current.get(zoneKey);
-        if (terminal) {
-          console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message`);
-          
-          if (event.data instanceof Blob) {
-            console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey}`);
-            event.data.text().then(text => {
-              console.log(`📝 ZONE TERMINAL: Blob converted to text for ${zoneKey}:`, {
-                textLength: text.length,
-                textPreview: text.substring(0, 100),
-                textContent: text
-              });
-              try {
-                terminal.write(text);
-                console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey}`);
-              } catch (error) {
-                console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
-              }
-            }).catch(error => {
-              console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
-            });
-          } else {
-            console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey}:`, {
-              dataLength: event.data.length,
-              dataPreview: event.data.substring(0, 100),
-              dataContent: event.data
-            });
-            try {
-              terminal.write(event.data);
-              console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey}`);
-            } catch (error) {
-              console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
-            }
-          }
-        } else {
-          console.error(`❌ ZONE TERMINAL: Cannot write to terminal for ${zoneKey} - terminal not found!`, {
-            sessionId: sessionData.id,
-            dataLost: event.data.substring ? event.data.substring(0, 100) : '[Blob data]'
-          });
-        }
-      };
-
       ws.onopen = () => {
         console.log(`🔗 ZONE TERMINAL: WebSocket connected for ${zoneKey}:`, sessionData.id, {
           readyState: ws.readyState,
@@ -249,7 +198,8 @@ export const ZoneTerminalProvider = ({ children }) => {
         });
       };
 
-      ws.onmessage = handleZoneMessage;
+      // 🔧 FIX DOUBLE OUTPUT: No message handler here - will be attached in attachTerminal()
+      console.log(`📨 ZONE TERMINAL: WebSocket created without message handler (will be attached in attachTerminal) for ${zoneKey}`);
 
       ws.onclose = (event) => {
         console.log(`🔗 ZONE TERMINAL: WebSocket closed for ${zoneKey}:`, sessionData.id, {
