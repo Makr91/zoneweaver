@@ -41,6 +41,7 @@ export const ZoneTerminalProvider = ({ children }) => {
   const websocketsMap = useRef(new Map());          // zoneKey -> websocket
   const websocketSessionMap = useRef(new Map());    // zoneKey -> session ID that WebSocket is connected to
   const fitAddonsMap = useRef(new Map());           // zoneKey -> fit addon
+  const onDataListenersMap = useRef(new Map());     // 🔧 FIX: zoneKey -> onData listener disposable
   const terminalModesMap = useRef(new Map());       // zoneKey -> readOnly mode
   const terminalContextsMap = useRef(new Map());    // zoneKey -> UI context (preview/modal)
   const creatingSessionsSet = useRef(new Set());    // zoneKey -> creating flag
@@ -97,6 +98,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       sessionsMap.current.clear();
       websocketsMap.current.clear();
       fitAddonsMap.current.clear();
+      onDataListenersMap.current.clear();
       terminalModesMap.current.clear();
       terminalContextsMap.current.clear();
       creatingSessionsSet.current.clear();
@@ -527,8 +529,19 @@ export const ZoneTerminalProvider = ({ children }) => {
           
           // Connect input to fresh WebSocket
           if (!readOnly) {
+            // 🔧 FIX: Dispose of any old onData listener before attaching a new one
+            if (onDataListenersMap.current.has(zoneKey)) {
+              try {
+                console.log(`🗑️ ZONE TERMINAL: Disposing old onData listener for ${zoneKey}`);
+                onDataListenersMap.current.get(zoneKey).dispose();
+                onDataListenersMap.current.delete(zoneKey);
+              } catch (error) {
+                console.warn(`⚠️ ZONE TERMINAL: Error disposing old onData listener for ${zoneKey}:`, error);
+              }
+            }
+
             console.log(`🔌 ZONE TERMINAL: Attaching input handler to fresh WebSocket for ${zoneKey}`);
-            newTerm.onData((data) => {
+            const onDataListener = newTerm.onData((data) => {
               const currentWs = websocketsMap.current.get(zoneKey);
               if (currentWs && currentWs.readyState === WebSocket.OPEN) {
                 console.log(`⌨️ ZONE TERMINAL: Sending input data for ${zoneKey}:`, {
@@ -544,8 +557,21 @@ export const ZoneTerminalProvider = ({ children }) => {
                 });
               }
             });
-            console.log(`✅ ZONE TERMINAL: Input handler attached to fresh WebSocket for ${zoneKey}`);
+
+            // 🔧 FIX: Store the new disposable listener
+            onDataListenersMap.current.set(zoneKey, onDataListener);
+            console.log(`✅ ZONE TERMINAL: Input handler attached and stored for ${zoneKey}`);
           } else {
+            // 🔧 FIX: Also dispose of listener when switching to read-only mode
+            if (onDataListenersMap.current.has(zoneKey)) {
+              try {
+                console.log(`🗑️ ZONE TERMINAL: Disposing onData listener for read-only mode for ${zoneKey}`);
+                onDataListenersMap.current.get(zoneKey).dispose();
+                onDataListenersMap.current.delete(zoneKey);
+              } catch (error) {
+                console.warn(`⚠️ ZONE TERMINAL: Error disposing onData listener for read-only mode for ${zoneKey}:`, error);
+              }
+            }
             console.log(`👁️ ZONE TERMINAL: Skipping input connection for read-only fresh WebSocket ${zoneKey}`);
           }
         }
@@ -794,12 +820,26 @@ export const ZoneTerminalProvider = ({ children }) => {
       const fitAddonDeleted = fitAddonsMap.current.delete(zoneKey);
       console.log(`🗑️ ZLOGIN CLEANUP: Terminal ${terminalDeleted ? 'removed' : 'not found'} from map for ${zoneKey}`);
       console.log(`🗑️ ZLOGIN CLEANUP: Fit addon ${fitAddonDeleted ? 'removed' : 'not found'} from map for ${zoneKey}`);
+
+      // 🔧 FIX: Dispose and clear the onData listener
+      if (onDataListenersMap.current.has(zoneKey)) {
+        try {
+          console.log(`🗑️ ZLOGIN CLEANUP: Disposing onData listener for ${zoneKey}`);
+          onDataListenersMap.current.get(zoneKey).dispose();
+        } catch (onDataError) {
+          console.warn(`⚠️ ZLOGIN CLEANUP: Error disposing onData listener for ${zoneKey}:`, onDataError);
+        }
+      }
+      const onDataDeleted = onDataListenersMap.current.delete(zoneKey);
+      console.log(`🗑️ ZLOGIN CLEANUP: onData listener ${onDataDeleted ? 'removed' : 'not found'} for ${zoneKey}`);
       
+      // 🔍 Verification: Check that everything is actually cleared
       // 🔍 Verification: Check that everything is actually cleared
       const verificationCheck = {
         terminalExists: terminalsMap.current.has(zoneKey),
         websocketExists: websocketsMap.current.has(zoneKey),
         sessionExists: sessionsMap.current.has(zoneKey),
+        onDataListenerExists: onDataListenersMap.current.has(zoneKey),
         promptExists: initialPromptSentSet.current.has(zoneKey),
         modeExists: terminalModesMap.current.has(zoneKey),
         contextExists: terminalContextsMap.current.has(zoneKey),
@@ -833,6 +873,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       console.log(`🚨 ZLOGIN CLEANUP: Executing fallback cleanup for ${zoneKey}`);
       terminalsMap.current.delete(zoneKey);
       fitAddonsMap.current.delete(zoneKey);
+      onDataListenersMap.current.delete(zoneKey);
       websocketsMap.current.delete(zoneKey);
       sessionsMap.current.delete(zoneKey);
       initialPromptSentSet.current.delete(zoneKey);
