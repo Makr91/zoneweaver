@@ -386,24 +386,29 @@ export const ZoneTerminalProvider = ({ children }) => {
 
         console.log(`✅ ZONE TERMINAL: Terminal ready for ${zoneKey}, checking for existing session`);
 
-        // Step 4: ONLY connect to existing sessions - NEVER auto-start new ones
-        let sessionData = sessionsMap.current.get(zoneKey);
-        if (!sessionData) {
-          // Try to find existing session on server without starting new one
-          sessionData = await findExistingSession(currentServer, zoneName);
+        // Step 4: FORCE refresh session data to avoid stale cache after kill->start cycles
+        console.log(`🔄 ZONE TERMINAL: Force refreshing session data for ${zoneKey} to avoid stale cache`);
         
-          if (sessionData) {
-            console.log(`🔄 ZONE TERMINAL: Found existing session for ${zoneKey}:`, sessionData.id);
-            
-            // Add websocket_url to existing sessions that don't have it (for backward compatibility)
-            if (!sessionData.websocket_url) {
-              console.log(`🔧 ZONE TERMINAL: Adding missing websocket_url to existing session for ${zoneKey}`);
-              sessionData.websocket_url = `/zlogin/${sessionData.id}`;
-            }
-            
-            // Store session data first
-            sessionsMap.current.set(zoneKey, sessionData);
+        // Always check for fresh session data from server instead of using cache
+        let sessionData = await findExistingSession(currentServer, zoneName);
+        
+        if (sessionData) {
+          console.log(`🔄 ZONE TERMINAL: Found active session for ${zoneKey}:`, sessionData.id);
+          
+          // Add websocket_url to existing sessions that don't have it (for backward compatibility)
+          if (!sessionData.websocket_url) {
+            console.log(`🔧 ZONE TERMINAL: Adding missing websocket_url to session for ${zoneKey}`);
+            sessionData.websocket_url = `/zlogin/${sessionData.id}`;
           }
+          
+          // Update cache with fresh session data
+          sessionsMap.current.set(zoneKey, sessionData);
+          
+          console.log(`💾 ZONE TERMINAL: Updated cache with fresh session data for ${zoneKey}:`, sessionData.id);
+        } else {
+          // Clear any stale cached session if no active session found
+          console.log(`🧹 ZONE TERMINAL: No active session found, clearing stale cache for ${zoneKey}`);
+          sessionsMap.current.delete(zoneKey);
         }
 
         if (sessionData) {
