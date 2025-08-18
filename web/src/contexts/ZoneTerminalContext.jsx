@@ -47,10 +47,16 @@ export const ZoneTerminalProvider = ({ children }) => {
   const attachingTerminalsSet = useRef(new Set());  // zoneKey -> attaching flag
   const initialPromptSentSet = useRef(new Set());   // zoneKey -> prompt sent flag
 
-  // Helper function to generate unique zone key
+  // Helper function to generate unique zone key for sessions (shared across contexts)
   const getZoneKey = useCallback((server, zoneName) => {
     if (!server || !zoneName) return null;
     return `${server.hostname}:${server.port}:${zoneName}`;
+  }, []);
+
+  // Helper function to generate unique terminal key (context-specific)
+  const getTerminalKey = useCallback((server, zoneName, context = 'preview') => {
+    if (!server || !zoneName) return null;
+    return `${server.hostname}:${server.port}:${zoneName}:${context}`;
   }, []);
 
   // Cleanup effect - now handles multiple sessions
@@ -251,48 +257,48 @@ export const ZoneTerminalProvider = ({ children }) => {
     }
 
     const zoneKey = getZoneKey(currentServer, zoneName);
-    if (!zoneKey) {
-      console.error('🚫 ZONE TERMINAL: Could not generate zone key');
+    const terminalKey = getTerminalKey(currentServer, zoneName, context);
+    
+    if (!zoneKey || !terminalKey) {
+      console.error('🚫 ZONE TERMINAL: Could not generate zone or terminal key');
       return () => {};
     }
 
-    // Check if we're already attaching a terminal for this zone
-    if (attachingTerminalsSet.current.has(zoneKey)) {
-      console.log(`⏳ ZONE TERMINAL: Already attaching terminal for ${zoneKey}`);
+    // Check if we're already attaching a terminal for this specific context
+    if (attachingTerminalsSet.current.has(terminalKey)) {
+      console.log(`⏳ ZONE TERMINAL: Already attaching terminal for ${terminalKey}`);
       return () => {};
     }
 
-    // COMPLETELY DISABLED: All terminal reuse - always create fresh terminals
-    // Check if we already have a terminal for this zone and dispose it
-    if (terminalsMap.current.has(zoneKey)) {
-      const existingMode = terminalModesMap.current.get(zoneKey);
-      const existingContext = terminalContextsMap.current.get(zoneKey);
+    // Check if we already have a terminal for this specific context and dispose it
+    if (terminalsMap.current.has(terminalKey)) {
+      const existingMode = terminalModesMap.current.get(terminalKey);
+      const existingContext = terminalContextsMap.current.get(terminalKey);
       
-      console.log(`🚀 ZONE TERMINAL: Always creating fresh terminal UI (preserving WebSocket/session) for ${zoneKey}`);
+      console.log(`🚀 ZONE TERMINAL: Always creating fresh terminal UI (preserving WebSocket/session) for ${terminalKey}`);
       console.log(`🔄 ZONE TERMINAL: Previous context: ${existingContext} -> ${context}, Mode: ${existingMode} -> ${readOnly}`);
       
       // Always dispose existing terminal to prevent DOM reattachment issues
-      const existingTerminal = terminalsMap.current.get(zoneKey);
+      const existingTerminal = terminalsMap.current.get(terminalKey);
       if (existingTerminal) {
         try {
-          console.log(`🗑️ ZONE TERMINAL: Disposing existing terminal (no reuse) for ${zoneKey}`);
+          console.log(`🗑️ ZONE TERMINAL: Disposing existing terminal (no reuse) for ${terminalKey}`);
           existingTerminal.dispose();
         } catch (error) {
-          console.warn(`Error disposing existing terminal for ${zoneKey}:`, error);
+          console.warn(`Error disposing existing terminal for ${terminalKey}:`, error);
         }
       }
       
-      // Clean up ONLY terminal UI references - PRESERVE session/websocket state
-      terminalsMap.current.delete(zoneKey);
-      fitAddonsMap.current.delete(zoneKey);
-      terminalModesMap.current.delete(zoneKey);
-      terminalContextsMap.current.delete(zoneKey);
+      // Clean up ONLY terminal UI references for this specific context - PRESERVE session/websocket state
+      terminalsMap.current.delete(terminalKey);
+      fitAddonsMap.current.delete(terminalKey);
+      terminalModesMap.current.delete(terminalKey);
+      terminalContextsMap.current.delete(terminalKey);
       
-      // IMPORTANT: Do NOT delete sessionsMap or websocketsMap - they persist for performance!
-      console.log(`🔄 ZONE TERMINAL: Fresh terminal creation preserving session/websocket state for ${zoneKey}`);
+      console.log(`🔄 ZONE TERMINAL: Fresh terminal creation for ${terminalKey} preserving shared session/websocket state for ${zoneKey}`);
     }
 
-    attachingTerminalsSet.current.add(zoneKey);
+    attachingTerminalsSet.current.add(terminalKey);
 
     let cleanup = () => {};
     let terminalInstance = null;
@@ -323,20 +329,20 @@ export const ZoneTerminalProvider = ({ children }) => {
           newTerm.write('\r\n\x1b[33m[READ-ONLY MODE - Console output only]\x1b[0m\r\n');
         }
 
-        // Step 3: Store terminal, fit addon, readOnly mode, and context for this zone
-        terminalsMap.current.set(zoneKey, newTerm);
-        fitAddonsMap.current.set(zoneKey, fitAddon);
-        terminalModesMap.current.set(zoneKey, readOnly);
-        terminalContextsMap.current.set(zoneKey, context);
+        // Step 3: Store terminal, fit addon, readOnly mode, and context using context-specific keys
+        terminalsMap.current.set(terminalKey, newTerm);
+        fitAddonsMap.current.set(terminalKey, fitAddon);
+        terminalModesMap.current.set(terminalKey, readOnly);
+        terminalContextsMap.current.set(terminalKey, context);
         
-        // CIRCULAR DEPENDENCY FIX: Only update global term state if current zone matches
+        // CIRCULAR DEPENDENCY FIX: Only update global term state if current zone matches and this is preview context
         // This prevents unnecessary re-renders that cause infinite loops
-        if (currentServer && getZoneKey(currentServer, zoneName) === zoneKey) {
+        if (currentServer && getZoneKey(currentServer, zoneName) === zoneKey && context === 'preview') {
           setTerm(newTerm);
         }
         terminalInstance = newTerm;
 
-        console.log(`✅ ZONE TERMINAL: Terminal ready for ${zoneKey}, checking for existing session`);
+        console.log(`✅ ZONE TERMINAL: Terminal ready for ${terminalKey} (context: ${context}), checking for session ${zoneKey}`);
 
         // Step 4: FORCE refresh session data to avoid stale cache after kill->start cycles
         console.log(`🔄 ZONE TERMINAL: Force refreshing session data for ${zoneKey} to avoid stale cache`);
@@ -386,7 +392,7 @@ export const ZoneTerminalProvider = ({ children }) => {
             // 🔧 CRITICAL FIX: ALWAYS attach fresh message handler - this ensures terminal is in terminalsMap
             console.log(`📨 ZONE TERMINAL: Attaching FRESH message handler to reused WebSocket for ${zoneKey} to fix race condition`);
             
-            // Create fresh message handler that can find the terminal (now that it's in terminalsMap)
+            // 🔧 CRITICAL FIX: Message broadcasting to ALL terminals for this zone (context isolation)
             const handleZoneMessageReused = (event) => {
               console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey} (REUSED WS)`, {
                 sessionId: sessionData.id,
@@ -396,9 +402,29 @@ export const ZoneTerminalProvider = ({ children }) => {
                 timestamp: new Date().toISOString()
               });
 
-              const terminal = terminalsMap.current.get(zoneKey);
-              if (terminal) {
-                console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message (REUSED WS)`);
+              // Find ALL terminals for this zone (all contexts)
+              const zoneTerminals = [];
+              for (const [terminalKey, terminal] of terminalsMap.current.entries()) {
+                if (terminalKey.startsWith(zoneKey + ':')) {
+                  zoneTerminals.push({ key: terminalKey, terminal });
+                }
+              }
+
+              if (zoneTerminals.length > 0) {
+                console.log(`✅ ZONE TERMINAL: Found ${zoneTerminals.length} terminals for ${zoneKey}, broadcasting message (REUSED WS)`, {
+                  terminals: zoneTerminals.map(t => t.key)
+                });
+                
+                const processMessageForTerminals = (text) => {
+                  zoneTerminals.forEach(({ key, terminal }) => {
+                    try {
+                      terminal.write(text);
+                      console.log(`✅ ZONE TERMINAL: Successfully wrote to terminal ${key} (REUSED WS)`);
+                    } catch (error) {
+                      console.error(`❌ ZONE TERMINAL: Error writing to terminal ${key}:`, error);
+                    }
+                  });
+                };
                 
                 if (event.data instanceof Blob) {
                   console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey} (REUSED WS)`);
@@ -407,12 +433,7 @@ export const ZoneTerminalProvider = ({ children }) => {
                       textLength: text.length,
                       textPreview: text.substring(0, 100)
                     });
-                    try {
-                      terminal.write(text);
-                      console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey} (REUSED WS)`);
-                    } catch (error) {
-                      console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
-                    }
+                    processMessageForTerminals(text);
                   }).catch(error => {
                     console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
                   });
@@ -421,15 +442,10 @@ export const ZoneTerminalProvider = ({ children }) => {
                     dataLength: event.data.length,
                     dataPreview: event.data.substring(0, 100)
                   });
-                  try {
-                    terminal.write(event.data);
-                    console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey} (REUSED WS)`);
-                  } catch (error) {
-                    console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
-                  }
+                  processMessageForTerminals(event.data);
                 }
               } else {
-                console.error(`❌ ZONE TERMINAL: Cannot write to terminal for ${zoneKey} - terminal not found! (REUSED WS)`, {
+                console.error(`❌ ZONE TERMINAL: No terminals found for ${zoneKey} - message lost! (REUSED WS)`, {
                   sessionId: sessionData.id,
                   dataLost: event.data.substring ? event.data.substring(0, 100) : '[Blob data]',
                   availableTerminals: Array.from(terminalsMap.current.keys())
@@ -496,9 +512,9 @@ export const ZoneTerminalProvider = ({ children }) => {
             const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
             const ws = new WebSocket(wsUrl);
 
-            // CRITICAL FIX: Enhanced message handler with proper terminal connection
+            // 🔧 CRITICAL FIX: Message broadcasting to ALL terminals for this zone (context isolation) - NEW WS
             const handleZoneMessage = (event) => {
-              console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey}`, {
+              console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey} (NEW WS)`, {
                 sessionId: sessionData.id,
                 dataType: typeof event.data,
                 isBlob: event.data instanceof Blob,
@@ -506,42 +522,50 @@ export const ZoneTerminalProvider = ({ children }) => {
                 timestamp: new Date().toISOString()
               });
 
-              const terminal = terminalsMap.current.get(zoneKey);
-              if (terminal) {
-                console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message`);
+              // Find ALL terminals for this zone (all contexts)
+              const zoneTerminals = [];
+              for (const [terminalKey, terminal] of terminalsMap.current.entries()) {
+                if (terminalKey.startsWith(zoneKey + ':')) {
+                  zoneTerminals.push({ key: terminalKey, terminal });
+                }
+              }
+
+              if (zoneTerminals.length > 0) {
+                console.log(`✅ ZONE TERMINAL: Found ${zoneTerminals.length} terminals for ${zoneKey}, broadcasting message (NEW WS)`, {
+                  terminals: zoneTerminals.map(t => t.key)
+                });
+                
+                const processMessageForTerminals = (text) => {
+                  zoneTerminals.forEach(({ key, terminal }) => {
+                    try {
+                      terminal.write(text);
+                      console.log(`✅ ZONE TERMINAL: Successfully wrote to terminal ${key} (NEW WS)`);
+                    } catch (error) {
+                      console.error(`❌ ZONE TERMINAL: Error writing to terminal ${key}:`, error);
+                    }
+                  });
+                };
                 
                 if (event.data instanceof Blob) {
-                  console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey}`);
+                  console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey} (NEW WS)`);
                   event.data.text().then(text => {
                     console.log(`📝 ZONE TERMINAL: Blob converted to text for ${zoneKey}:`, {
                       textLength: text.length,
-                      textPreview: text.substring(0, 100),
-                      textContent: text
+                      textPreview: text.substring(0, 100)
                     });
-                    try {
-                      terminal.write(text);
-                      console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey}`);
-                    } catch (error) {
-                      console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
-                    }
+                    processMessageForTerminals(text);
                   }).catch(error => {
                     console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
                   });
                 } else {
-                  console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey}:`, {
+                  console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey} (NEW WS):`, {
                     dataLength: event.data.length,
-                    dataPreview: event.data.substring(0, 100),
-                    dataContent: event.data
+                    dataPreview: event.data.substring(0, 100)
                   });
-                  try {
-                    terminal.write(event.data);
-                    console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey}`);
-                  } catch (error) {
-                    console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
-                  }
+                  processMessageForTerminals(event.data);
                 }
               } else {
-                console.error(`❌ ZONE TERMINAL: Cannot write to terminal for ${zoneKey} - terminal not found!`, {
+                console.error(`❌ ZONE TERMINAL: No terminals found for ${zoneKey} - message lost! (NEW WS)`, {
                   sessionId: sessionData.id,
                   dataLost: event.data.substring ? event.data.substring(0, 100) : '[Blob data]',
                   availableTerminals: Array.from(terminalsMap.current.keys())
