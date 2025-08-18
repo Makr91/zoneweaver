@@ -156,9 +156,11 @@ export const ZoneTerminalProvider = ({ children }) => {
 
       // Handle response structure from backend
       const sessionData = response.data.session || response.data.data;
+      console.log(`🔍 ZLOGIN SESSION: Full response data for ${zoneKey}:`, response.data);
       console.log(`🔍 ZLOGIN SESSION: Parsed session data for ${zoneKey}:`, {
         websocket_url: sessionData.websocket_url,
-        id: sessionData.id
+        id: sessionData.id,
+        allSessionFields: Object.keys(sessionData)
       });
       
       console.log(`🆕 ZLOGIN CREATE: New session created for ${zoneKey}`);
@@ -166,6 +168,16 @@ export const ZoneTerminalProvider = ({ children }) => {
       // Step 4: Display buffer content if available (reconnection context)
       if (sessionData.buffer && sessionData.buffer.trim()) {
         console.log(`📜 TERMINAL BUFFER: Restoring ${sessionData.buffer.split('\n').length} lines of history for ${zoneKey}`);
+      }
+
+      // Step 5: CRITICAL FIX - Check for undefined websocket_url
+      if (!sessionData.websocket_url) {
+        console.error(`🚫 ZLOGIN SESSION: Missing websocket_url for ${zoneKey}!`, {
+          sessionData,
+          responseKeys: Object.keys(response.data),
+          sessionKeys: Object.keys(sessionData)
+        });
+        return null; // Don't create malformed WebSocket connection
       }
 
       // Step 5: Create WebSocket connection using backend-provided URL
@@ -389,17 +401,25 @@ export const ZoneTerminalProvider = ({ children }) => {
         setTerm(newTerm);
         terminalInstance = newTerm;
 
-        console.log(`✅ ZONE TERMINAL: Terminal ready for ${zoneKey}, now creating WebSocket session`);
+        console.log(`✅ ZONE TERMINAL: Terminal ready for ${zoneKey}, checking for existing session`);
 
-        // Step 4: NOW create WebSocket session (terminal is ready to receive data)
+        // Step 4: ONLY connect to existing sessions - NEVER auto-start new ones
         let sessionData = sessionsMap.current.get(zoneKey);
         if (!sessionData) {
-          sessionData = await createOrReuseTerminalSession(currentServer, zoneName);
+          // Try to find existing session on server without starting new one
+          sessionData = await findExistingSession(currentServer, zoneName);
+          if (sessionData) {
+            console.log(`🔄 ZONE TERMINAL: Found existing session for ${zoneKey}:`, sessionData.id);
+            sessionsMap.current.set(zoneKey, sessionData);
+          }
         }
 
         if (!sessionData) {
-          console.error(`🚫 ZONE TERMINAL: Failed to create session for ${zoneKey}`);
-          return;
+          console.log(`📋 ZONE TERMINAL: No existing session for ${zoneKey} - showing no session state`);
+          // Display "No Session" indicator in terminal
+          newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
+          newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
+          return; // Don't create WebSocket connection without session
         }
 
         // Step 5: Wait for WebSocket to be ready
@@ -590,6 +610,81 @@ export const ZoneTerminalProvider = ({ children }) => {
     }
   }, [getZoneKey]);
 
+  // ⚡ EXPLICIT SESSION CREATION - Only called by user actions (button clicks)
+  const startZloginSessionExplicitly = useCallback(async (server, zoneName) => {
+    if (!server || !zoneName) {
+      console.error('🚫 START ZLOGIN: Invalid server or zone name');
+      return { success: false, message: 'Invalid parameters' };
+    }
+
+    const zoneKey = getZoneKey(server, zoneName);
+    if (!zoneKey) {
+      return { success: false, message: 'Could not generate zone key' };
+    }
+
+    try {
+      console.log(`🎬 START ZLOGIN: User explicitly requested session start for ${zoneKey}`);
+      
+      // Use the existing session creation logic
+      const sessionData = await createOrReuseTerminalSession(server, zoneName);
+      
+      if (sessionData) {
+        console.log(`✅ START ZLOGIN: Session started successfully for ${zoneKey}:`, sessionData.id);
+        
+        // After creating session, refresh any existing terminals to connect to it
+        const terminal = terminalsMap.current.get(zoneKey);
+        if (terminal) {
+          console.log(`🔄 START ZLOGIN: Refreshing existing terminal for ${zoneKey}`);
+          // Clear the "no session" message and show connection
+          terminal.clear();
+          terminal.write('\r\n\x1b[32m[ZLOGIN SESSION STARTED]\x1b[0m\r\n');
+          terminal.write('\x1b[37m[Connecting to session...]\x1b[0m\r\n');
+          
+          // Wait for WebSocket connection
+          let attempts = 0;
+          const maxAttempts = 50;
+          let ws = websocketsMap.current.get(zoneKey);
+
+          while (!ws && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            ws = websocketsMap.current.get(zoneKey);
+            attempts++;
+          }
+
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            terminal.clear(); // Clear connection message
+            console.log(`🔗 START ZLOGIN: Terminal connected to session for ${zoneKey}`);
+            
+            // Connect terminal input to WebSocket if not read-only
+            const isReadOnly = terminalModesMap.current.get(zoneKey);
+            if (!isReadOnly) {
+              terminal.onData((data) => {
+                const currentWs = websocketsMap.current.get(zoneKey);
+                if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+                  currentWs.send(data);
+                }
+              });
+            }
+            
+            // Send initial prompt if not read-only
+            if (!isReadOnly && !initialPromptSentSet.current.has(zoneKey)) {
+              ws.send('\n');
+              initialPromptSentSet.current.add(zoneKey);
+            }
+          }
+        }
+        
+        return { success: true, session: sessionData };
+      } else {
+        console.error(`❌ START ZLOGIN: Failed to start session for ${zoneKey}`);
+        return { success: false, message: 'Failed to create session' };
+      }
+    } catch (error) {
+      console.error(`💥 START ZLOGIN: Error starting session for ${zoneKey}:`, error);
+      return { success: false, message: error.message || 'Unknown error' };
+    }
+  }, [getZoneKey, createOrReuseTerminalSession]);
+
   const value = React.useMemo(() => ({
     term,
     attachTerminal,
@@ -598,8 +693,10 @@ export const ZoneTerminalProvider = ({ children }) => {
     clearAllZoneSessions,
     getZoneSessionInfo,
     forceZoneSessionRefresh,
-    validateSessionHealth: (server, sessionId) => validateSessionHealth(server, sessionId)
-  }), [term, attachTerminal, resizeTerminal, clearAllZoneSessions, getZoneSessionInfo, forceZoneSessionRefresh]);
+    validateSessionHealth: (server, sessionId) => validateSessionHealth(server, sessionId),
+    // Explicit session creation (only for user actions)
+    startZloginSessionExplicitly
+  }), [term, attachTerminal, resizeTerminal, clearAllZoneSessions, getZoneSessionInfo, forceZoneSessionRefresh, startZloginSessionExplicitly]);
 
   return (
     <ZoneTerminalContext.Provider value={value}>
