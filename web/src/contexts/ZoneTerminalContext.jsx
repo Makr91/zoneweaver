@@ -725,29 +725,105 @@ export const ZoneTerminalProvider = ({ children }) => {
   }, [getZoneKey]);
 
   // 🧹 CRITICAL SESSION CLEANUP - Called when sessions are explicitly killed
-  const forceZoneSessionCleanup = useCallback((server, zoneName) => {
-    if (!server || !zoneName) return;
+  const forceZoneSessionCleanup = useCallback(async (server, zoneName) => {
+    if (!server || !zoneName) {
+      console.error('🚫 ZLOGIN CLEANUP: Invalid server or zoneName provided');
+      return;
+    }
     
     const zoneKey = getZoneKey(server, zoneName);
-    console.log(`🧹 ZLOGIN CLEANUP: Force cleaning up session state for ${zoneKey}`);
+    console.log(`🧹 ZLOGIN CLEANUP: Force cleaning up session state for ${zoneKey}`, {
+      server: `${server.hostname}:${server.port}`,
+      zoneName,
+      timestamp: new Date().toISOString()
+    });
     
-    // Close and clear WebSocket (most important!)
-    const ws = websocketsMap.current.get(zoneKey);
-    if (ws) {
-      console.log(`🔗 ZLOGIN CLEANUP: Closing WebSocket for ${zoneKey}`);
-      ws.close();
+    try {
+      // 🔥 CRITICAL: Close and clear WebSocket (most important!)
+      const ws = websocketsMap.current.get(zoneKey);
+      if (ws) {
+        console.log(`🔗 ZLOGIN CLEANUP: Closing WebSocket for ${zoneKey}`, {
+          readyState: ws.readyState,
+          url: ws.url
+        });
+        
+        try {
+          if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+            ws.close(1000, 'Session killed by user');
+          }
+          console.log(`✅ ZLOGIN CLEANUP: WebSocket closed for ${zoneKey}`);
+        } catch (wsCloseError) {
+          console.warn(`⚠️ ZLOGIN CLEANUP: Error closing WebSocket for ${zoneKey}:`, wsCloseError);
+          // Continue with cleanup even if close fails
+        }
+      } else {
+        console.log(`ℹ️ ZLOGIN CLEANUP: No WebSocket found for ${zoneKey}`);
+      }
+      
+      // 🧹 FORCE DELETE: Always remove WebSocket from map regardless of close success
+      const wsDeleted = websocketsMap.current.delete(zoneKey);
+      console.log(`🗑️ ZLOGIN CLEANUP: WebSocket ${wsDeleted ? 'removed' : 'not found'} in map for ${zoneKey}`);
+      
+      // 🧹 Clear cached session and state
+      const sessionDeleted = sessionsMap.current.delete(zoneKey);
+      console.log(`🗑️ ZLOGIN CLEANUP: Session data ${sessionDeleted ? 'removed' : 'not found'} for ${zoneKey}`);
+      
+      const promptDeleted = initialPromptSentSet.current.delete(zoneKey);
+      console.log(`🗑️ ZLOGIN CLEANUP: Initial prompt flag ${promptDeleted ? 'removed' : 'not found'} for ${zoneKey}`);
+      
+      // 🧹 Clear terminal state tracking
+      const modeDeleted = terminalModesMap.current.delete(zoneKey);
+      const contextDeleted = terminalContextsMap.current.delete(zoneKey);
+      console.log(`🗑️ ZLOGIN CLEANUP: Terminal tracking data removed for ${zoneKey}`, {
+        modeDeleted,
+        contextDeleted
+      });
+      
+      // 🔍 Verification: Check that everything is actually cleared
+      const verificationCheck = {
+        websocketExists: websocketsMap.current.has(zoneKey),
+        sessionExists: sessionsMap.current.has(zoneKey),
+        promptExists: initialPromptSentSet.current.has(zoneKey),
+        modeExists: terminalModesMap.current.has(zoneKey),
+        contextExists: terminalContextsMap.current.has(zoneKey),
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log(`🔍 ZLOGIN CLEANUP: Verification check for ${zoneKey}:`, verificationCheck);
+      
+      if (verificationCheck.websocketExists || verificationCheck.sessionExists) {
+        console.error(`🚨 ZLOGIN CLEANUP: CLEANUP FAILED - Some data still exists for ${zoneKey}:`, verificationCheck);
+        throw new Error(`Cleanup verification failed - data still exists`);
+      }
+      
+      console.log(`✅ ZLOGIN CLEANUP: Complete cleanup finished for ${zoneKey}`, {
+        server: `${server.hostname}:${server.port}`,
+        zoneName,
+        success: true,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error(`💥 ZLOGIN CLEANUP: Error during cleanup for ${zoneKey}:`, {
+        error: error.message,
+        errorStack: error.stack,
+        server: `${server.hostname}:${server.port}`,
+        zoneName,
+        timestamp: new Date().toISOString()
+      });
+      
+      // 🚨 FALLBACK CLEANUP: Force clear everything even on error
+      console.log(`🚨 ZLOGIN CLEANUP: Executing fallback cleanup for ${zoneKey}`);
+      websocketsMap.current.delete(zoneKey);
+      sessionsMap.current.delete(zoneKey);
+      initialPromptSentSet.current.delete(zoneKey);
+      terminalModesMap.current.delete(zoneKey);
+      terminalContextsMap.current.delete(zoneKey);
+      console.log(`🧹 ZLOGIN CLEANUP: Fallback cleanup completed for ${zoneKey}`);
+      
+      // Re-throw the error so the caller knows cleanup had issues
+      throw error;
     }
-    websocketsMap.current.delete(zoneKey);
-    
-    // Clear cached session and state
-    sessionsMap.current.delete(zoneKey);
-    initialPromptSentSet.current.delete(zoneKey);
-    
-    // Clear terminal state tracking
-    terminalModesMap.current.delete(zoneKey);
-    terminalContextsMap.current.delete(zoneKey);
-    
-    console.log(`✅ ZLOGIN CLEANUP: Complete cleanup finished for ${zoneKey}`);
   }, [getZoneKey]);
 
   // ⚡ EXPLICIT SESSION CREATION - Only called by user actions (button clicks)

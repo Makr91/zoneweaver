@@ -2383,11 +2383,26 @@ const Zones = () => {
                           if (killResult.success) {
                             console.log(`zlogin session killed for ${selectedZone}`);
                             
-                            // 🧹 CRITICAL: Force cleanup of terminal context state
-                            await forceZoneSessionCleanup(currentServer, selectedZone);
+                            try {
+                              // 🧹 CRITICAL: Force cleanup of terminal context state with error handling
+                              console.log(`🧹 ZONES: Calling forceZoneSessionCleanup for ${selectedZone}`);
+                              await forceZoneSessionCleanup(currentServer, selectedZone);
+                              console.log(`✅ ZONES: forceZoneSessionCleanup completed successfully for ${selectedZone}`);
+                            } catch (cleanupError) {
+                              console.error(`💥 ZONES: Cleanup function failed for ${selectedZone}:`, cleanupError);
+                              // Continue with status refresh even if cleanup fails
+                              setError(`Session killed but cleanup failed: ${cleanupError.message}`);
+                            }
                             
-                            // Refresh status
-                            await refreshZloginSessionStatus(selectedZone);
+                            // Refresh status (always run this)
+                            try {
+                              console.log(`🔄 ZONES: Refreshing zlogin session status for ${selectedZone}`);
+                              await refreshZloginSessionStatus(selectedZone);
+                              console.log(`✅ ZONES: Session status refresh completed for ${selectedZone}`);
+                            } catch (refreshError) {
+                              console.error(`💥 ZONES: Status refresh failed for ${selectedZone}:`, refreshError);
+                              setError(`Session killed but status refresh failed: ${refreshError.message}`);
+                            }
                           } else {
                             console.error(`Failed to kill zlogin session for ${selectedZone}:`, killResult.message);
                             setError(`Failed to kill zlogin session: ${killResult.message}`);
