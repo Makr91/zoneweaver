@@ -572,24 +572,35 @@ const Zones = () => {
     }
   }, [currentZone, currentServer]);
 
-  // Auto-select console type based on what's available
+  // Auto-select console type based on what's available - STABILIZED to prevent infinite loops
   useEffect(() => {
     const hasVnc = zoneDetails.active_vnc_session;
     const hasZlogin = zoneDetails.zlogin_session;
     
+    // LOOP PREVENTION: Only change console type if there's a meaningful difference
+    // This prevents VNC disconnect -> console switch -> remount -> VNC disconnect loops
+    
     if (hasVnc && hasZlogin) {
       // Both active - keep current selection or default to VNC
       if (!activeConsoleType || (activeConsoleType !== 'vnc' && activeConsoleType !== 'zlogin')) {
+        console.log('🔧 CONSOLE SWITCH: Both sessions available, defaulting to VNC');
         setActiveConsoleType('vnc');
       }
-    } else if (hasZlogin) {
+    } else if (hasZlogin && activeConsoleType !== 'zlogin') {
+      // Only zlogin available and not already selected
+      console.log('🔧 CONSOLE SWITCH: Only zlogin available, switching to zlogin');
       setActiveConsoleType('zlogin');
-    } else if (hasVnc) {
+    } else if (hasVnc && activeConsoleType !== 'vnc') {
+      // Only VNC available and not already selected  
+      console.log('🔧 CONSOLE SWITCH: Only VNC available, switching to VNC');
       setActiveConsoleType('vnc');
-    } else {
-      setActiveConsoleType('vnc'); // Default to VNC when nothing is active
+    } else if (!hasVnc && !hasZlogin && activeConsoleType !== 'vnc') {
+      // Nothing available - default to VNC (but don't cause unnecessary switches)
+      console.log('🔧 CONSOLE SWITCH: No sessions available, defaulting to VNC');
+      setActiveConsoleType('vnc');
     }
-  }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session, activeConsoleType]);
+    // IMPORTANT: Removed activeConsoleType from dependency array to prevent circular updates
+  }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session]);
 
   const getZoneStatus = (zoneName) => {
     return runningZones.includes(zoneName) ? 'running' : 'stopped';

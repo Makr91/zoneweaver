@@ -376,8 +376,11 @@ export const ZoneTerminalProvider = ({ children }) => {
         terminalModesMap.current.set(zoneKey, readOnly);
         terminalContextsMap.current.set(zoneKey, context);
         
-        // Update global state if this is the current zone
-        setTerm(newTerm);
+        // CIRCULAR DEPENDENCY FIX: Only update global term state if current zone matches
+        // This prevents unnecessary re-renders that cause infinite loops
+        if (currentServer && getZoneKey(currentServer, zoneName) === zoneKey) {
+          setTerm(newTerm);
+        }
         terminalInstance = newTerm;
 
         console.log(`✅ ZONE TERMINAL: Terminal ready for ${zoneKey}, checking for existing session`);
@@ -497,13 +500,15 @@ export const ZoneTerminalProvider = ({ children }) => {
 
         cleanup = () => {
           try {
-            // Only remove from DOM, keep terminal in map for reuse
+            // Only remove from DOM, don't dispose terminal completely
             if (newTerm.element && newTerm.element.parentNode) {
               newTerm.element.parentNode.removeChild(newTerm.element);
             }
             
-            // Update global state if this was the current terminal
-            if (term === newTerm) {
+            // CIRCULAR DEPENDENCY FIX: Don't update term state in cleanup to prevent loops
+            // Only clear if this was actually the current term
+            const currentTerm = terminalsMap.current.get(zoneKey);
+            if (currentTerm === newTerm && term === newTerm) {
               setTerm(null);
             }
           } catch (error) {
@@ -525,7 +530,7 @@ export const ZoneTerminalProvider = ({ children }) => {
     createTerminalInstance();
 
     return () => cleanup();
-  }, [getZoneKey, currentServer, createOrReuseTerminalSession, term]);
+  }, [getZoneKey, currentServer, createOrReuseTerminalSession]); // REMOVED 'term' from dependencies to break circular loop
 
   const resizeTerminal = useCallback((zoneName = null) => {
     if (zoneName && currentServer) {
