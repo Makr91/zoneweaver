@@ -1662,25 +1662,28 @@ class ServerController {
         }
       );
 
+      // Extract session data from nested response structure (matches frontend parsing pattern)
+      const sessionData = result.data?.data || result.data;
+      
       console.log('📋 TERMINAL START: Session result', {
         success: result.success,
         status: result.status,
         hasData: !!result.data,
-        sessionId: result.data?.id,
-        reused: result.data?.reused,
-        websocket_url: result.data?.websocket_url,
+        sessionId: sessionData?.id,
+        reused: sessionData?.reused,
+        websocket_url: sessionData?.websocket_url,
         error: result.error
       });
 
       if (result.success) {
         console.log('🎉 TERMINAL START: Session created/reused successfully', {
-          sessionId: result.data.id,
-          reused: result.data.reused ? '⚡ REUSED' : '🆕 NEW',
-          status: result.data.status,
-          websocket_url: result.data.websocket_url
+          sessionId: sessionData.id,
+          reused: sessionData.reused ? '⚡ REUSED' : '🆕 NEW',
+          status: sessionData.status,
+          websocket_url: sessionData.websocket_url
         });
 
-        res.json({ success: true, data: result.data });
+        res.json({ success: true, data: sessionData });
       } else {
         console.error('❌ TERMINAL START: Session creation failed', {
           status: result.status,
