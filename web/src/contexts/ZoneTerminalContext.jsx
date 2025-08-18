@@ -408,10 +408,17 @@ export const ZoneTerminalProvider = ({ children }) => {
         if (!sessionData) {
           // Try to find existing session on server without starting new one
           sessionData = await findExistingSession(currentServer, zoneName);
-          if (sessionData) {
-            console.log(`🔄 ZONE TERMINAL: Found existing session for ${zoneKey}:`, sessionData.id);
-            sessionsMap.current.set(zoneKey, sessionData);
+        if (sessionData) {
+          console.log(`🔄 ZONE TERMINAL: Found existing session for ${zoneKey}:`, sessionData.id);
+          
+          // Add websocket_url to existing sessions that don't have it (for backward compatibility)
+          if (!sessionData.websocket_url) {
+            console.log(`🔧 ZONE TERMINAL: Adding missing websocket_url to existing session for ${zoneKey}`);
+            sessionData.websocket_url = `/zlogin/${sessionData.id}`;
           }
+          
+          sessionsMap.current.set(zoneKey, sessionData);
+        }
         }
 
         if (!sessionData) {
