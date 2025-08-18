@@ -490,6 +490,30 @@ export const ZoneTerminalProvider = ({ children }) => {
               handlerAttached: !!existingWs.onmessage,
               timestamp: new Date().toISOString()
             });
+
+            // 🔌 IMMEDIATE INPUT CONNECTION for reused WebSocket (already OPEN)
+            if (!readOnly) {
+              console.log(`🔌 ZONE TERMINAL: Attaching input handler to reused WebSocket for ${zoneKey}`);
+              newTerm.onData((data) => {
+                const currentWs = websocketsMap.current.get(zoneKey);
+                if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+                  console.log(`⌨️ ZONE TERMINAL: Sending input data for ${zoneKey} (REUSED WS):`, {
+                    dataLength: data.length,
+                    dataPreview: data.substring(0, 20),
+                    wsReadyState: currentWs.readyState
+                  });
+                  currentWs.send(data);
+                } else {
+                  console.warn(`⚠️ ZONE TERMINAL: Cannot send input - WebSocket not ready for ${zoneKey}`, {
+                    wsExists: !!currentWs,
+                    wsReadyState: currentWs?.readyState
+                  });
+                }
+              });
+              console.log(`✅ ZONE TERMINAL: Input handler attached to reused WebSocket for ${zoneKey}`);
+            } else {
+              console.log(`👁️ ZONE TERMINAL: Skipping input connection for read-only reused WebSocket ${zoneKey}`);
+            }
             
           } else {
             // 🔄 SESSION CHANGED: Close old WebSocket and create new one
@@ -622,6 +646,60 @@ export const ZoneTerminalProvider = ({ children }) => {
               sessionTracked: websocketSessionMap.current.has(zoneKey),
               timestamp: new Date().toISOString()
             });
+
+            // 🔄 NEW WEBSOCKET: Wait for OPEN state then attach input
+            console.log(`⏳ ZONE TERMINAL: Waiting for NEW WebSocket to be OPEN for ${zoneKey}...`);
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            while (ws.readyState !== WebSocket.OPEN && attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              console.log(`🔍 ZONE TERMINAL: NEW WebSocket state check for ${zoneKey}:`, {
+                attempt: attempts + 1,
+                readyState: ws.readyState,
+                states: {
+                  CONNECTING: WebSocket.CONNECTING,
+                  OPEN: WebSocket.OPEN,
+                  CLOSING: WebSocket.CLOSING,
+                  CLOSED: WebSocket.CLOSED
+                }
+              });
+              attempts++;
+            }
+
+            if (ws.readyState !== WebSocket.OPEN) {
+              console.error(`🚫 ZONE TERMINAL: NEW WebSocket failed to open for ${zoneKey}`, {
+                finalReadyState: ws.readyState,
+                attemptsUsed: attempts
+              });
+              return;
+            }
+
+            console.log(`✅ ZONE TERMINAL: NEW WebSocket is OPEN for ${zoneKey}, connecting terminal input (readOnly: ${readOnly})`);
+            
+            // Connect input to NEW WebSocket
+            if (!readOnly) {
+              console.log(`🔌 ZONE TERMINAL: Attaching input handler to NEW WebSocket for ${zoneKey}`);
+              newTerm.onData((data) => {
+                const currentWs = websocketsMap.current.get(zoneKey);
+                if (currentWs && currentWs.readyState === WebSocket.OPEN) {
+                  console.log(`⌨️ ZONE TERMINAL: Sending input data for ${zoneKey} (NEW WS):`, {
+                    dataLength: data.length,
+                    dataPreview: data.substring(0, 20),
+                    wsReadyState: currentWs.readyState
+                  });
+                  currentWs.send(data);
+                } else {
+                  console.warn(`⚠️ ZONE TERMINAL: Cannot send input - WebSocket not ready for ${zoneKey}`, {
+                    wsExists: !!currentWs,
+                    wsReadyState: currentWs?.readyState
+                  });
+                }
+              });
+              console.log(`✅ ZONE TERMINAL: Input handler attached to NEW WebSocket for ${zoneKey}`);
+            } else {
+              console.log(`👁️ ZONE TERMINAL: Skipping input connection for read-only NEW WebSocket ${zoneKey}`);
+            }
           }
         }
 
@@ -631,71 +709,6 @@ export const ZoneTerminalProvider = ({ children }) => {
           newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
           newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
           return; // Don't create WebSocket connection without session
-        }
-
-        // Step 5: Wait for WebSocket to be ready AND in OPEN state
-        let attempts = 0;
-        const maxAttempts = 50;
-        let ws = websocketsMap.current.get(zoneKey);
-
-        console.log(`⏳ ZONE TERMINAL: Waiting for WebSocket to be OPEN for ${zoneKey}...`);
-        while ((!ws || ws.readyState !== WebSocket.OPEN) && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          ws = websocketsMap.current.get(zoneKey);
-          
-          if (ws) {
-            console.log(`🔍 ZONE TERMINAL: WebSocket state check for ${zoneKey}:`, {
-              attempt: attempts + 1,
-              readyState: ws.readyState,
-              states: {
-                CONNECTING: WebSocket.CONNECTING,
-                OPEN: WebSocket.OPEN,
-                CLOSING: WebSocket.CLOSING,
-                CLOSED: WebSocket.CLOSED
-              }
-            });
-          }
-          
-          attempts++;
-        }
-
-        if (!ws) {
-          console.error(`🚫 ZONE TERMINAL: Timeout waiting for WebSocket to exist for ${zoneKey}`);
-          return;
-        }
-
-        if (ws.readyState !== WebSocket.OPEN) {
-          console.error(`🚫 ZONE TERMINAL: WebSocket failed to open for ${zoneKey}`, {
-            finalReadyState: ws.readyState,
-            attemptsUsed: attempts
-          });
-          return;
-        }
-
-        console.log(`✅ ZONE TERMINAL: WebSocket is OPEN for ${zoneKey}, connecting terminal input (readOnly: ${readOnly})`);
-        
-        // Step 6: Connect terminal input to WebSocket (only if not read-only)
-        if (!readOnly) {
-          console.log(`🔌 ZONE TERMINAL: Attaching input handler to terminal for ${zoneKey}`);
-          newTerm.onData((data) => {
-            const currentWs = websocketsMap.current.get(zoneKey);
-            if (currentWs && currentWs.readyState === WebSocket.OPEN) {
-              console.log(`⌨️ ZONE TERMINAL: Sending input data for ${zoneKey}:`, {
-                dataLength: data.length,
-                dataPreview: data.substring(0, 20),
-                wsReadyState: currentWs.readyState
-              });
-              currentWs.send(data);
-            } else {
-              console.warn(`⚠️ ZONE TERMINAL: Cannot send input - WebSocket not ready for ${zoneKey}`, {
-                wsExists: !!currentWs,
-                wsReadyState: currentWs?.readyState
-              });
-            }
-          });
-          console.log(`✅ ZONE TERMINAL: Input handler attached for ${zoneKey}`);
-        } else {
-          console.log(`👁️ ZONE TERMINAL: Skipping input connection for read-only terminal ${zoneKey}`);
         }
 
         // Step 7: Fit terminal and send initial prompt (only if not read-only)
