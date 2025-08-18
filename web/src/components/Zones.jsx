@@ -77,7 +77,7 @@ const Zones = () => {
     getStorageDatasets
   } = useServers();
 
-  const { attachTerminal, forceZoneSessionCleanup } = useZoneTerminal();
+  const { attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly } = useZoneTerminal();
 
   useEffect(() => {
     if (currentServer) {
@@ -1988,47 +1988,17 @@ const Zones = () => {
                                         <button 
                                           className='button is-small is-success'
                                           onClick={async () => {
+                                            if (!currentServer || !selectedZone) return;
                                             console.log(`🚀 START ZLOGIN: Starting zlogin session for preview in ${selectedZone}`);
                                             try {
                                               setLoading(true);
-                                              const result = await startZloginSession(
-                                                currentServer.hostname,
-                                                currentServer.port,
-                                                currentServer.protocol,
-                                                selectedZone
-                                              );
+                                              const result = await startZloginSessionExplicitly(currentServer, selectedZone);
                                               
                                               if (result.success) {
-                                                console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview for ${selectedZone}`, result);
-                                                console.log(`🔍 START ZLOGIN: Session details:`, result.data);
-                                                
-                                                // FIXED: Force immediate state update and console switch
-                                                setZoneDetails(prev => {
-                                                  console.log(`🔍 ZLOGIN STATE: Updating state - BEFORE:`, {
-                                                    prevZloginSession: prev.zlogin_session?.id,
-                                                    prevActiveZloginSession: prev.active_zlogin_session
-                                                  });
-                                                  
-                                                  const newState = {
-                                                    ...prev,
-                                                    zlogin_session: result.data.session,
-                                                    active_zlogin_session: true
-                                                  };
-                                                  
-                                                  console.log(`🔍 ZLOGIN STATE: Updating state - AFTER:`, {
-                                                    newZloginSession: newState.zlogin_session?.id,
-                                                    newActiveZloginSession: newState.active_zlogin_session
-                                                  });
-                                                  
-                                                  return newState;
-                                                });
-                                                
-                                                // Force immediate console switch with delay to ensure state update
-                                                setTimeout(() => {
-                                                  console.log(`🔧 ZLOGIN SWITCH: Forcing console switch to zlogin for ${selectedZone}`);
-                                                  setActiveConsoleType('zlogin');
-                                                }, 100);
-                                                
+                                                console.log(`✅ START ZLOGIN: Session started, updating UI for ${selectedZone}`);
+                                                // The context now manages the session state, so we just need to refresh the UI
+                                                await refreshZloginSessionStatus(selectedZone);
+                                                setActiveConsoleType('zlogin');
                                               } else {
                                                 console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
                                                 setError(`Failed to start zlogin console: ${result.message}`);
