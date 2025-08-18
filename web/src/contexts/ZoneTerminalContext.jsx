@@ -6,57 +6,19 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import '@xterm/xterm/css/xterm.css';
 import axios from 'axios';
 
-// ⚡ SESSION COOKIE MANAGEMENT - For Backend Session Reuse Optimization
-const generateBrowserFingerprint = () => {
-  let browserFingerprint = localStorage.getItem('browser_id');
-  if (!browserFingerprint) {
-    browserFingerprint = crypto.randomUUID();
-    localStorage.setItem('browser_id', browserFingerprint);
-  }
-  return browserFingerprint;
-};
+// Zone terminals use ZLOGIN sessions (not HOST terminal cookies)
 
-const generateTerminalCookie = (server) => {
-  const browserFingerprint = generateBrowserFingerprint();
-  return `terminal_${server.hostname}_${server.port}_${browserFingerprint}_${Date.now()}`;
-};
-
-const getOrCreateSessionCookie = (server) => {
-  if (!server) return null;
-  
-  const storageKey = `terminal_session_${server.hostname}:${server.port}`;
-  let sessionCookie = localStorage.getItem(storageKey);
-  
-  if (!sessionCookie) {
-    sessionCookie = generateTerminalCookie(server);
-    localStorage.setItem(storageKey, sessionCookie);
-    console.log(`🆕 SESSION COOKIE: Generated new session cookie for ${server.hostname}:${server.port} - ${sessionCookie}`);
-  } else {
-    console.log(`♻️ SESSION COOKIE: Reusing existing session cookie for ${server.hostname}:${server.port} - ${sessionCookie}`);
-  }
-  
-  return sessionCookie;
-};
-
-const clearSessionCookie = (server) => {
-  if (!server) return;
-  
-  const storageKey = `terminal_session_${server.hostname}:${server.port}`;
-  localStorage.removeItem(storageKey);
-  console.log(`🧹 SESSION COOKIE: Cleared session cookie for ${server.hostname}:${server.port}`);
-};
-
-// Optional health check function
-const validateSessionHealth = async (server, terminalCookie) => {
-  if (!server || !terminalCookie) return false;
+// Optional health check function for zlogin sessions
+const validateSessionHealth = async (server, sessionId) => {
+  if (!server || !sessionId) return false;
   
   try {
-    const response = await axios.get(`/api/servers/${server.hostname}/terminal/sessions/${terminalCookie}/health`);
-    const isHealthy = response.data.healthy;
-    console.log(`🏥 HEALTH CHECK: Session ${terminalCookie} health: ${isHealthy}`);
+    const response = await axios.get(`/api/servers/${server.hostname}/zlogin/sessions/${sessionId}`);
+    const isHealthy = response.data.success && response.data.session.status === 'active';
+    console.log(`🏥 ZLOGIN HEALTH CHECK: Session ${sessionId} health: ${isHealthy}`);
     return isHealthy;
   } catch (error) {
-    console.warn(`🏥 HEALTH CHECK: Failed to check session health for ${terminalCookie}:`, error);
+    console.warn(`🏥 ZLOGIN HEALTH CHECK: Failed to check session health for ${sessionId}:`, error);
     return false;
   }
 };
@@ -157,10 +119,10 @@ export const ZoneTerminalProvider = ({ children }) => {
     return null;
   }, []);
 
-  // ⚡ NEW SESSION REUSE LOGIC - Uses Backend Terminal Cookie API
+  // ⚡ ZLOGIN SESSION LOGIC - Uses proper zone login sessions
   const createOrReuseTerminalSession = useCallback(async (server, zoneName) => {
     if (!server || !zoneName) {
-      console.error('🚫 TERMINAL SESSION: Invalid server or zone name');
+      console.error('🚫 ZLOGIN SESSION: Invalid server or zone name');
       return null;
     }
 
@@ -169,56 +131,37 @@ export const ZoneTerminalProvider = ({ children }) => {
 
     // Check if we're already creating a session for this zone
     if (creatingSessionsSet.current.has(zoneKey)) {
-      console.log(`⏳ TERMINAL SESSION: Already creating session for ${zoneKey}`);
+      console.log(`⏳ ZLOGIN SESSION: Already creating session for ${zoneKey}`);
       return null;
     }
 
     // Check if we already have a session for this zone
     if (sessionsMap.current.has(zoneKey)) {
-      console.log(`✅ TERMINAL SESSION: Reusing existing session for ${zoneKey}`);
+      console.log(`✅ ZLOGIN SESSION: Reusing existing session for ${zoneKey}`);
       return sessionsMap.current.get(zoneKey);
     }
 
     creatingSessionsSet.current.add(zoneKey);
 
     try {
-      // Step 1: Get or create terminal cookie for session persistence
-      const terminalCookie = getOrCreateSessionCookie(server);
-      if (!terminalCookie) {
-        console.error(`🚫 TERMINAL SESSION: Failed to generate terminal cookie for ${zoneKey}`);
-        return null;
-      }
+      console.log(`🚀 ZLOGIN SESSION: Starting session for ${zoneKey}`);
 
-      console.log(`🚀 TERMINAL SESSION: Starting session with cookie ${terminalCookie} for ${zoneKey}`);
-
-      // Step 2: Call new backend API with terminal_cookie
-      const response = await axios.post(`/api/servers/${server.hostname}/terminal/start`, {
-        terminal_cookie: terminalCookie,
-        zone_name: zoneName
-      });
+      // Call correct ZLOGIN endpoint for zone terminal access
+      const response = await axios.post(`/api/servers/${server.hostname}/zones/${zoneName}/zlogin/start`);
 
       if (!response.data.success) {
-        console.error(`❌ TERMINAL SESSION: Backend failed to start session for ${zoneKey}:`, response.data.error);
-        
-        // Clear cached session cookie on error to force retry
-        clearSessionCookie(server);
+        console.error(`❌ ZLOGIN SESSION: Backend failed to start session for ${zoneKey}:`, response.data.error);
         return null;
       }
 
-      // Handle double-nested response structure from backend
-      const sessionData = response.data.data?.data || response.data.data;
-      console.log(`🔍 TERMINAL SESSION: Parsed session data for ${zoneKey}:`, {
+      // Handle response structure from backend
+      const sessionData = response.data.session || response.data.data;
+      console.log(`🔍 ZLOGIN SESSION: Parsed session data for ${zoneKey}:`, {
         websocket_url: sessionData.websocket_url,
-        id: sessionData.id,
-        reused: sessionData.reused
+        id: sessionData.id
       });
       
-      // Step 3: Log performance tracking
-      if (sessionData.reused) {
-        console.log(`⚡ TERMINAL REUSE: Session ${terminalCookie} reused for ${zoneKey} (INSTANT ~200ms)`);
-      } else {
-        console.log(`🆕 TERMINAL CREATE: New session ${terminalCookie} created for ${zoneKey} (~2s)`);
-      }
+      console.log(`🆕 ZLOGIN CREATE: New session created for ${zoneKey}`);
 
       // Step 4: Display buffer content if available (reconnection context)
       if (sessionData.buffer && sessionData.buffer.trim()) {
@@ -592,69 +535,71 @@ export const ZoneTerminalProvider = ({ children }) => {
     }
   }, [getZoneKey, currentServer, term]);
 
-  // ⚡ SESSION MANAGEMENT UTILITIES
-  const clearAllSessionCookies = useCallback(() => {
-    console.log('🧹 SESSION MANAGEMENT: Clearing all session cookies');
-    Object.keys(localStorage)
-      .filter(key => key.startsWith('terminal_session_'))
-      .forEach(key => {
-        console.log(`🧹 SESSION MANAGEMENT: Removing ${key}`);
-        localStorage.removeItem(key);
-      });
+  // ⚡ ZLOGIN SESSION MANAGEMENT UTILITIES
+  const clearAllZoneSessions = useCallback(() => {
+    console.log('🧹 ZLOGIN SESSION MANAGEMENT: Clearing all zone sessions');
     
-    // Also clear browser fingerprint to force complete refresh
-    localStorage.removeItem('browser_id');
-    console.log('🧹 SESSION MANAGEMENT: Cleared browser fingerprint');
+    // Clear all cached sessions for all zones
+    sessionsMap.current.clear();
+    
+    // Close all WebSockets
+    websocketsMap.current.forEach((ws, zoneKey) => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log(`🔗 ZLOGIN SESSION MANAGEMENT: Closing WebSocket for ${zoneKey}`);
+        ws.close();
+      }
+    });
+    websocketsMap.current.clear();
+    
+    console.log('🧹 ZLOGIN SESSION MANAGEMENT: All zone sessions cleared');
   }, []);
 
-  const getSessionInfo = useCallback((server) => {
-    if (!server) return null;
+  const getZoneSessionInfo = useCallback((server, zoneName) => {
+    if (!server || !zoneName) return null;
     
-    const terminalCookie = getOrCreateSessionCookie(server);
-    const storageKey = `terminal_session_${server.hostname}:${server.port}`;
+    const zoneKey = getZoneKey(server, zoneName);
+    const sessionData = sessionsMap.current.get(zoneKey);
     
     return {
-      terminalCookie,
-      hasSession: !!localStorage.getItem(storageKey),
-      server: `${server.hostname}:${server.port}`
+      hasSession: !!sessionData,
+      sessionId: sessionData?.id || null,
+      status: sessionData?.status || null,
+      server: `${server.hostname}:${server.port}`,
+      zone: zoneName
     };
-  }, []);
+  }, [getZoneKey]);
 
-  const forceSessionRefresh = useCallback((server) => {
-    if (!server) return;
+  const forceZoneSessionRefresh = useCallback((server, zoneName) => {
+    if (!server || !zoneName) return;
     
-    console.log(`🔄 SESSION REFRESH: Forcing session refresh for ${server.hostname}:${server.port}`);
-    clearSessionCookie(server);
+    const zoneKey = getZoneKey(server, zoneName);
+    console.log(`🔄 ZLOGIN SESSION REFRESH: Forcing session refresh for ${zoneKey}`);
     
-    // Clear any existing session data from maps
-    const serverPattern = `${server.hostname}:${server.port}:`;
-    
-    // Find and clear all sessions for this server
-    for (const [zoneKey, sessionData] of sessionsMap.current.entries()) {
-      if (zoneKey.startsWith(serverPattern)) {
-        console.log(`🧹 SESSION REFRESH: Clearing cached session for ${zoneKey}`);
-        sessionsMap.current.delete(zoneKey);
-        
-        // Close WebSocket if exists
-        const ws = websocketsMap.current.get(zoneKey);
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
-        websocketsMap.current.delete(zoneKey);
+    // Clear the specific zone session
+    const sessionData = sessionsMap.current.get(zoneKey);
+    if (sessionData) {
+      console.log(`🧹 ZLOGIN SESSION REFRESH: Clearing cached session for ${zoneKey}`);
+      sessionsMap.current.delete(zoneKey);
+      
+      // Close WebSocket if exists
+      const ws = websocketsMap.current.get(zoneKey);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close();
       }
+      websocketsMap.current.delete(zoneKey);
     }
-  }, []);
+  }, [getZoneKey]);
 
   const value = React.useMemo(() => ({
     term,
     attachTerminal,
     resizeTerminal,
-    // Session management utilities
-    clearAllSessionCookies,
-    getSessionInfo,
-    forceSessionRefresh,
-    validateSessionHealth: (server, terminalCookie) => validateSessionHealth(server, terminalCookie)
-  }), [term, attachTerminal, resizeTerminal, clearAllSessionCookies, getSessionInfo, forceSessionRefresh]);
+    // Zone session management utilities
+    clearAllZoneSessions,
+    getZoneSessionInfo,
+    forceZoneSessionRefresh,
+    validateSessionHealth: (server, sessionId) => validateSessionHealth(server, sessionId)
+  }), [term, attachTerminal, resizeTerminal, clearAllZoneSessions, getZoneSessionInfo, forceZoneSessionRefresh]);
 
   return (
     <ZoneTerminalContext.Provider value={value}>
