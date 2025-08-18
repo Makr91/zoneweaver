@@ -2000,7 +2000,7 @@ const Zones = () => {
                                               
                                               if (result.success) {
                                                 console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview for ${selectedZone}`, result);
-                                                console.log(`🔍 START ZLOGIN: Session details:`, result.session);
+                                                console.log(`🔍 START ZLOGIN: Session details:`, result.data);
                                                 
                                                 // FIXED: Force immediate state update and console switch
                                                 setZoneDetails(prev => {
@@ -2423,22 +2423,55 @@ const Zones = () => {
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
                 {/* Switch to VNC Console Button - Modal (second position for consistency) */}
-                {zoneDetails.active_vnc_session && (
-                  <button 
-                    className='button is-small is-warning'
-                    onClick={() => {
+                <button 
+                  className='button is-small is-warning'
+                  onClick={async () => {
+                    if (zoneDetails.active_vnc_session) {
+                      // VNC already active - just switch to VNC modal
                       setShowZloginConsole(false);
                       setTimeout(() => handleVncConsole(selectedZone), 100);
-                    }}
-                    title="Switch to VNC Console"
-                    style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                  >
-                    <span className='icon is-small'>
-                      <i className='fas fa-desktop'></i>
-                    </span>
-                    <span>VNC</span>
-                  </button>
-                )}
+                    } else {
+                      // Start VNC session then switch to VNC modal
+                      console.log(`🚀 MODAL START VNC: Starting VNC session from zlogin modal for ${selectedZone}`);
+                      setShowZloginConsole(false);
+                      try {
+                        setLoadingVnc(true);
+                        const result = await startVncSession(
+                          currentServer.hostname,
+                          currentServer.port,
+                          currentServer.protocol,
+                          selectedZone
+                        );
+                        
+                        if (result.success) {
+                          console.log(`✅ MODAL START VNC: VNC session started, switching to VNC modal`);
+                          setZoneDetails(prev => ({
+                            ...prev,
+                            active_vnc_session: true,
+                            vnc_session_info: result.data
+                          }));
+                          setTimeout(() => handleVncConsole(selectedZone), 100);
+                        } else {
+                          console.error(`❌ MODAL START VNC: Failed to start VNC session:`, result.message);
+                          setError(`Failed to start VNC console: ${result.message}`);
+                        }
+                      } catch (error) {
+                        console.error('💥 MODAL START VNC: Error starting VNC session:', error);
+                        setError(`Error starting VNC console`);
+                      } finally {
+                        setLoadingVnc(false);
+                      }
+                    }
+                  }}
+                  disabled={loadingVnc}
+                  title={zoneDetails.active_vnc_session ? "Switch to VNC Console" : "Start VNC Console"}
+                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                >
+                  <span className='icon is-small'>
+                    <i className={`fas ${loadingVnc ? 'fa-spinner fa-pulse' : 'fa-desktop'}`}></i>
+                  </span>
+                  <span>{loadingVnc ? 'Starting...' : 'VNC'}</span>
+                </button>
                 <button 
                   className='button is-small is-info'
                   onClick={openZloginFullScreen}
@@ -2562,22 +2595,55 @@ const Zones = () => {
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
                 {/* Switch to zlogin Console Button - Modal */}
-                {zoneDetails.zlogin_session && (
-                  <button 
-                    className='button is-small is-warning'
-                    onClick={() => {
+                <button 
+                  className='button is-small is-warning'
+                  onClick={async () => {
+                    if (zoneDetails.zlogin_session) {
+                      // zlogin already active - just switch to zlogin modal
                       closeVncConsole();
                       setTimeout(() => setShowZloginConsole(true), 100);
-                    }}
-                    title="Switch to zlogin Console"
-                    style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
-                  >
-                    <span className='icon is-small'>
-                      <i className='fas fa-terminal'></i>
-                    </span>
-                    <span>zlogin</span>
-                  </button>
-                )}
+                    } else {
+                      // Start zlogin session then switch to zlogin modal
+                      console.log(`🚀 MODAL START ZLOGIN: Starting zlogin session from VNC modal for ${selectedZone}`);
+                      closeVncConsole();
+                      try {
+                        setLoading(true);
+                        const result = await startZloginSession(
+                          currentServer.hostname,
+                          currentServer.port,
+                          currentServer.protocol,
+                          selectedZone
+                        );
+                        
+                        if (result.success) {
+                          console.log(`✅ MODAL START ZLOGIN: zlogin session started, switching to zlogin modal`);
+                          setZoneDetails(prev => ({
+                            ...prev,
+                            zlogin_session: result.data,
+                            active_zlogin_session: true
+                          }));
+                          setTimeout(() => setShowZloginConsole(true), 100);
+                        } else {
+                          console.error(`❌ MODAL START ZLOGIN: Failed to start zlogin session:`, result.message);
+                          setError(`Failed to start zlogin console: ${result.message}`);
+                        }
+                      } catch (error) {
+                        console.error('💥 MODAL START ZLOGIN: Error starting zlogin session:', error);
+                        setError(`Error starting zlogin console`);
+                      } finally {
+                        setLoading(false);
+                      }
+                    }
+                  }}
+                  disabled={loading}
+                  title={zoneDetails.zlogin_session ? "Switch to zlogin Console" : "Start zlogin Console"}
+                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                >
+                  <span className='icon is-small'>
+                    <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
+                  </span>
+                  <span>{loading ? 'Starting...' : 'zlogin'}</span>
+                </button>
                 <button 
                   className='button is-small is-info'
                   onClick={openVncFullScreen}
