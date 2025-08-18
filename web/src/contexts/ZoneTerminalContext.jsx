@@ -188,6 +188,59 @@ export const ZoneTerminalProvider = ({ children }) => {
       console.log(`🔗 TERMINAL SESSION: Connecting WebSocket to ${wsUrl}`);
       const ws = new WebSocket(wsUrl);
 
+      // 🔧 SMART MESSAGE HANDLER: Safe from duplication
+      const createSafeMessageHandler = (zoneKey, sessionId) => {
+        return (event) => {
+          console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey} (SESSION-CREATED WS)`, {
+            sessionId: sessionId,
+            dataType: typeof event.data,
+            isBlob: event.data instanceof Blob,
+            dataLength: event.data.length || (event.data.size || 'unknown'),
+            timestamp: new Date().toISOString()
+          });
+
+          const terminal = terminalsMap.current.get(zoneKey);
+          if (terminal) {
+            console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message (SESSION-CREATED WS)`);
+            
+            if (event.data instanceof Blob) {
+              console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey} (SESSION-CREATED WS)`);
+              event.data.text().then(text => {
+                console.log(`📝 ZONE TERMINAL: Blob converted to text for ${zoneKey}:`, {
+                  textLength: text.length,
+                  textPreview: text.substring(0, 100)
+                });
+                try {
+                  terminal.write(text);
+                  console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey} (SESSION-CREATED WS)`);
+                } catch (error) {
+                  console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
+                }
+              }).catch(error => {
+                console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
+              });
+            } else {
+              console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey} (SESSION-CREATED WS):`, {
+                dataLength: event.data.length,
+                dataPreview: event.data.substring(0, 100)
+              });
+              try {
+                terminal.write(event.data);
+                console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey} (SESSION-CREATED WS)`);
+              } catch (error) {
+                console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
+              }
+            }
+          } else {
+            console.warn(`⚠️ ZONE TERMINAL: No terminal found for ${zoneKey} - message will be processed when terminal attaches (SESSION-CREATED WS)`, {
+              sessionId: sessionId,
+              dataPreview: event.data.substring ? event.data.substring(0, 50) : '[Blob data]'
+            });
+            // Don't write to terminal yet - it will be handled when terminal attaches
+          }
+        };
+      };
+
       ws.onopen = () => {
         console.log(`🔗 ZONE TERMINAL: WebSocket connected for ${zoneKey}:`, sessionData.id, {
           readyState: ws.readyState,
@@ -198,8 +251,9 @@ export const ZoneTerminalProvider = ({ children }) => {
         });
       };
 
-      // 🔧 FIX DOUBLE OUTPUT: No message handler here - will be attached in attachTerminal()
-      console.log(`📨 ZONE TERMINAL: WebSocket created without message handler (will be attached in attachTerminal) for ${zoneKey}`);
+      // 🔧 ATTACH MESSAGE HANDLER: Always attach when WebSocket is created
+      ws.onmessage = createSafeMessageHandler(zoneKey, sessionData.id);
+      console.log(`📨 ZONE TERMINAL: Message handler attached to WebSocket at creation for ${zoneKey}`);
 
       ws.onclose = (event) => {
         console.log(`🔗 ZONE TERMINAL: WebSocket closed for ${zoneKey}:`, sessionData.id, {
@@ -378,69 +432,12 @@ export const ZoneTerminalProvider = ({ children }) => {
               existingSessionId: existingWsSessionId,
               wsReadyState: existingWs.readyState,
               wsUrl: existingWs.url,
-              sessionMatch: true
+              sessionMatch: true,
+              hasExistingHandler: !!existingWs.onmessage
             });
             
-            // 🔧 CRITICAL FIX: Update message handler for reused WebSocket to point to NEW terminal
-            const handleZoneMessage = (event) => {
-              console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey} (REUSED WS)`, {
-                sessionId: sessionData.id,
-                dataType: typeof event.data,
-                isBlob: event.data instanceof Blob,
-                dataLength: event.data.length || (event.data.size || 'unknown'),
-                timestamp: new Date().toISOString()
-              });
-
-              const terminal = terminalsMap.current.get(zoneKey);
-              if (terminal) {
-                console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message (REUSED WS)`);
-                
-                if (event.data instanceof Blob) {
-                  console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey} (REUSED WS)`);
-                  event.data.text().then(text => {
-                    console.log(`📝 ZONE TERMINAL: Blob converted to text for ${zoneKey}:`, {
-                      textLength: text.length,
-                      textPreview: text.substring(0, 100),
-                      textContent: text
-                    });
-                    try {
-                      terminal.write(text);
-                      console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey} (REUSED WS)`);
-                    } catch (error) {
-                      console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
-                    }
-                  }).catch(error => {
-                    console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
-                  });
-                } else {
-                  console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey} (REUSED WS):`, {
-                    dataLength: event.data.length,
-                    dataPreview: event.data.substring(0, 100),
-                    dataContent: event.data
-                  });
-                  try {
-                    terminal.write(event.data);
-                    console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey} (REUSED WS)`);
-                  } catch (error) {
-                    console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
-                  }
-                }
-              } else {
-                console.error(`❌ ZONE TERMINAL: Cannot write to terminal for ${zoneKey} - terminal not found! (REUSED WS)`, {
-                  sessionId: sessionData.id,
-                  dataLost: event.data.substring ? event.data.substring(0, 100) : '[Blob data]',
-                  availableTerminals: Array.from(terminalsMap.current.keys())
-                });
-              }
-            };
-            
-            // 🔧 CRITICAL: Re-attach message handler to reused WebSocket
-            existingWs.onmessage = handleZoneMessage;
-            console.log(`🔄 ZONE TERMINAL: Message handler re-attached to reused WebSocket for ${zoneKey}`, {
-              sessionId: sessionData.id,
-              handlerAttached: !!existingWs.onmessage,
-              timestamp: new Date().toISOString()
-            });
+            // 🔧 FIX DOUBLE OUTPUT: Don't replace message handler - it already exists and works
+            console.log(`📨 ZONE TERMINAL: WebSocket already has message handler, no need to replace for ${zoneKey}`);
 
             // 🔌 IMMEDIATE INPUT CONNECTION for reused WebSocket (already OPEN)
             if (!readOnly) {
