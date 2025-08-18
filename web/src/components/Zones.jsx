@@ -47,6 +47,7 @@ const Zones = () => {
   const [activeConsoleType, setActiveConsoleType] = useState('vnc'); // 'vnc' or 'zlogin'
   const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
   const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
+  const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
   
   const { user } = useAuth();
   const { 
@@ -1682,6 +1683,11 @@ const Zones = () => {
                                       <div className='buttons' style={{margin: 0}}>
                                         <VncActionsDropdown
                                           variant="button"
+                                          onToggleViewOnly={() => {
+                                            // Toggle view-only mode for preview VNC (not modal)
+                                            console.log(`Toggling preview VNC view-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
+                                            setPreviewVncViewOnly(!previewVncViewOnly);
+                                          }}
                                           onScreenshot={() => {
                                             // Proper screenshot implementation
                                             const vncContainer = document.querySelector('.vnc-viewer-react canvas');
@@ -1700,6 +1706,8 @@ const Zones = () => {
                                           }}
                                           onNewTab={() => handleVncConsole(selectedZone, true)}
                                           onKillSession={() => handleKillVncSession(selectedZone)}
+                                          isViewOnly={previewVncViewOnly}
+                                          isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
                                         <button 
@@ -1744,13 +1752,13 @@ const Zones = () => {
                                       }}
                                     >
                                       {zoneDetails.vnc_session_info ? (
-                                        // Active session - show live preview in read-only mode using VncViewer
+                                        // Active session - show live preview with toggleable view-only mode
                                         <VncViewerReact
                                           serverHostname={currentServer.hostname}
                                           serverPort={currentServer.port}
                                           serverProtocol={currentServer.protocol}
                                           zoneName={selectedZone}
-                                          viewOnly={true}
+                                          viewOnly={previewVncViewOnly}
                                           autoConnect={true}
                                           showControls={false}
                                           style={{ width: '100%', height: '100%' }}

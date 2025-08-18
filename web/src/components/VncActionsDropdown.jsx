@@ -6,6 +6,9 @@ const VncActionsDropdown = ({
   onFullScreen, 
   onNewTab,
   onKillSession,
+  onToggleViewOnly,
+  isViewOnly = true,
+  isAdmin = false,
   className = '',
   variant = 'default' // 'default' or 'button'
 }) => {
@@ -137,6 +140,18 @@ const VncActionsDropdown = ({
         <span>Actions</span>
       </div>
       <hr className="dropdown-divider" />
+      
+      {onToggleViewOnly && (
+        <a className="dropdown-item" onClick={() => {
+          onToggleViewOnly();
+          setIsActive(false);
+        }}>
+          <span className="icon is-small mr-2">
+            <i className={`fas ${isViewOnly ? 'fa-unlock' : 'fa-lock'}`}></i>
+          </span>
+          <span>{isViewOnly ? 'Enable Interaction' : 'Set View-Only Mode'}</span>
+        </a>
+      )}
       
       <a className="dropdown-item" onClick={handleScreenshot}>
         <span className="icon is-small mr-2">
