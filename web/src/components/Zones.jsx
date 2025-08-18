@@ -2011,7 +2011,7 @@ const Zones = () => {
                                                   
                                                   const newState = {
                                                     ...prev,
-                                                    zlogin_session: result.session,
+                                                    zlogin_session: result.data.session,
                                                     active_zlogin_session: true
                                                   };
                                                   
