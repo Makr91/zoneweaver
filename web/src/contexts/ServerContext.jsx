@@ -533,7 +533,17 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Zlogin start result
    */
   const startZloginSession = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/zlogin/start`, 'POST');
+    // Use specific handler (like HOST terminal) instead of general proxy to get websocket_url
+    try {
+      const response = await axios.post(`/api/servers/${hostname}:${port}/zones/${zoneName}/zlogin/start`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Start zlogin session error:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Failed to start zlogin session' 
+      };
+    }
   };
 
   /**
