@@ -415,6 +415,68 @@ export const ZoneTerminalProvider = ({ children }) => {
               wsReadyState: existingWs.readyState,
               wsUrl: existingWs.url
             });
+            
+            // 🔧 CRITICAL FIX: Update message handler for reused WebSocket to point to NEW terminal
+            const handleZoneMessage = (event) => {
+              console.log(`📨 ZONE TERMINAL: WebSocket message received for ${zoneKey} (REUSED WS)`, {
+                sessionId: sessionData.id,
+                dataType: typeof event.data,
+                isBlob: event.data instanceof Blob,
+                dataLength: event.data.length || (event.data.size || 'unknown'),
+                timestamp: new Date().toISOString()
+              });
+
+              const terminal = terminalsMap.current.get(zoneKey);
+              if (terminal) {
+                console.log(`✅ ZONE TERMINAL: Terminal exists for ${zoneKey}, processing message (REUSED WS)`);
+                
+                if (event.data instanceof Blob) {
+                  console.log(`📄 ZONE TERMINAL: Processing Blob data for ${zoneKey} (REUSED WS)`);
+                  event.data.text().then(text => {
+                    console.log(`📝 ZONE TERMINAL: Blob converted to text for ${zoneKey}:`, {
+                      textLength: text.length,
+                      textPreview: text.substring(0, 100),
+                      textContent: text
+                    });
+                    try {
+                      terminal.write(text);
+                      console.log(`✅ ZONE TERMINAL: Successfully wrote Blob text to terminal for ${zoneKey} (REUSED WS)`);
+                    } catch (error) {
+                      console.error(`❌ ZONE TERMINAL: Error writing Blob text to terminal for ${zoneKey}:`, error);
+                    }
+                  }).catch(error => {
+                    console.error(`❌ ZONE TERMINAL: Error converting Blob to text for ${zoneKey}:`, error);
+                  });
+                } else {
+                  console.log(`📝 ZONE TERMINAL: Processing string data for ${zoneKey} (REUSED WS):`, {
+                    dataLength: event.data.length,
+                    dataPreview: event.data.substring(0, 100),
+                    dataContent: event.data
+                  });
+                  try {
+                    terminal.write(event.data);
+                    console.log(`✅ ZONE TERMINAL: Successfully wrote string data to terminal for ${zoneKey} (REUSED WS)`);
+                  } catch (error) {
+                    console.error(`❌ ZONE TERMINAL: Error writing string data to terminal for ${zoneKey}:`, error);
+                  }
+                }
+              } else {
+                console.error(`❌ ZONE TERMINAL: Cannot write to terminal for ${zoneKey} - terminal not found! (REUSED WS)`, {
+                  sessionId: sessionData.id,
+                  dataLost: event.data.substring ? event.data.substring(0, 100) : '[Blob data]',
+                  availableTerminals: Array.from(terminalsMap.current.keys())
+                });
+              }
+            };
+            
+            // 🔧 CRITICAL: Re-attach message handler to reused WebSocket
+            existingWs.onmessage = handleZoneMessage;
+            console.log(`🔄 ZONE TERMINAL: Message handler re-attached to reused WebSocket for ${zoneKey}`, {
+              sessionId: sessionData.id,
+              handlerAttached: !!existingWs.onmessage,
+              timestamp: new Date().toISOString()
+            });
+            
           } else {
             console.log(`🔗 ZONE TERMINAL: Creating new WebSocket for session: ${sessionData.websocket_url}`, {
               sessionId: sessionData.id,
