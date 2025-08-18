@@ -132,9 +132,6 @@ export const ZoneTerminalProvider = ({ children }) => {
 
     if (sessionData && ws) {
       console.log(`✅ ZONE ATTACH: Connecting UI to existing session for ${zoneKey}`);
-       if (readOnly) {
-        newTerm.write('\r\n\x1b[33m[READ-ONLY MODE - Console output only]\x1b[0m\r\n');
-      }
       if (sessionData.buffer) {
         newTerm.write(sessionData.buffer);
       }
