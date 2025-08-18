@@ -712,10 +712,17 @@ const Zones = () => {
     }
   }, [currentZone, currentServer]);
 
-  // Auto-select console type based on what's available - STABILIZED to prevent infinite loops
+  // Auto-select console type based on what's available - FIXED to respect manual switching
   useEffect(() => {
     const hasVnc = zoneDetails.active_vnc_session;
     const hasZlogin = zoneDetails.zlogin_session;
+    
+    console.log(`🔧 CONSOLE AUTO-SWITCH CHECK:`, {
+      hasVnc,
+      hasZlogin, 
+      currentType: activeConsoleType,
+      zloginSessionId: zoneDetails.zlogin_session?.id
+    });
     
     // LOOP PREVENTION: Only change console type if there's a meaningful difference
     // This prevents VNC disconnect -> console switch -> remount -> VNC disconnect loops
@@ -726,12 +733,12 @@ const Zones = () => {
         console.log('🔧 CONSOLE SWITCH: Both sessions available, defaulting to VNC');
         setActiveConsoleType('vnc');
       }
-    } else if (hasZlogin && activeConsoleType !== 'zlogin') {
-      // Only zlogin available and not already selected
+    } else if (hasZlogin && !hasVnc) {
+      // Only zlogin available - ALWAYS switch to zlogin (don't check current type)
       console.log('🔧 CONSOLE SWITCH: Only zlogin available, switching to zlogin');
       setActiveConsoleType('zlogin');
-    } else if (hasVnc && activeConsoleType !== 'vnc') {
-      // Only VNC available and not already selected  
+    } else if (hasVnc && !hasZlogin) {
+      // Only VNC available - ALWAYS switch to VNC (don't check current type)
       console.log('🔧 CONSOLE SWITCH: Only VNC available, switching to VNC');
       setActiveConsoleType('vnc');
     } else if (!hasVnc && !hasZlogin && activeConsoleType !== 'vnc') {
@@ -1778,7 +1785,8 @@ const Zones = () => {
                                                     zlogin_session: result.session,
                                                     active_zlogin_session: true
                                                   }));
-                                                  // Console will auto-switch to zlogin via useEffect
+                                                  // FIXED: Force immediate console switch to zlogin
+                                                  setActiveConsoleType('zlogin');
                                                 } else {
                                                   console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
                                                   setError(`Failed to start zlogin console: ${result.message}`);
@@ -1924,7 +1932,7 @@ const Zones = () => {
                                       <div className='buttons' style={{margin: 0}}>
                                         {/* Start VNC Button - Preview only */}
                                         <button 
-                                          className='button is-small is-warning'
+                                          className='button is-small is-info'
                                           onClick={async () => {
                                             console.log(`🚀 START VNC: Starting VNC session for preview in ${selectedZone}`);
                                             try {
@@ -1968,7 +1976,7 @@ const Zones = () => {
                                         </button>
                                         {/* Start zlogin Button - Preview only */}
                                         <button 
-                                          className='button is-small is-warning'
+                                          className='button is-small is-success'
                                           onClick={async () => {
                                             console.log(`🚀 START ZLOGIN: Starting zlogin session for preview in ${selectedZone}`);
                                             try {
@@ -1988,7 +1996,7 @@ const Zones = () => {
                                                   zlogin_session: result.session,
                                                   active_zlogin_session: true
                                                 }));
-                                                // Force console type switch to zlogin
+                                                // FIXED: Force immediate console switch to zlogin
                                                 setActiveConsoleType('zlogin');
                                               } else {
                                                 console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
