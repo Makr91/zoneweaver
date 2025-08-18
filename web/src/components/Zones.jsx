@@ -45,6 +45,7 @@ const Zones = () => {
   const [storagePools, setStoragePools] = useState([]);
   const [storageDatasets, setStorageDatasets] = useState([]);
   const [activeConsoleType, setActiveConsoleType] = useState('vnc'); // 'vnc' or 'zlogin'
+  const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
   
   const { user } = useAuth();
   const { 
@@ -1309,9 +1310,9 @@ const Zones = () => {
                                         <ZloginActionsDropdown
                                           variant="button"
                                           onToggleReadOnly={() => {
-                                            // Toggle read-only mode for ZoneShell - switch to interactive mode
-                                            console.log('Toggling zlogin from read-only to interactive mode');
-                                            handleZloginConsole(selectedZone); // Open interactive modal
+                                            // Toggle read-only mode for preview ZoneShell (not modal)
+                                            console.log(`Toggling preview read-only mode from ${previewReadOnly} to ${!previewReadOnly}`);
+                                            setPreviewReadOnly(!previewReadOnly);
                                           }}
                                           onNewSession={() => handleZloginConsole(selectedZone)}
                                           onKillSession={async () => {
@@ -1433,7 +1434,7 @@ const Zones = () => {
                                     >
                                       <ZoneShell 
                                         zoneName={selectedZone} 
-                                        readOnly={true}
+                                        readOnly={previewReadOnly}
                                         context="preview"
                                         style={{
                                           height: '100%',
