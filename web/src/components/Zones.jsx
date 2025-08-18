@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -604,11 +604,14 @@ const Zones = () => {
     // IMPORTANT: Removed activeConsoleType from dependency array to prevent circular updates
   }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session]);
 
+  // Previous state tracking to fix infinite loop
+  const prevShowZloginConsole = useRef(showZloginConsole);
+  
   // Handle modal close reconnection - Fix for preview terminal going black after modal closes
   useEffect(() => {
-    // When zlogin modal closes and we should be showing zlogin preview
-    if (!showZloginConsole && activeConsoleType === 'zlogin' && zoneDetails.zlogin_session && selectedZone) {
-      console.log('🔄 MODAL CLOSE: zlogin modal closed, reconnecting preview terminal');
+    // Only trigger when modal JUST closed (state transition from true to false)
+    if (prevShowZloginConsole.current && !showZloginConsole && activeConsoleType === 'zlogin' && zoneDetails.zlogin_session && selectedZone) {
+      console.log('🔄 MODAL CLOSE: zlogin modal just closed, reconnecting preview terminal');
       
       // Force preview terminal reconnection by incrementing the reconnect key
       // This will trigger a fresh ZoneShell component mount
@@ -617,6 +620,9 @@ const Zones = () => {
         console.log('🔄 MODAL CLOSE: Preview terminal reconnection triggered');
       }, 100); // Small delay to ensure modal cleanup is complete
     }
+    
+    // Update previous state for next comparison
+    prevShowZloginConsole.current = showZloginConsole;
   }, [showZloginConsole, activeConsoleType, zoneDetails.zlogin_session, selectedZone]);
 
   const getZoneStatus = (zoneName) => {
