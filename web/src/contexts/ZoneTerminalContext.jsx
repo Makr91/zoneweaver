@@ -774,9 +774,30 @@ export const ZoneTerminalProvider = ({ children }) => {
         modeDeleted,
         contextDeleted
       });
+
+      // 🔥 CRITICAL FIX: Dispose and clear the actual terminal instance
+      const terminal = terminalsMap.current.get(zoneKey);
+      if (terminal) {
+        try {
+          console.log(`🗑️ ZLOGIN CLEANUP: Disposing terminal instance for ${zoneKey}`);
+          terminal.dispose();
+          console.log(`✅ ZLOGIN CLEANUP: Terminal disposed for ${zoneKey}`);
+        } catch (termDisposeError) {
+          console.warn(`⚠️ ZLOGIN CLEANUP: Error disposing terminal for ${zoneKey}:`, termDisposeError);
+        }
+      } else {
+        console.log(`ℹ️ ZLOGIN CLEANUP: No terminal instance found for ${zoneKey}`);
+      }
+
+      // 🧹 FORCE DELETE: Always remove terminal from maps
+      const terminalDeleted = terminalsMap.current.delete(zoneKey);
+      const fitAddonDeleted = fitAddonsMap.current.delete(zoneKey);
+      console.log(`🗑️ ZLOGIN CLEANUP: Terminal ${terminalDeleted ? 'removed' : 'not found'} from map for ${zoneKey}`);
+      console.log(`🗑️ ZLOGIN CLEANUP: Fit addon ${fitAddonDeleted ? 'removed' : 'not found'} from map for ${zoneKey}`);
       
       // 🔍 Verification: Check that everything is actually cleared
       const verificationCheck = {
+        terminalExists: terminalsMap.current.has(zoneKey),
         websocketExists: websocketsMap.current.has(zoneKey),
         sessionExists: sessionsMap.current.has(zoneKey),
         promptExists: initialPromptSentSet.current.has(zoneKey),
@@ -787,7 +808,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       
       console.log(`🔍 ZLOGIN CLEANUP: Verification check for ${zoneKey}:`, verificationCheck);
       
-      if (verificationCheck.websocketExists || verificationCheck.sessionExists) {
+      if (verificationCheck.terminalExists || verificationCheck.websocketExists || verificationCheck.sessionExists) {
         console.error(`🚨 ZLOGIN CLEANUP: CLEANUP FAILED - Some data still exists for ${zoneKey}:`, verificationCheck);
         throw new Error(`Cleanup verification failed - data still exists`);
       }
@@ -810,6 +831,8 @@ export const ZoneTerminalProvider = ({ children }) => {
       
       // 🚨 FALLBACK CLEANUP: Force clear everything even on error
       console.log(`🚨 ZLOGIN CLEANUP: Executing fallback cleanup for ${zoneKey}`);
+      terminalsMap.current.delete(zoneKey);
+      fitAddonsMap.current.delete(zoneKey);
       websocketsMap.current.delete(zoneKey);
       sessionsMap.current.delete(zoneKey);
       initialPromptSentSet.current.delete(zoneKey);
