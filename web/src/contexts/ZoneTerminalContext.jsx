@@ -309,80 +309,34 @@ export const ZoneTerminalProvider = ({ children }) => {
       return () => {};
     }
 
-    // Check if we already have a terminal for this zone
+    // COMPLETELY DISABLED: All terminal reuse - always create fresh terminals
+    // Check if we already have a terminal for this zone and dispose it
     if (terminalsMap.current.has(zoneKey)) {
       const existingMode = terminalModesMap.current.get(zoneKey);
       const existingContext = terminalContextsMap.current.get(zoneKey);
       
-      // Smart context detection - check if we're switching contexts
-      const isContextSwitch = existingContext && existingContext !== context;
-      const isModeChange = existingMode !== readOnly;
+      console.log(`🚀 ZONE TERMINAL: Always creating fresh terminal UI (preserving WebSocket/session) for ${zoneKey}`);
+      console.log(`🔄 ZONE TERMINAL: Previous context: ${existingContext} -> ${context}, Mode: ${existingMode} -> ${readOnly}`);
       
-      if (isContextSwitch) {
-        console.log(`🔄 ZONE TERMINAL: Context switch detected for ${zoneKey} (${existingContext} -> ${context}), forcing fresh terminal`);
-      } else if (isModeChange) {
-        console.log(`🔄 ZONE TERMINAL: ReadOnly mode changed for ${zoneKey} (${existingMode} -> ${readOnly}), creating new terminal`);
-      }
-      
-      // DISABLED: Terminal reuse for context switches (fixes DOM reattachment issues)
-      // Always create fresh terminal UI for context switches or mode changes
-      if (isContextSwitch || isModeChange) {
-        console.log(`🚀 ZONE TERMINAL: Creating fresh terminal UI (preserving WebSocket/session) for ${zoneKey}`);
-        // Fall through to create new terminal - WebSocket/session will be reused automatically
-      } else {
-        // Same context and same mode - can safely reuse (rare case, mostly for rapid re-renders)
-        console.log(`♻️ ZONE TERMINAL: Reusing existing terminal for ${zoneKey} (same context: ${context}, same mode: ${readOnly})`);
-        const existingTerminal = terminalsMap.current.get(zoneKey);
-        const existingFitAddon = fitAddonsMap.current.get(zoneKey);
-        
-        // Re-attach existing terminal to new DOM element
-        try {
-          existingTerminal.open(terminalRef.current);
-          if (existingFitAddon) {
-            setTimeout(() => existingFitAddon.fit(), 100);
-          }
-          
-          // Update context (same terminal, potentially different DOM location)
-          terminalContextsMap.current.set(zoneKey, context);
-          
-          // Update global state if this is the current zone
-          setTerm(existingTerminal);
-          
-          return () => {
-            // Don't dispose on cleanup for reused terminals, just remove from DOM
-            try {
-              if (existingTerminal.element && existingTerminal.element.parentNode) {
-                existingTerminal.element.parentNode.removeChild(existingTerminal.element);
-              }
-            } catch (error) {
-              console.warn(`Error detaching terminal for ${zoneKey}:`, error);
-            }
-          };
-        } catch (error) {
-          console.error(`🚨 ZONE TERMINAL: Error reusing terminal for ${zoneKey} (creating fresh terminal):`, error);
-          // Fall through to create new terminal
-        }
-      }
-      
-      // Context switch or mode change detected - dispose existing terminal BUT PRESERVE SESSION STATE
+      // Always dispose existing terminal to prevent DOM reattachment issues
       const existingTerminal = terminalsMap.current.get(zoneKey);
       if (existingTerminal) {
         try {
-          console.log(`🗑️ ZONE TERMINAL: Disposing existing terminal for context/mode change ${zoneKey}`);
+          console.log(`🗑️ ZONE TERMINAL: Disposing existing terminal (no reuse) for ${zoneKey}`);
           existingTerminal.dispose();
         } catch (error) {
           console.warn(`Error disposing existing terminal for ${zoneKey}:`, error);
         }
       }
       
-      // Clean up ONLY terminal UI references - PRESERVE session/websocket state for context switching
+      // Clean up ONLY terminal UI references - PRESERVE session/websocket state
       terminalsMap.current.delete(zoneKey);
       fitAddonsMap.current.delete(zoneKey);
       terminalModesMap.current.delete(zoneKey);
       terminalContextsMap.current.delete(zoneKey);
       
-      // IMPORTANT: Do NOT delete sessionsMap or websocketsMap - they should persist across contexts!
-      console.log(`🔄 ZONE TERMINAL: Context switch preserving session/websocket state for ${zoneKey}`);
+      // IMPORTANT: Do NOT delete sessionsMap or websocketsMap - they persist for performance!
+      console.log(`🔄 ZONE TERMINAL: Fresh terminal creation preserving session/websocket state for ${zoneKey}`);
     }
 
     attachingTerminalsSet.current.add(zoneKey);
