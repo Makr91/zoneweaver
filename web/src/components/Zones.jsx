@@ -193,32 +193,33 @@ const Zones = () => {
         setLoading(false);
         console.log(`⚡ PERF: Zone details loaded and UI shown (${performance.now()}ms)`);
         
-        // 🚀 PERFORMANCE FIX: Run session checks in background (non-blocking)
-        console.log(`⚡ PERF: Starting background session status checks for ${zoneName}`);
+        // 🚀 RACE CONDITION FIX: Serialize session checks to prevent state corruption
+        console.log(`⚡ RACE FIX: Starting serialized session status checks for ${zoneName}`);
         
-        // Load session statuses in parallel without blocking UI
-        Promise.allSettled([
-          refreshVncSessionStatus(zoneName).catch(err => 
-            console.warn('Background VNC status check failed:', err)
-          ),
-          refreshZloginSessionStatus(zoneName).catch(err => 
-            console.warn('Background zlogin status check failed:', err)
-          ),
-          loadMonitoringData(currentServer).catch(err => 
-            console.warn('Background monitoring data load failed:', err)
-          )
-        ]).then((results) => {
-          const vncResult = results[0];
-          const zloginResult = results[1];
-          const monitoringResult = results[2];
-          
-          console.log(`⚡ PERF: Background session checks completed for ${zoneName}:`, {
-            vnc: vncResult.status,
-            zlogin: zloginResult.status, 
-            monitoring: monitoringResult.status,
-            totalTime: performance.now()
-          });
-        });
+        // CRITICAL: Run session checks SEQUENTIALLY to prevent race conditions
+        // This prevents refreshVncSessionStatus from overwriting zlogin_session with stale state
+        (async () => {
+          try {
+            console.log(`🔍 RACE FIX: Step 1 - VNC status check for ${zoneName}`);
+            await refreshVncSessionStatus(zoneName).catch(err => 
+              console.warn('Background VNC status check failed:', err)
+            );
+            
+            console.log(`🔍 RACE FIX: Step 2 - zlogin status check for ${zoneName}`);
+            await refreshZloginSessionStatus(zoneName).catch(err => 
+              console.warn('Background zlogin status check failed:', err)  
+            );
+            
+            console.log(`🔍 RACE FIX: Step 3 - monitoring data load for ${zoneName}`);
+            await loadMonitoringData(currentServer).catch(err => 
+              console.warn('Background monitoring data load failed:', err)
+            );
+            
+            console.log(`✅ RACE FIX: All serialized session checks completed for ${zoneName}`);
+          } catch (error) {
+            console.error(`💥 RACE FIX: Error in serialized session checks for ${zoneName}:`, error);
+          }
+        })();
         
       } else {
         setError(`Failed to fetch details for zone ${zoneName}: ${result.message}`);
@@ -415,18 +416,26 @@ const Zones = () => {
         console.log(`✅ VNC STATUS: Active session found for ${zoneName}`);
         setZoneDetails(prev => {
           console.log(`🔍 ZONE STATE: VNC update - BEFORE:`, {
+            hasZloginSession: !!prev.zlogin_session,
+            hasActiveZloginSession: prev.active_zlogin_session,
             disk: prev.configuration?.disk,
             net: prev.configuration?.net,
             timestamp: Date.now()
           });
           
+          // 🛡️ DEFENSIVE STATE MERGE: Only update VNC fields, explicitly preserve zlogin state
           const newState = {
             ...prev,
             active_vnc_session: true,
-            vnc_session_info: vncResult.data.vnc_session_info
+            vnc_session_info: vncResult.data.vnc_session_info,
+            // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
+            zlogin_session: prev.zlogin_session || null,
+            active_zlogin_session: prev.active_zlogin_session || false
           };
           
           console.log(`🔍 ZONE STATE: VNC update - AFTER:`, {
+            hasZloginSession: !!newState.zlogin_session,
+            hasActiveZloginSession: newState.active_zlogin_session,
             disk: newState.configuration?.disk,
             net: newState.configuration?.net,
             timestamp: Date.now()
@@ -439,18 +448,26 @@ const Zones = () => {
         console.log(`❌ VNC STATUS: No active session for ${zoneName}`);
         setZoneDetails(prev => {
           console.log(`🔍 ZONE STATE: VNC clear - BEFORE:`, {
+            hasZloginSession: !!prev.zlogin_session,
+            hasActiveZloginSession: prev.active_zlogin_session,
             disk: prev.configuration?.disk,
             net: prev.configuration?.net,
             timestamp: Date.now()
           });
           
+          // 🛡️ DEFENSIVE STATE MERGE: Only clear VNC fields, explicitly preserve zlogin state
           const newState = {
             ...prev,
             active_vnc_session: false,
-            vnc_session_info: null
+            vnc_session_info: null,
+            // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
+            zlogin_session: prev.zlogin_session || null,
+            active_zlogin_session: prev.active_zlogin_session || false
           };
           
           console.log(`🔍 ZONE STATE: VNC clear - AFTER:`, {
+            hasZloginSession: !!newState.zlogin_session,
+            hasActiveZloginSession: newState.active_zlogin_session,
             disk: newState.configuration?.disk,
             net: newState.configuration?.net,
             timestamp: Date.now()
@@ -525,35 +542,89 @@ const Zones = () => {
 
         if (activeZoneSession) {
           console.log(`✅ ZLOGIN STATUS: Active session found for ${zoneName}:`, activeZoneSession.id);
-          setZoneDetails(prev => ({
-            ...prev,
-            zlogin_session: activeZoneSession,
-            active_zlogin_session: true
-          }));
+          setZoneDetails(prev => {
+            console.log(`🔍 ZONE STATE: ZLOGIN update - BEFORE:`, {
+              hasVncSession: !!prev.active_vnc_session,
+              hasVncSessionInfo: !!prev.vnc_session_info,
+              timestamp: Date.now()
+            });
+
+            // 🛡️ DEFENSIVE STATE MERGE: Only update zlogin fields, explicitly preserve VNC state
+            const newState = {
+              ...prev,
+              zlogin_session: activeZoneSession,
+              active_zlogin_session: true,
+              // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
+              active_vnc_session: prev.active_vnc_session || false,
+              vnc_session_info: prev.vnc_session_info || null
+            };
+
+            console.log(`🔍 ZONE STATE: ZLOGIN update - AFTER:`, {
+              hasVncSession: !!newState.active_vnc_session,
+              hasVncSessionInfo: !!newState.vnc_session_info,
+              timestamp: Date.now()
+            });
+
+            return newState;
+          });
         } else {
           console.log(`❌ ZLOGIN STATUS: No active session for ${zoneName}`);
-          setZoneDetails(prev => ({
-            ...prev,
-            zlogin_session: null,
-            active_zlogin_session: false
-          }));
+          setZoneDetails(prev => {
+            console.log(`🔍 ZONE STATE: ZLOGIN clear - BEFORE:`, {
+              hasVncSession: !!prev.active_vnc_session,
+              hasVncSessionInfo: !!prev.vnc_session_info,
+              timestamp: Date.now()
+            });
+
+            // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
+            const newState = {
+              ...prev,
+              zlogin_session: null,
+              active_zlogin_session: false,
+              // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
+              active_vnc_session: prev.active_vnc_session || false,
+              vnc_session_info: prev.vnc_session_info || null
+            };
+
+            console.log(`🔍 ZONE STATE: ZLOGIN clear - AFTER:`, {
+              hasVncSession: !!newState.active_vnc_session,
+              hasVncSessionInfo: !!newState.vnc_session_info,
+              timestamp: Date.now()
+            });
+
+            return newState;
+          });
         }
       } else {
         // No sessions or API error
         console.log(`❌ ZLOGIN STATUS: No sessions found or API error for ${zoneName}`);
-        setZoneDetails(prev => ({
-          ...prev,
-          zlogin_session: null,
-          active_zlogin_session: false
-        }));
+        setZoneDetails(prev => {
+          // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
+          const newState = {
+            ...prev,
+            zlogin_session: null,
+            active_zlogin_session: false,
+            // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
+            active_vnc_session: prev.active_vnc_session || false,
+            vnc_session_info: prev.vnc_session_info || null
+          };
+          return newState;
+        });
       }
     } catch (error) {
       console.error('💥 ZLOGIN STATUS: Error checking session status:', error);
-      setZoneDetails(prev => ({
-        ...prev,
-        zlogin_session: null,
-        active_zlogin_session: false
-      }));
+      setZoneDetails(prev => {
+        // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
+        const newState = {
+          ...prev,
+          zlogin_session: null,
+          active_zlogin_session: false,
+          // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
+          active_vnc_session: prev.active_vnc_session || false,
+          vnc_session_info: prev.vnc_session_info || null
+        };
+        return newState;
+      });
     }
   };
 
