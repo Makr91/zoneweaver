@@ -39,6 +39,7 @@ export const ZoneTerminalProvider = ({ children }) => {
   const terminalsMap = useRef(new Map());           // zoneKey -> terminal instance
   const sessionsMap = useRef(new Map());            // zoneKey -> session data  
   const websocketsMap = useRef(new Map());          // zoneKey -> websocket
+  const websocketSessionMap = useRef(new Map());    // zoneKey -> session ID that WebSocket is connected to
   const fitAddonsMap = useRef(new Map());           // zoneKey -> fit addon
   const terminalModesMap = useRef(new Map());       // zoneKey -> readOnly mode
   const terminalContextsMap = useRef(new Map());    // zoneKey -> UI context (preview/modal)
@@ -406,14 +407,22 @@ export const ZoneTerminalProvider = ({ children }) => {
         }
 
         if (sessionData) {
-          // Always check if we need to create/recreate WebSocket connection
+          // Check if we need to create/recreate WebSocket connection
           let existingWs = websocketsMap.current.get(zoneKey);
+          const existingWsSessionId = websocketSessionMap.current.get(zoneKey);
           
-          if (existingWs && existingWs.readyState === WebSocket.OPEN) {
+          // 🚨 CRITICAL FIX: Only reuse WebSocket if it's connected to the SAME session
+          const canReuseWebSocket = existingWs && 
+                                   existingWs.readyState === WebSocket.OPEN && 
+                                   existingWsSessionId === sessionData.id;
+          
+          if (canReuseWebSocket) {
             console.log(`♻️ ZONE TERMINAL: Reusing existing WebSocket connection for ${zoneKey}`, {
               sessionId: sessionData.id,
+              existingSessionId: existingWsSessionId,
               wsReadyState: existingWs.readyState,
-              wsUrl: existingWs.url
+              wsUrl: existingWs.url,
+              sessionMatch: true
             });
             
             // 🔧 CRITICAL FIX: Update message handler for reused WebSocket to point to NEW terminal
@@ -478,6 +487,27 @@ export const ZoneTerminalProvider = ({ children }) => {
             });
             
           } else {
+            // 🔄 SESSION CHANGED: Close old WebSocket and create new one
+            if (existingWs) {
+              console.log(`🔄 ZONE TERMINAL: Session changed - closing old WebSocket for ${zoneKey}`, {
+                oldSessionId: existingWsSessionId,
+                newSessionId: sessionData.id,
+                wsReadyState: existingWs.readyState,
+                reason: existingWsSessionId !== sessionData.id ? 'session_mismatch' : 'ws_not_open'
+              });
+              
+              try {
+                if (existingWs.readyState === WebSocket.OPEN || existingWs.readyState === WebSocket.CONNECTING) {
+                  existingWs.close(1000, 'Session changed');
+                }
+              } catch (error) {
+                console.warn(`⚠️ ZONE TERMINAL: Error closing old WebSocket for ${zoneKey}:`, error);
+              }
+              
+              // Clean up old WebSocket references
+              websocketsMap.current.delete(zoneKey);
+              websocketSessionMap.current.delete(zoneKey);
+            }
             console.log(`🔗 ZONE TERMINAL: Creating new WebSocket for session: ${sessionData.websocket_url}`, {
               sessionId: sessionData.id,
               reason: existingWs ? `existing ws state: ${existingWs.readyState}` : 'no existing ws',
@@ -578,11 +608,13 @@ export const ZoneTerminalProvider = ({ children }) => {
               });
             };
 
-            // Store WebSocket connection
+            // Store WebSocket connection and track session ID
             websocketsMap.current.set(zoneKey, ws);
+            websocketSessionMap.current.set(zoneKey, sessionData.id);
             console.log(`💾 ZONE TERMINAL: Stored WebSocket for ${zoneKey}`, {
               sessionId: sessionData.id,
               wsStored: websocketsMap.current.has(zoneKey),
+              sessionTracked: websocketSessionMap.current.has(zoneKey),
               timestamp: new Date().toISOString()
             });
           }
@@ -824,7 +856,9 @@ export const ZoneTerminalProvider = ({ children }) => {
       
       // 🧹 FORCE DELETE: Always remove WebSocket from map regardless of close success
       const wsDeleted = websocketsMap.current.delete(zoneKey);
+      const wsSessionDeleted = websocketSessionMap.current.delete(zoneKey);
       console.log(`🗑️ ZLOGIN CLEANUP: WebSocket ${wsDeleted ? 'removed' : 'not found'} in map for ${zoneKey}`);
+      console.log(`🗑️ ZLOGIN CLEANUP: WebSocket session tracking ${wsSessionDeleted ? 'removed' : 'not found'} for ${zoneKey}`);
       
       // 🧹 Clear cached session and state
       const sessionDeleted = sessionsMap.current.delete(zoneKey);
