@@ -1495,15 +1495,53 @@ const Zones = () => {
                                           onNewSession={() => handleZloginConsole(selectedZone)}
                                           onKillSession={async () => {
                                             if (!currentServer || !selectedZone) return;
+                                            
                                             try {
                                               setLoading(true);
-                                              await forceZoneSessionCleanup(currentServer, selectedZone);
-                                              setZoneDetails(prev => ({
-                                                ...prev,
-                                                zlogin_session: null,
-                                                active_zlogin_session: false
-                                              }));
-                                              console.log(`✅ UI: zlogin session state cleared for ${selectedZone}`);
+                                              console.log(`Killing zlogin session for zone: ${selectedZone}`);
+                                              
+                                              // Get all active zlogin sessions to find the one for this zone
+                                              const sessionsResult = await makeZoneweaverAPIRequest(
+                                                currentServer.hostname,
+                                                currentServer.port,
+                                                currentServer.protocol,
+                                                'zlogin/sessions'
+                                              );
+
+                                              if (sessionsResult.success && sessionsResult.data) {
+                                                const activeSessions = Array.isArray(sessionsResult.data) 
+                                                  ? sessionsResult.data 
+                                                  : (sessionsResult.data.sessions || []);
+                                                
+                                                const activeZoneSession = activeSessions.find(session => 
+                                                  session.zone_name === selectedZone && session.status === 'active'
+                                                );
+
+                                                if (activeZoneSession) {
+                                                  // Kill the specific session by ID
+                                                  const killResult = await makeZoneweaverAPIRequest(
+                                                    currentServer.hostname,
+                                                    currentServer.port,
+                                                    currentServer.protocol,
+                                                    `zlogin/sessions/${activeZoneSession.id}/stop`,
+                                                    'DELETE'
+                                                  );
+
+                                                  if (killResult.success) {
+                                                    console.log(`zlogin session killed for ${selectedZone}`);
+                                                    // Refresh status
+                                                    await refreshZloginSessionStatus(selectedZone);
+                                                  } else {
+                                                    console.error(`Failed to kill zlogin session for ${selectedZone}:`, killResult.message);
+                                                    setError(`Failed to kill zlogin session: ${killResult.message}`);
+                                                  }
+                                                } else {
+                                                  console.log(`No active zlogin session found for ${selectedZone}`);
+                                                }
+                                              } else {
+                                                console.error('Failed to get zlogin sessions:', sessionsResult.message);
+                                                setError('Failed to get active sessions');
+                                              }
                                             } catch (error) {
                                               console.error('Error killing zlogin session:', error);
                                               setError('Error killing zlogin session');

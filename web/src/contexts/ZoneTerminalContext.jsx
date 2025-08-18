@@ -117,10 +117,6 @@ export const ZoneTerminalProvider = ({ children }) => {
     newTerm.loadAddon(new WebLinksAddon());
     newTerm.open(terminalRef.current);
 
-    if (readOnly) {
-        newTerm.write('\r\n\x1b[33m[READ-ONLY MODE - Console output only]\x1b[0m\r\n');
-    }
-
     terminalsMap.current.set(zoneKey, newTerm);
     fitAddonsMap.current.set(zoneKey, fitAddon);
     if (getZoneKey(currentServer, zoneName) === zoneKey) {
