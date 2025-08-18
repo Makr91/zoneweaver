@@ -1754,6 +1754,7 @@ const Zones = () => {
                                       {zoneDetails.vnc_session_info ? (
                                         // Active session - show live preview with toggleable view-only mode
                                         <VncViewerReact
+                                          key={`vnc-preview-${selectedZone}-${previewVncViewOnly}`}
                                           serverHostname={currentServer.hostname}
                                           serverPort={currentServer.port}
                                           serverProtocol={currentServer.protocol}
