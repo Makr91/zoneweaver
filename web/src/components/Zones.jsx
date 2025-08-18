@@ -1792,7 +1792,7 @@ const Zones = () => {
                                                   console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
                                                   setZoneDetails(prev => ({
                                                     ...prev,
-                                                    zlogin_session: result.session,
+                                                    zlogin_session: result.data,
                                                     active_zlogin_session: true
                                                   }));
                                                   // FIXED: Force immediate console switch to zlogin
@@ -2011,7 +2011,7 @@ const Zones = () => {
                                                   
                                                   const newState = {
                                                     ...prev,
-                                                    zlogin_session: result.session,
+                                                    zlogin_session: result.data,
                                                     active_zlogin_session: true
                                                   };
                                                   
