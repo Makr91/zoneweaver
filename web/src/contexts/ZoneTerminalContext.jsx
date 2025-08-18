@@ -260,8 +260,20 @@ export const ZoneTerminalProvider = ({ children }) => {
 
   const initializeSessionFromExisting = useCallback((server, zoneName, sessionData) => {
     const zoneKey = getZoneKey(server, zoneName);
-    if (!zoneKey || !sessionData || !sessionData.websocket_url) {
-      console.error(`❌ ZLOGIN RECONNECT: Invalid data provided for ${zoneKey}`);
+    if (!zoneKey || !sessionData || !sessionData.id) {
+      console.error(`❌ ZLOGIN RECONNECT: Invalid data provided for ${zoneKey}`, {
+        hasZoneKey: !!zoneKey,
+        hasSessionData: !!sessionData,
+        hasSessionId: !!sessionData?.id
+      });
+      return;
+    }
+
+    // Construct websocket_url if missing (for sessions from GET /sessions API)
+    const websocketUrl = sessionData.websocket_url || `/zlogin/${sessionData.id}`;
+    
+    if (!websocketUrl) {
+      console.error(`❌ ZLOGIN RECONNECT: Could not determine websocket URL for ${zoneKey}`);
       return;
     }
 
@@ -270,9 +282,13 @@ export const ZoneTerminalProvider = ({ children }) => {
       return;
     }
 
-    console.log(`🔄 ZLOGIN RECONNECT: Initializing session from existing data for ${zoneKey}`);
+    console.log(`🔄 ZLOGIN RECONNECT: Initializing session from existing data for ${zoneKey}`, {
+      sessionId: sessionData.id,
+      websocketUrl: websocketUrl,
+      wasConstructed: !sessionData.websocket_url
+    });
 
-    const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
+    const wsUrl = `wss://${window.location.host}${websocketUrl}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => console.log(`🔗 ZLOGIN RECONNECT: WebSocket connected for ${zoneKey}`);
