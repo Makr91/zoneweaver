@@ -1625,7 +1625,7 @@ const Zones = () => {
                                       }}
                                     >
                                       <ZoneShell 
-                                        key={`preview-zlogin-${selectedZone}-${previewReconnectKey}`}
+                                        key={`preview-zlogin-${selectedZone}-${previewReconnectKey}-${previewReadOnly ? 'ro' : 'rw'}`}
                                         zoneName={selectedZone} 
                                         readOnly={previewReadOnly}
                                         context="preview"
