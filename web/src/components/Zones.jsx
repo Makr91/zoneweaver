@@ -1004,8 +1004,8 @@ const Zones = () => {
   };
 
   /**
-   * FIXED: Complete kill process with proper separation from start validation
-   * Prevents race conditions between kill verification and start validation
+   * SIMPLIFIED: VNC kill process aligned with zlogin pattern
+   * Just call backend kill then refresh status from API - simpler and more reliable
    */
   const handleKillVncSession = async (zoneName) => {
     if (!currentServer || killInProgress) return;
@@ -1027,14 +1027,15 @@ const Zones = () => {
       if (result.success) {
         console.log(`✅ VNC KILL: Backend reported successful kill for ${zoneName}`);
         
-        // CRITICAL: Complete kill verification before allowing any new operations
-        await verifyKillCompletion(zoneName);
+        // SIMPLIFIED: Just refresh status from API (like zlogin does)
+        await refreshVncSessionStatus(zoneName);
         
-        // CRITICAL: Add 2-second buffer before allowing new session starts
-        console.log(`⏳ VNC KILL: Adding 2-second safety buffer...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Close VNC console modal if it's open
+        if (showVncConsole) {
+          closeVncConsole();
+        }
         
-        console.log(`✅ VNC KILL: Kill process completely finished for ${zoneName}`);
+        console.log(`✅ VNC KILL: Kill process completed for ${zoneName}`);
         
       } else {
         console.error(`❌ VNC KILL: Backend failed to kill session:`, result.message);
@@ -1834,35 +1835,95 @@ const Zones = () => {
                               } else {
                                 return (
                                   <div 
-                                    style={{ 
-                                      height: 'calc(100vh - 250px - 10vh)', 
-                                      minHeight: '450px',
-                                      backgroundColor: '#2c3e50',
-                                      color: '#ecf0f1',
-                                      borderRadius: '6px',
+                                    style={{
                                       border: '2px solid #dbdbdb',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      padding: '2rem'
+                                      borderRadius: '6px',
+                                      overflow: 'hidden',
+                                      backgroundColor: '#000',
+                                      height: 'calc(100vh - 250px - 10vh)', // Reduced by ~10% total
+                                      minHeight: '450px'
                                     }}
                                   >
-                                    <div style={{ textAlign: 'center' }}>
-                                      <div style={{ marginBottom: '12px' }}>
-                                        <img 
-                                          src="/images/startcloud.svg" 
-                                          alt="Start Console" 
-                                          style={{ 
-                                            width: '64px', 
-                                            height: '64px',
-                                            opacity: 0.8,
-                                            filter: 'brightness(0.9)'
-                                          }} 
-                                        />
+                                    {/* Inactive Console Header - Same style as active headers */}
+                                    <div 
+                                      style={{
+                                        backgroundColor: '#363636',
+                                        color: 'white',
+                                        padding: '8px 12px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                      }}
+                                    >
+                                      <div>
+                                        <h6 className='title is-7 has-text-white mb-1'>Console Management</h6>
+                                        <p className='is-size-7 has-text-white-ter mb-0'>
+                                          No active sessions • Click to start
+                                        </p>
                                       </div>
-                                      <h6 className='title is-6' style={{ color: '#ecf0f1', marginBottom: '12px' }}>Console Status</h6>
-                                      <p style={{ fontSize: '0.9rem', fontWeight: '500', marginBottom: '8px' }}><strong>No Active Console Session</strong></p>
-                                      <p style={{ fontSize: '0.75rem', opacity: 0.8 }}>Click the Console button to start a VNC session when the zone is running.</p>
+                                      <div className='buttons' style={{margin: 0}}>
+                                        {/* Start VNC Button */}
+                                        <button 
+                                          className='button is-small is-success'
+                                          onClick={() => handleVncConsole(selectedZone)}
+                                          disabled={loading || loadingVnc}
+                                          title="Start VNC Console"
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        >
+                                          <span className='icon is-small'>
+                                            <i className='fas fa-desktop'></i>
+                                          </span>
+                                          <span>Start VNC</span>
+                                        </button>
+                                        {/* Start zlogin Button */}
+                                        <button 
+                                          className='button is-small is-info'
+                                          onClick={() => handleZloginConsole(selectedZone)}
+                                          disabled={loading}
+                                          title="Start zlogin Console"
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        >
+                                          <span className='icon is-small'>
+                                            <i className='fas fa-terminal'></i>
+                                          </span>
+                                          <span>Start zlogin</span>
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Console Content - Inactive State */}
+                                    <div 
+                                      style={{
+                                        position: 'relative',
+                                        width: '100%',
+                                        height: 'calc(100% - 60px)', // Fill remaining height after header
+                                        backgroundColor: '#2c3e50',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden'
+                                      }}
+                                    >
+                                      <div style={{ textAlign: 'center', color: '#ecf0f1' }}>
+                                        <div style={{ marginBottom: '12px' }}>
+                                          <img 
+                                            src="/images/startcloud.svg" 
+                                            alt="Start Console" 
+                                            style={{ 
+                                              width: '64px', 
+                                              height: '64px',
+                                              opacity: 0.8,
+                                              filter: 'brightness(0.9)'
+                                            }} 
+                                          />
+                                        </div>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: '500', marginBottom: '8px' }}>
+                                          <strong>No Active Console Session</strong>
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                          Click the buttons above to start VNC or zlogin console
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 );
