@@ -275,6 +275,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       // Store session and WebSocket for this zone
       sessionsMap.current.set(zoneKey, sessionData);
       websocketsMap.current.set(zoneKey, ws);
+      websocketSessionMap.current.set(zoneKey, sessionData.id); // 🔧 CRITICAL FIX: Store session ID mapping
       
       // Update global state if this is the current zone
       if (currentServer && getZoneKey(currentServer, zoneName) === zoneKey) {
