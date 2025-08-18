@@ -1552,7 +1552,23 @@ const Zones = () => {
                                         />
                                         <button 
                                           className='button is-small is-primary'
-                                          onClick={() => handleZloginConsole(selectedZone)}
+                                          onClick={() => {
+                                            console.log(`🔍 EXPAND BUTTON: Checking session state for ${selectedZone}:`, {
+                                              hasZloginSession: !!zoneDetails.zlogin_session,
+                                              sessionId: zoneDetails.zlogin_session?.id,
+                                              sessionStatus: zoneDetails.zlogin_session?.status
+                                            });
+                                            
+                                            if (zoneDetails.zlogin_session) {
+                                              // ✅ Session exists - just open modal (don't create new session!)
+                                              console.log(`🔍 EXPAND BUTTON: Session exists, opening modal for ${selectedZone}`);
+                                              setShowZloginConsole(true);
+                                            } else {
+                                              // ❌ No session - start new one then open modal
+                                              console.log(`🔍 EXPAND BUTTON: No session exists, starting new session for ${selectedZone}`);
+                                              handleZloginConsole(selectedZone);
+                                            }
+                                          }}
                                           disabled={loading}
                                           title="Expand zlogin Console"
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
