@@ -417,7 +417,37 @@ export const ZoneTerminalProvider = ({ children }) => {
             sessionData.websocket_url = `/zlogin/${sessionData.id}`;
           }
           
+          // Create WebSocket connection for existing session
+          const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
+          console.log(`🔗 ZONE TERMINAL: Creating WebSocket for existing session: ${wsUrl}`);
+          const ws = new WebSocket(wsUrl);
+
+          const handleZoneMessage = (event) => {
+            const terminal = terminalsMap.current.get(zoneKey);
+            if (terminal) {
+              if (event.data instanceof Blob) {
+                event.data.text().then(text => terminal.write(text));
+              } else {
+                terminal.write(event.data);
+              }
+            }
+          };
+
+          ws.onopen = () => {
+            console.log(`🔗 ZONE TERMINAL: WebSocket connected for existing session ${sessionData.id}`);
+          };
+          ws.onmessage = handleZoneMessage;
+          ws.onclose = (event) => {
+            console.log(`🔗 ZONE TERMINAL: WebSocket closed for existing session ${sessionData.id}`);
+            websocketsMap.current.delete(zoneKey);
+          };
+          ws.onerror = (error) => {
+            console.error(`🚨 ZONE TERMINAL: WebSocket error for existing session ${sessionData.id}:`, error);
+          };
+
+          // Store session and WebSocket
           sessionsMap.current.set(zoneKey, sessionData);
+          websocketsMap.current.set(zoneKey, ws);
         }
         }
 
