@@ -130,7 +130,8 @@ export const ZoneTerminalProvider = ({ children }) => {
     const sessionData = sessionsMap.current.get(zoneKey);
     const ws = websocketsMap.current.get(zoneKey);
 
-    if (sessionData && ws) {
+    // Helper function to setup terminal connection
+    const setupTerminalConnection = () => {
       console.log(`✅ ZONE ATTACH: Connecting UI to existing session for ${zoneKey}`);
       if (sessionData.buffer) {
         newTerm.write(sessionData.buffer);
@@ -150,6 +151,47 @@ export const ZoneTerminalProvider = ({ children }) => {
           onDataListenersMap.current.get(zoneKey).dispose();
           onDataListenersMap.current.delete(zoneKey);
         }
+      }
+    };
+
+    if (sessionData && ws) {
+      // Check WebSocket connection state
+      if (ws.readyState === WebSocket.OPEN) {
+        // WebSocket is ready - connect immediately
+        setupTerminalConnection();
+      } else if (ws.readyState === WebSocket.CONNECTING) {
+        // WebSocket is still connecting - wait for it to open
+        console.log(`⏳ ZONE ATTACH: WebSocket connecting for ${zoneKey}, waiting for connection...`);
+        newTerm.write('\r\n\x1b[33m[Connecting to existing session...]\x1b[0m\r\n');
+        
+        const onWsOpen = () => {
+          console.log(`✅ ZONE ATTACH: WebSocket connected, setting up terminal for ${zoneKey}`);
+          // Clear the connecting message and setup connection
+          newTerm.clear();
+          if (readOnly) {
+            newTerm.write('\r\n\x1b[33m[READ-ONLY MODE]\x1b[0m\r\n');
+          }
+          setupTerminalConnection();
+          ws.removeEventListener('open', onWsOpen);
+        };
+        
+        const onWsError = () => {
+          console.error(`❌ ZONE ATTACH: WebSocket failed to connect for ${zoneKey}`);
+          newTerm.clear();
+          newTerm.write('\r\n\x1b[31m[Connection failed]\x1b[0m\r\n');
+          newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
+          newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
+          ws.removeEventListener('open', onWsOpen);
+          ws.removeEventListener('error', onWsError);
+        };
+        
+        ws.addEventListener('open', onWsOpen);
+        ws.addEventListener('error', onWsError);
+      } else {
+        // WebSocket is closed or closing - treat as no session
+        console.log(`❌ ZONE ATTACH: WebSocket in invalid state ${ws.readyState} for ${zoneKey}`);
+        newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
+        newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
       }
     } else {
       newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
