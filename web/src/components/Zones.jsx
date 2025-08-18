@@ -1376,7 +1376,7 @@ const Zones = () => {
                                             }
                                           }}
                                           isReadOnly={true}
-                                          isAdmin={user?.role === 'admin'}
+                                          isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
                                         <button 
@@ -2000,7 +2000,7 @@ const Zones = () => {
                     }
                   }}
                   isReadOnly={false}
-                  isAdmin={user?.role === 'admin'}
+                  isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
                 {/* Switch to VNC Console Button - Modal (second position for consistency) */}
