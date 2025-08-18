@@ -1579,21 +1579,51 @@ const Zones = () => {
                                             <i className='fas fa-expand'></i>
                                           </span>
                                         </button>
-                                        {/* Always show VNC button - starts VNC if not active */}
+                                        {/* Always show VNC button - switches to VNC or starts VNC for preview */}
                                         <button 
                                           className='button is-small is-warning'
-                                          onClick={() => {
+                                          onClick={async () => {
                                             if (hasVnc) {
+                                              // VNC already active - just switch to it in preview
                                               setActiveConsoleType('vnc');
                                             } else {
-                                              handleVncConsole(selectedZone);
+                                              // Start VNC session for preview (not modal)
+                                              console.log(`🚀 START VNC: Starting VNC session for preview from zlogin header`);
+                                              try {
+                                                setLoadingVnc(true);
+                                                const result = await startVncSession(
+                                                  currentServer.hostname,
+                                                  currentServer.port,
+                                                  currentServer.protocol,
+                                                  selectedZone
+                                                );
+                                                
+                                                if (result.success) {
+                                                  console.log(`✅ START VNC: VNC session started, switching to VNC preview`);
+                                                  setZoneDetails(prev => ({
+                                                    ...prev,
+                                                    active_vnc_session: true,
+                                                    vnc_session_info: result.data
+                                                  }));
+                                                  // Console will auto-switch to VNC via useEffect
+                                                } else {
+                                                  console.error(`❌ START VNC: Failed to start VNC session:`, result.message);
+                                                  setError(`Failed to start VNC console: ${result.message}`);
+                                                }
+                                              } catch (error) {
+                                                console.error('💥 START VNC: Error starting VNC session:', error);
+                                                setError(`Error starting VNC console`);
+                                              } finally {
+                                                setLoadingVnc(false);
+                                              }
                                             }
                                           }}
+                                          disabled={loadingVnc}
                                           title={hasVnc ? "Switch to VNC Console" : "Start VNC Console"}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
-                                            <i className={`fas ${hasVnc ? 'fa-desktop' : 'fa-play'}`}></i>
+                                            <i className={`fas ${hasVnc ? 'fa-desktop' : (loadingVnc ? 'fa-spinner fa-pulse' : 'fa-play')}`}></i>
                                           </span>
                                         </button>
                                       </div>
@@ -1722,21 +1752,51 @@ const Zones = () => {
                                             <i className='fas fa-expand'></i>
                                           </span>
                                         </button>
-                                        {/* Always show zlogin button - starts zlogin if not active */}
+                                        {/* Always show zlogin button - switches to zlogin or starts zlogin for preview */}
                                         <button 
                                           className='button is-small is-warning'
-                                          onClick={() => {
+                                          onClick={async () => {
                                             if (hasZlogin) {
+                                              // zlogin already active - just switch to it in preview
                                               setActiveConsoleType('zlogin');
                                             } else {
-                                              handleZloginConsole(selectedZone);
+                                              // Start zlogin session for preview (not modal)
+                                              console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
+                                              try {
+                                                setLoading(true);
+                                                const result = await startZloginSession(
+                                                  currentServer.hostname,
+                                                  currentServer.port,
+                                                  currentServer.protocol,
+                                                  selectedZone
+                                                );
+                                                
+                                                if (result.success) {
+                                                  console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
+                                                  setZoneDetails(prev => ({
+                                                    ...prev,
+                                                    zlogin_session: result.session,
+                                                    active_zlogin_session: true
+                                                  }));
+                                                  // Console will auto-switch to zlogin via useEffect
+                                                } else {
+                                                  console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
+                                                  setError(`Failed to start zlogin console: ${result.message}`);
+                                                }
+                                              } catch (error) {
+                                                console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
+                                                setError(`Error starting zlogin console`);
+                                              } finally {
+                                                setLoading(false);
+                                              }
                                             }
                                           }}
+                                          disabled={loading}
                                           title={hasZlogin ? "Switch to zlogin Console" : "Start zlogin Console"}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
-                                            <i className={`fas ${hasZlogin ? 'fa-terminal' : 'fa-play'}`}></i>
+                                            <i className={`fas ${hasZlogin ? 'fa-terminal' : (loading ? 'fa-spinner fa-pulse' : 'fa-play')}`}></i>
                                           </span>
                                         </button>
                                       </div>
@@ -1862,10 +1922,40 @@ const Zones = () => {
                                         </p>
                                       </div>
                                       <div className='buttons' style={{margin: 0}}>
-                                        {/* Start VNC Button */}
+                                        {/* Start VNC Button - Preview only */}
                                         <button 
                                           className='button is-small is-success'
-                                          onClick={() => handleVncConsole(selectedZone)}
+                                          onClick={async () => {
+                                            console.log(`🚀 START VNC: Starting VNC session for preview in ${selectedZone}`);
+                                            try {
+                                              setLoadingVnc(true);
+                                              const result = await startVncSession(
+                                                currentServer.hostname,
+                                                currentServer.port,
+                                                currentServer.protocol,
+                                                selectedZone
+                                              );
+                                              
+                                              if (result.success) {
+                                                console.log(`✅ START VNC: VNC session started, will show in preview for ${selectedZone}`);
+                                                // Update state to show VNC session active
+                                                setZoneDetails(prev => ({
+                                                  ...prev,
+                                                  active_vnc_session: true,
+                                                  vnc_session_info: result.data
+                                                }));
+                                                // Console type will auto-switch to VNC via useEffect
+                                              } else {
+                                                console.error(`❌ START VNC: Failed to start VNC session:`, result.message);
+                                                setError(`Failed to start VNC console: ${result.message}`);
+                                              }
+                                            } catch (error) {
+                                              console.error('💥 START VNC: Error starting VNC session:', error);
+                                              setError(`Error starting VNC console`);
+                                            } finally {
+                                              setLoadingVnc(false);
+                                            }
+                                          }}
                                           disabled={loading || loadingVnc}
                                           title="Start VNC Console"
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
@@ -1873,12 +1963,42 @@ const Zones = () => {
                                           <span className='icon is-small'>
                                             <i className='fas fa-desktop'></i>
                                           </span>
-                                          <span>Start VNC</span>
+                                          <span>{loadingVnc ? 'Starting...' : 'Start VNC'}</span>
                                         </button>
-                                        {/* Start zlogin Button */}
+                                        {/* Start zlogin Button - Preview only */}
                                         <button 
                                           className='button is-small is-info'
-                                          onClick={() => handleZloginConsole(selectedZone)}
+                                          onClick={async () => {
+                                            console.log(`🚀 START ZLOGIN: Starting zlogin session for preview in ${selectedZone}`);
+                                            try {
+                                              setLoading(true);
+                                              const result = await startZloginSession(
+                                                currentServer.hostname,
+                                                currentServer.port,
+                                                currentServer.protocol,
+                                                selectedZone
+                                              );
+                                              
+                                              if (result.success) {
+                                                console.log(`✅ START ZLOGIN: zlogin session started, will show in preview for ${selectedZone}`);
+                                                // Update state to show zlogin session active
+                                                setZoneDetails(prev => ({
+                                                  ...prev,
+                                                  zlogin_session: result.session,
+                                                  active_zlogin_session: true
+                                                }));
+                                                // Console type will auto-switch to zlogin via useEffect
+                                              } else {
+                                                console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
+                                                setError(`Failed to start zlogin console: ${result.message}`);
+                                              }
+                                            } catch (error) {
+                                              console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
+                                              setError(`Error starting zlogin console`);
+                                            } finally {
+                                              setLoading(false);
+                                            }
+                                          }}
                                           disabled={loading}
                                           title="Start zlogin Console"
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
@@ -1886,7 +2006,7 @@ const Zones = () => {
                                           <span className='icon is-small'>
                                             <i className='fas fa-terminal'></i>
                                           </span>
-                                          <span>Start zlogin</span>
+                                          <span>{loading ? 'Starting...' : 'Start zlogin'}</span>
                                         </button>
                                       </div>
                                     </div>
