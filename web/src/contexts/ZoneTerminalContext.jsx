@@ -324,9 +324,14 @@ export const ZoneTerminalProvider = ({ children }) => {
         console.log(`🔄 ZONE TERMINAL: ReadOnly mode changed for ${zoneKey} (${existingMode} -> ${readOnly}), creating new terminal`);
       }
       
-      // Only reuse terminal if same context AND same mode
-      if (!isContextSwitch && !isModeChange) {
-        console.log(`♻️ ZONE TERMINAL: Reusing existing terminal for ${zoneKey} (readOnly: ${readOnly}, context: ${context})`);
+      // DISABLED: Terminal reuse for context switches (fixes DOM reattachment issues)
+      // Always create fresh terminal UI for context switches or mode changes
+      if (isContextSwitch || isModeChange) {
+        console.log(`🚀 ZONE TERMINAL: Creating fresh terminal UI (preserving WebSocket/session) for ${zoneKey}`);
+        // Fall through to create new terminal - WebSocket/session will be reused automatically
+      } else {
+        // Same context and same mode - can safely reuse (rare case, mostly for rapid re-renders)
+        console.log(`♻️ ZONE TERMINAL: Reusing existing terminal for ${zoneKey} (same context: ${context}, same mode: ${readOnly})`);
         const existingTerminal = terminalsMap.current.get(zoneKey);
         const existingFitAddon = fitAddonsMap.current.get(zoneKey);
         
@@ -354,7 +359,7 @@ export const ZoneTerminalProvider = ({ children }) => {
             }
           };
         } catch (error) {
-          console.error(`🚨 ZONE TERMINAL: Error reusing terminal for ${zoneKey} (context switch may be needed):`, error);
+          console.error(`🚨 ZONE TERMINAL: Error reusing terminal for ${zoneKey} (creating fresh terminal):`, error);
           // Fall through to create new terminal
         }
       }
