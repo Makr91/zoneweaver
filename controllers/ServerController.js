@@ -2219,7 +2219,14 @@ class ServerController {
           status: result.data.status
         });
 
-        res.json({ success: true, session: result.data });
+        // Add websocket_url field that frontend expects for WebSocket connection
+        res.json({ 
+          success: true, 
+          session: {
+            ...result.data,
+            websocket_url: `/zlogin/${result.data.id}`
+          }
+        });
       } else {
         console.error('❌ ZLOGIN START: Session creation failed', {
           status: result.status,
