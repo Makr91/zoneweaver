@@ -46,6 +46,7 @@ const Zones = () => {
   const [storageDatasets, setStorageDatasets] = useState([]);
   const [activeConsoleType, setActiveConsoleType] = useState('vnc'); // 'vnc' or 'zlogin'
   const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
+  const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
   
   const { user } = useAuth();
   const { 
@@ -602,6 +603,21 @@ const Zones = () => {
     }
     // IMPORTANT: Removed activeConsoleType from dependency array to prevent circular updates
   }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session]);
+
+  // Handle modal close reconnection - Fix for preview terminal going black after modal closes
+  useEffect(() => {
+    // When zlogin modal closes and we should be showing zlogin preview
+    if (!showZloginConsole && activeConsoleType === 'zlogin' && zoneDetails.zlogin_session && selectedZone) {
+      console.log('🔄 MODAL CLOSE: zlogin modal closed, reconnecting preview terminal');
+      
+      // Force preview terminal reconnection by incrementing the reconnect key
+      // This will trigger a fresh ZoneShell component mount
+      setTimeout(() => {
+        setPreviewReconnectKey(prev => prev + 1);
+        console.log('🔄 MODAL CLOSE: Preview terminal reconnection triggered');
+      }, 100); // Small delay to ensure modal cleanup is complete
+    }
+  }, [showZloginConsole, activeConsoleType, zoneDetails.zlogin_session, selectedZone]);
 
   const getZoneStatus = (zoneName) => {
     return runningZones.includes(zoneName) ? 'running' : 'stopped';
@@ -1433,6 +1449,7 @@ const Zones = () => {
                                       }}
                                     >
                                       <ZoneShell 
+                                        key={`preview-zlogin-${selectedZone}-${previewReconnectKey}`}
                                         zoneName={selectedZone} 
                                         readOnly={previewReadOnly}
                                         context="preview"
