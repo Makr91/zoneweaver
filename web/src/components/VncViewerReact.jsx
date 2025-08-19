@@ -178,27 +178,162 @@ const VncViewerReact = forwardRef(({
         console.warn(`⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`);
       }
     },
-    clipboardPaste: (text) => {
+    clipboardPaste: async (text) => {
       if (vncRef.current && connected) {
-        console.log(`📋 VNC-VIEWER: Forwarding clipboardPaste(${text.length} chars)`);
+        console.log(`📋 VNC-VIEWER: Starting character-by-character typing of ${text.length} characters`);
+        
         try {
-          // Try the react-vnc method first
-          if (vncRef.current.clipboardPaste) {
-            return vncRef.current.clipboardPaste(text);
+          // Character-to-keysym mapping for typing simulation
+          const getKeysymForChar = (char) => {
+            const code = char.charCodeAt(0);
+            
+            // Letters (a-z, A-Z)
+            if (char >= 'a' && char <= 'z') return 0x61 + (code - 97); // a=0x61
+            if (char >= 'A' && char <= 'Z') return 0x41 + (code - 65); // A=0x41
+            
+            // Numbers (0-9)
+            if (char >= '0' && char <= '9') return 0x30 + (code - 48); // 0=0x30
+            
+            // Common symbols and punctuation
+            switch (char) {
+              case ' ': return 0x20; // space
+              case '!': return 0x21; // exclamation
+              case '"': return 0x22; // quotation
+              case '#': return 0x23; // hash
+              case '$': return 0x24; // dollar
+              case '%': return 0x25; // percent
+              case '&': return 0x26; // ampersand
+              case "'": return 0x27; // apostrophe
+              case '(': return 0x28; // left parenthesis
+              case ')': return 0x29; // right parenthesis
+              case '*': return 0x2a; // asterisk
+              case '+': return 0x2b; // plus
+              case ',': return 0x2c; // comma
+              case '-': return 0x2d; // minus
+              case '.': return 0x2e; // period
+              case '/': return 0x2f; // slash
+              case ':': return 0x3a; // colon
+              case ';': return 0x3b; // semicolon
+              case '<': return 0x3c; // less than
+              case '=': return 0x3d; // equals
+              case '>': return 0x3e; // greater than
+              case '?': return 0x3f; // question mark
+              case '@': return 0x40; // at
+              case '[': return 0x5b; // left bracket
+              case '\\': return 0x5c; // backslash
+              case ']': return 0x5d; // right bracket
+              case '^': return 0x5e; // caret
+              case '_': return 0x5f; // underscore
+              case '`': return 0x60; // grave accent
+              case '{': return 0x7b; // left brace
+              case '|': return 0x7c; // pipe
+              case '}': return 0x7d; // right brace
+              case '~': return 0x7e; // tilde
+              case '\n': return 0xFF0D; // Return/Enter
+              case '\r': return 0xFF0D; // Return/Enter
+              case '\t': return 0xFF09; // Tab
+              default: return code; // Use Unicode code point for other characters
+            }
+          };
+          
+          // Character-to-KeyboardEvent.code mapping
+          const getKeyCodeForChar = (char) => {
+            // Letters
+            if (char >= 'a' && char <= 'z') return `Key${char.toUpperCase()}`;
+            if (char >= 'A' && char <= 'Z') return `Key${char}`;
+            
+            // Numbers
+            if (char >= '0' && char <= '9') return `Digit${char}`;
+            
+            // Special keys and symbols
+            switch (char) {
+              case ' ': return 'Space';
+              case '\n': case '\r': return 'Enter';
+              case '\t': return 'Tab';
+              case '!': return 'Digit1'; // Shift+1
+              case '@': return 'Digit2'; // Shift+2
+              case '#': return 'Digit3'; // Shift+3
+              case '$': return 'Digit4'; // Shift+4
+              case '%': return 'Digit5'; // Shift+5
+              case '^': return 'Digit6'; // Shift+6
+              case '&': return 'Digit7'; // Shift+7
+              case '*': return 'Digit8'; // Shift+8
+              case '(': return 'Digit9'; // Shift+9
+              case ')': return 'Digit0'; // Shift+0
+              case '-': return 'Minus';
+              case '_': return 'Minus'; // Shift+Minus
+              case '=': return 'Equal';
+              case '+': return 'Equal'; // Shift+Equal
+              case '[': return 'BracketLeft';
+              case '{': return 'BracketLeft'; // Shift+BracketLeft
+              case ']': return 'BracketRight';
+              case '}': return 'BracketRight'; // Shift+BracketRight
+              case '\\': return 'Backslash';
+              case '|': return 'Backslash'; // Shift+Backslash
+              case ';': return 'Semicolon';
+              case ':': return 'Semicolon'; // Shift+Semicolon
+              case "'": return 'Quote';
+              case '"': return 'Quote'; // Shift+Quote
+              case '`': return 'Backquote';
+              case '~': return 'Backquote'; // Shift+Backquote
+              case ',': return 'Comma';
+              case '<': return 'Comma'; // Shift+Comma
+              case '.': return 'Period';
+              case '>': return 'Period'; // Shift+Period
+              case '/': return 'Slash';
+              case '?': return 'Slash'; // Shift+Slash
+              default: return null; // No specific key code
+            }
+          };
+          
+          // Check if character needs shift modifier
+          const needsShift = (char) => {
+            return char >= 'A' && char <= 'Z' || 
+                   '!@#$%^&*()_+{}|:"<>?~'.includes(char);
+          };
+          
+          // Send each character as a key event
+          for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const keysym = getKeysymForChar(char);
+            const keyCode = getKeyCodeForChar(char);
+            const requiresShift = needsShift(char);
+            
+            console.log(`📋 VNC-VIEWER: Typing character '${char}' (${i+1}/${text.length}) - keysym: 0x${keysym.toString(16)}, keyCode: ${keyCode}, shift: ${requiresShift}`);
+            
+            try {
+              if (requiresShift && keyCode) {
+                // Send Shift+Key for uppercase letters and symbols
+                vncRef.current.sendKey(0xFFE1, 'ShiftLeft', true); // Shift down
+                vncRef.current.sendKey(keysym, keyCode); // Character
+                vncRef.current.sendKey(0xFFE1, 'ShiftLeft', false); // Shift up
+              } else if (keyCode) {
+                // Send regular key
+                vncRef.current.sendKey(keysym, keyCode);
+              } else {
+                // Fallback: send keysym only
+                vncRef.current.sendKey(keysym, null);
+              }
+              
+              // Small delay between characters to avoid overwhelming the terminal
+              if (i < text.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 20)); // 20ms delay
+              }
+            } catch (error) {
+              console.error(`❌ VNC-VIEWER: Error typing character '${char}':`, error);
+            }
           }
-          // Fallback to accessing underlying RFB object directly
-          else if (vncRef.current.rfb && vncRef.current.rfb.clipboardPasteFrom) {
-            console.log(`📋 VNC-VIEWER: Using underlying RFB.clipboardPasteFrom method`);
-            return vncRef.current.rfb.clipboardPasteFrom(text);
-          }
-          else {
-            console.warn(`📋 VNC-VIEWER: No clipboard method available on VNC ref`);
-          }
+          
+          console.log(`✅ VNC-VIEWER: Finished typing ${text.length} characters`);
+          return true;
+          
         } catch (error) {
-          console.error(`❌ VNC-VIEWER: Error pasting clipboard:`, error);
+          console.error(`❌ VNC-VIEWER: Error in character-by-character typing:`, error);
+          return false;
         }
       } else {
-        console.warn(`⚠️ VNC-VIEWER: Cannot paste clipboard - not connected or ref unavailable`);
+        console.warn(`⚠️ VNC-VIEWER: Cannot type text - connected: ${connected}, ref: ${!!vncRef.current}`);
+        return false;
       }
     },
     // Additional control methods
