@@ -50,6 +50,10 @@ const Zones = () => {
   const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
   const [vncReconnectKey, setVncReconnectKey] = useState(0); // Force VNC reconnection after kill→start
   
+  // VNC component refs to pass to action dropdowns
+  const previewVncRef = useRef(null);
+  const modalVncRef = useRef(null);
+  
   // VNC Display Settings
   const [vncSettings, setVncSettings] = useState({
     quality: 6,
@@ -1843,6 +1847,7 @@ const Zones = () => {
                                       </div>
                                       <div className='buttons' style={{margin: 0}}>
                                         <VncActionsDropdown
+                                          vncRef={previewVncRef}
                                           variant="button"
                                           onToggleReadOnly={() => {
                                             // Toggle read-only mode for preview VNC (not modal)
@@ -1956,6 +1961,7 @@ const Zones = () => {
                                       {zoneDetails.vnc_session_info ? (
                                         // Active session - show live preview with toggleable view-only mode
                                         <VncViewerReact
+                                          ref={previewVncRef}
                                           key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
                                           serverHostname={currentServer.hostname}
                                           serverPort={currentServer.port}
@@ -2712,6 +2718,7 @@ const Zones = () => {
               </p>
               <div className='buttons' style={{margin: 0}}>
                 <VncActionsDropdown
+                  vncRef={modalVncRef}
                   variant="button"
                   onScreenshot={() => {
                     // Proper screenshot implementation for modal
@@ -2839,6 +2846,7 @@ const Zones = () => {
                 </div>
               ) : currentServer && selectedZone ? (
                 <VncViewerReact
+                  ref={modalVncRef}
                   key={`vnc-modal-${selectedZone}-${vncReconnectKey}`}
                   serverHostname={currentServer.hostname}
                   serverPort={currentServer.port}
