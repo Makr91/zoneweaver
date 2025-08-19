@@ -50,6 +50,42 @@ const Zones = () => {
   const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
   const [vncReconnectKey, setVncReconnectKey] = useState(0); // Force VNC reconnection after kill→start
   
+  // VNC Display Settings
+  const [vncSettings, setVncSettings] = useState({
+    quality: 6,
+    compression: 2,
+    resize: 'scale', // 'none', 'scale', 'remote'
+    showDot: false
+  });
+  
+  // VNC Settings Change Handlers
+  const handleVncQualityChange = (quality) => {
+    setVncSettings(prev => ({ ...prev, quality }));
+    console.log(`🎛️ VNC SETTINGS: Quality changed to ${quality}`);
+  };
+  
+  const handleVncCompressionChange = (compression) => {
+    setVncSettings(prev => ({ ...prev, compression }));
+    console.log(`🎛️ VNC SETTINGS: Compression changed to ${compression}`);
+  };
+  
+  const handleVncResizeChange = (resize) => {
+    setVncSettings(prev => ({ ...prev, resize }));
+    console.log(`🎛️ VNC SETTINGS: Resize mode changed to ${resize}`);
+    // Force VNC component remount with new settings
+    setVncReconnectKey(prev => prev + 1);
+  };
+  
+  const handleVncShowDotChange = (showDot) => {
+    setVncSettings(prev => ({ ...prev, showDot }));
+    console.log(`🎛️ VNC SETTINGS: Show cursor dot changed to ${showDot}`);
+  };
+  
+  const handleVncClipboardPaste = (text) => {
+    console.log(`📋 VNC CLIPBOARD: Attempting to paste text of length ${text.length}`);
+    // This will be passed to VNC components that have the ref to call clipboardPaste
+  };
+  
   const { user } = useAuth();
   const { 
     getServers, 
@@ -1831,6 +1867,16 @@ const Zones = () => {
                                           onKillSession={() => handleKillVncSession(selectedZone)}
                                           isReadOnly={previewVncViewOnly}
                                           isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
+                                          // New VNC settings props
+                                          quality={vncSettings.quality}
+                                          compression={vncSettings.compression}
+                                          resize={vncSettings.resize}
+                                          showDot={vncSettings.showDot}
+                                          onQualityChange={handleVncQualityChange}
+                                          onCompressionChange={handleVncCompressionChange}
+                                          onResizeChange={handleVncResizeChange}
+                                          onShowDotChange={handleVncShowDotChange}
+                                          onClipboardPaste={handleVncClipboardPaste}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
                                         <button 
@@ -1916,6 +1962,15 @@ const Zones = () => {
                                           viewOnly={previewVncViewOnly}
                                           autoConnect={true}
                                           showControls={false}
+                                          // VNC Settings
+                                          quality={vncSettings.quality}
+                                          compression={vncSettings.compression}
+                                          resize={vncSettings.resize}
+                                          showDot={vncSettings.showDot}
+                                          resizeSession={vncSettings.resize === 'remote'}
+                                          onClipboard={(event) => {
+                                            console.log('📋 VNC PREVIEW: Clipboard received from server:', event);
+                                          }}
                                           style={{ width: '100%', height: '100%' }}
                                         />
                                       ) : zoneDetails.configuration?.zonepath ? (

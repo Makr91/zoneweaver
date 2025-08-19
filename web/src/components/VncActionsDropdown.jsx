@@ -12,7 +12,17 @@ const VncActionsDropdown = ({
   isReadOnly,
   isAdmin = false,
   className = '',
-  variant = 'default' // 'default' or 'button'
+  variant = 'default', // 'default' or 'button'
+  // New VNC feature props
+  quality = 6,
+  compression = 2,
+  resize = 'scale',
+  showDot = false,
+  onQualityChange = null,
+  onCompressionChange = null,
+  onResizeChange = null,
+  onShowDotChange = null,
+  onClipboardPaste = null
 }) => {
   const [isActive, setIsActive] = useState(false);
   const [showFunctionKeys, setShowFunctionKeys] = useState(false);
@@ -374,6 +384,155 @@ const VncActionsDropdown = ({
       </div>
 
       <hr className="dropdown-divider" />
+      
+      {/* VNC Display Settings */}
+      <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
+        <span className="icon is-small mr-2">
+          <i className="fas fa-desktop"></i>
+        </span>
+        <span>Display Settings</span>
+      </div>
+      <hr className="dropdown-divider" />
+      
+      {/* Scaling Options */}
+      <div className="dropdown-item">
+        <div className="field">
+          <label className="label is-small">Scaling Mode</label>
+          <div className="control">
+            <div className="select is-small is-fullwidth">
+              <select 
+                value={resize === 'scale' ? 'local' : resize === 'remote' ? 'remote' : 'none'} 
+                onChange={(e) => {
+                  if (onResizeChange) {
+                    const newValue = e.target.value === 'local' ? 'scale' : 
+                                   e.target.value === 'remote' ? 'remote' : 'none';
+                    onResizeChange(newValue);
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <option value="none">None (1:1)</option>
+                <option value="local">Local Scaling</option>
+                <option value="remote">Remote Resizing</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Quality Slider */}
+      <div className="dropdown-item">
+        <div className="field">
+          <label className="label is-small">Quality Level: {quality}</label>
+          <div className="control">
+            <input 
+              className="slider is-small is-fullwidth is-primary"
+              type="range"
+              min="0"
+              max="9"
+              value={quality}
+              onChange={(e) => {
+                if (onQualityChange) {
+                  onQualityChange(parseInt(e.target.value));
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              style={{width: '100%'}}
+            />
+          </div>
+          <div className="help is-size-7">
+            0 = Lowest quality, 9 = Highest quality
+          </div>
+        </div>
+      </div>
+      
+      {/* Compression Slider */}
+      <div className="dropdown-item">
+        <div className="field">
+          <label className="label is-small">Compression Level: {compression}</label>
+          <div className="control">
+            <input 
+              className="slider is-small is-fullwidth is-info"
+              type="range"
+              min="0"
+              max="9"
+              value={compression}
+              onChange={(e) => {
+                if (onCompressionChange) {
+                  onCompressionChange(parseInt(e.target.value));
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              style={{width: '100%'}}
+            />
+          </div>
+          <div className="help is-size-7">
+            0 = No compression, 9 = Max compression
+          </div>
+        </div>
+      </div>
+      
+      {/* Show Cursor Dot Toggle */}
+      <div className="dropdown-item">
+        <div className="field">
+          <div className="control">
+            <label className="checkbox">
+              <input 
+                type="checkbox"
+                checked={showDot}
+                onChange={(e) => {
+                  if (onShowDotChange) {
+                    onShowDotChange(e.target.checked);
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <span className="ml-2">Show cursor dot when no cursor</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <hr className="dropdown-divider" />
+      
+      {/* Clipboard Actions */}
+      {onClipboardPaste && (
+        <>
+          <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
+            <span className="icon is-small mr-2">
+              <i className="fas fa-clipboard"></i>
+            </span>
+            <span>Clipboard</span>
+          </div>
+          
+          <a 
+            className="dropdown-item" 
+            onClick={async () => {
+              try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                  const text = await navigator.clipboard.readText();
+                  if (text && onClipboardPaste) {
+                    onClipboardPaste(text);
+                    console.log('📋 VNC CLIPBOARD: Pasted text from browser clipboard');
+                  }
+                } else {
+                  console.warn('📋 VNC CLIPBOARD: Browser clipboard API not available');
+                }
+              } catch (error) {
+                console.error('📋 VNC CLIPBOARD: Error reading clipboard:', error);
+              }
+              setIsActive(false);
+            }}
+          >
+            <span className="icon is-small mr-2">
+              <i className="fas fa-paste"></i>
+            </span>
+            <span>Paste from Browser Clipboard</span>
+          </a>
+          
+          <hr className="dropdown-divider" />
+        </>
+      )}
       
       <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
         <span className="icon is-small mr-2">

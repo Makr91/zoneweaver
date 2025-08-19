@@ -18,9 +18,11 @@ const VncViewerReact = ({
   resize = 'scale',
   showDot = false,
   showControls = true,
+  resizeSession = false,
   onConnect = null,
   onDisconnect = null,
   onCtrlAltDel = null,
+  onClipboard = null,
   style = {},
   className = ''
 }) => {
@@ -131,6 +133,22 @@ const VncViewerReact = ({
     console.error(`🔒 REACT-VNC: Security failure for ${zoneName}:`, event);
     setError('VNC security failure - check server configuration');
     setConnecting(false);
+  };
+
+  // Clipboard event handler
+  const handleClipboard = (event) => {
+    console.log(`📋 REACT-VNC: Clipboard event for ${zoneName}:`, event);
+    if (onClipboard) {
+      onClipboard(event);
+    }
+  };
+
+  // Clipboard paste method - expose to parent via ref
+  const handleClipboardPaste = (text) => {
+    if (vncRef.current && connected && vncRef.current.clipboardPaste) {
+      console.log(`📋 REACT-VNC: Pasting clipboard text to ${zoneName}`);
+      vncRef.current.clipboardPaste(text);
+    }
   };
 
   if (error) {
@@ -250,7 +268,8 @@ const VncViewerReact = ({
           ref={vncRef}
           url={wsUrl}
           viewOnly={viewOnly}
-          scaleViewport={resize === 'scale'}
+          scaleViewport={resize === 'scale' && !resizeSession}
+          resizeSession={resizeSession}
           autoConnect={autoConnect}
           background="#000000"
           qualityLevel={quality}
@@ -267,6 +286,7 @@ const VncViewerReact = ({
           onDisconnect={handleVncDisconnect}
           onCredentialsRequired={handleCredentialsRequired}
           onSecurityFailure={handleSecurityFailure}
+          onClipboard={handleClipboard}
         />
       </div>
     </div>
