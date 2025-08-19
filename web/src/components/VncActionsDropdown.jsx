@@ -93,7 +93,7 @@ const VncActionsDropdown = ({
   const handleKeyboardShortcut = (keys) => {
     if (vncRef?.current?.sendKey) {
       const finalKeyString = typeof keys === 'string' && keys.includes('-') ? keys : buildKeyString(keys);
-      console.log(`Sending keyboard shortcut: ${finalKeyString}`);
+      console.log(`🎹 VNC DROPDOWN: Sending keyboard shortcut: ${finalKeyString}`);
       sendKeyboardShortcut(vncRef.current, finalKeyString);
       setIsActive(false);
     }
@@ -531,7 +531,16 @@ const VncActionsDropdown = ({
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      style={{width: '100%'}}
+                      style={{
+                        width: '100%',
+                        accentColor: '#007bff',
+                        background: `linear-gradient(to right, #007bff 0%, #007bff ${(quality/9)*100}%, #ccc ${(quality/9)*100}%, #ccc 100%)`,
+                        height: '8px',
+                        borderRadius: '4px',
+                        outline: 'none',
+                        WebkitAppearance: 'none',
+                        appearance: 'none'
+                      }}
                     />
                   </div>
                   <div className="help is-size-7" style={{marginTop: '1rem'}}>
@@ -557,7 +566,16 @@ const VncActionsDropdown = ({
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      style={{width: '100%'}}
+                      style={{
+                        width: '100%',
+                        accentColor: '#17a2b8',
+                        background: `linear-gradient(to right, #17a2b8 0%, #17a2b8 ${(compression/9)*100}%, #ccc ${(compression/9)*100}%, #ccc 100%)`,
+                        height: '8px',
+                        borderRadius: '4px',
+                        outline: 'none',
+                        WebkitAppearance: 'none',
+                        appearance: 'none'
+                      }}
                     />
                   </div>
                   <div className="help is-size-7" style={{marginTop: '1rem'}}>
@@ -654,7 +672,7 @@ const VncActionsDropdown = ({
               )}
 
               {/* Paste from Clipboard */}
-              {onClipboardPaste && (
+              {(onClipboardPaste || vncRef?.current?.clipboardPaste) && (
                 <>
                   <a 
                     className="dropdown-item" 
@@ -662,15 +680,21 @@ const VncActionsDropdown = ({
                       try {
                         if (navigator.clipboard && navigator.clipboard.readText) {
                           const text = await navigator.clipboard.readText();
-                          if (text && onClipboardPaste) {
-                            onClipboardPaste(text);
-                            console.log('📋 VNC CLIPBOARD: Pasted text from browser clipboard');
+                          if (text) {
+                            // Try the forwarded method first, fallback to callback
+                            if (vncRef?.current?.clipboardPaste) {
+                              vncRef.current.clipboardPaste(text);
+                              console.log('📋 VNC DROPDOWN: Pasted text via forwarded method');
+                            } else if (onClipboardPaste) {
+                              onClipboardPaste(text);
+                              console.log('📋 VNC DROPDOWN: Pasted text via callback');
+                            }
                           }
                         } else {
-                          console.warn('📋 VNC CLIPBOARD: Browser clipboard API not available');
+                          console.warn('📋 VNC DROPDOWN: Browser clipboard API not available');
                         }
                       } catch (error) {
-                        console.error('📋 VNC CLIPBOARD: Error reading clipboard:', error);
+                        console.error('📋 VNC DROPDOWN: Error reading clipboard:', error);
                       }
                       setIsActive(false);
                     }}

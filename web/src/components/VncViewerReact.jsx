@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { VncScreen } from 'react-vnc';
 
 /**
@@ -6,7 +6,7 @@ import { VncScreen } from 'react-vnc';
  * Replaces iframe-based approach with direct WebSocket connection
  * Provides 70-85% performance improvement by eliminating asset loading cascade
  */
-const VncViewerReact = ({ 
+const VncViewerReact = forwardRef(({ 
   serverHostname, 
   serverPort, 
   serverProtocol = 'https',
@@ -16,7 +16,7 @@ const VncViewerReact = ({
   quality = 6,
   compression = 2,
   resize = 'scale',
-  showDot = false,
+  showDot = true,
   showControls = true,
   resizeSession = false,
   onConnect = null,
@@ -25,7 +25,7 @@ const VncViewerReact = ({
   onClipboard = null,
   style = {},
   className = ''
-}) => {
+}, ref) => {
   const vncRef = useRef(null);
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -151,7 +151,37 @@ const VncViewerReact = ({
     }
   };
 
-  // Expose methods via ref
+  // Expose methods via useImperativeHandle for VncActionsDropdown
+  useImperativeHandle(ref, () => ({
+    // React-VNC methods
+    sendKey: (keysym, code, down = false) => {
+      if (vncRef.current && connected) {
+        console.log(`🎹 VNC-VIEWER: Forwarding sendKey(${keysym}, ${code}, ${down})`);
+        return vncRef.current.sendKey(keysym, code, down);
+      }
+    },
+    sendCtrlAltDel: () => {
+      if (vncRef.current && connected) {
+        console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
+        return vncRef.current.sendCtrlAltDel();
+      }
+    },
+    clipboardPaste: (text) => {
+      if (vncRef.current && connected) {
+        console.log(`📋 VNC-VIEWER: Forwarding clipboardPaste(${text.length} chars)`);
+        return vncRef.current.clipboardPaste(text);
+      }
+    },
+    // Additional control methods
+    connect: handleConnect,
+    disconnect: handleDisconnect,
+    refresh: handleRefresh,
+    // State
+    connected,
+    connecting
+  }), [connected, connecting]);
+
+  // Legacy support - expose methods via callback props
   useEffect(() => {
     if (onConnect && typeof onConnect === 'object') {
       onConnect.clipboardPaste = handleClipboardPaste;
@@ -298,6 +328,6 @@ const VncViewerReact = ({
       </div>
     </div>
   );
-};
+});
 
 export default VncViewerReact;
