@@ -316,13 +316,29 @@ export const ZoneTerminalProvider = ({ children }) => {
     console.log(`🎉 ZLOGIN RECONNECT: Session initialized successfully for ${zoneKey}`);
   }, [getZoneKey]);
 
+  const pasteTextToZone = useCallback(async (server, zoneName, text) => {
+    const zoneKey = getZoneKey(server, zoneName);
+    const ws = websocketsMap.current.get(zoneKey);
+    
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      console.log(`📋 ZLOGIN PASTE: Sending ${text.length} characters to ${zoneKey}`);
+      // Send clipboard text through WebSocket (simulates typing)
+      ws.send(text);
+      return true;
+    } else {
+      console.warn(`⚠️ ZLOGIN PASTE: Cannot paste - WebSocket not ready for ${zoneKey}`);
+      return false;
+    }
+  }, [getZoneKey]);
+
   const value = React.useMemo(() => ({
     term,
     attachTerminal,
     forceZoneSessionCleanup,
     startZloginSessionExplicitly,
-    initializeSessionFromExisting
-  }), [term, attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting]);
+    initializeSessionFromExisting,
+    pasteTextToZone
+  }), [term, attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting, pasteTextToZone]);
 
   return (
     <ZoneTerminalContext.Provider value={value}>

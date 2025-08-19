@@ -91,6 +91,63 @@ const Zones = () => {
     console.log(`📋 VNC CLIPBOARD: Attempting to paste text of length ${text.length}`);
     // This will be passed to VNC components that have the ref to call clipboardPaste
   };
+
+  // Paste handler functions for quick access buttons
+  const handleVncPreviewPaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && previewVncRef.current?.clipboardPaste) {
+        console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
+        previewVncRef.current.clipboardPaste(text);
+      } else {
+        console.warn('📋 VNC PREVIEW PASTE: No text or VNC ref unavailable');
+      }
+    } catch (error) {
+      console.error('📋 VNC PREVIEW PASTE: Clipboard access error:', error);
+    }
+  };
+
+  const handleVncModalPaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && modalVncRef.current?.clipboardPaste) {
+        console.log(`📋 VNC MODAL PASTE: Pasting ${text.length} characters`);
+        modalVncRef.current.clipboardPaste(text);
+      } else {
+        console.warn('📋 VNC MODAL PASTE: No text or VNC ref unavailable');
+      }
+    } catch (error) {
+      console.error('📋 VNC MODAL PASTE: Clipboard access error:', error);
+    }
+  };
+
+  const handleZloginPreviewPaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && currentServer && selectedZone) {
+        console.log(`📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`);
+        await pasteTextToZone(currentServer, selectedZone, text);
+      } else {
+        console.warn('📋 ZLOGIN PREVIEW PASTE: No text or session unavailable');
+      }
+    } catch (error) {
+      console.error('📋 ZLOGIN PREVIEW PASTE: Clipboard access error:', error);
+    }
+  };
+
+  const handleZloginModalPaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && currentServer && selectedZone) {
+        console.log(`📋 ZLOGIN MODAL PASTE: Pasting ${text.length} characters`);
+        await pasteTextToZone(currentServer, selectedZone, text);
+      } else {
+        console.warn('📋 ZLOGIN MODAL PASTE: No text or session unavailable');
+      }
+    } catch (error) {
+      console.error('📋 ZLOGIN MODAL PASTE: Clipboard access error:', error);
+    }
+  };
   
   const { user } = useAuth();
   const { 
@@ -120,7 +177,7 @@ const Zones = () => {
     getStorageDatasets
   } = useServers();
 
-  const { attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting } = useZoneTerminal();
+  const { attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting, pasteTextToZone } = useZoneTerminal();
 
   useEffect(() => {
     if (currentServer) {
@@ -1671,6 +1728,17 @@ const Zones = () => {
                                           isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
+                                        {/* Paste from Clipboard Button - zlogin Preview */}
+                                        <button 
+                                          className='button is-small is-info'
+                                          onClick={handleZloginPreviewPaste}
+                                          title="Paste from Browser Clipboard"
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        >
+                                          <span className='icon is-small'>
+                                            <i className='fas fa-paste'></i>
+                                          </span>
+                                        </button>
                                         <button 
                                           className='button is-small is-primary'
                                           onClick={() => {
@@ -1886,6 +1954,17 @@ const Zones = () => {
                                           onClipboardPaste={handleVncClipboardPaste}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
+                                        {/* Paste from Clipboard Button - VNC Preview */}
+                                        <button 
+                                          className='button is-small is-info'
+                                          onClick={handleVncPreviewPaste}
+                                          title="Paste from Browser Clipboard"
+                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                        >
+                                          <span className='icon is-small'>
+                                            <i className='fas fa-paste'></i>
+                                          </span>
+                                        </button>
                                         <button 
                                           className='button is-small is-primary'
                                           onClick={() => handleVncConsole(selectedZone)}
@@ -2567,6 +2646,17 @@ const Zones = () => {
                   isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
+                {/* Paste from Clipboard Button - zlogin Modal */}
+                <button 
+                  className='button is-small is-info'
+                  onClick={handleZloginModalPaste}
+                  title="Paste from Browser Clipboard"
+                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                >
+                  <span className='icon is-small'>
+                    <i className='fas fa-paste'></i>
+                  </span>
+                </button>
                 {/* Switch to VNC Console Button - Modal (second position for consistency) */}
                 <button 
                   className='button is-small is-warning'
@@ -2742,6 +2832,17 @@ const Zones = () => {
                   isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
+                {/* Paste from Clipboard Button - VNC Modal */}
+                <button 
+                  className='button is-small is-info'
+                  onClick={handleVncModalPaste}
+                  title="Paste from Browser Clipboard"
+                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                >
+                  <span className='icon is-small'>
+                    <i className='fas fa-paste'></i>
+                  </span>
+                </button>
                 {/* Switch to zlogin Console Button - Modal */}
                 <button 
                   className='button is-small is-warning'
