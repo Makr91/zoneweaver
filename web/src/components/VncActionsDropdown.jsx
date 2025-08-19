@@ -28,6 +28,7 @@ const VncActionsDropdown = ({
   const [showFunctionKeys, setShowFunctionKeys] = useState(false);
   const [showKeyboardInput, setShowKeyboardInput] = useState(false);
   const [showDisplaySettings, setShowDisplaySettings] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const [modifierKeys, setModifierKeys] = useState({
     ctrl: false,
     alt: false,
@@ -245,28 +246,10 @@ const VncActionsDropdown = ({
     <div 
       className="dropdown-content"
       style={{
-        backgroundColor: 'var(--bulma-scheme-main-bis)',
+        backgroundColor: '#f8f9fa',
         border: '1px solid var(--bulma-border)'
       }}
     >
-      {isAdmin && actualToggleHandler && (
-        <>
-          <a 
-            className="dropdown-item" 
-            onClick={() => {
-              actualToggleHandler();
-              setIsActive(false);
-            }}
-            title={actualIsReadOnly ? "Enable interactive mode" : "Enable read-only mode"}
-          >
-            <span className="icon mr-2">
-              <i className={`fas ${actualIsReadOnly ? 'fa-edit' : 'fa-eye'}`}></i>
-            </span>
-            {actualIsReadOnly ? 'Enable Interactive' : 'Set Read-Only'}
-          </a>
-          <hr className="dropdown-divider" />
-        </>
-      )}
       
       {/* Keyboard & Input Submenu */}
       <div 
@@ -306,7 +289,7 @@ const VncActionsDropdown = ({
             <div 
               className="dropdown-content"
               style={{
-                backgroundColor: 'var(--bulma-scheme-main-bis)',
+                backgroundColor: '#f8f9fa',
                 border: '1px solid var(--bulma-border)'
               }}
             >
@@ -437,7 +420,7 @@ const VncActionsDropdown = ({
                     <div 
                       className="dropdown-content"
                       style={{
-                        backgroundColor: 'var(--bulma-scheme-main-bis)',
+                        backgroundColor: '#f8f9fa',
                         border: '1px solid var(--bulma-border)'
                       }}
                     >
@@ -501,7 +484,7 @@ const VncActionsDropdown = ({
             <div 
               className="dropdown-content"
               style={{
-                backgroundColor: 'var(--bulma-scheme-main-bis)',
+                backgroundColor: '#f8f9fa',
                 border: '1px solid var(--bulma-border)'
               }}
             >
@@ -533,9 +516,9 @@ const VncActionsDropdown = ({
               
               {/* Quality Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '1rem'}}>
-                  <label className="label is-small" style={{marginBottom: '0.5rem'}}>Quality Level: {quality}</label>
-                  <div className="control" style={{marginTop: '0.75rem'}}>
+                <div className="field" style={{marginBottom: '1.5rem'}}>
+                  <label className="label is-small" style={{marginBottom: '1rem'}}>Quality Level: {quality}</label>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.25rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-primary"
                       type="range"
@@ -551,7 +534,7 @@ const VncActionsDropdown = ({
                       style={{width: '100%'}}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '0.5rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '0.75rem'}}>
                     0 = Lowest quality, 9 = Highest quality
                   </div>
                 </div>
@@ -559,9 +542,9 @@ const VncActionsDropdown = ({
               
               {/* Compression Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '1rem'}}>
-                  <label className="label is-small" style={{marginBottom: '0.5rem'}}>Compression Level: {compression}</label>
-                  <div className="control" style={{marginTop: '0.75rem'}}>
+                <div className="field" style={{marginBottom: '1.5rem'}}>
+                  <label className="label is-small" style={{marginBottom: '1rem'}}>Compression Level: {compression}</label>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.25rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-info"
                       type="range"
@@ -577,7 +560,7 @@ const VncActionsDropdown = ({
                       style={{width: '100%'}}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '0.5rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '0.75rem'}}>
                     0 = No compression, 9 = Max compression
                   </div>
                 </div>
@@ -608,79 +591,127 @@ const VncActionsDropdown = ({
         )}
       </div>
 
-      <hr className="dropdown-divider" />
-      
-      {/* Clipboard Actions */}
-      {onClipboardPaste && (
-        <>
-          <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-            <span className="icon is-small mr-2">
-              <i className="fas fa-clipboard"></i>
-            </span>
-            <span>Clipboard</span>
-          </div>
-          
-          <a 
-            className="dropdown-item" 
-            onClick={async () => {
-              try {
-                if (navigator.clipboard && navigator.clipboard.readText) {
-                  const text = await navigator.clipboard.readText();
-                  if (text && onClipboardPaste) {
-                    onClipboardPaste(text);
-                    console.log('📋 VNC CLIPBOARD: Pasted text from browser clipboard');
-                  }
-                } else {
-                  console.warn('📋 VNC CLIPBOARD: Browser clipboard API not available');
-                }
-              } catch (error) {
-                console.error('📋 VNC CLIPBOARD: Error reading clipboard:', error);
-              }
-              setIsActive(false);
+      {/* Actions Submenu */}
+      <div 
+        className="dropdown-item" 
+        style={{
+          position: 'relative', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center'
+        }}
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
+      >
+        <div style={{display: 'flex', alignItems: 'center'}}>
+          <span className="icon is-small mr-2">
+            <i className="fas fa-tools"></i>
+          </span>
+          <span>Actions</span>
+        </div>
+        <span className="icon is-small">
+          <i className="fas fa-chevron-right"></i>
+        </span>
+        
+        {/* Actions Submenu */}
+        {showActions && (
+          <div 
+            className="dropdown-menu" 
+            style={{
+              position: 'absolute',
+              ...calculateSubmenuPosition(300),
+              top: '0',
+              minWidth: '260px',
+              maxWidth: '300px',
+              zIndex: 1000
             }}
           >
-            <span className="icon is-small mr-2">
-              <i className="fas fa-paste"></i>
-            </span>
-            <span>Paste from Browser Clipboard</span>
-          </a>
-          
-          <hr className="dropdown-divider" />
-        </>
-      )}
-      
-      <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-        <span className="icon is-small mr-2">
-          <i className="fas fa-tools"></i>
-        </span>
-        <span>Actions</span>
+            <div 
+              className="dropdown-content"
+              style={{
+                backgroundColor: '#f8f9fa',
+                border: '1px solid var(--bulma-border)'
+              }}
+            >
+              {/* Enable Interactive/Read Only */}
+              {isAdmin && actualToggleHandler && (
+                <>
+                  <a 
+                    className="dropdown-item" 
+                    onClick={() => {
+                      actualToggleHandler();
+                      setIsActive(false);
+                    }}
+                    title={actualIsReadOnly ? "Enable interactive mode" : "Enable read-only mode"}
+                  >
+                    <span className="icon is-small mr-2">
+                      <i className={`fas ${actualIsReadOnly ? 'fa-edit' : 'fa-eye'}`}></i>
+                    </span>
+                    <span>{actualIsReadOnly ? 'Enable Interactive' : 'Set Read-Only'}</span>
+                  </a>
+                  <hr className="dropdown-divider" />
+                </>
+              )}
+
+              {/* Paste from Clipboard */}
+              {onClipboardPaste && (
+                <>
+                  <a 
+                    className="dropdown-item" 
+                    onClick={async () => {
+                      try {
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                          const text = await navigator.clipboard.readText();
+                          if (text && onClipboardPaste) {
+                            onClipboardPaste(text);
+                            console.log('📋 VNC CLIPBOARD: Pasted text from browser clipboard');
+                          }
+                        } else {
+                          console.warn('📋 VNC CLIPBOARD: Browser clipboard API not available');
+                        }
+                      } catch (error) {
+                        console.error('📋 VNC CLIPBOARD: Error reading clipboard:', error);
+                      }
+                      setIsActive(false);
+                    }}
+                  >
+                    <span className="icon is-small mr-2">
+                      <i className="fas fa-paste"></i>
+                    </span>
+                    <span>Paste from Browser Clipboard</span>
+                  </a>
+                  <hr className="dropdown-divider" />
+                </>
+              )}
+
+              <a className="dropdown-item" onClick={handleScreenshot}>
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-camera"></i>
+                </span>
+                <span>Take Screenshot</span>
+              </a>
+              
+              {onFullScreen && (
+                <a className="dropdown-item" onClick={handleFullScreen}>
+                  <span className="icon is-small mr-2">
+                    <i className="fas fa-expand"></i>
+                  </span>
+                  <span>Full Screen</span>
+                </a>
+              )}
+              
+              {onNewTab && (
+                <a className="dropdown-item" onClick={handleNewTab}>
+                  <span className="icon is-small mr-2">
+                    <i className="fas fa-external-link-alt"></i>
+                  </span>
+                  <span>Open in New Tab</span>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-      <hr className="dropdown-divider" />
-      
-      <a className="dropdown-item" onClick={handleScreenshot}>
-        <span className="icon is-small mr-2">
-          <i className="fas fa-camera"></i>
-        </span>
-        <span>Take Screenshot</span>
-      </a>
-      
-      {onFullScreen && (
-        <a className="dropdown-item" onClick={handleFullScreen}>
-          <span className="icon is-small mr-2">
-            <i className="fas fa-expand"></i>
-          </span>
-          <span>Full Screen</span>
-        </a>
-      )}
-      
-      {onNewTab && (
-        <a className="dropdown-item" onClick={handleNewTab}>
-          <span className="icon is-small mr-2">
-            <i className="fas fa-external-link-alt"></i>
-          </span>
-          <span>Open in New Tab</span>
-        </a>
-      )}
       
       {onKillSession && (
         <>
