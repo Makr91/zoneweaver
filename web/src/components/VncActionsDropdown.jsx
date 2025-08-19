@@ -26,6 +26,8 @@ const VncActionsDropdown = ({
 }) => {
   const [isActive, setIsActive] = useState(false);
   const [showFunctionKeys, setShowFunctionKeys] = useState(false);
+  const [showKeyboardInput, setShowKeyboardInput] = useState(false);
+  const [showDisplaySettings, setShowDisplaySettings] = useState(false);
   const [modifierKeys, setModifierKeys] = useState({
     ctrl: false,
     alt: false,
@@ -223,7 +225,13 @@ const VncActionsDropdown = ({
   const actualToggleHandler = onToggleReadOnly || onToggleViewOnly;
 
   const dropdownContent = (
-    <div className="dropdown-content">
+    <div 
+      className="dropdown-content"
+      style={{
+        backgroundColor: 'var(--bulma-scheme-main-bis)',
+        border: '1px solid var(--bulma-border)'
+      }}
+    >
       {isAdmin && actualToggleHandler && (
         <>
           <a 
@@ -243,254 +251,330 @@ const VncActionsDropdown = ({
         </>
       )}
       
-      <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-        <span className="icon is-small mr-2">
-          <i className="fas fa-keyboard"></i>
-        </span>
-        <span>Keyboard Shortcuts</span>
-      </div>
-      <hr className="dropdown-divider" />
-      
-      <a className="dropdown-item" onClick={handleCtrlAltDel}>
-        <span className="icon is-small mr-2">
-          <i className="fas fa-power-off"></i>
-        </span>
-        <span>Ctrl+Alt+Del</span>
-      </a>
-      
-      <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+Tab')}>
-        <span className="icon is-small mr-2">
-          <i className="fas fa-window-restore"></i>
-        </span>
-        <span>Alt+Tab</span>
-      </a>
-      
-      <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+F4')}>
-        <span className="icon is-small mr-2">
-          <i className="fas fa-times"></i>
-        </span>
-        <span>Alt+F4</span>
-      </a>
-
-      <hr className="dropdown-divider" />
-      
-      {/* Modifier Key Toggles */}
-      <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-        <span className="icon is-small mr-2">
-          <i className="fas fa-hand-paper"></i>
-        </span>
-        <span>Modifier Keys</span>
-      </div>
-      
-      <div className="dropdown-item" style={{padding: '0.375rem 0.75rem'}}>
-        <div className="field is-grouped">
-          <div className="control">
-            <button 
-              className={`button is-small ${modifierKeys.ctrl ? 'is-primary' : 'is-light'}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleModifier('ctrl');
-              }}
-              title={`CTRL ${modifierKeys.ctrl ? 'ON' : 'OFF'} - Click to toggle`}
-            >
-              <span className="icon is-small">
-                <i className={`fas ${modifierKeys.ctrl ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
-              </span>
-              <span>CTRL</span>
-            </button>
-          </div>
-          <div className="control">
-            <button 
-              className={`button is-small ${modifierKeys.alt ? 'is-warning' : 'is-light'}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleModifier('alt');
-              }}
-              title={`ALT ${modifierKeys.alt ? 'ON' : 'OFF'} - Click to toggle`}
-            >
-              <span className="icon is-small">
-                <i className={`fas ${modifierKeys.alt ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
-              </span>
-              <span>ALT</span>
-            </button>
-          </div>
-          <div className="control">
-            <button 
-              className={`button is-small ${modifierKeys.shift ? 'is-info' : 'is-light'}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleModifier('shift');
-              }}
-              title={`SHIFT ${modifierKeys.shift ? 'ON' : 'OFF'} - Click to toggle`}
-            >
-              <span className="icon is-small">
-                <i className={`fas ${modifierKeys.shift ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
-              </span>
-              <span>SHIFT</span>
-            </button>
-          </div>
-        </div>
-        {(modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift) && (
-          <div className="help is-size-7 has-text-grey mt-1">
-            Active modifiers will be combined with function keys
-          </div>
-        )}
-      </div>
-
-      {/* Function Keys Submenu */}
+      {/* Keyboard & Input Submenu */}
       <div 
         className="dropdown-item" 
         style={{position: 'relative'}}
-        onMouseEnter={() => setShowFunctionKeys(true)}
-        onMouseLeave={() => setShowFunctionKeys(false)}
+        onMouseEnter={() => setShowKeyboardInput(true)}
+        onMouseLeave={() => setShowKeyboardInput(false)}
       >
         <span className="icon is-small mr-2">
           <i className="fas fa-keyboard"></i>
         </span>
-        <span>Function Keys</span>
+        <span>Keyboard & Input</span>
         <span className="icon is-small ml-auto">
           <i className="fas fa-chevron-right"></i>
         </span>
         
-        {/* Submenu */}
-        {showFunctionKeys && (
+        {/* Keyboard Input Submenu */}
+        {showKeyboardInput && (
           <div 
             className="dropdown-menu" 
             style={{
               position: 'absolute',
               left: '100%',
               top: '0',
-              minWidth: '120px',
+              minWidth: '280px',
+              maxWidth: '350px',
               zIndex: 1000
             }}
           >
-            <div className="dropdown-content">
-              {[...Array(12)].map((_, i) => (
-                <a 
-                  key={i}
-                  className="dropdown-item" 
-                  onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
-                  title={`Send F${i + 1} key to guest`}
-                >
-                  <span className="icon is-small mr-2">
-                    <i className="fas fa-keyboard"></i>
-                  </span>
-                  <span>F{i + 1}</span>
-                </a>
-              ))}
+            <div 
+              className="dropdown-content"
+              style={{
+                backgroundColor: 'var(--bulma-scheme-main-bis)',
+                border: '1px solid var(--bulma-border)'
+              }}
+            >
+              {/* Common Shortcuts */}
+              <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-keyboard"></i>
+                </span>
+                <span>Common Shortcuts</span>
+              </div>
+              <hr className="dropdown-divider" />
+              
+              <a className="dropdown-item" onClick={handleCtrlAltDel}>
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-power-off"></i>
+                </span>
+                <span>Ctrl+Alt+Del</span>
+              </a>
+              
+              <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+Tab')}>
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-window-restore"></i>
+                </span>
+                <span>Alt+Tab</span>
+              </a>
+              
+              <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+F4')}>
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-times"></i>
+                </span>
+                <span>Alt+F4</span>
+              </a>
+
+              <hr className="dropdown-divider" />
+              
+              {/* Modifier Key Toggles */}
+              <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-hand-paper"></i>
+                </span>
+                <span>Modifier Keys</span>
+              </div>
+              
+              <div className="dropdown-item" style={{padding: '0.375rem 0.75rem'}}>
+                <div className="field is-grouped">
+                  <div className="control">
+                    <button 
+                      className={`button is-small ${modifierKeys.ctrl ? 'is-primary' : 'is-light'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleModifier('ctrl');
+                      }}
+                      title={`CTRL ${modifierKeys.ctrl ? 'ON' : 'OFF'} - Click to toggle`}
+                    >
+                      <span className="icon is-small">
+                        <i className={`fas ${modifierKeys.ctrl ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+                      </span>
+                      <span>CTRL</span>
+                    </button>
+                  </div>
+                  <div className="control">
+                    <button 
+                      className={`button is-small ${modifierKeys.alt ? 'is-warning' : 'is-light'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleModifier('alt');
+                      }}
+                      title={`ALT ${modifierKeys.alt ? 'ON' : 'OFF'} - Click to toggle`}
+                    >
+                      <span className="icon is-small">
+                        <i className={`fas ${modifierKeys.alt ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+                      </span>
+                      <span>ALT</span>
+                    </button>
+                  </div>
+                  <div className="control">
+                    <button 
+                      className={`button is-small ${modifierKeys.shift ? 'is-info' : 'is-light'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleModifier('shift');
+                      }}
+                      title={`SHIFT ${modifierKeys.shift ? 'ON' : 'OFF'} - Click to toggle`}
+                    >
+                      <span className="icon is-small">
+                        <i className={`fas ${modifierKeys.shift ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+                      </span>
+                      <span>SHIFT</span>
+                    </button>
+                  </div>
+                </div>
+                {(modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift) && (
+                  <div className="help is-size-7 has-text-grey mt-1">
+                    Active modifiers will be combined with function keys
+                  </div>
+                )}
+              </div>
+
+              <hr className="dropdown-divider" />
+
+              {/* Function Keys Submenu */}
+              <div 
+                className="dropdown-item" 
+                style={{position: 'relative'}}
+                onMouseEnter={() => setShowFunctionKeys(true)}
+                onMouseLeave={() => setShowFunctionKeys(false)}
+              >
+                <span className="icon is-small mr-2">
+                  <i className="fas fa-keyboard"></i>
+                </span>
+                <span>Function Keys</span>
+                <span className="icon is-small ml-auto">
+                  <i className="fas fa-chevron-right"></i>
+                </span>
+                
+                {/* Function Keys Sub-submenu */}
+                {showFunctionKeys && (
+                  <div 
+                    className="dropdown-menu" 
+                    style={{
+                      position: 'absolute',
+                      left: '100%',
+                      top: '0',
+                      minWidth: '140px',
+                      zIndex: 1001
+                    }}
+                  >
+                    <div 
+                      className="dropdown-content"
+                      style={{
+                        backgroundColor: 'var(--bulma-scheme-main-bis)',
+                        border: '1px solid var(--bulma-border)'
+                      }}
+                    >
+                      {[...Array(12)].map((_, i) => (
+                        <a 
+                          key={i}
+                          className="dropdown-item" 
+                          onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
+                          title={`Send ${modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift ? buildKeyString(`F${i + 1}`) : `F${i + 1}`} to guest`}
+                        >
+                          <span className="icon is-small mr-2">
+                            <i className="fas fa-keyboard"></i>
+                          </span>
+                          <span>F{i + 1}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      <hr className="dropdown-divider" />
-      
-      {/* VNC Display Settings */}
-      <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
+      {/* Display Settings Submenu */}
+      <div 
+        className="dropdown-item" 
+        style={{position: 'relative'}}
+        onMouseEnter={() => setShowDisplaySettings(true)}
+        onMouseLeave={() => setShowDisplaySettings(false)}
+      >
         <span className="icon is-small mr-2">
           <i className="fas fa-desktop"></i>
         </span>
         <span>Display Settings</span>
-      </div>
-      <hr className="dropdown-divider" />
-      
-      {/* Scaling Options */}
-      <div className="dropdown-item">
-        <div className="field">
-          <label className="label is-small">Scaling Mode</label>
-          <div className="control">
-            <div className="select is-small is-fullwidth">
-              <select 
-                value={resize === 'scale' ? 'local' : resize === 'remote' ? 'remote' : 'none'} 
-                onChange={(e) => {
-                  if (onResizeChange) {
-                    const newValue = e.target.value === 'local' ? 'scale' : 
-                                   e.target.value === 'remote' ? 'remote' : 'none';
-                    onResizeChange(newValue);
-                  }
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="none">None (1:1)</option>
-                <option value="local">Local Scaling</option>
-                <option value="remote">Remote Resizing</option>
-              </select>
+        <span className="icon is-small ml-auto">
+          <i className="fas fa-chevron-right"></i>
+        </span>
+        
+        {/* Display Settings Submenu */}
+        {showDisplaySettings && (
+          <div 
+            className="dropdown-menu" 
+            style={{
+              position: 'absolute',
+              left: '100%',
+              top: '0',
+              minWidth: '300px',
+              maxWidth: '350px',
+              zIndex: 1000
+            }}
+          >
+            <div 
+              className="dropdown-content"
+              style={{
+                backgroundColor: 'var(--bulma-scheme-main-bis)',
+                border: '1px solid var(--bulma-border)'
+              }}
+            >
+              {/* Scaling Options */}
+              <div className="dropdown-item">
+                <div className="field">
+                  <label className="label is-small">Scaling Mode</label>
+                  <div className="control">
+                    <div className="select is-small is-fullwidth">
+                      <select 
+                        value={resize === 'scale' ? 'local' : resize === 'remote' ? 'remote' : 'none'} 
+                        onChange={(e) => {
+                          if (onResizeChange) {
+                            const newValue = e.target.value === 'local' ? 'scale' : 
+                                           e.target.value === 'remote' ? 'remote' : 'none';
+                            onResizeChange(newValue);
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <option value="none">None (1:1)</option>
+                        <option value="local">Local Scaling</option>
+                        <option value="remote">Remote Resizing</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quality Slider */}
+              <div className="dropdown-item">
+                <div className="field">
+                  <label className="label is-small">Quality Level: {quality}</label>
+                  <div className="control">
+                    <input 
+                      className="slider is-small is-fullwidth is-primary"
+                      type="range"
+                      min="0"
+                      max="9"
+                      value={quality}
+                      onChange={(e) => {
+                        if (onQualityChange) {
+                          onQualityChange(parseInt(e.target.value));
+                        }
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{width: '100%'}}
+                    />
+                  </div>
+                  <div className="help is-size-7">
+                    0 = Lowest quality, 9 = Highest quality
+                  </div>
+                </div>
+              </div>
+              
+              {/* Compression Slider */}
+              <div className="dropdown-item">
+                <div className="field">
+                  <label className="label is-small">Compression Level: {compression}</label>
+                  <div className="control">
+                    <input 
+                      className="slider is-small is-fullwidth is-info"
+                      type="range"
+                      min="0"
+                      max="9"
+                      value={compression}
+                      onChange={(e) => {
+                        if (onCompressionChange) {
+                          onCompressionChange(parseInt(e.target.value));
+                        }
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{width: '100%'}}
+                    />
+                  </div>
+                  <div className="help is-size-7">
+                    0 = No compression, 9 = Max compression
+                  </div>
+                </div>
+              </div>
+              
+              {/* Show Cursor Dot Toggle */}
+              <div className="dropdown-item">
+                <div className="field">
+                  <div className="control">
+                    <label className="checkbox">
+                      <input 
+                        type="checkbox"
+                        checked={showDot}
+                        onChange={(e) => {
+                          if (onShowDotChange) {
+                            onShowDotChange(e.target.checked);
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="ml-2">Show cursor dot when no cursor</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* Quality Slider */}
-      <div className="dropdown-item">
-        <div className="field">
-          <label className="label is-small">Quality Level: {quality}</label>
-          <div className="control">
-            <input 
-              className="slider is-small is-fullwidth is-primary"
-              type="range"
-              min="0"
-              max="9"
-              value={quality}
-              onChange={(e) => {
-                if (onQualityChange) {
-                  onQualityChange(parseInt(e.target.value));
-                }
-              }}
-              onClick={(e) => e.stopPropagation()}
-              style={{width: '100%'}}
-            />
-          </div>
-          <div className="help is-size-7">
-            0 = Lowest quality, 9 = Highest quality
-          </div>
-        </div>
-      </div>
-      
-      {/* Compression Slider */}
-      <div className="dropdown-item">
-        <div className="field">
-          <label className="label is-small">Compression Level: {compression}</label>
-          <div className="control">
-            <input 
-              className="slider is-small is-fullwidth is-info"
-              type="range"
-              min="0"
-              max="9"
-              value={compression}
-              onChange={(e) => {
-                if (onCompressionChange) {
-                  onCompressionChange(parseInt(e.target.value));
-                }
-              }}
-              onClick={(e) => e.stopPropagation()}
-              style={{width: '100%'}}
-            />
-          </div>
-          <div className="help is-size-7">
-            0 = No compression, 9 = Max compression
-          </div>
-        </div>
-      </div>
-      
-      {/* Show Cursor Dot Toggle */}
-      <div className="dropdown-item">
-        <div className="field">
-          <div className="control">
-            <label className="checkbox">
-              <input 
-                type="checkbox"
-                checked={showDot}
-                onChange={(e) => {
-                  if (onShowDotChange) {
-                    onShowDotChange(e.target.checked);
-                  }
-                }}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <span className="ml-2">Show cursor dot when no cursor</span>
-            </label>
-          </div>
-        </div>
+        )}
       </div>
 
       <hr className="dropdown-divider" />

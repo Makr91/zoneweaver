@@ -151,6 +151,13 @@ const VncViewerReact = ({
     }
   };
 
+  // Expose methods via ref
+  useEffect(() => {
+    if (onConnect && typeof onConnect === 'object') {
+      onConnect.clipboardPaste = handleClipboardPaste;
+    }
+  }, [connected]);
+
   if (error) {
     return (
       <div className={`vnc-viewer-error ${className}`} style={style}>

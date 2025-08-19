@@ -79,6 +79,8 @@ const Zones = () => {
   const handleVncShowDotChange = (showDot) => {
     setVncSettings(prev => ({ ...prev, showDot }));
     console.log(`🎛️ VNC SETTINGS: Show cursor dot changed to ${showDot}`);
+    // Force VNC component remount for cursor dot setting to take effect
+    setVncReconnectKey(prev => prev + 1);
   };
   
   const handleVncClipboardPaste = (text) => {
