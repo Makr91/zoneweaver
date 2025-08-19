@@ -543,7 +543,7 @@ const VncActionsDropdown = ({
                       }}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '1rem', marginBottom: '0.5rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '1.5rem', marginBottom: '0.5rem'}}>
                     0 = Lowest quality, 9 = Highest quality
                   </div>
                 </div>
@@ -578,7 +578,7 @@ const VncActionsDropdown = ({
                       }}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '1rem', marginBottom: '0.5rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '1.5rem', marginBottom: '0.5rem'}}>
                     0 = No compression, 9 = Max compression
                   </div>
                 </div>
