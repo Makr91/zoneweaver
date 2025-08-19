@@ -13,6 +13,7 @@ const VncActionsDropdown = ({
   variant = 'default' // 'default' or 'button'
 }) => {
   const [isActive, setIsActive] = useState(false);
+  const [showFunctionKeys, setShowFunctionKeys] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -135,20 +136,51 @@ const VncActionsDropdown = ({
         <span>Alt+F4</span>
       </a>
 
-      {/* Individual Function Key Items */}
-      {[...Array(12)].map((_, i) => (
-        <a 
-          key={i}
-          className="dropdown-item" 
-          onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
-          title={`Send F${i + 1} key to guest`}
-        >
-          <span className="icon is-small mr-2">
-            <i className="fas fa-keyboard"></i>
-          </span>
-          <span>F{i + 1}</span>
-        </a>
-      ))}
+      {/* Function Keys Submenu */}
+      <div 
+        className="dropdown-item" 
+        style={{position: 'relative'}}
+        onMouseEnter={() => setShowFunctionKeys(true)}
+        onMouseLeave={() => setShowFunctionKeys(false)}
+      >
+        <span className="icon is-small mr-2">
+          <i className="fas fa-keyboard"></i>
+        </span>
+        <span>Function Keys</span>
+        <span className="icon is-small ml-auto">
+          <i className="fas fa-chevron-right"></i>
+        </span>
+        
+        {/* Submenu */}
+        {showFunctionKeys && (
+          <div 
+            className="dropdown-menu" 
+            style={{
+              position: 'absolute',
+              left: '100%',
+              top: '0',
+              minWidth: '120px',
+              zIndex: 1000
+            }}
+          >
+            <div className="dropdown-content">
+              {[...Array(12)].map((_, i) => (
+                <a 
+                  key={i}
+                  className="dropdown-item" 
+                  onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
+                  title={`Send F${i + 1} key to guest`}
+                >
+                  <span className="icon is-small mr-2">
+                    <i className="fas fa-keyboard"></i>
+                  </span>
+                  <span>F{i + 1}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <hr className="dropdown-divider" />
       
