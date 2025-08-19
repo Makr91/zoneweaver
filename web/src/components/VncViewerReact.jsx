@@ -153,23 +153,41 @@ const VncViewerReact = forwardRef(({
 
   // Expose methods via useImperativeHandle for VncActionsDropdown
   useImperativeHandle(ref, () => ({
-    // React-VNC methods
-    sendKey: (keysym, code, down = false) => {
+    // React-VNC methods - properly forwarded from VncScreen ref
+    sendKey: (keysym, code, down) => {
       if (vncRef.current && connected) {
-        console.log(`🎹 VNC-VIEWER: Forwarding sendKey(${keysym}, ${code}, ${down})`);
-        return vncRef.current.sendKey(keysym, code, down);
+        console.log(`🎹 VNC-VIEWER: Forwarding sendKey(keysym: ${keysym}, code: "${code}", down: ${down})`);
+        try {
+          return vncRef.current.sendKey(keysym, code, down);
+        } catch (error) {
+          console.error(`❌ VNC-VIEWER: Error sending key:`, error);
+        }
+      } else {
+        console.warn(`⚠️ VNC-VIEWER: Cannot send key - not connected or ref unavailable`);
       }
     },
     sendCtrlAltDel: () => {
       if (vncRef.current && connected) {
         console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
-        return vncRef.current.sendCtrlAltDel();
+        try {
+          return vncRef.current.sendCtrlAltDel();
+        } catch (error) {
+          console.error(`❌ VNC-VIEWER: Error sending Ctrl+Alt+Del:`, error);
+        }
+      } else {
+        console.warn(`⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`);
       }
     },
     clipboardPaste: (text) => {
       if (vncRef.current && connected) {
         console.log(`📋 VNC-VIEWER: Forwarding clipboardPaste(${text.length} chars)`);
-        return vncRef.current.clipboardPaste(text);
+        try {
+          return vncRef.current.clipboardPaste(text);
+        } catch (error) {
+          console.error(`❌ VNC-VIEWER: Error pasting clipboard:`, error);
+        }
+      } else {
+        console.warn(`⚠️ VNC-VIEWER: Cannot paste clipboard - not connected or ref unavailable`);
       }
     },
     // Additional control methods
@@ -178,7 +196,9 @@ const VncViewerReact = forwardRef(({
     refresh: handleRefresh,
     // State
     connected,
-    connecting
+    connecting,
+    // Access to underlying RFB object for advanced operations
+    rfb: vncRef.current?.rfb || null
   }), [connected, connecting]);
 
   // Legacy support - expose methods via callback props

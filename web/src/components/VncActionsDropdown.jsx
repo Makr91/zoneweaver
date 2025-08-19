@@ -90,12 +90,17 @@ const VncActionsDropdown = ({
     return baseKey.toLowerCase();
   };
 
-  const handleKeyboardShortcut = (keys) => {
+  const handleKeyboardShortcut = (keyCode, keysym, withModifiers = true) => {
     if (vncRef?.current?.sendKey) {
-      const finalKeyString = typeof keys === 'string' && keys.includes('-') ? keys : buildKeyString(keys);
-      console.log(`🎹 VNC DROPDOWN: Sending keyboard shortcut: ${finalKeyString}`);
-      sendKeyboardShortcut(vncRef.current, finalKeyString);
-      setIsActive(false);
+      const activeModifiers = withModifiers ? Object.keys(modifierKeys).filter(mod => modifierKeys[mod]) : [];
+      console.log(`🎹 VNC DROPDOWN: Sending key: ${keyCode} (keysym: 0x${keysym.toString(16)}) with modifiers: [${activeModifiers.join(', ')}]`);
+      
+      try {
+        sendKeyWithModifiers(vncRef.current, keysym, keyCode, activeModifiers);
+        setIsActive(false);
+      } catch (error) {
+        console.error(`❌ VNC DROPDOWN: Error sending keyboard shortcut:`, error);
+      }
     }
   };
 
@@ -130,37 +135,10 @@ const VncActionsDropdown = ({
     '5': 0x035, '6': 0x036, '7': 0x037, '8': 0x038, '9': 0x039
   };
 
-  // Function to send complex keyboard shortcuts using react-vnc's sendKey method
-  const sendKeyboardShortcut = (vncRef, keyString) => {
+  // Function to send keys with modifiers using the proper react-vnc/noVNC API
+  const sendKeyWithModifiers = (vncRef, keysym, keyCode, modifiers) => {
     if (!vncRef.sendKey) {
       console.warn('VNC sendKey method not available');
-      return;
-    }
-
-    console.log(`🎹 VNC KEYS: Sending keyboard shortcut: ${keyString}`);
-
-    // Parse the key combination
-    const parts = keyString.toLowerCase().split('-');
-    const modifiers = [];
-    let targetKey = null;
-
-    // Separate modifiers from the target key
-    for (const part of parts) {
-      if (['ctrl', 'alt', 'shift'].includes(part)) {
-        modifiers.push(part);
-      } else {
-        targetKey = part;
-      }
-    }
-
-    if (!targetKey) {
-      console.warn('No target key found in keyboard shortcut:', keyString);
-      return;
-    }
-
-    const targetKeysym = keysymMap[targetKey];
-    if (!targetKeysym) {
-      console.warn('Unknown key:', targetKey);
       return;
     }
 
@@ -169,29 +147,42 @@ const VncActionsDropdown = ({
       for (const modifier of modifiers) {
         const modifierKeysym = keysymMap[modifier];
         if (modifierKeysym) {
-          console.log(`🎹 VNC KEYS: Sending ${modifier} DOWN (${modifierKeysym.toString(16)})`);
-          vncRef.sendKey(modifierKeysym, modifier, true); // true = key down
+          console.log(`🎹 VNC KEYS: Sending ${modifier} DOWN (keysym: 0x${modifierKeysym.toString(16)})`);
+          vncRef.sendKey(modifierKeysym, modifier.charAt(0).toUpperCase() + modifier.slice(1) + 'Left', true);
         }
       }
 
-      // Step 2: Send target key DOWN then UP
-      console.log(`🎹 VNC KEYS: Sending ${targetKey} DOWN-UP (${targetKeysym.toString(16)})`);
-      vncRef.sendKey(targetKeysym, targetKey, true);  // key down
-      vncRef.sendKey(targetKeysym, targetKey, false); // key up
+      // Step 2: Send target key (if down not specified, both press and release are sent)
+      console.log(`🎹 VNC KEYS: Sending ${keyCode} (keysym: 0x${keysym.toString(16)})`);
+      vncRef.sendKey(keysym, keyCode);
 
       // Step 3: Send modifier keys UP (in reverse order)
       for (let i = modifiers.length - 1; i >= 0; i--) {
         const modifier = modifiers[i];
         const modifierKeysym = keysymMap[modifier];
         if (modifierKeysym) {
-          console.log(`🎹 VNC KEYS: Sending ${modifier} UP (${modifierKeysym.toString(16)})`);
-          vncRef.sendKey(modifierKeysym, modifier, false); // false = key up
+          console.log(`🎹 VNC KEYS: Sending ${modifier} UP (keysym: 0x${modifierKeysym.toString(16)})`);
+          vncRef.sendKey(modifierKeysym, modifier.charAt(0).toUpperCase() + modifier.slice(1) + 'Left', false);
         }
       }
 
-      console.log(`✅ VNC KEYS: Successfully sent keyboard shortcut: ${keyString}`);
+      console.log(`✅ VNC KEYS: Successfully sent key with modifiers`);
     } catch (error) {
-      console.error('❌ VNC KEYS: Error sending keyboard shortcut:', error);
+      console.error('❌ VNC KEYS: Error sending key with modifiers:', error);
+    }
+  };
+
+  // Legacy function for backward compatibility with common shortcuts
+  const sendKeyboardShortcut = (vncRef, keyString) => {
+    console.log(`🎹 VNC KEYS: Legacy shortcut: ${keyString}`);
+    
+    // Handle common shortcuts
+    if (keyString.toLowerCase() === 'alt+tab') {
+      sendKeyWithModifiers(vncRef, keysymMap['tab'], 'Tab', ['alt']);
+    } else if (keyString.toLowerCase() === 'alt+f4') {
+      sendKeyWithModifiers(vncRef, keysymMap['f4'], 'F4', ['alt']);
+    } else {
+      console.warn('Unknown legacy shortcut:', keyString);
     }
   };
 
@@ -424,19 +415,24 @@ const VncActionsDropdown = ({
                         border: '1px solid var(--bulma-border)'
                       }}
                     >
-                      {[...Array(12)].map((_, i) => (
-                        <a 
-                          key={i}
-                          className="dropdown-item" 
-                          onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
-                          title={`Send ${modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift ? buildKeyString(`F${i + 1}`) : `F${i + 1}`} to guest`}
-                        >
-                          <span className="icon is-small mr-2">
-                            <i className="fas fa-keyboard"></i>
-                          </span>
-                          <span>F{i + 1}</span>
-                        </a>
-                      ))}
+                      {[...Array(12)].map((_, i) => {
+                        const fKeyNum = i + 1;
+                        const keyCode = `F${fKeyNum}`;
+                        const keysym = keysymMap[`f${fKeyNum}`];
+                        return (
+                          <a 
+                            key={i}
+                            className="dropdown-item" 
+                            onClick={() => handleKeyboardShortcut(keyCode, keysym, true)}
+                            title={`Send ${modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift ? buildKeyString(`F${fKeyNum}`) : `F${fKeyNum}`} to guest`}
+                          >
+                            <span className="icon is-small mr-2">
+                              <i className="fas fa-keyboard"></i>
+                            </span>
+                            <span>F{fKeyNum}</span>
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
