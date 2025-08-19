@@ -288,6 +288,79 @@ const Zones = () => {
   };
 
   /**
+   * Wait for VNC session to become active after start API call
+   * Polls the VNC info endpoint until status shows 'active'
+   */
+  const waitForVncSessionReady = async (zoneName, maxAttempts = 10) => {
+    if (!currentServer) {
+      return { ready: false, reason: 'No current server selected' };
+    }
+
+    console.log(`⏳ VNC READY: Waiting for session to become active for zone: ${zoneName}`);
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        console.log(`🔍 VNC READY: Check ${attempt}/${maxAttempts} for zone: ${zoneName}`);
+        
+        // Check VNC session status
+        const vncResult = await makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `zones/${zoneName}/vnc/info?_ready_check=${Date.now()}`,
+          'GET',
+          null,
+          null,
+          true // Force bypass cache
+        );
+
+        console.log(`🔍 VNC READY: Response for attempt ${attempt}:`, {
+          success: vncResult.success,
+          status: vncResult.status,
+          active: vncResult.data?.active_vnc_session,
+          sessionStatus: vncResult.data?.vnc_session_info?.status
+        });
+
+        if (vncResult.success && vncResult.data && vncResult.data.active_vnc_session) {
+          const sessionInfo = vncResult.data.vnc_session_info;
+          if (sessionInfo && sessionInfo.status === 'active') {
+            console.log(`✅ VNC READY: Session is active for ${zoneName} (attempt ${attempt})`);
+            return { 
+              ready: true, 
+              sessionInfo: sessionInfo,
+              reason: 'Session active and ready'
+            };
+          } else {
+            console.log(`⚠️ VNC READY: Session exists but not active yet: ${sessionInfo?.status || 'unknown'}`);
+          }
+        } else {
+          console.log(`⚠️ VNC READY: Session not found yet on attempt ${attempt}`);
+        }
+        
+        // Wait before retry (except on last attempt)
+        if (attempt < maxAttempts) {
+          console.log(`⏳ VNC READY: Waiting 500ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+      } catch (error) {
+        console.error(`💥 VNC READY: Error on attempt ${attempt}:`, error);
+        
+        // Wait before retry (except on last attempt)  
+        if (attempt < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+    }
+
+    console.log(`❌ VNC READY: Session not ready after ${maxAttempts} attempts for zone: ${zoneName}`);
+    return { 
+      ready: false, 
+      reason: `Session not ready after ${maxAttempts} attempts (~5 seconds). The VNC process may have failed to start or the backend needs more time.`
+    };
+  };
+
+  /**
    * Enhanced VNC session validation
    * Validates that a VNC session is actually working after backend reports success
    */
@@ -874,6 +947,7 @@ const Zones = () => {
 
   /**
    * VNC console start - ALL connections go through Zoneweaver proxy
+   * Now includes session readiness verification to fix kill→start timing issues
    */
   const handleVncConsole = async (zoneName, openInNewTab = false) => {
     if (!currentServer) return;
@@ -892,7 +966,7 @@ const Zones = () => {
       );
 
       if (result.success) {
-        console.log(`✅ VNC START: VNC session ready for ${zoneName}`);
+        console.log(`✅ VNC START: VNC start API succeeded for ${zoneName}`);
         const vncData = result.data;
         
         if (!vncData || typeof vncData !== 'object') {
@@ -901,6 +975,17 @@ const Zones = () => {
           return;
         }
         
+        // ⏳ NEW: Wait for session to become truly ready
+        console.log(`⏳ VNC START: Waiting for session to become active...`);
+        const readinessResult = await waitForVncSessionReady(zoneName);
+        
+        if (!readinessResult.ready) {
+          console.error(`❌ VNC START: Session not ready: ${readinessResult.reason}`);
+          setError(`VNC session started but not ready: ${readinessResult.reason}`);
+          return;
+        }
+        
+        console.log(`✅ VNC START: Session is ready and active for ${zoneName}`);
         setVncSession(vncData);
         
         // ONLY use Zoneweaver proxy routes - NO direct connections
@@ -916,11 +1001,14 @@ const Zones = () => {
           setShowVncConsole(true);
         }
         
-        // Update status immediately - session is ready
+        // Update status with verified session info (merge to preserve all metadata)
         setZoneDetails(prev => ({
           ...prev,
           active_vnc_session: true,
-          vnc_session_info: vncData
+          vnc_session_info: {
+            ...vncData,                    // Keep original start data (session_id, etc.)
+            ...readinessResult.sessionInfo // Add verified info (status, created_at, etc.)
+          }
         }));
         
       } else {
@@ -1588,11 +1676,25 @@ const Zones = () => {
                                                 );
                                                 
                                                 if (result.success) {
-                                                  console.log(`✅ START VNC: VNC session started, switching to VNC preview`);
+                                                  console.log(`✅ START VNC: VNC start API succeeded, waiting for readiness...`);
+                                                  
+                                                  // Wait for session to become truly ready
+                                                  const readinessResult = await waitForVncSessionReady(selectedZone);
+                                                  
+                                                  if (!readinessResult.ready) {
+                                                    console.error(`❌ START VNC: Session not ready: ${readinessResult.reason}`);
+                                                    setError(`VNC session started but not ready: ${readinessResult.reason}`);
+                                                    return;
+                                                  }
+                                                  
+                                                  console.log(`✅ START VNC: VNC session ready, switching to VNC preview`);
                                                   setZoneDetails(prev => ({
                                                     ...prev,
                                                     active_vnc_session: true,
-                                                    vnc_session_info: result.data
+                                                    vnc_session_info: {
+                                                      ...result.data,                    // Keep original start data (session_id, etc.)
+                                                      ...readinessResult.sessionInfo    // Add verified info (status, created_at, etc.)
+                                                    }
                                                   }));
                                                   // Force console switch to VNC
                                                   setActiveConsoleType('vnc');
@@ -1928,12 +2030,26 @@ const Zones = () => {
                                               );
                                               
                                               if (result.success) {
-                                                console.log(`✅ START VNC: VNC session started, switching to VNC preview for ${selectedZone}`);
+                                                console.log(`✅ START VNC: VNC start API succeeded, waiting for readiness...`);
+                                                
+                                                // Wait for session to become truly ready
+                                                const readinessResult = await waitForVncSessionReady(selectedZone);
+                                                
+                                                if (!readinessResult.ready) {
+                                                  console.error(`❌ START VNC: Session not ready: ${readinessResult.reason}`);
+                                                  setError(`VNC session started but not ready: ${readinessResult.reason}`);
+                                                  return;
+                                                }
+                                                
+                                                console.log(`✅ START VNC: VNC session ready, switching to VNC preview for ${selectedZone}`);
                                                 // Update state to show VNC session active
                                                 setZoneDetails(prev => ({
                                                   ...prev,
                                                   active_vnc_session: true,
-                                                  vnc_session_info: result.data
+                                                  vnc_session_info: {
+                                                    ...result.data,                    // Keep original start data (session_id, etc.)
+                                                    ...readinessResult.sessionInfo    // Add verified info (status, created_at, etc.)
+                                                  }
                                                 }));
                                                 // Force console type switch to VNC
                                                 setActiveConsoleType('vnc');
