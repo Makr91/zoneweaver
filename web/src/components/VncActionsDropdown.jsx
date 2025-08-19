@@ -61,11 +61,107 @@ const VncActionsDropdown = ({
   };
 
   const handleKeyboardShortcut = (keys) => {
-    if (vncRef?.current) {
+    if (vncRef?.current?.sendKey) {
       const finalKeyString = typeof keys === 'string' && keys.includes('-') ? keys : buildKeyString(keys);
       console.log(`Sending keyboard shortcut: ${finalKeyString}`);
-      // vncRef.current.sendKeyboardShortcut(finalKeyString);
+      sendKeyboardShortcut(vncRef.current, finalKeyString);
       setIsActive(false);
+    }
+  };
+
+  // X11 Keysym mappings for common keys
+  const keysymMap = {
+    // Function keys
+    'f1': 0xFFBE, 'f2': 0xFFBF, 'f3': 0xFFC0, 'f4': 0xFFC1,
+    'f5': 0xFFC2, 'f6': 0xFFC3, 'f7': 0xFFC4, 'f8': 0xFFC5,
+    'f9': 0xFFC6, 'f10': 0xFFC7, 'f11': 0xFFC8, 'f12': 0xFFC9,
+    
+    // Modifier keys
+    'ctrl': 0xFFE3,
+    'alt': 0xFFE9,
+    'shift': 0xFFE1,
+    
+    // Common keys
+    'tab': 0xFF09,
+    'return': 0xFF0D,
+    'escape': 0xFF1B,
+    'delete': 0xFFFF,
+    
+    // Letters (lowercase)
+    'a': 0x061, 'b': 0x062, 'c': 0x063, 'd': 0x064, 'e': 0x065,
+    'f': 0x066, 'g': 0x067, 'h': 0x068, 'i': 0x069, 'j': 0x06A,
+    'k': 0x06B, 'l': 0x06C, 'm': 0x06D, 'n': 0x06E, 'o': 0x06F,
+    'p': 0x070, 'q': 0x071, 'r': 0x072, 's': 0x073, 't': 0x074,
+    'u': 0x075, 'v': 0x076, 'w': 0x077, 'x': 0x078, 'y': 0x079,
+    'z': 0x07A,
+    
+    // Numbers
+    '0': 0x030, '1': 0x031, '2': 0x032, '3': 0x033, '4': 0x034,
+    '5': 0x035, '6': 0x036, '7': 0x037, '8': 0x038, '9': 0x039
+  };
+
+  // Function to send complex keyboard shortcuts using react-vnc's sendKey method
+  const sendKeyboardShortcut = (vncRef, keyString) => {
+    if (!vncRef.sendKey) {
+      console.warn('VNC sendKey method not available');
+      return;
+    }
+
+    console.log(`🎹 VNC KEYS: Sending keyboard shortcut: ${keyString}`);
+
+    // Parse the key combination
+    const parts = keyString.toLowerCase().split('-');
+    const modifiers = [];
+    let targetKey = null;
+
+    // Separate modifiers from the target key
+    for (const part of parts) {
+      if (['ctrl', 'alt', 'shift'].includes(part)) {
+        modifiers.push(part);
+      } else {
+        targetKey = part;
+      }
+    }
+
+    if (!targetKey) {
+      console.warn('No target key found in keyboard shortcut:', keyString);
+      return;
+    }
+
+    const targetKeysym = keysymMap[targetKey];
+    if (!targetKeysym) {
+      console.warn('Unknown key:', targetKey);
+      return;
+    }
+
+    try {
+      // Step 1: Send modifier keys DOWN
+      for (const modifier of modifiers) {
+        const modifierKeysym = keysymMap[modifier];
+        if (modifierKeysym) {
+          console.log(`🎹 VNC KEYS: Sending ${modifier} DOWN (${modifierKeysym.toString(16)})`);
+          vncRef.sendKey(modifierKeysym, modifier, true); // true = key down
+        }
+      }
+
+      // Step 2: Send target key DOWN then UP
+      console.log(`🎹 VNC KEYS: Sending ${targetKey} DOWN-UP (${targetKeysym.toString(16)})`);
+      vncRef.sendKey(targetKeysym, targetKey, true);  // key down
+      vncRef.sendKey(targetKeysym, targetKey, false); // key up
+
+      // Step 3: Send modifier keys UP (in reverse order)
+      for (let i = modifiers.length - 1; i >= 0; i--) {
+        const modifier = modifiers[i];
+        const modifierKeysym = keysymMap[modifier];
+        if (modifierKeysym) {
+          console.log(`🎹 VNC KEYS: Sending ${modifier} UP (${modifierKeysym.toString(16)})`);
+          vncRef.sendKey(modifierKeysym, modifier, false); // false = key up
+        }
+      }
+
+      console.log(`✅ VNC KEYS: Successfully sent keyboard shortcut: ${keyString}`);
+    } catch (error) {
+      console.error('❌ VNC KEYS: Error sending keyboard shortcut:', error);
     }
   };
 

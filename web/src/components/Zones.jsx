@@ -48,6 +48,7 @@ const Zones = () => {
   const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
   const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
   const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
+  const [vncReconnectKey, setVncReconnectKey] = useState(0); // Force VNC reconnection after kill→start
   
   const { user } = useAuth();
   const { 
@@ -1043,6 +1044,9 @@ const Zones = () => {
         // SIMPLIFIED: Just refresh status from API (like zlogin does)
         await refreshVncSessionStatus(zoneName);
         
+        // Force VNC component remount to clear stale WebSocket connections
+        setVncReconnectKey(prev => prev + 1);
+        
         // Close VNC console modal if it's open
         if (showVncConsole) {
           closeVncConsole();
@@ -1802,7 +1806,7 @@ const Zones = () => {
                                       {zoneDetails.vnc_session_info ? (
                                         // Active session - show live preview with toggleable view-only mode
                                         <VncViewerReact
-                                          key={`vnc-preview-${selectedZone}-${previewVncViewOnly}`}
+                                          key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
                                           serverHostname={currentServer.hostname}
                                           serverPort={currentServer.port}
                                           serverProtocol={currentServer.protocol}
@@ -2662,6 +2666,7 @@ const Zones = () => {
                 </div>
               ) : currentServer && selectedZone ? (
                 <VncViewerReact
+                  key={`vnc-modal-${selectedZone}-${vncReconnectKey}`}
                   serverHostname={currentServer.hostname}
                   serverPort={currentServer.port}
                   serverProtocol={currentServer.protocol}
