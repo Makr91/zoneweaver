@@ -17,7 +17,7 @@ const VncActionsDropdown = ({
   quality = 6,
   compression = 2,
   resize = 'scale',
-  showDot = false,
+  showDot = true,
   onQualityChange = null,
   onCompressionChange = null,
   onResizeChange = null,
@@ -516,9 +516,9 @@ const VncActionsDropdown = ({
               
               {/* Quality Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '2rem'}}>
+                <div className="field" style={{marginBottom: '1rem'}}>
                   <label className="label is-small" style={{marginBottom: '1rem'}}>Quality Level: {quality}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.75rem'}}>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-primary"
                       type="range"
@@ -551,9 +551,9 @@ const VncActionsDropdown = ({
               
               {/* Compression Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '2rem'}}>
+                <div className="field" style={{marginBottom: '1rem'}}>
                   <label className="label is-small" style={{marginBottom: '1rem'}}>Compression Level: {compression}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.75rem'}}>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-info"
                       type="range"
