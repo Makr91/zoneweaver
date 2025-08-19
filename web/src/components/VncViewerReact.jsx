@@ -133,17 +133,13 @@ const VncViewerReact = forwardRef(({
       // Only handle when VNC is connected and in focus
       if (!connected || !vncRef.current) return;
       
-      // Ensure the event is coming from within the VNC component area
-      const vncContainer = event.target.closest('.vnc-viewer-react');
-      if (!vncContainer) return;
-      
       // Detect Ctrl+V (Windows/Linux) or Cmd+V (Mac)
       const isCtrlV = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v';
       
       if (isCtrlV) {
         console.log(`⌨️ VNC-VIEWER: Ctrl+V detected, attempting auto-paste for ${zoneName}`);
         
-        // Prevent browser's default paste behavior only for Ctrl+V
+        // Prevent browser's default paste behavior
         event.preventDefault();
         event.stopPropagation();
         
@@ -178,26 +174,17 @@ const VncViewerReact = forwardRef(({
           }
         }
       }
-      // For all other keys, let VNC handle them normally (no preventDefault)
     };
     
-    // Add targeted event listener to VNC container when connected
-    if (connected && vncRef.current) {
-      // Find the VNC container div
-      const vncContainer = document.querySelector('.vnc-viewer-react');
+    // Add event listener to the document when VNC is connected
+    if (connected) {
+      console.log(`⌨️ VNC-VIEWER: Adding Ctrl+V listener for ${zoneName}`);
+      document.addEventListener('keydown', handleKeyDown, true); // Use capture phase
       
-      if (vncContainer) {
-        console.log(`⌨️ VNC-VIEWER: Adding targeted Ctrl+V listener for ${zoneName}`);
-        // Use bubbling phase (false) so VNC gets events first
-        vncContainer.addEventListener('keydown', handleKeyDown, false);
-        
-        return () => {
-          console.log(`⌨️ VNC-VIEWER: Removing targeted Ctrl+V listener for ${zoneName}`);
-          vncContainer.removeEventListener('keydown', handleKeyDown, false);
-        };
-      } else {
-        console.warn(`⚠️ VNC-VIEWER: Could not find VNC container for Ctrl+V listener`);
-      }
+      return () => {
+        console.log(`⌨️ VNC-VIEWER: Removing Ctrl+V listener for ${zoneName}`);
+        document.removeEventListener('keydown', handleKeyDown, true);
+      };
     }
   }, [connected, zoneName]); // Re-setup when connection state changes
 
