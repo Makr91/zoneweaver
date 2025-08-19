@@ -246,7 +246,7 @@ const VncActionsDropdown = ({
     <div 
       className="dropdown-content"
       style={{
-        backgroundColor: '#f8f9fa',
+        backgroundColor: 'var(--bulma-scheme-main-bis)',
         border: '1px solid var(--bulma-border)'
       }}
     >
@@ -289,7 +289,7 @@ const VncActionsDropdown = ({
             <div 
               className="dropdown-content"
               style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'var(--bulma-scheme-main-bis)',
                 border: '1px solid var(--bulma-border)'
               }}
             >
@@ -420,7 +420,7 @@ const VncActionsDropdown = ({
                     <div 
                       className="dropdown-content"
                       style={{
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: 'var(--bulma-scheme-main-bis)',
                         border: '1px solid var(--bulma-border)'
                       }}
                     >
@@ -484,7 +484,7 @@ const VncActionsDropdown = ({
             <div 
               className="dropdown-content"
               style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'var(--bulma-scheme-main-bis)',
                 border: '1px solid var(--bulma-border)'
               }}
             >
@@ -516,9 +516,9 @@ const VncActionsDropdown = ({
               
               {/* Quality Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '1.5rem'}}>
+                <div className="field" style={{marginBottom: '2rem'}}>
                   <label className="label is-small" style={{marginBottom: '1rem'}}>Quality Level: {quality}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.25rem'}}>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.75rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-primary"
                       type="range"
@@ -534,7 +534,7 @@ const VncActionsDropdown = ({
                       style={{width: '100%'}}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '0.75rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '1rem'}}>
                     0 = Lowest quality, 9 = Highest quality
                   </div>
                 </div>
@@ -542,9 +542,9 @@ const VncActionsDropdown = ({
               
               {/* Compression Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '1.5rem'}}>
+                <div className="field" style={{marginBottom: '2rem'}}>
                   <label className="label is-small" style={{marginBottom: '1rem'}}>Compression Level: {compression}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.25rem'}}>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.75rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-info"
                       type="range"
@@ -560,7 +560,7 @@ const VncActionsDropdown = ({
                       style={{width: '100%'}}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '0.75rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '1rem'}}>
                     0 = No compression, 9 = Max compression
                   </div>
                 </div>
@@ -629,7 +629,7 @@ const VncActionsDropdown = ({
             <div 
               className="dropdown-content"
               style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'var(--bulma-scheme-main-bis)',
                 border: '1px solid var(--bulma-border)'
               }}
             >
