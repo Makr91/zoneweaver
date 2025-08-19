@@ -518,7 +518,7 @@ const VncActionsDropdown = ({
               <div className="dropdown-item">
                 <div className="field" style={{marginBottom: '1rem'}}>
                   <label className="label is-small" style={{marginBottom: '1rem'}}>Quality Level: {quality}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1rem'}}>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.5rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-primary"
                       type="range"
@@ -543,7 +543,7 @@ const VncActionsDropdown = ({
                       }}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '1rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '1rem', marginBottom: '0.5rem'}}>
                     0 = Lowest quality, 9 = Highest quality
                   </div>
                 </div>
@@ -553,7 +553,7 @@ const VncActionsDropdown = ({
               <div className="dropdown-item">
                 <div className="field" style={{marginBottom: '1rem'}}>
                   <label className="label is-small" style={{marginBottom: '1rem'}}>Compression Level: {compression}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1rem'}}>
+                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.5rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-info"
                       type="range"
@@ -578,7 +578,7 @@ const VncActionsDropdown = ({
                       }}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '1rem'}}>
+                  <div className="help is-size-7" style={{marginTop: '1rem', marginBottom: '0.5rem'}}>
                     0 = No compression, 9 = Max compression
                   </div>
                 </div>

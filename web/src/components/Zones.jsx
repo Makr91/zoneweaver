@@ -55,7 +55,7 @@ const Zones = () => {
     quality: 6,
     compression: 2,
     resize: 'scale', // 'none', 'scale', 'remote'
-    showDot: false
+    showDot: true
   });
   
   // VNC Settings Change Handlers
