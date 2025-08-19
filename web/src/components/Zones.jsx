@@ -1622,7 +1622,7 @@ const Zones = () => {
                                         width: '100%',
                                         height: 'calc(100% - 60px)', // Fill remaining height after header
                                         backgroundColor: '#000',
-                                        overflow: 'hidden'
+                                        overflow: 'visible'
                                       }}
                                     >
                                       <ZoneShell 
@@ -1796,7 +1796,7 @@ const Zones = () => {
                                         width: '100%',
                                         height: 'calc(100% - 60px)', // Fill remaining height after header
                                         backgroundColor: '#000',
-                                        overflow: 'hidden'
+                                        overflow: 'visible'
                                       }}
                                     >
                                       {zoneDetails.vnc_session_info ? (
