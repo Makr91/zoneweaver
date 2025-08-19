@@ -35,6 +35,23 @@ const VncActionsDropdown = ({
   });
   const dropdownRef = useRef(null);
 
+  // Dynamic submenu positioning to prevent viewport overflow
+  const calculateSubmenuPosition = (submenuWidth = 300) => {
+    if (!dropdownRef.current) return { left: '100%' };
+    
+    const dropdownRect = dropdownRef.current.getBoundingClientRect();
+    const rightSpace = window.innerWidth - dropdownRect.right;
+    const shouldFlipLeft = rightSpace < submenuWidth + 20; // 20px buffer
+    
+    return shouldFlipLeft ? {
+      right: '100%',
+      left: 'auto'
+    } : {
+      left: '100%',
+      right: 'auto'
+    };
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -254,15 +271,22 @@ const VncActionsDropdown = ({
       {/* Keyboard & Input Submenu */}
       <div 
         className="dropdown-item" 
-        style={{position: 'relative'}}
+        style={{
+          position: 'relative', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center'
+        }}
         onMouseEnter={() => setShowKeyboardInput(true)}
         onMouseLeave={() => setShowKeyboardInput(false)}
       >
-        <span className="icon is-small mr-2">
-          <i className="fas fa-keyboard"></i>
-        </span>
-        <span>Keyboard & Input</span>
-        <span className="icon is-small ml-auto">
+        <div style={{display: 'flex', alignItems: 'center'}}>
+          <span className="icon is-small mr-2">
+            <i className="fas fa-keyboard"></i>
+          </span>
+          <span>Keyboard & Input</span>
+        </div>
+        <span className="icon is-small">
           <i className="fas fa-chevron-right"></i>
         </span>
         
@@ -272,7 +296,7 @@ const VncActionsDropdown = ({
             className="dropdown-menu" 
             style={{
               position: 'absolute',
-              left: '100%',
+              ...calculateSubmenuPosition(350),
               top: '0',
               minWidth: '280px',
               maxWidth: '350px',
@@ -442,15 +466,22 @@ const VncActionsDropdown = ({
       {/* Display Settings Submenu */}
       <div 
         className="dropdown-item" 
-        style={{position: 'relative'}}
+        style={{
+          position: 'relative', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center'
+        }}
         onMouseEnter={() => setShowDisplaySettings(true)}
         onMouseLeave={() => setShowDisplaySettings(false)}
       >
-        <span className="icon is-small mr-2">
-          <i className="fas fa-desktop"></i>
-        </span>
-        <span>Display Settings</span>
-        <span className="icon is-small ml-auto">
+        <div style={{display: 'flex', alignItems: 'center'}}>
+          <span className="icon is-small mr-2">
+            <i className="fas fa-desktop"></i>
+          </span>
+          <span>Display Settings</span>
+        </div>
+        <span className="icon is-small">
           <i className="fas fa-chevron-right"></i>
         </span>
         
@@ -460,7 +491,7 @@ const VncActionsDropdown = ({
             className="dropdown-menu" 
             style={{
               position: 'absolute',
-              left: '100%',
+              ...calculateSubmenuPosition(350),
               top: '0',
               minWidth: '300px',
               maxWidth: '350px',
@@ -502,9 +533,9 @@ const VncActionsDropdown = ({
               
               {/* Quality Slider */}
               <div className="dropdown-item">
-                <div className="field">
-                  <label className="label is-small">Quality Level: {quality}</label>
-                  <div className="control">
+                <div className="field" style={{marginBottom: '1rem'}}>
+                  <label className="label is-small" style={{marginBottom: '0.5rem'}}>Quality Level: {quality}</label>
+                  <div className="control" style={{marginTop: '0.75rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-primary"
                       type="range"
@@ -520,7 +551,7 @@ const VncActionsDropdown = ({
                       style={{width: '100%'}}
                     />
                   </div>
-                  <div className="help is-size-7">
+                  <div className="help is-size-7" style={{marginTop: '0.5rem'}}>
                     0 = Lowest quality, 9 = Highest quality
                   </div>
                 </div>
@@ -528,9 +559,9 @@ const VncActionsDropdown = ({
               
               {/* Compression Slider */}
               <div className="dropdown-item">
-                <div className="field">
-                  <label className="label is-small">Compression Level: {compression}</label>
-                  <div className="control">
+                <div className="field" style={{marginBottom: '1rem'}}>
+                  <label className="label is-small" style={{marginBottom: '0.5rem'}}>Compression Level: {compression}</label>
+                  <div className="control" style={{marginTop: '0.75rem'}}>
                     <input 
                       className="slider is-small is-fullwidth is-info"
                       type="range"
@@ -546,7 +577,7 @@ const VncActionsDropdown = ({
                       style={{width: '100%'}}
                     />
                   </div>
-                  <div className="help is-size-7">
+                  <div className="help is-size-7" style={{marginTop: '0.5rem'}}>
                     0 = No compression, 9 = Max compression
                   </div>
                 </div>
