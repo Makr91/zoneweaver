@@ -16,6 +16,11 @@ const VncActionsDropdown = ({
 }) => {
   const [isActive, setIsActive] = useState(false);
   const [showFunctionKeys, setShowFunctionKeys] = useState(false);
+  const [modifierKeys, setModifierKeys] = useState({
+    ctrl: false,
+    alt: false,
+    shift: false
+  });
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -36,11 +41,30 @@ const VncActionsDropdown = ({
     }
   };
 
+  const toggleModifier = (key) => {
+    setModifierKeys(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const buildKeyString = (baseKey) => {
+    const modifiers = [];
+    if (modifierKeys.ctrl) modifiers.push('ctrl');
+    if (modifierKeys.alt) modifiers.push('alt');
+    if (modifierKeys.shift) modifiers.push('shift');
+    
+    if (modifiers.length > 0) {
+      return `${modifiers.join('-')}-${baseKey.toLowerCase()}`;
+    }
+    return baseKey.toLowerCase();
+  };
+
   const handleKeyboardShortcut = (keys) => {
     if (vncRef?.current) {
-      // Send keyboard shortcuts - these would need to be implemented in the VNC component
-      console.log(`Sending keyboard shortcut: ${keys}`);
-      // vncRef.current.sendKeyboardShortcut(keys);
+      const finalKeyString = typeof keys === 'string' && keys.includes('-') ? keys : buildKeyString(keys);
+      console.log(`Sending keyboard shortcut: ${finalKeyString}`);
+      // vncRef.current.sendKeyboardShortcut(finalKeyString);
       setIsActive(false);
     }
   };
@@ -141,6 +165,71 @@ const VncActionsDropdown = ({
         </span>
         <span>Alt+F4</span>
       </a>
+
+      <hr className="dropdown-divider" />
+      
+      {/* Modifier Key Toggles */}
+      <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
+        <span className="icon is-small mr-2">
+          <i className="fas fa-hand-paper"></i>
+        </span>
+        <span>Modifier Keys</span>
+      </div>
+      
+      <div className="dropdown-item" style={{padding: '0.375rem 0.75rem'}}>
+        <div className="field is-grouped">
+          <div className="control">
+            <button 
+              className={`button is-small ${modifierKeys.ctrl ? 'is-primary' : 'is-light'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleModifier('ctrl');
+              }}
+              title={`CTRL ${modifierKeys.ctrl ? 'ON' : 'OFF'} - Click to toggle`}
+            >
+              <span className="icon is-small">
+                <i className={`fas ${modifierKeys.ctrl ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+              </span>
+              <span>CTRL</span>
+            </button>
+          </div>
+          <div className="control">
+            <button 
+              className={`button is-small ${modifierKeys.alt ? 'is-warning' : 'is-light'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleModifier('alt');
+              }}
+              title={`ALT ${modifierKeys.alt ? 'ON' : 'OFF'} - Click to toggle`}
+            >
+              <span className="icon is-small">
+                <i className={`fas ${modifierKeys.alt ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+              </span>
+              <span>ALT</span>
+            </button>
+          </div>
+          <div className="control">
+            <button 
+              className={`button is-small ${modifierKeys.shift ? 'is-info' : 'is-light'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleModifier('shift');
+              }}
+              title={`SHIFT ${modifierKeys.shift ? 'ON' : 'OFF'} - Click to toggle`}
+            >
+              <span className="icon is-small">
+                <i className={`fas ${modifierKeys.shift ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+              </span>
+              <span>SHIFT</span>
+            </button>
+          </div>
+        </div>
+        {(modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift) && (
+          <div className="help is-size-7 has-text-grey mt-1">
+            Active modifiers will be combined with function keys
+          </div>
+        )}
+      </div>
 
       {/* Function Keys Submenu */}
       <div 

@@ -1461,7 +1461,7 @@ const Zones = () => {
                                     style={{
                                       border: '2px solid #dbdbdb',
                                       borderRadius: '6px',
-                                      overflow: 'hidden',
+                                      overflow: 'visible',
                                       backgroundColor: '#000',
                                       height: 'calc(100vh - 250px - 10vh)', // Reduced by ~10% total
                                       minHeight: '450px'
