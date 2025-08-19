@@ -182,7 +182,18 @@ const VncViewerReact = forwardRef(({
       if (vncRef.current && connected) {
         console.log(`📋 VNC-VIEWER: Forwarding clipboardPaste(${text.length} chars)`);
         try {
-          return vncRef.current.clipboardPaste(text);
+          // Try the react-vnc method first
+          if (vncRef.current.clipboardPaste) {
+            return vncRef.current.clipboardPaste(text);
+          }
+          // Fallback to accessing underlying RFB object directly
+          else if (vncRef.current.rfb && vncRef.current.rfb.clipboardPasteFrom) {
+            console.log(`📋 VNC-VIEWER: Using underlying RFB.clipboardPasteFrom method`);
+            return vncRef.current.rfb.clipboardPasteFrom(text);
+          }
+          else {
+            console.warn(`📋 VNC-VIEWER: No clipboard method available on VNC ref`);
+          }
         } catch (error) {
           console.error(`❌ VNC-VIEWER: Error pasting clipboard:`, error);
         }
