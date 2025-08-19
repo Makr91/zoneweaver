@@ -124,9 +124,6 @@ const VncViewerReact = forwardRef(({
     }
   };
 
-  // Store ref to the clipboardPaste function (keyboard listener removed to prevent interference)
-  const clipboardPasteRef = useRef(null);
-
   const handleCredentialsRequired = () => {
     console.log(`🔐 REACT-VNC: Credentials required for ${zoneName}`);
     setError('VNC authentication required - this should not happen with zadm vnc');
@@ -155,9 +152,33 @@ const VncViewerReact = forwardRef(({
   };
 
   // Expose methods via useImperativeHandle for VncActionsDropdown
-  useImperativeHandle(ref, () => {
-    // Define the clipboardPaste function
-    const clipboardPasteFunc = async (text) => {
+  useImperativeHandle(ref, () => ({
+    // React-VNC methods - properly forwarded from VncScreen ref
+    sendKey: (keysym, code, down) => {
+      if (vncRef.current && connected) {
+        console.log(`🎹 VNC-VIEWER: Forwarding sendKey(keysym: ${keysym}, code: "${code}", down: ${down})`);
+        try {
+          return vncRef.current.sendKey(keysym, code, down);
+        } catch (error) {
+          console.error(`❌ VNC-VIEWER: Error sending key:`, error);
+        }
+      } else {
+        console.warn(`⚠️ VNC-VIEWER: Cannot send key - not connected or ref unavailable`);
+      }
+    },
+    sendCtrlAltDel: () => {
+      if (vncRef.current && connected) {
+        console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
+        try {
+          return vncRef.current.sendCtrlAltDel();
+        } catch (error) {
+          console.error(`❌ VNC-VIEWER: Error sending Ctrl+Alt+Del:`, error);
+        }
+      } else {
+        console.warn(`⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`);
+      }
+    },
+    clipboardPaste: async (text) => {
       if (vncRef.current && connected) {
         console.log(`📋 VNC-VIEWER: Starting character-by-character typing of ${text.length} characters`);
         
@@ -294,9 +315,9 @@ const VncViewerReact = forwardRef(({
                 vncRef.current.sendKey(keysym, null);
               }
               
-              // Longer delay between characters for TTY console compatibility
+              // Small delay between characters to avoid overwhelming the terminal
               if (i < text.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay for better TTY compatibility
+                await new Promise(resolve => setTimeout(resolve, 20)); // 20ms delay
               }
             } catch (error) {
               console.error(`❌ VNC-VIEWER: Error typing character '${char}':`, error);
@@ -314,49 +335,17 @@ const VncViewerReact = forwardRef(({
         console.warn(`⚠️ VNC-VIEWER: Cannot type text - connected: ${connected}, ref: ${!!vncRef.current}`);
         return false;
       }
-    };
-    
-    // Store the function in the ref for Ctrl+V access
-    clipboardPasteRef.current = clipboardPasteFunc;
-    
-    return {
-      // React-VNC methods - properly forwarded from VncScreen ref
-      sendKey: (keysym, code, down) => {
-        if (vncRef.current && connected) {
-          console.log(`🎹 VNC-VIEWER: Forwarding sendKey(keysym: ${keysym}, code: "${code}", down: ${down})`);
-          try {
-            return vncRef.current.sendKey(keysym, code, down);
-          } catch (error) {
-            console.error(`❌ VNC-VIEWER: Error sending key:`, error);
-          }
-        } else {
-          console.warn(`⚠️ VNC-VIEWER: Cannot send key - not connected or ref unavailable`);
-        }
-      },
-      sendCtrlAltDel: () => {
-        if (vncRef.current && connected) {
-          console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
-          try {
-            return vncRef.current.sendCtrlAltDel();
-          } catch (error) {
-            console.error(`❌ VNC-VIEWER: Error sending Ctrl+Alt+Del:`, error);
-          }
-        } else {
-          console.warn(`⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`);
-        }
-      },
-      clipboardPaste: clipboardPasteFunc,
-      // Additional control methods
-      connect: handleConnect,
-      disconnect: handleDisconnect,
-      refresh: handleRefresh,
-      // State
-      connected,
-      connecting,
-      // Access to underlying RFB object for advanced operations
-      rfb: vncRef.current?.rfb || null
-    };
-  }, [connected, connecting]);
+    },
+    // Additional control methods
+    connect: handleConnect,
+    disconnect: handleDisconnect,
+    refresh: handleRefresh,
+    // State
+    connected,
+    connecting,
+    // Access to underlying RFB object for advanced operations
+    rfb: vncRef.current?.rfb || null
+  }), [connected, connecting]);
 
   // Legacy support - expose methods via callback props
   useEffect(() => {
