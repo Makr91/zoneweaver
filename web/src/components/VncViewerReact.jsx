@@ -124,6 +124,74 @@ const VncViewerReact = forwardRef(({
     }
   };
 
+  // Automatic Ctrl+V paste functionality
+  useEffect(() => {
+    const handleKeyDown = async (event) => {
+      // Only handle when VNC is connected and in focus
+      if (!connected || !vncRef.current) return;
+      
+      // Detect Ctrl+V (Windows/Linux) or Cmd+V (Mac)
+      const isCtrlV = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v';
+      
+      if (isCtrlV) {
+        console.log(`⌨️ VNC-VIEWER: Ctrl+V detected, attempting auto-paste for ${zoneName}`);
+        
+        // Prevent browser's default paste behavior
+        event.preventDefault();
+        event.stopPropagation();
+        
+        try {
+          // Check if clipboard API is available
+          if (!navigator.clipboard || !navigator.clipboard.readText) {
+            console.warn(`📋 VNC-VIEWER: Clipboard API not available in this browser`);
+            return;
+          }
+          
+          // Read clipboard content
+          const clipboardText = await navigator.clipboard.readText();
+          
+          if (clipboardText && clipboardText.length > 0) {
+            console.log(`📋 VNC-VIEWER: Auto-pasting ${clipboardText.length} characters from clipboard`);
+            
+            // Use our existing character-by-character typing function
+            const clipboardPasteFunc = vncRef.current?.clipboardPaste;
+            if (clipboardPasteFunc && typeof clipboardPasteFunc === 'function') {
+              await clipboardPasteFunc(clipboardText);
+            } else {
+              // Fallback: call the imperative handle method directly
+              const imperativeHandle = ref?.current;
+              if (imperativeHandle?.clipboardPaste) {
+                await imperativeHandle.clipboardPaste(clipboardText);
+              } else {
+                console.warn(`📋 VNC-VIEWER: clipboardPaste method not available`);
+              }
+            }
+          } else {
+            console.log(`📋 VNC-VIEWER: Clipboard is empty, nothing to paste`);
+          }
+          
+        } catch (error) {
+          if (error.name === 'NotAllowedError') {
+            console.warn(`📋 VNC-VIEWER: Clipboard access denied. User needs to grant permission or use the dropdown menu.`);
+          } else {
+            console.error(`❌ VNC-VIEWER: Error reading clipboard:`, error);
+          }
+        }
+      }
+    };
+    
+    // Add event listener to the document when VNC is connected
+    if (connected) {
+      console.log(`⌨️ VNC-VIEWER: Adding Ctrl+V listener for ${zoneName}`);
+      document.addEventListener('keydown', handleKeyDown, true); // Use capture phase
+      
+      return () => {
+        console.log(`⌨️ VNC-VIEWER: Removing Ctrl+V listener for ${zoneName}`);
+        document.removeEventListener('keydown', handleKeyDown, true);
+      };
+    }
+  }, [connected, zoneName]); // Re-setup when connection state changes
+
   const handleCredentialsRequired = () => {
     console.log(`🔐 REACT-VNC: Credentials required for ${zoneName}`);
     setError('VNC authentication required - this should not happen with zadm vnc');
