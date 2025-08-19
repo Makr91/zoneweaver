@@ -6,8 +6,10 @@ const VncActionsDropdown = ({
   onFullScreen, 
   onNewTab,
   onKillSession,
-  onToggleViewOnly,
-  isViewOnly = true,
+  onToggleViewOnly, // Kept for backward compatibility
+  onToggleReadOnly,
+  isViewOnly, // Kept for backward compatibility
+  isReadOnly,
   isAdmin = false,
   className = '',
   variant = 'default' // 'default' or 'button'
@@ -86,22 +88,26 @@ const VncActionsDropdown = ({
     setIsActive(false);
   };
 
+  // Use new props if available, fall back to old ones for backward compatibility
+  const actualIsReadOnly = isReadOnly !== undefined ? isReadOnly : isViewOnly;
+  const actualToggleHandler = onToggleReadOnly || onToggleViewOnly;
+
   const dropdownContent = (
     <div className="dropdown-content">
-      {isAdmin && onToggleViewOnly && (
+      {isAdmin && actualToggleHandler && (
         <>
           <a 
             className="dropdown-item" 
             onClick={() => {
-              onToggleViewOnly();
+              actualToggleHandler();
               setIsActive(false);
             }}
-            title={isViewOnly ? "Enable interactive mode" : "Enable view-only mode"}
+            title={actualIsReadOnly ? "Enable interactive mode" : "Enable read-only mode"}
           >
             <span className="icon mr-2">
-              <i className={`fas ${isViewOnly ? 'fa-edit' : 'fa-eye'}`}></i>
+              <i className={`fas ${actualIsReadOnly ? 'fa-edit' : 'fa-eye'}`}></i>
             </span>
-            {isViewOnly ? 'Enable Interactive' : 'Set View-Only'}
+            {actualIsReadOnly ? 'Enable Interactive' : 'Set Read-Only'}
           </a>
           <hr className="dropdown-divider" />
         </>
@@ -246,7 +252,7 @@ const VncActionsDropdown = ({
             </span>
           </button>
         </div>
-        <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu">
+        <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 9999}}>
           {dropdownContent}
         </div>
       </div>
@@ -270,7 +276,7 @@ const VncActionsDropdown = ({
           </span>
         </span>
       </div>
-      <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu">
+      <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 9999}}>
         {dropdownContent}
       </div>
     </div>

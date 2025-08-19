@@ -1533,7 +1533,7 @@ const Zones = () => {
                                               URL.revokeObjectURL(url);
                                             }
                                           }}
-                                          isReadOnly={true}
+                                          isReadOnly={previewReadOnly}
                                           isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
@@ -1700,9 +1700,9 @@ const Zones = () => {
                                       <div className='buttons' style={{margin: 0}}>
                                         <VncActionsDropdown
                                           variant="button"
-                                          onToggleViewOnly={() => {
-                                            // Toggle view-only mode for preview VNC (not modal)
-                                            console.log(`Toggling preview VNC view-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
+                                          onToggleReadOnly={() => {
+                                            // Toggle read-only mode for preview VNC (not modal)
+                                            console.log(`Toggling preview VNC read-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
                                             setPreviewVncViewOnly(!previewVncViewOnly);
                                           }}
                                           onScreenshot={() => {
@@ -1723,7 +1723,7 @@ const Zones = () => {
                                           }}
                                           onNewTab={() => handleVncConsole(selectedZone, true)}
                                           onKillSession={() => handleKillVncSession(selectedZone)}
-                                          isViewOnly={previewVncViewOnly}
+                                          isReadOnly={previewVncViewOnly}
                                           isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                                           style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         />
@@ -2554,6 +2554,8 @@ const Zones = () => {
                   }}
                   onNewTab={() => handleVncConsole(selectedZone, true)}
                   onKillSession={() => handleKillVncSession(selectedZone)}
+                  isReadOnly={false}
+                  isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                   style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 />
                 {/* Switch to zlogin Console Button - Modal */}

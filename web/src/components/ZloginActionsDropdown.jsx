@@ -108,7 +108,7 @@ const ZloginActionsDropdown = ({
             </span>
           </button>
         </div>
-        <div className="dropdown-menu" id="zlogin-dropdown-menu" role="menu">
+        <div className="dropdown-menu" id="zlogin-dropdown-menu" role="menu" style={{zIndex: 9999}}>
           {dropdownContent}
         </div>
       </div>
@@ -133,7 +133,7 @@ const ZloginActionsDropdown = ({
           </span>
         </span>
       </div>
-      <div className="dropdown-menu" id="zlogin-dropdown-menu" role="menu">
+      <div className="dropdown-menu" id="zlogin-dropdown-menu" role="menu" style={{zIndex: 9999}}>
         {dropdownContent}
       </div>
     </div>
