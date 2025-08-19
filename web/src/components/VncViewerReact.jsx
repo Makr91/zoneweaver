@@ -124,6 +124,83 @@ const VncViewerReact = forwardRef(({
     }
   };
 
+  // Store ref to the clipboardPaste function for Ctrl+V
+  const clipboardPasteRef = useRef(null);
+  
+  // Automatic Ctrl+V paste functionality
+  useEffect(() => {
+    const handleKeyDown = async (event) => {
+      // Only handle when VNC is connected and in focus
+      if (!connected || !vncRef.current) return;
+      
+      // Ensure the event is coming from within the VNC component area
+      const vncContainer = event.target.closest('.vnc-viewer-react');
+      if (!vncContainer) return;
+      
+      // Detect Ctrl+V (Windows/Linux) or Cmd+V (Mac)
+      const isCtrlV = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v';
+      
+      if (isCtrlV) {
+        console.log(`⌨️ VNC-VIEWER: Ctrl+V detected, attempting auto-paste for ${zoneName}`);
+        
+        // Prevent browser's default paste behavior only for Ctrl+V
+        event.preventDefault();
+        event.stopPropagation();
+        
+        try {
+          // Check if clipboard API is available
+          if (!navigator.clipboard || !navigator.clipboard.readText) {
+            console.warn(`📋 VNC-VIEWER: Clipboard API not available in this browser`);
+            return;
+          }
+          
+          // Read clipboard content
+          const clipboardText = await navigator.clipboard.readText();
+          
+          if (clipboardText && clipboardText.length > 0) {
+            console.log(`📋 VNC-VIEWER: Auto-pasting ${clipboardText.length} characters from clipboard`);
+            
+            // Use the stored clipboardPaste function
+            if (clipboardPasteRef.current && typeof clipboardPasteRef.current === 'function') {
+              await clipboardPasteRef.current(clipboardText);
+            } else {
+              console.warn(`📋 VNC-VIEWER: clipboardPaste method not available`);
+            }
+          } else {
+            console.log(`📋 VNC-VIEWER: Clipboard is empty, nothing to paste`);
+          }
+          
+        } catch (error) {
+          if (error.name === 'NotAllowedError') {
+            console.warn(`📋 VNC-VIEWER: Clipboard access denied. User needs to grant permission or use the dropdown menu.`);
+          } else {
+            console.error(`❌ VNC-VIEWER: Error reading clipboard:`, error);
+          }
+        }
+      }
+      // For all other keys, let VNC handle them normally (no preventDefault)
+    };
+    
+    // Add targeted event listener to VNC container when connected
+    if (connected && vncRef.current) {
+      // Find the VNC container div
+      const vncContainer = document.querySelector('.vnc-viewer-react');
+      
+      if (vncContainer) {
+        console.log(`⌨️ VNC-VIEWER: Adding targeted Ctrl+V listener for ${zoneName}`);
+        // Use bubbling phase (false) so VNC gets events first
+        vncContainer.addEventListener('keydown', handleKeyDown, false);
+        
+        return () => {
+          console.log(`⌨️ VNC-VIEWER: Removing targeted Ctrl+V listener for ${zoneName}`);
+          vncContainer.removeEventListener('keydown', handleKeyDown, false);
+        };
+      } else {
+        console.warn(`⚠️ VNC-VIEWER: Could not find VNC container for Ctrl+V listener`);
+      }
+    }
+  }, [connected, zoneName]); // Re-setup when connection state changes
+
   const handleCredentialsRequired = () => {
     console.log(`🔐 REACT-VNC: Credentials required for ${zoneName}`);
     setError('VNC authentication required - this should not happen with zadm vnc');
@@ -152,33 +229,9 @@ const VncViewerReact = forwardRef(({
   };
 
   // Expose methods via useImperativeHandle for VncActionsDropdown
-  useImperativeHandle(ref, () => ({
-    // React-VNC methods - properly forwarded from VncScreen ref
-    sendKey: (keysym, code, down) => {
-      if (vncRef.current && connected) {
-        console.log(`🎹 VNC-VIEWER: Forwarding sendKey(keysym: ${keysym}, code: "${code}", down: ${down})`);
-        try {
-          return vncRef.current.sendKey(keysym, code, down);
-        } catch (error) {
-          console.error(`❌ VNC-VIEWER: Error sending key:`, error);
-        }
-      } else {
-        console.warn(`⚠️ VNC-VIEWER: Cannot send key - not connected or ref unavailable`);
-      }
-    },
-    sendCtrlAltDel: () => {
-      if (vncRef.current && connected) {
-        console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
-        try {
-          return vncRef.current.sendCtrlAltDel();
-        } catch (error) {
-          console.error(`❌ VNC-VIEWER: Error sending Ctrl+Alt+Del:`, error);
-        }
-      } else {
-        console.warn(`⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`);
-      }
-    },
-    clipboardPaste: async (text) => {
+  useImperativeHandle(ref, () => {
+    // Define the clipboardPaste function
+    const clipboardPasteFunc = async (text) => {
       if (vncRef.current && connected) {
         console.log(`📋 VNC-VIEWER: Starting character-by-character typing of ${text.length} characters`);
         
@@ -335,17 +388,49 @@ const VncViewerReact = forwardRef(({
         console.warn(`⚠️ VNC-VIEWER: Cannot type text - connected: ${connected}, ref: ${!!vncRef.current}`);
         return false;
       }
-    },
-    // Additional control methods
-    connect: handleConnect,
-    disconnect: handleDisconnect,
-    refresh: handleRefresh,
-    // State
-    connected,
-    connecting,
-    // Access to underlying RFB object for advanced operations
-    rfb: vncRef.current?.rfb || null
-  }), [connected, connecting]);
+    };
+    
+    // Store the function in the ref for Ctrl+V access
+    clipboardPasteRef.current = clipboardPasteFunc;
+    
+    return {
+      // React-VNC methods - properly forwarded from VncScreen ref
+      sendKey: (keysym, code, down) => {
+        if (vncRef.current && connected) {
+          console.log(`🎹 VNC-VIEWER: Forwarding sendKey(keysym: ${keysym}, code: "${code}", down: ${down})`);
+          try {
+            return vncRef.current.sendKey(keysym, code, down);
+          } catch (error) {
+            console.error(`❌ VNC-VIEWER: Error sending key:`, error);
+          }
+        } else {
+          console.warn(`⚠️ VNC-VIEWER: Cannot send key - not connected or ref unavailable`);
+        }
+      },
+      sendCtrlAltDel: () => {
+        if (vncRef.current && connected) {
+          console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
+          try {
+            return vncRef.current.sendCtrlAltDel();
+          } catch (error) {
+            console.error(`❌ VNC-VIEWER: Error sending Ctrl+Alt+Del:`, error);
+          }
+        } else {
+          console.warn(`⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`);
+        }
+      },
+      clipboardPaste: clipboardPasteFunc,
+      // Additional control methods
+      connect: handleConnect,
+      disconnect: handleDisconnect,
+      refresh: handleRefresh,
+      // State
+      connected,
+      connecting,
+      // Access to underlying RFB object for advanced operations
+      rfb: vncRef.current?.rfb || null
+    };
+  }, [connected, connecting]);
 
   // Legacy support - expose methods via callback props
   useEffect(() => {
