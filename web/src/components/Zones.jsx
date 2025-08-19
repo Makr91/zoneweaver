@@ -1590,7 +1590,8 @@ const Zones = () => {
                                                     active_vnc_session: true,
                                                     vnc_session_info: result.data
                                                   }));
-                                                  // Console will auto-switch to VNC via useEffect
+                                                  // Force console switch to VNC
+                                                  setActiveConsoleType('vnc');
                                                 } else {
                                                   console.error(`❌ START VNC: Failed to start VNC session:`, result.message);
                                                   setError(`Failed to start VNC console: ${result.message}`);

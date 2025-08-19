@@ -135,20 +135,20 @@ const VncActionsDropdown = ({
         <span>Alt+F4</span>
       </a>
 
-      <div className="dropdown-item">
-        <div className="buttons are-small">
-          {[...Array(12)].map((_, i) => (
-            <button 
-              key={i} 
-              className="button is-outlined is-small"
-              onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
-              title={`Send F${i + 1} key to guest`}
-            >
-              F{i + 1}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Individual Function Key Items */}
+      {[...Array(12)].map((_, i) => (
+        <a 
+          key={i}
+          className="dropdown-item" 
+          onClick={() => handleKeyboardShortcut(`F${i + 1}`)}
+          title={`Send F${i + 1} key to guest`}
+        >
+          <span className="icon is-small mr-2">
+            <i className="fas fa-keyboard"></i>
+          </span>
+          <span>F{i + 1}</span>
+        </a>
+      ))}
 
       <hr className="dropdown-divider" />
       
