@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/Makr91/zoneweaver/compare/v0.7.0...v0.7.1) (2025-08-20)
+
+
+### Bug Fixes
+
+* cleanup build scripts and random files, and update WASM version ([79c614a](https://github.com/Makr91/zoneweaver/commit/79c614a484481a3d5f5650ef1bfeede04b895570))
+
 ## [0.7.0](https://github.com/Makr91/zoneweaver/compare/v0.6.0...v0.7.0) (2025-08-20)
 
 
