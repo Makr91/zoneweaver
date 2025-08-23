@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.7.6](https://github.com/Makr91/zoneweaver/compare/v0.7.5...v0.7.6) (2025-08-23)
+
+
+### Bug Fixes
+
+* codeql ([7bccea9](https://github.com/Makr91/zoneweaver/commit/7bccea9393749f757bcbca9b75642e3295a73ab6))
+* codeql critical ssrf ([8807877](https://github.com/Makr91/zoneweaver/commit/880787789fb0d1573c0e8aa422af7d129e424054))
+* codeql critical ssrf v3 ([34d5e9a](https://github.com/Makr91/zoneweaver/commit/34d5e9ae33e8feaf7dc389e78811733296f34b19))
+* codeql critical ssrf v4 ([7e7190e](https://github.com/Makr91/zoneweaver/commit/7e7190e8f3293a3700a3ab1a096839a5e9f78a13))
+* codeql critical ssrf v5 ([81c17ec](https://github.com/Makr91/zoneweaver/commit/81c17ecaf44fa5b109dee04de293ba16652a0597))
+* codeql critical ssrf v6 ([d7d4027](https://github.com/Makr91/zoneweaver/commit/d7d40274925a4d6ed801cf574cacbd73e6ebee22))
+* codeql critical ssrf v7 ([b808158](https://github.com/Makr91/zoneweaver/commit/b808158bd3e8675030761d84bb368f97ce50f915))
+* codeql critical ssrf v8 ([9c6c06a](https://github.com/Makr91/zoneweaver/commit/9c6c06a472eb9ac99021e7b5883cec091c8ba96e))
+* codeql high v10 ([c8856c7](https://github.com/Makr91/zoneweaver/commit/c8856c7a8d37ec457dc49da80dc031401f1572ca))
+* codeql high v11 ([ba0a939](https://github.com/Makr91/zoneweaver/commit/ba0a9395d71cdede5b2a9454b6f1c72ee1455fbc))
+* codeql high v12 ([41ad0f9](https://github.com/Makr91/zoneweaver/commit/41ad0f9001662ad3a5a1807155fe6d100f76136a))
+* codeql high v9 ([299db5a](https://github.com/Makr91/zoneweaver/commit/299db5a4eea15c831670e3b59e49b18d98f388de))
+
 ## [0.7.5](https://github.com/Makr91/zoneweaver/compare/v0.7.4...v0.7.5) (2025-08-23)
 
 
