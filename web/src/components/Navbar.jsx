@@ -187,14 +187,8 @@ const Navbar = () => {
       );
 
       if (result.success) {
-        const proxyUrl = `/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(currentZone)}/vnc/console?autoconnect=true&scale=true`;
-        
-        if (openInNewTab) {
-          window.open(proxyUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
-        } else {
-          // Navigate to zones page with VNC parameter to auto-open console
-          navigate(`/ui/zones?vnc=${currentZone}`);
-        }
+        // Navigate to zones page with VNC parameter to auto-open console (react-vnc only)
+        navigate(`/ui/zones?vnc=${currentZone}`);
       } else {
         console.error(`Failed to start VNC console for ${currentZone}:`, result.message);
       }

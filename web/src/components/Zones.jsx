@@ -1088,7 +1088,7 @@ const Zones = () => {
         setVncSession(vncData);
         
         // ONLY use Zoneweaver proxy routes - NO direct connections
-        const proxyUrl = `/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(zoneName)}/vnc/console`;
+        // Legacy console endpoint removed - using react-vnc only now
         
         if (openInNewTab) {
           // Open console in new tab via Zoneweaver proxy

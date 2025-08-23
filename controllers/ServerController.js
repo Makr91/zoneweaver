@@ -760,10 +760,10 @@ class ServerController {
 
   /**
    * @swagger
-   * /api/servers/{serverAddress}/zones/{zoneName}/vnc/{path}:
+   * /api/servers/{serverAddress}/zones/{zoneName}/vnc/websockify:
    *   get:
-   *     summary: Proxy VNC assets and requests
-   *     description: General VNC proxy for static assets, WebSocket connections, and other VNC-related requests
+   *     summary: Proxy VNC WebSocket connections
+   *     description: WebSocket proxy for react-vnc connections (websockify endpoint only)
    *     tags: [VNC Console]
    *     security:
    *       - JwtAuth: []
@@ -782,34 +782,9 @@ class ServerController {
    *           type: string
    *         description: Name of the zone
    *         example: "my-zone"
-   *       - in: path
-   *         name: path
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: VNC asset path (CSS, JS, images, WebSocket, etc.)
-   *         example: "app/ui.js"
    *     responses:
    *       200:
-   *         description: VNC asset served successfully
-   *         content:
-   *           text/css:
-   *             schema:
-   *               type: string
-   *               description: CSS stylesheets (scoped for Zoneweaver)
-   *           application/javascript:
-   *             schema:
-   *               type: string
-   *               description: JavaScript files
-   *           image/*:
-   *             schema:
-   *               type: string
-   *               format: binary
-   *               description: Image assets
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               description: API responses
+   *         description: WebSocket connection established
    *       401:
    *         description: Not authenticated (optional auth)
    *         content:
@@ -817,23 +792,11 @@ class ServerController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    *       404:
-   *         description: Server, zone, or asset not found
+   *         description: Server, zone, or VNC session not found
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
-   *             examples:
-   *               serverNotFound:
-   *                 summary: Server not found
-   *                 value:
-   *                   success: false
-   *                   message: "Zoneweaver API Server hostname:port not found in Zoneweaver configuration"
-   *               assetNotFound:
-   *                 summary: Asset not found
-   *                 value:
-   *                   success: false
-   *                   message: "Asset not found"
-   *                   asset_path: "app/missing.js"
    *       500:
    *         description: Proxy error or Zoneweaver API error
    *         content:
@@ -841,6 +804,28 @@ class ServerController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
+  /**
+   * Security function to validate VNC paths and prevent SSRF attacks
+   * Only allows websockify endpoint for react-vnc WebSocket connections
+   * @param {string} vncPath - The VNC path to validate
+   * @returns {boolean} - True if path is valid, false otherwise
+   */
+  static isValidVncPath(vncPath) {
+    if (!vncPath || typeof vncPath !== 'string') {
+      return false;
+    }
+    
+    // Remove path traversal attempts and normalize
+    const cleanPath = vncPath
+      .replace(/\.\./g, '')        // Remove .. sequences
+      .replace(/\/+/g, '/')        // Normalize multiple slashes
+      .replace(/^\/+|\/+$/g, '')   // Remove leading/trailing slashes
+      .trim();
+    
+    // Only allow websockify endpoint (used by react-vnc)
+    return cleanPath === 'websockify';
+  }
+
   static async proxyVncGeneral(req, res) {
     try {
       const { serverAddress, zoneName } = req.params;
@@ -848,58 +833,59 @@ class ServerController {
         ? req.params.splat.join('/') 
         : (req.params.splat || ''); // Express 5.x compatibility fix
       
+      // 🛡️ SECURITY FIX: Validate VNC path to prevent SSRF attacks
+      if (!ServerController.isValidVncPath(vncPath)) {
+        console.error(`🚨 SECURITY: Invalid VNC path blocked: "${vncPath}"`);
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid VNC path. Only websockify endpoint is allowed.',
+          blocked_path: vncPath
+        });
+      }
+      
       // Parse hostname and port from serverAddress
       const [hostname, port] = serverAddress.split(':');
       
-      // Use cached server lookup to avoid database hits on every asset request
+      // Use cached server lookup
       const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
 
       if (!server) {
-        console.error(`🔗 VNC Asset: Server not found - ${hostname}:${port}`);
+        console.error(`🔗 VNC: Server not found - ${hostname}:${port}`);
         return res.status(404).json({
           success: false,
-          message: `Zoneweaver API Server ${hostname}:${port} not found in Zoneweaver configuration`,
-          asset_path: vncPath
+          message: `Zoneweaver API Server ${hostname}:${port} not found in configuration`
         });
       }
 
       if (!server.api_key) {
-        console.error(`🔗 VNC Asset: No API key for server ${hostname}:${port}`);
+        console.error(`🔗 VNC: No API key for server ${hostname}:${port}`);
         return res.status(500).json({
           success: false,
-          message: `No API key configured for Zoneweaver API Server ${hostname}:${port}`,
-          asset_path: vncPath
+          message: `No API key configured for server ${hostname}:${port}`
         });
       }
 
-      // Import required modules
+      // Import axios
       const axios = (await import('axios')).default;
       
       // Check if this is a WebSocket upgrade request
       if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
-        console.log(`🔌 WebSocket upgrade request for VNC path: ${vncPath}`);
-        
-        // Use native WebSocket implementation for better control
+        console.log(`🔌 WebSocket upgrade request for VNC websockify`);
         // This will be handled by the WebSocket upgrade handler in index.js
         return;
       }
 
-      // Handle regular HTTP requests (static assets, API calls)
+      // Handle regular HTTP requests to websockify endpoint
       const queryString = req.url.split('?')[1];
       
-      // Construct the Zoneweaver API URL - aligned with backend's new asset routing
+      // 🛡️ SECURITY: Construct URL with validated path only
       let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
       
-      // Append query parameters if present
       if (queryString) {
         zapiUrl += `?${queryString}`;
       }
       
-      // Only log CSS files and console requests to reduce noise
-      const needsLogging = vncPath.includes('console') || vncPath.endsWith('.css');
-      if (needsLogging) {
-        console.log(`🔗 VNC Asset: Proxying ${vncPath || 'root'} to ${zapiUrl}`);
-      }
+      console.log(`🔗 VNC: Proxying websockify to ${zapiUrl}`);
 
       try {
         // Make authenticated request to Zoneweaver API
@@ -919,142 +905,51 @@ class ServerController {
           headers: requestHeaders,
           data: req.method !== 'GET' && req.method !== 'DELETE' ? req.body : undefined,
           responseType: 'stream',
-          timeout: 30000
+          timeout: 30000,
+          maxRedirects: 0  // 🛡️ SECURITY FIX: Disable redirects to prevent SSRF bypass
         });
 
-        // Apply aggressive no-cache headers for all VNC content
+        // Set security headers
         res.set({
           'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
           'Pragma': 'no-cache',
           'Expires': '0',
-          'X-Proxied-By': 'Zoneweaver',
+          'X-Proxied-By': 'Zoneweaver-VNC',
           'X-Frame-Options': 'SAMEORIGIN'
         });
 
-        // Check if this is an iframe request - skip all processing for iframe isolation
-        const isIframeRequest = req.headers['sec-fetch-dest'] === 'iframe' || 
-                               req.headers.referer?.includes('/zones/') ||
-                               req.get('X-Requested-With') === 'iframe';
-
-        // Check if this is a CSS file that needs scoping - but skip for iframes
-        const contentType = response.headers['content-type'] || '';
-        const needsCssScoping = !isIframeRequest && (contentType.includes('text/css') || vncPath.endsWith('.css'));
-
-        if (isIframeRequest) {
-          // Only log first few assets and CSS files for iframe requests to reduce noise
-          const shouldLog = needsLogging || vncPath.endsWith('.css') || vncPath.includes('core/rfb.js') || vncPath.includes('ui.js');
-          if (shouldLog) {
-            console.log(`🖼️ VNC IFRAME: Passing ${vncPath} through unmodified for iframe isolation`);
+        // Forward response headers except caching ones
+        Object.keys(response.headers).forEach(key => {
+          const lowerKey = key.toLowerCase();
+          if (!['transfer-encoding', 'connection', 'cache-control', 'pragma', 'expires', 'etag', 'last-modified'].includes(lowerKey)) {
+            res.set(key, response.headers[key]);
           }
-          
-          // Pass through completely unmodified for true iframe isolation
-          res.set({
-            'Content-Type': contentType,
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'X-Proxied-By': 'Zoneweaver-Iframe',
-            'X-Frame-Options': 'SAMEORIGIN'
-          });
+        });
 
-          // Forward other headers except caching ones
-          Object.keys(response.headers).forEach(key => {
-            const lowerKey = key.toLowerCase();
-            if (!['transfer-encoding', 'connection', 'content-type', 'cache-control', 'pragma', 'expires', 'etag', 'last-modified'].includes(lowerKey)) {
-              res.set(key, response.headers[key]);
-            }
-          });
-
-          res.status(response.status);
-          response.data.pipe(res);
-
-        } else if (needsCssScoping) {
-          // Buffer CSS content for scoping
-          let cssContent = '';
-          
-          response.data.on('data', (chunk) => {
-            cssContent += chunk.toString();
-          });
-          
-          response.data.on('end', () => {
-            // Apply CSS scoping to prevent conflicts with main app
-            const scopedCss = cssContent.replace(/([^{}]+){/g, (match, selector) => {
-              const cleanSelector = selector.trim();
-              
-              // Skip @rules, already scoped selectors, and global selectors
-              if (cleanSelector.startsWith('@') || cleanSelector.includes('.vnc-viewer') || cleanSelector === 'html' || cleanSelector === 'body') {
-                return match;
-              }
-              
-              // Add .vnc-viewer scope
-              return `.vnc-viewer ${cleanSelector} {`;
-            });
-            
-            console.log(`🎨 VNC CSS: Applied scoping to ${vncPath}`);
-            
-            // Set response headers
-            res.set({
-              'Content-Type': 'text/css',
-              'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-              'Pragma': 'no-cache',
-              'Expires': '0',
-              'X-Proxied-By': 'Zoneweaver',
-              'Content-Length': Buffer.byteLength(scopedCss)
-            });
-            
-            res.status(response.status).send(scopedCss);
-          });
-          
-          response.data.on('error', (error) => {
-            console.error('Error reading CSS content for scoping:', error);
-            res.status(500).send('/* Error processing CSS */');
-          });
-          
-        } else {
-          // Forward response headers except caching ones
-          Object.keys(response.headers).forEach(key => {
-            const lowerKey = key.toLowerCase();
-            if (!['transfer-encoding', 'connection', 'cache-control', 'pragma', 'expires', 'etag', 'last-modified'].includes(lowerKey)) {
-              res.set(key, response.headers[key]);
-            }
-          });
-
-          // Set status and pipe response
-          res.status(response.status);
-          response.data.pipe(res);
-        }
+        // Pipe response directly
+        res.status(response.status);
+        response.data.pipe(res);
 
       } catch (proxyError) {
-        console.error(`🔗 VNC Asset proxy failed for ${vncPath}:`, proxyError.message);
+        console.error(`🔗 VNC proxy failed for websockify:`, proxyError.message);
         
         if (proxyError.response) {
           const statusCode = proxyError.response.status;
-          // Handle backend-specific errors as documented by backend AI
-          if (statusCode === 404) {
-            return res.status(404).json({
-              success: false,
-              message: 'Asset not found',
-              asset_path: vncPath,
-              error: 'VNC session may not be active'
-            });
-          }
-          
           res.status(statusCode).json({
             success: false,
-            message: `VNC asset proxy error: ${statusCode}`,
-            asset_path: vncPath
+            message: `VNC proxy error: ${statusCode}`,
+            error: 'VNC session may not be active'
           });
         } else {
           res.status(500).json({
             success: false,
-            message: `VNC asset proxy connection error: ${proxyError.message}`,
-            asset_path: vncPath
+            message: `VNC proxy connection error: ${proxyError.message}`
           });
         }
       }
 
     } catch (error) {
-      console.error('🔗 VNC general proxy error:', error.message);
+      console.error('🔗 VNC proxy error:', error.message);
       res.status(500).json({
         success: false,
         message: 'VNC proxy request failed',
@@ -1063,364 +958,6 @@ class ServerController {
     }
   }
 
-  /**
-   * @swagger
-   * /api/servers/{serverAddress}/zones/{zoneName}/vnc/console:
-   *   get:
-   *     summary: Access VNC console for zone
-   *     description: Proxy to Zoneweaver API VNC console with URL rewriting for seamless integration in Zoneweaver
-   *     tags: [VNC Console]
-   *     security:
-   *       - JwtAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: serverAddress
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Server address in format hostname:port
-   *         example: "zoneweaver-api-host.example.com:5001"
-   *       - in: path
-   *         name: zoneName
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Name of the zone
-   *         example: "my-zone"
-   *       - in: query
-   *         name: autoconnect
-   *         required: false
-   *         schema:
-   *           type: boolean
-   *         description: Auto-connect to VNC (noVNC parameter)
-   *         example: true
-   *       - in: query
-   *         name: resize
-   *         required: false
-   *         schema:
-   *           type: string
-   *           enum: [scale, remote]
-   *         description: Resize method (noVNC parameter)
-   *         example: "scale"
-   *     responses:
-   *       200:
-   *         description: VNC console HTML page
-   *         content:
-   *           text/html:
-   *             schema:
-   *               type: string
-   *               description: noVNC client HTML with rewritten URLs for Zoneweaver integration
-   *       401:
-   *         description: Not authenticated (optional auth for iframe compatibility)
-   *         content:
-   *           text/html:
-   *             schema:
-   *               type: string
-   *               description: HTML error page
-   *       404:
-   *         description: Server or zone not found
-   *         content:
-   *           text/html:
-   *             schema:
-   *               type: string
-   *               description: HTML error page with user-friendly message
-   *             examples:
-   *               serverNotFound:
-   *                 summary: Server not found
-   *                 value: '<html><body><h2>Server Not Found</h2><p>Zoneweaver API Server not found in Zoneweaver configuration.</p></body></html>'
-   *               configError:
-   *                 summary: Configuration error
-   *                 value: '<html><body><h2>Configuration Error</h2><p>No API key configured for Zoneweaver API Server</p></body></html>'
-   *       500:
-   *         description: Proxy error or Zoneweaver API error
-   *         content:
-   *           text/html:
-   *             schema:
-   *               type: string
-   *               description: HTML error page with retry button
-   */
-  static async proxyVncConsole(req, res) {
-    try {
-      const { serverAddress, zoneName } = req.params;
-      
-      // Parse hostname and port from serverAddress
-      const [hostname, port] = serverAddress.split(':');
-      
-      // Use cached server lookup to avoid database hits on every asset request
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
-
-      if (!server) {
-        console.error(`🔗 VNC Console: Server not found - ${hostname}:${port}`);
-        return res.status(404).send(`
-          <html>
-            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-              <h2 style="color: #e74c3c;">Server Not Found</h2>
-              <p>Zoneweaver API Server ${hostname}:${port} not found in Zoneweaver configuration.</p>
-              <p style="color: #7f8c8d; font-size: 0.9em;">Please add this server in Zoneweaver settings.</p>
-            </body>
-          </html>
-        `);
-      }
-
-      if (!server.api_key) {
-        console.error(`🔗 VNC Console: No API key for server ${hostname}:${port}`);
-        return res.status(500).send(`
-          <html>
-            <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-              <h2 style="color: #e74c3c;">Configuration Error</h2>
-              <p>No API key configured for Zoneweaver API Server ${hostname}:${port}</p>
-              <p style="color: #7f8c8d; font-size: 0.9em;">
-                Please check the server configuration in Zoneweaver settings.
-              </p>
-            </body>
-          </html>
-        `);
-      }
-
-      // Import axios for HTTP proxy requests
-      const axios = (await import('axios')).default;
-      
-      // Extract query parameters from the request URL to forward to Zoneweaver API
-      const queryString = req.url.split('?')[1];
-      
-      // Construct the Zoneweaver API VNC console URL - aligned with backend implementation
-      let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/console`;
-      
-      // Append query parameters if present (for noVNC configuration)
-      if (queryString) {
-        zapiUrl += `?${queryString}`;
-      }
-      
-      console.log(`🔗 VNC Console: Proxying request to ${zapiUrl}`);
-
-      try {
-        // Make authenticated request to Zoneweaver API
-        const requestHeaders = {
-          'Authorization': `Bearer ${server.api_key}`,
-          'User-Agent': 'Zoneweaver-Proxy/1.0',
-          'Accept': req.headers.accept || '*/*'
-        };
-        
-        console.log(`Making request with headers:`, { 
-          'Authorization': `Bearer ${server.api_key.substring(0, 10)}...`, 
-          'User-Agent': requestHeaders['User-Agent'],
-          'Accept': requestHeaders['Accept']
-        });
-
-        const response = await axios({
-          method: req.method,
-          url: zapiUrl,
-          headers: requestHeaders,
-          responseType: 'stream', // ✅ FIX: Enable streaming response
-          timeout: 30000
-        });
-
-        // Check if this is an iframe request - if so, skip all processing for true isolation
-        const isIframeRequest = req.headers['sec-fetch-dest'] === 'iframe' || 
-                               req.headers.referer?.includes('/zones/') ||
-                               req.get('X-Requested-With') === 'iframe';
-
-        // Check if this content needs URL rewriting (HTML, JS, CSS) - but skip for iframes
-        const contentType = response.headers['content-type'] || '';
-        const needsRewriting = !isIframeRequest && (
-          contentType.includes('text/html') || 
-          contentType.includes('text/css') || 
-          contentType.includes('application/javascript') ||
-          contentType.includes('text/javascript')
-        );
-
-        if (isIframeRequest) {
-          console.log(`🖼️ VNC IFRAME: Passing content through unmodified for iframe isolation`);
-          
-          // Pass through completely unmodified for true iframe isolation
-          res.set({
-            'Content-Type': contentType,
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'X-Frame-Options': 'SAMEORIGIN',
-            'X-Proxied-By': 'Zoneweaver-Iframe'
-          });
-
-          // Forward other headers except caching ones
-          Object.keys(response.headers).forEach(key => {
-            const lowerKey = key.toLowerCase();
-            if (!['transfer-encoding', 'connection', 'content-type', 'cache-control', 'pragma', 'expires', 'etag', 'last-modified'].includes(lowerKey)) {
-              res.set(key, response.headers[key]);
-            }
-          });
-
-          res.status(response.status);
-          response.data.pipe(res);
-          
-        } else if (needsRewriting) {
-          // Buffer the content for rewriting
-          let content = '';
-          
-          response.data.on('data', (chunk) => {
-            content += chunk.toString();
-          });
-          
-          response.data.on('end', () => {
-            // Get frontend URL details
-            const frontendHost = req.get('host');
-            const protocol = req.secure || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
-            const wsProtocol = protocol === 'https' ? 'wss' : 'ws';
-            
-            let rewrittenContent = content;
-            
-            // Comprehensive URL rewriting patterns
-            const patterns = [
-              // Rewrite relative asset paths that start with "app/"
-              {
-                pattern: /href="app\//g,
-                replacement: `href="${protocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/app/`
-              },
-              {
-                pattern: /src="app\//g,
-                replacement: `src="${protocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/app/`
-              },
-              // WebSocket URLs
-              {
-                pattern: new RegExp(`wss?://${server.hostname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:${server.port}/websockify`, 'g'),
-                replacement: `${wsProtocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`
-              },
-              // HTTP/HTTPS URLs (for assets, API calls, etc.)
-              {
-                pattern: new RegExp(`https?://${server.hostname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:${server.port}/zones/${zoneName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/vnc/`, 'g'),
-                replacement: `${protocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/`
-              },
-              // Relative URLs that might be constructed dynamically
-              {
-                pattern: new RegExp(`["'](?:\\.\\./)*zones/${zoneName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/vnc/([^"']*?)["']`, 'g'),
-                replacement: `"${protocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/$1"`
-              },
-              // JavaScript string concatenation patterns
-              {
-                pattern: new RegExp(`["']/zones/${zoneName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/vnc/["']`, 'g'),
-                replacement: `"${protocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/"`
-              },
-              // CSS url() references
-              {
-                pattern: new RegExp(`url\\(["']?(?:\\.\\./)*zones/${zoneName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/vnc/([^"')]*?)["']?\\)`, 'g'),
-                replacement: `url("${protocol}://${frontendHost}/api/servers/${serverAddress}/zones/${encodeURIComponent(zoneName)}/vnc/$1")`
-              }
-            ];
-            
-            // Apply all rewriting patterns
-            patterns.forEach(({ pattern, replacement }) => {
-              const before = rewrittenContent.length;
-              rewrittenContent = rewrittenContent.replace(pattern, replacement);
-              const after = rewrittenContent.length;
-              if (before !== after) {
-                console.log(`🔄 URL rewrite applied: ${pattern.source}`);
-              }
-            });
-            
-            // Set aggressive no-cache headers for all VNC content
-            res.set({
-              'Content-Type': contentType,
-              'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-              'Pragma': 'no-cache',
-              'Expires': '0',
-              'X-Frame-Options': 'SAMEORIGIN',
-              'X-Proxied-By': 'Zoneweaver',
-              'Content-Length': Buffer.byteLength(rewrittenContent),
-              // Content Security Policy to block direct backend access
-              'Content-Security-Policy': `connect-src 'self' ${wsProtocol}://${frontendHost}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';`
-            });
-            
-            res.status(response.status).send(rewrittenContent);
-          });
-          
-          response.data.on('error', (error) => {
-            console.error('Error reading content for rewriting:', error);
-            res.status(500).send('Error processing content');
-          });
-          
-        } else {
-          // For binary content (images, etc.), pipe directly with no-cache headers
-          res.set({
-            'Content-Type': contentType,
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'X-Frame-Options': 'SAMEORIGIN',
-            'X-Proxied-By': 'Zoneweaver'
-          });
-
-          // Forward other headers except caching ones
-          Object.keys(response.headers).forEach(key => {
-            const lowerKey = key.toLowerCase();
-            if (!['transfer-encoding', 'connection', 'content-type', 'cache-control', 'pragma', 'expires', 'etag', 'last-modified'].includes(lowerKey)) {
-              res.set(key, response.headers[key]);
-            }
-          });
-
-          res.status(response.status);
-          response.data.pipe(res);
-        }
-
-      } catch (proxyError) {
-        console.error('VNC proxy request failed:', proxyError.message);
-        
-        if (proxyError.response) {
-          // Handle specific HTTP errors from Zoneweaver API
-          const statusCode = proxyError.response.status;
-          const errorMessage = proxyError.response.data || proxyError.message;
-          
-          res.status(statusCode).send(`
-            <html>
-              <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-                <h2 style="color: #e74c3c;">VNC Console Error</h2>
-                <p><strong>Status:</strong> ${statusCode}</p>
-                <p><strong>Message:</strong> ${errorMessage}</p>
-                <p style="color: #7f8c8d; font-size: 0.9em;">
-                  Make sure the zone is running and VNC is enabled.
-                </p>
-                <button onclick="window.location.reload()" style="padding: 8px 16px; margin-top: 10px;">
-                  Retry
-                </button>
-              </body>
-            </html>
-          `);
-        } else {
-          // Network or other errors
-          res.status(500).send(`
-            <html>
-              <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-                <h2 style="color: #e74c3c;">Connection Error</h2>
-                <p>Failed to connect to Zoneweaver API.</p>
-                <p style="color: #7f8c8d; font-size: 0.9em;">
-                  ${proxyError.message}
-                </p>
-                <button onclick="window.location.reload()" style="padding: 8px 16px; margin-top: 10px;">
-                  Retry
-                </button>
-              </body>
-            </html>
-          `);
-        }
-      }
-
-    } catch (error) {
-      console.error('VNC console proxy error:', error.message);
-      res.status(500).send(`
-        <html>
-          <body style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-            <h2 style="color: #e74c3c;">Proxy Error</h2>
-            <p>Failed to proxy VNC console request.</p>
-            <p style="color: #7f8c8d; font-size: 0.9em;">
-              ${error.message}
-            </p>
-            <button onclick="window.location.reload()" style="padding: 8px 16px; margin-top: 10px;">
-              Retry
-            </button>
-          </body>
-        </html>
-      `);
-    }
-  }
 
   /**
    * @swagger
