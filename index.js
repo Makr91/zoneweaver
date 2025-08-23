@@ -5,6 +5,7 @@ import fs from "fs";
 import cors from "cors";
 import session from "express-session";
 import YAML from "yaml";
+import rateLimit from "express-rate-limit";
 import router from "./routes/index.js";
 import db from "./models/index.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
@@ -20,6 +21,17 @@ process.on('uncaughtException', (err) => {
 
 // Load configuration from YAML file
 const config = loadConfig();
+
+// 🛡️ Static File Rate Limiting Configuration (CodeQL Security Fix)
+// Create rate limiter for static file serving endpoints
+const rlConfig = config.rateLimiting || {};
+const staticFileLimiter = rateLimit({
+  windowMs: rlConfig.staticFiles?.windowMs?.value || 15 * 60 * 1000,
+  max: rlConfig.staticFiles?.max?.value || 1000,
+  message: { error: rlConfig.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const app = express();
 const port = process.env.PORT || config.frontend.port;
@@ -172,8 +184,8 @@ app.get('/api-docs/swagger.json', (req, res) => {
   res.send(dynamicSpecs);
 });
 
-// Handle React Router routes - serve index.html for all non-API routes
-app.get('*splat', (req, res) => {
+// Handle React Router routes - serve index.html for all non-API routes - Protected with static file rate limiting (CodeQL flagged)
+app.get('*splat', staticFileLimiter, (req, res) => {
   res.sendFile('./web/dist/index.html', { root: '.' });
 });
 

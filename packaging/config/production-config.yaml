@@ -179,3 +179,107 @@ session:
 gravatar:
   # Get your API key from https://gravatar.com/
   apiKey: ""
+
+# Rate Limiting Configuration (CodeQL Security Fix)
+rateLimiting:
+  authentication:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Authentication rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 5
+      description: "Maximum authentication attempts per window"
+      required: true
+    message:
+      type: string
+      value: "Too many authentication attempts, please try again later"
+      description: "Error message for authentication rate limit"
+      required: true
+  
+  admin:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Admin operations rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 100
+      description: "Maximum admin requests per window"
+      required: true
+    message:
+      type: string
+      value: "Too many admin requests, please try again later"
+      description: "Error message for admin rate limit"
+      required: true
+      
+  apiProxy:
+    windowMs:
+      type: integer
+      value: 60000
+      description: "API proxy rate limit window in milliseconds (1 minute)"
+      required: true
+    max:
+      type: integer
+      value: 20
+      description: "Maximum API proxy requests per window"
+      required: true
+    message:
+      type: string
+      value: "Too many API proxy requests, please try again later"
+      description: "Error message for API proxy rate limit"
+      required: true
+      
+  realtime:
+    windowMs:
+      type: integer
+      value: 60000
+      description: "Real-time operations rate limit window in milliseconds (1 minute)"
+      required: true
+    max:
+      type: integer
+      value: 50
+      description: "Maximum real-time requests per window"
+      required: true
+    message:
+      type: string
+      value: "Too many real-time requests, please try again later"
+      description: "Error message for real-time rate limit"
+      required: true
+      
+  standard:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Standard operations rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 200
+      description: "Maximum standard requests per window"
+      required: true
+    message:
+      type: string
+      value: "Too many requests, please try again later"
+      description: "Error message for standard rate limit"
+      required: true
+      
+  staticFiles:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Static file serving rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 1000
+      description: "Maximum static file requests per window (high limit for normal browsing)"
+      required: true
+    message:
+      type: string
+      value: "Too many static file requests, please try again later"
+      description: "Error message for static file rate limit"
+      required: true

@@ -14,49 +14,62 @@ import { loadConfig } from "../utils/config.js";
 const router = express.Router();
 
 // 🛡️ Rate Limiting Configuration (CodeQL Security Fix)
-// Tiered approach based on endpoint sensitivity and resource usage
+// Configurable tiered approach based on endpoint sensitivity and resource usage
+
+// Load rate limiting configuration from config.yaml
+const config = loadConfig();
+const rlConfig = config.rateLimiting || {};
 
 // Authentication - Strict (prevent brute force attacks)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
-  message: { error: 'Too many authentication attempts, please try again later' },
+  windowMs: rlConfig.authentication?.windowMs?.value || 15 * 60 * 1000,
+  max: rlConfig.authentication?.max?.value || 5,
+  message: { error: rlConfig.authentication?.message?.value || 'Too many authentication attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Admin operations - Moderate (protect admin functions)
 const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: { error: 'Too many admin requests, please try again later' },
+  windowMs: rlConfig.admin?.windowMs?.value || 15 * 60 * 1000,
+  max: rlConfig.admin?.max?.value || 100,
+  message: { error: rlConfig.admin?.message?.value || 'Too many admin requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // External API proxy - Restrictive (protect downstream Zoneweaver servers)
 const apiProxyLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20, // limit each IP to 20 requests per minute
-  message: { error: 'Too many API proxy requests, please try again later' },
+  windowMs: rlConfig.apiProxy?.windowMs?.value || 60 * 1000,
+  max: rlConfig.apiProxy?.max?.value || 20,
+  message: { error: rlConfig.apiProxy?.message?.value || 'Too many API proxy requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Real-time operations - Lenient (maintain VNC/terminal functionality)
 const realtimeLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 50, // limit each IP to 50 requests per minute
-  message: { error: 'Too many real-time requests, please try again later' },
+  windowMs: rlConfig.realtime?.windowMs?.value || 60 * 1000,
+  max: rlConfig.realtime?.max?.value || 50,
+  message: { error: rlConfig.realtime?.message?.value || 'Too many real-time requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Standard operations - Normal (general purpose)
 const standardLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // limit each IP to 200 requests per windowMs
-  message: { error: 'Too many requests, please try again later' },
+  windowMs: rlConfig.standard?.windowMs?.value || 15 * 60 * 1000,
+  max: rlConfig.standard?.max?.value || 200,
+  message: { error: rlConfig.standard?.message?.value || 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Static file serving - High limit (prevent file system abuse, CodeQL flagged endpoints)
+const staticFileLimiter = rateLimit({
+  windowMs: rlConfig.staticFiles?.windowMs?.value || 15 * 60 * 1000,
+  max: rlConfig.staticFiles?.max?.value || 1000,
+  message: { error: rlConfig.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -238,11 +251,11 @@ router.get("/api/settings/backups", adminLimiter, authenticate, requireSuperAdmi
 // Mail testing endpoint - Protected with admin rate limiting
 router.post("/api/mail/test", adminLimiter, authenticate, requireSuperAdmin, AuthController.testMail);
 
-// Serve static files from the Vite app build directory
-router.use('/ui', express.static(path.join(process.cwd(), 'web/dist')));
+// Serve static files from the Vite app build directory - Protected with static file rate limiting (CodeQL flagged)
+router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'web/dist')));
 
-// Catch all handler: send back Vite's index.html file for client-side routing
-router.get('/ui/*splat', (req, res) => {
+// Catch all handler: send back Vite's index.html file for client-side routing - Protected with static file rate limiting (CodeQL flagged)
+router.get('/ui/*splat', staticFileLimiter, (req, res) => {
   res.sendFile(path.join(process.cwd(), 'web/dist/index.html'));
 });
 
