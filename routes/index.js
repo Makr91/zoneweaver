@@ -4,6 +4,7 @@ import crypto from "crypto";
 import axios from "axios";
 import fs from "fs";
 import YAML from "yaml";
+import rateLimit from "express-rate-limit";
 import AuthController from "../controllers/AuthController.js";
 import ServerController from "../controllers/ServerController.js";
 import SettingsController from "../controllers/SettingsController.js";
@@ -12,15 +13,63 @@ import { loadConfig } from "../utils/config.js";
 
 const router = express.Router();
 
-// Authentication endpoints
-router.post("/api/auth/register", AuthController.register);
-router.post("/api/auth/login", AuthController.login);
-router.post("/api/auth/logout", AuthController.logout);
-router.get("/api/auth/profile", authenticate, AuthController.getProfile);
-router.post("/api/auth/change-password", authenticate, AuthController.changePassword);
-router.delete("/api/auth/delete-account", authenticate, AuthController.deleteSelfAccount);
-router.get("/api/auth/verify", AuthController.verifyToken);
-router.get("/api/auth/setup-status", AuthController.checkSetupStatus);
+// 🛡️ Rate Limiting Configuration (CodeQL Security Fix)
+// Tiered approach based on endpoint sensitivity and resource usage
+
+// Authentication - Strict (prevent brute force attacks)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: { error: 'Too many authentication attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Admin operations - Moderate (protect admin functions)
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: 'Too many admin requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// External API proxy - Restrictive (protect downstream Zoneweaver servers)
+const apiProxyLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // limit each IP to 20 requests per minute
+  message: { error: 'Too many API proxy requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Real-time operations - Lenient (maintain VNC/terminal functionality)
+const realtimeLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 50, // limit each IP to 50 requests per minute
+  message: { error: 'Too many real-time requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Standard operations - Normal (general purpose)
+const standardLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // limit each IP to 200 requests per windowMs
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Authentication endpoints - Protected with strict rate limiting
+router.post("/api/auth/register", authLimiter, AuthController.register);
+router.post("/api/auth/login", authLimiter, AuthController.login);
+router.post("/api/auth/logout", standardLimiter, AuthController.logout);
+router.get("/api/auth/profile", standardLimiter, authenticate, AuthController.getProfile);
+router.post("/api/auth/change-password", authLimiter, authenticate, AuthController.changePassword);
+router.delete("/api/auth/delete-account", authLimiter, authenticate, AuthController.deleteSelfAccount);
+router.get("/api/auth/verify", standardLimiter, AuthController.verifyToken);
+router.get("/api/auth/setup-status", standardLimiter, AuthController.checkSetupStatus);
 
 /**
  * @swagger
@@ -96,7 +145,7 @@ router.get("/api/auth/setup-status", AuthController.checkSetupStatus);
  *                   type: string
  *                   example: "Gravatar API request failed"
  */
-router.get( '/api/profile/:identifier', async ( req, res ) => {
+router.get( '/api/profile/:identifier', standardLimiter, async ( req, res ) => {
     const { identifier } = req.params;
  
     try {
@@ -119,75 +168,75 @@ router.get( '/api/profile/:identifier', async ( req, res ) => {
     }
 } );
 
-// Admin endpoints
-router.get("/api/admin/users", authenticate, requireAdmin, AuthController.getAllUsers);
-router.put("/api/admin/users/role", authenticate, requireAdmin, AuthController.updateUserRole);
-router.delete("/api/admin/users/:userId", authenticate, requireAdmin, AuthController.deactivateUser);
-router.put("/api/admin/users/:userId/reactivate", authenticate, requireAdmin, AuthController.reactivateUser);
-router.delete("/api/admin/users/:userId/delete", authenticate, requireSuperAdmin, AuthController.deleteUser);
+// Admin endpoints - Protected with admin rate limiting
+router.get("/api/admin/users", adminLimiter, authenticate, requireAdmin, AuthController.getAllUsers);
+router.put("/api/admin/users/role", adminLimiter, authenticate, requireAdmin, AuthController.updateUserRole);
+router.delete("/api/admin/users/:userId", adminLimiter, authenticate, requireAdmin, AuthController.deactivateUser);
+router.put("/api/admin/users/:userId/reactivate", adminLimiter, authenticate, requireAdmin, AuthController.reactivateUser);
+router.delete("/api/admin/users/:userId/delete", adminLimiter, authenticate, requireSuperAdmin, AuthController.deleteUser);
 
-// Organization endpoints (super-admin only)
-router.get("/api/organizations", authenticate, requireSuperAdmin, AuthController.getAllOrganizations);
-router.get("/api/organizations/:id", authenticate, requireAdmin, AuthController.getOrganization);
-router.put("/api/organizations/:id", authenticate, requireAdmin, AuthController.updateOrganization);
-router.get("/api/organizations/:id/users", authenticate, requireAdmin, AuthController.getOrganizationUsers);
-router.get("/api/organizations/:id/stats", authenticate, requireAdmin, AuthController.getOrganizationStats);
-router.get("/api/organizations/check/:name", AuthController.checkOrganizationExists);
-router.put("/api/organizations/:orgId/deactivate", authenticate, requireSuperAdmin, AuthController.deactivateOrganization);
-router.delete("/api/organizations/:orgId", authenticate, requireSuperAdmin, AuthController.deleteOrganization);
+// Organization endpoints - Protected with admin rate limiting
+router.get("/api/organizations", adminLimiter, authenticate, requireSuperAdmin, AuthController.getAllOrganizations);
+router.get("/api/organizations/:id", adminLimiter, authenticate, requireAdmin, AuthController.getOrganization);
+router.put("/api/organizations/:id", adminLimiter, authenticate, requireAdmin, AuthController.updateOrganization);
+router.get("/api/organizations/:id/users", adminLimiter, authenticate, requireAdmin, AuthController.getOrganizationUsers);
+router.get("/api/organizations/:id/stats", adminLimiter, authenticate, requireAdmin, AuthController.getOrganizationStats);
+router.get("/api/organizations/check/:name", standardLimiter, AuthController.checkOrganizationExists);
+router.put("/api/organizations/:orgId/deactivate", adminLimiter, authenticate, requireSuperAdmin, AuthController.deactivateOrganization);
+router.delete("/api/organizations/:orgId", adminLimiter, authenticate, requireSuperAdmin, AuthController.deleteOrganization);
 
-// Invitation endpoints
-router.post("/api/invitations/send", authenticate, requireAdmin, AuthController.sendInvitation);
-router.post("/api/invitations", authenticate, requireAdmin, AuthController.createInvitation);
-router.get("/api/invitations", authenticate, requireAdmin, AuthController.getInvitations);
-router.post("/api/invitations/:id/resend", authenticate, requireAdmin, AuthController.resendInvitation);
-router.delete("/api/invitations/:id", authenticate, requireAdmin, AuthController.revokeInvitation);
-router.get("/api/invitations/validate/:code", AuthController.validateInvitation);
+// Invitation endpoints - Protected with admin rate limiting
+router.post("/api/invitations/send", adminLimiter, authenticate, requireAdmin, AuthController.sendInvitation);
+router.post("/api/invitations", adminLimiter, authenticate, requireAdmin, AuthController.createInvitation);
+router.get("/api/invitations", adminLimiter, authenticate, requireAdmin, AuthController.getInvitations);
+router.post("/api/invitations/:id/resend", adminLimiter, authenticate, requireAdmin, AuthController.resendInvitation);
+router.delete("/api/invitations/:id", adminLimiter, authenticate, requireAdmin, AuthController.revokeInvitation);
+router.get("/api/invitations/validate/:code", standardLimiter, AuthController.validateInvitation);
 
-// Server management endpoints
-router.post("/api/servers", authenticate, requireAdmin, ServerController.addServer);
-router.get("/api/servers", authenticate, ServerController.getAllServers);
-router.post("/api/servers/test", authenticate, ServerController.testServer);
-router.delete("/api/servers/:serverId", authenticate, requireAdmin, ServerController.removeServer);
+// Server management endpoints - Protected with admin rate limiting
+router.post("/api/servers", adminLimiter, authenticate, requireAdmin, ServerController.addServer);
+router.get("/api/servers", adminLimiter, authenticate, ServerController.getAllServers);
+router.post("/api/servers/test", adminLimiter, authenticate, ServerController.testServer);
+router.delete("/api/servers/:serverId", adminLimiter, authenticate, requireAdmin, ServerController.removeServer);
 
-// Zoneweaver API proxy endpoints
-router.all("/api/zapi/:protocol/:hostname/:port/*splat", authenticate, ServerController.proxyToZoneweaverAPI);
+// Zoneweaver API proxy endpoints - Protected with API proxy rate limiting
+router.all("/api/zapi/:protocol/:hostname/:port/*splat", apiProxyLimiter, authenticate, ServerController.proxyToZoneweaverAPI);
 
-// Zoneweaver API settings endpoints
-router.get("/api/zapi/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPISettings);
-router.put("/api/zapi/:protocol/:hostname/:port/settings", authenticate, requireSuperAdmin, SettingsController.updateZoneweaverAPISettings);
-router.get("/api/zapi/:protocol/:hostname/:port/settings/backups", authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPIBackups);
-router.post("/api/zapi/:protocol/:hostname/:port/settings/restore/:filename", authenticate, requireSuperAdmin, SettingsController.restoreZoneweaverAPIBackup);
-router.post("/api/zapi/:protocol/:hostname/:port/server/restart", authenticate, requireSuperAdmin, SettingsController.restartZoneweaverAPIServer);
+// Zoneweaver API settings endpoints - Protected with admin rate limiting
+router.get("/api/zapi/:protocol/:hostname/:port/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPISettings);
+router.put("/api/zapi/:protocol/:hostname/:port/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.updateZoneweaverAPISettings);
+router.get("/api/zapi/:protocol/:hostname/:port/settings/backups", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getZoneweaverAPIBackups);
+router.post("/api/zapi/:protocol/:hostname/:port/settings/restore/:filename", adminLimiter, authenticate, requireSuperAdmin, SettingsController.restoreZoneweaverAPIBackup);
+router.post("/api/zapi/:protocol/:hostname/:port/server/restart", adminLimiter, authenticate, requireSuperAdmin, SettingsController.restartZoneweaverAPIServer);
 
-// VNC proxy endpoints 
-router.all("/api/servers/:serverAddress/zones/:zoneName/vnc/*splat", optionalAuth, ServerController.proxyVncGeneral);
+// VNC proxy endpoints - Protected with real-time rate limiting
+router.all("/api/servers/:serverAddress/zones/:zoneName/vnc/*splat", realtimeLimiter, optionalAuth, ServerController.proxyVncGeneral);
 
-// Zlogin proxy endpoints
-router.post("/api/servers/:serverAddress/zones/:zoneName/zlogin/start", authenticate, ServerController.startZloginSession);
-router.get("/api/servers/:serverAddress/zlogin/sessions", authenticate, ServerController.getZloginSessions);
-router.get("/api/servers/:serverAddress/zlogin/sessions/:sessionId", authenticate, ServerController.getZloginSession);
-router.delete("/api/servers/:serverAddress/zlogin/sessions/:sessionId/stop", authenticate, ServerController.stopZloginSession);
+// Zlogin proxy endpoints - Protected with real-time rate limiting
+router.post("/api/servers/:serverAddress/zones/:zoneName/zlogin/start", realtimeLimiter, authenticate, ServerController.startZloginSession);
+router.get("/api/servers/:serverAddress/zlogin/sessions", realtimeLimiter, authenticate, ServerController.getZloginSessions);
+router.get("/api/servers/:serverAddress/zlogin/sessions/:sessionId", realtimeLimiter, authenticate, ServerController.getZloginSession);
+router.delete("/api/servers/:serverAddress/zlogin/sessions/:sessionId/stop", realtimeLimiter, authenticate, ServerController.stopZloginSession);
 
-// Terminal proxy endpoints
-router.post("/api/terminal/start", authenticate, ServerController.startTerminalSession);
+// Terminal proxy endpoints - Protected with real-time rate limiting
+router.post("/api/terminal/start", realtimeLimiter, authenticate, ServerController.startTerminalSession);
 
-// Server-specific terminal proxy endpoints (matching zlogin pattern)
-router.post("/api/servers/:serverAddress/terminal/start", authenticate, ServerController.startServerTerminalSession);
-router.get("/api/servers/:serverAddress/terminal/sessions", authenticate, ServerController.getServerTerminalSessions);
-router.get("/api/servers/:serverAddress/terminal/sessions/:terminalCookie/health", authenticate, ServerController.checkServerTerminalHealth);
-router.get("/api/servers/:serverAddress/terminal/sessions/:sessionId", authenticate, ServerController.getServerTerminalSession);
-router.delete("/api/servers/:serverAddress/terminal/sessions/:sessionId/stop", authenticate, ServerController.stopServerTerminalSession);
+// Server-specific terminal proxy endpoints - Protected with real-time rate limiting (CodeQL flagged these)
+router.post("/api/servers/:serverAddress/terminal/start", realtimeLimiter, authenticate, ServerController.startServerTerminalSession);
+router.get("/api/servers/:serverAddress/terminal/sessions", realtimeLimiter, authenticate, ServerController.getServerTerminalSessions);
+router.get("/api/servers/:serverAddress/terminal/sessions/:terminalCookie/health", realtimeLimiter, authenticate, ServerController.checkServerTerminalHealth);
+router.get("/api/servers/:serverAddress/terminal/sessions/:sessionId", realtimeLimiter, authenticate, ServerController.getServerTerminalSession);
+router.delete("/api/servers/:serverAddress/terminal/sessions/:sessionId/stop", realtimeLimiter, authenticate, ServerController.stopServerTerminalSession);
 
-// Settings endpoints (super-admin only)
-router.get("/api/settings", authenticate, requireSuperAdmin, SettingsController.getSettings);
-router.put("/api/settings", authenticate, requireSuperAdmin, SettingsController.updateSettings);
-router.post("/api/settings/reset", authenticate, requireSuperAdmin, SettingsController.resetSettings);
-router.post("/api/settings/restart", authenticate, requireSuperAdmin, SettingsController.restartServer);
-router.get("/api/settings/backups", authenticate, requireSuperAdmin, SettingsController.getBackups);
+// Settings endpoints - Protected with admin rate limiting
+router.get("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getSettings);
+router.put("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.updateSettings);
+router.post("/api/settings/reset", adminLimiter, authenticate, requireSuperAdmin, SettingsController.resetSettings);
+router.post("/api/settings/restart", adminLimiter, authenticate, requireSuperAdmin, SettingsController.restartServer);
+router.get("/api/settings/backups", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getBackups);
 
-// Mail testing endpoint (super-admin only)
-router.post("/api/mail/test", authenticate, requireSuperAdmin, AuthController.testMail);
+// Mail testing endpoint - Protected with admin rate limiting
+router.post("/api/mail/test", adminLimiter, authenticate, requireSuperAdmin, AuthController.testMail);
 
 // Serve static files from the Vite app build directory
 router.use('/ui', express.static(path.join(process.cwd(), 'web/dist')));
