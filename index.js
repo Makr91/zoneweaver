@@ -440,7 +440,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
     
     // Add immediate error handler to prevent server crashes
     backendWs.on('error', (err) => {
-      console.error(`🔌 Backend WebSocket connection failed for VNC ${zoneName}:`, err.message);
+      console.error('🔌 Backend WebSocket connection failed for VNC %s:', zoneName, err.message);
       socket.destroy(); // Close the client connection gracefully
     });
     
@@ -472,7 +472,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
         });
         
         clientWs.on('error', (err) => {
-          console.error(`🔌 Client WebSocket error for ${zoneName}:`, err.message);
+          console.error('🔌 Client WebSocket error for %s:', zoneName, err.message);
           backendWs.close();
         });
         
@@ -484,7 +484,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
         });
         
         backendWs.on('error', (err) => {
-          console.error(`🔌 Backend WebSocket error for ${zoneName}:`, err.message);
+          console.error('🔌 Backend WebSocket error for %s:', zoneName, err.message);
           if (clientWs.readyState === WebSocket.OPEN) {
             clientWs.close();
           }
@@ -492,7 +492,7 @@ async function handleWebSocketUpgrade(request, socket, head) {
       });
       
       backendWs.on('error', (err) => {
-        console.error(`🔌 Failed to connect to backend WebSocket for ${zoneName}:`, err.message);
+        console.error('🔌 Failed to connect to backend WebSocket for %s:', zoneName, err.message);
         clientWs.close();
       });
     });
