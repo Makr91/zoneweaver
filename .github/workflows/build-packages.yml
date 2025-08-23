@@ -78,7 +78,7 @@ jobs:
 
       - name: Create package structure
         run: |
-          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,DEBIAN}
+          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
 
       - name: Copy application files
         run: |
@@ -110,6 +110,12 @@ jobs:
           
           # DEBIAN control files
           cp packaging/DEBIAN/{postinst,prerm,postrm} "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
+
+      - name: Install man pages
+        run: |
+          # Copy and compress man pages following Debian Policy
+          gzip -9 -c packaging/DEBIAN/man/zoneweaver.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/zoneweaver.8.gz"
+          gzip -9 -c packaging/DEBIAN/man/zoneweaver.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/zoneweaver.yaml.5.gz"
 
       - name: Create control file
         run: |

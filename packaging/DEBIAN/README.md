@@ -38,7 +38,7 @@ export PACKAGE_NAME="zoneweaver"
 export ARCH="amd64"
 
 # Create directory structure
-mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,DEBIAN}
+mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
 ```
 
 ### 3. Copy Application Files
@@ -56,6 +56,10 @@ cp packaging/DEBIAN/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARC
 
 # DEBIAN control files
 cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
+
+# Man pages (compress following Debian Policy)
+gzip -9 -c packaging/DEBIAN/man/zoneweaver.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/zoneweaver.8.gz"
+gzip -9 -c packaging/DEBIAN/man/zoneweaver.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/zoneweaver.yaml.5.gz"
 ```
 
 ### 4. Generate Control File
@@ -151,6 +155,7 @@ gh workflow run release-please.yml
 - **JWT Secret**: `/etc/zoneweaver/.jwt-secret` (auto-generated)
 - **Service**: `systemctl {start|stop|status|restart} zoneweaver`
 - **Default Access**: `https://localhost:3443`
+- **Manual Pages**: `man zoneweaver` and `man zoneweaver.yaml`
 
 ## Troubleshooting
 
