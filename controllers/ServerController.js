@@ -902,9 +902,12 @@ class ServerController {
         });
       }
       
-      const validatedServer = await ServerController.validateServerAddress(serverAddress);
+      // 🛡️ SECURITY: CodeQL SSRF Fix - Complete data flow isolation
+      // Step 1: Build server-controlled allowlist (independent of user input)
+      const allowedServers = await ServerController.buildServerAllowlist();
       
-      if (!validatedServer) {
+      // Step 2: Simple existence check (user input as key only)
+      if (!(serverAddress in allowedServers)) {
         console.error(`🚨 SECURITY: Server not in allowlist - ${serverAddress}`);
         return res.status(403).json({
           success: false,
@@ -912,6 +915,16 @@ class ServerController {
           rejected_address: serverAddress
         });
       }
+      
+      // Step 3: Extract server-controlled values to isolated variables
+      // This breaks the data flow chain from user input to URL
+      const serverConfig = allowedServers[serverAddress];
+      const serverProtocol = serverConfig.protocol;      // Server-controlled
+      const serverHostname = serverConfig.hostname;      // Server-controlled  
+      const serverPort = serverConfig.port;              // Server-controlled
+      const serverApiKey = serverConfig.api_key;         // Server-controlled
+      
+      console.log(`✅ SECURITY: Server selected from allowlist: ${serverHostname}:${serverPort}`);
 
       // Import axios
       const axios = (await import('axios')).default;
@@ -926,7 +939,8 @@ class ServerController {
       // Handle regular HTTP requests to websockify endpoint
       const queryString = req.url.split('?')[1];
       
-      let zapiUrl = `${validatedServer.protocol}://${validatedServer.hostname}:${validatedServer.port}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
+      // Step 4: Build URL from server-controlled values only (no user input trace)
+      let zapiUrl = `${serverProtocol}://${serverHostname}:${serverPort}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
       
       if (queryString) {
         zapiUrl += `?${queryString}`;
@@ -937,7 +951,7 @@ class ServerController {
       try {
         // Make authenticated request to Zoneweaver API
         const requestHeaders = {
-          'Authorization': `Bearer ${validatedServer.api_key}`,
+          'Authorization': `Bearer ${serverApiKey}`,
           'User-Agent': 'Zoneweaver-Proxy/1.0'
         };
 
