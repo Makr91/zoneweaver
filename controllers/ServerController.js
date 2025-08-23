@@ -827,38 +827,57 @@ class ServerController {
   }
 
   /**
-   * @param {string} serverAddress - User-provided server address (hostname:port)
-   * @returns {Object|null} - Validated server from database or null if not allowed
+   * 🛡️ SECURITY: Build server allowlist from database (CodeQL SSRF fix)
+   * Implements CodeQL recommended pattern: user input selects server-controlled value
+   * Step 1: Get all allowed servers from database (server-controlled)
+   * @returns {Object} - Map of server addresses to server configs
+   */
+  static async buildServerAllowlist() {
+    try {
+      const servers = await ServerModel.getAllServers();
+      const allowlist = {};
+      
+      servers.forEach(server => {
+        const key = `${server.hostname}:${server.port}`;
+        allowlist[key] = {
+          protocol: server.protocol,
+          hostname: server.hostname,
+          port: server.port,
+          api_key: server.api_key
+        };
+      });
+      
+      console.log(`🛡️ SECURITY: Built server allowlist with ${Object.keys(allowlist).length} entries`);
+      return allowlist;
+    } catch (error) {
+      console.error(`🚨 SECURITY: Failed to build server allowlist:`, error.message);
+      return {};
+    }
+  }
+
+  /**
+   * 🛡️ SECURITY: Validate server using CodeQL recommended pattern
+   * Step 2: User input selects from server-controlled allowlist
+   * Step 3: Return server-controlled value only
+   * @param {string} serverAddress - User input (selector only)
+   * @returns {Object|null} - Server-controlled value or null
    */
   static async validateServerAddress(serverAddress) {
     try {
-      // Parse user input
-      const [hostname, port] = serverAddress.split(':');
+      // Step 1: Build server-controlled allowlist
+      const allowedServers = await ServerController.buildServerAllowlist();
       
-      if (!hostname || !port) {
-        console.error(`🚨 SECURITY: Invalid server address format: "${serverAddress}"`);
+      // Step 2: User input selects from allowlist (like CodeQL's "EU" → "europe" example)
+      const allowedServer = allowedServers[serverAddress];
+      
+      if (!allowedServer) {
+        console.error(`🚨 SECURITY: Server not in allowlist: "${serverAddress}"`);
         return null;
       }
       
-      // 🛡️ ALLOWLIST CHECK: Only allow servers that exist in our database
-      const validatedServer = await ServerController.getCachedServer(
-        hostname, 
-        parseInt(port), 
-        'https' // We only support HTTPS for security
-      );
-      
-      if (!validatedServer) {
-        console.error(`🚨 SECURITY: Server not in allowlist: "${hostname}:${port}"`);
-        return null;
-      }
-      
-      if (!validatedServer.api_key) {
-        console.error(`🚨 SECURITY: Server missing API key: "${hostname}:${port}"`);
-        return null;
-      }
-      
-      console.log(`✅ SECURITY: Server validated from allowlist: ${validatedServer.hostname}:${validatedServer.port}`);
-      return validatedServer;
+      // Step 3: Return server-controlled values only (like CodeQL's subdomain example)
+      console.log(`✅ SECURITY: Server selected from allowlist: ${allowedServer.hostname}:${allowedServer.port}`);
+      return allowedServer;
       
     } catch (error) {
       console.error(`🚨 SECURITY: Server validation error:`, error.message);
