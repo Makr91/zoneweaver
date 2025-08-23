@@ -1659,7 +1659,7 @@ const Zones = () => {
                                     }}
                                   >
                                     {/* zlogin Console Header */}
-                                    <div className="has-background-primary-on-scheme has-text-primary-on-scheme-invert p-3 is-flex is-justify-content-space-between is-align-items-center">
+                                    <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
                                       <div>
                                         <h6 className='title is-7 has-text-white mb-1'>Active zlogin Session</h6>
                                         {zoneDetails.zlogin_session && (
@@ -1882,7 +1882,7 @@ const Zones = () => {
                                     }}
                                   >
                                     {/* Console Header */}
-                                    <div className="has-background-primary-on-scheme has-text-primary-on-scheme-invert p-3 is-flex is-justify-content-space-between is-align-items-center">
+                                    <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
                                       <div>
                                         <h6 className='title is-7 has-text-white mb-1'>Active VNC Session</h6>
                                         {zoneDetails.vnc_session_info && zoneDetails.vnc_session_info.web_port && (
@@ -2122,7 +2122,7 @@ const Zones = () => {
                                     }}
                                   >
                                     {/* Inactive Console Header - Same style as active headers */}
-                                    <div className="has-background-primary-on-scheme has-text-primary-on-scheme-invert p-3 is-flex is-justify-content-space-between is-align-items-center">
+                                    <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
                                       <div>
                                         <h6 className='title is-7 has-text-white mb-1'>Console Management</h6>
                                         <p className='is-size-7 has-text-white-ter mb-0'>
