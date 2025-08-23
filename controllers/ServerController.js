@@ -826,6 +826,46 @@ class ServerController {
     return cleanPath === 'websockify';
   }
 
+  /**
+   * @param {string} serverAddress - User-provided server address (hostname:port)
+   * @returns {Object|null} - Validated server from database or null if not allowed
+   */
+  static async validateServerAddress(serverAddress) {
+    try {
+      // Parse user input
+      const [hostname, port] = serverAddress.split(':');
+      
+      if (!hostname || !port) {
+        console.error(`🚨 SECURITY: Invalid server address format: "${serverAddress}"`);
+        return null;
+      }
+      
+      // 🛡️ ALLOWLIST CHECK: Only allow servers that exist in our database
+      const validatedServer = await ServerController.getCachedServer(
+        hostname, 
+        parseInt(port), 
+        'https' // We only support HTTPS for security
+      );
+      
+      if (!validatedServer) {
+        console.error(`🚨 SECURITY: Server not in allowlist: "${hostname}:${port}"`);
+        return null;
+      }
+      
+      if (!validatedServer.api_key) {
+        console.error(`🚨 SECURITY: Server missing API key: "${hostname}:${port}"`);
+        return null;
+      }
+      
+      console.log(`✅ SECURITY: Server validated from allowlist: ${validatedServer.hostname}:${validatedServer.port}`);
+      return validatedServer;
+      
+    } catch (error) {
+      console.error(`🚨 SECURITY: Server validation error:`, error.message);
+      return null;
+    }
+  }
+
   static async proxyVncGeneral(req, res) {
     try {
       const { serverAddress, zoneName } = req.params;
@@ -843,25 +883,14 @@ class ServerController {
         });
       }
       
-      // Parse hostname and port from serverAddress
-      const [hostname, port] = serverAddress.split(':');
+      const validatedServer = await ServerController.validateServerAddress(serverAddress);
       
-      // Use cached server lookup
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
-
-      if (!server) {
-        console.error(`🔗 VNC: Server not found - ${hostname}:${port}`);
-        return res.status(404).json({
+      if (!validatedServer) {
+        console.error(`🚨 SECURITY: Server not in allowlist - ${serverAddress}`);
+        return res.status(403).json({
           success: false,
-          message: `Zoneweaver API Server ${hostname}:${port} not found in configuration`
-        });
-      }
-
-      if (!server.api_key) {
-        console.error(`🔗 VNC: No API key for server ${hostname}:${port}`);
-        return res.status(500).json({
-          success: false,
-          message: `No API key configured for server ${hostname}:${port}`
+          message: 'Server not in allowed list. Only configured servers are permitted.',
+          rejected_address: serverAddress
         });
       }
 
@@ -878,8 +907,7 @@ class ServerController {
       // Handle regular HTTP requests to websockify endpoint
       const queryString = req.url.split('?')[1];
       
-      // 🛡️ SECURITY: Construct URL with validated path only
-      let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
+      let zapiUrl = `${validatedServer.protocol}://${validatedServer.hostname}:${validatedServer.port}/zones/${encodeURIComponent(zoneName)}/vnc/${vncPath}`;
       
       if (queryString) {
         zapiUrl += `?${queryString}`;
@@ -890,7 +918,7 @@ class ServerController {
       try {
         // Make authenticated request to Zoneweaver API
         const requestHeaders = {
-          'Authorization': `Bearer ${server.api_key}`,
+          'Authorization': `Bearer ${validatedServer.api_key}`,
           'User-Agent': 'Zoneweaver-Proxy/1.0'
         };
 
