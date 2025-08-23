@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.4](https://github.com/Makr91/zoneweaver/compare/v0.7.3...v0.7.4) (2025-08-23)
+
+
+### Bug Fixes
+
+* swagger versioning ([0c2cd3b](https://github.com/Makr91/zoneweaver/commit/0c2cd3b51b4a4908316d28b2aaa24624a5e79d80))
+
 ## [0.7.3](https://github.com/Makr91/zoneweaver/compare/v0.7.2...v0.7.3) (2025-08-23)
 
 
