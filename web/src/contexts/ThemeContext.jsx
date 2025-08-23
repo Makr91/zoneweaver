@@ -15,11 +15,16 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     // Check localStorage for saved preference
     const savedTheme = localStorage.getItem('zoneweaver-theme');
+    console.log('🎨 THEME: ThemeProvider initializing', { savedTheme, fallback: savedTheme || 'auto' });
     return savedTheme || 'auto';
   });
 
+  // Debug theme state changes
+  console.log('🎨 THEME: Current theme state:', theme);
+
   // Apply theme to HTML element
   useEffect(() => {
+    console.log('🎨 THEME: useEffect running, theme:', theme);
     const html = document.documentElement;
     
     // Always clear existing theme classes first
@@ -29,16 +34,19 @@ export const ThemeProvider = ({ children }) => {
       // For auto mode, check system preference and apply appropriate data-theme
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const activeTheme = prefersDark ? 'dark' : 'light';
+      console.log('🎨 THEME: Auto mode detected system theme:', activeTheme);
       html.setAttribute('data-theme', activeTheme);
       html.classList.add(`theme-${activeTheme}`);
     } else {
       // Apply specific theme
+      console.log('🎨 THEME: Applying specific theme:', theme);
       html.setAttribute('data-theme', theme);
       html.classList.add(`theme-${theme}`);
     }
     
     // Save preference
     localStorage.setItem('zoneweaver-theme', theme);
+    console.log('🎨 THEME: Applied to DOM - data-theme:', html.getAttribute('data-theme'), 'classes:', html.className);
     
     // Listen for system theme changes when in auto mode
     if (theme === 'auto') {
@@ -56,10 +64,11 @@ export const ThemeProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
+    console.log('🎨 THEME: toggleTheme called, current theme:', theme);
     setTheme(current => {
-      if (current === 'auto') return 'light';
-      if (current === 'light') return 'dark';
-      return 'auto';
+      const newTheme = current === 'auto' ? 'light' : current === 'light' ? 'dark' : 'auto';
+      console.log('🎨 THEME: Theme changing from', current, 'to', newTheme);
+      return newTheme;
     });
   };
 

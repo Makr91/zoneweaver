@@ -10,6 +10,7 @@ const SidebarFooter = () => {
   const userContext = useContext(UserSettings);
   const { user, logout } = useAuth();
   const { toggleTheme, getThemeDisplay } = useTheme();
+  console.log('🎨 SIDEBAR: SidebarFooter rendered, toggleTheme type:', typeof toggleTheme);
   const [isDropdownActive, setIsDropdownActive] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -60,7 +61,11 @@ const SidebarFooter = () => {
                 <span className='icon'><i className='fas fa-info-circle'></i></span>
                 <span>Help and Docs</span>
               </a>
-              <a onClick={toggleTheme} className='dropdown-item'>
+              <a onClick={() => {
+                console.log('🎨 SIDEBAR: Theme button clicked, about to call toggleTheme');
+                toggleTheme();
+                console.log('🎨 SIDEBAR: toggleTheme called');
+              }} className='dropdown-item'>
                 <span className='icon'><i className='fas fa-palette'></i></span>
                 <span>Theme: {getThemeDisplay()}</span>
               </a>
