@@ -160,11 +160,7 @@ router.get("/api/zapi/:protocol/:hostname/:port/settings/backups", authenticate,
 router.post("/api/zapi/:protocol/:hostname/:port/settings/restore/:filename", authenticate, requireSuperAdmin, SettingsController.restoreZoneweaverAPIBackup);
 router.post("/api/zapi/:protocol/:hostname/:port/server/restart", authenticate, requireSuperAdmin, SettingsController.restartZoneweaverAPIServer);
 
-// VNC proxy endpoints (use optional auth for iframe compatibility)
-// Specific VNC Console proxy endpoint (must come BEFORE general route)
-router.get("/api/servers/:serverAddress/zones/:zoneName/vnc/console", optionalAuth, ServerController.proxyVncConsole);
-
-// General VNC proxy for all VNC-related paths (WebSocket, static assets, etc.)
+// VNC proxy endpoints 
 router.all("/api/servers/:serverAddress/zones/:zoneName/vnc/*splat", optionalAuth, ServerController.proxyVncGeneral);
 
 // Zlogin proxy endpoints
