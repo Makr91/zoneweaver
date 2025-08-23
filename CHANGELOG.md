@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.3](https://github.com/Makr91/zoneweaver/compare/v0.7.2...v0.7.3) (2025-08-23)
+
+
+### Bug Fixes
+
+* removing old VNC paths ([efea466](https://github.com/Makr91/zoneweaver/commit/efea4662c85d4fc4190c13fff89be0d57a2773f9))
+* removing old VNC paths v2 ([666a470](https://github.com/Makr91/zoneweaver/commit/666a4702d33b2fb8d85b940f192f803eb55f3281))
+
 ## [0.7.2](https://github.com/Makr91/zoneweaver/compare/v0.7.1...v0.7.2) (2025-08-20)
 
 
