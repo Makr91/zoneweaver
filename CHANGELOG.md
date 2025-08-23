@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.5](https://github.com/Makr91/zoneweaver/compare/v0.7.4...v0.7.5) (2025-08-23)
+
+
+### Bug Fixes
+
+* disable cacheing ([e51ecff](https://github.com/Makr91/zoneweaver/commit/e51ecff83b7694dcffaac3182af08e5a00e4b837))
+
 ## [0.7.4](https://github.com/Makr91/zoneweaver/compare/v0.7.3...v0.7.4) (2025-08-23)
 
 

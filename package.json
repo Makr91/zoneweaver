@@ -1,6 +1,6 @@
 {
   "name": "zoneweaver",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Zoneweaver API - NodeJS backend and Vite based frontend",
   "main": "index.js",
   "type": "module",
