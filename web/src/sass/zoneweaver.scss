@@ -14,16 +14,21 @@ $yellow: #ffe600;
 
 // Import theme utilities for dark mode implementation
 @use "bulma/sass/utilities/css-variables" as cv;
+@use "bulma/sass/themes/light";
 @use "bulma/sass/themes/dark";
 @use "bulma/sass/themes/setup";
 
 // Import the entire Bulma framework (simpler approach)
 @forward "bulma";
 
-// Implement Bulma's dark theme system
+// Implement Bulma's theme system
 // System theme (follows OS preference)
 @include cv.system-theme($name: "dark") {
   @include dark.dark-theme;
+}
+
+@include cv.system-theme($name: "light") {
+  @include light.light-theme;
 }
 
 // Manual theme control via data-theme attributes and CSS classes
@@ -33,6 +38,7 @@ $yellow: #ffe600;
 }
 
 @include cv.bulma-theme($name: "light") {
+  @include light.light-theme;
   @include setup.setup-theme;
 }
 
@@ -91,17 +97,17 @@ $yellow: #ffe600;
 }
 
 .log-console::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
+  box-shadow: inset 0 0 5px var(--bulma-border);
   border-radius: 10px;
 }
 
 .log-console::-webkit-scrollbar-thumb {
-  background: #4f4f4f;
+  background: var(--bulma-border);
   border-radius: 10px;
 }
 
 .log-console::-webkit-scrollbar-thumb:hover {
-  background: #454545;
+  background: var(--bulma-text-weak);
 }
 
 .content-footer {
@@ -124,17 +130,17 @@ $yellow: #ffe600;
 }
 
 .hero-content-body::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
+  box-shadow: inset 0 0 5px var(--bulma-border);
   border-radius: 10px;
 }
 
 .hero-content-body::-webkit-scrollbar-thumb {
-  background: #4f4f4f;
+  background: var(--bulma-border);
   border-radius: 10px;
 }
 
 .hero-content-body::-webkit-scrollbar-thumb:hover {
-  background: #454545;
+  background: var(--bulma-text-weak);
 }
 
 .sidebar {
@@ -159,17 +165,17 @@ $yellow: #ffe600;
 }
 
 .mainbody::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
+  box-shadow: inset 0 0 5px var(--bulma-border);
   border-radius: 10px;
 }
 
 .mainbody::-webkit-scrollbar-thumb {
-  background: #4f4f4f;
+  background: var(--bulma-border);
   border-radius: 10px;
 }
 
 .mainbody::-webkit-scrollbar-thumb:hover {
-  background: #454545;
+  background: var(--bulma-text-weak);
 }
 
 .sidebarbody {
@@ -185,17 +191,17 @@ $yellow: #ffe600;
 }
 
 .sidebarbody::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
+  box-shadow: inset 0 0 5px var(--bulma-border);
   border-radius: 10px;
 }
 
 .sidebarbody::-webkit-scrollbar-thumb {
-  background: #4f4f4f;
+  background: var(--bulma-border);
   border-radius: 10px;
 }
 
 .sidebarbody::-webkit-scrollbar-thumb:hover {
-  background: #454545;
+  background: var(--bulma-text-weak);
 }
 
 .active {
@@ -294,7 +300,7 @@ span[data-tooltip] {
 
 .is-submenu-collapsed {
   .icon {
-    color: #888 !important;
+    color: var(--bulma-text-weak) !important;
   }
 }
 
@@ -627,10 +633,10 @@ button,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bulma-scheme-main-ter);
   border-radius: 6px;
   min-height: 120px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--bulma-text-weak);
   font-style: italic;
 }
 
@@ -660,11 +666,11 @@ button,
 
 // Task status row styling
 .task-failed {
-  background-color: rgba(255, 0, 0, 0.1) !important;
+  background-color: rgba(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-l), 0.1) !important;
 }
 
 .task-running {
-  background-color: rgba(255, 255, 0, 0.1) !important;
+  background-color: rgba(var(--bulma-warning-h), var(--bulma-warning-s), var(--bulma-warning-l), 0.1) !important;
 }
 
 // Toggle switch styling
