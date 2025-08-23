@@ -50,7 +50,7 @@ const SidebarFooter = () => {
             </button>
           </div>
           <div className='dropdown-menu' id='profile-management' role='menu'>
-            <div className='dropdown-content'>
+            <div className='dropdown-content has-background-primary-soft has-text-primary-soft-invert'>
               <a 
                 className='dropdown-item' 
                 href='https://zoneweaver.startcloud.com' 
