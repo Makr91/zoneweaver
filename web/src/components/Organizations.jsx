@@ -73,8 +73,8 @@ const Organizations = () => {
         <title>Organization Management - Zoneweaver</title>
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
-      <div className='container is-fluid m-2'>
-        <div className='box p-0'>
+      <div className='container is-fluid p-0'>
+        <div className='box p-0 is-radiusless'>
           <div className='titlebar box active level is-mobile mb-0 p-3'>
             <div className='level-left'>
               <strong>Organization Management</strong>
