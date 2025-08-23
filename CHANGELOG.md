@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.7](https://github.com/Makr91/zoneweaver/compare/v0.7.6...v0.7.7) (2025-08-23)
+
+
+### Bug Fixes
+
+* debian man pages ([3d675cb](https://github.com/Makr91/zoneweaver/commit/3d675cb3c2de1fcab9c2c0a42d1ce2a790c6a4a9))
+
 ## [0.7.6](https://github.com/Makr91/zoneweaver/compare/v0.7.5...v0.7.6) (2025-08-23)
 
 
