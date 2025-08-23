@@ -109,8 +109,15 @@ class AuthController {
         });
       }
 
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      // Email validation (ReDoS-safe with input length limit)
+      if (email.length > 254) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Email address too long' 
+        });
+      }
+      
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ 
           success: false, 
@@ -1612,8 +1619,15 @@ class AuthController {
         });
       }
 
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      // Email validation (ReDoS-safe with input length limit)
+      if (email.length > 254) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Email address too long' 
+        });
+      }
+      
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ 
           success: false, 
@@ -2692,8 +2706,15 @@ class AuthController {
         });
       }
 
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      // Email validation (ReDoS-safe with input length limit)
+      if (email.length > 254) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email address too long'
+        });
+      }
+      
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({
           success: false,
