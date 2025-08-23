@@ -157,19 +157,6 @@ database:
     description: "Log SQL queries to console (for debugging)"
     required: true
 
-# Session configuration - now uses same database as main app
-session:
-  table:
-    type: string
-    value: "sessions"
-    description: "Session table name"
-    required: true
-  secret:
-    type: password
-    value: "__SESSION_SECRET_FROM_FILE__"
-    description: "Session secret key"
-    required: true
-    readonly: true
 
 # Legacy database path (kept for migration compatibility)
 # Remove this after migration is complete
@@ -190,8 +177,8 @@ rateLimiting:
       required: true
     max:
       type: integer
-      value: 5
-      description: "Maximum authentication attempts per window"
+      value: 25
+      description: "Maximum authentication attempts per window (5X higher limit)"
       required: true
     message:
       type: string
@@ -207,8 +194,8 @@ rateLimiting:
       required: true
     max:
       type: integer
-      value: 100
-      description: "Maximum admin requests per window"
+      value: 500
+      description: "Maximum admin requests per window (5X higher limit)"
       required: true
     message:
       type: string
@@ -224,8 +211,8 @@ rateLimiting:
       required: true
     max:
       type: integer
-      value: 20
-      description: "Maximum API proxy requests per window"
+      value: 100
+      description: "Maximum API proxy requests per window (5X higher limit)"
       required: true
     message:
       type: string
@@ -241,8 +228,8 @@ rateLimiting:
       required: true
     max:
       type: integer
-      value: 50
-      description: "Maximum real-time requests per window"
+      value: 250
+      description: "Maximum real-time requests per window (5X higher limit)"
       required: true
     message:
       type: string
@@ -258,8 +245,8 @@ rateLimiting:
       required: true
     max:
       type: integer
-      value: 200
-      description: "Maximum standard requests per window"
+      value: 1000
+      description: "Maximum standard requests per window (5X higher limit)"
       required: true
     message:
       type: string
@@ -275,8 +262,8 @@ rateLimiting:
       required: true
     max:
       type: integer
-      value: 1000
-      description: "Maximum static file requests per window (high limit for normal browsing)"
+      value: 5000
+      description: "Maximum static file requests per window (5X higher limit for normal browsing)"
       required: true
     message:
       type: string

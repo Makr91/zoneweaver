@@ -65,77 +65,16 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
-/**
- * Session-based authentication middleware
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
- */
-export const authenticateSession = async (req, res, next) => {
-  try {
-    if (!req.session || !req.session.userId) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Not authenticated' 
-      });
-    }
-
-    // Get fresh user data
-    const { user: UserModel } = db;
-    const user = await UserModel.findByPk(req.session.userId);
-    
-    if (!user) {
-      // Clear invalid session
-      req.session.destroy();
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid session - user not found' 
-      });
-    }
-
-    // Add user info to request object
-    req.user = {
-      userId: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role
-    };
-
-    next();
-  } catch (error) {
-    console.error('Session authentication error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Authentication error' 
-    });
-  }
-};
 
 /**
- * Flexible authentication middleware that accepts both JWT and session
+ * JWT-based authentication middleware (CSRF-safe)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
 export const authenticate = async (req, res, next) => {
-  // Try JWT authentication first
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token) {
-    return authenticateToken(req, res, next);
-  }
-
-  // Fall back to session authentication
-  if (req.session && req.session.userId) {
-    return authenticateSession(req, res, next);
-  }
-
-  // No authentication method found
-  return res.status(401).json({ 
-    success: false, 
-    message: 'Authentication required' 
-  });
+  // Use JWT authentication only (sessions removed for CSRF security)
+  return authenticateToken(req, res, next);
 };
 
 /**
@@ -215,14 +154,14 @@ export const requireSuperAdmin = (req, res, next) => {
 };
 
 /**
- * Optional authentication middleware - doesn't fail if no auth provided
+ * Optional JWT authentication middleware - doesn't fail if no auth provided (CSRF-safe)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
 export const optionalAuth = async (req, res, next) => {
   try {
-    // Try JWT authentication first
+    // Try JWT authentication only (sessions removed for CSRF security)
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -242,23 +181,6 @@ export const optionalAuth = async (req, res, next) => {
         }
       } catch (error) {
         // Ignore JWT errors for optional auth
-      }
-    } else if (req.session && req.session.userId) {
-      // Try session authentication
-      try {
-        const { user: UserModel } = db;
-        const user = await UserModel.findByPk(req.session.userId);
-        
-        if (user) {
-          req.user = {
-            userId: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role
-          };
-        }
-      } catch (error) {
-        // Ignore session errors for optional auth
       }
     }
 

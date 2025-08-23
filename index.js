@@ -3,7 +3,6 @@ import https from "https";
 import http from "http";
 import fs from "fs";
 import cors from "cors";
-import session from "express-session";
 import YAML from "yaml";
 import rateLimit from "express-rate-limit";
 import router from "./routes/index.js";
@@ -27,7 +26,7 @@ const config = loadConfig();
 const rlConfig = config.rateLimiting || {};
 const staticFileLimiter = rateLimit({
   windowMs: rlConfig.staticFiles?.windowMs?.value || 15 * 60 * 1000,
-  max: rlConfig.staticFiles?.max?.value || 1000,
+  max: rlConfig.staticFiles?.max?.value || 5000,
   message: { error: rlConfig.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -60,42 +59,6 @@ app.use(express.json());
 
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));
-
-// Session store configuration using connect-session-sequelize
-let sessionStore;
-try {
-  const SequelizeStore = (await import('connect-session-sequelize')).default(session.Store);
-  const sessionTableName = config.session?.table?.value || 'sessions';
-  
-  sessionStore = new SequelizeStore({
-    db: db.sequelize,
-    tableName: sessionTableName,
-    checkExpirationInterval: 15 * 60 * 1000, // 15 minutes
-    expiration: 24 * 60 * 60 * 1000 // 24 hours
-  });
-  
-  // Sync session table
-  sessionStore.sync();
-  
-  console.log(`✅ Using Sequelize session store (table: ${sessionTableName})`);
-} catch (error) {
-  console.error('Failed to initialize Sequelize session store:', error.message);
-  console.log('Falling back to MemoryStore (not recommended for production)');
-  sessionStore = null; // Will use default MemoryStore
-}
-
-// Session configuration
-app.use(session({
-  store: sessionStore,
-  secret: config.security.jwt_secret || 'fallback-session-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: config.server.ssl.enabled, // Use secure cookies in production with HTTPS
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
 
 // Database and models are already initialized via models/index.js import
 // Access models via db.server, db.user, etc.
