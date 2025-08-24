@@ -91,7 +91,7 @@ export const useHostNetworkingData = () => {
 
             console.log('🔍 NETWORKING: Loading complete network data for', currentServer.hostname);
 
-            // Load all network data in parallel - uses monitoring endpoints for historical data
+            // Load all network data in parallel - current usage data for animations, topology data for structure
             const [
                 interfacesResult,
                 usageResult,
@@ -103,7 +103,7 @@ export const useHostNetworkingData = () => {
                 zonesResult
             ] = await Promise.allSettled([
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/interfaces'),
-                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/usage'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/usage?limit=1'),
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/ipaddresses'),
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/routes'),
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/aggregates'),
@@ -509,12 +509,8 @@ export const useHostNetworkingData = () => {
         }
     }, [timeWindow, resolution, currentServer, makeZoneweaverAPIRequest]);
 
-    // Process real-time chart data when usage data changes
-    useEffect(() => {
-        if (networkUsage.length > 0) {
-            processChartData();
-        }
-    }, [networkUsage]);
+    // Note: networkUsage is now only for react-flow topology animations (current values)
+    // Chart data comes from loadHistoricalChartData() with time-based sampling
 
     // Chart functionality
     const expandChart = (chartId, type) => {
