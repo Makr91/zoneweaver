@@ -592,36 +592,31 @@ export const useHostStorageData = () => {
         return isNaN(result) || result < 0 ? 0 : Math.floor(result);
     };
 
+    // Helper function to calculate historical timestamp (matching Host overview page)
+    const getHistoricalTimestamp = (timeWindow) => {
+        const now = new Date();
+        const minutesAgo = {
+            '1min': 1, '5min': 5, '10min': 10, '15min': 15,
+            '30min': 30, '1hour': 60, '3hour': 180, 
+            '6hour': 360, '12hour': 720, '24hour': 1440
+        };
+        const minutes = minutesAgo[timeWindow] || 15;
+        return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
+    };
+
     // Load disk I/O statistics
     const loadDiskIOStats = async (server) => {
         if (!server || loading) return;
 
         try {
-            const now = new Date();
-            const timeWindowMs = {
-                '1min': 1 * 60 * 1000,
-                '5min': 5 * 60 * 1000,
-                '10min': 10 * 60 * 1000,
-                '15min': 15 * 60 * 1000,
-                '30min': 30 * 60 * 1000,
-                '1hour': 60 * 60 * 1000,
-                '3hour': 3 * 60 * 60 * 1000,
-                '6hour': 6 * 60 * 60 * 1000,
-                '12hour': 12 * 60 * 60 * 1000,
-                '24hour': 24 * 60 * 60 * 1000
-            };
-            const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
-
-            const filters = {
-                limit: getResolutionLimit(resolution),
-                since: sinceTime.toISOString()
-            };
+            const historicalTimestamp = getHistoricalTimestamp(timeWindow);
+            console.log('📊 DISK IO: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow);
 
             const result = await makeZoneweaverAPIRequest(
                 server.hostname,
                 server.port,
                 server.protocol,
-                `monitoring/storage/disk-io?limit=${getResolutionLimit(resolution)}&per_device=true&since=${encodeURIComponent(filters.since)}`
+                `monitoring/storage/disk-io?limit=${getResolutionLimit(resolution)}&per_device=true&since=${encodeURIComponent(historicalTimestamp)}`
             );
 
             if (result.success && result.data?.diskio) {
@@ -697,37 +692,25 @@ export const useHostStorageData = () => {
         if (!server || loading) return;
 
         try {
-            const config = getMaxDataPointsForWindow(timeWindow);
-            const now = new Date();
-            const timeWindowMs = {
-                '1min': 1 * 60 * 1000,
-                '5min': 5 * 60 * 1000,
-                '10min': 10 * 60 * 1000,
-                '15min': 15 * 60 * 1000,
-                '30min': 30 * 60 * 1000,
-                '1hour': 60 * 60 * 1000,
-                '3hour': 3 * 60 * 60 * 1000,
-                '6hour': 6 * 60 * 60 * 1000,
-                '12hour': 12 * 60 * 60 * 1000,
-                '24hour': 24 * 60 * 60 * 1000
-            };
-
-            const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
-            const sinceISO = sinceTime.toISOString();
+            const historicalTimestamp = getHistoricalTimestamp(timeWindow);
+            console.log('📊 POOL IO: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow);
 
             const historicalResult = await makeZoneweaverAPIRequest(
                 server.hostname,
                 server.port,
                 server.protocol,
-                `monitoring/storage/pool-io?limit=${getResolutionLimit(resolution)}&per_pool=true&since=${encodeURIComponent(sinceISO)}`
+                `monitoring/storage/pool-io?limit=${getResolutionLimit(resolution)}&per_pool=true&since=${encodeURIComponent(historicalTimestamp)}`
             );
 
             if (historicalResult.success && historicalResult.data?.poolio) {
                 const historicalPoolIO = historicalResult.data.poolio;
+                console.log('📊 POOL IO: Processing', historicalPoolIO.length, 'historical pool IO records');
+                
                 const validHistoricalPoolIO = historicalPoolIO.filter(io =>
                     io.pool && io.scan_timestamp
                 );
 
+                // Group by pool for chart processing
                 const poolData = {};
                 validHistoricalPoolIO.forEach(io => {
                     const poolName = io.pool;
@@ -737,13 +720,12 @@ export const useHostStorageData = () => {
                     poolData[poolName].push(io);
                 });
 
+                // Build chart data from historical records (no double filtering)
                 const historicalPoolChartData = {};
 
                 Object.entries(poolData).forEach(([poolName, ioArray]) => {
-                    ioArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
-                    const recentIO = ioArray.filter(io =>
-                        new Date(io.scan_timestamp) >= sinceTime
-                    );
+                    // Sort by timestamp (oldest first)  
+                    const sortedRecords = ioArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
 
                     historicalPoolChartData[poolName] = {
                         readData: [],
@@ -751,7 +733,8 @@ export const useHostStorageData = () => {
                         totalData: []
                     };
 
-                    recentIO.forEach(io => {
+                    // Process ALL records (remove the problematic recentIO filter)
+                    sortedRecords.forEach(io => {
                         const timestamp = new Date(io.scan_timestamp).getTime();
                         const readBandwidth = parseFloat(io.read_bandwidth_bytes) || 0;
                         const writeBandwidth = parseFloat(io.write_bandwidth_bytes) || 0;
@@ -764,16 +747,12 @@ export const useHostStorageData = () => {
                         historicalPoolChartData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
                     });
 
-                    const allSeries = ['readData', 'writeData', 'totalData'];
-                    allSeries.forEach(series => {
-                        if (historicalPoolChartData[poolName][series].length > maxDataPoints) {
-                            historicalPoolChartData[poolName][series] = historicalPoolChartData[poolName][series].slice(-maxDataPoints);
-                        }
-                    });
+                    console.log(`📊 POOL IO: Built ${sortedRecords.length} historical points for pool ${poolName}`);
                 });
 
                 setPoolChartData(historicalPoolChartData);
 
+                // Extract latest values for table display
                 const latestPoolIOStats = Object.entries(poolData).map(([poolName, ioArray]) => {
                     return ioArray.sort((a, b) => new Date(b.scan_timestamp) - new Date(a.scan_timestamp))[0];
                 }).filter(Boolean);
@@ -796,24 +775,12 @@ export const useHostStorageData = () => {
         if (!server || loading) return;
 
         try {
-            const now = new Date();
-            const timeWindowMs = {
-                '1min': 1 * 60 * 1000,
-                '5min': 5 * 60 * 1000,
-                '10min': 10 * 60 * 1000,
-                '15min': 15 * 60 * 1000,
-                '30min': 30 * 60 * 1000,
-                '1hour': 60 * 60 * 1000,
-                '3hour': 3 * 60 * 60 * 1000,
-                '6hour': 6 * 60 * 60 * 1000,
-                '12hour': 12 * 60 * 60 * 1000,
-                '24hour': 24 * 60 * 60 * 1000
-            };
-            const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
+            const historicalTimestamp = getHistoricalTimestamp(timeWindow);
+            console.log('📊 ARC: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow);
 
             const filters = {
                 limit: getResolutionLimit(resolution),
-                since: sinceTime.toISOString()
+                since: historicalTimestamp
             };
 
             const result = await getStorageARC(server.hostname, server.port, server.protocol, filters);
