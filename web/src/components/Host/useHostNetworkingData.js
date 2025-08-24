@@ -40,6 +40,7 @@ export const useHostNetworkingData = () => {
     
     // Track initial loading to prevent duplicate historical calls
     const initialLoadDone = useRef(false);
+    const [initialDataLoaded, setInitialDataLoaded] = useState(false);
     
     // Authentication
     const { user } = useAuth();
@@ -66,14 +67,22 @@ export const useHostNetworkingData = () => {
         });
         if (currentServer && makeZoneweaverAPIRequest) {
             loadHistoricalChartData(); // Load historical data first to establish chart foundation
-            loadNetworkData();
+            loadNetworkData().then(() => {
+                setInitialDataLoaded(true); // Mark initial data load as completed
+                console.log('🔍 NETWORKING: Initial data loading completed');
+            });
             initialLoadDone.current = true; // Mark initial load as completed
         }
     }, [currentServer]);
 
-    // Auto-refresh effect
+    // Auto-refresh effect - wait for initial data to load before starting
     useEffect(() => {
-        if (!autoRefresh || !currentServer) return;
+        if (!autoRefresh || !currentServer || !initialDataLoaded) {
+            if (!initialDataLoaded) {
+                console.log('🔄 NETWORKING: Auto-refresh waiting for initial data load to complete');
+            }
+            return;
+        }
 
         console.log('🔄 NETWORKING: Setting up auto-refresh every', refreshInterval, 'seconds');
         const interval = setInterval(() => {
@@ -85,7 +94,7 @@ export const useHostNetworkingData = () => {
             console.log('🔄 NETWORKING: Cleaning up auto-refresh interval');
             clearInterval(interval);
         };
-    }, [autoRefresh, refreshInterval, currentServer]);
+    }, [autoRefresh, refreshInterval, currentServer, initialDataLoaded]);
 
     const loadNetworkData = async () => {
         if (!currentServer || loading) return;
