@@ -60,23 +60,23 @@ export const useHostData = (currentServer) => {
   } = useServers();
 
   const updatePoolIOChartData = useCallback((poolIOData) => {
+    // Group by pool and sort by timestamp for proper chart initialization
+    const poolData = {};
     poolIOData.forEach(poolIO => {
       const poolName = poolIO.pool;
-      const timestamp = new Date(poolIO.scan_timestamp).getTime();
+      if (!poolData[poolName]) {
+        poolData[poolName] = [];
+      }
+      poolData[poolName].push(poolIO);
+    });
+
+    // Initialize charts with historical data
+    setChartData(prevData => {
+      const newData = { ...prevData };
       
-      const readBandwidth = poolIO.read_bandwidth_bytes || 0;
-      const writeBandwidth = poolIO.write_bandwidth_bytes || 0;
-      
-      const readMBps = readBandwidth / (1024 * 1024);
-      const writeMBps = writeBandwidth / (1024 * 1024);
-      const totalMBps = readMBps + writeMBps;
-      
-      const readPoint = [timestamp, parseFloat(readMBps.toFixed(3))];
-      const writePoint = [timestamp, parseFloat(writeMBps.toFixed(3))]; 
-      const totalPoint = [timestamp, parseFloat(totalMBps.toFixed(3))];
-      
-      setChartData(prevData => {
-        const newData = { ...prevData };
+      Object.entries(poolData).forEach(([poolName, poolIOArray]) => {
+        // Sort by timestamp (oldest first)
+        poolIOArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
         
         if (!newData[poolName]) {
           newData[poolName] = {
@@ -86,18 +86,49 @@ export const useHostData = (currentServer) => {
           };
         }
         
-        newData[poolName].readData.push(readPoint);
-        newData[poolName].writeData.push(writePoint);
-        newData[poolName].totalData.push(totalPoint);
+        // If this is initial load, replace the data. If updating, append.
+        const isInitialLoad = newData[poolName].readData.length === 0;
         
+        if (isInitialLoad) {
+          // Initialize with all historical data
+          poolIOArray.forEach(poolIO => {
+            const timestamp = new Date(poolIO.scan_timestamp).getTime();
+            const readBandwidth = poolIO.read_bandwidth_bytes || 0;
+            const writeBandwidth = poolIO.write_bandwidth_bytes || 0;
+            const readMBps = readBandwidth / (1024 * 1024);
+            const writeMBps = writeBandwidth / (1024 * 1024);
+            const totalMBps = readMBps + writeMBps;
+            
+            newData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
+            newData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
+            newData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
+          });
+        } else {
+          // Update mode - just add the latest points
+          const latestPoolIO = poolIOArray[poolIOArray.length - 1];
+          if (latestPoolIO) {
+            const timestamp = new Date(latestPoolIO.scan_timestamp).getTime();
+            const readBandwidth = latestPoolIO.read_bandwidth_bytes || 0;
+            const writeBandwidth = latestPoolIO.write_bandwidth_bytes || 0;
+            const readMBps = readBandwidth / (1024 * 1024);
+            const writeMBps = writeBandwidth / (1024 * 1024);
+            const totalMBps = readMBps + writeMBps;
+            
+            newData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
+            newData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
+            newData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
+          }
+        }
+        
+        // Trim to max data points
         if (newData[poolName].readData.length > maxDataPoints) {
           newData[poolName].readData = newData[poolName].readData.slice(-maxDataPoints);
           newData[poolName].writeData = newData[poolName].writeData.slice(-maxDataPoints);
           newData[poolName].totalData = newData[poolName].totalData.slice(-maxDataPoints);
         }
-        
-        return newData;
       });
+      
+      return newData;
     });
   }, [maxDataPoints]);
 
@@ -135,17 +166,23 @@ export const useHostData = (currentServer) => {
   }, [maxDataPoints]);
 
   const updateNetworkChartData = useCallback((networkUsageData) => {
+    // Group by interface and sort by timestamp for proper chart initialization
+    const interfaceData = {};
     networkUsageData.forEach(usage => {
-      const bandwidth = calculateNetworkBandwidth(usage);
       const interfaceName = usage.link;
-      const timestamp = new Date(usage.scan_timestamp).getTime();
+      if (!interfaceData[interfaceName]) {
+        interfaceData[interfaceName] = [];
+      }
+      interfaceData[interfaceName].push(usage);
+    });
+
+    // Initialize charts with historical data
+    setNetworkChartData(prevData => {
+      const newData = { ...prevData };
       
-      const rxPoint = [timestamp, parseFloat(bandwidth.rxMbps.toFixed(3))];
-      const txPoint = [timestamp, parseFloat(bandwidth.txMbps.toFixed(3))]; 
-      const totalPoint = [timestamp, parseFloat(bandwidth.totalMbps.toFixed(3))];
-      
-      setNetworkChartData(prevData => {
-        const newData = { ...prevData };
+      Object.entries(interfaceData).forEach(([interfaceName, usageArray]) => {
+        // Sort by timestamp (oldest first)
+        usageArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
         
         if (!newData[interfaceName]) {
           newData[interfaceName] = {
@@ -155,18 +192,41 @@ export const useHostData = (currentServer) => {
           };
         }
         
-        newData[interfaceName].rxData.push(rxPoint);
-        newData[interfaceName].txData.push(txPoint);
-        newData[interfaceName].totalData.push(totalPoint);
+        // If this is initial load, replace the data. If updating, append.
+        const isInitialLoad = newData[interfaceName].rxData.length === 0;
         
+        if (isInitialLoad) {
+          // Initialize with all historical data
+          usageArray.forEach(usage => {
+            const bandwidth = calculateNetworkBandwidth(usage);
+            const timestamp = new Date(usage.scan_timestamp).getTime();
+            
+            newData[interfaceName].rxData.push([timestamp, parseFloat(bandwidth.rxMbps.toFixed(3))]);
+            newData[interfaceName].txData.push([timestamp, parseFloat(bandwidth.txMbps.toFixed(3))]);
+            newData[interfaceName].totalData.push([timestamp, parseFloat(bandwidth.totalMbps.toFixed(3))]);
+          });
+        } else {
+          // Update mode - just add the latest points
+          const latestUsage = usageArray[usageArray.length - 1];
+          if (latestUsage) {
+            const bandwidth = calculateNetworkBandwidth(latestUsage);
+            const timestamp = new Date(latestUsage.scan_timestamp).getTime();
+            
+            newData[interfaceName].rxData.push([timestamp, parseFloat(bandwidth.rxMbps.toFixed(3))]);
+            newData[interfaceName].txData.push([timestamp, parseFloat(bandwidth.txMbps.toFixed(3))]);
+            newData[interfaceName].totalData.push([timestamp, parseFloat(bandwidth.totalMbps.toFixed(3))]);
+          }
+        }
+        
+        // Trim to max data points
         if (newData[interfaceName].rxData.length > maxDataPoints) {
           newData[interfaceName].rxData = newData[interfaceName].rxData.slice(-maxDataPoints);
           newData[interfaceName].txData = newData[interfaceName].txData.slice(-maxDataPoints);
           newData[interfaceName].totalData = newData[interfaceName].totalData.slice(-maxDataPoints);
         }
-        
-        return newData;
       });
+      
+      return newData;
     });
   }, [maxDataPoints]);
 
@@ -214,198 +274,56 @@ export const useHostData = (currentServer) => {
   }, []);
 
   const updateMemoryChartData = useCallback((memoryData) => {
-    const used = [];
-    const free = [];
-    const cached = [];
-    const total = [];
-
-    memoryData.forEach(d => {
-      const timestamp = new Date(d.scan_timestamp).getTime();
-      used.push([timestamp, parseFloat((d.used_memory_bytes / (1024 ** 3)).toFixed(2))]);
-      free.push([timestamp, parseFloat((d.free_memory_bytes / (1024 ** 3)).toFixed(2))]);
-      cached.push([timestamp, parseFloat((d.cached_bytes / (1024 ** 3)).toFixed(2))]);
-      total.push([timestamp, parseFloat((d.total_memory_bytes / (1024 ** 3)).toFixed(2))]);
-    });
-
-    setMemoryChartData({
-      used: used.sort((a, b) => a[0] - b[0]),
-      free: free.sort((a, b) => a[0] - b[0]),
-      cached: cached.sort((a, b) => a[0] - b[0]),
-      total: total.sort((a, b) => a[0] - b[0]),
-    });
-  }, []);
-
-  const loadHistoricalPoolIOData = useCallback(async (server) => {
-    if (!server) return;
+    // Sort memory data by timestamp for proper initialization
+    const sortedMemoryData = [...memoryData].sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
     
-    try {
-      // Use fixed 1 hour time window and limit=20 with per_pool=true for optimization
-      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000)).toISOString();
-      const historicalResult = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        `monitoring/storage/pool-io?limit=20&per_pool=true&since=${encodeURIComponent(oneHourAgo)}`
-      );
+    setMemoryChartData(prevData => {
+      const isInitialLoad = prevData.used.length === 0;
+      
+      if (isInitialLoad) {
+        // Initialize with all historical data
+        const used = [];
+        const free = [];
+        const cached = [];
+        const total = [];
 
-      if (historicalResult.success && historicalResult.data?.poolio) {
-        const historicalPoolIO = historicalResult.data.poolio;
-        const validHistoricalPoolIO = historicalPoolIO.filter(poolIO => 
-          poolIO.pool && poolIO.scan_timestamp
-        );
-        
-        const poolData = {};
-        validHistoricalPoolIO.forEach(poolIO => {
-          const poolName = poolIO.pool;
-          if (!poolData[poolName]) {
-            poolData[poolName] = [];
-          }
-          poolData[poolName].push(poolIO);
+        sortedMemoryData.forEach(d => {
+          const timestamp = new Date(d.scan_timestamp).getTime();
+          used.push([timestamp, parseFloat((d.used_memory_bytes / (1024 ** 3)).toFixed(2))]);
+          free.push([timestamp, parseFloat((d.free_memory_bytes / (1024 ** 3)).toFixed(2))]);
+          cached.push([timestamp, parseFloat((d.cached_bytes / (1024 ** 3)).toFixed(2))]);
+          total.push([timestamp, parseFloat((d.total_memory_bytes / (1024 ** 3)).toFixed(2))]);
         });
-        
-        const historicalChartData = {};
-        const now = new Date();
-        const timeWindowMs = {
-          '1min': 1 * 60 * 1000,
-          '5min': 5 * 60 * 1000,
-          '10min': 10 * 60 * 1000,
-          '15min': 15 * 60 * 1000,
-          '30min': 30 * 60 * 1000,
-          '1hour': 60 * 60 * 1000,
-          '3hour': 3 * 60 * 60 * 1000,
-          '6hour': 6 * 60 * 60 * 1000,
-          '12hour': 12 * 60 * 60 * 1000,
-          '24hour': 24 * 60 * 60 * 1000
+
+        return {
+          used: used,
+          free: free,
+          cached: cached,
+          total: total,
         };
-        const cutoffTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
-        
-        Object.entries(poolData).forEach(([poolName, poolIOArray]) => {
-          poolIOArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
-          const recentPoolIO = poolIOArray.filter(poolIO => 
-            new Date(poolIO.scan_timestamp) >= cutoffTime
-          );
-          
-          historicalChartData[poolName] = {
-            readData: [],
-            writeData: [],
-            totalData: []
+      } else {
+        // Update mode - add the latest point
+        const latestData = sortedMemoryData[sortedMemoryData.length - 1];
+        if (latestData) {
+          const timestamp = new Date(latestData.scan_timestamp).getTime();
+          const newUsed = [...prevData.used, [timestamp, parseFloat((latestData.used_memory_bytes / (1024 ** 3)).toFixed(2))]];
+          const newFree = [...prevData.free, [timestamp, parseFloat((latestData.free_memory_bytes / (1024 ** 3)).toFixed(2))]];
+          const newCached = [...prevData.cached, [timestamp, parseFloat((latestData.cached_bytes / (1024 ** 3)).toFixed(2))]];
+          const newTotal = [...prevData.total, [timestamp, parseFloat((latestData.total_memory_bytes / (1024 ** 3)).toFixed(2))]];
+
+          return {
+            used: newUsed.length > maxDataPoints ? newUsed.slice(-maxDataPoints) : newUsed,
+            free: newFree.length > maxDataPoints ? newFree.slice(-maxDataPoints) : newFree,
+            cached: newCached.length > maxDataPoints ? newCached.slice(-maxDataPoints) : newCached,
+            total: newTotal.length > maxDataPoints ? newTotal.slice(-maxDataPoints) : newTotal,
           };
-          
-          recentPoolIO.forEach(poolIO => {
-            const timestamp = new Date(poolIO.scan_timestamp).getTime();
-            const readBandwidth = poolIO.read_bandwidth_bytes || 0;
-            const writeBandwidth = poolIO.write_bandwidth_bytes || 0;
-            const readMBps = readBandwidth / (1024 * 1024);
-            const writeMBps = writeBandwidth / (1024 * 1024);
-            const totalMBps = readMBps + writeMBps;
-            
-            historicalChartData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
-            historicalChartData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
-            historicalChartData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
-          });
-        });
-        
-        setChartData(historicalChartData);
+        }
       }
-    } catch (error) {
-      console.error('Error loading historical pool I/O data:', error);
-    }
-  }, [timeWindow, makeZoneweaverAPIRequest]);
+      
+      return prevData;
+    });
+  }, [maxDataPoints]);
 
-  const loadHistoricalNetworkData = useCallback(async (server) => {
-    if (!server) return;
-    
-    try {
-      // Use fixed 1 hour time window and limit=20 with per_interface=true for optimization
-      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000)).toISOString();
-      const [historicalResult, interfacesResult] = await Promise.allSettled([
-        makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `monitoring/network/usage?limit=20&per_interface=true&since=${encodeURIComponent(oneHourAgo)}`
-        ),
-        makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          'monitoring/network/interfaces'
-        )
-      ]);
-
-      if (historicalResult.status === 'fulfilled' && historicalResult.value.success && historicalResult.value.data?.usage) {
-        const historicalNetworkUsage = historicalResult.value.data.usage;
-        const interfacesData = (interfacesResult.status === 'fulfilled' && interfacesResult.value.success) 
-          ? interfacesResult.value.data?.interfaces || [] 
-          : [];
-        
-        const validHistoricalUsage = historicalNetworkUsage.filter(usage => 
-          usage.link && 
-          usage.link !== 'LINK' && 
-          usage.ipackets !== 'IPACKETS' &&
-          usage.time_delta_seconds > 0
-        );
-        
-        const realInterfacesOnlyHistorical = validHistoricalUsage.filter(usage => {
-          const interfaceInfo = interfacesData.find(iface => iface.link === usage.link);
-          return interfaceInfo && interfaceInfo.class === 'phys';
-        });
-        
-        const interfaceData = {};
-        realInterfacesOnlyHistorical.forEach(usage => {
-          const interfaceName = usage.link;
-          if (!interfaceData[interfaceName]) {
-            interfaceData[interfaceName] = [];
-          }
-          interfaceData[interfaceName].push(usage);
-        });
-        
-        const historicalNetworkChartData = {};
-        const now = new Date();
-        const timeWindowMs = {
-          '1min': 1 * 60 * 1000,
-          '5min': 5 * 60 * 1000,
-          '10min': 10 * 60 * 1000,
-          '15min': 15 * 60 * 1000,
-          '30min': 30 * 60 * 1000,
-          '1hour': 60 * 60 * 1000,
-          '3hour': 3 * 60 * 60 * 1000,
-          '6hour': 6 * 60 * 60 * 1000,
-          '12hour': 12 * 60 * 60 * 1000,
-          '24hour': 24 * 60 * 60 * 1000
-        };
-        const cutoffTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['15min']));
-        
-        Object.entries(interfaceData).forEach(([interfaceName, usageArray]) => {
-          usageArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
-          const recentUsage = usageArray.filter(usage => 
-            new Date(usage.scan_timestamp) >= cutoffTime
-          );
-          
-          if (recentUsage.length > 0) {
-            historicalNetworkChartData[interfaceName] = {
-              rxData: [],
-              txData: [],
-              totalData: []
-            };
-            
-            recentUsage.forEach(usage => {
-              const bandwidth = calculateNetworkBandwidth(usage);
-              const timestamp = new Date(usage.scan_timestamp).getTime();
-              
-              historicalNetworkChartData[interfaceName].rxData.push([timestamp, parseFloat(bandwidth.rxMbps.toFixed(3))]);
-              historicalNetworkChartData[interfaceName].txData.push([timestamp, parseFloat(bandwidth.txMbps.toFixed(3))]);
-              historicalNetworkChartData[interfaceName].totalData.push([timestamp, parseFloat(bandwidth.totalMbps.toFixed(3))]);
-            });
-          }
-        });
-        
-        setNetworkChartData(historicalNetworkChartData);
-      }
-    } catch (error) {
-      console.error('Error loading historical network data:', error);
-    }
-  }, [timeWindow, makeZoneweaverAPIRequest]);
 
   const loadHostData = useCallback(async (server) => {
     if (!server || loading) return;
@@ -652,7 +570,7 @@ export const useHostData = (currentServer) => {
     } finally {
       setLoading(false);
     }
-  }, [timeWindow, makeZoneweaverAPIRequest, getMonitoringHealth, getMonitoringStatus, getStoragePools, getStorageDatasets, getStoragePoolIO, getStorageARC, getNetworkUsage, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateARCChartData, updateNetworkChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
+  }, [timeWindow, makeZoneweaverAPIRequest, getMonitoringHealth, getMonitoringStatus, getStoragePools, getStorageDatasets, getStoragePoolIO, getStorageARC, getNetworkUsage, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateARCChartData, updateNetworkChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData, loading]);
 
   // Load data when server changes - sequential loading pattern like networking page
   useEffect(() => {
