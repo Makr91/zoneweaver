@@ -366,14 +366,19 @@ export const useHostData = (currentServer) => {
           since: historicalTimestamp  
         }),
         // CPU data
-        getSystemCPU(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          since: historicalTimestamp,
-          include_cores: true
-        }),
+        makeZoneweaverAPIRequest(
+          currentServer.hostname, 
+          currentServer.port, 
+          currentServer.protocol, 
+          `monitoring/system/cpu?limit=200&since=${encodeURIComponent(historicalTimestamp)}&include_cores=true`
+        ),
         // Memory data
-        getSystemMemory(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          since: historicalTimestamp
-        })
+        makeZoneweaverAPIRequest(
+          currentServer.hostname, 
+          currentServer.port, 
+          currentServer.protocol, 
+          `monitoring/system/memory?limit=200&since=${encodeURIComponent(historicalTimestamp)}`
+        )
       ]);
 
       const [networkResult, poolIOResult, arcResult, cpuResult, memoryResult] = results;
