@@ -61,10 +61,12 @@ const ZoneweaverSettings = () => {
     }
   }, [user]);
 
-  // Load servers when allServers changes
+  // Load servers when allServers changes (avoid unnecessary calls)
   useEffect(() => {
-    loadServers();
-  }, [allServers]);
+    if (user && canManageSettings(user.role)) {
+      loadServers();
+    }
+  }, [allServers, user]);
 
   // Handle URL parameter for direct tab navigation
   useEffect(() => {

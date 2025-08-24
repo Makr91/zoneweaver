@@ -527,13 +527,21 @@ export const useHostData = (currentServer) => {
           }
           return acc;
         }, []);
-        deduplicatedNetworkUsage.sort((a, b) => {
-          const aBandwidth = calculateNetworkBandwidth(a);
-          const bBandwidth = calculateNetworkBandwidth(b);
-          return bBandwidth.totalMbps - aBandwidth.totalMbps;
-        });
-        setNetworkUsage(deduplicatedNetworkUsage);
-        updateNetworkChartData(deduplicatedNetworkUsage);
+        // Pre-calculate bandwidth once to avoid repeated calculations in sort comparator
+        const networkUsageWithBandwidth = deduplicatedNetworkUsage.map(usage => ({
+          ...usage,
+          bandwidth: calculateNetworkBandwidth(usage)
+        }));
+        
+        // Sort by pre-calculated bandwidth values
+        networkUsageWithBandwidth.sort((a, b) => 
+          b.bandwidth.totalMbps - a.bandwidth.totalMbps
+        );
+        
+        // Use the sorted data with bandwidth for state (remove bandwidth property for consistency)
+        const sortedNetworkUsage = networkUsageWithBandwidth.map(({ bandwidth, ...usage }) => usage);
+        setNetworkUsage(sortedNetworkUsage);
+        updateNetworkChartData(sortedNetworkUsage);
       } else {
         setNetworkUsage([]);
       }
