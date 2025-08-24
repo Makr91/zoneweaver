@@ -39,6 +39,8 @@ const HostNetworking = () => {
         chartData,
         timeWindow,
         setTimeWindow,
+        resolution,
+        setResolution,
         chartRefs,
         summaryChartRefs,
         interfaceSort,
@@ -119,6 +121,8 @@ const HostNetworking = () => {
                         setAutoRefresh={setAutoRefresh}
                         refreshInterval={refreshInterval}
                         setRefreshInterval={setRefreshInterval}
+                        resolution={resolution}
+                        setResolution={setResolution}
                         selectedServer={selectedServer}
                         loadNetworkData={loadNetworkData}
                     />

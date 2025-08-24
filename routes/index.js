@@ -41,7 +41,7 @@ const adminLimiter = rateLimit({
 // External API proxy - Restrictive (protect downstream Zoneweaver servers)
 const apiProxyLimiter = rateLimit({
   windowMs: rlConfig.apiProxy?.windowMs?.value || 60 * 1000,
-  max: rlConfig.apiProxy?.max?.value || 100,
+  max: rlConfig.apiProxy?.max?.value || 2000,
   message: { error: rlConfig.apiProxy?.message?.value || 'Too many API proxy requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,

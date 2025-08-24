@@ -6,6 +6,8 @@ const NetworkingHeader = ({
     setAutoRefresh,
     refreshInterval,
     setRefreshInterval,
+    resolution,
+    setResolution,
     selectedServer,
     loadNetworkData
 }) => {
@@ -16,6 +18,21 @@ const NetworkingHeader = ({
             </div>
             <div className='level-right'>
                 <div className='field is-grouped'>
+                    <div className='control'>
+                        <div className='select is-small'>
+                            <select
+                                value={resolution}
+                                onChange={(e) => setResolution(e.target.value)}
+                                disabled={loading}
+                                title="Chart resolution - controls the number of data points"
+                            >
+                                <option value="realtime">Real-time (500 pts)</option>
+                                <option value="high">High (250 pts)</option>
+                                <option value="medium">Medium (100 pts)</option>
+                                <option value="low">Low (50 pts)</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className='control'>
                         <div className='select is-small'>
                             <select

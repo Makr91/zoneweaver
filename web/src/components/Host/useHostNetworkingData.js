@@ -26,6 +26,7 @@ export const useHostNetworkingData = () => {
     // Chart data state
     const [chartData, setChartData] = useState({});
     const [timeWindow, setTimeWindow] = useState('15min');
+    const [resolution, setResolution] = useState('high'); // 'realtime', 'high', 'medium', 'low'
     const [chartSortBy, setChartSortBy] = useState('bandwidth');
     const [expandedChart, setExpandedChart] = useState(null);
     const [expandedChartType, setExpandedChartType] = useState(null);
@@ -357,17 +358,28 @@ export const useHostNetworkingData = () => {
         return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
     };
 
-    // Load historical chart data for the selected time window
+    // Helper function to get resolution limit for API requests
+    const getResolutionLimit = (resolution) => {
+        const resolutionLimits = {
+            'realtime': 500,
+            'high': 250,
+            'medium': 100,
+            'low': 50
+        };
+        return resolutionLimits[resolution] || 250;
+    };
+
+    // Load historical chart data for the selected time window and resolution
     const loadHistoricalChartData = async () => {
         if (!currentServer || !makeZoneweaverAPIRequest) return;
 
         try {
-            console.log('📊 HISTORICAL CHARTS: Loading historical data for time window:', timeWindow);
+            console.log('📊 HISTORICAL CHARTS: Loading historical data for time window:', timeWindow, 'resolution:', resolution);
             
             const historicalTimestamp = getHistoricalTimestamp(timeWindow);
-            const limit = 1000; // Adjust based on expected data volume
+            const limit = getResolutionLimit(resolution);
             
-            console.log('📊 HISTORICAL CHARTS: Requesting data since:', historicalTimestamp);
+            console.log('📊 HISTORICAL CHARTS: Requesting data since:', historicalTimestamp, 'with limit:', limit);
             
             const historicalResult = await makeZoneweaverAPIRequest(
                 currentServer.hostname, 
@@ -489,13 +501,13 @@ export const useHostNetworkingData = () => {
         });
     };
 
-    // Load historical chart data when time window changes or server changes
+    // Load historical chart data when time window, resolution, or server changes
     useEffect(() => {
         if (currentServer && makeZoneweaverAPIRequest) {
-            console.log('📊 HISTORICAL CHARTS: Time window or server changed, loading historical data');
+            console.log('📊 HISTORICAL CHARTS: Time window, resolution, or server changed, loading historical data');
             loadHistoricalChartData();
         }
-    }, [timeWindow, currentServer, makeZoneweaverAPIRequest]);
+    }, [timeWindow, resolution, currentServer, makeZoneweaverAPIRequest]);
 
     // Process real-time chart data when usage data changes
     useEffect(() => {
@@ -666,6 +678,8 @@ export const useHostNetworkingData = () => {
         chartData,
         timeWindow,
         setTimeWindow,
+        resolution,
+        setResolution,
         chartRefs,
         summaryChartRefs,
         interfaceSort,
