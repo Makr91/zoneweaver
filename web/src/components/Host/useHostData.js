@@ -310,13 +310,14 @@ export const useHostData = (currentServer) => {
     if (!server) return;
     
     try {
-      const config = getMaxDataPointsForWindow(timeWindow);
+      // Use fixed 1 hour time window and limit=20 with per_interface=true for optimization
+      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000)).toISOString();
       const [historicalResult, interfacesResult] = await Promise.allSettled([
         makeZoneweaverAPIRequest(
           server.hostname,
           server.port,
           server.protocol,
-          `monitoring/network/usage?limit=${config.limit}`
+          `monitoring/network/usage?limit=20&per_interface=true&since=${encodeURIComponent(oneHourAgo)}`
         ),
         makeZoneweaverAPIRequest(
           server.hostname,
@@ -437,7 +438,11 @@ export const useHostData = (currentServer) => {
         makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'tasks/stats'), // 6
         getStoragePoolIO(server.hostname, server.port, server.protocol, diskIOFilters), // 7
         getStorageARC(server.hostname, server.port, server.protocol, diskIOFilters), // 8
-        getNetworkUsage(server.hostname, server.port, server.protocol), // 9
+        getNetworkUsage(server.hostname, server.port, server.protocol, { 
+          limit: 20, 
+          per_interface: true, 
+          since: sinceTime.toISOString() 
+        }), // 9
         getSystemCPU(server.hostname, server.port, server.protocol, { since: sinceTime.toISOString(), include_cores: true }), // 10
         getSystemMemory(server.hostname, server.port, server.protocol, { since: sinceTime.toISOString() }), // 11
         makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'system/swap/summary') // 12
