@@ -69,9 +69,9 @@ export const useHostNetworkingData = () => {
             loadHistoricalChartData(); // Load historical data first to establish chart foundation
             loadNetworkData().then(() => {
                 setInitialDataLoaded(true); // Mark initial data load as completed
-                console.log('🔍 NETWORKING: Initial data loading completed');
+                initialLoadDone.current = true; // Mark initial load as completed AFTER completion
+                console.log('🔍 NETWORKING: Initial data loading completed - preventing duplicate historical calls');
             });
-            initialLoadDone.current = true; // Mark initial load as completed
         }
     }, [currentServer]);
 
