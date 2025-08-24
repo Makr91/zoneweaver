@@ -532,16 +532,18 @@ export const useHostStorageData = () => {
         return windowConfig[window] || windowConfig['1hour'];
     };
 
-    // Update maxDataPoints when timeWindow changes
+    // Update maxDataPoints when timeWindow or resolution changes
     useEffect(() => {
         const config = getMaxDataPointsForWindow(timeWindow);
         setMaxDataPoints(config.points);
 
-        // Reload data with new time window (loadDiskIOStats handles historical data)
+        // Reload data with new time window or resolution (loadDiskIOStats handles historical data)
         if (selectedServer) {
             loadDiskIOStats(selectedServer);
+            loadPoolIOStats(selectedServer);
+            loadArcStats(selectedServer);
         }
-    }, [timeWindow, selectedServer]);
+    }, [timeWindow, resolution, selectedServer]);
 
     // Toggle section collapse
     const toggleSection = (section) => {
@@ -615,29 +617,74 @@ export const useHostStorageData = () => {
                 since: sinceTime.toISOString()
             };
 
-            const result = await getStorageDiskIO(server.hostname, server.port, server.protocol, filters);
+            const result = await makeZoneweaverAPIRequest(
+                server.hostname,
+                server.port,
+                server.protocol,
+                `monitoring/storage/disk-io?limit=${getResolutionLimit(resolution)}&per_device=true&since=${encodeURIComponent(filters.since)}`
+            );
 
             if (result.success && result.data?.diskio) {
                 const diskIOData = result.data.diskio;
+                console.log('📊 DISK IO: Processing', diskIOData.length, 'historical disk IO records');
 
-                const deduplicatedDiskIO = diskIOData.reduce((acc, io) => {
-                    const existing = acc.find(existing => existing.device_name === io.device_name);
-                    if (!existing) {
-                        acc.push({ ...io });
-                    } else {
-                        if (new Date(io.scan_timestamp) > new Date(existing.scan_timestamp)) {
-                            const index = acc.indexOf(existing);
-                            acc[index] = { ...io };
-                        }
+                // Group by device for chart processing  
+                const deviceGroups = {};
+                diskIOData.forEach(io => {
+                    const deviceName = io.device_name;
+                    if (!deviceName) return;
+                    
+                    if (!deviceGroups[deviceName]) {
+                        deviceGroups[deviceName] = [];
                     }
-                    return acc;
-                }, []);
+                    deviceGroups[deviceName].push(io);
+                });
 
-                deduplicatedDiskIO.sort((a, b) => a.device_name.localeCompare(b.device_name));
-                setDiskIOStats([...deduplicatedDiskIO]);
-                updateDiskIOChartData(deduplicatedDiskIO);
+                // Build chart data from historical records
+                const newDiskChartData = {};
+                
+                Object.entries(deviceGroups).forEach(([deviceName, records]) => {
+                    // Sort records by timestamp (oldest first)
+                    const sortedRecords = records.sort((a, b) => 
+                        new Date(a.scan_timestamp) - new Date(b.scan_timestamp)
+                    );
+
+                    newDiskChartData[deviceName] = {
+                        readData: [],
+                        writeData: [],
+                        totalData: []
+                    };
+
+                    sortedRecords.forEach(io => {
+                        const timestamp = new Date(io.scan_timestamp).getTime();
+                        const readBandwidth = parseFloat(io.read_bandwidth_bytes) || 0;
+                        const writeBandwidth = parseFloat(io.write_bandwidth_bytes) || 0;
+                        const readMBps = readBandwidth / (1024 * 1024);
+                        const writeMBps = writeBandwidth / (1024 * 1024);
+                        const totalMBps = readMBps + writeMBps;
+
+                        newDiskChartData[deviceName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
+                        newDiskChartData[deviceName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
+                        newDiskChartData[deviceName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
+                    });
+
+                    console.log(`📊 DISK IO: Built ${sortedRecords.length} historical points for device ${deviceName}`);
+                });
+
+                setChartData(newDiskChartData);
+
+                // Extract latest values for table display (deduplicated by device)
+                const latestDiskIO = Object.entries(deviceGroups).map(([deviceName, records]) => {
+                    return records.sort((a, b) => new Date(b.scan_timestamp) - new Date(a.scan_timestamp))[0];
+                }).filter(Boolean);
+
+                latestDiskIO.sort((a, b) => a.device_name.localeCompare(b.device_name));
+                setDiskIOStats(latestDiskIO);
+                
+                console.log('📊 DISK IO: Loaded historical data for', Object.keys(newDiskChartData).length, 'devices');
             } else {
                 setDiskIOStats([]);
+                setChartData({});
             }
         } catch (error) {
             console.error('Error loading disk I/O statistics:', error);

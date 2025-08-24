@@ -365,7 +365,7 @@ export const useHostData = (currentServer) => {
           currentServer.hostname, 
           currentServer.port, 
           currentServer.protocol, 
-          `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=100&per_interface=true`
+          `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${getResolutionLimit(resolution)}&per_interface=true`
         ),
         // Storage pool I/O data  
         getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
@@ -382,14 +382,14 @@ export const useHostData = (currentServer) => {
           currentServer.hostname, 
           currentServer.port, 
           currentServer.protocol, 
-          `monitoring/system/cpu?limit=200&since=${encodeURIComponent(historicalTimestamp)}&include_cores=true`
+          `monitoring/system/cpu?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(historicalTimestamp)}&include_cores=true`
         ),
         // Memory data
         makeZoneweaverAPIRequest(
           currentServer.hostname, 
           currentServer.port, 
           currentServer.protocol, 
-          `monitoring/system/memory?limit=200&since=${encodeURIComponent(historicalTimestamp)}`
+          `monitoring/system/memory?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(historicalTimestamp)}`
         )
       ]);
 
@@ -562,7 +562,7 @@ export const useHostData = (currentServer) => {
     } catch (error) {
       console.error('📊 HISTORICAL CHARTS: Error loading historical data:', error);
     }
-  }, [currentServer, makeZoneweaverAPIRequest, timeWindow, getStoragePoolIO, getStorageARC, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
+  }, [currentServer, makeZoneweaverAPIRequest, timeWindow, resolution, getStoragePoolIO, getStorageARC, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
 
 
   const loadHostData = useCallback(async (server) => {
