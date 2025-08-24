@@ -324,6 +324,163 @@ export const useHostData = (currentServer) => {
     });
   }, [maxDataPoints]);
 
+  // Helper function to calculate historical timestamp based on time window
+  const getHistoricalTimestamp = (timeWindow) => {
+    const now = new Date();
+    const minutesAgo = {
+      '1min': 1, '5min': 5, '10min': 10, '15min': 15,
+      '30min': 30, '1hour': 60, '3hour': 180, 
+      '6hour': 360, '12hour': 720, '24hour': 1440
+    };
+    const minutes = minutesAgo[timeWindow] || 15;
+    return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
+  };
+
+  // Load historical chart data for the selected time window
+  const loadHistoricalChartData = useCallback(async () => {
+    if (!currentServer || !makeZoneweaverAPIRequest) return;
+
+    try {
+      console.log('📊 HISTORICAL CHARTS: Loading historical data for time window:', timeWindow);
+      
+      const historicalTimestamp = getHistoricalTimestamp(timeWindow);
+      console.log('📊 HISTORICAL CHARTS: Requesting data since:', historicalTimestamp);
+      
+      // Load historical data for all chart types in parallel
+      const results = await Promise.allSettled([
+        // Network usage data
+        makeZoneweaverAPIRequest(
+          currentServer.hostname, 
+          currentServer.port, 
+          currentServer.protocol, 
+          `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=100&per_interface=true`
+        ),
+        // Storage pool I/O data  
+        getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
+          limit: 2000,
+          since: historicalTimestamp
+        }),
+        // ZFS ARC data
+        getStorageARC(currentServer.hostname, currentServer.port, currentServer.protocol, {
+          limit: 2000,
+          since: historicalTimestamp  
+        }),
+        // CPU data
+        getSystemCPU(currentServer.hostname, currentServer.port, currentServer.protocol, {
+          since: historicalTimestamp,
+          include_cores: true
+        }),
+        // Memory data
+        getSystemMemory(currentServer.hostname, currentServer.port, currentServer.protocol, {
+          since: historicalTimestamp
+        })
+      ]);
+
+      const [networkResult, poolIOResult, arcResult, cpuResult, memoryResult] = results;
+
+      // Process network historical data
+      if (networkResult.status === 'fulfilled' && networkResult.value?.success) {
+        const networkData = networkResult.value.data?.usage || [];
+        console.log('📊 HISTORICAL CHARTS: Processing', networkData.length, 'historical network records');
+        
+        // Group by interface
+        const interfaceGroups = {};
+        networkData.forEach(record => {
+          const interfaceName = record.link;
+          if (!interfaceName) return;
+          
+          if (!interfaceGroups[interfaceName]) {
+            interfaceGroups[interfaceName] = [];
+          }
+          interfaceGroups[interfaceName].push(record);
+        });
+
+        // Build network chart data from historical records
+        const newNetworkChartData = {};
+        Object.entries(interfaceGroups).forEach(([interfaceName, records]) => {
+          // Sort records by timestamp (oldest first)
+          const sortedRecords = records.sort((a, b) => 
+            new Date(a.scan_timestamp) - new Date(b.scan_timestamp)
+          );
+
+          newNetworkChartData[interfaceName] = {
+            rxData: [],
+            txData: [],
+            totalData: []
+          };
+
+          sortedRecords.forEach(record => {
+            const bandwidth = calculateNetworkBandwidth(record);
+            const timestamp = new Date(record.scan_timestamp).getTime();
+            
+            newNetworkChartData[interfaceName].rxData.push([timestamp, parseFloat(bandwidth.rxMbps.toFixed(3))]);
+            newNetworkChartData[interfaceName].txData.push([timestamp, parseFloat(bandwidth.txMbps.toFixed(3))]);
+            newNetworkChartData[interfaceName].totalData.push([timestamp, parseFloat(bandwidth.totalMbps.toFixed(3))]);
+          });
+
+          console.log(`📊 HISTORICAL CHARTS: Built ${sortedRecords.length} historical points for network ${interfaceName}`);
+        });
+
+        setNetworkChartData(newNetworkChartData);
+      }
+
+      // Process storage pool I/O historical data
+      if (poolIOResult.status === 'fulfilled' && poolIOResult.value?.success) {
+        const poolIOData = poolIOResult.value.data?.poolio || [];
+        console.log('📊 HISTORICAL CHARTS: Processing', poolIOData.length, 'historical pool I/O records');
+        updatePoolIOChartData(poolIOData);
+      }
+
+      // Process ZFS ARC historical data  
+      if (arcResult.status === 'fulfilled' && arcResult.value?.success) {
+        const arcData = arcResult.value.data?.arc || [];
+        console.log('📊 HISTORICAL CHARTS: Processing', arcData.length, 'historical ARC records');
+        
+        // Reset ARC chart data and build from historical records
+        const sizeData = [];
+        const targetData = [];
+        const hitRateData = [];
+
+        arcData.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
+        
+        arcData.forEach(arc => {
+          const timestamp = new Date(arc.scan_timestamp).getTime();
+          const arcSize = arc.arc_size ? parseFloat(arc.arc_size) / (1024 * 1024 * 1024) : 0;
+          const arcTarget = arc.arc_target_size ? parseFloat(arc.arc_target_size) / (1024 * 1024 * 1024) : 0;
+          const arcHits = parseFloat(arc.hits || arc.arc_hits) || 0;
+          const arcMisses = parseFloat(arc.misses || arc.arc_misses) || 0;
+          const hitRate = arc.hit_ratio || (arcHits + arcMisses > 0 ? (arcHits / (arcHits + arcMisses)) * 100 : 0);
+          
+          sizeData.push([timestamp, parseFloat(arcSize.toFixed(2))]);
+          targetData.push([timestamp, parseFloat(arcTarget.toFixed(2))]);  
+          hitRateData.push([timestamp, parseFloat(hitRate.toFixed(1))]);
+        });
+
+        setArcChartData({ sizeData, targetData, hitRateData });
+      }
+
+      // Process CPU historical data
+      if (cpuResult.status === 'fulfilled' && cpuResult.value?.success) {
+        const cpuData = cpuResult.value.data?.cpu || [];
+        console.log('📊 HISTORICAL CHARTS: Processing', cpuData.length, 'historical CPU records');
+        updateCPUChartData(cpuData);
+        updateCPUCoreChartData(cpuData);
+      }
+
+      // Process memory historical data
+      if (memoryResult.status === 'fulfilled' && memoryResult.value?.success) {
+        const memoryData = memoryResult.value.data?.memory || [];
+        console.log('📊 HISTORICAL CHARTS: Processing', memoryData.length, 'historical memory records');
+        updateMemoryChartData(memoryData);
+      }
+
+      console.log('📊 HISTORICAL CHARTS: Completed loading historical data for all chart types');
+
+    } catch (error) {
+      console.error('📊 HISTORICAL CHARTS: Error loading historical data:', error);
+    }
+  }, [currentServer, makeZoneweaverAPIRequest, timeWindow, getStoragePoolIO, getStorageARC, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
+
 
   const loadHostData = useCallback(async (server) => {
     if (!server || loading) return;
@@ -588,7 +745,10 @@ export const useHostData = (currentServer) => {
     });
     
     if (currentServer && makeZoneweaverAPIRequest) {
-      // Load main host data (already includes historical data)
+      // Load historical chart data first to establish chart foundation
+      loadHistoricalChartData();
+      
+      // Load main host data
       loadHostData(currentServer).then(() => {
         setInitialDataLoaded(true); // Mark initial data load as completed
         initialLoadDone.current = true; // Mark initial load as completed AFTER completion
@@ -596,6 +756,16 @@ export const useHostData = (currentServer) => {
       });
     }
   }, [currentServer]);
+
+  // Load historical chart data when time window changes (but not during initial load)
+  useEffect(() => {
+    if (currentServer && makeZoneweaverAPIRequest && initialLoadDone.current) {
+      console.log('📊 HISTORICAL CHARTS: Time window changed, loading historical data');
+      loadHistoricalChartData();
+    } else if (!initialLoadDone.current) {
+      console.log('📊 HISTORICAL CHARTS: Skipping time window change during initial load');
+    }
+  }, [timeWindow, loadHistoricalChartData]);
 
   // Auto-refresh effect - wait for initial data to load before starting
   useEffect(() => {
