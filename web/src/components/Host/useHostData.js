@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useServers } from '../../contexts/ServerContext';
 import { getMaxDataPointsForWindow, calculateNetworkBandwidth } from './utils';
 
@@ -40,6 +40,10 @@ export const useHostData = (currentServer) => {
   });
   const [timeWindow, setTimeWindow] = useState('15min');
   const [maxDataPoints, setMaxDataPoints] = useState(180);
+
+  // Track initial loading to prevent duplicate historical calls and auto-refresh overlap
+  const initialLoadDone = useRef(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   const {
     makeZoneweaverAPIRequest,
@@ -234,12 +238,13 @@ export const useHostData = (currentServer) => {
     if (!server) return;
     
     try {
-      const config = getMaxDataPointsForWindow(timeWindow);
+      // Use fixed 1 hour time window and limit=20 with per_pool=true for optimization
+      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000)).toISOString();
       const historicalResult = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        `monitoring/storage/pool-io?limit=${config.limit}`
+        `monitoring/storage/pool-io?limit=20&per_pool=true&since=${encodeURIComponent(oneHourAgo)}`
       );
 
       if (historicalResult.success && historicalResult.data?.poolio) {
@@ -648,23 +653,47 @@ export const useHostData = (currentServer) => {
     }
   }, [timeWindow, makeZoneweaverAPIRequest, getMonitoringHealth, getMonitoringStatus, getStoragePools, getStorageDatasets, getStoragePoolIO, getStorageARC, getNetworkUsage, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateARCChartData, updateNetworkChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
 
+  // Load data when server changes - sequential loading pattern like networking page
   useEffect(() => {
-    if (currentServer) {
+    console.log('🔍 HOST: Server changed effect triggered', {
+      currentServer: currentServer?.hostname,
+      hasRequest: !!makeZoneweaverAPIRequest
+    });
+    
+    if (currentServer && makeZoneweaverAPIRequest) {
+      // Load historical data first to establish chart foundation
       loadHistoricalPoolIOData(currentServer);
       loadHistoricalNetworkData(currentServer);
-      loadHostData(currentServer);
+      
+      // Then load main host data
+      loadHostData(currentServer).then(() => {
+        setInitialDataLoaded(true); // Mark initial data load as completed
+        initialLoadDone.current = true; // Mark initial load as completed AFTER completion
+        console.log('🔍 HOST: Initial data loading completed - preventing duplicate calls');
+      });
     }
-  }, [currentServer, loadHostData, loadHistoricalPoolIOData, loadHistoricalNetworkData]);
+  }, [currentServer]);
 
+  // Auto-refresh effect - wait for initial data to load before starting
   useEffect(() => {
-    if (refreshInterval === 0 || !currentServer) return;
+    if (!refreshInterval || refreshInterval === 0 || !currentServer || !initialDataLoaded) {
+      if (!initialDataLoaded) {
+        console.log('🔄 HOST: Auto-refresh waiting for initial data load to complete');
+      }
+      return;
+    }
 
+    console.log('🔄 HOST: Setting up auto-refresh every', refreshInterval, 'seconds');
     const interval = setInterval(() => {
+      console.log('🔄 HOST: Auto-refreshing host data...');
       loadHostData(currentServer);
     }, refreshInterval * 1000);
 
-    return () => clearInterval(interval);
-  }, [refreshInterval, currentServer, loadHostData]);
+    return () => {
+      console.log('🔄 HOST: Cleaning up auto-refresh interval');
+      clearInterval(interval);
+    };
+  }, [refreshInterval, currentServer, initialDataLoaded, loadHostData]);
 
   return {
     serverStats,

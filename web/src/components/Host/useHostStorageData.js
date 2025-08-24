@@ -662,7 +662,7 @@ export const useHostStorageData = () => {
                 server.hostname,
                 server.port,
                 server.protocol,
-                `monitoring/storage/pool-io?limit=${config.limit}&since=${encodeURIComponent(sinceISO)}`
+                `monitoring/storage/pool-io?limit=20&per_pool=true&since=${encodeURIComponent(sinceISO)}`
             );
 
             if (historicalResult.success && historicalResult.data?.poolio) {
@@ -998,7 +998,7 @@ export const useHostStorageData = () => {
                 server.hostname,
                 server.port,
                 server.protocol,
-                `monitoring/storage/disk-io?limit=${config.limit}`
+                `monitoring/storage/disk-io?limit=20&per_device=true&since=${encodeURIComponent(sinceISO)}`
             );
 
             if (historicalResult.success && historicalResult.data?.diskio) {
