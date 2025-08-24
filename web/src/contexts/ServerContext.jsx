@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
@@ -56,6 +56,7 @@ export const ServerProvider = ({ children }) => {
   });
   
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const loadingRef = useRef(false);
 
 
   // Persist currentServer to localStorage whenever it changes
@@ -142,12 +143,18 @@ export const ServerProvider = ({ children }) => {
       });
       
       if (matchingServer) {
-        // Only update if the server ID is different (meaningful change)
-        if (matchingServer.id !== currentServer.id) {
+        // Compare meaningful fields instead of potentially different IDs
+        const hasActualChanges = 
+          matchingServer.hostname !== currentServer.hostname ||
+          matchingServer.port !== currentServer.port ||
+          matchingServer.protocol !== currentServer.protocol ||
+          matchingServer.lastUsed !== currentServer.lastUsed;
+          
+        if (hasActualChanges) {
           console.log('✅ SERVER RE-ESTABLISHMENT: Re-establishing server connection:', matchingServer.hostname);
           setCurrentServer(matchingServer);
         } else {
-          console.log('✅ SERVER RE-ESTABLISHMENT: Server already current, skipping re-establishment');
+          console.log('✅ SERVER RE-ESTABLISHMENT: Server already current, no actual changes');
         }
       } else {
         // Server no longer exists, clear selection
@@ -164,7 +171,14 @@ export const ServerProvider = ({ children }) => {
    * Load all servers from the application
    */
   const loadServers = useCallback(async () => {
+    // Prevent concurrent calls
+    if (loadingRef.current) {
+      console.log('📡 SERVER: loadServers already in progress, skipping duplicate');
+      return;
+    }
+    
     try {
+      loadingRef.current = true;
       setLoading(true);
       const response = await axios.get('/api/servers');
 
@@ -178,6 +192,7 @@ export const ServerProvider = ({ children }) => {
       console.error('Error loading servers:', error);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, []);
 
