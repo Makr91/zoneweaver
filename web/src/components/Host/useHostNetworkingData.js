@@ -499,13 +499,13 @@ export const useHostNetworkingData = () => {
         });
     };
 
-    // Load historical chart data when time window, resolution, or server changes
+    // Load historical chart data when time window or resolution changes
     useEffect(() => {
         if (currentServer && makeZoneweaverAPIRequest) {
-            console.log('📊 HISTORICAL CHARTS: Time window, resolution, or server changed, loading historical data');
+            console.log('📊 HISTORICAL CHARTS: Time window or resolution changed, loading historical data');
             loadHistoricalChartData();
         }
-    }, [timeWindow, resolution, currentServer, makeZoneweaverAPIRequest]);
+    }, [timeWindow, resolution]);
 
     // Note: networkUsage is now only for react-flow topology animations (current values)
     // Chart data comes from loadHistoricalChartData() with time-based sampling
