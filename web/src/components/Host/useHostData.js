@@ -422,6 +422,42 @@ export const useHostData = (currentServer) => {
         });
 
         setNetworkChartData(newNetworkChartData);
+        
+        // Extract latest values for network usage state (for tables)
+        const validNetworkUsage = networkData.filter(usage => 
+          usage.link && 
+          usage.link !== 'LINK' && 
+          usage.ipackets !== 'IPACKETS' &&
+          usage.time_delta_seconds > 0
+        );
+        
+        const deduplicatedNetworkUsage = validNetworkUsage.reduce((acc, usage) => {
+          const existing = acc.find(existing => existing.link === usage.link);
+          if (!existing) {
+            acc.push({...usage});
+          } else {
+            if (new Date(usage.scan_timestamp) > new Date(existing.scan_timestamp)) {
+              const index = acc.indexOf(existing);
+              acc[index] = {...usage};
+            }
+          }
+          return acc;
+        }, []);
+        
+        // Pre-calculate bandwidth once to avoid repeated calculations in sort comparator
+        const networkUsageWithBandwidth = deduplicatedNetworkUsage.map(usage => ({
+          ...usage,
+          bandwidth: calculateNetworkBandwidth(usage)
+        }));
+        
+        // Sort by pre-calculated bandwidth values
+        networkUsageWithBandwidth.sort((a, b) => 
+          b.bandwidth.totalMbps - a.bandwidth.totalMbps
+        );
+        
+        // Use the sorted data with bandwidth for state (remove bandwidth property for consistency)
+        const sortedNetworkUsage = networkUsageWithBandwidth.map(({ bandwidth, ...usage }) => usage);
+        setNetworkUsage(sortedNetworkUsage);
       }
 
       // Process storage pool I/O historical data
@@ -429,6 +465,22 @@ export const useHostData = (currentServer) => {
         const poolIOData = poolIOResult.value.data?.poolio || [];
         console.log('📊 HISTORICAL CHARTS: Processing', poolIOData.length, 'historical pool I/O records');
         updatePoolIOChartData(poolIOData);
+        
+        // Extract latest values for current state
+        const deduplicatedPoolIO = poolIOData.reduce((acc, poolIO) => {
+          const existing = acc.find(existing => existing.pool === poolIO.pool);
+          if (!existing) {
+            acc.push({...poolIO});
+          } else {
+            if (new Date(poolIO.scan_timestamp) > new Date(existing.scan_timestamp)) {
+              const index = acc.indexOf(existing);
+              acc[index] = {...poolIO};
+            }
+          }
+          return acc;
+        }, []);
+        deduplicatedPoolIO.sort((a, b) => a.pool.localeCompare(b.pool));
+        setDiskIOStats(deduplicatedPoolIO);
       }
 
       // Process ZFS ARC historical data  
@@ -457,6 +509,17 @@ export const useHostData = (currentServer) => {
         });
 
         setArcChartData({ sizeData, targetData, hitRateData });
+        
+        // Extract latest values for current state
+        const deduplicatedARC = arcData.reduce((acc, arc) => {
+          const existing = acc.find(existing => existing.scan_timestamp === arc.scan_timestamp);
+          if (!existing) {
+            acc.push({...arc});
+          }
+          return acc;
+        }, []);
+        deduplicatedARC.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
+        setArcStats(deduplicatedARC);
       }
 
       // Process CPU historical data
@@ -465,6 +528,7 @@ export const useHostData = (currentServer) => {
         console.log('📊 HISTORICAL CHARTS: Processing', cpuData.length, 'historical CPU records');
         updateCPUChartData(cpuData);
         updateCPUCoreChartData(cpuData);
+        setCpuStats(cpuData);
       }
 
       // Process memory historical data
@@ -472,6 +536,7 @@ export const useHostData = (currentServer) => {
         const memoryData = memoryResult.value.data?.memory || [];
         console.log('📊 HISTORICAL CHARTS: Processing', memoryData.length, 'historical memory records');
         updateMemoryChartData(memoryData);
+        setMemoryStats(memoryData);
       }
 
       console.log('📊 HISTORICAL CHARTS: Completed loading historical data for all chart types');
@@ -517,16 +582,7 @@ export const useHostData = (currentServer) => {
         getStoragePools(server.hostname, server.port, server.protocol), // 4
         getStorageDatasets(server.hostname, server.port, server.protocol), // 5
         makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'tasks/stats'), // 6
-        getStoragePoolIO(server.hostname, server.port, server.protocol, diskIOFilters), // 7
-        getStorageARC(server.hostname, server.port, server.protocol, diskIOFilters), // 8
-        getNetworkUsage(server.hostname, server.port, server.protocol, { 
-          limit: 20, 
-          per_interface: true, 
-          since: sinceTime.toISOString() 
-        }), // 9
-        getSystemCPU(server.hostname, server.port, server.protocol, { since: sinceTime.toISOString(), include_cores: true }), // 10
-        getSystemMemory(server.hostname, server.port, server.protocol, { since: sinceTime.toISOString() }), // 11
-        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'system/swap/summary') // 12
+        makeZoneweaverAPIRequest(server.hostname, server.port, server.protocol, 'system/swap/summary') // 7
       ]);
 
       const [
@@ -537,12 +593,7 @@ export const useHostData = (currentServer) => {
         poolsResult,
         datasetsResult, 
         taskResult,
-        poolIOResult,
-        arcResult,
-        networkUsageResult,
-        cpuResult,
-        memoryResult, // This is actually the 12th result (index 11)
-        swapSummaryResult // This is the 13th result (index 12)
+        swapSummaryResult // This is now the 8th result (index 7)
       ] = results;
 
 
@@ -620,105 +671,6 @@ export const useHostData = (currentServer) => {
         setTaskStats({});
       }
 
-      if (poolIOResult.status === 'fulfilled' && poolIOResult.value.success) {
-        const poolIOData = poolIOResult.value.data?.poolio || [];
-        const deduplicatedPoolIO = poolIOData.reduce((acc, poolIO) => {
-          const existing = acc.find(existing => existing.pool === poolIO.pool);
-          if (!existing) {
-            acc.push({...poolIO});
-          } else {
-            if (new Date(poolIO.scan_timestamp) > new Date(existing.scan_timestamp)) {
-              const index = acc.indexOf(existing);
-              acc[index] = {...poolIO};
-            }
-          }
-          return acc;
-        }, []);
-        deduplicatedPoolIO.sort((a, b) => a.pool.localeCompare(b.pool));
-        setDiskIOStats(deduplicatedPoolIO);
-        updatePoolIOChartData(deduplicatedPoolIO);
-      } else {
-        setDiskIOStats([]);
-      }
-
-      if (arcResult.status === 'fulfilled' && arcResult.value.success) {
-        const arcData = arcResult.value.data?.arc || [];
-        const deduplicatedARC = arcData.reduce((acc, arc) => {
-          const existing = acc.find(existing => existing.scan_timestamp === arc.scan_timestamp);
-          if (!existing) {
-            acc.push({...arc});
-          }
-          return acc;
-        }, []);
-        deduplicatedARC.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
-        setArcStats(deduplicatedARC);
-        updateARCChartData(deduplicatedARC);
-      } else {
-        setArcStats([]);
-      }
-
-      if (networkUsageResult.status === 'fulfilled' && networkUsageResult.value.success) {
-        const networkData = networkUsageResult.value.data?.usage || [];
-        const interfacesData = (networkResult.status === 'fulfilled' && networkResult.value.success) 
-          ? networkResult.value.data?.interfaces || [] 
-          : [];
-        const validNetworkUsage = networkData.filter(usage => 
-          usage.link && 
-          usage.link !== 'LINK' && 
-          usage.ipackets !== 'IPACKETS' &&
-          usage.time_delta_seconds > 0
-        );
-        const realInterfacesOnly = validNetworkUsage.filter(usage => {
-          const interfaceInfo = interfacesData.find(iface => iface.link === usage.link);
-          return interfaceInfo && interfaceInfo.class === 'phys';
-        });
-        const deduplicatedNetworkUsage = realInterfacesOnly.reduce((acc, usage) => {
-          const existing = acc.find(existing => existing.link === usage.link);
-          if (!existing) {
-            acc.push({...usage});
-          } else {
-            if (new Date(usage.scan_timestamp) > new Date(existing.scan_timestamp)) {
-              const index = acc.indexOf(existing);
-              acc[index] = {...usage};
-            }
-          }
-          return acc;
-        }, []);
-        // Pre-calculate bandwidth once to avoid repeated calculations in sort comparator
-        const networkUsageWithBandwidth = deduplicatedNetworkUsage.map(usage => ({
-          ...usage,
-          bandwidth: calculateNetworkBandwidth(usage)
-        }));
-        
-        // Sort by pre-calculated bandwidth values
-        networkUsageWithBandwidth.sort((a, b) => 
-          b.bandwidth.totalMbps - a.bandwidth.totalMbps
-        );
-        
-        // Use the sorted data with bandwidth for state (remove bandwidth property for consistency)
-        const sortedNetworkUsage = networkUsageWithBandwidth.map(({ bandwidth, ...usage }) => usage);
-        setNetworkUsage(sortedNetworkUsage);
-        updateNetworkChartData(sortedNetworkUsage);
-      } else {
-        setNetworkUsage([]);
-      }
-
-      if (cpuResult.status === 'fulfilled' && cpuResult.value.success) {
-        const cpuData = cpuResult.value.data?.cpu || [];
-        setCpuStats(cpuData);
-        updateCPUChartData(cpuData);
-        updateCPUCoreChartData(cpuData);
-      } else {
-        setCpuStats([]);
-      }
-
-      if (memoryResult.status === 'fulfilled' && memoryResult.value.success) {
-        const memoryData = memoryResult.value.data?.memory || [];
-        setMemoryStats(memoryData);
-        updateMemoryChartData(memoryData);
-      } else {
-        setMemoryStats([]);
-      }
 
       // Process swap summary data
       if (swapSummaryResult.status === 'fulfilled' && swapSummaryResult.value.success) {
