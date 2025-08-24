@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useServers } from "../../contexts/ServerContext";
 
@@ -95,7 +95,7 @@ export const useHostStorageData = () => {
         }
     }, [servers, currentServer]);
 
-    // Auto-refresh effect
+    // Auto-refresh effect - now uses wrapped functions to get current timeWindow/resolution
     useEffect(() => {
         if (!autoRefresh || !selectedServer) return;
 
@@ -107,7 +107,7 @@ export const useHostStorageData = () => {
         }, refreshInterval * 1000);
 
         return () => clearInterval(interval);
-    }, [autoRefresh, refreshInterval, selectedServer]);
+    }, [autoRefresh, refreshInterval, selectedServer, loadDiskIOStats, loadPoolIOStats, loadArcStats]);
 
     const loadStorageData = async (server) => {
         if (!server || loading) return;
@@ -543,7 +543,7 @@ export const useHostStorageData = () => {
             loadPoolIOStats(selectedServer);
             loadArcStats(selectedServer);
         }
-    }, [timeWindow, resolution, selectedServer]);
+    }, [timeWindow, resolution, selectedServer, loadDiskIOStats, loadPoolIOStats, loadArcStats]);
 
     // Toggle section collapse
     const toggleSection = (section) => {
@@ -604,13 +604,13 @@ export const useHostStorageData = () => {
         return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
     };
 
-    // Load disk I/O statistics
-    const loadDiskIOStats = async (server) => {
+    // Load disk I/O statistics - wrapped in useCallback to prevent stale closures
+    const loadDiskIOStats = useCallback(async (server) => {
         if (!server || loading) return;
 
         try {
             const historicalTimestamp = getHistoricalTimestamp(timeWindow);
-            console.log('📊 DISK IO: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow);
+            console.log('📊 DISK IO: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow, 'resolution:', resolution);
 
             const result = await makeZoneweaverAPIRequest(
                 server.hostname,
@@ -685,15 +685,15 @@ export const useHostStorageData = () => {
             console.error('Error loading disk I/O statistics:', error);
             setDiskIOStats([]);
         }
-    };
+    }, [timeWindow, resolution, loading, makeZoneweaverAPIRequest]);
 
-    // Load Pool I/O statistics
-    const loadPoolIOStats = async (server) => {
+    // Load Pool I/O statistics - wrapped in useCallback to prevent stale closures
+    const loadPoolIOStats = useCallback(async (server) => {
         if (!server || loading) return;
 
         try {
             const historicalTimestamp = getHistoricalTimestamp(timeWindow);
-            console.log('📊 POOL IO: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow);
+            console.log('📊 POOL IO: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow, 'resolution:', resolution);
 
             const historicalResult = await makeZoneweaverAPIRequest(
                 server.hostname,
@@ -768,22 +768,22 @@ export const useHostStorageData = () => {
             setPoolIOStats([]);
             setPoolChartData({});
         }
-    };
+    }, [timeWindow, resolution, loading, makeZoneweaverAPIRequest]);
 
-    // Load ARC statistics
-    const loadArcStats = async (server) => {
+    // Load ARC statistics - wrapped in useCallback to prevent stale closures
+    const loadArcStats = useCallback(async (server) => {
         if (!server || loading) return;
 
         try {
             const historicalTimestamp = getHistoricalTimestamp(timeWindow);
-            console.log('📊 ARC: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow);
+            console.log('📊 ARC: Requesting data since:', historicalTimestamp, 'for time window:', timeWindow, 'resolution:', resolution);
 
-            const filters = {
-                limit: getResolutionLimit(resolution),
-                since: historicalTimestamp
-            };
-
-            const result = await getStorageARC(server.hostname, server.port, server.protocol, filters);
+            const result = await makeZoneweaverAPIRequest(
+                server.hostname,
+                server.port,
+                server.protocol,
+                `monitoring/storage/arc?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(historicalTimestamp)}`
+            );
 
             if (result.success && result.data?.arc) {
                 const arcData = result.data.arc;
@@ -797,7 +797,7 @@ export const useHostStorageData = () => {
             console.error('Error loading ARC statistics:', error);
             setArcStats([]);
         }
-    };
+    }, [timeWindow, resolution, loading, makeZoneweaverAPIRequest]);
 
     // Update disk I/O chart data
     const updateDiskIOChartData = (diskIOData) => {
