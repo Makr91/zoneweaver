@@ -5,6 +5,9 @@ import { useServers } from "../../contexts/ServerContext";
 export const useHostNetworkingData = () => {
     console.log('🐛 DEBUG: useHostNetworkingData hook starting - Enhanced for topology');
     
+    // Debug counters
+    const callCounterRef = useRef({ loadHistorical: 0, loadNetwork: 0 });
+    
     // Network data state
     const [networkInterfaces, setNetworkInterfaces] = useState([]);
     const [networkUsage, setNetworkUsage] = useState([]);
@@ -56,12 +59,20 @@ export const useHostNetworkingData = () => {
 
     // Load data when server changes
     useEffect(() => {
-        console.log('🔍 NETWORKING: Server changed effect triggered', {
+        const effectId = `server-change-${Date.now()}`;
+        console.log('🚨 CASCADE DEBUG: Server change effect triggered', {
+            effectId,
             currentServer: currentServer?.hostname,
-            hasRequest: !!makeZoneweaverAPIRequest
+            currentServerId: currentServer?.id,
+            hasRequest: !!makeZoneweaverAPIRequest,
+            timestamp: new Date().toISOString(),
+            stackTrace: new Error().stack
         });
+        
         if (currentServer && makeZoneweaverAPIRequest) {
+            console.log(`🚨 CASCADE DEBUG: ${effectId} calling loadHistoricalChartData`);
             loadHistoricalChartData(); // Load historical data first to establish chart foundation
+            console.log(`🚨 CASCADE DEBUG: ${effectId} calling loadNetworkData`);
             loadNetworkData();
         }
     }, [currentServer]);
@@ -371,13 +382,28 @@ export const useHostNetworkingData = () => {
     const loadHistoricalChartData = async () => {
         if (!currentServer || !makeZoneweaverAPIRequest) return;
 
+        // Debug tracking
+        callCounterRef.current.loadHistorical++;
+        const callId = `hist-${callCounterRef.current.loadHistorical}-${Date.now()}`;
+        
+        console.log('🚨🚨🚨 CASCADE DEBUG: loadHistoricalChartData called', {
+            callId,
+            callNumber: callCounterRef.current.loadHistorical,
+            timestamp: new Date().toISOString(),
+            timeWindow,
+            resolution,
+            server: currentServer?.hostname,
+            serverId: currentServer?.id,
+            stackTrace: new Error().stack
+        });
+
         try {
-            console.log('📊 HISTORICAL CHARTS: Loading historical data for time window:', timeWindow, 'resolution:', resolution);
+            console.log(`📊 HISTORICAL CHARTS [${callId}]: Loading historical data for time window:`, timeWindow, 'resolution:', resolution);
             
             const historicalTimestamp = getHistoricalTimestamp(timeWindow);
             const limit = getResolutionLimit(resolution);
             
-            console.log('📊 HISTORICAL CHARTS: Requesting data since:', historicalTimestamp, 'with limit:', limit);
+            console.log(`📊 HISTORICAL CHARTS [${callId}]: Requesting data since:`, historicalTimestamp, 'with limit:', limit);
             
             const historicalResult = await makeZoneweaverAPIRequest(
                 currentServer.hostname, 
@@ -385,6 +411,8 @@ export const useHostNetworkingData = () => {
                 currentServer.protocol, 
                 `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${limit}&per_interface=true`
             );
+
+            console.log(`🚨🚨🚨 CASCADE DEBUG: loadHistoricalChartData API call completed [${callId}]`);
 
             const historicalUsage = historicalResult?.data?.usage || historicalResult?.usage || [];
             if (historicalUsage && Array.isArray(historicalUsage) && historicalUsage.length > 0) {
@@ -501,8 +529,20 @@ export const useHostNetworkingData = () => {
 
     // Load historical chart data when time window or resolution changes
     useEffect(() => {
+        const effectId = `settings-change-${Date.now()}`;
+        console.log('🚨 CASCADE DEBUG: Settings change effect triggered', {
+            effectId,
+            timeWindow,
+            resolution,
+            currentServer: currentServer?.hostname,
+            currentServerId: currentServer?.id,
+            hasRequest: !!makeZoneweaverAPIRequest,
+            timestamp: new Date().toISOString(),
+            stackTrace: new Error().stack
+        });
+        
         if (currentServer && makeZoneweaverAPIRequest) {
-            console.log('📊 HISTORICAL CHARTS: Time window or resolution changed, loading historical data');
+            console.log(`🚨 CASCADE DEBUG: ${effectId} calling loadHistoricalChartData`);
             loadHistoricalChartData();
         }
     }, [timeWindow, resolution]);
