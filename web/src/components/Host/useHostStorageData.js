@@ -75,8 +75,7 @@ export const useHostStorageData = () => {
         if (serverList.length > 0) {
             const server = currentServer || serverList[0];
             setSelectedServer(server);
-            // Load historical data first to initialize charts, then current data
-            loadHistoricalDiskIOData(server);
+            // Load current data (loadDiskIOStats already handles historical data and chart updates)
             loadStorageData(server);
             loadDiskIOStats(server);
             loadPoolIOStats(server);
@@ -526,9 +525,9 @@ export const useHostStorageData = () => {
         const config = getMaxDataPointsForWindow(timeWindow);
         setMaxDataPoints(config.points);
 
-        // Reload historical data with new time window
+        // Reload data with new time window (loadDiskIOStats handles historical data)
         if (selectedServer) {
-            loadHistoricalDiskIOData(selectedServer);
+            loadDiskIOStats(selectedServer);
         }
     }, [timeWindow, selectedServer]);
 
@@ -971,85 +970,6 @@ export const useHostStorageData = () => {
         setArcChartData(historicalChartData);
     };
 
-    // Load historical disk I/O data
-    const loadHistoricalDiskIOData = async (server) => {
-        if (!server) return;
-
-        try {
-            const config = getMaxDataPointsForWindow(timeWindow);
-            const now = new Date();
-            const timeWindowMs = {
-                '1min': 1 * 60 * 1000,
-                '5min': 5 * 60 * 1000,
-                '10min': 10 * 60 * 1000,
-                '15min': 15 * 60 * 1000,
-                '30min': 30 * 60 * 1000,
-                '1hour': 60 * 60 * 1000,
-                '3hour': 3 * 60 * 60 * 1000,
-                '6hour': 6 * 60 * 60 * 1000,
-                '12hour': 12 * 60 * 60 * 1000,
-                '24hour': 24 * 60 * 60 * 1000
-            };
-
-            const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
-            const sinceISO = sinceTime.toISOString();
-
-            const historicalResult = await makeZoneweaverAPIRequest(
-                server.hostname,
-                server.port,
-                server.protocol,
-                `monitoring/storage/disk-io?limit=20&per_device=true&since=${encodeURIComponent(sinceISO)}`
-            );
-
-            if (historicalResult.success && historicalResult.data?.diskio) {
-                const historicalDiskIO = historicalResult.data.diskio;
-                const validHistoricalDiskIO = historicalDiskIO.filter(io =>
-                    io.device_name && io.scan_timestamp
-                );
-
-                const deviceData = {};
-                validHistoricalDiskIO.forEach(io => {
-                    const deviceName = io.device_name;
-                    if (!deviceData[deviceName]) {
-                        deviceData[deviceName] = [];
-                    }
-                    deviceData[deviceName].push(io);
-                });
-
-                const historicalChartData = {};
-
-                Object.entries(deviceData).forEach(([deviceName, ioArray]) => {
-                    ioArray.sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
-                    const recentIO = ioArray.filter(io =>
-                        new Date(io.scan_timestamp) >= sinceTime
-                    );
-
-                    historicalChartData[deviceName] = {
-                        readData: [],
-                        writeData: [],
-                        totalData: []
-                    };
-
-                    recentIO.forEach(io => {
-                        const timestamp = new Date(io.scan_timestamp).getTime();
-                        const readBandwidth = io.read_bandwidth_bytes || 0;
-                        const writeBandwidth = io.write_bandwidth_bytes || 0;
-                        const readMBps = readBandwidth / (1024 * 1024);
-                        const writeMBps = writeBandwidth / (1024 * 1024);
-                        const totalMBps = readMBps + writeMBps;
-
-                        historicalChartData[deviceName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
-                        historicalChartData[deviceName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
-                        historicalChartData[deviceName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
-                    });
-                });
-
-                setChartData(historicalChartData);
-            }
-        } catch (error) {
-            console.error('Error loading historical disk I/O data:', error);
-        }
-    };
 
     // Chart expansion functions
     const expandChart = (chartId, type) => {

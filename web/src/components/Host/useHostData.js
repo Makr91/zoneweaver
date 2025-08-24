@@ -662,11 +662,7 @@ export const useHostData = (currentServer) => {
     });
     
     if (currentServer && makeZoneweaverAPIRequest) {
-      // Load historical data first to establish chart foundation
-      loadHistoricalPoolIOData(currentServer);
-      loadHistoricalNetworkData(currentServer);
-      
-      // Then load main host data
+      // Load main host data (already includes historical data)
       loadHostData(currentServer).then(() => {
         setInitialDataLoaded(true); // Mark initial data load as completed
         initialLoadDone.current = true; // Mark initial load as completed AFTER completion
