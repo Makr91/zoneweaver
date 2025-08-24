@@ -24,12 +24,12 @@ const NetworkingHeader = ({
                                 value={resolution}
                                 onChange={(e) => setResolution(e.target.value)}
                                 disabled={loading}
-                                title="Chart resolution - controls the number of data points"
+                                title="Chart resolution - controls the number of data points per interface"
                             >
-                                <option value="realtime">Real-time (500 pts)</option>
-                                <option value="high">High (250 pts)</option>
-                                <option value="medium">Medium (100 pts)</option>
-                                <option value="low">Low (50 pts)</option>
+                                <option value="realtime">Real-time (250 per interface)</option>
+                                <option value="high">High (75 per interface)</option>
+                                <option value="medium">Medium (25 per interface)</option>
+                                <option value="low">Low (10 per interface)</option>
                             </select>
                         </div>
                     </div>

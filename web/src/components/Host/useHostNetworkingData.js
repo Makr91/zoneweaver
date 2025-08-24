@@ -103,7 +103,7 @@ export const useHostNetworkingData = () => {
                 zonesResult
             ] = await Promise.allSettled([
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/interfaces'),
-                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/usage?limit=1'),
+                makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/usage?limit=1&per_interface=true'),
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/ipaddresses'),
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'monitoring/network/routes'),
                 makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'network/aggregates'),
@@ -358,15 +358,15 @@ export const useHostNetworkingData = () => {
         return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
     };
 
-    // Helper function to get resolution limit for API requests
+    // Helper function to get resolution limit for API requests (per interface)
     const getResolutionLimit = (resolution) => {
         const resolutionLimits = {
-            'realtime': 500,
-            'high': 250,
-            'medium': 100,
-            'low': 50
+            'realtime': 250,  // per interface
+            'high': 75,       // per interface
+            'medium': 25,     // per interface
+            'low': 10         // per interface
         };
-        return resolutionLimits[resolution] || 250;
+        return resolutionLimits[resolution] || 25;
     };
 
     // Load historical chart data for the selected time window and resolution
@@ -385,7 +385,7 @@ export const useHostNetworkingData = () => {
                 currentServer.hostname, 
                 currentServer.port, 
                 currentServer.protocol, 
-                `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${limit}`
+                `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${limit}&per_interface=true`
             );
 
             const historicalUsage = historicalResult?.data?.usage || historicalResult?.usage || [];
