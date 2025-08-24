@@ -13,7 +13,7 @@ export const useHostStorageData = () => {
     const [error, setError] = useState("");
     const [selectedServer, setSelectedServer] = useState(null);
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [refreshInterval, setRefreshInterval] = useState(60); // seconds
+    const [refreshInterval, setRefreshInterval] = useState(300); // seconds
 
     // Collapsible section states
     const [sectionsCollapsed, setSectionsCollapsed] = useState({

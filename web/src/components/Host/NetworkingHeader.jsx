@@ -9,7 +9,9 @@ const NetworkingHeader = ({
     resolution,
     setResolution,
     selectedServer,
-    loadNetworkData
+    loadNetworkData,
+    timeWindow,
+    setTimeWindow
 }) => {
     return (
         <div className='titlebar box active level is-mobile mb-0 p-3'>
@@ -18,6 +20,27 @@ const NetworkingHeader = ({
             </div>
             <div className='level-right'>
                 <div className='field is-grouped'>
+                    <div className='control'>
+                        <div className='select is-small'>
+                            <select
+                                value={timeWindow}
+                                onChange={(e) => setTimeWindow(e.target.value)}
+                                disabled={loading}
+                                title="Select time window for charts"
+                            >
+                                <option value="1min">1 Minute</option>
+                                <option value="5min">5 Minutes</option>
+                                <option value="10min">10 Minutes</option>
+                                <option value="15min">15 Minutes</option>
+                                <option value="30min">30 Minutes</option>
+                                <option value="1hour">1 Hour</option>
+                                <option value="3hour">3 Hours</option>
+                                <option value="6hour">6 Hours</option>
+                                <option value="12hour">12 Hours</option>
+                                <option value="24hour">24 Hours</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className='control'>
                         <div className='select is-small'>
                             <select

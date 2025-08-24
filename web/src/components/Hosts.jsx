@@ -36,11 +36,15 @@ const Hosts = () => {
     error,
     refreshInterval,
     setRefreshInterval,
+    autoRefresh,
+    setAutoRefresh,
     chartData,
     arcChartData,
     networkChartData,
     cpuChartData,
     memoryChartData,
+    timeWindow,
+    setTimeWindow,
     loadHostData,
   } = useHostData(currentServer);
 
@@ -196,6 +200,10 @@ const Hosts = () => {
             refreshInterval={refreshInterval}
             setRefreshInterval={setRefreshInterval}
             loadHostData={loadHostData}
+            timeWindow={timeWindow}
+            setTimeWindow={setTimeWindow}
+            autoRefresh={autoRefresh}
+            setAutoRefresh={setAutoRefresh}
           />
 
           <div className='p-4'>

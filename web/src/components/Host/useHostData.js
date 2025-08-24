@@ -18,7 +18,8 @@ export const useHostData = (currentServer) => {
   const [swapSummaryData, setSwapSummaryData] = useState({}); // New state for swap summary
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [refreshInterval, setRefreshInterval] = useState(60);
+  const [refreshInterval, setRefreshInterval] = useState(300);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const [chartData, setChartData] = useState({});
   const [arcChartData, setArcChartData] = useState({
@@ -713,6 +714,8 @@ export const useHostData = (currentServer) => {
     error,
     refreshInterval,
     setRefreshInterval,
+    autoRefresh,
+    setAutoRefresh,
     chartData,
     arcChartData,
     networkChartData,

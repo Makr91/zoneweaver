@@ -125,6 +125,8 @@ const HostNetworking = () => {
                         setResolution={setResolution}
                         selectedServer={selectedServer}
                         loadNetworkData={loadNetworkData}
+                        timeWindow={timeWindow}
+                        setTimeWindow={setTimeWindow}
                     />
 
                     <div className='p-4'>

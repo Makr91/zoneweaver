@@ -148,6 +148,8 @@ const HostStorage = () => {
                         setRefreshInterval={setRefreshInterval}
                         selectedServer={selectedServer}
                         loadStorageData={loadStorageData}
+                        timeWindow={timeWindow}
+                        setTimeWindow={setTimeWindow}
                     />
 
                     <div className='p-4'>

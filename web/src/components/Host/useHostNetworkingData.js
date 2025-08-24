@@ -22,7 +22,7 @@ export const useHostNetworkingData = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [refreshInterval, setRefreshInterval] = useState(60); // seconds
+    const [refreshInterval, setRefreshInterval] = useState(300); // seconds
     
     // Chart data state
     const [chartData, setChartData] = useState({});
