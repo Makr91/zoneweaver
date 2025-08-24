@@ -382,7 +382,7 @@ export const useHostNetworkingData = () => {
                 const interfaceGroups = {};
                 
                 historicalResult.usage.forEach(record => {
-                    const interfaceName = record.interface || record.name || record.link;
+                    const interfaceName = record.link || record.interface || record.name;
                     if (!interfaceName) return;
                     
                     if (!interfaceGroups[interfaceName]) {
@@ -446,7 +446,7 @@ export const useHostNetworkingData = () => {
             
             // Process each interface's current usage data
             networkUsage.forEach(usage => {
-                const interfaceName = usage.interface || usage.name || usage.link;
+                const interfaceName = usage.link || usage.interface || usage.name;
                 
                 if (interfaceName) {
                     // Use pre-calculated bandwidth values directly from API
@@ -604,8 +604,16 @@ export const useHostNetworkingData = () => {
         
         bandwidthSort.forEach(sort => {
             sorted.sort((a, b) => {
-                const aVal = parseFloat(a[sort.column]) || 0;
-                const bVal = parseFloat(b[sort.column]) || 0;
+                let aVal, bVal;
+                
+                // Handle calculated total bandwidth
+                if (sort.column === 'totalMbps') {
+                    aVal = (parseFloat(a.rx_mbps) || 0) + (parseFloat(a.tx_mbps) || 0);
+                    bVal = (parseFloat(b.rx_mbps) || 0) + (parseFloat(b.tx_mbps) || 0);
+                } else {
+                    aVal = parseFloat(a[sort.column]) || 0;
+                    bVal = parseFloat(b[sort.column]) || 0;
+                }
                 
                 if (sort.direction === 'asc') {
                     return aVal - bVal;
