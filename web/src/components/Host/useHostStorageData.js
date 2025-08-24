@@ -95,19 +95,24 @@ export const useHostStorageData = () => {
         }
     }, [servers, currentServer]);
 
-    // Auto-refresh effect - now uses wrapped functions to get current timeWindow/resolution
+    // Auto-refresh effect - uses live updates for smooth chart animations
     useEffect(() => {
         if (!autoRefresh || !selectedServer) return;
 
+        console.log('🔄 AUTO-REFRESH: Setting up live data updates every', refreshInterval, 'seconds');
         const interval = setInterval(() => {
+            console.log('🔄 AUTO-REFRESH: Fetching latest data points for smooth chart updates');
+            // Load basic storage data (pools, datasets, disks)
             loadStorageData(selectedServer);
-            loadDiskIOStats(selectedServer);
-            loadPoolIOStats(selectedServer);
-            loadArcStats(selectedServer);
+            // Load only latest chart data points (not full historical reload)
+            loadLatestStorageData(selectedServer);
         }, refreshInterval * 1000);
 
-        return () => clearInterval(interval);
-    }, [autoRefresh, refreshInterval, selectedServer, loadDiskIOStats, loadPoolIOStats, loadArcStats]);
+        return () => {
+            console.log('🔄 AUTO-REFRESH: Cleaning up live update interval');
+            clearInterval(interval);
+        };
+    }, [autoRefresh, refreshInterval, selectedServer, loadLatestStorageData]);
 
     const loadStorageData = async (server) => {
         if (!server || loading) return;
@@ -798,6 +803,103 @@ export const useHostStorageData = () => {
             setArcStats([]);
         }
     }, [timeWindow, resolution, loading, makeZoneweaverAPIRequest]);
+
+    // Load only latest data points for smooth auto-refresh (like networking page)
+    const loadLatestStorageData = useCallback(async (server) => {
+        if (!server || loading) return;
+
+        try {
+            console.log('🔄 LIVE UPDATE: Fetching latest storage data for auto-refresh');
+            
+            // Get only the latest few data points (limit=1 for each endpoint)
+            const [diskResult, poolResult, arcResult] = await Promise.allSettled([
+                makeZoneweaverAPIRequest(
+                    server.hostname,
+                    server.port,
+                    server.protocol,
+                    `monitoring/storage/disk-io?limit=1&per_device=true`
+                ),
+                makeZoneweaverAPIRequest(
+                    server.hostname,
+                    server.port,
+                    server.protocol,
+                    `monitoring/storage/pool-io?limit=1&per_pool=true`
+                ),
+                makeZoneweaverAPIRequest(
+                    server.hostname,
+                    server.port,
+                    server.protocol,
+                    `monitoring/storage/arc?limit=1`
+                )
+            ]);
+
+            // Process disk IO latest data
+            if (diskResult.status === 'fulfilled' && diskResult.value?.success && diskResult.value.data?.diskio) {
+                const latestDiskIO = diskResult.value.data.diskio;
+                console.log('🔄 LIVE UPDATE: Adding', latestDiskIO.length, 'latest disk IO points');
+                
+                // Update table data
+                const deduplicatedDiskIO = latestDiskIO.reduce((acc, io) => {
+                    const existing = acc.find(existing => existing.device_name === io.device_name);
+                    if (!existing) {
+                        acc.push({...io});
+                    } else if (new Date(io.scan_timestamp) > new Date(existing.scan_timestamp)) {
+                        const index = acc.indexOf(existing);
+                        acc[index] = {...io};
+                    }
+                    return acc;
+                }, [...diskIOStats]);
+                
+                deduplicatedDiskIO.sort((a, b) => a.device_name.localeCompare(b.device_name));
+                setDiskIOStats(deduplicatedDiskIO);
+
+                // Update chart data by appending new points
+                updateDiskIOChartData(latestDiskIO);
+            }
+
+            // Process pool IO latest data  
+            if (poolResult.status === 'fulfilled' && poolResult.value?.success && poolResult.value.data?.poolio) {
+                const latestPoolIO = poolResult.value.data.poolio;
+                console.log('🔄 LIVE UPDATE: Adding', latestPoolIO.length, 'latest pool IO points');
+                
+                // Update table data
+                const deduplicatedPoolIO = latestPoolIO.reduce((acc, io) => {
+                    const existing = acc.find(existing => existing.pool === io.pool);
+                    if (!existing) {
+                        acc.push({...io});
+                    } else if (new Date(io.scan_timestamp) > new Date(existing.scan_timestamp)) {
+                        const index = acc.indexOf(existing);
+                        acc[index] = {...io};
+                    }
+                    return acc;
+                }, [...poolIOStats]);
+                
+                deduplicatedPoolIO.sort((a, b) => a.pool.localeCompare(b.pool));
+                setPoolIOStats(deduplicatedPoolIO);
+
+                // Update chart data by appending new points
+                updatePoolIOChartData(latestPoolIO);
+            }
+
+            // Process ARC latest data
+            if (arcResult.status === 'fulfilled' && arcResult.value?.success && arcResult.value.data?.arc) {
+                const latestArc = arcResult.value.data.arc;
+                console.log('🔄 LIVE UPDATE: Adding', latestArc.length, 'latest ARC points');
+                
+                // Update table data
+                setArcStats(prevStats => {
+                    const combined = [...prevStats, ...latestArc];
+                    return combined.sort((a, b) => new Date(b.scan_timestamp) - new Date(a.scan_timestamp));
+                });
+
+                // Update chart data by appending new points
+                updateArcChartData(latestArc);
+            }
+
+        } catch (error) {
+            console.error('🔄 LIVE UPDATE: Error loading latest storage data:', error);
+        }
+    }, [loading, makeZoneweaverAPIRequest, diskIOStats, poolIOStats]);
 
     // Update disk I/O chart data
     const updateDiskIOChartData = (diskIOData) => {
