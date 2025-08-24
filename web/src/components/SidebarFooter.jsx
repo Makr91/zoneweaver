@@ -40,7 +40,7 @@ const SidebarFooter = () => {
   return (
     <nav className='level'>
       <div className='level-left' style={{ width: '100%' }}>
-        <div className={`dropdown is-up ${isDropdownActive ? 'is-active' : ''}`} style={{ width: '100%' }} ref={dropdownRef}>
+        <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ width: '100%', overflow: 'visible' }} ref={dropdownRef}>
           <div className='dropdown-trigger' style={{ width: '100%' }}>
             <button className='button is-ghost is-fullwidth p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
               <GravatarImage />
@@ -49,8 +49,17 @@ const SidebarFooter = () => {
               )}
             </button>
           </div>
-          <div className='dropdown-menu' id='profile-management' role='menu'>
-            <div className='dropdown-content has-background-primary-soft has-text-primary-soft-invert'>
+          <div className='dropdown-menu' id='profile-management' role='menu' style={{
+            position: 'fixed',
+            zIndex: 10001,
+            bottom: '60px',
+            left: 'auto',
+            right: 'auto'
+          }}>
+            <div className='dropdown-content has-background-scheme-main-bis has-text-scheme-invert is-flex is-flex-direction-column' style={{
+              width: 'fit-content',
+              minWidth: 'auto'
+            }}>
               <a 
                 className='dropdown-item' 
                 href='https://zoneweaver.startcloud.com' 
