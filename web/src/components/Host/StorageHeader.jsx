@@ -6,6 +6,8 @@ const StorageHeader = ({
     setAutoRefresh,
     refreshInterval,
     setRefreshInterval,
+    resolution,
+    setResolution,
     selectedServer,
     loadStorageData,
     timeWindow,
@@ -36,6 +38,21 @@ const StorageHeader = ({
                                 <option value="6hour">6 Hours</option>
                                 <option value="12hour">12 Hours</option>
                                 <option value="24hour">24 Hours</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className='control'>
+                        <div className='select is-small'>
+                            <select
+                                value={resolution}
+                                onChange={(e) => setResolution(e.target.value)}
+                                disabled={loading}
+                                title="Chart resolution - controls the number of data points"
+                            >
+                                <option value="realtime">Real-time (125 points)</option>
+                                <option value="high">High (38 points)</option>
+                                <option value="medium">Medium (13 points)</option>
+                                <option value="low">Low (5 points)</option>
                             </select>
                         </div>
                     </div>

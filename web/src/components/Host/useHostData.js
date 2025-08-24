@@ -40,6 +40,7 @@ export const useHostData = (currentServer) => {
     total: []
   });
   const [timeWindow, setTimeWindow] = useState('15min');
+  const [resolution, setResolution] = useState('high');
   const [maxDataPoints, setMaxDataPoints] = useState(180);
 
   // Track initial loading to prevent duplicate historical calls and auto-refresh overlap
@@ -336,6 +337,17 @@ export const useHostData = (currentServer) => {
     return new Date(now.getTime() - (minutes * 60 * 1000)).toISOString();
   };
 
+  // Helper function to get resolution limit for API requests
+  const getResolutionLimit = (resolution) => {
+    const resolutionLimits = {
+      'realtime': 125,
+      'high': 38,
+      'medium': 13,
+      'low': 5
+    };
+    return resolutionLimits[resolution] || 38;
+  };
+
   // Load historical chart data for the selected time window
   const loadHistoricalChartData = useCallback(async () => {
     if (!currentServer || !makeZoneweaverAPIRequest) return;
@@ -357,12 +369,12 @@ export const useHostData = (currentServer) => {
         ),
         // Storage pool I/O data  
         getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          limit: 2000,
+          limit: getResolutionLimit(resolution),
           since: historicalTimestamp
         }),
         // ZFS ARC data
         getStorageARC(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          limit: 2000,
+          limit: getResolutionLimit(resolution),
           since: historicalTimestamp  
         }),
         // CPU data
@@ -715,15 +727,15 @@ export const useHostData = (currentServer) => {
     }
   }, [currentServer]);
 
-  // Load historical chart data when time window changes (but not during initial load)
+  // Load historical chart data when time window or resolution changes (but not during initial load)
   useEffect(() => {
     if (currentServer && makeZoneweaverAPIRequest && initialLoadDone.current) {
-      console.log('📊 HISTORICAL CHARTS: Time window changed, loading historical data');
+      console.log('📊 HISTORICAL CHARTS: Time window or resolution changed, loading historical data');
       loadHistoricalChartData();
     } else if (!initialLoadDone.current) {
-      console.log('📊 HISTORICAL CHARTS: Skipping time window change during initial load');
+      console.log('📊 HISTORICAL CHARTS: Skipping settings change during initial load');
     }
-  }, [timeWindow, loadHistoricalChartData]);
+  }, [timeWindow, resolution, loadHistoricalChartData]);
 
   // Auto-refresh effect - wait for initial data to load before starting
   useEffect(() => {
@@ -773,6 +785,8 @@ export const useHostData = (currentServer) => {
     memoryChartData,
     timeWindow,
     setTimeWindow,
+    resolution,
+    setResolution,
     maxDataPoints,
     setMaxDataPoints,
     loadHostData

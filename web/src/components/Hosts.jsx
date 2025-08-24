@@ -45,6 +45,8 @@ const Hosts = () => {
     memoryChartData,
     timeWindow,
     setTimeWindow,
+    resolution,
+    setResolution,
     loadHostData,
   } = useHostData(currentServer);
 
@@ -202,6 +204,8 @@ const Hosts = () => {
             loadHostData={loadHostData}
             timeWindow={timeWindow}
             setTimeWindow={setTimeWindow}
+            resolution={resolution}
+            setResolution={setResolution}
             autoRefresh={autoRefresh}
             setAutoRefresh={setAutoRefresh}
           />
@@ -213,75 +217,79 @@ const Hosts = () => {
               </div>
             )}
 
-            {/* Host Overview - Unified Section */}
-            {Object.keys(serverStats).length > 0 && (
-              <>
-                <SystemInfo
-                  serverStats={serverStats}
-                  monitoringStatus={monitoringStatus}
-                  monitoringHealth={monitoringHealth}
-                  taskStats={taskStats}
-                  swapSummaryData={swapSummaryData} // Pass swapSummaryData here
+            {/* Host Overview - Progressive Loading (like networking page) */}
+            <SystemInfo
+              serverStats={serverStats}
+              monitoringStatus={monitoringStatus}
+              monitoringHealth={monitoringHealth}
+              taskStats={taskStats}
+              swapSummaryData={swapSummaryData}
+              loading={loading}
+            />
+
+            <ZoneManager
+              serverStats={serverStats}
+              currentServer={currentServer}
+              handleZoneAction={handleZoneAction}
+              loading={loading}
+            />
+
+            <NetworkStorageSummary
+              serverStats={serverStats}
+              storageSummary={storageSummary}
+              loading={loading}
+            />
+
+            {/* Performance Monitoring Charts Section */}
+            <div className='box mb-5'>
+              <h3 className='title is-5 mb-4'>
+                <span className='icon-text'>
+                  <span className='icon'><i className='fas fa-chart-area'></i></span>
+                  <span>Performance Monitoring</span>
+                </span>
+              </h3>
+              
+              <div className='columns is-multiline'>
+                <StorageIOChart
+                  chartData={chartData}
+                  storageSeriesVisibility={storageSeriesVisibility}
+                  setStorageSeriesVisibility={setStorageSeriesVisibility}
+                  expandChart={expandChart}
+                  loading={loading}
                 />
 
-                <ZoneManager
-                  serverStats={serverStats}
-                  currentServer={currentServer}
-                  handleZoneAction={handleZoneAction}
+                <ZfsArcChart
+                  arcChartData={arcChartData}
+                  expandChart={expandChart}
+                  loading={loading}
                 />
 
-                <NetworkStorageSummary
-                  serverStats={serverStats}
-                  storageSummary={storageSummary}
+                <NetworkChart
+                  networkChartData={networkChartData}
+                  networkSeriesVisibility={networkSeriesVisibility}
+                  setNetworkSeriesVisibility={setNetworkSeriesVisibility}
+                  expandChart={expandChart}
+                  loading={loading}
                 />
 
-                {/* Performance Monitoring Charts Section */}
-                <div className='box mb-5'>
-                  <h3 className='title is-5 mb-4'>
-                    <span className='icon-text'>
-                      <span className='icon'><i className='fas fa-chart-area'></i></span>
-                      <span>Performance Monitoring</span>
-                    </span>
-                  </h3>
-                  
-                  <div className='columns is-multiline'>
-                    <StorageIOChart
-                      chartData={chartData}
-                      storageSeriesVisibility={storageSeriesVisibility}
-                      setStorageSeriesVisibility={setStorageSeriesVisibility}
-                      expandChart={expandChart}
-                    />
+                <CpuChart
+                  cpuChartData={cpuChartData}
+                  cpuSeriesVisibility={cpuSeriesVisibility}
+                  setCpuSeriesVisibility={setCpuSeriesVisibility}
+                  expandChart={expandChart}
+                  loading={loading}
+                />
 
-                    <ZfsArcChart
-                      arcChartData={arcChartData}
-                      expandChart={expandChart}
-                    />
+                <MemoryChart
+                  memoryChartData={memoryChartData}
+                  memorySeriesVisibility={memorySeriesVisibility}
+                  expandChart={expandChart}
+                  loading={loading}
+                />
+              </div>
+            </div>
 
-                    <NetworkChart
-                      networkChartData={networkChartData}
-                      networkSeriesVisibility={networkSeriesVisibility}
-                      setNetworkSeriesVisibility={setNetworkSeriesVisibility}
-                      expandChart={expandChart}
-                    />
-
-                    <CpuChart
-                      cpuChartData={cpuChartData}
-                      cpuSeriesVisibility={cpuSeriesVisibility}
-                      setCpuSeriesVisibility={setCpuSeriesVisibility}
-                      expandChart={expandChart}
-                    />
-
-                    <MemoryChart
-                      memoryChartData={memoryChartData}
-                      memorySeriesVisibility={memorySeriesVisibility}
-                      expandChart={expandChart}
-                    />
-                  </div>
-                </div>
-
-                <ProvisioningStatus currentServer={currentServer} />
-              </>
-            )}
+            <ProvisioningStatus currentServer={currentServer} />
           </div>
         </div>
       </div>

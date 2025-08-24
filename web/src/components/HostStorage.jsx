@@ -27,6 +27,8 @@ const HostStorage = () => {
         setAutoRefresh,
         refreshInterval,
         setRefreshInterval,
+        resolution,
+        setResolution,
         sectionsCollapsed,
         toggleSection,
         poolSort,
@@ -146,6 +148,8 @@ const HostStorage = () => {
                         setAutoRefresh={setAutoRefresh}
                         refreshInterval={refreshInterval}
                         setRefreshInterval={setRefreshInterval}
+                        resolution={resolution}
+                        setResolution={setResolution}
                         selectedServer={selectedServer}
                         loadStorageData={loadStorageData}
                         timeWindow={timeWindow}

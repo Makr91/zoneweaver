@@ -38,6 +38,7 @@ export const useHostStorageData = () => {
     const [poolChartData, setPoolChartData] = useState({});
     const [arcChartData, setArcChartData] = useState({});
     const [timeWindow, setTimeWindow] = useState('15min');
+    const [resolution, setResolution] = useState('high');
     const [maxDataPoints, setMaxDataPoints] = useState(720);
     const chartRefs = useRef({});
     const poolChartRefs = useRef({});
@@ -69,6 +70,17 @@ export const useHostStorageData = () => {
         getStorageARC,
         makeZoneweaverAPIRequest
     } = useServers();
+
+    // Helper function to get resolution limit for API requests
+    const getResolutionLimit = (resolution) => {
+        const resolutionLimits = {
+            'realtime': 125,
+            'high': 38,
+            'medium': 13,
+            'low': 5
+        };
+        return resolutionLimits[resolution] || 38;
+    };
 
     useEffect(() => {
         const serverList = getServers();
@@ -583,7 +595,6 @@ export const useHostStorageData = () => {
         if (!server || loading) return;
 
         try {
-            const config = getMaxDataPointsForWindow(timeWindow);
             const now = new Date();
             const timeWindowMs = {
                 '1min': 1 * 60 * 1000,
@@ -600,7 +611,7 @@ export const useHostStorageData = () => {
             const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
 
             const filters = {
-                limit: config.limit,
+                limit: getResolutionLimit(resolution),
                 since: sinceTime.toISOString()
             };
 
@@ -661,7 +672,7 @@ export const useHostStorageData = () => {
                 server.hostname,
                 server.port,
                 server.protocol,
-                `monitoring/storage/pool-io?limit=20&per_pool=true&since=${encodeURIComponent(sinceISO)}`
+                `monitoring/storage/pool-io?limit=${getResolutionLimit(resolution)}&per_pool=true&since=${encodeURIComponent(sinceISO)}`
             );
 
             if (historicalResult.success && historicalResult.data?.poolio) {
@@ -738,7 +749,6 @@ export const useHostStorageData = () => {
         if (!server || loading) return;
 
         try {
-            const config = getMaxDataPointsForWindow(timeWindow);
             const now = new Date();
             const timeWindowMs = {
                 '1min': 1 * 60 * 1000,
@@ -755,7 +765,7 @@ export const useHostStorageData = () => {
             const sinceTime = new Date(now.getTime() - (timeWindowMs[timeWindow] || timeWindowMs['1hour']));
 
             const filters = {
-                limit: config.limit,
+                limit: getResolutionLimit(resolution),
                 since: sinceTime.toISOString()
             };
 
@@ -996,6 +1006,8 @@ export const useHostStorageData = () => {
         setAutoRefresh,
         refreshInterval,
         setRefreshInterval,
+        resolution,
+        setResolution,
         sectionsCollapsed,
         toggleSection,
         poolSort,
