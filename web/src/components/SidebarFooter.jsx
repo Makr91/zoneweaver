@@ -71,7 +71,7 @@ const SidebarFooter = () => {
               </a>
               <a onClick={toggleTheme} className='dropdown-item has-background-grey'>
                 <span className='icon'><i className='fas fa-palette'></i></span>
-                <span>Theme: {getThemeDisplay()}</span>
+                <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, '')}</span>
               </a>
               <a className='dropdown-item has-background-grey' href='/ui/notifications'>
                 <span className='icon'><i className='fas fa-bell'></i></span>
