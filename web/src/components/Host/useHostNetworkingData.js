@@ -60,6 +60,7 @@ export const useHostNetworkingData = () => {
             hasRequest: !!makeZoneweaverAPIRequest
         });
         if (currentServer && makeZoneweaverAPIRequest) {
+            loadHistoricalChartData(); // Load historical data first to establish chart foundation
             loadNetworkData();
         }
     }, [currentServer]);
