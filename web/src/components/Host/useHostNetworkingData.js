@@ -376,13 +376,14 @@ export const useHostNetworkingData = () => {
                 `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${limit}`
             );
 
-            if (historicalResult?.usage && Array.isArray(historicalResult.usage)) {
-                console.log('📊 HISTORICAL CHARTS: Received', historicalResult.usage.length, 'historical records');
+            const historicalUsage = historicalResult?.data?.usage || historicalResult?.usage || [];
+            if (historicalUsage && Array.isArray(historicalUsage) && historicalUsage.length > 0) {
+                console.log('📊 HISTORICAL CHARTS: Received', historicalUsage.length, 'historical records');
                 
                 // Group historical data by interface
                 const interfaceGroups = {};
                 
-                historicalResult.usage.forEach(record => {
+                historicalUsage.forEach(record => {
                     const interfaceName = record.link || record.interface || record.name;
                     if (!interfaceName) return;
                     
