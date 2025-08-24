@@ -415,12 +415,13 @@ export const useHostData = (currentServer) => {
           };
 
           sortedRecords.forEach(record => {
-            const bandwidth = calculateNetworkBandwidth(record);
             const timestamp = new Date(record.scan_timestamp).getTime();
+            const rxMbps = parseFloat(record.rx_mbps) || 0;  // Use pre-calculated API value
+            const txMbps = parseFloat(record.tx_mbps) || 0;  // Use pre-calculated API value
             
-            newNetworkChartData[interfaceName].rxData.push([timestamp, parseFloat(bandwidth.rxMbps.toFixed(3))]);
-            newNetworkChartData[interfaceName].txData.push([timestamp, parseFloat(bandwidth.txMbps.toFixed(3))]);
-            newNetworkChartData[interfaceName].totalData.push([timestamp, parseFloat(bandwidth.totalMbps.toFixed(3))]);
+            newNetworkChartData[interfaceName].rxData.push([timestamp, parseFloat(rxMbps.toFixed(3))]);
+            newNetworkChartData[interfaceName].txData.push([timestamp, parseFloat(txMbps.toFixed(3))]);
+            newNetworkChartData[interfaceName].totalData.push([timestamp, parseFloat((rxMbps + txMbps).toFixed(3))]);
           });
 
           console.log(`📊 HISTORICAL CHARTS: Built ${sortedRecords.length} historical points for network ${interfaceName}`);
@@ -449,19 +450,19 @@ export const useHostData = (currentServer) => {
           return acc;
         }, []);
         
-        // Pre-calculate bandwidth once to avoid repeated calculations in sort comparator
+        // Use API's pre-calculated bandwidth values for sorting
         const networkUsageWithBandwidth = deduplicatedNetworkUsage.map(usage => ({
           ...usage,
-          bandwidth: calculateNetworkBandwidth(usage)
+          totalMbps: (parseFloat(usage.rx_mbps) || 0) + (parseFloat(usage.tx_mbps) || 0)
         }));
         
-        // Sort by pre-calculated bandwidth values
+        // Sort by pre-calculated bandwidth values from API
         networkUsageWithBandwidth.sort((a, b) => 
-          b.bandwidth.totalMbps - a.bandwidth.totalMbps
+          b.totalMbps - a.totalMbps
         );
         
-        // Use the sorted data with bandwidth for state (remove bandwidth property for consistency)
-        const sortedNetworkUsage = networkUsageWithBandwidth.map(({ bandwidth, ...usage }) => usage);
+        // Use the sorted data for state (remove totalMbps property for consistency)
+        const sortedNetworkUsage = networkUsageWithBandwidth.map(({ totalMbps, ...usage }) => usage);
         setNetworkUsage(sortedNetworkUsage);
       }
 

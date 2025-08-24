@@ -77,16 +77,7 @@ export const getMaxDataPointsForWindow = (window) => {
  * @returns {object} An object with rx/tx bytes per second and Mbps values.
  */
 export const calculateNetworkBandwidth = (record) => {
-  console.log('🔍 BANDWIDTH: calculateNetworkBandwidth called with:', {
-    link: record.link,
-    time_delta_seconds: record.time_delta_seconds,
-    rbytes_delta: record.rbytes_delta,
-    obytes_delta: record.obytes_delta,
-    fullRecord: record
-  });
-
   if (!record.time_delta_seconds || record.time_delta_seconds <= 0) {
-    console.log('🔍 BANDWIDTH: No time delta, returning zeros for', record.link);
     return {
       rxBytesPerSecond: 0,
       txBytesPerSecond: 0,
@@ -112,6 +103,5 @@ export const calculateNetworkBandwidth = (record) => {
     totalMbps: Math.max(0, totalMbps)
   };
 
-  console.log('🔍 BANDWIDTH: Calculated result for', record.link, ':', result);
   return result;
 };
