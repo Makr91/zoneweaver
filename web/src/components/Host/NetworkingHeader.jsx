@@ -26,10 +26,10 @@ const NetworkingHeader = ({
                                 disabled={loading}
                                 title="Chart resolution - controls the number of data points per interface"
                             >
-                                <option value="realtime">Real-time (250 per interface)</option>
-                                <option value="high">High (75 per interface)</option>
-                                <option value="medium">Medium (25 per interface)</option>
-                                <option value="low">Low (10 per interface)</option>
+                                <option value="realtime">Real-time (125 per interface)</option>
+                                <option value="high">High (38 per interface)</option>
+                                <option value="medium">Medium (13 per interface)</option>
+                                <option value="low">Low (5 per interface)</option>
                             </select>
                         </div>
                     </div>

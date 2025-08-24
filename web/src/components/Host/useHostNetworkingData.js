@@ -361,12 +361,12 @@ export const useHostNetworkingData = () => {
     // Helper function to get resolution limit for API requests (per interface)
     const getResolutionLimit = (resolution) => {
         const resolutionLimits = {
-            'realtime': 250,  // per interface
-            'high': 75,       // per interface
-            'medium': 25,     // per interface
-            'low': 10         // per interface
+            'realtime': 125,  // per interface
+            'high': 38,       // per interface
+            'medium': 13,     // per interface
+            'low': 5          // per interface
         };
-        return resolutionLimits[resolution] || 25;
+        return resolutionLimits[resolution] || 13;
     };
 
     // Load historical chart data for the selected time window and resolution
