@@ -157,10 +157,8 @@ export const useHostNetworkingData = () => {
                 // Access usage from nested data structure
                 const usage = usageResult.value?.data?.usage || usageResult.value?.usage || [];
                 const deduplicatedUsage = usage.reduce((acc, entry) => {
-                    const interfaceId = entry.interface || entry.name || entry.link;
-                    const existing = acc.find(existing => 
-                        (existing.interface || existing.name || existing.link) === interfaceId
-                    );
+                    const interfaceId = entry.link;
+                    const existing = acc.find(existing => existing.link === interfaceId);
                     if (!existing) {
                         acc.push(entry);
                     } else {
@@ -396,7 +394,7 @@ export const useHostNetworkingData = () => {
                 const interfaceGroups = {};
                 
                 historicalUsage.forEach(record => {
-                    const interfaceName = record.link || record.interface || record.name;
+                    const interfaceName = record.link;
                     if (!interfaceName) return;
                     
                     if (!interfaceGroups[interfaceName]) {
@@ -460,7 +458,7 @@ export const useHostNetworkingData = () => {
             
             // Process each interface's current usage data
             networkUsage.forEach(usage => {
-                const interfaceName = usage.link || usage.interface || usage.name;
+                const interfaceName = usage.link;
                 
                 if (interfaceName) {
                     // Use pre-calculated bandwidth values directly from API

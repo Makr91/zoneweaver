@@ -40,13 +40,13 @@ const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => {
                             <tbody>
                                 {routes.map((route, index) => (
                                     <tr key={index}>
-                                        <td><strong>{route.interface || route.iface || 'N/A'}</strong></td>
-                                        <td><code>{route.destination || route.dest || 'N/A'}</code></td>
-                                        <td><code>{route.gateway || route.gw || 'N/A'}</code></td>
-                                        <td>{route.metric || 'N/A'}</td>
+                                        <td><strong>{route.interface || 'N/A'}</strong></td>
+                                        <td><code>{route.destination || 'N/A'}</code></td>
+                                        <td><code>{route.gateway || 'N/A'}</code></td>
+                                        <td>N/A</td>
                                         <td>
                                             <span className='tag is-dark'>
-                                                {route.type || 'Static'}
+                                                Static
                                             </span>
                                         </td>
                                     </tr>

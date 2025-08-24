@@ -40,17 +40,17 @@ const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => {
                             <tbody>
                                 {ipAddresses.map((ip, index) => (
                                     <tr key={index}>
-                                        <td><strong>{ip.interface || ip.name}</strong></td>
-                                        <td><code>{ip.ip_address || ip.address || ip.addr}</code></td>
-                                        <td><code>{ip.prefix_length ? `/${ip.prefix_length}` : ip.netmask || ip.prefix || 'N/A'}</code></td>
+                                        <td><strong>{ip.interface}</strong></td>
+                                        <td><code>{ip.ip_address}</code></td>
+                                        <td><code>{ip.prefix_length ? `/${ip.prefix_length}` : 'N/A'}</code></td>
                                         <td>
                                             <span className='tag is-info'>
-                                                {ip.ip_version || ip.type || ip.family || 'IPv4'}
+                                                {ip.ip_version || 'IPv4'}
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`tag ${ip.state === 'ok' || ip.status === 'active' || ip.state === 'up' ? 'is-success' : 'is-warning'}`}>
-                                                {ip.state || ip.status || 'Active'}
+                                            <span className={`tag ${ip.state === 'ok' || ip.state === 'up' ? 'is-success' : 'is-warning'}`}>
+                                                {ip.state || 'Active'}
                                             </span>
                                         </td>
                                     </tr>
