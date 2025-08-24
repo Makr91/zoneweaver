@@ -142,9 +142,13 @@ export const ServerProvider = ({ children }) => {
       });
       
       if (matchingServer) {
-        // Always update to use the fresh API-loaded server object
-        console.log('✅ SERVER RE-ESTABLISHMENT: Re-establishing server connection:', matchingServer.hostname);
-        setCurrentServer(matchingServer);
+        // Only update if the server ID is different (meaningful change)
+        if (matchingServer.id !== currentServer.id) {
+          console.log('✅ SERVER RE-ESTABLISHMENT: Re-establishing server connection:', matchingServer.hostname);
+          setCurrentServer(matchingServer);
+        } else {
+          console.log('✅ SERVER RE-ESTABLISHMENT: Server already current, skipping re-establishment');
+        }
       } else {
         // Server no longer exists, clear selection
         console.log('❌ SERVER RE-ESTABLISHMENT: Previously selected server no longer exists, clearing selection');
