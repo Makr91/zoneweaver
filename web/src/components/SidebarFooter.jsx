@@ -56,12 +56,12 @@ const SidebarFooter = () => {
             left: 'auto',
             right: 'auto'
           }}>
-            <div className='dropdown-content has-background-scheme-main-bis has-text-scheme-invert is-flex is-flex-direction-column' style={{
+            <div className='dropdown-content has-background-scheme-main-bis has-text-scheme-invert is-flex is-flex-direction-column has-background-grey' style={{
               width: 'fit-content',
               minWidth: 'auto'
             }}>
               <a 
-                className='dropdown-item' 
+                className='dropdown-item has-background-grey' 
                 href='https://zoneweaver.startcloud.com' 
                 target='_blank' 
                 rel='noopener noreferrer'
@@ -69,21 +69,21 @@ const SidebarFooter = () => {
                 <span className='icon'><i className='fas fa-info-circle'></i></span>
                 <span>Help and Docs</span>
               </a>
-              <a onClick={toggleTheme} className='dropdown-item'>
+              <a onClick={toggleTheme} className='dropdown-item has-background-grey'>
                 <span className='icon'><i className='fas fa-palette'></i></span>
                 <span>Theme: {getThemeDisplay()}</span>
               </a>
-              <a className='dropdown-item' href='/ui/notifications'>
+              <a className='dropdown-item has-background-grey' href='/ui/notifications'>
                 <span className='icon'><i className='fas fa-bell'></i></span>
                 <span>Notifications</span>
               </a>
-              <a className='dropdown-item' href='/ui/profile'>
+              <a className='dropdown-item has-background-grey' href='/ui/profile'>
                 <span className='icon'><i className='fas fa-user'></i></span>
                 <span>Profile</span>
               </a>
               <hr className='dropdown-divider' />
-              <a onClick={handleLogout} className='dropdown-item'>
-                <span className='icon'><i className='fas fa-sign-out-alt'></i></span>
+              <a onClick={handleLogout} className='dropdown-item has-background-grey'>
+                <span className='icon has-text-danger'><i className='fas fa-sign-out-alt'></i></span>
                 <span>Log Out</span>
               </a>
             </div>
