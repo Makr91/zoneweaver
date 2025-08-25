@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.7.8](https://github.com/Makr91/zoneweaver/compare/v0.7.7...v0.7.8) (2025-08-25)
+
+
+### Bug Fixes
+
+* auto refresh on monitoring pages ([ab4749a](https://github.com/Makr91/zoneweaver/commit/ab4749ad17871d87c7ec3ae2a7ba8a21c7533f3b))
+* auto refresh on monitoring pages v10 ([03ae414](https://github.com/Makr91/zoneweaver/commit/03ae414aa2a364289db15b22eb2435d6b752989c))
+* auto refresh on monitoring pages v11 ([1d5e9b0](https://github.com/Makr91/zoneweaver/commit/1d5e9b01cf212891a83ee7b937225c611df5f2c6))
+* auto refresh on monitoring pages v12 ([4caf7dd](https://github.com/Makr91/zoneweaver/commit/4caf7dd612d3d368196ef1960e31708c339f2fb2))
+* auto refresh on monitoring pages v13 ([f98fe2a](https://github.com/Makr91/zoneweaver/commit/f98fe2a5d889142640b4a8e354798212ca5651e5))
+* auto refresh on monitoring pages v14 ([35c268f](https://github.com/Makr91/zoneweaver/commit/35c268ff108d3b92bd407227d5feae2c73811bad))
+* auto refresh on monitoring pages v2 ([b206b4d](https://github.com/Makr91/zoneweaver/commit/b206b4d4bfd0fc27cdff2022420bf3d1af690482))
+* auto refresh on monitoring pages v2 ([e771335](https://github.com/Makr91/zoneweaver/commit/e771335d711f78459839f20f7cbeea35eea02be1))
+* auto refresh on monitoring pages v3 ([28f6b18](https://github.com/Makr91/zoneweaver/commit/28f6b183cbb16d2d5de1f6608ede879cd107e1cb))
+* auto refresh on monitoring pages v4 ([2b1b63c](https://github.com/Makr91/zoneweaver/commit/2b1b63cee825c2234cdc55e52bc143ea5fa82122))
+* auto refresh on monitoring pages v5 ([55c1d15](https://github.com/Makr91/zoneweaver/commit/55c1d159ffd1d39eaf5f5ed3a85db114a7fe2fe1))
+* auto refresh on monitoring pages v6 ([00ff323](https://github.com/Makr91/zoneweaver/commit/00ff323bc0012e2bf8e6637228e7470d96fcfaba))
+* auto refresh on monitoring pages v7 ([1764875](https://github.com/Makr91/zoneweaver/commit/17648752b800a04c662adf72a2da1769d7efbd00))
+* auto refresh on monitoring pages v8 ([dfa940e](https://github.com/Makr91/zoneweaver/commit/dfa940e9afec1d7b4fa8cd8e7e6dfd781d91721d))
+* auto refresh on monitoring pages v9 ([b0f11d8](https://github.com/Makr91/zoneweaver/commit/b0f11d89df1b9dd076d9118bc780a6b53bb02fb8))
+* networking charts ([6cf8b0f](https://github.com/Makr91/zoneweaver/commit/6cf8b0f1fee13a03e3e2052de06eb61125a2f607))
+* networking charts v10 - deadcode/speed improvements -debug ([6b60d39](https://github.com/Makr91/zoneweaver/commit/6b60d39656eeb5dccbedaea664623806a53d3c92))
+* networking charts v11 - deadcode/speed improvements -debug ([526e8bf](https://github.com/Makr91/zoneweaver/commit/526e8bfda40f95038e2dde64fbee917c223b5bf2))
+* networking charts v12 - deadcode/speed improvements -debug ([211a82a](https://github.com/Makr91/zoneweaver/commit/211a82ae9ee14c9977ae52c779f80d556ab442f4))
+* networking charts v13 - deadcode/speed improvements -debug ([b816070](https://github.com/Makr91/zoneweaver/commit/b816070db02fa097a67b78640bdb90dc6007db36))
+* networking charts v14 - deadcode/speed improvements -debug ([e1009d8](https://github.com/Makr91/zoneweaver/commit/e1009d852edc61677baf81fb1f20e98fc78d82f4))
+* networking charts v15 - deadcode/speed improvements -debug ([f081e21](https://github.com/Makr91/zoneweaver/commit/f081e21b8cce3f253d2e72c2c0c0006aea1d04d0))
+* networking charts v16 - deadcode/speed improvements -debug ([98fd026](https://github.com/Makr91/zoneweaver/commit/98fd026ffaa877d24cec7d226246608b5027a538))
+* networking charts v2 ([887396f](https://github.com/Makr91/zoneweaver/commit/887396f370de93ffe298958bfe7ae8c05ca3b9cd))
+* networking charts v3 ([c533519](https://github.com/Makr91/zoneweaver/commit/c533519252f176ea1963b74dac402202b231c6f9))
+* networking charts v4 - speed improvements ([58dbc0b](https://github.com/Makr91/zoneweaver/commit/58dbc0bced4fcd822fb8f5b7ff8c3b8fc4e82c38))
+* networking charts v5 - speed improvements ([7d62e33](https://github.com/Makr91/zoneweaver/commit/7d62e331bc7646be027112130fde1bc80b2d57ae))
+* networking charts v6 - speed improvements ([dc69899](https://github.com/Makr91/zoneweaver/commit/dc698995bbd39d3785d3ce527a959964ec300ace))
+* networking charts v7 - speed improvements ([80c594b](https://github.com/Makr91/zoneweaver/commit/80c594b1f9a44ffb623fe478b8eb656e264749cb))
+* networking charts v8 - deadcode/speed improvements ([8855d62](https://github.com/Makr91/zoneweaver/commit/8855d6218b10e36b12487fd6385e583061bc29e2))
+* networking charts v9 - deadcode/speed improvements ([b8e8596](https://github.com/Makr91/zoneweaver/commit/b8e8596a6db3156e8c335f77067c2a17d4b71952))
+* theme - minor tweaks ([1dff438](https://github.com/Makr91/zoneweaver/commit/1dff438f68fb10f0fcb6280c5b0e519ff418c8a4))
+* theme - minor tweaks v2 ([a4dbefb](https://github.com/Makr91/zoneweaver/commit/a4dbefbcbc1e6437de2184cdc2090fef35425cda))
+* theme - minor tweaks v3 ([170e70f](https://github.com/Makr91/zoneweaver/commit/170e70fd630860f4c463f60c44148f054394d94a))
+* theme - minor tweaks v3 ([bcd43ee](https://github.com/Makr91/zoneweaver/commit/bcd43eef02dc094c84d9acb6cede6449874c4187))
+* theme - minor tweaks v4 ([e0c80cf](https://github.com/Makr91/zoneweaver/commit/e0c80cfc20b5bac1c185547cde28ce9cbb898b2d))
+* theme - pages no radius, no padding ([a66e1b5](https://github.com/Makr91/zoneweaver/commit/a66e1b5354f2391aa15682a620fa41b3a8299d89))
+* themeing ([4be759b](https://github.com/Makr91/zoneweaver/commit/4be759be35d02e71f5dd0f54abb048eecdbdc50b))
+* Zones Page ([3cb814d](https://github.com/Makr91/zoneweaver/commit/3cb814d5c72955a2660d8c62bf54b41abc71403f))
+* Zones Page v2 ([9a873de](https://github.com/Makr91/zoneweaver/commit/9a873de30b6839cfb3442c8449954d8af3e1d3c5))
+* Zones Page v3 ([b5b48c6](https://github.com/Makr91/zoneweaver/commit/b5b48c6c337e945b1d91b3287b7c20e8761f2584))
+
 ## [0.7.7](https://github.com/Makr91/zoneweaver/compare/v0.7.6...v0.7.7) (2025-08-23)
 
 
