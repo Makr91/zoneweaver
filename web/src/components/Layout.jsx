@@ -222,13 +222,8 @@ const Layout = () => {
   }, [isAuthenticated, loading, navigate]);
 
   /**
-   * Load servers immediately when user is authenticated to prevent race conditions
+   * Server loading is handled by ServerContext - no need to duplicate here
    */
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadServers();
-    }
-  }, [isAuthenticated, loadServers]);
 
   // Show loading spinner while checking authentication
   if (loading) {

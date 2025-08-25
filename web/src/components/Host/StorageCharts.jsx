@@ -172,7 +172,7 @@ const StorageCharts = ({
                                                 }
                                             },
                                             time: {
-                                                useUTC: true
+                                                useUTC: false
                                             },
                                             title: {
                                                 text: 'Read Bandwidth (All Devices)',
@@ -310,7 +310,7 @@ const StorageCharts = ({
                                                 }
                                             },
                                             time: {
-                                                useUTC: true
+                                                useUTC: false
                                             },
                                             title: {
                                                 text: 'Write Bandwidth (All Devices)',
