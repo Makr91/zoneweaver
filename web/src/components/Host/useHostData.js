@@ -377,16 +377,19 @@ export const useHostData = (currentServer) => {
           `monitoring/network/usage?since=${encodeURIComponent(historicalTimestamp)}&limit=${getResolutionLimit(resolution)}&per_interface=true`
         ),
         // Storage pool I/O data  
-        getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          limit: getResolutionLimit(resolution),
-          since: historicalTimestamp,
-          per_pool: true
-        }),
+        makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `monitoring/storage/pool-io?limit=${getResolutionLimit(resolution)}&per_pool=true&since=${encodeURIComponent(historicalTimestamp)}`
+        ),
         // ZFS ARC data
-        getStorageARC(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          limit: getResolutionLimit(resolution),
-          since: historicalTimestamp  
-        }),
+        makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `monitoring/storage/arc?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(historicalTimestamp)}`
+        ),
         // CPU data
         makeZoneweaverAPIRequest(
           currentServer.hostname, 
@@ -654,17 +657,20 @@ export const useHostData = (currentServer) => {
         ) : Promise.resolve({ success: false, message: 'No network timestamp' }),
         
         // Storage pool I/O data (if we have a timestamp)
-        lastChartTimestamps.poolIO ? getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          limit: getResolutionLimit(resolution),
-          since: lastChartTimestamps.poolIO,
-          per_pool: true
-        }) : Promise.resolve({ success: false, message: 'No poolIO timestamp' }),
+        lastChartTimestamps.poolIO ? makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `monitoring/storage/pool-io?limit=${getResolutionLimit(resolution)}&per_pool=true&since=${encodeURIComponent(lastChartTimestamps.poolIO)}`
+        ) : Promise.resolve({ success: false, message: 'No poolIO timestamp' }),
         
         // ZFS ARC data (if we have a timestamp)
-        lastChartTimestamps.arc ? getStorageARC(currentServer.hostname, currentServer.port, currentServer.protocol, {
-          limit: getResolutionLimit(resolution),
-          since: lastChartTimestamps.arc
-        }) : Promise.resolve({ success: false, message: 'No arc timestamp' }),
+        lastChartTimestamps.arc ? makeZoneweaverAPIRequest(
+          currentServer.hostname,
+          currentServer.port,
+          currentServer.protocol,
+          `monitoring/storage/arc?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(lastChartTimestamps.arc)}`
+        ) : Promise.resolve({ success: false, message: 'No arc timestamp' }),
         
         // CPU data (if we have a timestamp)
         lastChartTimestamps.cpu ? makeZoneweaverAPIRequest(
