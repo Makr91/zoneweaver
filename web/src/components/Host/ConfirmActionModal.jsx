@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const ConfirmActionModal = ({ bootEnvironment, action, onClose, onConfirm }) => {
   const [options, setOptions] = useState({
     temporary: false,
-    force: false,
+    force: true,
     snapshots: false,
     mountpoint: `/mnt/${bootEnvironment.name}`,
     sharedMode: 'ro'
@@ -232,7 +232,7 @@ const ConfirmActionModal = ({ bootEnvironment, action, onClose, onConfirm }) => 
                       onChange={(e) => handleOptionChange('force', e.target.checked)}
                     />
                     <span className='ml-2'>
-                      <strong>Force Delete</strong> - Force deletion even if mounted or active
+                      <strong>Force Delete</strong> - Required for non-interactive deletion (recommended)
                     </span>
                   </label>
                 </div>
