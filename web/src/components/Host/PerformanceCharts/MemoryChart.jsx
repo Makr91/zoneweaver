@@ -29,6 +29,9 @@ const MemoryChart = ({ memoryChartData, memorySeriesVisibility, expandChart }) =
                 highcharts={Highcharts}
                 options={{
                   chart: { type: 'spline', height: 200, backgroundColor: '#1e2a3a' },
+                  time: {
+                    useUTC: false
+                  },
                   title: { text: 'Memory Usage', style: { color: '#ffffff', fontSize: '12px' } },
                   xAxis: { type: 'datetime', labels: { style: { color: '#b0bec5' } } },
                   yAxis: { title: { text: 'GB', style: { color: '#b0bec5' } }, min: 0 },

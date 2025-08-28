@@ -69,8 +69,9 @@ export const useHostData = (currentServer) => {
     getSystemMemory
   } = useServers();
 
-  const updatePoolIOChartData = useCallback((poolIOData) => {
-    // Group by pool and sort by timestamp for proper chart initialization
+  // Historical data processor for Storage I/O (like Network and ARC use)
+  const processStorageIOHistoricalData = useCallback((poolIOData) => {
+    // Group by pool
     const poolData = {};
     poolIOData.forEach(poolIO => {
       const poolName = poolIO.pool;
@@ -80,7 +81,51 @@ export const useHostData = (currentServer) => {
       poolData[poolName].push(poolIO);
     });
 
-    // Initialize charts with historical data
+    // Build complete chart data from historical records
+    const newChartData = {};
+    Object.entries(poolData).forEach(([poolName, poolIOArray]) => {
+      // Sort records by timestamp (oldest first)
+      const sortedRecords = poolIOArray.sort((a, b) => 
+        new Date(a.scan_timestamp) - new Date(b.scan_timestamp)
+      );
+
+      newChartData[poolName] = {
+        readData: [],
+        writeData: [],
+        totalData: []
+      };
+
+      sortedRecords.forEach(poolIO => {
+        const timestamp = new Date(poolIO.scan_timestamp).getTime();
+        const readBandwidth = poolIO.read_bandwidth_bytes || 0;
+        const writeBandwidth = poolIO.write_bandwidth_bytes || 0;
+        const readMBps = readBandwidth / (1024 * 1024);
+        const writeMBps = writeBandwidth / (1024 * 1024);
+        const totalMBps = readMBps + writeMBps;
+        
+        newChartData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
+        newChartData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
+        newChartData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
+      });
+
+      console.log(`📊 STORAGE IO: Built ${sortedRecords.length} historical points for pool ${poolName}`);
+    });
+
+    return newChartData;
+  }, []);
+
+  // Incremental update function for Storage I/O (pure incremental only)
+  const updatePoolIOChartData = useCallback((poolIOData) => {
+    // Group by pool
+    const poolData = {};
+    poolIOData.forEach(poolIO => {
+      const poolName = poolIO.pool;
+      if (!poolData[poolName]) {
+        poolData[poolName] = [];
+      }
+      poolData[poolName].push(poolIO);
+    });
+
     setChartData(prevData => {
       const newData = { ...prevData };
       
@@ -96,39 +141,19 @@ export const useHostData = (currentServer) => {
           };
         }
         
-        // If this is initial load, replace the data. If updating, append.
-        const isInitialLoad = newData[poolName].readData.length === 0;
-        
-        if (isInitialLoad) {
-          // Initialize with all historical data
-          poolIOArray.forEach(poolIO => {
-            const timestamp = new Date(poolIO.scan_timestamp).getTime();
-            const readBandwidth = poolIO.read_bandwidth_bytes || 0;
-            const writeBandwidth = poolIO.write_bandwidth_bytes || 0;
-            const readMBps = readBandwidth / (1024 * 1024);
-            const writeMBps = writeBandwidth / (1024 * 1024);
-            const totalMBps = readMBps + writeMBps;
-            
-            newData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
-            newData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
-            newData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
-          });
-        } else {
-          // Update mode - just add the latest points
-          const latestPoolIO = poolIOArray[poolIOArray.length - 1];
-          if (latestPoolIO) {
-            const timestamp = new Date(latestPoolIO.scan_timestamp).getTime();
-            const readBandwidth = latestPoolIO.read_bandwidth_bytes || 0;
-            const writeBandwidth = latestPoolIO.write_bandwidth_bytes || 0;
-            const readMBps = readBandwidth / (1024 * 1024);
-            const writeMBps = writeBandwidth / (1024 * 1024);
-            const totalMBps = readMBps + writeMBps;
-            
-            newData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
-            newData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
-            newData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
-          }
-        }
+        // Pure incremental - append all new data points
+        poolIOArray.forEach(poolIO => {
+          const timestamp = new Date(poolIO.scan_timestamp).getTime();
+          const readBandwidth = poolIO.read_bandwidth_bytes || 0;
+          const writeBandwidth = poolIO.write_bandwidth_bytes || 0;
+          const readMBps = readBandwidth / (1024 * 1024);
+          const writeMBps = writeBandwidth / (1024 * 1024);
+          const totalMBps = readMBps + writeMBps;
+          
+          newData[poolName].readData.push([timestamp, parseFloat(readMBps.toFixed(3))]);
+          newData[poolName].writeData.push([timestamp, parseFloat(writeMBps.toFixed(3))]);
+          newData[poolName].totalData.push([timestamp, parseFloat(totalMBps.toFixed(3))]);
+        });
         
         // Trim to max data points
         if (newData[poolName].readData.length > maxDataPoints) {
@@ -240,97 +265,163 @@ export const useHostData = (currentServer) => {
     });
   }, [maxDataPoints]);
 
-  const updateCPUChartData = useCallback((cpuData) => {
+  // Historical data processor for CPU (like Network and ARC use)
+  const processCPUHistoricalData = useCallback((cpuData) => {
+    // Sort data by timestamp (oldest first)
+    const sortedData = [...cpuData].sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
+    
     const overall = [];
     const load1 = [];
     const load5 = [];
     const load15 = [];
+    const cores = {};
 
-    cpuData.forEach(d => {
+    sortedData.forEach(d => {
       const timestamp = new Date(d.scan_timestamp).getTime();
       overall.push([timestamp, d.cpu_utilization_pct]);
       load1.push([timestamp, d.load_avg_1min]);
       load5.push([timestamp, d.load_avg_5min]);
       load15.push([timestamp, d.load_avg_15min]);
-    });
-
-    setCpuChartData(prev => ({
-      ...prev,
-      overall: overall.sort((a, b) => a[0] - b[0]),
-      load: {
-        '1min': load1.sort((a, b) => a[0] - b[0]),
-        '5min': load5.sort((a, b) => a[0] - b[0]),
-        '15min': load15.sort((a, b) => a[0] - b[0]),
-      }
-    }));
-  }, []);
-
-  const updateCPUCoreChartData = useCallback((cpuData) => {
-    const cores = {};
-    cpuData.forEach(d => {
+      
+      // Process per-core data
       if (d.per_core_parsed) {
         d.per_core_parsed.forEach(coreData => {
           if (!cores[coreData.cpu_id]) {
             cores[coreData.cpu_id] = [];
           }
-          cores[coreData.cpu_id].push([new Date(d.scan_timestamp).getTime(), coreData.utilization_pct]);
+          cores[coreData.cpu_id].push([timestamp, coreData.utilization_pct]);
         });
       }
     });
-    Object.keys(cores).forEach(core => {
-      cores[core].sort((a, b) => a[0] - b[0]);
-    });
-    setCpuChartData(prev => ({ ...prev, cores }));
+
+    console.log(`📊 CPU: Built ${sortedData.length} historical points for CPU data`);
+
+    return {
+      overall: overall,
+      cores: cores,
+      load: {
+        '1min': load1,
+        '5min': load5,
+        '15min': load15,
+      }
+    };
   }, []);
 
+  // Historical data processor for Memory (like Network and ARC use)
+  const processMemoryHistoricalData = useCallback((memoryData) => {
+    // Sort data by timestamp (oldest first)
+    const sortedData = [...memoryData].sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
+    
+    const used = [];
+    const free = [];
+    const cached = [];
+    const total = [];
+
+    sortedData.forEach(d => {
+      const timestamp = new Date(d.scan_timestamp).getTime();
+      used.push([timestamp, parseFloat((d.used_memory_bytes / (1024 ** 3)).toFixed(2))]);
+      free.push([timestamp, parseFloat((d.free_memory_bytes / (1024 ** 3)).toFixed(2))]);
+      cached.push([timestamp, parseFloat((d.cached_bytes / (1024 ** 3)).toFixed(2))]);
+      total.push([timestamp, parseFloat((d.total_memory_bytes / (1024 ** 3)).toFixed(2))]);
+    });
+
+    console.log(`📊 MEMORY: Built ${sortedData.length} historical points for memory data`);
+
+    return {
+      used: used,
+      free: free,
+      cached: cached,
+      total: total,
+    };
+  }, []);
+
+  // Incremental update function for CPU (pure incremental only)
+  const updateCPUChartData = useCallback((cpuData) => {
+    setCpuChartData(prevData => {
+      const newData = { ...prevData };
+      
+      // Sort new data by timestamp
+      const sortedData = [...cpuData].sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
+      
+      // Process each new data point
+      sortedData.forEach(d => {
+        const timestamp = new Date(d.scan_timestamp).getTime();
+        
+        // Append to overall data
+        newData.overall.push([timestamp, d.cpu_utilization_pct]);
+        
+        // Append to load data
+        newData.load['1min'].push([timestamp, d.load_avg_1min]);
+        newData.load['5min'].push([timestamp, d.load_avg_5min]);
+        newData.load['15min'].push([timestamp, d.load_avg_15min]);
+      });
+      
+      // Trim to max data points
+      if (newData.overall.length > maxDataPoints) {
+        newData.overall = newData.overall.slice(-maxDataPoints);
+        newData.load['1min'] = newData.load['1min'].slice(-maxDataPoints);
+        newData.load['5min'] = newData.load['5min'].slice(-maxDataPoints);
+        newData.load['15min'] = newData.load['15min'].slice(-maxDataPoints);
+      }
+      
+      return newData;
+    });
+  }, [maxDataPoints]);
+
+  // Incremental update function for CPU cores (pure incremental only)
+  const updateCPUCoreChartData = useCallback((cpuData) => {
+    setCpuChartData(prevData => {
+      const newData = { ...prevData };
+      
+      cpuData.forEach(d => {
+        if (d.per_core_parsed) {
+          const timestamp = new Date(d.scan_timestamp).getTime();
+          
+          d.per_core_parsed.forEach(coreData => {
+            if (!newData.cores[coreData.cpu_id]) {
+              newData.cores[coreData.cpu_id] = [];
+            }
+            newData.cores[coreData.cpu_id].push([timestamp, coreData.utilization_pct]);
+            
+            // Trim core data to max data points
+            if (newData.cores[coreData.cpu_id].length > maxDataPoints) {
+              newData.cores[coreData.cpu_id] = newData.cores[coreData.cpu_id].slice(-maxDataPoints);
+            }
+          });
+        }
+      });
+      
+      return newData;
+    });
+  }, [maxDataPoints]);
+
+  // Incremental update function for Memory (pure incremental only)
   const updateMemoryChartData = useCallback((memoryData) => {
-    // Sort memory data by timestamp for proper initialization
+    // Sort memory data by timestamp
     const sortedMemoryData = [...memoryData].sort((a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp));
     
     setMemoryChartData(prevData => {
-      const isInitialLoad = prevData.used.length === 0;
+      const newData = { ...prevData };
       
-      if (isInitialLoad) {
-        // Initialize with all historical data
-        const used = [];
-        const free = [];
-        const cached = [];
-        const total = [];
-
-        sortedMemoryData.forEach(d => {
-          const timestamp = new Date(d.scan_timestamp).getTime();
-          used.push([timestamp, parseFloat((d.used_memory_bytes / (1024 ** 3)).toFixed(2))]);
-          free.push([timestamp, parseFloat((d.free_memory_bytes / (1024 ** 3)).toFixed(2))]);
-          cached.push([timestamp, parseFloat((d.cached_bytes / (1024 ** 3)).toFixed(2))]);
-          total.push([timestamp, parseFloat((d.total_memory_bytes / (1024 ** 3)).toFixed(2))]);
-        });
-
-        return {
-          used: used,
-          free: free,
-          cached: cached,
-          total: total,
-        };
-      } else {
-        // Update mode - add the latest point
-        const latestData = sortedMemoryData[sortedMemoryData.length - 1];
-        if (latestData) {
-          const timestamp = new Date(latestData.scan_timestamp).getTime();
-          const newUsed = [...prevData.used, [timestamp, parseFloat((latestData.used_memory_bytes / (1024 ** 3)).toFixed(2))]];
-          const newFree = [...prevData.free, [timestamp, parseFloat((latestData.free_memory_bytes / (1024 ** 3)).toFixed(2))]];
-          const newCached = [...prevData.cached, [timestamp, parseFloat((latestData.cached_bytes / (1024 ** 3)).toFixed(2))]];
-          const newTotal = [...prevData.total, [timestamp, parseFloat((latestData.total_memory_bytes / (1024 ** 3)).toFixed(2))]];
-
-          return {
-            used: newUsed.length > maxDataPoints ? newUsed.slice(-maxDataPoints) : newUsed,
-            free: newFree.length > maxDataPoints ? newFree.slice(-maxDataPoints) : newFree,
-            cached: newCached.length > maxDataPoints ? newCached.slice(-maxDataPoints) : newCached,
-            total: newTotal.length > maxDataPoints ? newTotal.slice(-maxDataPoints) : newTotal,
-          };
-        }
+      // Process each new memory data point
+      sortedMemoryData.forEach(d => {
+        const timestamp = new Date(d.scan_timestamp).getTime();
+        
+        newData.used.push([timestamp, parseFloat((d.used_memory_bytes / (1024 ** 3)).toFixed(2))]);
+        newData.free.push([timestamp, parseFloat((d.free_memory_bytes / (1024 ** 3)).toFixed(2))]);
+        newData.cached.push([timestamp, parseFloat((d.cached_bytes / (1024 ** 3)).toFixed(2))]);
+        newData.total.push([timestamp, parseFloat((d.total_memory_bytes / (1024 ** 3)).toFixed(2))]);
+      });
+      
+      // Trim to max data points
+      if (newData.used.length > maxDataPoints) {
+        newData.used = newData.used.slice(-maxDataPoints);
+        newData.free = newData.free.slice(-maxDataPoints);
+        newData.cached = newData.cached.slice(-maxDataPoints);
+        newData.total = newData.total.slice(-maxDataPoints);
       }
       
-      return prevData;
+      return newData;
     });
   }, [maxDataPoints]);
 
@@ -491,11 +582,14 @@ export const useHostData = (currentServer) => {
         setNetworkUsage(sortedNetworkUsage);
       }
 
-      // Process storage pool I/O historical data
+      // Process storage pool I/O historical data - DIRECT STATE REPLACEMENT
       if (poolIOResult.status === 'fulfilled' && poolIOResult.value?.success) {
         const poolIOData = poolIOResult.value.data?.poolio || [];
         console.log('📊 HISTORICAL CHARTS: Processing', poolIOData.length, 'historical pool I/O records');
-        updatePoolIOChartData(poolIOData);
+        
+        // Direct state replacement using historical processor (like Network/ARC)
+        const processedStorageIOData = processStorageIOHistoricalData(poolIOData);
+        setChartData(processedStorageIOData);
         
         // Extract latest values for current state
         const deduplicatedPoolIO = poolIOData.reduce((acc, poolIO) => {
@@ -553,20 +647,25 @@ export const useHostData = (currentServer) => {
         setArcStats(deduplicatedARC);
       }
 
-      // Process CPU historical data
+      // Process CPU historical data - DIRECT STATE REPLACEMENT
       if (cpuResult.status === 'fulfilled' && cpuResult.value?.success) {
         const cpuData = cpuResult.value.data?.cpu || [];
         console.log('📊 HISTORICAL CHARTS: Processing', cpuData.length, 'historical CPU records');
-        updateCPUChartData(cpuData);
-        updateCPUCoreChartData(cpuData);
+        
+        // Direct state replacement using historical processor (like Network/ARC)
+        const processedCPUData = processCPUHistoricalData(cpuData);
+        setCpuChartData(processedCPUData);
         setCpuStats(cpuData);
       }
 
-      // Process memory historical data
+      // Process memory historical data - DIRECT STATE REPLACEMENT
       if (memoryResult.status === 'fulfilled' && memoryResult.value?.success) {
         const memoryData = memoryResult.value.data?.memory || [];
         console.log('📊 HISTORICAL CHARTS: Processing', memoryData.length, 'historical memory records');
-        updateMemoryChartData(memoryData);
+        
+        // Direct state replacement using historical processor (like Network/ARC)
+        const processedMemoryData = processMemoryHistoricalData(memoryData);
+        setMemoryChartData(processedMemoryData);
         setMemoryStats(memoryData);
       }
 

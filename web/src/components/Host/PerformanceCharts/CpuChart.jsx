@@ -60,6 +60,9 @@ const CpuChart = ({ cpuChartData, cpuSeriesVisibility, setCpuSeriesVisibility, e
                 highcharts={Highcharts}
                 options={{
                   chart: { type: 'spline', height: 200, backgroundColor: '#1e2a3a' },
+                  time: {
+                    useUTC: false
+                  },
                   title: { text: 'CPU Performance', style: { color: '#ffffff', fontSize: '12px' } },
                   xAxis: { type: 'datetime', labels: { style: { color: '#b0bec5' } } },
                   yAxis: [{ title: { text: 'Usage %', style: { color: '#b0bec5' } }, min: 0, max: 100 }, { title: { text: 'Load', style: { color: '#b0bec5' } }, opposite: true }],
