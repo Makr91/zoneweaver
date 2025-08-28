@@ -26,27 +26,14 @@ const SidebarHeader = () => {
           <i className='icon-zoneweaver-logo'></i>
         </span>
       );
-    } else if (width < 180) {
-      // Logo + text, no version when narrow but not collapsed
+    } else {
+      // Logo + text when not collapsed (no version)
       return (
         <>
           <span className='icon'>
             <i className='icon-zoneweaver-logo'></i>
           </span>
           <span>Zoneweaver</span>
-          <span className='icon'>
-            <i className='fa fa-angle-left'></i>
-          </span>
-        </>
-      );
-    } else {
-      // Full header with version when wide enough (default 240px)
-      return (
-        <>
-          <span className='icon'>
-            <i className='icon-zoneweaver-logo'></i>
-          </span>
-          <span>Zoneweaver v{__APP_VERSION__ || '1.0.0'}</span>
           <span className='icon'>
             <i className='fa fa-angle-left'></i>
           </span>
