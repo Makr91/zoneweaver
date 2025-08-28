@@ -48,6 +48,7 @@ const Hosts = () => {
     resolution,
     setResolution,
     loadHostData,
+    refreshAllData,
   } = useHostData(currentServer);
 
   const [expandedChart, setExpandedChart] = useState(null);
@@ -201,7 +202,7 @@ const Hosts = () => {
             loading={loading}
             refreshInterval={refreshInterval}
             setRefreshInterval={setRefreshInterval}
-            loadHostData={loadHostData}
+            refreshAllData={refreshAllData}
             timeWindow={timeWindow}
             setTimeWindow={setTimeWindow}
             resolution={resolution}

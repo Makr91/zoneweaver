@@ -5,7 +5,7 @@ const HostHeader = ({
   loading, 
   refreshInterval, 
   setRefreshInterval, 
-  loadHostData,
+  refreshAllData,
   timeWindow,
   setTimeWindow,
   resolution,
@@ -88,7 +88,7 @@ const HostHeader = ({
           <div className='control'>
             <button 
               className={`button is-small is-info ${loading ? 'is-loading' : ''}`}
-              onClick={() => loadHostData(currentServer)}
+              onClick={() => refreshAllData(currentServer)}
               disabled={loading}
             >
               <span className='icon'>

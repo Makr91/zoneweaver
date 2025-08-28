@@ -47,6 +47,15 @@ export const useHostData = (currentServer) => {
   const initialLoadDone = useRef(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
+  // Track latest timestamps for incremental chart updates
+  const [lastChartTimestamps, setLastChartTimestamps] = useState({
+    poolIO: null,
+    network: null,
+    arc: null,
+    cpu: null,
+    memory: null
+  });
+
   const {
     makeZoneweaverAPIRequest,
     getMonitoringHealth,
@@ -560,10 +569,227 @@ export const useHostData = (currentServer) => {
 
       console.log('📊 HISTORICAL CHARTS: Completed loading historical data for all chart types');
 
+      // Update timestamp tracking after successful historical load
+      const newTimestamps = {};
+      
+      if (networkResult.status === 'fulfilled' && networkResult.value?.success) {
+        const networkData = networkResult.value.data?.usage || [];
+        if (networkData.length > 0) {
+          const latestNetwork = networkData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.network = latestNetwork.scan_timestamp;
+        }
+      }
+      
+      if (poolIOResult.status === 'fulfilled' && poolIOResult.value?.success) {
+        const poolIOData = poolIOResult.value.data?.poolio || [];
+        if (poolIOData.length > 0) {
+          const latestPoolIO = poolIOData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.poolIO = latestPoolIO.scan_timestamp;
+        }
+      }
+      
+      if (arcResult.status === 'fulfilled' && arcResult.value?.success) {
+        const arcData = arcResult.value.data?.arc || [];
+        if (arcData.length > 0) {
+          const latestARC = arcData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.arc = latestARC.scan_timestamp;
+        }
+      }
+      
+      if (cpuResult.status === 'fulfilled' && cpuResult.value?.success) {
+        const cpuData = cpuResult.value.data?.cpu || [];
+        if (cpuData.length > 0) {
+          const latestCPU = cpuData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.cpu = latestCPU.scan_timestamp;
+        }
+      }
+      
+      if (memoryResult.status === 'fulfilled' && memoryResult.value?.success) {
+        const memoryData = memoryResult.value.data?.memory || [];
+        if (memoryData.length > 0) {
+          const latestMemory = memoryData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.memory = latestMemory.scan_timestamp;
+        }
+      }
+
+      setLastChartTimestamps(prev => ({ ...prev, ...newTimestamps }));
+
     } catch (error) {
       console.error('📊 HISTORICAL CHARTS: Error loading historical data:', error);
     }
   }, [currentServer, makeZoneweaverAPIRequest, timeWindow, resolution, getStoragePoolIO, getStorageARC, getSystemCPU, getSystemMemory, updatePoolIOChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData]);
+
+  // Load recent chart data for incremental refresh
+  const loadRecentChartData = useCallback(async () => {
+    if (!currentServer || !makeZoneweaverAPIRequest) return;
+
+    try {
+      console.log('🔄 RECENT CHARTS: Loading recent chart data for refresh');
+
+      // Check if we have any timestamps - if not, fall back to historical load
+      const hasTimestamps = Object.values(lastChartTimestamps).some(timestamp => timestamp !== null);
+      if (!hasTimestamps) {
+        console.log('🔄 RECENT CHARTS: No timestamps found, falling back to historical load');
+        return loadHistoricalChartData();
+      }
+
+      // Load recent data for all chart types in parallel
+      const results = await Promise.allSettled([
+        // Network usage data (if we have a timestamp)
+        lastChartTimestamps.network ? makeZoneweaverAPIRequest(
+          currentServer.hostname, 
+          currentServer.port, 
+          currentServer.protocol, 
+          `monitoring/network/usage?since=${encodeURIComponent(lastChartTimestamps.network)}&limit=${getResolutionLimit(resolution)}&per_interface=true`
+        ) : Promise.resolve({ success: false, message: 'No network timestamp' }),
+        
+        // Storage pool I/O data (if we have a timestamp)
+        lastChartTimestamps.poolIO ? getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
+          limit: getResolutionLimit(resolution),
+          since: lastChartTimestamps.poolIO,
+          per_pool: true
+        }) : Promise.resolve({ success: false, message: 'No poolIO timestamp' }),
+        
+        // ZFS ARC data (if we have a timestamp)
+        lastChartTimestamps.arc ? getStorageARC(currentServer.hostname, currentServer.port, currentServer.protocol, {
+          limit: getResolutionLimit(resolution),
+          since: lastChartTimestamps.arc
+        }) : Promise.resolve({ success: false, message: 'No arc timestamp' }),
+        
+        // CPU data (if we have a timestamp)
+        lastChartTimestamps.cpu ? makeZoneweaverAPIRequest(
+          currentServer.hostname, 
+          currentServer.port, 
+          currentServer.protocol, 
+          `monitoring/system/cpu?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(lastChartTimestamps.cpu)}&include_cores=true`
+        ) : Promise.resolve({ success: false, message: 'No cpu timestamp' }),
+        
+        // Memory data (if we have a timestamp)
+        lastChartTimestamps.memory ? makeZoneweaverAPIRequest(
+          currentServer.hostname, 
+          currentServer.port, 
+          currentServer.protocol, 
+          `monitoring/system/memory?limit=${getResolutionLimit(resolution)}&since=${encodeURIComponent(lastChartTimestamps.memory)}`
+        ) : Promise.resolve({ success: false, message: 'No memory timestamp' })
+      ]);
+
+      const [networkResult, poolIOResult, arcResult, cpuResult, memoryResult] = results;
+
+      // Track updated timestamps
+      const newTimestamps = {};
+
+      // Process network recent data
+      if (networkResult.status === 'fulfilled' && networkResult.value?.success) {
+        const networkData = networkResult.value.data?.usage || [];
+        console.log('🔄 RECENT CHARTS: Processing', networkData.length, 'recent network records');
+        
+        if (networkData.length > 0) {
+          updateNetworkChartData(networkData);
+          
+          // Update network usage state (for tables)
+          const validNetworkUsage = networkData.filter(usage => 
+            usage.link && 
+            usage.link !== 'LINK' && 
+            usage.ipackets !== 'IPACKETS' &&
+            usage.time_delta_seconds > 0
+          );
+          
+          if (validNetworkUsage.length > 0) {
+            // Find latest timestamp for this chart type
+            const latestNetwork = validNetworkUsage.reduce((latest, current) => 
+              new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+            );
+            newTimestamps.network = latestNetwork.scan_timestamp;
+          }
+        }
+      }
+
+      // Process storage pool I/O recent data
+      if (poolIOResult.status === 'fulfilled' && poolIOResult.value?.success) {
+        const poolIOData = poolIOResult.value.data?.poolio || [];
+        console.log('🔄 RECENT CHARTS: Processing', poolIOData.length, 'recent pool I/O records');
+        
+        if (poolIOData.length > 0) {
+          updatePoolIOChartData(poolIOData);
+          
+          // Find latest timestamp for this chart type
+          const latestPoolIO = poolIOData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.poolIO = latestPoolIO.scan_timestamp;
+        }
+      }
+
+      // Process ZFS ARC recent data
+      if (arcResult.status === 'fulfilled' && arcResult.value?.success) {
+        const arcData = arcResult.value.data?.arc || [];
+        console.log('🔄 RECENT CHARTS: Processing', arcData.length, 'recent ARC records');
+        
+        if (arcData.length > 0) {
+          updateARCChartData(arcData);
+          
+          // Find latest timestamp for this chart type
+          const latestARC = arcData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.arc = latestARC.scan_timestamp;
+        }
+      }
+
+      // Process CPU recent data
+      if (cpuResult.status === 'fulfilled' && cpuResult.value?.success) {
+        const cpuData = cpuResult.value.data?.cpu || [];
+        console.log('🔄 RECENT CHARTS: Processing', cpuData.length, 'recent CPU records');
+        
+        if (cpuData.length > 0) {
+          updateCPUChartData(cpuData);
+          updateCPUCoreChartData(cpuData);
+          
+          // Find latest timestamp for this chart type
+          const latestCPU = cpuData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.cpu = latestCPU.scan_timestamp;
+        }
+      }
+
+      // Process memory recent data
+      if (memoryResult.status === 'fulfilled' && memoryResult.value?.success) {
+        const memoryData = memoryResult.value.data?.memory || [];
+        console.log('🔄 RECENT CHARTS: Processing', memoryData.length, 'recent memory records');
+        
+        if (memoryData.length > 0) {
+          updateMemoryChartData(memoryData);
+          
+          // Find latest timestamp for this chart type
+          const latestMemory = memoryData.reduce((latest, current) => 
+            new Date(current.scan_timestamp) > new Date(latest.scan_timestamp) ? current : latest
+          );
+          newTimestamps.memory = latestMemory.scan_timestamp;
+        }
+      }
+
+      // Update timestamps with any new data we received
+      if (Object.keys(newTimestamps).length > 0) {
+        setLastChartTimestamps(prev => ({ ...prev, ...newTimestamps }));
+      }
+
+      console.log('🔄 RECENT CHARTS: Completed loading recent data for all chart types');
+
+    } catch (error) {
+      console.error('🔄 RECENT CHARTS: Error loading recent chart data:', error);
+    }
+  }, [currentServer, makeZoneweaverAPIRequest, lastChartTimestamps, resolution, getStoragePoolIO, getStorageARC, updateNetworkChartData, updatePoolIOChartData, updateARCChartData, updateCPUChartData, updateCPUCoreChartData, updateMemoryChartData, loadHistoricalChartData]);
 
 
   const loadHostData = useCallback(async (server) => {
@@ -729,14 +955,38 @@ export const useHostData = (currentServer) => {
   }, [currentServer]);
 
   // Load historical chart data when time window or resolution changes (but not during initial load)
+  // Also reset timestamps since we're changing the time window
   useEffect(() => {
     if (currentServer && makeZoneweaverAPIRequest && initialLoadDone.current) {
       console.log('📊 HISTORICAL CHARTS: Time window or resolution changed, loading historical data');
+      // Reset timestamps when time window or resolution changes
+      setLastChartTimestamps({
+        poolIO: null,
+        network: null,
+        arc: null,
+        cpu: null,
+        memory: null
+      });
       loadHistoricalChartData();
     } else if (!initialLoadDone.current) {
       console.log('📊 HISTORICAL CHARTS: Skipping settings change during initial load');
     }
   }, [timeWindow, resolution, loadHistoricalChartData]);
+
+  // Combined refresh function for both auto-refresh and manual refresh
+  const refreshAllData = useCallback(async (server = currentServer) => {
+    if (!server) return;
+    
+    console.log('🔄 REFRESH: Starting combined refresh for host data and charts');
+    
+    // Run both in parallel
+    await Promise.all([
+      loadHostData(server),
+      loadRecentChartData()
+    ]);
+    
+    console.log('🔄 REFRESH: Completed combined refresh');
+  }, [currentServer, loadHostData, loadRecentChartData]);
 
   // Auto-refresh effect - wait for initial data to load before starting
   useEffect(() => {
@@ -749,15 +999,15 @@ export const useHostData = (currentServer) => {
 
     console.log('🔄 HOST: Setting up auto-refresh every', refreshInterval, 'seconds');
     const interval = setInterval(() => {
-      console.log('🔄 HOST: Auto-refreshing host data...');
-      loadHostData(currentServer);
+      console.log('🔄 HOST: Auto-refreshing host data and charts...');
+      refreshAllData(currentServer);
     }, refreshInterval * 1000);
 
     return () => {
       console.log('🔄 HOST: Cleaning up auto-refresh interval');
       clearInterval(interval);
     };
-  }, [refreshInterval, currentServer, initialDataLoaded, loadHostData]);
+  }, [refreshInterval, currentServer, initialDataLoaded, refreshAllData]);
 
   return {
     serverStats,
@@ -790,6 +1040,7 @@ export const useHostData = (currentServer) => {
     setResolution,
     maxDataPoints,
     setMaxDataPoints,
-    loadHostData
+    loadHostData,
+    refreshAllData  // Export the combined refresh function
   };
 };
