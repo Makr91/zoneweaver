@@ -370,7 +370,8 @@ export const useHostData = (currentServer) => {
         // Storage pool I/O data  
         getStoragePoolIO(currentServer.hostname, currentServer.port, currentServer.protocol, {
           limit: getResolutionLimit(resolution),
-          since: historicalTimestamp
+          since: historicalTimestamp,
+          per_pool: true
         }),
         // ZFS ARC data
         getStorageARC(currentServer.hostname, currentServer.port, currentServer.protocol, {

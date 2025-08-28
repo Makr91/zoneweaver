@@ -221,10 +221,6 @@ const Layout = () => {
     }
   }, [isAuthenticated, loading, navigate]);
 
-  /**
-   * Server loading is handled by ServerContext - no need to duplicate here
-   */
-
   // Show loading spinner while checking authentication
   if (loading) {
     return (
