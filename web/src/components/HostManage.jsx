@@ -7,6 +7,7 @@ import ServiceManagement from "./Host/ServiceManagement";
 import NetworkHostnameManagement from "./Host/NetworkHostnameManagement";
 import PackageManagement from "./Host/PackageManagement";
 import BootEnvironmentManagement from "./Host/BootEnvironmentManagement";
+import TimeNTPManagement from "./Host/TimeNTPManagement";
 
 const HostManage = () => {
   const [activeTab, setActiveTab] = useState('services');
@@ -80,14 +81,6 @@ const HostManage = () => {
                 <strong>Host Management: {currentServer.hostname}</strong>
               </div>
             </div>
-            <div className='level-right'>
-              <div className='tags has-addons'>
-                <span className='tag'>Status</span>
-                <span className={`tag ${currentServer.status === 'online' || currentServer.status === 'up' ? 'is-success' : 'is-danger'}`}>
-                  {currentServer.status || currentServer.state || 'Unknown'}
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Tab Navigation */}
@@ -123,8 +116,8 @@ const HostManage = () => {
                   <span>Storage Management</span>
                 </a>
               </li>
-              <li className='is-disabled'>
-                <a>
+              <li className={activeTab === 'time-ntp' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('time-ntp')}>
                   <span className='icon is-small'><i className='fas fa-clock'></i></span>
                   <span>Time & NTP</span>
                 </a>
@@ -196,6 +189,21 @@ const HostManage = () => {
                 </div>
                 
                 <BootEnvironmentManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Time & NTP Tab */}
+            {activeTab === 'time-ntp' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Time Synchronization & NTP Management</h2>
+                  <p className='content'>
+                    Manage time synchronization services, NTP configuration, and timezone settings on <strong>{currentServer.hostname}</strong>. 
+                    Monitor time server peers, configure NTP servers, and manage system timezone.
+                  </p>
+                </div>
+                
+                <TimeNTPManagement server={currentServer} />
               </div>
             )}
           </div>
