@@ -89,17 +89,17 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className='has-text-grey' style={{ fontSize: '0.85rem' }}>
+                                            <span className='has-text-grey is-size-7'>
                                                 R: {poolIO.total_wait_read}, W: {poolIO.total_wait_write}
                                             </span>
                                         </td>
                                         <td>
-                                            <span className='has-text-grey' style={{ fontSize: '0.85rem' }}>
+                                            <span className='has-text-grey is-size-7'>
                                                 R: {poolIO.disk_wait_read}, W: {poolIO.disk_wait_write}
                                             </span>
                                         </td>
                                         <td>
-                                            <span className='has-text-grey' style={{ fontSize: '0.8rem' }}>
+                                            <span className='has-text-grey is-size-7'>
                                                 {new Date(poolIO.scan_timestamp).toLocaleTimeString()}
                                             </span>
                                         </td>

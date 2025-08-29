@@ -14,8 +14,7 @@ const DiskIOTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={resetDiskIOSort}
                         title="Click to reset sorting to default"
                     >
@@ -93,7 +92,7 @@ const DiskIOTable = ({
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <span className='has-text-grey' style={{ fontSize: '0.8rem' }}>
+                                                    <span className='has-text-grey is-size-7'>
                                                         {new Date(io.scan_timestamp).toLocaleTimeString()}
                                                     </span>
                                                 </td>

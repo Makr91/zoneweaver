@@ -117,7 +117,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span className='has-text-grey' style={{ fontSize: '0.8rem' }}>
+                                                        <span className='has-text-grey is-size-7'>
                                                             {new Date(arc.scan_timestamp).toLocaleTimeString()}
                                                         </span>
                                                     </td>
