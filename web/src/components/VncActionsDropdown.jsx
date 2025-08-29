@@ -237,9 +237,7 @@ const VncActionsDropdown = ({
     <div 
       className="dropdown-content"
       style={{
-        backgroundColor: 'var(--bulma-scheme-main-bis)',
-        border: '1px solid var(--bulma-border)',
-        minWidth: '320px'
+        minWidth: '280px'
       }}
     >
       
@@ -273,18 +271,12 @@ const VncActionsDropdown = ({
               position: 'absolute',
               ...calculateSubmenuPosition(350),
               top: '0',
-              minWidth: '320px',
+              minWidth: '280px',
               maxWidth: '350px',
               zIndex: 10000
             }}
           >
-            <div 
-              className="dropdown-content"
-              style={{
-                backgroundColor: 'var(--bulma-scheme-main-bis)',
-                border: '1px solid var(--bulma-border)'
-              }}
-            >
+            <div className="dropdown-content">
               {/* Common Shortcuts */}
               <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
                 <span className="icon mr-2">
@@ -409,13 +401,7 @@ const VncActionsDropdown = ({
                       zIndex: 10001
                     }}
                   >
-                    <div 
-                      className="dropdown-content"
-                      style={{
-                        backgroundColor: 'var(--bulma-scheme-main-bis)',
-                        border: '1px solid var(--bulma-border)'
-                      }}
-                    >
+                    <div className="dropdown-content">
                       {[...Array(12)].map((_, i) => {
                         const fKeyNum = i + 1;
                         const keyCode = `F${fKeyNum}`;
@@ -478,13 +464,7 @@ const VncActionsDropdown = ({
               zIndex: 20001
             }}
           >
-            <div 
-              className="dropdown-content"
-              style={{
-                backgroundColor: 'var(--bulma-scheme-main-bis)',
-                border: '1px solid var(--bulma-border)'
-              }}
-            >
+            <div className="dropdown-content">
               {/* Scaling Options */}
               <div className="dropdown-item">
                 <div className="field">
@@ -641,13 +621,7 @@ const VncActionsDropdown = ({
               zIndex: 20001
             }}
           >
-            <div 
-              className="dropdown-content"
-              style={{
-                backgroundColor: 'var(--bulma-scheme-main-bis)',
-                border: '1px solid var(--bulma-border)'
-              }}
-            >
+            <div className="dropdown-content">
               {/* Enable Interactive/Read Only */}
               {isAdmin && actualToggleHandler && (
                 <>

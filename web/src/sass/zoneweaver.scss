@@ -192,14 +192,12 @@ $yellow: #ffe600;
 // Clean dropdown styling that respects themes
 .dropdown-content {
   border-radius: 6px !important;
-  background-color: var(--bulma-scheme-main-bis) !important;
   border: 1px solid var(--bulma-border) !important;
 }
 
 .dropdown-menu {
   .dropdown-content {
     border-radius: 6px !important;
-    background-color: var(--bulma-scheme-main-bis) !important;
     border: 1px solid var(--bulma-border) !important;
   }
 }

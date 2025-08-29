@@ -35,13 +35,7 @@ const ZloginActionsDropdown = ({
   };
 
   const dropdownContent = (
-    <div 
-      className="dropdown-content"
-      style={{
-        backgroundColor: 'var(--bulma-scheme-main-bis)',
-        border: '1px solid var(--bulma-border)'
-      }}
-    >
+    <div className="dropdown-content">
       {isAdmin && onToggleReadOnly && (
         <>
           <a 
