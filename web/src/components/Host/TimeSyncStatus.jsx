@@ -239,7 +239,7 @@ const TimeSyncStatus = ({ server, onError }) => {
         features: [
           'Better for intermittent connections',
           'Faster synchronization',
-          'Uses /etc/chrony.conf'
+          'Uses /etc/inet/chrony.conf'
         ]
       },
       ntpsec: {
@@ -483,7 +483,7 @@ const TimeSyncStatus = ({ server, onError }) => {
           </div>
           <div className='control'>
             <button
-              className='button'
+              className='button is-warning'
               onClick={() => handleServiceAction('restart')}
               disabled={!statusInfo?.available || syncing || loading}
             >
@@ -500,32 +500,7 @@ const TimeSyncStatus = ({ server, onError }) => {
       <div className='box'>
         <h3 className='title is-6'>Time Synchronization Service Management</h3>
         
-        {/* Current Service Status */}
-        {availableSystems?.current && (
-          <div className='notification is-info is-light mb-4'>
-            <p>
-              <strong>Current Service:</strong> {getSystemInfo(availableSystems.current.service).name}
-              <br/>
-              <strong>Status:</strong> {availableSystems.current.status}
-              {availableSystems.current.available && (
-                <span className='tag is-success is-small ml-2'>Active</span>
-              )}
-            </p>
-          </div>
-        )}
 
-        {/* Recommendations */}
-        {availableSystems?.recommendations && (
-          <div className='notification is-info is-light mb-4'>
-            <p>
-              <strong>Recommendations:</strong><br/>
-              <strong>Modern:</strong> {getSystemInfo(availableSystems.recommendations.modern).name} • 
-              <strong>Traditional:</strong> {getSystemInfo(availableSystems.recommendations.traditional).name} • 
-              <strong>Secure:</strong> {getSystemInfo(availableSystems.recommendations.secure).name}
-            </p>
-            <p className='is-size-7 mt-2'>{availableSystems.recommendations.description}</p>
-          </div>
-        )}
         
         {/* Available Systems */}
         {availableSystems?.available && (
@@ -612,19 +587,6 @@ const TimeSyncStatus = ({ server, onError }) => {
           </div>
         )}
 
-        {/* Switch operation notes */}
-        <div className='notification is-info is-light mt-4'>
-          <p>
-            <strong>Service Switching:</strong> Switching between time synchronization services will:
-          </p>
-          <ul>
-            <li>Automatically disable the current service</li>
-            <li>Install packages if needed (when "Install if needed" is enabled)</li>
-            <li>Preserve existing server configurations when possible</li>
-            <li>Enable and configure the new service</li>
-            <li>Verify synchronization is working</li>
-          </ul>
-        </div>
       </div>
 
       {/* Action Confirmation Modal */}
