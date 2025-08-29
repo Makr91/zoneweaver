@@ -55,107 +55,46 @@ $yellow: #ffe600;
 }
 
 
-.footer-copyright {
-  align-items: flex-end !important;
-  overflow-y: auto;
-}
+// Common scrollbar mixin
+@mixin custom-scrollbar($width: 10px) {
+  &::-webkit-scrollbar {
+    background: transparent;
+    width: $width;
+  }
 
-.log-footer {
-  align-items: flex-end !important;
-  overflow-y: auto;
+  &::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px var(--bulma-border);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--bulma-border);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--bulma-text-weak);
+  }
 }
 
 .log-console {
   height: 100%;
   align-items: flex-start !important;
   overflow-y: auto;
-}
-
-.log-console::-webkit-scrollbar {
-  background: transparent;
-  width: 10px;
-}
-
-.log-console::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px var(--bulma-border);
-  border-radius: 10px;
-}
-
-.log-console::-webkit-scrollbar-thumb {
-  background: var(--bulma-border);
-  border-radius: 10px;
-}
-
-.log-console::-webkit-scrollbar-thumb:hover {
-  background: var(--bulma-text-weak);
-}
-
-.content-footer {
-  min-height: 0 !important;
-}
-
-.vertical-is-thin {
-  min-height: 0 !important;
-}
-
-.hero-content-body {
-  align-items: flex-start !important;
-  overflow-y: auto;
-  height: 65vh;
-}
-
-.hero-content-body::-webkit-scrollbar {
-  background: transparent;
-  width: 10px;
-}
-
-.hero-content-body::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px var(--bulma-border);
-  border-radius: 10px;
-}
-
-.hero-content-body::-webkit-scrollbar-thumb {
-  background: var(--bulma-border);
-  border-radius: 10px;
-}
-
-.hero-content-body::-webkit-scrollbar-thumb:hover {
-  background: var(--bulma-text-weak);
+  @include custom-scrollbar();
 }
 
 .sidebar {
   width: 100%;
   align-items: flex-start !important;
-}
-
-.sidebar::-webkit-scrollbar {
-  background: transparent;
-  width: 0px;
+  @include custom-scrollbar(0px);
 }
 
 .mainbody {
   height: 1vh;
   align-items: flex-start !important;
   overflow-y: auto;
-}
-
-.mainbody::-webkit-scrollbar {
-  background: transparent;
-  width: 10px;
-}
-
-.mainbody::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px var(--bulma-border);
-  border-radius: 10px;
-}
-
-.mainbody::-webkit-scrollbar-thumb {
-  background: var(--bulma-border);
-  border-radius: 10px;
-}
-
-.mainbody::-webkit-scrollbar-thumb:hover {
-  background: var(--bulma-text-weak);
+  @include custom-scrollbar();
 }
 
 .sidebarbody {
@@ -163,29 +102,7 @@ $yellow: #ffe600;
   align-items: flex-start !important;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.sidebarbody::-webkit-scrollbar {
-  background: transparent;
-  width: 10px;
-}
-
-.sidebarbody::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px var(--bulma-border);
-  border-radius: 10px;
-}
-
-.sidebarbody::-webkit-scrollbar-thumb {
-  background: var(--bulma-border);
-  border-radius: 10px;
-}
-
-.sidebarbody::-webkit-scrollbar-thumb:hover {
-  background: var(--bulma-text-weak);
-}
-
-.active {
-  border-color: transparent !important;
+  @include custom-scrollbar();
 }
 
 .react-resizable {
@@ -264,9 +181,6 @@ $yellow: #ffe600;
   transform: rotate(45deg);
 }
 
-span[data-tooltip] {
-  border-bottom: none;
-}
 
 .is-collapsible {
   overflow-y: hidden;
@@ -475,11 +389,6 @@ button,
   }
 }
 
-// Ensure icons display properly
-.icon i {
-  font-style: normal !important;
-}
-
 // Fix for custom icon fonts
 .icon-zoneweaver-logo {
   font-family: 'fontello' !important;
@@ -493,8 +402,6 @@ button,
   text-transform: none;
   line-height: 1em;
 }
-
-
 
 @font-face {
   font-family: "fontello";
@@ -519,9 +426,6 @@ button,
 .icon-zoneweaver-logo:before {
   content: '\e801';
 }
-
-
-
 
 // Only allow rounded corners on dropdown containers and first/last items
 .dropdown-content,
@@ -553,42 +457,6 @@ button,
   }
 }
 
-// Dashboard placeholder styling for cells
-.dashboard-placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bulma-scheme-main-ter);
-  border-radius: 6px;
-  min-height: 120px;
-  color: var(--bulma-text-weak);
-  font-style: italic;
-}
-
-// Ensure dashboard cells fit on screen without scrolling
-.grid .cell.notification {
-  min-height: 150px;
-  max-height: 280px;
-  display: flex;
-  flex-direction: column;
-  
-  .content {
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  // Smaller title and subtitle for better space usage
-  .title {
-    font-size: 1.25rem !important;
-    margin-bottom: 0.5rem !important;
-  }
-  
-  .subtitle {
-    font-size: 1rem !important;
-    margin-bottom: 0.5rem !important;
-  }
-}
 
 // Task status row styling
 .task-failed {
