@@ -391,10 +391,10 @@ const Navbar = () => {
               <>
                 <button
                   onClick={handleShareCurrentPage}
-                  className='button is-fullwidth is-info'
+                  className='dropdown-item'
                   title="Copy shareable link to clipboard"
                 >
-                  <span className='icon'><i className='fas fa-share-alt'></i></span>
+                  <span className='icon has-text-info mr-2'><i className='fas fa-share-alt'></i></span>
                   <span>Share Link</span>
                 </button>
                 <hr className='dropdown-divider' />
@@ -410,9 +410,9 @@ const Navbar = () => {
                     setCurrentAction("shutdown");
                     setCurrentMode("zone");
                   }}
-                  className='button is-fullwidth has-background-warning-dark has-text-warning-light'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-stop'></i></span>
+                  <span className='icon has-text-warning mr-2'><i className='fas fa-stop'></i></span>
                   <span>Shutdown</span>
                 </button>
                 <button 
@@ -421,9 +421,9 @@ const Navbar = () => {
                     setCurrentAction("start");
                     setCurrentMode("zone");
                   }}
-                  className='button is-fullwidth has-background-success-dark has-text-success-light'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-play'></i></span>
+                  <span className='icon has-text-success mr-2'><i className='fas fa-play'></i></span>
                   <span>Power On</span>
                 </button>
               </>
@@ -436,9 +436,9 @@ const Navbar = () => {
                   setCurrentAction("restart");
                   setCurrentMode("zone");
                 }}
-                className='button is-fullwidth has-background-warning'
+                className='dropdown-item'
               >
-                <span className='icon'><i className='fas fa-redo'></i></span>
+                <span className='icon has-text-warning mr-2'><i className='fas fa-redo'></i></span>
                 <span>Restart</span>
               </button>
             )}
@@ -447,47 +447,47 @@ const Navbar = () => {
               <>
                 <hr className='dropdown-divider' />
                 <button 
-                  className='button is-fullwidth is-dark'
+                  className='dropdown-item'
                   onClick={() => handleVncConsole(false)}
                   disabled={vncLoading || getZoneStatus(currentZone) !== 'running'}
                 >
-                  <span className='icon'><i className='fas fa-terminal'></i></span>
+                  <span className='icon mr-2'><i className='fas fa-terminal'></i></span>
                   <span>{vncLoading ? 'Starting...' : 'Console'}</span>
                 </button>
                 <button 
-                  className='button is-fullwidth is-dark'
+                  className='dropdown-item'
                   onClick={() => handleVncConsole(true)}
                   disabled={vncLoading || getZoneStatus(currentZone) !== 'running'}
                   title="Open Console in New Tab"
                 >
-                  <span className='icon'><i className='fas fa-external-link-alt'></i></span>
+                  <span className='icon mr-2'><i className='fas fa-external-link-alt'></i></span>
                   <span>Console (New Tab)</span>
                 </button>
                 <button
-                  className='button is-fullwidth is-dark'
+                  className='dropdown-item'
                   onClick={() => navigate(`/ui/zones?zlogin=${currentZone}`)}
                   disabled={getZoneStatus(currentZone) !== 'running'}
                   title="Open zlogin Console"
                 >
-                  <span className='icon'><i className='fas fa-terminal'></i></span>
+                  <span className='icon mr-2'><i className='fas fa-terminal'></i></span>
                   <span>zlogin Console</span>
                 </button>
                 <button 
-                  className='button is-fullwidth is-danger'
+                  className='dropdown-item'
                   onClick={handleKillVncSession}
                   disabled={vncLoading}
                   title="Kill VNC Session"
                 >
-                  <span className='icon'><i className='fas fa-times'></i></span>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-times'></i></span>
                   <span>Kill VNC Session</span>
                 </button>
                 <button 
-                  className='button is-fullwidth is-danger'
+                  className='dropdown-item'
                   onClick={handleKillZloginSession}
                   disabled={vncLoading}
                   title="Kill zlogin Session"
                 >
-                  <span className='icon'><i className='fas fa-skull-crossbones'></i></span>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-skull-crossbones'></i></span>
                   <span>Kill zlogin Session</span>
                 </button>
               </>
@@ -503,13 +503,13 @@ const Navbar = () => {
                     setCurrentAction("kill");
                     setCurrentMode("zone");
                   }}
-                  className='button is-fullwidth has-background-warning-dark has-text-warning-light'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-skull'></i></span>
+                  <span className='icon has-text-warning mr-2'><i className='fas fa-skull'></i></span>
                   <span>Force Kill</span>
                 </button>
-                <button className='button is-fullwidth'>
-                  <span className='icon'><i className='fas fa-camera'></i></span>
+                <button className='dropdown-item'>
+                  <span className='icon mr-2'><i className='fas fa-camera'></i></span>
                   <span>Snapshot</span>
                 </button>
                 <button
@@ -518,9 +518,9 @@ const Navbar = () => {
                     setCurrentAction("provision");
                     setCurrentMode("zone");
                   }}
-                  className='button is-fullwidth'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-cogs'></i></span>
+                  <span className='icon mr-2'><i className='fas fa-cogs'></i></span>
                   <span>Provision</span>
                 </button>
                 <button
@@ -529,9 +529,9 @@ const Navbar = () => {
                     setCurrentAction("destroy");
                     setCurrentMode("zone");
                   }}
-                  className='button is-fullwidth has-background-danger-dark has-text-danger-light'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-trash'></i></span>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-trash'></i></span>
                   <span>Destroy</span>
                 </button>
               </>
@@ -570,10 +570,10 @@ const Navbar = () => {
               <>
                 <button
                   onClick={handleShareCurrentPage}
-                  className='button is-fullwidth is-info'
+                  className='dropdown-item'
                   title="Copy shareable link to clipboard"
                 >
-                  <span className='icon'><i className='fas fa-share-alt'></i></span>
+                  <span className='icon has-text-info mr-2'><i className='fas fa-share-alt'></i></span>
                   <span>Share Link</span>
                 </button>
                 <hr className='dropdown-divider' />
@@ -581,12 +581,12 @@ const Navbar = () => {
             )}
             
             {/* Read-only actions available to all users */}
-            <a href='/ui/hosts' className='button is-fullwidth is-info'>
-              <span className='icon'><i className='fas fa-eye'></i></span>
+            <a href='/ui/hosts' className='dropdown-item'>
+              <span className='icon has-text-info mr-2'><i className='fas fa-eye'></i></span>
               <span>View Host Details</span>
             </a>
-            <a href='/ui/zones' className='button is-fullwidth is-info'>
-              <span className='icon'><i className='fas fa-server'></i></span>
+            <a href='/ui/zones' className='dropdown-item'>
+              <span className='icon has-text-info mr-2'><i className='fas fa-server'></i></span>
               <span>Manage Zones</span>
             </a>
             
@@ -594,12 +594,12 @@ const Navbar = () => {
             {canControlHosts(userRole) && (
               <>
                 <hr className='dropdown-divider' />
-                <button className='button is-fullwidth'>
-                  <span className='icon'><i className='fas fa-terminal'></i></span>
+                <button className='dropdown-item'>
+                  <span className='icon mr-2'><i className='fas fa-terminal'></i></span>
                   <span>Shell</span>
                 </button>
-                <button className='button is-fullwidth'>
-                  <span className='icon'><i className='fas fa-desktop'></i></span>
+                <button className='dropdown-item'>
+                  <span className='icon mr-2'><i className='fas fa-desktop'></i></span>
                   <span>Console</span>
                 </button>
               </>
@@ -614,9 +614,9 @@ const Navbar = () => {
                     setCurrentAction("restart");
                     setCurrentMode("host");
                   }}
-                  className='button is-fullwidth has-background-warning'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-redo'></i></span>
+                  <span className='icon has-text-warning mr-2'><i className='fas fa-redo'></i></span>
                   <span>Restart Host</span>
                 </button>
                 <button
@@ -625,9 +625,9 @@ const Navbar = () => {
                     setCurrentAction("shutdown");
                     setCurrentMode("host");
                   }}
-                  className='button is-fullwidth has-background-danger-dark has-text-warning-light'
+                  className='dropdown-item'
                 >
-                  <span className='icon'><i className='fas fa-power-off'></i></span>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-power-off'></i></span>
                   <span>Power Off Host</span>
                 </button>
               </>
@@ -657,9 +657,9 @@ const Navbar = () => {
             onClick={() => {
               clearZone();
             }}
-            className='button is-warning mb-1 is-fullwidth'
+            className='dropdown-item'
           >
-            <span className='icon'>
+            <span className='icon has-text-warning mr-2'>
               <i className='fas fa-times'></i>
             </span>
             <span>Deselect Zone</span>
@@ -675,7 +675,7 @@ const Navbar = () => {
               onClick={() => {
                 selectZone(zone);
               }}
-              className='button mb-1 is-fullwidth'
+              className='dropdown-item'
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -684,7 +684,7 @@ const Navbar = () => {
             >
               <span>{zone}</span>
               <span 
-                className={`icon is-small ${statusColor}`}
+                className={`icon ${statusColor}`}
                 title={`Status: ${status}`}
               >
                 <i className='fas fa-circle' style={{ fontSize: '0.6rem' }}></i>
@@ -741,7 +741,7 @@ const Navbar = () => {
                         selectServer(server);
                         console.log("Host selected:", server.hostname);
                       }}
-                      className='button mb-1 is-fullwidth'
+                      className='dropdown-item'
                     >
                       {server.hostname}
                     </button>

@@ -49,7 +49,7 @@ const ZloginActionsDropdown = ({
             onClick={() => handleAction(onToggleReadOnly)}
             title={isReadOnly ? "Enable interactive mode" : "Enable read-only mode"}
           >
-            <span className="icon is-small mr-2">
+            <span className="icon mr-2">
               <i className={`fas ${isReadOnly ? 'fa-edit' : 'fa-eye'}`}></i>
             </span>
             <span>{isReadOnly ? 'Enable Interactive' : 'Set Read-Only'}</span>
@@ -59,7 +59,7 @@ const ZloginActionsDropdown = ({
       )}
       
       <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-        <span className="icon is-small mr-2">
+        <span className="icon mr-2">
           <i className="fas fa-tools"></i>
         </span>
         <span>Actions</span>
@@ -72,7 +72,7 @@ const ZloginActionsDropdown = ({
           onClick={() => handleAction(onScreenshot)}
           title="Capture terminal output as text"
         >
-          <span className="icon is-small mr-2">
+          <span className="icon mr-2">
             <i className="fas fa-camera"></i>
           </span>
           <span>Capture Output</span>
@@ -87,7 +87,7 @@ const ZloginActionsDropdown = ({
             onClick={() => handleAction(onKillSession)}
             title="Terminate zlogin session"
           >
-            <span className="icon is-small mr-2">
+            <span className="icon mr-2">
               <i className="fas fa-skull"></i>
             </span>
             <span>Kill zlogin Session</span>
@@ -109,7 +109,7 @@ const ZloginActionsDropdown = ({
             disabled={disabled}
             title="zlogin Console Actions"
           >
-            <span className="icon is-small">
+            <span className="icon">
               <i className="fas fa-ellipsis-v"></i>
             </span>
           </button>
@@ -134,7 +134,7 @@ const ZloginActionsDropdown = ({
           style={{ fontSize: '0.875rem' }}
         >
           zlogin Actions
-          <span className="icon is-small ml-1">
+          <span className="icon ml-1">
             <i className="fas fa-angle-down" aria-hidden="true"></i>
           </span>
         </span>

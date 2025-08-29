@@ -156,7 +156,7 @@ const Footer = () => {
                 <div className="dropdown-menu">
                   <div className="dropdown-content">
                     <a className="dropdown-item" onClick={handleRestartShell} style={{ cursor: 'pointer' }}>
-                      <span className="icon is-small">
+                      <span className="icon mr-2">
                         <i className="fas fa-refresh"></i>
                       </span>
                       <span>Restart Shell</span>

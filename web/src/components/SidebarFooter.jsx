@@ -66,24 +66,24 @@ const SidebarFooter = () => {
                 target='_blank' 
                 rel='noopener noreferrer'
               >
-                <span className='icon'><i className='fas fa-info-circle'></i></span>
+                <span className='icon mr-2'><i className='fas fa-info-circle'></i></span>
                 <span>Help and Docs</span>
               </a>
               <a onClick={toggleTheme} className='dropdown-item has-background-grey'>
-                <span className='icon'><i className='fas fa-palette'></i></span>
+                <span className='icon mr-2'><i className='fas fa-palette'></i></span>
                 <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, '')}</span>
               </a>
               <a className='dropdown-item has-background-grey' href='/ui/notifications'>
-                <span className='icon'><i className='fas fa-bell'></i></span>
+                <span className='icon mr-2'><i className='fas fa-bell'></i></span>
                 <span>Notifications</span>
               </a>
               <a className='dropdown-item has-background-grey' href='/ui/profile'>
-                <span className='icon'><i className='fas fa-user'></i></span>
+                <span className='icon mr-2'><i className='fas fa-user'></i></span>
                 <span>Profile</span>
               </a>
               <hr className='dropdown-divider' />
               <a onClick={handleLogout} className='dropdown-item has-background-grey'>
-                <span className='icon has-text-danger'><i className='fas fa-sign-out-alt'></i></span>
+                <span className='icon has-text-danger mr-2'><i className='fas fa-sign-out-alt'></i></span>
                 <span>Log Out</span>
               </a>
             </div>

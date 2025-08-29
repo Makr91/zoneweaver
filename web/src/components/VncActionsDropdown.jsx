@@ -255,12 +255,12 @@ const VncActionsDropdown = ({
         onMouseLeave={() => setShowKeyboardInput(false)}
       >
         <div style={{display: 'flex', alignItems: 'center'}}>
-          <span className="icon is-small mr-2">
+          <span className="icon mr-2">
             <i className="fas fa-keyboard"></i>
           </span>
           <span>Keyboard & Input</span>
         </div>
-        <span className="icon is-small">
+        <span className="icon">
           <i className="fas fa-chevron-right"></i>
         </span>
         
@@ -286,7 +286,7 @@ const VncActionsDropdown = ({
             >
               {/* Common Shortcuts */}
               <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-keyboard"></i>
                 </span>
                 <span>Common Shortcuts</span>
@@ -294,21 +294,21 @@ const VncActionsDropdown = ({
               <hr className="dropdown-divider" />
               
               <a className="dropdown-item" onClick={handleCtrlAltDel}>
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-power-off"></i>
                 </span>
                 <span>Ctrl+Alt+Del</span>
               </a>
               
               <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+Tab')}>
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-window-restore"></i>
                 </span>
                 <span>Alt+Tab</span>
               </a>
               
               <a className="dropdown-item" onClick={() => handleKeyboardShortcut('Alt+F4')}>
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-times"></i>
                 </span>
                 <span>Alt+F4</span>
@@ -318,7 +318,7 @@ const VncActionsDropdown = ({
               
               {/* Modifier Key Toggles */}
               <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-hand-paper"></i>
                 </span>
                 <span>Modifier Keys</span>
@@ -388,11 +388,11 @@ const VncActionsDropdown = ({
                 onMouseEnter={() => setShowFunctionKeys(true)}
                 onMouseLeave={() => setShowFunctionKeys(false)}
               >
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-keyboard"></i>
                 </span>
                 <span>Function Keys</span>
-                <span className="icon is-small ml-auto">
+                <span className="icon ml-auto">
                   <i className="fas fa-chevron-right"></i>
                 </span>
                 
@@ -426,7 +426,7 @@ const VncActionsDropdown = ({
                             onClick={() => handleKeyboardShortcut(keyCode, keysym, true)}
                             title={`Send ${modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift ? buildKeyString(`F${fKeyNum}`) : `F${fKeyNum}`} to guest`}
                           >
-                            <span className="icon is-small mr-2">
+                            <span className="icon mr-2">
                               <i className="fas fa-keyboard"></i>
                             </span>
                             <span>F{fKeyNum}</span>
@@ -455,12 +455,12 @@ const VncActionsDropdown = ({
         onMouseLeave={() => setShowDisplaySettings(false)}
       >
         <div style={{display: 'flex', alignItems: 'center'}}>
-          <span className="icon is-small mr-2">
+          <span className="icon mr-2">
             <i className="fas fa-desktop"></i>
           </span>
           <span>Display Settings</span>
         </div>
-        <span className="icon is-small">
+        <span className="icon">
           <i className="fas fa-chevron-right"></i>
         </span>
         
@@ -618,12 +618,12 @@ const VncActionsDropdown = ({
         onMouseLeave={() => setShowActions(false)}
       >
         <div style={{display: 'flex', alignItems: 'center'}}>
-          <span className="icon is-small mr-2">
+          <span className="icon mr-2">
             <i className="fas fa-tools"></i>
           </span>
           <span>Actions</span>
         </div>
-        <span className="icon is-small">
+        <span className="icon">
           <i className="fas fa-chevron-right"></i>
         </span>
         
@@ -658,7 +658,7 @@ const VncActionsDropdown = ({
                     }}
                     title={actualIsReadOnly ? "Enable interactive mode" : "Enable read-only mode"}
                   >
-                    <span className="icon is-small mr-2">
+                    <span className="icon mr-2">
                       <i className={`fas ${actualIsReadOnly ? 'fa-edit' : 'fa-eye'}`}></i>
                     </span>
                     <span>{actualIsReadOnly ? 'Enable Interactive' : 'Set Read-Only'}</span>
@@ -695,7 +695,7 @@ const VncActionsDropdown = ({
                       setIsActive(false);
                     }}
                   >
-                    <span className="icon is-small mr-2">
+                    <span className="icon mr-2">
                       <i className="fas fa-paste"></i>
                     </span>
                     <span>Paste from Browser Clipboard</span>
@@ -705,7 +705,7 @@ const VncActionsDropdown = ({
               )}
 
               <a className="dropdown-item" onClick={handleScreenshot}>
-                <span className="icon is-small mr-2">
+                <span className="icon mr-2">
                   <i className="fas fa-camera"></i>
                 </span>
                 <span>Take Screenshot</span>
@@ -713,7 +713,7 @@ const VncActionsDropdown = ({
               
               {onFullScreen && (
                 <a className="dropdown-item" onClick={handleFullScreen}>
-                  <span className="icon is-small mr-2">
+                  <span className="icon mr-2">
                     <i className="fas fa-expand"></i>
                   </span>
                   <span>Full Screen</span>
@@ -722,7 +722,7 @@ const VncActionsDropdown = ({
               
               {onNewTab && (
                 <a className="dropdown-item" onClick={handleNewTab}>
-                  <span className="icon is-small mr-2">
+                  <span className="icon mr-2">
                     <i className="fas fa-external-link-alt"></i>
                   </span>
                   <span>Open in New Tab</span>
@@ -737,7 +737,7 @@ const VncActionsDropdown = ({
         <>
           <hr className="dropdown-divider" />
           <a className="dropdown-item has-text-danger" onClick={handleKillSession}>
-            <span className="icon is-small mr-2">
+            <span className="icon mr-2">
               <i className="fas fa-skull"></i>
             </span>
             <span>Kill VNC Session</span>

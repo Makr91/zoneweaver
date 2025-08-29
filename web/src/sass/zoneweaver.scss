@@ -43,17 +43,11 @@ $yellow: #ffe600;
   box-shadow: none !important;
 }
 
-// Custom CSS that doesn't interfere with theming
-.z-index-set-behind {
-  z-index: 9;
-}
-
 // Only apply max-height: 0 to collapsible sections within the sidebar
 .sidebar .is-collapsible.is-minimized,
 #accordion .is-collapsible.is-minimized {
   max-height: 0;
 }
-
 
 // Common scrollbar mixin
 @mixin custom-scrollbar($width: 10px) {
@@ -188,9 +182,6 @@ $yellow: #ffe600;
   overflow-x: hidden;
 }
 
-.is-submenu {
-  padding-left: 2rem !important;
-}
 
 .is-submenu-collapsed {
   .icon {
@@ -209,60 +200,10 @@ $yellow: #ffe600;
   }
 }
 
-// Remove gaps between dropdown elements but let theme handle colors
-.dropdown-content .button,
-.dropdown-menu .button,
-.dropdown-content a,
-.dropdown-menu a,
-.dropdown-content .tag,
-.dropdown-menu .tag,
-.dropdown-content .menu-list a,
-.dropdown-menu .menu-list a,
-.dropdown-content .menu-list li,
-.dropdown-menu .menu-list li,
-.dropdown-content > *,
-.dropdown-menu > * {
-  border-radius: 0 !important;
-  margin: 0 !important;
-  margin-bottom: 0 !important;
-  margin-top: 0 !important;
-  border: none !important;
-  
-  &:first-child {
-    border-top-left-radius: 6px !important;
-    border-top-right-radius: 6px !important;
-  }
-  
-  &:last-child {
-    border-bottom-left-radius: 6px !important;
-    border-bottom-right-radius: 6px !important;
-  }
-  
-  // Handle single element case
-  &:first-child:last-child {
-    border-radius: 6px !important;
-  }
-}
 
-// Remove any global button margins that might interfere
-.dropdown-content, .dropdown-menu {
-  .button.mb-1,
-  .button.is-fullwidth {
-    margin-bottom: 0 !important;
-  }
-}
-
-// AGGRESSIVE border-radius removal for ALL button cases
+// Button styling for remaining buttons (non-dropdown)
 .button,
-button,
-.dropdown-content .button,
-.dropdown-menu .button,
-.dropdown-content button,
-.dropdown-menu button,
-.navbar .button,
-.navbar button,
-.sidebar .button,
-.sidebar button {
+button {
   border-radius: 0 !important;
   border: none !important;
   --bulma-button-border-style: none !important;
@@ -427,35 +368,7 @@ button,
   content: '\e801';
 }
 
-// Only allow rounded corners on dropdown containers and first/last items
-.dropdown-content,
-.dropdown-menu .dropdown-content {
-  border-radius: 6px !important;
-  
-  .button:first-child,
-  button:first-child,
-  > *:first-child {
-    border-top-left-radius: 6px !important;
-    border-top-right-radius: 6px !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-  }
-  
-  .button:last-child,
-  button:last-child,
-  > *:last-child {
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-left-radius: 6px !important;
-    border-bottom-right-radius: 6px !important;
-  }
-  
-  .button:first-child:last-child,
-  button:first-child:last-child,
-  > *:first-child:last-child {
-    border-radius: 6px !important;
-  }
-}
+
 
 
 // Task status row styling
@@ -465,63 +378,4 @@ button,
 
 .task-running {
   background-color: rgba(var(--bulma-warning-h), var(--bulma-warning-s), var(--bulma-warning-l), 0.1) !important;
-}
-
-// Toggle switch styling
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--bulma-grey-light);
-  transition: 0.3s;
-  border-radius: 24px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: var(--bulma-primary);
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px var(--bulma-primary);
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-// Dark theme toggle switch adjustments
-[data-theme="dark"] .slider:before {
-  background-color: var(--bulma-scheme-main);
-}
-
-[data-theme="dark"] input:checked + .slider {
-  background-color: var(--bulma-primary);
 }

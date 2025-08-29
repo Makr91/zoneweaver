@@ -51,13 +51,13 @@ const DeviceFilters = ({
                                 <div className='dropdown-menu'>
                                     <div className='dropdown-content'>
                                         <a className='dropdown-item' onClick={() => exportDeviceData('csv', devices, selectedServer)}>
-                                            <span className='icon'>
+                                            <span className='icon mr-2'>
                                                 <i className='fas fa-file-csv'></i>
                                             </span>
                                             <span>Export as CSV</span>
                                         </a>
                                         <a className='dropdown-item' onClick={() => exportDeviceData('json', devices, selectedServer)}>
-                                            <span className='icon'>
+                                            <span className='icon mr-2'>
                                                 <i className='fas fa-file-code'></i>
                                             </span>
                                             <span>Export as JSON</span>
