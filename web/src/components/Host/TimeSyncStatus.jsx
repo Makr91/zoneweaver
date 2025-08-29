@@ -423,7 +423,7 @@ const TimeSyncStatus = ({ server, onError }) => {
                         </span>
                         <span className='is-size-7 ml-1'>{peer.status || 'Unknown'}</span>
                       </td>
-                      <td className='is-family-monospace'>{peer.remote}</td>
+                      <td className='is-family-monospace'>{peer.remote || peer.name || 'Unknown Server'}</td>
                       <td>{peer.stratum || 'N/A'}</td>
                       <td className={getHealthColor(peer.delay, { good: 50, warning: 200 })}>
                         {formatDelay(peer.delay)}
