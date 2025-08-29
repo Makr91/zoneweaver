@@ -4,6 +4,7 @@ import NTPConfirmActionModal from './NTPConfirmActionModal';
 
 const TimeSyncConfig = ({ server, onError }) => {
   const [configInfo, setConfigInfo] = useState(null);
+  const [statusInfo, setStatusInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [configContent, setConfigContent] = useState('');
@@ -19,6 +20,7 @@ const TimeSyncConfig = ({ server, onError }) => {
   // Load configuration on component mount
   useEffect(() => {
     loadTimeSyncConfig();
+    loadTimeSyncStatus(); // Also load status for restart functionality
   }, [server]);
 
   const loadTimeSyncConfig = async () => {
@@ -51,6 +53,29 @@ const TimeSyncConfig = ({ server, onError }) => {
       onError('Error loading time synchronization configuration: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTimeSyncStatus = async () => {
+    if (!server || !makeZoneweaverAPIRequest) return;
+    
+    try {
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'system/time-sync/status',
+        'GET'
+      );
+      
+      if (result.success) {
+        setStatusInfo(result.data);
+      } else {
+        // Don't show error for status - it's used for restart functionality
+        console.warn('Failed to load time sync status:', result.message);
+      }
+    } catch (err) {
+      console.warn('Error loading time sync status:', err.message);
     }
   };
 
@@ -142,9 +167,63 @@ const TimeSyncConfig = ({ server, onError }) => {
     setConfigContent(filteredLines.join('\n'));
   };
 
+  const handleServiceRestart = async () => {
+    if (!server || !makeZoneweaverAPIRequest) return;
+    
+    if (!statusInfo?.service_details?.fmri) {
+      onError('Service FMRI not available. Cannot restart service.');
+      return { success: false };
+    }
+    
+    try {
+      setSaving(true); // Reuse saving state for restart
+      onError('');
+      
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'services/action',
+        'POST',
+        {
+          fmri: encodeURIComponent(statusInfo.service_details.fmri),
+          action: 'restart',
+          options: {}
+        }
+      );
+      
+      if (result.success) {
+        console.log('Service restart initiated successfully');
+        // Refresh status after restart
+        setTimeout(() => loadTimeSyncStatus(), 2000);
+        return { success: true };
+      } else {
+        onError(result.message || 'Failed to restart time synchronization service');
+        return { success: false };
+      }
+    } catch (err) {
+      console.error('Error restarting service:', err);
+      onError('Error restarting time synchronization service: ' + err.message);
+      return { success: false };
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleServiceAction = (action) => {
     setActionType(action);
     setShowActionModal(true);
+  };
+
+  const getConfirmHandler = () => {
+    switch (actionType) {
+      case 'save':
+        return handleSaveConfig;
+      case 'restart':
+        return handleServiceRestart;
+      default:
+        return () => Promise.resolve({ success: true });
+    }
   };
 
   const isConfigValid = (config) => {
@@ -435,7 +514,7 @@ const TimeSyncConfig = ({ server, onError }) => {
             setShowActionModal(false);
             setActionType('');
           }}
-          onConfirm={actionType === 'save' ? handleSaveConfig : () => {}}
+          onConfirm={getConfirmHandler()}
         />
       )}
     </div>
