@@ -512,7 +512,7 @@ const TimeSyncStatus = ({ server, onError }) => {
               
               return (
                 <div key={systemKey} className='column is-one-third'>
-                  <div className={`card ${isCurrent ? 'has-background-success-light' : ''}`}>
+                <div className={`card ${isCurrent ? 'has-background-info-soft' : ''}`}>
                     <div className='card-header'>
                       <p className='card-header-title'>
                         <span className='icon mr-2'>

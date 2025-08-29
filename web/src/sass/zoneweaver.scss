@@ -4,22 +4,17 @@
 $orange: #ff6600;
 $yellow: #ffe600;
 
-// ALL @use statements must come first, before any @forward statements
-// Override global Sass variables from the /utilities folder
-@use "bulma/sass/utilities" with (
+// Import Bulma with custom variables
+@use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow
 );
-
 
 // Import theme utilities for dark mode implementation
 @use "bulma/sass/utilities/css-variables" as cv;
 @use "bulma/sass/themes/light";
 @use "bulma/sass/themes/dark";
 @use "bulma/sass/themes/setup";
-
-// Import the entire Bulma framework (simpler approach)
-@forward "bulma";
 
 // Implement Bulma's theme system
 // System theme (follows OS preference)
