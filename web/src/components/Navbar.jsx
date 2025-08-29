@@ -412,7 +412,7 @@ const Navbar = () => {
                   }}
                   className='dropdown-item'
                 >
-                  <span className='icon has-text-warning mr-2'><i className='fas fa-stop'></i></span>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-stop'></i></span>
                   <span>Shutdown</span>
                 </button>
                 <button 
@@ -443,55 +443,6 @@ const Navbar = () => {
               </button>
             )}
 
-            {canAccessZoneConsole(userRole) && (
-              <>
-                <hr className='dropdown-divider' />
-                <button 
-                  className='dropdown-item'
-                  onClick={() => handleVncConsole(false)}
-                  disabled={vncLoading || getZoneStatus(currentZone) !== 'running'}
-                >
-                  <span className='icon mr-2'><i className='fas fa-terminal'></i></span>
-                  <span>{vncLoading ? 'Starting...' : 'Console'}</span>
-                </button>
-                <button 
-                  className='dropdown-item'
-                  onClick={() => handleVncConsole(true)}
-                  disabled={vncLoading || getZoneStatus(currentZone) !== 'running'}
-                  title="Open Console in New Tab"
-                >
-                  <span className='icon mr-2'><i className='fas fa-external-link-alt'></i></span>
-                  <span>Console (New Tab)</span>
-                </button>
-                <button
-                  className='dropdown-item'
-                  onClick={() => navigate(`/ui/zones?zlogin=${currentZone}`)}
-                  disabled={getZoneStatus(currentZone) !== 'running'}
-                  title="Open zlogin Console"
-                >
-                  <span className='icon mr-2'><i className='fas fa-terminal'></i></span>
-                  <span>zlogin Console</span>
-                </button>
-                <button 
-                  className='dropdown-item'
-                  onClick={handleKillVncSession}
-                  disabled={vncLoading}
-                  title="Kill VNC Session"
-                >
-                  <span className='icon has-text-danger mr-2'><i className='fas fa-times'></i></span>
-                  <span>Kill VNC Session</span>
-                </button>
-                <button 
-                  className='dropdown-item'
-                  onClick={handleKillZloginSession}
-                  disabled={vncLoading}
-                  title="Kill zlogin Session"
-                >
-                  <span className='icon has-text-danger mr-2'><i className='fas fa-skull-crossbones'></i></span>
-                  <span>Kill zlogin Session</span>
-                </button>
-              </>
-            )}
 
             {/* Advanced controls - admin only */}
             {canDestroyZones(userRole) && (
@@ -505,7 +456,7 @@ const Navbar = () => {
                   }}
                   className='dropdown-item'
                 >
-                  <span className='icon has-text-warning mr-2'><i className='fas fa-skull'></i></span>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-skull'></i></span>
                   <span>Force Kill</span>
                 </button>
                 <button className='dropdown-item'>
@@ -590,20 +541,6 @@ const Navbar = () => {
               <span>Manage Zones</span>
             </a>
             
-            {/* Host control actions - admin only */}
-            {canControlHosts(userRole) && (
-              <>
-                <hr className='dropdown-divider' />
-                <button className='dropdown-item'>
-                  <span className='icon mr-2'><i className='fas fa-terminal'></i></span>
-                  <span>Shell</span>
-                </button>
-                <button className='dropdown-item'>
-                  <span className='icon mr-2'><i className='fas fa-desktop'></i></span>
-                  <span>Console</span>
-                </button>
-              </>
-            )}
             
             {canPowerOffHosts(userRole) && (
               <>

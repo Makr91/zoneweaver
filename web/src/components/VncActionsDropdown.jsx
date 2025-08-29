@@ -272,9 +272,9 @@ const VncActionsDropdown = ({
               position: 'absolute',
               ...calculateSubmenuPosition(350),
               top: '0',
-              minWidth: '280px',
+              minWidth: '320px',
               maxWidth: '350px',
-              zIndex: 1000
+              zIndex: 10000
             }}
           >
             <div 
@@ -405,7 +405,7 @@ const VncActionsDropdown = ({
                       left: '100%',
                       top: '0',
                       minWidth: '140px',
-                      zIndex: 1001
+                      zIndex: 10001
                     }}
                   >
                     <div 

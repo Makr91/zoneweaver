@@ -53,8 +53,8 @@ const SidebarFooter = () => {
             position: 'fixed',
             zIndex: 10001,
             bottom: '60px',
-            left: 'auto',
-            right: 'auto'
+            left: '50%',
+            transform: 'translateX(-50%)'
           }}>
             <div className='dropdown-content has-background-scheme-main-bis has-text-scheme-invert is-flex is-flex-direction-column has-background-grey' style={{
               width: 'fit-content',
