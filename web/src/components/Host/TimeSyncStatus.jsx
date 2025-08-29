@@ -150,10 +150,59 @@ const TimeSyncStatus = ({ server, onError }) => {
     }
   };
 
+  const handleServiceRestart = async () => {
+    if (!server || !makeZoneweaverAPIRequest) return;
+    
+    console.log('Restart button clicked, statusInfo:', statusInfo);
+    
+    if (!statusInfo?.service_details?.fmri) {
+      onError('Service FMRI not available. Cannot restart service.');
+      return { success: false };
+    }
+    
+    try {
+      setSyncing(true);
+      onError('');
+      
+      console.log('Restarting service with FMRI:', statusInfo.service_details.fmri);
+      
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'services/action',
+        'POST',
+        {
+          fmri: encodeURIComponent(statusInfo.service_details.fmri),
+          action: 'restart',
+          options: {}
+        }
+      );
+      
+      if (result.success) {
+        console.log('Service restart initiated successfully');
+        // Refresh status after restart - same pattern as ServiceManagement
+        setTimeout(() => loadTimeSyncStatus(), 2000); // Reduced timeout to match ServiceManagement
+        return { success: true };
+      } else {
+        onError(result.message || 'Failed to restart time synchronization service');
+        return { success: false };
+      }
+    } catch (err) {
+      console.error('Error restarting service:', err);
+      onError('Error restarting time synchronization service: ' + err.message);
+      return { success: false };
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const getConfirmHandler = () => {
     switch (actionType) {
       case 'sync':
         return handleForceSync;
+      case 'restart':
+        return handleServiceRestart;
       case 'switch-ntp':
         return () => handleServiceSwitch('ntp');
       case 'switch-chrony':
