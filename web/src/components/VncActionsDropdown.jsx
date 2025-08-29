@@ -237,7 +237,7 @@ const VncActionsDropdown = ({
     <div 
       className="dropdown-content"
       style={{
-        minWidth: '280px'
+        minWidth: '250px'
       }}
     >
       
@@ -271,7 +271,7 @@ const VncActionsDropdown = ({
               position: 'absolute',
               ...calculateSubmenuPosition(350),
               top: '0',
-              minWidth: '280px',
+              minWidth: '250px',
               maxWidth: '350px',
               zIndex: 10000
             }}
@@ -317,7 +317,7 @@ const VncActionsDropdown = ({
                 <span>Modifier Keys</span>
               </div>
               
-              <div className="dropdown-item" style={{padding: '0.375rem 0.75rem'}}>
+              <div className="dropdown-item px-3 py-2">
                 <div className="field is-grouped">
                   <div className="control">
                     <button 
@@ -493,9 +493,9 @@ const VncActionsDropdown = ({
               
               {/* Quality Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '1rem'}}>
-                  <label className="label is-small" style={{marginBottom: '1rem'}}>Quality Level: {quality}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.5rem'}}>
+                <div className="field mb-4">
+                  <label className="label is-small">Quality Level: {quality}</label>
+                  <div className="control mt-5 mb-5">
                     <input 
                       className="slider is-small is-fullwidth is-primary"
                       type="range"
@@ -520,7 +520,7 @@ const VncActionsDropdown = ({
                       }}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '2.5rem', marginBottom: '0.5rem'}}>
+                  <div className="help is-size-7 mt-2 mb-2">
                     0 = Lowest quality, 9 = Highest quality
                   </div>
                 </div>
@@ -528,9 +528,9 @@ const VncActionsDropdown = ({
               
               {/* Compression Slider */}
               <div className="dropdown-item">
-                <div className="field" style={{marginBottom: '1rem'}}>
-                  <label className="label is-small" style={{marginBottom: '1rem'}}>Compression Level: {compression}</label>
-                  <div className="control" style={{marginTop: '1.25rem', marginBottom: '1.5rem'}}>
+                <div className="field mb-4">
+                  <label className="label is-small" >Compression Level: {compression}</label>
+                  <div className="control mt-5 mb-5">
                     <input 
                       className="slider is-small is-fullwidth is-info"
                       type="range"
@@ -555,7 +555,7 @@ const VncActionsDropdown = ({
                       }}
                     />
                   </div>
-                  <div className="help is-size-7" style={{marginTop: '2.5rem', marginBottom: '0.5rem'}}>
+                  <div className="help is-size-7 mt-2 mb-2">
                     0 = No compression, 9 = Max compression
                   </div>
                 </div>
