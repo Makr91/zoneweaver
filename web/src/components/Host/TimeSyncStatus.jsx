@@ -4,16 +4,19 @@ import NTPConfirmActionModal from './NTPConfirmActionModal';
 
 const TimeSyncStatus = ({ server, onError }) => {
   const [statusInfo, setStatusInfo] = useState(null);
+  const [availableSystems, setAvailableSystems] = useState(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
   const [actionType, setActionType] = useState('');
+  const [targetSystem, setTargetSystem] = useState('');
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load time sync status on component mount
+  // Load time sync status and available systems on component mount
   useEffect(() => {
     loadTimeSyncStatus();
+    loadAvailableSystems();
   }, [server]);
 
   const loadTimeSyncStatus = async () => {
@@ -40,6 +43,29 @@ const TimeSyncStatus = ({ server, onError }) => {
       onError('Error loading time synchronization status: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAvailableSystems = async () => {
+    if (!server || !makeZoneweaverAPIRequest) return;
+    
+    try {
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'system/time-sync/available-systems',
+        'GET'
+      );
+      
+      if (result.success) {
+        setAvailableSystems(result.data);
+      } else {
+        // Don't show error for available systems - it's not critical
+        console.warn('Failed to load available systems:', result.message);
+      }
+    } catch (err) {
+      console.warn('Error loading available systems:', err.message);
     }
   };
 
@@ -81,6 +107,109 @@ const TimeSyncStatus = ({ server, onError }) => {
   const handleServiceAction = (action) => {
     setActionType(action);
     setShowActionModal(true);
+  };
+
+  const handleServiceSwitch = async (targetService) => {
+    if (!server || !makeZoneweaverAPIRequest) return;
+    
+    try {
+      setSyncing(true); // Reuse syncing state for service operations
+      onError('');
+      
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'system/time-sync/switch',
+        'POST',
+        {
+          target_system: targetService, // 'ntp', 'chrony', or 'ntpsec'
+          preserve_servers: true,
+          install_if_needed: true,
+          created_by: 'api'
+        }
+      );
+      
+      if (result.success) {
+        console.log(`Successfully initiated switch to ${targetService} service`);
+        // Refresh both status and available systems after switch
+        setTimeout(() => {
+          loadTimeSyncStatus();
+          loadAvailableSystems();
+        }, 2000);
+        return { success: true };
+      } else {
+        onError(result.message || `Failed to switch to ${targetService} service`);
+        return { success: false };
+      }
+    } catch (err) {
+      onError(`Error switching to ${targetService} service: ` + err.message);
+      return { success: false };
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const getConfirmHandler = () => {
+    switch (actionType) {
+      case 'sync':
+        return handleForceSync;
+      case 'switch-ntp':
+        return () => handleServiceSwitch('ntp');
+      case 'switch-chrony':
+        return () => handleServiceSwitch('chrony');
+      case 'switch-ntpsec':
+        return () => handleServiceSwitch('ntpsec');
+      default:
+        return () => Promise.resolve({ success: true });
+    }
+  };
+
+  const handleSystemSwitch = (systemKey) => {
+    setTargetSystem(systemKey);
+    setActionType(`switch-${systemKey}`);
+    setShowActionModal(true);
+  };
+
+  const getSystemInfo = (systemKey) => {
+    const systemData = {
+      ntp: {
+        name: 'Traditional NTP',
+        icon: 'fa-clock',
+        description: 'Network Time Protocol - Traditional UNIX time synchronization service.',
+        features: [
+          'Mature and widely supported',
+          'Standard on most UNIX systems',
+          'Uses /etc/inet/ntp.conf'
+        ]
+      },
+      chrony: {
+        name: 'Chrony',
+        icon: 'fa-stopwatch',
+        description: 'Modern time synchronization daemon with enhanced features.',
+        features: [
+          'Better for intermittent connections',
+          'Faster synchronization',
+          'Uses /etc/chrony.conf'
+        ]
+      },
+      ntpsec: {
+        name: 'NTPsec',
+        icon: 'fa-shield-alt',
+        description: 'Security-focused NTP implementation with enhanced security features.',
+        features: [
+          'Enhanced security and code quality',
+          'Backward compatible with NTP',
+          'Active security maintenance'
+        ]
+      }
+    };
+    return systemData[systemKey] || systemData.ntp;
+  };
+
+  const getSystemStatus = (systemKey) => {
+    if (!availableSystems?.available) return null;
+    return availableSystems.available[systemKey];
   };
 
   const getServiceStatusBadge = (service, status, available) => {
@@ -318,6 +447,137 @@ const TimeSyncStatus = ({ server, onError }) => {
         </div>
       </div>
 
+      {/* Service Management */}
+      <div className='box'>
+        <h3 className='title is-6'>Time Synchronization Service Management</h3>
+        
+        {/* Current Service Status */}
+        {availableSystems?.current && (
+          <div className='notification is-info is-light mb-4'>
+            <p>
+              <strong>Current Service:</strong> {getSystemInfo(availableSystems.current.service).name}
+              <br/>
+              <strong>Status:</strong> {availableSystems.current.status}
+              {availableSystems.current.available && (
+                <span className='tag is-success is-small ml-2'>Active</span>
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {availableSystems?.recommendations && (
+          <div className='notification is-info is-light mb-4'>
+            <p>
+              <strong>Recommendations:</strong><br/>
+              <strong>Modern:</strong> {getSystemInfo(availableSystems.recommendations.modern).name} • 
+              <strong>Traditional:</strong> {getSystemInfo(availableSystems.recommendations.traditional).name} • 
+              <strong>Secure:</strong> {getSystemInfo(availableSystems.recommendations.secure).name}
+            </p>
+            <p className='is-size-7 mt-2'>{availableSystems.recommendations.description}</p>
+          </div>
+        )}
+        
+        {/* Available Systems */}
+        {availableSystems?.available && (
+          <div className='columns is-multiline'>
+            {Object.keys(availableSystems.available).map((systemKey) => {
+              const systemData = getSystemStatus(systemKey);
+              const systemInfo = getSystemInfo(systemKey);
+              const isCurrent = availableSystems.current?.service === systemKey;
+              
+              return (
+                <div key={systemKey} className='column is-one-third'>
+                  <div className={`card ${isCurrent ? 'has-background-success-light' : ''}`}>
+                    <div className='card-header'>
+                      <p className='card-header-title'>
+                        <span className='icon mr-2'>
+                          <i className={`fas ${systemInfo.icon}`}></i>
+                        </span>
+                        {systemInfo.name}
+                        {isCurrent && (
+                          <span className='tag is-success is-small ml-2'>Current</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className='card-content'>
+                      <div className='content'>
+                        <p>{systemInfo.description}</p>
+                        <ul className='is-size-7'>
+                          {systemInfo.features.map((feature, index) => (
+                            <li key={index}>{feature}</li>
+                          ))}
+                        </ul>
+                        
+                        {systemData && (
+                          <div className='mt-3'>
+                            <div className='tags'>
+                              <span className={`tag is-small ${systemData.installed ? 'is-success' : 'is-warning'}`}>
+                                {systemData.installed ? 'Installed' : 'Not Installed'}
+                              </span>
+                              {systemData.installed && (
+                                <span className={`tag is-small ${systemData.enabled ? 'is-info' : 'is-grey'}`}>
+                                  {systemData.enabled ? 'Enabled' : 'Disabled'}
+                                </span>
+                              )}
+                            </div>
+                            {systemData.package_name && (
+                              <p className='is-size-7 has-text-grey'>Package: {systemData.package_name}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className='card-footer'>
+                      <div className='card-footer-item'>
+                        <button
+                          className={`button is-small ${isCurrent ? 'is-success' : 'is-info'} ${syncing ? 'is-loading' : ''}`}
+                          onClick={() => handleSystemSwitch(systemKey)}
+                          disabled={isCurrent || !systemData?.can_switch_to || loading || syncing}
+                        >
+                          <span className='icon'>
+                            <i className={`fas ${isCurrent ? 'fa-check' : 'fa-exchange-alt'}`}></i>
+                          </span>
+                          <span>
+                            {isCurrent ? 'Current Service' : 
+                             !systemData?.can_switch_to ? 'Cannot Switch' :
+                             !systemData?.installed ? 'Install & Switch' : 'Switch to ' + systemInfo.name}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* No systems available fallback */}
+        {!availableSystems?.available && !loading && (
+          <div className='notification is-warning'>
+            <p>
+              <strong>No Time Synchronization Systems Available</strong><br/>
+              Unable to detect available time synchronization systems. The system may need package installation or configuration.
+            </p>
+          </div>
+        )}
+
+        {/* Switch operation notes */}
+        <div className='notification is-info is-light mt-4'>
+          <p>
+            <strong>Service Switching:</strong> Switching between time synchronization services will:
+          </p>
+          <ul>
+            <li>Automatically disable the current service</li>
+            <li>Install packages if needed (when "Install if needed" is enabled)</li>
+            <li>Preserve existing server configurations when possible</li>
+            <li>Enable and configure the new service</li>
+            <li>Verify synchronization is working</li>
+          </ul>
+        </div>
+      </div>
+
       {/* Action Confirmation Modal */}
       {showActionModal && (
         <NTPConfirmActionModal 
@@ -327,7 +587,7 @@ const TimeSyncStatus = ({ server, onError }) => {
             setShowActionModal(false);
             setActionType('');
           }}
-          onConfirm={actionType === 'sync' ? handleForceSync : () => {}}
+          onConfirm={getConfirmHandler()}
         />
       )}
     </div>

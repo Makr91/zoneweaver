@@ -51,6 +51,30 @@ const NTPConfirmActionModal = ({ service, action, onClose, onConfirm }) => {
           description: `Change the system timezone to "${service?.timezone}".`,
           warning: 'Timezone changes may require a system reboot for full effect. Some services may continue using the old timezone until restarted.'
         };
+      case 'switch-ntp':
+        return {
+          title: 'Switch to Traditional NTP',
+          icon: 'fa-clock',
+          buttonClass: 'has-background-info-dark has-text-info-light',
+          description: 'Switch to traditional Network Time Protocol (NTP) for time synchronization.',
+          warning: 'This operation will disable the current service, install NTP if needed, preserve server configurations where possible, and enable NTP service.'
+        };
+      case 'switch-chrony':
+        return {
+          title: 'Switch to Chrony',
+          icon: 'fa-stopwatch',
+          buttonClass: 'has-background-info-dark has-text-info-light',
+          description: 'Switch to modern Chrony daemon for enhanced time synchronization.',
+          warning: 'This operation will disable the current service, install Chrony if needed, preserve server configurations where possible, and enable Chrony service.'
+        };
+      case 'switch-ntpsec':
+        return {
+          title: 'Switch to NTPsec',
+          icon: 'fa-shield-alt',
+          buttonClass: 'has-background-info-dark has-text-info-light',
+          description: 'Switch to security-focused NTPsec implementation for enhanced security.',
+          warning: 'This operation will disable the current service, install NTPsec if needed, preserve server configurations where possible, and enable NTPsec service.'
+        };
       default:
         return {
           title: 'Confirm Action',
