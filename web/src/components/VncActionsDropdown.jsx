@@ -238,7 +238,8 @@ const VncActionsDropdown = ({
       className="dropdown-content"
       style={{
         backgroundColor: 'var(--bulma-scheme-main-bis)',
-        border: '1px solid var(--bulma-border)'
+        border: '1px solid var(--bulma-border)',
+        minWidth: '320px'
       }}
     >
       
@@ -474,7 +475,7 @@ const VncActionsDropdown = ({
               top: '0',
               minWidth: '300px',
               maxWidth: '350px',
-              zIndex: 1000
+              zIndex: 20001
             }}
           >
             <div 
@@ -637,7 +638,7 @@ const VncActionsDropdown = ({
               top: '0',
               minWidth: '260px',
               maxWidth: '300px',
-              zIndex: 1000
+              zIndex: 20001
             }}
           >
             <div 
@@ -762,7 +763,7 @@ const VncActionsDropdown = ({
             </span>
           </button>
         </div>
-        <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 9999}}>
+        <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 20000}}>
           {dropdownContent}
         </div>
       </div>
@@ -786,7 +787,7 @@ const VncActionsDropdown = ({
           </span>
         </span>
       </div>
-      <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 9999}}>
+      <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 20000}}>
         {dropdownContent}
       </div>
     </div>

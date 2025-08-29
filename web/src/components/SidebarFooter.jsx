@@ -49,19 +49,10 @@ const SidebarFooter = () => {
               )}
             </button>
           </div>
-          <div className='dropdown-menu' id='profile-management' role='menu' style={{
-            position: 'fixed',
-            zIndex: 10001,
-            bottom: '60px',
-            left: '50%',
-            transform: 'translateX(-50%)'
-          }}>
-            <div className='dropdown-content has-background-scheme-main-bis has-text-scheme-invert is-flex is-flex-direction-column has-background-grey' style={{
-              width: 'fit-content',
-              minWidth: 'auto'
-            }}>
+          <div className='dropdown-menu' id='profile-management' role='menu'>
+            <div className='dropdown-content'>
               <a 
-                className='dropdown-item has-background-grey' 
+                className='dropdown-item' 
                 href='https://zoneweaver.startcloud.com' 
                 target='_blank' 
                 rel='noopener noreferrer'
@@ -69,20 +60,20 @@ const SidebarFooter = () => {
                 <span className='icon mr-2'><i className='fas fa-info-circle'></i></span>
                 <span>Help and Docs</span>
               </a>
-              <a onClick={toggleTheme} className='dropdown-item has-background-grey'>
+              <a onClick={toggleTheme} className='dropdown-item'>
                 <span className='icon mr-2'><i className='fas fa-palette'></i></span>
                 <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, '')}</span>
               </a>
-              <a className='dropdown-item has-background-grey' href='/ui/notifications'>
+              <a className='dropdown-item' href='/ui/notifications'>
                 <span className='icon mr-2'><i className='fas fa-bell'></i></span>
                 <span>Notifications</span>
               </a>
-              <a className='dropdown-item has-background-grey' href='/ui/profile'>
+              <a className='dropdown-item' href='/ui/profile'>
                 <span className='icon mr-2'><i className='fas fa-user'></i></span>
                 <span>Profile</span>
               </a>
               <hr className='dropdown-divider' />
-              <a onClick={handleLogout} className='dropdown-item has-background-grey'>
+              <a onClick={handleLogout} className='dropdown-item'>
                 <span className='icon has-text-danger mr-2'><i className='fas fa-sign-out-alt'></i></span>
                 <span>Log Out</span>
               </a>
