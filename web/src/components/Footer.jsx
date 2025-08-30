@@ -119,8 +119,12 @@ const Footer = () => {
       <nav className='level react-resizable-handle react-resizable-handle-n mb-0'>
         <div className='level-item is-justify-content-flex-start'>
           <div className='pl-1'>
-            <a href='https://STARTcloud.com'>
-              Zoneweaver v{__APP_VERSION__ || '1.0.0'} &#169; STARTcloud.com&#8482; {new Date().getFullYear()}
+            <a href='https://zoneweaver.startcloud.com/' className='has-text-primary'>
+              Zoneweaver v{__APP_VERSION__ || '1.0.0'} &#169;
+            </a>
+            {' '}
+            <a href='https://startcloud.com/' className='has-text-primary'>
+              STARTcloud.com&#8482; {new Date().getFullYear()}
             </a>
           </div>
         </div>
