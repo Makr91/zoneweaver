@@ -9,6 +9,8 @@ import VncActionsDropdown from "./VncActionsDropdown";
 import ZloginActionsDropdown from "./ZloginActionsDropdown";
 import ZoneShell from "./ZoneShell";
 import ConsoleDisplay from "./ConsoleDisplay";
+import useZoneMonitoring from "../hooks/useZoneMonitoring";
+import useConsoleSettings from "../hooks/useConsoleSettings";
 
 /**
  * Zones Management Component
@@ -41,57 +43,10 @@ const Zones = () => {
   const [isZloginFullScreen, setIsZloginFullScreen] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [killInProgress, setKillInProgress] = useState(false);
-  const [monitoringHealth, setMonitoringHealth] = useState({});
-  const [networkInterfaces, setNetworkInterfaces] = useState([]);
-  const [storagePools, setStoragePools] = useState([]);
-  const [storageDatasets, setStorageDatasets] = useState([]);
-  const [activeConsoleType, setActiveConsoleType] = useState('vnc'); // 'vnc' or 'zlogin'
-  const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
-  const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
-  const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
-  const [vncReconnectKey, setVncReconnectKey] = useState(0); // Force VNC reconnection after kill→start
   
   // VNC component refs to pass to action dropdowns
   const previewVncRef = useRef(null);
   const modalVncRef = useRef(null);
-  
-  // VNC Display Settings
-  const [vncSettings, setVncSettings] = useState({
-    quality: 6,
-    compression: 2,
-    resize: 'scale', // 'none', 'scale', 'remote'
-    showDot: true
-  });
-  
-  // VNC Settings Change Handlers
-  const handleVncQualityChange = (quality) => {
-    setVncSettings(prev => ({ ...prev, quality }));
-    console.log(`🎛️ VNC SETTINGS: Quality changed to ${quality}`);
-  };
-  
-  const handleVncCompressionChange = (compression) => {
-    setVncSettings(prev => ({ ...prev, compression }));
-    console.log(`🎛️ VNC SETTINGS: Compression changed to ${compression}`);
-  };
-  
-  const handleVncResizeChange = (resize) => {
-    setVncSettings(prev => ({ ...prev, resize }));
-    console.log(`🎛️ VNC SETTINGS: Resize mode changed to ${resize}`);
-    // Force VNC component remount with new settings
-    setVncReconnectKey(prev => prev + 1);
-  };
-  
-  const handleVncShowDotChange = (showDot) => {
-    setVncSettings(prev => ({ ...prev, showDot }));
-    console.log(`🎛️ VNC SETTINGS: Show cursor dot changed to ${showDot}`);
-    // Force VNC component remount for cursor dot setting to take effect
-    setVncReconnectKey(prev => prev + 1);
-  };
-  
-  const handleVncClipboardPaste = (text) => {
-    console.log(`📋 VNC CLIPBOARD: Attempting to paste text of length ${text.length}`);
-    // This will be passed to VNC components that have the ref to call clipboardPaste
-  };
 
   // Paste handler functions for quick access buttons
   const handleVncPreviewPaste = async () => {
@@ -179,6 +134,36 @@ const Zones = () => {
   } = useServers();
 
   const { attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting, pasteTextToZone } = useZoneTerminal();
+
+  // Initialize monitoring hook
+  const {
+    monitoringHealth,
+    networkInterfaces,
+    storagePools,
+    storageDatasets,
+    loadMonitoringData
+  } = useZoneMonitoring(getMonitoringHealth, getNetworkInterfaces, getStoragePools, getStorageDatasets);
+
+  // Initialize console settings hook
+  const {
+    activeConsoleType,
+    setActiveConsoleType,
+    previewReadOnly,
+    setPreviewReadOnly,
+    previewReconnectKey,
+    setPreviewReconnectKey,
+    previewVncViewOnly,
+    setPreviewVncViewOnly,
+    vncReconnectKey,
+    setVncReconnectKey,
+    vncSettings,
+    setVncSettings,
+    handleVncQualityChange,
+    handleVncCompressionChange,
+    handleVncResizeChange,
+    handleVncShowDotChange,
+    handleVncClipboardPaste
+  } = useConsoleSettings();
 
   useEffect(() => {
     if (currentServer) {
@@ -334,58 +319,6 @@ const Zones = () => {
     }
   };
 
-  const loadMonitoringData = async (server) => {
-    if (!server) return;
-    
-    try {
-      // Load monitoring health for host status
-      const healthResult = await getMonitoringHealth(
-        server.hostname,
-        server.port,
-        server.protocol
-      );
-
-      if (healthResult.success) {
-        setMonitoringHealth(healthResult.data);
-      }
-
-      // Load network interfaces for network configuration context
-      const networkResult = await getNetworkInterfaces(
-        server.hostname,
-        server.port,
-        server.protocol
-      );
-
-      if (networkResult.success) {
-        setNetworkInterfaces(networkResult.data);
-      }
-
-      // Load storage pools for storage configuration context
-      const poolsResult = await getStoragePools(
-        server.hostname,
-        server.port,
-        server.protocol
-      );
-
-      if (poolsResult.success) {
-        setStoragePools(poolsResult.data);
-      }
-
-      // Load storage datasets
-      const datasetsResult = await getStorageDatasets(
-        server.hostname,
-        server.port,
-        server.protocol
-      );
-
-      if (datasetsResult.success) {
-        setStorageDatasets(datasetsResult.data);
-      }
-    } catch (error) {
-      console.warn('Error fetching monitoring data:', error);
-      // Don't fail the whole component if monitoring data fails
-    }
-  };
 
   /**
    * Wait for VNC session to become active after start API call
