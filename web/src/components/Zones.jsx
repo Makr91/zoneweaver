@@ -2949,4 +2949,4 @@ const Zones = () => {
   );
 };
 
-export default Zones;
+export default React.memo(Zones);
