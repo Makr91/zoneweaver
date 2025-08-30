@@ -2175,7 +2175,6 @@ const Zones = () => {
                                           }}
                                           disabled={loading || loadingVnc}
                                           title="Start VNC Console"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-desktop'></i>
@@ -2610,14 +2609,14 @@ const Zones = () => {
                   }}
                   isReadOnly={false}
                   isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                  className="has-shadow-medium"
                 />
                 {/* Paste from Clipboard Button - zlogin Modal */}
                 <button 
                   className='button is-small is-info'
                   onClick={handleZloginModalPaste}
                   title="Paste from Browser Clipboard"
-                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                  className="has-shadow-medium"
                 >
                   <span className='icon is-small'>
                     <i className='fas fa-paste'></i>

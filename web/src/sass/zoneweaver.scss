@@ -575,6 +575,12 @@ button {
   width: 30% !important;
 }
 
+// Card width helpers for legend components
+.has-min-width-250-max-300 {
+  min-width: 250px !important;
+  max-width: 300px !important;
+}
+
 // Combined Max Height + Overflow helpers (common patterns)
 .has-max-height-150-auto {
   max-height: 150px !important;
@@ -826,6 +832,51 @@ button {
 
 .has-max-width-300 {
   max-width: 300px !important;
+}
+
+// Font size helpers for network topology
+.has-font-size-6px {
+  font-size: 6px !important;
+}
+
+.has-font-size-8px {
+  font-size: 8px !important;
+}
+
+.has-font-size-9px {
+  font-size: 9px !important;
+}
+
+.has-font-size-12px {
+  font-size: 12px !important;
+}
+
+// Line height helpers
+.has-line-height-12 {
+  line-height: 1.2 !important;
+}
+
+// Opacity helpers for subtle styling
+.has-opacity-07 {
+  opacity: 0.7 !important;
+}
+
+.has-opacity-08 {
+  opacity: 0.8 !important;
+}
+
+// Margin top helper for specific spacing
+.has-margin-top-6px {
+  margin-top: 6px !important;
+}
+
+// Flex layout helpers
+.has-flex-basis-150px {
+  flex-basis: 150px !important;
+}
+
+.has-flex-grow-0 {
+  flex-grow: 0 !important;
 }
 
 // Border Radius helpers (if not using is-radiusless)

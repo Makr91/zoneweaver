@@ -258,10 +258,7 @@ const ZoneweaverAPISettings = () => {
     const { key, value, path } = item;
     return (
       <div key={path.join('.')} className="field is-horizontal mb-1">
-        <div className="field-label is-small" style={{ 
-          flexBasis: '150px', 
-          flexGrow: 0, 
-          minWidth: '150px',
+        <div className="field-label is-small has-flex-basis-150px has-flex-grow-0 has-min-width-150" style={{ 
           paddingLeft: isIndented ? '20px' : '0'
         }}>
           <label className="label is-size-7 has-text-left">
@@ -282,9 +279,8 @@ const ZoneweaverAPISettings = () => {
                 </label>
               ) : Array.isArray(value) ? (
                 <textarea
-                  className="textarea is-small"
+                  className="textarea is-small has-min-width-150"
                   rows="10"
-                  style={{ minWidth: '150px' }}
                   value={value.join('\n')}
                   onChange={(e) => handleSettingChange(path, e.target.value.split('\n'))}
                 />
