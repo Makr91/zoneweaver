@@ -29,77 +29,38 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
 
   return (
     <div 
-      className="react-flow__node-default" 
-      style={{ 
-        width: '46px',
-        height: '46px',
-        borderRadius: '23px',
-        backgroundColor: isRunning ? 'var(--zw-zone-active)' : 'var(--zw-zone-inactive)',
-        border: '2px solid white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-      }}
+      className="react-flow__node-default zw-node-base" 
+      style={{ backgroundColor: isRunning ? 'var(--zw-zone-active)' : 'var(--zw-zone-inactive)' }}
       title={tooltipContent}
     >
       {/* Handles - Both target and source for bidirectional traffic */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{ 
-          background: 'var(--zw-zone-active)',
-          border: '2px solid white',
-          width: '8px',
-          height: '8px'
-        }}
+        className="zw-node-handle"
+        style={{ background: 'var(--zw-zone-active)' }}
       />
       <Handle
         type="source"
         position={Position.Top}
+        className="zw-node-handle"
         style={{ 
           background: 'var(--zw-zone-active)',
-          border: '2px solid white',
-          width: '8px',
-          height: '8px',
           left: '75%'
         }}
       />
 
       {/* Icon */}
-      <i 
-        className="fas fa-server" 
-        style={{ 
-          color: 'white',
-          fontSize: '18px'
-        }}
-      />
+      <i className="fas fa-server zw-node-icon" />
       
       {/* Status indicator */}
-      <div style={{
-        position: 'absolute',
-        top: '-4px',
-        right: '-4px',
-        width: '14px',
-        height: '14px',
-        borderRadius: '50%',
-        backgroundColor: isRunning ? 'var(--zw-nic-active)' : 'var(--zw-zone-active)',
-        border: '2px solid white'
-      }} />
+      <div 
+        className="zw-zone-status-indicator"
+        style={{ backgroundColor: isRunning ? 'var(--zw-nic-active)' : 'var(--zw-zone-active)' }}
+      />
       
       {/* Label below */}
-      <div style={{
-        position: 'absolute',
-        top: '48px',
-        fontSize: '10px',
-        fontWeight: 'bold',
-        color: 'var(--zw-node-text)',
-        textAlign: 'center',
-        width: '60px',
-        left: '50%',
-        transform: 'translateX(-50%)'
-      }}>
+      <div className="zw-node-label">
         {label}
       </div>
     </div>

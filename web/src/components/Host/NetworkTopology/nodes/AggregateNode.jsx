@@ -34,65 +34,30 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
 
   return (
     <div 
-      className="react-flow__node-default" 
-      style={{ 
-        width: '46px',
-        height: '46px',
-        borderRadius: '23px',
-        backgroundColor: 'var(--zw-aggregate-color)',
-        border: '2px solid white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-      }}
+      className="react-flow__node-default zw-node-base" 
+      style={{ backgroundColor: 'var(--zw-aggregate-color)' }}
       title={tooltipContent}
     >
       {/* Handles */}
       <Handle
         type="target"
         position={Position.Left}
-        style={{ 
-          background: 'var(--zw-aggregate-color)',
-          border: '2px solid white',
-          width: '8px',
-          height: '8px'
-        }}
+        className="zw-node-handle"
+        style={{ background: 'var(--zw-aggregate-color)' }}
       />
       
       <Handle
         type="source"
         position={Position.Right}
-        style={{ 
-          background: 'var(--zw-aggregate-color)',
-          border: '2px solid white',
-          width: '8px',
-          height: '8px'
-        }}
+        className="zw-node-handle"
+        style={{ background: 'var(--zw-aggregate-color)' }}
       />
 
       {/* Icon */}
-      <i 
-        className="fas fa-link" 
-        style={{ 
-          color: 'white',
-          fontSize: '18px'
-        }}
-      />
+      <i className="fas fa-link zw-node-icon" />
       
       {/* Label below */}
-      <div style={{
-        position: 'absolute',
-        top: '48px',
-        fontSize: '10px',
-        fontWeight: 'bold',
-        color: 'var(--zw-node-text)',
-        textAlign: 'center',
-        width: '60px',
-        left: '50%',
-        transform: 'translateX(-50%)'
-      }}>
+      <div className="zw-node-label">
         {label}
       </div>
     </div>

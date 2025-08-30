@@ -207,21 +207,11 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
         <EdgeLabelRenderer>
           <div
             style={{
-              position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              background: 'rgba(255, 255, 255, 0.9)',
               border: `1px solid ${edgeColor}`,
-              borderRadius: '3px',
-              fontSize: '9px',
-              fontWeight: 'bold',
-              padding: '1px 3px',
-              pointerEvents: 'all',
-              color: directionColor,
-              boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              minWidth: '20px',
-              textAlign: 'center'
+              color: directionColor
             }}
-            className="nodrag nopan"
+            className="nodrag nopan zw-floating-edge-label"
           >
             {directionSymbol}{formatBandwidth(currentMbps)}
           </div>

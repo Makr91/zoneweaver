@@ -671,6 +671,20 @@ button {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
+// Floating edge label styling (smaller variant)
+.zw-floating-edge-label {
+  position: absolute !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 3px !important;
+  font-size: 9px !important;
+  font-weight: bold !important;
+  padding: 1px 3px !important;
+  pointer-events: all !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+  min-width: 20px !important;
+  text-align: center !important;
+}
+
 // Opacity helpers
 .has-opacity-70 {
   opacity: 0.7 !important;
@@ -865,6 +879,12 @@ button {
   opacity: 0.8 !important;
 }
 
+// Combined margin and opacity helpers
+.has-margin-top-6px-opacity-07 {
+  margin-top: 6px !important;
+  opacity: 0.7 !important;
+}
+
 // Margin top helper for specific spacing
 .has-margin-top-6px {
   margin-top: 6px !important;
@@ -877,6 +897,76 @@ button {
 
 .has-flex-grow-0 {
   flex-grow: 0 !important;
+}
+
+// VNC/Loading container complex flex layout
+.zw-vnc-loading-container {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+// Network topology node base styles
+.zw-node-base {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 23px !important;
+  border: 2px solid white !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+// VLAN badge positioning
+.zw-vlan-badge {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  background-color: #e74c3c !important;
+  color: white !important;
+  border-radius: 8px !important;
+  font-size: 8px !important;
+  padding: 2px 4px !important;
+  font-weight: bold !important;
+  min-width: 16px !important;
+  text-align: center !important;
+}
+
+// Zone status indicator
+.zw-zone-status-indicator {
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  border: 2px solid white !important;
+}
+
+.zw-node-handle {
+  border: 2px solid white !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.zw-node-icon {
+  color: white !important;
+  font-size: 18px !important;
+}
+
+.zw-node-label {
+  position: absolute !important;
+  top: 48px !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  color: var(--zw-node-text) !important;
+  text-align: center !important;
+  width: 60px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 // Border Radius helpers (if not using is-radiusless)

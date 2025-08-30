@@ -58,84 +58,37 @@ ${ipAddresses?.length ? `IP: ${ipAddresses.map(ip => ip.ip_address).join(', ')}`
 
   return (
     <div 
-      className="react-flow__node-default" 
-      style={{ 
-        width: '46px',
-        height: '46px',
-        borderRadius: '23px',
-        backgroundColor: getColor(),
-        border: '2px solid white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-      }}
+      className="react-flow__node-default zw-node-base" 
+      style={{ backgroundColor: getColor() }}
       title={tooltipContent}
     >
       {/* Handles - Top for input (from physical/aggregates), Bottom for output (to zones) */}
       <Handle
         type="target"
         position={Position.Top}
-        style={{ 
-          background: 'var(--zw-vnic-color)',
-          border: '2px solid white',
-          width: '8px',
-          height: '8px'
-        }}
+        className="zw-node-handle"
+        style={{ background: 'var(--zw-vnic-color)' }}
       />
       
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ 
-          background: 'var(--zw-vnic-color)',
-          border: '2px solid white',
-          width: '8px',
-          height: '8px'
-        }}
+        className="zw-node-handle"
+        style={{ background: 'var(--zw-vnic-color)' }}
       />
 
       {/* Icon */}
-      <i 
-        className="fas fa-network-wired" 
-        style={{ 
-          color: 'white',
-          fontSize: '18px'
-        }}
-      />
+      <i className="fas fa-network-wired zw-node-icon" />
       
       {/* VLAN badge if present */}
       {vlanId && (
-        <div style={{
-          position: 'absolute',
-          top: '-8px',
-          right: '-8px',
-          backgroundColor: '#e74c3c',
-          color: 'white',
-          borderRadius: '8px',
-          fontSize: '8px',
-          padding: '2px 4px',
-          fontWeight: 'bold',
-          minWidth: '16px',
-          textAlign: 'center'
-        }}>
+        <div className="zw-vlan-badge">
           {vlanId}
         </div>
       )}
       
       {/* Label below */}
-      <div style={{
-        position: 'absolute',
-        top: '48px',
-        fontSize: '10px',
-        fontWeight: 'bold',
-        color: 'var(--zw-node-text)',
-        textAlign: 'center',
-        width: '60px',
-        left: '50%',
-        transform: 'translateX(-50%)'
-      }}>
+      <div className="zw-node-label">
         {label}
       </div>
     </div>

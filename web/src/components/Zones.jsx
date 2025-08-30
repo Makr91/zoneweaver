@@ -2093,7 +2093,7 @@ const Zones = () => {
                                             <div className="is-size-6 has-text-weight-medium">
                                               No Console Session
                                             </div>
-                                            <div className="is-size-7" style={{ marginTop: '6px', opacity: 0.7 }}>
+                                            <div className="is-size-7 has-margin-top-6px-opacity-07">
                                               Click Console to start session
                                             </div>
                                           </div>
@@ -2236,7 +2236,7 @@ const Zones = () => {
                                       }}
                                     >
                                       <div className="zw-text-placeholder has-text-centered">
-                                        <div style={{ marginBottom: '12px' }}>
+                                        <div className="has-margin-bottom-12px">
                                           <img 
                                             src="/images/startcloud.svg" 
                                             alt="Start Console" 
@@ -2251,7 +2251,7 @@ const Zones = () => {
                                         <div className="is-size-6 has-text-weight-medium mb-2">
                                           <strong>No Active Console Session</strong>
                                         </div>
-                                        <div className="is-size-7" style={{ opacity: 0.8 }}>
+                                        <div className="is-size-7 has-opacity-08">
                                           Click the buttons above to start VNC or zlogin console
                                         </div>
                                       </div>
@@ -2430,7 +2430,7 @@ const Zones = () => {
                         <details>
                           <summary className='title is-6 is-clickable'>Raw Data (Debug)</summary>
                           <div className='box'>
-                            <pre className='is-size-7' style={{overflow: 'auto'}}>{JSON.stringify(zoneDetails, null, 2)}</pre>
+                            <pre className='is-size-7 has-overflow-auto'>{JSON.stringify(zoneDetails, null, 2)}</pre>
                           </div>
                         </details>
                       </div>
@@ -2504,7 +2504,7 @@ const Zones = () => {
                   <span>zlogin Console - {selectedZone}</span>
                 </span>
               </p>
-              <div className='buttons' style={{margin: 0}}>
+              <div className='buttons has-margin-0'>
                 {/* zlogin Actions Dropdown - Modal (leftmost for consistency) */}
                 <ZloginActionsDropdown
                   variant="button"
@@ -2613,10 +2613,9 @@ const Zones = () => {
                 />
                 {/* Paste from Clipboard Button - zlogin Modal */}
                 <button 
-                  className='button is-small is-info'
+                  className='button is-small is-info has-shadow-medium'
                   onClick={handleZloginModalPaste}
                   title="Paste from Browser Clipboard"
-                  className="has-shadow-medium"
                 >
                   <span className='icon is-small'>
                     <i className='fas fa-paste'></i>
@@ -2624,7 +2623,7 @@ const Zones = () => {
                 </button>
                 {/* Switch to VNC Console Button - Modal (second position for consistency) */}
                 <button 
-                  className='button is-small is-warning'
+                  className='button is-small is-warning has-shadow-medium'
                   onClick={async () => {
                     if (zoneDetails.active_vnc_session) {
                       // VNC already active - just switch to VNC modal
@@ -2665,7 +2664,6 @@ const Zones = () => {
                   }}
                   disabled={loadingVnc}
                   title={zoneDetails.active_vnc_session ? "Switch to VNC Console" : "Start VNC Console"}
-                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 >
                   <span className='icon is-small'>
                     <i className={`fas ${loadingVnc ? 'fa-spinner fa-pulse' : 'fa-desktop'}`}></i>
@@ -2771,7 +2769,7 @@ const Zones = () => {
                   <span>Console - {selectedZone}</span>
                 </span>
               </p>
-              <div className='buttons' style={{margin: 0}}>
+              <div className='buttons has-margin-0'>
                 <VncActionsDropdown
                   vncRef={modalVncRef}
                   variant="button"
@@ -2795,14 +2793,13 @@ const Zones = () => {
                   onKillSession={() => handleKillVncSession(selectedZone)}
                   isReadOnly={false}
                   isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                  className="has-shadow-medium"
                 />
                 {/* Paste from Clipboard Button - VNC Modal */}
                 <button 
-                  className='button is-small is-info'
+                  className='button is-small is-info has-shadow-medium'
                   onClick={handleVncModalPaste}
                   title="Paste from Browser Clipboard"
-                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 >
                   <span className='icon is-small'>
                     <i className='fas fa-paste'></i>
@@ -2810,7 +2807,7 @@ const Zones = () => {
                 </button>
                 {/* Switch to zlogin Console Button - Modal */}
                 <button 
-                  className='button is-small is-warning'
+                  className='button is-small is-warning has-shadow-medium'
                   onClick={async () => {
                     if (zoneDetails.zlogin_session) {
                       // zlogin already active - just switch to zlogin modal
@@ -2851,7 +2848,6 @@ const Zones = () => {
                   }}
                   disabled={loading}
                   title={zoneDetails.zlogin_session ? "Switch to zlogin Console" : "Start zlogin Console"}
-                  style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                 >
                   <span className='icon is-small'>
                     <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
