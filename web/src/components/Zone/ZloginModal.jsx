@@ -20,7 +20,9 @@ const ZloginModal = ({
   currentServer,
   forceZoneSessionCleanup,
   refreshZloginSessionStatus,
-  setError
+  setError,
+  modalReadOnly,
+  setModalReadOnly
 }) => {
   if (!showZloginConsole) {
     return null;
@@ -73,7 +75,10 @@ const ZloginModal = ({
           <div className='buttons has-margin-0'>
             <ZloginActionsDropdown
               variant="button"
-              onToggleReadOnly={() => console.log('Toggle zlogin read-only mode in modal')}
+              onToggleReadOnly={() => {
+                console.log(`🔧 ZLOGIN MODAL READ-ONLY: Toggling from ${modalReadOnly} to ${!modalReadOnly}`);
+                setModalReadOnly(!modalReadOnly);
+              }}
               onNewSession={() => {
                 setShowZloginConsole(false);
                 setTimeout(() => {
@@ -128,19 +133,21 @@ const ZloginModal = ({
                   URL.revokeObjectURL(url);
                 }
               }}
-              isReadOnly={false}
+              isReadOnly={modalReadOnly}
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
               className="has-shadow-medium"
             />
-            <button 
-              className='button is-small is-info has-shadow-medium'
-              onClick={handleZloginModalPaste}
-              title="Paste from Browser Clipboard"
-            >
-              <span className='icon is-small'>
-                <i className='fas fa-paste'></i>
-              </span>
-            </button>
+            {!modalReadOnly && (
+              <button 
+                className='button is-small is-info has-shadow-medium'
+                onClick={handleZloginModalPaste}
+                title="Paste from Browser Clipboard"
+              >
+                <span className='icon is-small'>
+                  <i className='fas fa-paste'></i>
+                </span>
+              </button>
+            )}
             <button 
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
@@ -192,9 +199,9 @@ const ZloginModal = ({
           }}
         >
           <ZoneShell 
-            key={`zlogin-modal-${selectedZone}`} 
+            key={`zlogin-modal-${selectedZone}-${modalReadOnly ? 'ro' : 'rw'}`} 
             zoneName={selectedZone} 
-            readOnly={false} 
+            readOnly={modalReadOnly} 
             context="modal" 
           />
         </section>

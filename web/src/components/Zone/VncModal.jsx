@@ -119,15 +119,17 @@ const VncModal = ({
               onClipboardPaste={handleVncClipboardPaste}
               className="has-shadow-medium"
             />
-            <button 
-              className='button is-small is-info has-shadow-medium'
-              onClick={handleVncModalPaste}
-              title="Paste from Browser Clipboard"
-            >
-              <span className='icon is-small'>
-                <i className='fas fa-paste'></i>
-              </span>
-            </button>
+            {!modalVncViewOnly && (
+              <button 
+                className='button is-small is-info has-shadow-medium'
+                onClick={handleVncModalPaste}
+                title="Paste from Browser Clipboard"
+              >
+                <span className='icon is-small'>
+                  <i className='fas fa-paste'></i>
+                </span>
+              </button>
+            )}
             <button 
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {

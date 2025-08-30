@@ -130,25 +130,27 @@ const ConsoleDisplay = ({
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
               className="has-shadow-medium"
             />
-            <button 
-              className='button is-small is-info has-box-shadow'
-              onClick={async () => {
-                try {
-                  const text = await navigator.clipboard.readText();
-                  if (text && currentServer && selectedZone) {
-                    console.log(`📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`);
-                    await pasteTextToZone(currentServer, selectedZone, text);
+            {!previewReadOnly && (
+              <button 
+                className='button is-small is-info has-box-shadow'
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    if (text && currentServer && selectedZone) {
+                      console.log(`📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`);
+                      await pasteTextToZone(currentServer, selectedZone, text);
+                    }
+                  } catch (error) {
+                    console.error('📋 ZLOGIN PREVIEW PASTE: Error:', error);
                   }
-                } catch (error) {
-                  console.error('📋 ZLOGIN PREVIEW PASTE: Error:', error);
-                }
-              }}
-              title="Paste from Browser Clipboard"
-            >
-              <span className='icon is-small'>
-                <i className='fas fa-paste'></i>
-              </span>
-            </button>
+                }}
+                title="Paste from Browser Clipboard"
+              >
+                <span className='icon is-small'>
+                  <i className='fas fa-paste'></i>
+                </span>
+              </button>
+            )}
             <button 
               className='button is-small is-primary'
               onClick={() => {
@@ -321,25 +323,27 @@ const ConsoleDisplay = ({
               onClipboardPaste={handleVncClipboardPaste}
               className="has-shadow-medium"
             />
-            <button 
-              className='button is-small is-info has-shadow-medium'
-              onClick={async () => {
-                try {
-                  const text = await navigator.clipboard.readText();
-                  if (text && previewVncRef.current?.clipboardPaste) {
-                    console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
-                    previewVncRef.current.clipboardPaste(text);
+            {!previewVncViewOnly && (
+              <button 
+                className='button is-small is-info has-shadow-medium'
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    if (text && previewVncRef.current?.clipboardPaste) {
+                      console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
+                      previewVncRef.current.clipboardPaste(text);
+                    }
+                  } catch (error) {
+                    console.error('📋 VNC PREVIEW PASTE: Error:', error);
                   }
-                } catch (error) {
-                  console.error('📋 VNC PREVIEW PASTE: Error:', error);
-                }
-              }}
-              title="Paste from Browser Clipboard"
-            >
-              <span className='icon is-small'>
-                <i className='fas fa-paste'></i>
-              </span>
-            </button>
+                }}
+                title="Paste from Browser Clipboard"
+              >
+                <span className='icon is-small'>
+                  <i className='fas fa-paste'></i>
+                </span>
+              </button>
+            )}
             <button 
               className='button is-small is-primary'
               onClick={() => handleVncConsole(selectedZone)}
@@ -550,24 +554,26 @@ const ConsoleDisplay = ({
                 isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                 className="has-shadow-medium"
               />
-              <button 
-                className='button is-small is-info has-box-shadow'
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText();
-                    if (text && currentServer && selectedZone) {
-                      await pasteTextToZone(currentServer, selectedZone, text);
+              {!previewReadOnly && (
+                <button 
+                  className='button is-small is-info has-box-shadow'
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      if (text && currentServer && selectedZone) {
+                        await pasteTextToZone(currentServer, selectedZone, text);
+                      }
+                    } catch (error) {
+                      console.error('📋 ZLOGIN PREVIEW PASTE: Error:', error);
                     }
-                  } catch (error) {
-                    console.error('📋 ZLOGIN PREVIEW PASTE: Error:', error);
-                  }
-                }}
-                title="Paste from Browser Clipboard"
-              >
-                <span className='icon is-small'>
-                  <i className='fas fa-paste'></i>
-                </span>
-              </button>
+                  }}
+                  title="Paste from Browser Clipboard"
+                >
+                  <span className='icon is-small'>
+                    <i className='fas fa-paste'></i>
+                  </span>
+                </button>
+              )}
               <button 
                 className='button is-small is-primary'
                 onClick={() => {
@@ -710,24 +716,26 @@ const ConsoleDisplay = ({
                 onClipboardPaste={handleVncClipboardPaste}
                 className="has-shadow-medium"
               />
-              <button 
-                className='button is-small is-info has-shadow-medium'
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText();
-                    if (text && previewVncRef.current?.clipboardPaste) {
-                      previewVncRef.current.clipboardPaste(text);
+              {!previewVncViewOnly && (
+                <button 
+                  className='button is-small is-info has-shadow-medium'
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      if (text && previewVncRef.current?.clipboardPaste) {
+                        previewVncRef.current.clipboardPaste(text);
+                      }
+                    } catch (error) {
+                      console.error('📋 VNC PREVIEW PASTE: Error:', error);
                     }
-                  } catch (error) {
-                    console.error('📋 VNC PREVIEW PASTE: Error:', error);
-                  }
-                }}
-                title="Paste from Browser Clipboard"
-              >
-                <span className='icon is-small'>
-                  <i className='fas fa-paste'></i>
-                </span>
-              </button>
+                  }}
+                  title="Paste from Browser Clipboard"
+                >
+                  <span className='icon is-small'>
+                    <i className='fas fa-paste'></i>
+                  </span>
+                </button>
+              )}
               <button 
                 className='button is-small is-primary'
                 onClick={() => handleVncConsole(selectedZone)}

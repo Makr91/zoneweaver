@@ -38,6 +38,7 @@ const Zones = () => {
   const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
   const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
   const [modalVncViewOnly, setModalVncViewOnly] = useState(false); // Track modal VNC view-only state
+  const [modalReadOnly, setModalReadOnly] = useState(false); // Track modal zlogin read-only state
   
   // VNC component refs to pass to action dropdowns
   const previewVncRef = useRef(null);
@@ -437,6 +438,8 @@ const Zones = () => {
         forceZoneSessionCleanup={forceZoneSessionCleanup}
         refreshZloginSessionStatus={refreshZloginSessionStatus}
         setError={setError}
+        modalReadOnly={modalReadOnly}
+        setModalReadOnly={setModalReadOnly}
       />
 
       <VncModal
