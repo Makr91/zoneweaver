@@ -87,6 +87,7 @@ const Zones = () => {
     handleVncPreviewPaste,
     handleVncModalPaste,
     openDirectVncFallback,
+    waitForVncSessionReady,
   } = useVncSession(currentServer, currentZone, setZoneDetails);
 
   const {
@@ -461,22 +462,10 @@ const Zones = () => {
                               handleVncShowDotChange={handleVncShowDotChange}
                               handleVncClipboardPaste={handleVncClipboardPaste}
                               handleVncPreviewPaste={handleVncPreviewPaste}
-                              // Missing props that ConsoleDisplay references
-                              startVncSession={async (hostname, port, protocol, zoneName) => {
-                                // Use the hook function
-                                const errorMsg = await handleVncConsole(zoneName);
-                                return errorMsg ? { success: false, message: errorMsg } : { success: true };
-                              }}
-                              startZloginSession={async (hostname, port, protocol, zoneName) => {
-                                // Use the hook function  
-                                const result = await handleZloginConsole(zoneName);
-                                return result;
-                              }}
-                              waitForVncSessionReady={async (zoneName) => {
-                                // This function is inside the VNC hook and not exposed, but ConsoleDisplay needs it
-                                // For now, return a simple success
-                                return { ready: true, sessionInfo: zoneDetails.vnc_session_info };
-                              }}
+                              // Direct function references from hooks
+                              startVncSession={(hostname, port, protocol, zoneName) => handleVncConsole(zoneName)}
+                              startZloginSession={(hostname, port, protocol, zoneName) => handleZloginConsole(zoneName)}
+                              waitForVncSessionReady={waitForVncSessionReady}
                               pasteTextToZone={pasteTextToZone}
                             />
                           </div>

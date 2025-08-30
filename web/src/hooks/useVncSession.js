@@ -309,5 +309,6 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
     handleCornerLeave,
     handleVncIframeError,
     openDirectVncFallback,
+    waitForVncSessionReady,
   };
 };
