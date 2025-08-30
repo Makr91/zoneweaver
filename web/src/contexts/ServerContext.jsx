@@ -692,18 +692,6 @@ export const ServerProvider = ({ children }) => {
   };
 
   /**
-   * Get network traffic statistics
-   * @param {string} hostname - Server hostname
-   * @param {number} port - Server port
-   * @param {string} protocol - Server protocol
-   * @param {Object} filters - Filter options (limit, since, link)
-   * @returns {Promise<Object>} Network statistics data
-   */
-  const getNetworkStats = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/stats', 'GET', null, filters);
-  };
-
-  /**
    * Get network usage accounting data
    * @param {string} hostname - Server hostname
    * @param {number} port - Server port
@@ -1011,7 +999,6 @@ export const ServerProvider = ({ children }) => {
     getMonitoringSummary,
     // Network Monitoring Functions
     getNetworkInterfaces,
-    getNetworkStats,
     getNetworkUsage,
     getNetworkIPAddresses,
     getNetworkRoutes,
