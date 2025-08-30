@@ -196,26 +196,9 @@ const BandwidthCharts = ({
 
                             {/* TX Summary Chart */}
                             <div className='column is-4'>
-                                <div
-                                    style={{
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                        backgroundColor: '#1e2a3a',
-                                        padding: '10px',
-                                        border: '1px solid #37474f',
-                                        position: 'relative'
-                                    }}
-                                >
+                                <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost'
-                                        style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            right: '5px',
-                                            zIndex: 1000,
-                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                            border: 'none'
-                                        }}
+                                        className='button is-small is-ghost is-chart-expand-button'
                                         onClick={() => expandChart('summary-tx', 'summary-tx')}
                                         title="Expand chart to full size"
                                     >
@@ -334,26 +317,9 @@ const BandwidthCharts = ({
 
                             {/* Total Summary Chart */}
                             <div className='column is-4'>
-                                <div
-                                    style={{
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                        backgroundColor: '#1e2a3a',
-                                        padding: '10px',
-                                        border: '1px solid #37474f',
-                                        position: 'relative'
-                                    }}
-                                >
+                                <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost'
-                                        style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            right: '5px',
-                                            zIndex: 1000,
-                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                            border: 'none'
-                                        }}
+                                        className='button is-small is-ghost is-chart-expand-button'
                                         onClick={() => expandChart('summary-total', 'summary-total')}
                                         title="Expand chart to full size"
                                     >
@@ -593,26 +559,9 @@ const BandwidthCharts = ({
 
                                     return (
                                         <div key={`chart-${interfaceName}`} className='column is-6'>
-                                            <div
-                                                style={{
-                                                    borderRadius: '8px',
-                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                                    backgroundColor: '#1e2a3a',
-                                                    padding: '10px',
-                                                    border: '1px solid #37474f',
-                                                    position: 'relative'
-                                                }}
-                                            >
+                                            <div className='is-chart-container is-relative'>
                                                 <button
-                                                    className='button is-small is-ghost'
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: '5px',
-                                                        right: '5px',
-                                                        zIndex: 1000,
-                                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                                        border: 'none'
-                                                    }}
+                                                    className='button is-small is-ghost is-chart-expand-button'
                                                     onClick={() => expandChart(interfaceName, 'individual')}
                                                     title="Expand chart to full size"
                                                 >

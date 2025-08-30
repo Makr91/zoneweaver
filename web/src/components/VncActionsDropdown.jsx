@@ -376,8 +376,7 @@ const VncActionsDropdown = ({
 
               {/* Function Keys Submenu */}
               <div 
-                className="dropdown-item" 
-                style={{position: 'relative'}}
+                className="dropdown-item is-relative"
                 onMouseEnter={() => setShowFunctionKeys(true)}
                 onMouseLeave={() => setShowFunctionKeys(false)}
               >
@@ -749,11 +748,10 @@ const VncActionsDropdown = ({
     <div className={`dropdown is-right ${isActive ? 'is-active' : ''} ${className}`} ref={dropdownRef}>
       <div className="dropdown-trigger">
         <span 
-          className="has-text-link is-clickable"
+          className="has-text-link is-clickable is-size-7"
           aria-haspopup="true"
           aria-controls="vnc-dropdown-menu"
           onClick={() => setIsActive(!isActive)}
-          style={{ fontSize: '0.875rem' }}
         >
           VNC Actions
           <span className="icon is-small ml-1">
