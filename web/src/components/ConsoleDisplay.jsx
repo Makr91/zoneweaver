@@ -54,7 +54,6 @@ const ConsoleDisplay = ({
     timestamp: Date.now()
   });
 
-  // FIXED: Clean logic according to user requirements
   if (hasZlogin && !hasVnc) {
     // Only zlogin active → Show zlogin
     console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console (only zlogin active)`);
