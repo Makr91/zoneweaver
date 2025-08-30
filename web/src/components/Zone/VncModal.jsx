@@ -14,6 +14,8 @@ const VncModal = ({
   selectedZone,
   vncReconnectKey,
   modalVncRef,
+  modalVncViewOnly,
+  setModalVncViewOnly,
   handleVncModalPaste,
   handleVncConsole,
   handleKillVncSession,
@@ -83,8 +85,9 @@ const VncModal = ({
               vncRef={modalVncRef}
               variant="button"
               onToggleReadOnly={() => {
-                // VNC modal doesn't have view-only toggle, but this could be added if needed
-                console.log('VNC modal read-only toggle clicked');
+                // FIXED: Actually toggle modal VNC view-only mode
+                console.log(`🔧 VNC MODAL READ-ONLY: Toggling from ${modalVncViewOnly} to ${!modalVncViewOnly}`);
+                setModalVncViewOnly(!modalVncViewOnly);
               }}
               onScreenshot={() => {
                 const vncContainer = document.querySelector('.vnc-viewer-react canvas');
@@ -103,7 +106,7 @@ const VncModal = ({
               }}
               onNewTab={() => handleVncConsole(selectedZone, true)}
               onKillSession={() => handleKillVncSession(selectedZone)}
-              isReadOnly={false}
+              isReadOnly={modalVncViewOnly}
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
               quality={vncSettings.quality}
               compression={vncSettings.compression}
@@ -202,16 +205,24 @@ const VncModal = ({
           ) : currentServer && selectedZone ? (
             <VncViewerReact
               ref={modalVncRef}
-              key={`vnc-modal-${selectedZone}-${vncReconnectKey}`}
+              key={`vnc-modal-${selectedZone}-${modalVncViewOnly}-${vncReconnectKey}`}
               serverHostname={currentServer.hostname}
               serverPort={currentServer.port}
               serverProtocol={currentServer.protocol}
               zoneName={selectedZone}
-              viewOnly={false}
+              viewOnly={modalVncViewOnly}
               autoConnect={true}
               showControls={false}
+              quality={vncSettings.quality}
+              compression={vncSettings.compression}
+              resize={vncSettings.resize}
+              showDot={vncSettings.showDot}
+              resizeSession={vncSettings.resize === 'remote'}
               onConnect={() => console.log('✅ VNC MODAL: Connected to VNC server')}
               onDisconnect={(reason) => console.log('❌ VNC MODAL: Disconnected:', reason)}
+              onClipboard={(event) => {
+                console.log('📋 VNC MODAL: Clipboard received from server:', event);
+              }}
               style={{
                 width: '100%',
                 height: '100%',

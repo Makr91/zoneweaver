@@ -382,7 +382,7 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* VNC Console Content */}
+        {/* zlogin Console Content - CRITICAL FIX: This should be zlogin, not VNC! */}
         <div 
           style={{
             position: 'relative',
@@ -392,86 +392,39 @@ const ConsoleDisplay = ({
             overflow: 'visible'
           }}
         >
-          {zoneDetails.vnc_session_info ? (
-            <VncViewerReact
-              ref={previewVncRef}
-              key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
-              serverHostname={currentServer.hostname}
-              serverPort={currentServer.port}
-              serverProtocol={currentServer.protocol}
-              zoneName={selectedZone}
-              viewOnly={previewVncViewOnly}
-              autoConnect={true}
-              showControls={false}
-              quality={vncSettings.quality}
-              compression={vncSettings.compression}
-              resize={vncSettings.resize}
-              showDot={vncSettings.showDot}
-              resizeSession={vncSettings.resize === 'remote'}
-              onClipboard={(event) => {
-                console.log('📋 VNC PREVIEW: Clipboard received from server:', event);
-              }}
-              style={{ width: '100%', height: '100%' }}
-            />
-          ) : zoneDetails.configuration?.zonepath ? (
-            <img
-              src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
-              alt={`Screenshot of ${selectedZone}`}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                backgroundColor: '#2c3e50'
-              }}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'flex';
-              }}
-              onLoad={(e) => {
-                if (e.target.nextElementSibling) {
-                  e.target.nextElementSibling.style.display = 'none';
-                }
-              }}
-            />
-          ) : null}
+          <ZoneShell 
+            key={`preview-zlogin-${selectedZone}-${previewReconnectKey}-${previewReadOnly ? 'ro' : 'rw'}`}
+            zoneName={selectedZone} 
+            readOnly={previewReadOnly}
+            context="preview"
+            style={{
+              height: '100%',
+              width: '100%',
+              fontSize: '10px'
+            }}
+          />
           
-          {!(zoneDetails.vnc_session_info?.proxy_url || zoneDetails.vnc_session_info?.console_url) && (
-            <div 
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                display: zoneDetails.configuration?.zonepath ? 'none' : 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#2c3e50',
-                color: '#ecf0f1'
-              }}
-            >
-              <div className="has-text-centered">
-                <div className="has-margin-bottom-12px">
-                  <img 
-                    src="/images/startcloud.svg" 
-                    alt="Start Console" 
-                    style={{ 
-                      width: '64px', 
-                      height: '64px',
-                      opacity: 0.8,
-                      filter: 'brightness(0.9)'
-                    }} 
-                  />
-                </div>
-                <div className="is-size-6 has-text-weight-medium">
-                  No Console Session
-                </div>
-                <div className="is-size-7 has-margin-top-6px-opacity-07">
-                  Click Console to start session
-                </div>
-              </div>
-            </div>
-          )}
+          <div 
+            style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '3px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}
+          >
+            <span className='icon is-small has-margin-right-3px'>
+              <i className='fas fa-circle' style={{
+                color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
+                fontSize: '0.4rem'
+              }}></i>
+            </span>
+            {zoneDetails.zlogin_session ? 'Live' : 'Offline'}
+          </div>
         </div>
       </div>
     );

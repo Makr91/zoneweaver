@@ -37,6 +37,7 @@ const Zones = () => {
   const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
   const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
   const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
+  const [modalVncViewOnly, setModalVncViewOnly] = useState(false); // Track modal VNC view-only state
   
   // VNC component refs to pass to action dropdowns
   const previewVncRef = useRef(null);
@@ -471,6 +472,8 @@ const Zones = () => {
         selectedZone={selectedZone}
         vncReconnectKey={vncReconnectKey}
         modalVncRef={modalVncRef}
+        modalVncViewOnly={modalVncViewOnly}
+        setModalVncViewOnly={setModalVncViewOnly}
         handleVncModalPaste={handleVncModalPaste}
         handleVncConsole={handleVncConsole}
         handleKillVncSession={handleKillVncSession}
