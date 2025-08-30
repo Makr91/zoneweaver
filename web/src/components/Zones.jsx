@@ -48,10 +48,7 @@ const Zones = () => {
     servers: allServers, 
     currentServer, 
     currentZone, 
-    selectZone,
-    startZone,
-    stopZone,
-    restartZone
+    selectZone
   } = useServers();
 
   const { zones, runningZones, error: zonesError, getZoneStatus, loadZones: reloadZones } = useZoneManager(currentServer);
@@ -229,96 +226,6 @@ const Zones = () => {
     prevShowZloginConsole.current = showZloginConsole;
   }, [showZloginConsole, activeConsoleType, zoneDetails.zlogin_session, selectedZone]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'running':
-        return 'is-success';
-      case 'stopped':
-        return 'is-danger';
-      default:
-        return 'is-warning';
-    }
-  };
-
-  // Zone action handlers - CRITICAL MISSING FUNCTIONALITY
-  const handleStartZone = async (zoneName) => {
-    if (!currentServer) return;
-    
-    try {
-      setLoading(true);
-      const result = await startZone(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        zoneName
-      );
-
-      if (result.success) {
-        // Refresh zones list after action
-        setTimeout(() => reloadZones(), 2000);
-      } else {
-        setError(`Failed to start zone ${zoneName}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error starting zone:', error);
-      setError(`Error starting zone ${zoneName}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStopZone = async (zoneName, force = false) => {
-    if (!currentServer) return;
-    
-    try {
-      setLoading(true);
-      const result = await stopZone(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        zoneName,
-        force
-      );
-
-      if (result.success) {
-        // Refresh zones list after action
-        setTimeout(() => reloadZones(), 2000);
-      } else {
-        setError(`Failed to stop zone ${zoneName}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error stopping zone:', error);
-      setError(`Error stopping zone ${zoneName}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRestartZone = async (zoneName) => {
-    if (!currentServer) return;
-    
-    try {
-      setLoading(true);
-      const result = await restartZone(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        zoneName
-      );
-
-      if (result.success) {
-        // Refresh zones list after action
-        setTimeout(() => reloadZones(), 3000);
-      } else {
-        setError(`Failed to restart zone ${zoneName}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error restarting zone:', error);
-      setError(`Error restarting zone ${zoneName}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (allServers.length === 0) {
     return (
@@ -462,11 +369,18 @@ const Zones = () => {
                               handleVncShowDotChange={handleVncShowDotChange}
                               handleVncClipboardPaste={handleVncClipboardPaste}
                               handleVncPreviewPaste={handleVncPreviewPaste}
-                              // Direct function references from hooks
-                              startVncSession={(hostname, port, protocol, zoneName) => handleVncConsole(zoneName)}
-                              startZloginSession={(hostname, port, protocol, zoneName) => handleZloginConsole(zoneName)}
+                              // Fixed function wrappers with proper return formats
+                              startVncSession={async (hostname, port, protocol, zoneName) => {
+                                const errorMsg = await handleVncConsole(zoneName);
+                                return errorMsg ? { success: false, message: errorMsg } : { success: true };
+                              }}
+                              startZloginSession={async (hostname, port, protocol, zoneName) => {
+                                const result = await handleZloginConsole(zoneName);
+                                return result; // Already returns {success: boolean}
+                              }}
                               waitForVncSessionReady={waitForVncSessionReady}
                               pasteTextToZone={pasteTextToZone}
+                              setShowZloginConsole={setShowZloginConsole}
                             />
                           </div>
                         </div>
@@ -552,22 +466,13 @@ const Zones = () => {
         isVncFullScreen={isVncFullScreen}
         openVncFullScreen={() => setIsVncFullScreen(!isVncFullScreen)}
         vncLoadError={vncLoadError}
-        openDirectVncFallback={() => {
-          if (vncSession && vncSession.directUrl) {
-            window.open(vncSession.directUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
-          } else if (vncSession && vncSession.console_url) {
-            window.open(vncSession.console_url, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
-          }
-          closeVncConsole();
-        }}
+        openDirectVncFallback={openDirectVncFallback}
         setVncLoadError={setVncLoadError}
         currentServer={currentServer}
         selectedZone={selectedZone}
         vncReconnectKey={vncReconnectKey}
         modalVncRef={modalVncRef}
-        handleVncModalPaste={() => {
-          // This needs to be implemented if you want paste functionality in the modal
-        }}
+        handleVncModalPaste={handleVncModalPaste}
         handleVncConsole={handleVncConsole}
         handleKillVncSession={handleKillVncSession}
         user={user}
@@ -576,6 +481,12 @@ const Zones = () => {
         handleZloginConsole={handleZloginConsole}
         loading={loading}
         loadingVnc={loadingVnc}
+        vncSettings={vncSettings}
+        handleVncQualityChange={handleVncQualityChange}
+        handleVncCompressionChange={handleVncCompressionChange}
+        handleVncResizeChange={handleVncResizeChange}
+        handleVncShowDotChange={handleVncShowDotChange}
+        handleVncClipboardPaste={handleVncClipboardPaste}
       />
     </div>
   );

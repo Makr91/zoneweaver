@@ -22,7 +22,13 @@ const VncModal = ({
   setShowZloginConsole,
   handleZloginConsole,
   loading,
-  loadingVnc
+  loadingVnc,
+  vncSettings,
+  handleVncQualityChange,
+  handleVncCompressionChange,
+  handleVncResizeChange,
+  handleVncShowDotChange,
+  handleVncClipboardPaste
 }) => {
   if (!showVncConsole) {
     return null;
@@ -76,6 +82,10 @@ const VncModal = ({
             <VncActionsDropdown
               vncRef={modalVncRef}
               variant="button"
+              onToggleReadOnly={() => {
+                // VNC modal doesn't have view-only toggle, but this could be added if needed
+                console.log('VNC modal read-only toggle clicked');
+              }}
               onScreenshot={() => {
                 const vncContainer = document.querySelector('.vnc-viewer-react canvas');
                 if (vncContainer) {
@@ -95,6 +105,15 @@ const VncModal = ({
               onKillSession={() => handleKillVncSession(selectedZone)}
               isReadOnly={false}
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
+              quality={vncSettings.quality}
+              compression={vncSettings.compression}
+              resize={vncSettings.resize}
+              showDot={vncSettings.showDot}
+              onQualityChange={handleVncQualityChange}
+              onCompressionChange={handleVncCompressionChange}
+              onResizeChange={handleVncResizeChange}
+              onShowDotChange={handleVncShowDotChange}
+              onClipboardPaste={handleVncClipboardPaste}
               className="has-shadow-medium"
             />
             <button 
