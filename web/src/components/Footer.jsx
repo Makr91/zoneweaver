@@ -150,12 +150,7 @@ const Footer = () => {
               </button>
             </p>
             {showShellDropdown && (
-              <div className="dropdown is-active has-z-index-sidebar" style={{ 
-                position: 'absolute', 
-                bottom: '100%', 
-                right: '0', 
-                minWidth: '150px'
-              }}>
+              <div className="dropdown is-active has-z-index-sidebar is-absolute has-bottom-100-percent has-right-0 has-min-width-150">
                 <div className="dropdown-menu">
                   <div className="dropdown-content">
                     <a className="dropdown-item is-clickable" onClick={handleRestartShell}>
@@ -190,8 +185,8 @@ const Footer = () => {
         minConstraints={[Infinity, 0]}
         handle={ResizeHandle()}
       >
-        <div className='log-console has-background-black has-text-white' style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, overflow: 'hidden', width: '100%' }}>
+        <div className='log-console has-background-black has-text-white is-fullheight is-flex is-flex-direction-column'>
+          <div className="is-flex-grow-1 is-clipped is-fullwidth">
             {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
           </div>
         </div>

@@ -42,7 +42,7 @@ const SidebarFooter = () => {
       {userContext.sidebarMinimized ? (
         // Collapsed: Center the dropdown
         <div className='level-item'>
-          <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ overflow: 'visible' }} ref={dropdownRef}>
+          <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} ref={dropdownRef}>
             <div className='dropdown-trigger'>
               <button className='button is-ghost p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
                 <GravatarImage />
@@ -83,8 +83,8 @@ const SidebarFooter = () => {
       ) : (
         // Expanded: Current left-aligned structure
         <div className='level-left is-fullwidth'>
-          <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ width: '100%', overflow: 'visible' }} ref={dropdownRef}>
-            <div className='dropdown-trigger' style={{ width: '100%' }}>
+          <div className={`dropdown is-up is-relative is-fullwidth ${isDropdownActive ? 'is-active' : ''}`} ref={dropdownRef}>
+            <div className='dropdown-trigger is-fullwidth'>
               <button className='button is-ghost is-fullwidth p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
                 <GravatarImage />
                 <span className="ml-2 is-flex-grow-1 has-text-centered">{user?.username || 'User'}</span>

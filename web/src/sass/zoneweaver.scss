@@ -534,3 +534,134 @@ button {
 .task-running {
   background-color: rgba(var(--bulma-warning-h), var(--bulma-warning-s), var(--bulma-warning-l), 0.1) !important;
 }
+
+// Custom helper classes for replacing inline styles
+// Box Shadow helpers
+.has-shadow-small {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.has-shadow-medium {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+// Max Height helpers
+.has-max-height-150 {
+  max-height: 150px !important;
+}
+
+.has-max-height-200 {
+  max-height: 200px !important;
+}
+
+.has-max-height-300 {
+  max-height: 300px !important;
+}
+
+// Viewport Units helpers
+.has-width-95vw {
+  width: 95vw !important;
+}
+
+.has-height-90vh {
+  height: 90vh !important;
+}
+
+.has-height-85vh {
+  height: 85vh !important;
+}
+
+// Percentage Width helpers
+.has-width-30 {
+  width: 30% !important;
+}
+
+// Opacity helpers
+.has-opacity-70 {
+  opacity: 0.7 !important;
+}
+
+.has-opacity-80 {
+  opacity: 0.8 !important;
+}
+
+// Overflow helpers
+.has-overflow-auto {
+  overflow: auto !important;
+}
+
+// Line Height helpers
+.has-line-height-12 {
+  line-height: 1.2 !important;
+}
+
+// Font Size helpers (smaller than Bulma's is-size-7)
+.has-font-size-8px {
+  font-size: 8px !important;
+}
+
+.has-font-size-9px {
+  font-size: 9px !important;
+}
+
+.has-font-size-12px {
+  font-size: 12px !important;
+}
+
+// Min Width helpers
+.has-min-width-150 {
+  min-width: 150px !important;
+}
+
+.has-min-width-250 {
+  min-width: 250px !important;
+}
+
+.has-max-width-300 {
+  max-width: 300px !important;
+}
+
+// Border Radius helpers (if not using is-radiusless)
+.has-border-radius-0 {
+  border-radius: 0 !important;
+}
+
+// Margin helpers for specific values not in Bulma's scale
+.has-margin-right-3px {
+  margin-right: 3px !important;
+}
+
+.has-margin-bottom-12px {
+  margin-bottom: 12px !important;
+}
+
+.has-margin-top-6px {
+  margin-top: 6px !important;
+}
+
+.has-margin-top-175rem {
+  margin-top: 1.75rem !important;
+}
+
+.has-padding-bottom-15rem {
+  padding-bottom: 1.5rem !important;
+}
+
+// Box Sizing helper
+.has-box-sizing-border-box {
+  box-sizing: border-box !important;
+}
+
+// Position helpers
+.is-absolute {
+  position: absolute !important;
+}
+
+// Position helpers for specific values
+.has-bottom-100-percent {
+  bottom: 100% !important;
+}
+
+.has-right-0 {
+  right: 0 !important;
+}
