@@ -23,8 +23,8 @@ const HostShell = () => {
   }, [attachTerminal]);
 
   return (
-    <div style={{ height: '100%', width: '100%', marginTop: '1.75rem', paddingBottom: '1.5rem', boxSizing: 'border-box' }}>
-      <div ref={terminalRef} style={{ height: '100%', width: '100%' }} />
+    <div className="is-fullheight is-fullwidth has-margin-top-175rem has-padding-bottom-15rem has-box-sizing-border-box">
+      <div ref={terminalRef} className="is-fullheight is-fullwidth" />
     </div>
   );
 };

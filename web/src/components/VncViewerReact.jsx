@@ -414,11 +414,10 @@ const VncViewerReact = forwardRef(({
             <div className="buttons is-small has-margin-0">
               {/* Ctrl+Alt+Del Button */}
               <button 
-                className="button is-small is-warning" 
+                className="button is-small is-warning has-shadow-small" 
                 onClick={handleCtrlAltDel}
                 disabled={!connected}
                 title="Send Ctrl+Alt+Del to guest system"
-                style={{boxShadow: '0 2px 4px rgba(0,0,0,0.2)'}}
               >
                 <span className="icon is-small">
                   <i className="fas fa-keyboard"></i>
@@ -428,11 +427,10 @@ const VncViewerReact = forwardRef(({
               
               {/* Connect/Disconnect Button */}
               <button 
-                className={`button is-small ${connected ? 'is-danger' : 'is-success'}`}
+                className={`button is-small has-shadow-small ${connected ? 'is-danger' : 'is-success'}`}
                 onClick={connected ? handleDisconnect : handleConnect}
                 disabled={connecting}
                 title={connected ? 'Disconnect from VNC' : 'Connect to VNC'}
-                style={{boxShadow: '0 2px 4px rgba(0,0,0,0.2)'}}
               >
                 <span className="icon is-small">
                   <i className={`fas ${connected ? 'fa-plug' : 'fa-play'}`}></i>

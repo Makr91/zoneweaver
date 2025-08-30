@@ -70,12 +70,12 @@ const ServiceDetailsModal = ({ service, onClose }) => {
                   <tbody>
                     {detailsArray.map((detail, index) => (
                       <tr key={index}>
-                        <td style={{ width: '30%' }}>
+                        <td className="has-width-30">
                           <strong>{detail.label}</strong>
                         </td>
                         <td>
                           {detail.value.includes('\n') ? (
-                            <pre className='is-size-7  p-2' style={{ maxHeight: '200px', overflow: 'auto' }}>
+                            <pre className='is-size-7 p-2 has-max-height-200-auto'>
                               {detail.value}
                             </pre>
                           ) : (

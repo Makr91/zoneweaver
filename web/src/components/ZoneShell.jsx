@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useZoneTerminal } from '../contexts/ZoneTerminalContext';
 import '@xterm/xterm/css/xterm.css';
 
-const ZoneShell = React.memo(({ zoneName, readOnly = false, context = 'preview', style = {} }) => {
+const ZoneShell = React.memo(({ zoneName, readOnly = false, context = 'preview', style = {}, className = '' }) => {
   const terminalRef = useRef(null);
   const { attachTerminal } = useZoneTerminal();
 
@@ -16,8 +16,8 @@ const ZoneShell = React.memo(({ zoneName, readOnly = false, context = 'preview',
   }, [attachTerminal, zoneName, readOnly, context]);
 
   return (
-    <div style={{ height: '100%', width: '100%', boxSizing: 'border-box', ...style }}>
-      <div ref={terminalRef} style={{ height: '100%', width: '100%' }} />
+    <div className={`is-fullheight is-fullwidth has-box-sizing-border-box ${className || ''}`} style={style}>
+      <div ref={terminalRef} className="is-fullheight is-fullwidth" />
     </div>
   );
 });

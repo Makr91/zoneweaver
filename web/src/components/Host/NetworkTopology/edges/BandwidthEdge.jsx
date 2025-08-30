@@ -278,21 +278,11 @@ const BandwidthEdge = ({
       <EdgeLabelRenderer>
         <div
           style={{
-            position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            background: 'rgba(255, 255, 255, 0.9)',
             border: `1px solid ${getEdgeColor()}`,
-            borderRadius: '4px',
-            padding: '2px 6px',
-            fontSize: '10px',
-            fontWeight: 'bold',
-            color: getEdgeColor(),
-            pointerEvents: 'all',
-            maxWidth: '120px',
-            textAlign: 'center',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            color: getEdgeColor()
           }}
-          className="nodrag nopan"
+          className="nodrag nopan zw-edge-label has-text-centered"
         >
           {/* Primary Label Based on Type */}
           <div style={{ lineHeight: '1.2' }}>

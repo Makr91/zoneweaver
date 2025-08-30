@@ -177,18 +177,9 @@ const BidirectionalEdge = ({ id, source, target, style = {}, data = {}, markerEn
         <EdgeLabelRenderer>
           <div
             style={{
-              position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              background: 'rgba(255, 255, 255, 0.9)',
-              border: '1px solid #d1d5db',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              padding: '2px 4px',
-              pointerEvents: 'all',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`
             }}
-            className="nodrag nopan"
+            className="nodrag nopan zw-edge-label"
           >
             <div style={{ color: downlinkColor }}>↓{(rxMbps).toFixed(1)}M</div>
             <div style={{ color: uplinkColor }}>↑{(txMbps).toFixed(1)}M</div>

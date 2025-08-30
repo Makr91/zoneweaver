@@ -17,7 +17,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
     // Handle different types of property values
     if (value.includes('\n') || value.length > 100) {
       return (
-        <pre className='is-size-7 has-background-dark has-text-light p-2' style={{ maxHeight: '150px', overflow: 'auto' }}>
+        <pre className='is-size-7 has-background-dark has-text-light p-2 has-max-height-150-auto'>
           {value}
         </pre>
       );
@@ -89,7 +89,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                 <table className='table is-fullwidth is-striped'>
                   <thead>
                     <tr>
-                      <th style={{ width: '30%' }}>Property</th>
+                      <th className="has-width-30">Property</th>
                       <th>Value</th>
                     </tr>
                   </thead>

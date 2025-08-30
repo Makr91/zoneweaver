@@ -1716,8 +1716,8 @@ const Zones = () => {
                                             }
                                           }}
                                           isReadOnly={previewReadOnly}
-                                          isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-                                          className='has-box-shadow'
+                          isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
+                          className="has-shadow-medium"
                                         />
                                         {/* Paste from Clipboard Button - zlogin Preview */}
                                         <button 
@@ -1757,7 +1757,7 @@ const Zones = () => {
                                         </button>
                                         {/* Always show VNC button - switches to VNC or starts VNC for preview */}
                                         <button 
-                                          className='button is-small is-warning'
+                                          className='button is-small is-warning has-shadow-medium'
                                           onClick={async () => {
                                             if (hasVnc) {
                                               // VNC already active - just switch to it in preview
@@ -1811,7 +1811,6 @@ const Zones = () => {
                                           }}
                                           disabled={loadingVnc}
                                           title={hasVnc ? "Switch to VNC Console" : "Start VNC Console"}
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className={`fas ${loadingVnc ? 'fa-spinner fa-pulse' : 'fa-desktop'}`}></i>
@@ -1856,7 +1855,7 @@ const Zones = () => {
                                           fontWeight: 'bold'
                                         }}
                                       >
-                                        <span className='icon is-small' style={{marginRight: '3px'}}>
+                                        <span className='icon is-small has-margin-right-3px'>
                                           <i className='fas fa-circle' style={{
                                             color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
                                             fontSize: '0.4rem'
@@ -1932,14 +1931,13 @@ const Zones = () => {
                                           onResizeChange={handleVncResizeChange}
                                           onShowDotChange={handleVncShowDotChange}
                                           onClipboardPaste={handleVncClipboardPaste}
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                          className="has-shadow-medium"
                                         />
                                         {/* Paste from Clipboard Button - VNC Preview */}
                                         <button 
-                                          className='button is-small is-info'
+                                          className='button is-small is-info has-shadow-medium'
                                           onClick={handleVncPreviewPaste}
                                           title="Paste from Browser Clipboard"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-paste'></i>
@@ -1950,7 +1948,6 @@ const Zones = () => {
                                           onClick={() => handleVncConsole(selectedZone)}
                                           disabled={loading || loadingVnc}
                                           title="Expand VNC Console"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-expand'></i>
@@ -1958,7 +1955,7 @@ const Zones = () => {
                                         </button>
                                         {/* Always show zlogin button - switches to zlogin or starts zlogin for preview */}
                                         <button 
-                                          className='button is-small is-warning'
+                                          className='button is-small is-warning has-shadow-medium'
                                           onClick={async () => {
                                             if (hasZlogin) {
                                               // zlogin already active - just switch to it in preview
@@ -1998,7 +1995,6 @@ const Zones = () => {
                                           }}
                                           disabled={loading}
                                           title={hasZlogin ? "Switch to zlogin Console" : "Start zlogin Console"}
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
@@ -2082,7 +2078,7 @@ const Zones = () => {
                                           }}
                                         >
                                           <div className="has-text-centered">
-                                            <div style={{ marginBottom: '12px' }}>
+                                            <div className="has-margin-bottom-12px">
                                               <img 
                                                 src="/images/startcloud.svg" 
                                                 alt="Start Console" 
@@ -2127,7 +2123,7 @@ const Zones = () => {
                                           No active sessions • Click to start
                                         </p>
                                       </div>
-                                      <div className='buttons' style={{margin: 0}}>
+                                        <div className='buttons has-margin-0'>
                                         {/* Start VNC Button - Preview only */}
                                         <button 
                                           className='button is-small is-info'
@@ -2217,8 +2213,7 @@ const Zones = () => {
                                             }
                                           }}
                                           disabled={loading}
-                                          title="Start zlogin Console"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                          title={hasZlogin ? "Switch to zlogin Console" : "Start zlogin Console"}
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-terminal'></i>

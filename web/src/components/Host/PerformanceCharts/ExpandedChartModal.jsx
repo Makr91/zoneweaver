@@ -26,7 +26,7 @@ const ExpandedChartModal = ({
   return (
     <div className='modal is-active has-z-index-modal'>
       <div className='modal-background' onClick={closeExpandedChart}></div>
-      <div className='modal-card has-z-index-modal-high' style={{ width: '95vw', height: '90vh' }}>
+      <div className='modal-card has-z-index-modal-high has-width-95vw has-height-90vh'>
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon-text'>
@@ -158,15 +158,7 @@ const ExpandedChartModal = ({
           )}
 
           {/* Expanded Chart */}
-          <div 
-            style={{
-              borderRadius: '8px',
-              backgroundColor: '#1e2a3a',
-              padding: '10px',
-              border: '1px solid #37474f',
-              height: 'calc(90vh - 180px)'
-            }}
-          >
+          <div className="zw-expanded-chart-container">
             {expandedChartType === 'storage-io' && (
               <HighchartsReact 
                 highcharts={Highcharts} 
