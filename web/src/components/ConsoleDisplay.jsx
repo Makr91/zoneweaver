@@ -47,18 +47,8 @@ const ConsoleDisplay = ({
   const hasVnc = zoneDetails.active_vnc_session;
   const hasZlogin = zoneDetails.zlogin_session;
   
-  console.log(`🔍 CONSOLE DISPLAY: Determining which console to show:`, {
-    hasVnc,
-    hasZlogin,
-    activeConsoleType,
-    zloginSessionId: hasZlogin?.id,
-    vncSessionInfo: hasVnc ? 'present' : 'absent',
-    timestamp: Date.now()
-  });
-  
   // Show the selected console type
   if ((activeConsoleType === 'zlogin' && hasZlogin) || (hasZlogin && !hasVnc)) {
-    console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console`);
     return (
       <div 
         style={{
@@ -66,7 +56,7 @@ const ConsoleDisplay = ({
           borderRadius: '6px',
           overflow: 'visible',
           backgroundColor: '#000',
-          height: 'calc(100vh - 250px - 10vh)', // Reduced by ~10% total
+          height: 'calc(100vh - 250px - 10vh)',
           minHeight: '450px'
         }}
       >
@@ -129,7 +119,6 @@ const ConsoleDisplay = ({
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
               className="has-shadow-medium"
             />
-            {/* Paste from Clipboard Button - zlogin Preview */}
             <button 
               className='button is-small is-info has-box-shadow'
               onClick={handleZloginPreviewPaste}
@@ -142,19 +131,11 @@ const ConsoleDisplay = ({
             <button 
               className='button is-small is-primary'
               onClick={() => {
-                console.log(`🔍 EXPAND BUTTON: Checking session state for ${selectedZone}:`, {
-                  hasZloginSession: !!zoneDetails.zlogin_session,
-                  sessionId: zoneDetails.zlogin_session?.id,
-                  sessionStatus: zoneDetails.zlogin_session?.status
-                });
-                
                 if (zoneDetails.zlogin_session) {
-                  // ✅ Session exists - just open modal (don't create new session!)
-                  console.log(`🔍 EXPAND BUTTON: Session exists, opening modal for ${selectedZone}`);
+                  // Session exists - just open modal (don't create new session!)
                   setShowZloginConsole(true);
                 } else {
-                  // ❌ No session - start new one then open modal
-                  console.log(`🔍 EXPAND BUTTON: No session exists, starting new session for ${selectedZone}`);
+                  // No session - start new one then open modal
                   handleZloginConsole(selectedZone);
                 }
               }}
@@ -165,13 +146,14 @@ const ConsoleDisplay = ({
                 <i className='fas fa-expand'></i>
               </span>
             </button>
-            {/* Always show VNC button - switches to VNC or starts VNC for preview */}
             <button 
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
                 if (hasVnc) {
+                  // VNC already active - just switch to it in preview
                   setActiveConsoleType('vnc');
                 } else {
+                  // Start VNC session for preview (not modal)
                   console.log(`🚀 START VNC: Starting VNC session for preview from zlogin header`);
                   try {
                     setLoadingVnc(true);
@@ -284,7 +266,7 @@ const ConsoleDisplay = ({
           minHeight: '450px'
         }}
       >
-        {/* VNC Console display logic */}
+        {/* VNC Console Header */}
         <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
           <div>
             <h6 className='title is-7 has-text-white mb-1'>Active VNC Session</h6>
@@ -359,29 +341,26 @@ const ConsoleDisplay = ({
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
                 if (hasZlogin) {
+                  // zlogin already active - just switch to it in preview
                   setActiveConsoleType('zlogin');
                 } else {
+                  // Start zlogin session for preview (not modal)
                   console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
                   try {
                     setLoading(true);
-                    const result = await startZloginSession(
-                      currentServer.hostname,
-                      currentServer.port,
-                      currentServer.protocol,
-                      selectedZone
-                    );
+                    const result = await startZloginSessionExplicitly(currentServer, selectedZone);
                     
-                    if (result.success) {
+                    if (result) {
                       console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
                       setZoneDetails(prev => ({
                         ...prev,
-                        zlogin_session: result.data,
+                        zlogin_session: result,
                         active_zlogin_session: true
                       }));
                       setActiveConsoleType('zlogin');
                     } else {
-                      console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
-                      setError(`Failed to start zlogin console: ${result.message}`);
+                      console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
+                      setError(`Failed to start zlogin console`);
                     }
                   } catch (error) {
                     console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
@@ -535,29 +514,26 @@ const ConsoleDisplay = ({
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
                 if (hasZlogin) {
+                  // zlogin already active - just switch to it in preview
                   setActiveConsoleType('zlogin');
                 } else {
+                  // Start zlogin session for preview (not modal)
                   console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
                   try {
                     setLoading(true);
-                    const result = await startZloginSession(
-                      currentServer.hostname,
-                      currentServer.port,
-                      currentServer.protocol,
-                      selectedZone
-                    );
+                    const result = await startZloginSessionExplicitly(currentServer, selectedZone);
                     
-                    if (result.success) {
+                    if (result) {
                       console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
                       setZoneDetails(prev => ({
                         ...prev,
-                        zlogin_session: result.data,
+                        zlogin_session: result,
                         active_zlogin_session: true
                       }));
                       setActiveConsoleType('zlogin');
                     } else {
-                      console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
-                      setError(`Failed to start zlogin console: ${result.message}`);
+                      console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
+                      setError(`Failed to start zlogin console`);
                     }
                   } catch (error) {
                     console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
@@ -577,7 +553,7 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* VNC Console Content - CRITICAL MISSING PIECE! */}
+        {/* VNC Console Preview */}
         <div 
           style={{
             position: 'relative',
@@ -588,7 +564,6 @@ const ConsoleDisplay = ({
           }}
         >
           {zoneDetails.vnc_session_info ? (
-            // Active session - show live preview with toggleable view-only mode
             <VncViewerReact
               ref={previewVncRef}
               key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
@@ -610,7 +585,6 @@ const ConsoleDisplay = ({
               style={{ width: '100%', height: '100%' }}
             />
           ) : zoneDetails.configuration?.zonepath ? (
-            // No active session - show static screenshot
             <img
               src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
               alt={`Screenshot of ${selectedZone}`}
@@ -674,6 +648,7 @@ const ConsoleDisplay = ({
       </div>
     );
   } else {
+    // Inactive console case - no sessions active
     return (
       <div 
         style={{
@@ -765,8 +740,8 @@ const ConsoleDisplay = ({
                     }));
                     setActiveConsoleType('zlogin');
                   } else {
-                    console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
-                    setError(`Failed to start zlogin console: ${result.message}`);
+                    console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
+                    setError(`Failed to start zlogin console`);
                   }
                 } catch (error) {
                   console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
@@ -776,7 +751,7 @@ const ConsoleDisplay = ({
                 }
               }}
               disabled={loading}
-              title={hasZlogin ? "Switch to zlogin Console" : "Start zlogin Console"}
+              title="Start zlogin Console"
             >
               <span className='icon is-small'>
                 <i className='fas fa-terminal'></i>
