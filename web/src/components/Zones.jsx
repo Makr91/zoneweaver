@@ -64,6 +64,7 @@ const Zones = () => {
   const {
     vncSession,
     loadingVnc,
+    setLoadingVnc,
     showVncConsole,
     setShowVncConsole,
     vncLoadError,
@@ -353,6 +354,7 @@ const Zones = () => {
                               vncSettings={vncSettings}
                               setActiveConsoleType={setActiveConsoleType}
                               setLoading={setLoading}
+                              setLoadingVnc={setLoadingVnc}
                               setError={setError}
                               setPreviewReadOnly={setPreviewReadOnly}
                               setPreviewVncViewOnly={setPreviewVncViewOnly}

@@ -277,6 +277,7 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
   return {
     vncSession,
     loadingVnc,
+    setLoadingVnc,
     showVncConsole,
     setShowVncConsole,
     vncLoadError,
