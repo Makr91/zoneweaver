@@ -398,7 +398,183 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* Console Preview */}
+        {/* zlogin Console Content */}
+        <div 
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: 'calc(100% - 60px)',
+            backgroundColor: '#000',
+            overflow: 'visible'
+          }}
+        >
+          <ZoneShell 
+            key={`preview-zlogin-${selectedZone}-${previewReconnectKey}-${previewReadOnly ? 'ro' : 'rw'}`}
+            zoneName={selectedZone} 
+            readOnly={previewReadOnly}
+            context="preview"
+            style={{
+              height: '100%',
+              width: '100%',
+              fontSize: '10px'
+            }}
+          />
+          
+          {/* Session Status Indicator */}
+          <div 
+            style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '3px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}
+          >
+            <span className='icon is-small has-margin-right-3px'>
+              <i className='fas fa-circle' style={{
+                color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
+                fontSize: '0.4rem'
+              }}></i>
+            </span>
+            {zoneDetails.zlogin_session ? 'Live' : 'Offline'}
+          </div>
+        </div>
+      </div>
+    );
+  } else if ((activeConsoleType === 'vnc' && hasVnc) || (hasVnc && !hasZlogin)) {
+    return (
+      <div 
+        style={{
+          border: '2px solid var(--zw-border-light)',
+          borderRadius: '6px',
+          overflow: 'visible',
+          backgroundColor: '#000',
+          height: 'calc(100vh - 250px - 10vh)',
+          minHeight: '450px'
+        }}
+      >
+        {/* VNC Console Header */}
+        <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
+          <div>
+            <h6 className='title is-7 has-text-white mb-1'>Active VNC Session</h6>
+            {zoneDetails.vnc_session_info && zoneDetails.vnc_session_info.web_port && (
+              <p className='is-size-7 has-text-white-ter mb-0'>
+                Port: {zoneDetails.vnc_session_info.web_port} | 
+                Started: {zoneDetails.vnc_session_info.created_at ? 
+                  new Date(zoneDetails.vnc_session_info.created_at).toLocaleString() : 
+                  'Unknown'
+                }
+              </p>
+            )}
+          </div>
+          <div className='buttons has-margin-0'>
+            <VncActionsDropdown
+              vncRef={previewVncRef}
+              variant="button"
+              onToggleReadOnly={() => {
+                console.log(`Toggling preview VNC read-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
+                setPreviewVncViewOnly(!previewVncViewOnly);
+              }}
+              onScreenshot={() => {
+                const vncContainer = document.querySelector('.vnc-viewer-react canvas');
+                if (vncContainer) {
+                  vncContainer.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `vnc-screenshot-${selectedZone}-${Date.now()}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  });
+                }
+              }}
+              onNewTab={() => handleVncConsole(selectedZone, true)}
+              onKillSession={() => handleKillVncSession(selectedZone)}
+              isReadOnly={previewVncViewOnly}
+              isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
+              quality={vncSettings.quality}
+              compression={vncSettings.compression}
+              resize={vncSettings.resize}
+              showDot={vncSettings.showDot}
+              onQualityChange={handleVncQualityChange}
+              onCompressionChange={handleVncCompressionChange}
+              onResizeChange={handleVncResizeChange}
+              onShowDotChange={handleVncShowDotChange}
+              onClipboardPaste={handleVncClipboardPaste}
+              className="has-shadow-medium"
+            />
+            <button 
+              className='button is-small is-info has-shadow-medium'
+              onClick={handleVncPreviewPaste}
+              title="Paste from Browser Clipboard"
+            >
+              <span className='icon is-small'>
+                <i className='fas fa-paste'></i>
+              </span>
+            </button>
+            <button 
+              className='button is-small is-primary'
+              onClick={() => handleVncConsole(selectedZone)}
+              disabled={loading || loadingVnc}
+              title="Expand VNC Console"
+            >
+              <span className='icon is-small'>
+                <i className='fas fa-expand'></i>
+              </span>
+            </button>
+            <button 
+              className='button is-small is-warning has-shadow-medium'
+              onClick={async () => {
+                if (hasZlogin) {
+                  setActiveConsoleType('zlogin');
+                } else {
+                  console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
+                  try {
+                    setLoading(true);
+                    const result = await startZloginSession(
+                      currentServer.hostname,
+                      currentServer.port,
+                      currentServer.protocol,
+                      selectedZone
+                    );
+                    
+                    if (result.success) {
+                      console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
+                      setZoneDetails(prev => ({
+                        ...prev,
+                        zlogin_session: result.data,
+                        active_zlogin_session: true
+                      }));
+                      setActiveConsoleType('zlogin');
+                    } else {
+                      console.error(`❌ START ZLOGIN: Failed to start zlogin session:`, result.message);
+                      setError(`Failed to start zlogin console: ${result.message}`);
+                    }
+                  } catch (error) {
+                    console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
+                    setError(`Error starting zlogin console`);
+                  } finally {
+                    setLoading(false);
+                  }
+                }
+              }}
+              disabled={loading}
+              title={hasZlogin ? "Switch to zlogin Console" : "Start zlogin Console"}
+            >
+              <span className='icon is-small'>
+                <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* VNC Console Preview - Live when active, static screenshot when inactive */}
         <div 
           style={{
             position: 'relative',
@@ -409,6 +585,7 @@ const ConsoleDisplay = ({
           }}
         >
           {zoneDetails.vnc_session_info ? (
+            // Active session - show live preview with toggleable view-only mode
             <VncViewerReact
               ref={previewVncRef}
               key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
@@ -430,6 +607,7 @@ const ConsoleDisplay = ({
               style={{ width: '100%', height: '100%' }}
             />
           ) : zoneDetails.configuration?.zonepath ? (
+            // No active session - show static screenshot
             <img
               src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
               alt={`Screenshot of ${selectedZone}`}

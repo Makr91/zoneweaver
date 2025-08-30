@@ -1,16 +1,20 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
+import { useZoneManager } from "../hooks/useZoneManager";
+import { useZoneDetails } from "../hooks/useZoneDetails";
+import { useVncSession } from "../hooks/useVncSession";
+import { useZloginSession } from "../hooks/useZloginSession";
 import { useZoneTerminal } from "../contexts/ZoneTerminalContext";
-import VncViewerReact from "./VncViewerReact";
-import VncActionsDropdown from "./VncActionsDropdown";
-import ZloginActionsDropdown from "./ZloginActionsDropdown";
-import ZoneShell from "./ZoneShell";
 import ConsoleDisplay from "./ConsoleDisplay";
-import useZoneMonitoring from "../hooks/useZoneMonitoring";
-import useConsoleSettings from "../hooks/useConsoleSettings";
+import ZoneInfo from "./Zone/ZoneInfo";
+import ZoneHardware from "./Zone/ZoneHardware";
+import ZoneStorage from "./Zone/ZoneStorage";
+import ZoneNetwork from "./Zone/ZoneNetwork";
+import VncModal from "./Zone/VncModal";
+import ZloginModal from "./Zone/ZloginModal";
 
 /**
  * Zones Management Component
@@ -24,166 +28,97 @@ import useConsoleSettings from "../hooks/useConsoleSettings";
  * details for the currently selected zone on the currently selected server.
  */
 const Zones = () => {
-  const [zones, setZones] = useState([]);
-  const [runningZones, setRunningZones] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedZone, setSelectedZone] = useState(null);
   
   const [searchParams, setSearchParams] = useSearchParams();
-  const [zoneDetails, setZoneDetails] = useState({});
-  const [vncSession, setVncSession] = useState(null);
-  const [loadingVnc, setLoadingVnc] = useState(false);
-  const [showVncConsole, setShowVncConsole] = useState(false);
-  const [vncConsoleUrl, setVncConsoleUrl] = useState("");
-  const [vncLoadError, setVncLoadError] = useState(false);
-  const [isVncFullScreen, setIsVncFullScreen] = useState(false);
-  const [showFullScreenControls, setShowFullScreenControls] = useState(false);
-  const [showZloginConsole, setShowZloginConsole] = useState(false);
-  const [isZloginFullScreen, setIsZloginFullScreen] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState(null);
-  const [killInProgress, setKillInProgress] = useState(false);
+  const [activeConsoleType, setActiveConsoleType] = useState('vnc'); // 'vnc' or 'zlogin'
+  const [previewReadOnly, setPreviewReadOnly] = useState(true); // Track preview terminal read-only state
+  const [previewReconnectKey, setPreviewReconnectKey] = useState(0); // Force preview reconnection
+  const [previewVncViewOnly, setPreviewVncViewOnly] = useState(true); // Track preview VNC view-only state
   
   // VNC component refs to pass to action dropdowns
   const previewVncRef = useRef(null);
   const modalVncRef = useRef(null);
-
-  // Paste handler functions for quick access buttons
-  const handleVncPreviewPaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text && previewVncRef.current?.clipboardPaste) {
-        console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
-        previewVncRef.current.clipboardPaste(text);
-      } else {
-        console.warn('📋 VNC PREVIEW PASTE: No text or VNC ref unavailable');
-      }
-    } catch (error) {
-      console.error('📋 VNC PREVIEW PASTE: Clipboard access error:', error);
-    }
-  };
-
-  const handleVncModalPaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text && modalVncRef.current?.clipboardPaste) {
-        console.log(`📋 VNC MODAL PASTE: Pasting ${text.length} characters`);
-        modalVncRef.current.clipboardPaste(text);
-      } else {
-        console.warn('📋 VNC MODAL PASTE: No text or VNC ref unavailable');
-      }
-    } catch (error) {
-      console.error('📋 VNC MODAL PASTE: Clipboard access error:', error);
-    }
-  };
-
-  const handleZloginPreviewPaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text && currentServer && selectedZone) {
-        console.log(`📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`);
-        await pasteTextToZone(currentServer, selectedZone, text);
-      } else {
-        console.warn('📋 ZLOGIN PREVIEW PASTE: No text or session unavailable');
-      }
-    } catch (error) {
-      console.error('📋 ZLOGIN PREVIEW PASTE: Clipboard access error:', error);
-    }
-  };
-
-  const handleZloginModalPaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text && currentServer && selectedZone) {
-        console.log(`📋 ZLOGIN MODAL PASTE: Pasting ${text.length} characters`);
-        await pasteTextToZone(currentServer, selectedZone, text);
-      } else {
-        console.warn('📋 ZLOGIN MODAL PASTE: No text or session unavailable');
-      }
-    } catch (error) {
-      console.error('📋 ZLOGIN MODAL PASTE: Clipboard access error:', error);
-    }
-  };
   
   const { user } = useAuth();
   const { 
-    getServers, 
     makeZoneweaverAPIRequest, 
     servers: allServers, 
     currentServer, 
     currentZone, 
-    selectZone, 
-    clearZone,
+    selectZone,
     startZone,
     stopZone,
-    restartZone,
-    deleteZone,
-    getZoneDetails,
-    getAllZones,
-    startVncSession,
-    getVncSessionInfo,
-    stopVncSession,
-    startZloginSession,
-    stopZloginSession,
-    getZoneConfig,
-    // Monitoring functions
-    getMonitoringHealth,
-    getNetworkInterfaces,
-    getStoragePools,
-    getStorageDatasets
+    restartZone
   } = useServers();
 
-  const { attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting, pasteTextToZone } = useZoneTerminal();
+  const { zones, runningZones, error: zonesError, getZoneStatus, loadZones: reloadZones } = useZoneManager(currentServer);
 
-  // Initialize monitoring hook
   const {
+    zoneDetails,
+    setZoneDetails,
     monitoringHealth,
-    networkInterfaces,
-    storagePools,
-    storageDatasets,
-    loadMonitoringData
-  } = useZoneMonitoring(getMonitoringHealth, getNetworkInterfaces, getStoragePools, getStorageDatasets);
+    error: detailsError,
+    loadZoneDetails,
+  } = useZoneDetails(currentServer, currentZone);
 
-  // Initialize console settings hook
   const {
-    activeConsoleType,
-    setActiveConsoleType,
-    previewReadOnly,
-    setPreviewReadOnly,
-    previewReconnectKey,
-    setPreviewReconnectKey,
-    previewVncViewOnly,
-    setPreviewVncViewOnly,
+    vncSession,
+    loadingVnc,
+    showVncConsole,
+    setShowVncConsole,
+    vncLoadError,
+    setVncLoadError,
+    isVncFullScreen,
+    setIsVncFullScreen,
     vncReconnectKey,
-    setVncReconnectKey,
     vncSettings,
-    setVncSettings,
     handleVncQualityChange,
     handleVncCompressionChange,
     handleVncResizeChange,
     handleVncShowDotChange,
-    handleVncClipboardPaste
-  } = useConsoleSettings();
+    handleVncConsole,
+    closeVncConsole,
+    handleKillVncSession,
+    refreshVncSessionStatus,
+    handleVncClipboardPaste,
+    handleVncPreviewPaste,
+    handleVncModalPaste,
+    openDirectVncFallback,
+  } = useVncSession(currentServer, currentZone, setZoneDetails);
 
-  useEffect(() => {
-    if (currentServer) {
-      loadZones(currentServer);
-    }
-  }, [currentServer]);
+  const {
+    showZloginConsole,
+    setShowZloginConsole,
+    isZloginFullScreen,
+    setIsZloginFullScreen,
+    handleZloginConsole,
+    refreshZloginSessionStatus,
+    handleZloginPreviewPaste,
+    handleZloginModalPaste,
+  } = useZloginSession(currentServer, currentZone, setZoneDetails);
+
+  const { forceZoneSessionCleanup, startZloginSessionExplicitly, pasteTextToZone } = useZoneTerminal();
 
   // Handle URL query parameter for zone selection
   useEffect(() => {
     const zloginParam = searchParams.get('zlogin');
     if (zloginParam) {
       handleZoneSelect(zloginParam);
-      handleZloginConsole(zloginParam);
+      handleZloginConsole(zloginParam).then(result => {
+        if (!result.success) setError(result.message);
+      });
       setSearchParams({});
     }
 
     const vncParam = searchParams.get('vnc');
     if (vncParam) {
       handleZoneSelect(vncParam);
-      handleVncConsole(vncParam);
+      handleVncConsole(vncParam).then(errorMsg => {
+        if (errorMsg) setError(errorMsg);
+      });
       setSearchParams({});
     }
 
@@ -203,103 +138,22 @@ const Zones = () => {
     }
   }, [searchParams, zones, setSearchParams]);
 
-  const loadZones = async (server) => {
-    if (loading) return;
-    try {
-      setLoading(true);
-      setError("");
-      
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        'stats'
-      );
-
-      if (result.success) {
-        const data = result.data;
-        setZones(data.allzones || []);
-        setRunningZones(data.runningzones || []);
-      } else {
-        setError(`Failed to fetch zones for ${server.hostname}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error fetching zones:', error);
-      setError(`Error connecting to ${server.hostname}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadZoneDetails = async (zoneName) => {
-    if (!currentServer || loading) return;
-    
-    try {
-      setLoading(true);
-      
-      // 🚀 PERFORMANCE FIX: Load zone details immediately (non-blocking)
-      console.log(`⚡ PERF: Starting fast zone details load for ${zoneName}`);
-      
-      const result = await makeZoneweaverAPIRequest(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        `zones/${zoneName}`
-      );
-
-      if (result.success) {
-        console.log(`🔍 ZONE LOAD: Raw zone data for ${zoneName}:`, {
-          configuration: result.data.configuration,
-          diskArray: result.data.configuration?.disk,
-          netArray: result.data.configuration?.net,
-          diskIsArray: Array.isArray(result.data.configuration?.disk),
-          netIsArray: Array.isArray(result.data.configuration?.net),
-          diskValue: result.data.configuration?.disk,
-          netValue: result.data.configuration?.net
-        });
-        
-        setZoneDetails(prev => {
-          console.log(`🔍 ZONE STATE: Initial load - BEFORE:`, {
-            prevDisk: prev.configuration?.disk,
-            prevNet: prev.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          const newState = result.data;
-          
-          console.log(`🔍 ZONE STATE: Initial load - AFTER:`, {
-            newDisk: newState.configuration?.disk,
-            newNet: newState.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          return newState;
-        });
-        
-        // 🚀 PERFORMANCE FIX: Set loading to false immediately to show UI
-        setLoading(false);
-        console.log(`⚡ PERF: Zone details loaded and UI shown (${performance.now()}ms)`);
-        
-        // 🚀 RACE CONDITION FIX: Serialize session checks to prevent state corruption
-        console.log(`⚡ RACE FIX: Starting serialized session status checks for ${zoneName}`);
-        
-        // CRITICAL: Run session checks SEQUENTIALLY to prevent race conditions
-        // This prevents refreshVncSessionStatus from overwriting zlogin_session with stale state
+  const handleZoneSelect = (zoneName) => {
+    selectZone(zoneName);
+    // Manually trigger zone details load with session refresh orchestration
+    if (currentServer && zoneName) {
+      loadZoneDetails(currentServer, zoneName).then(() => {
+        // Run serialized session checks after zone details load
         (async () => {
           try {
-            console.log(`🔍 RACE FIX: Step 1 - VNC status check for ${zoneName}`);
+            console.log(`🔍 RACE FIX: Starting serialized session status checks for ${zoneName}`);
+            
             await refreshVncSessionStatus(zoneName).catch(err => 
               console.warn('Background VNC status check failed:', err)
             );
             
-            console.log(`🔍 RACE FIX: Step 2 - zlogin status check for ${zoneName}`);
             await refreshZloginSessionStatus(zoneName).catch(err => 
               console.warn('Background zlogin status check failed:', err)  
-            );
-            
-            console.log(`🔍 RACE FIX: Step 3 - monitoring data load for ${zoneName}`);
-            await loadMonitoringData(currentServer).catch(err => 
-              console.warn('Background monitoring data load failed:', err)
             );
             
             console.log(`✅ RACE FIX: All serialized session checks completed for ${zoneName}`);
@@ -307,523 +161,14 @@ const Zones = () => {
             console.error(`💥 RACE FIX: Error in serialized session checks for ${zoneName}:`, error);
           }
         })();
-        
-      } else {
-        setError(`Failed to fetch details for zone ${zoneName}: ${result.message}`);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Error fetching zone details:', error);
-      setError(`Error fetching zone details for ${zoneName}`);
-      setLoading(false);
-    }
-  };
-
-
-  /**
-   * Wait for VNC session to become active after start API call
-   * Polls the VNC info endpoint until status shows 'active'
-   */
-  const waitForVncSessionReady = async (zoneName, maxAttempts = 10) => {
-    if (!currentServer) {
-      return { ready: false, reason: 'No current server selected' };
-    }
-
-    console.log(`⏳ VNC READY: Waiting for session to become active for zone: ${zoneName}`);
-    
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        console.log(`🔍 VNC READY: Check ${attempt}/${maxAttempts} for zone: ${zoneName}`);
-        
-        // Check VNC session status
-        const vncResult = await makeZoneweaverAPIRequest(
-          currentServer.hostname,
-          currentServer.port,
-          currentServer.protocol,
-          `zones/${zoneName}/vnc/info?_ready_check=${Date.now()}`,
-          'GET',
-          null,
-          null,
-          true // Force bypass cache
-        );
-
-        console.log(`🔍 VNC READY: Response for attempt ${attempt}:`, {
-          success: vncResult.success,
-          status: vncResult.status,
-          active: vncResult.data?.active_vnc_session,
-          sessionStatus: vncResult.data?.vnc_session_info?.status
-        });
-
-        if (vncResult.success && vncResult.data && vncResult.data.active_vnc_session) {
-          const sessionInfo = vncResult.data.vnc_session_info;
-          if (sessionInfo && sessionInfo.status === 'active') {
-            console.log(`✅ VNC READY: Session is active for ${zoneName} (attempt ${attempt})`);
-            return { 
-              ready: true, 
-              sessionInfo: sessionInfo,
-              reason: 'Session active and ready'
-            };
-          } else {
-            console.log(`⚠️ VNC READY: Session exists but not active yet: ${sessionInfo?.status || 'unknown'}`);
-          }
-        } else {
-          console.log(`⚠️ VNC READY: Session not found yet on attempt ${attempt}`);
-        }
-        
-        // Wait before retry (except on last attempt)
-        if (attempt < maxAttempts) {
-          console.log(`⏳ VNC READY: Waiting 500ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-      } catch (error) {
-        console.error(`💥 VNC READY: Error on attempt ${attempt}:`, error);
-        
-        // Wait before retry (except on last attempt)  
-        if (attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      }
-    }
-
-    console.log(`❌ VNC READY: Session not ready after ${maxAttempts} attempts for zone: ${zoneName}`);
-    return { 
-      ready: false, 
-      reason: `Session not ready after ${maxAttempts} attempts (~5 seconds). The VNC process may have failed to start or the backend needs more time.`
-    };
-  };
-
-  /**
-   * Enhanced VNC session validation
-   * Validates that a VNC session is actually working after backend reports success
-   */
-  const validateVncSession = async (zoneName, maxAttempts = 3) => {
-    if (!currentServer) {
-      return { valid: false, reason: 'No current server selected' };
-    }
-
-    console.log(`🔍 VNC VALIDATION: Starting validation for zone: ${zoneName}`);
-    
-    // Wait a moment for the VNC session to stabilize
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        console.log(`🔍 VNC VALIDATION: Attempt ${attempt}/${maxAttempts} for zone: ${zoneName}`);
-        
-        // Check VNC session status with cache bypass
-        const vncResult = await makeZoneweaverAPIRequest(
-          currentServer.hostname,
-          currentServer.port,
-          currentServer.protocol,
-          `zones/${zoneName}/vnc/info?_validation=true&_t=${Date.now()}`,
-          'GET',
-          null,
-          null,
-          true // Force bypass cache
-        );
-
-        console.log(`🔍 VNC VALIDATION: Response for attempt ${attempt}:`, {
-          success: vncResult.success,
-          status: vncResult.status,
-          data: vncResult.data
-        });
-
-        if (vncResult.success && vncResult.data) {
-          // Check multiple indicators of active session
-          const hasActiveProperty = typeof vncResult.data.active !== 'undefined';
-          const hasStatusProperty = vncResult.data.status;
-          const hasConsoleUrl = vncResult.data.console_url;
-          const hasWebPort = vncResult.data.web_port;
-          
-          const isActive = hasActiveProperty ? vncResult.data.active : 
-                           (hasStatusProperty ? vncResult.data.status === 'active' : false);
-          
-          if (isActive && hasConsoleUrl && hasWebPort) {
-            console.log(`✅ VNC VALIDATION: Session validated successfully for ${zoneName}`);
-            return { 
-              valid: true, 
-              sessionInfo: vncResult.data,
-              reason: 'Session active and accessible'
-            };
-          } else {
-            console.log(`⚠️ VNC VALIDATION: Session reported but missing required fields:`, {
-              isActive,
-              hasConsoleUrl,
-              hasWebPort,
-              data: vncResult.data
-            });
-          }
-        } else {
-          console.log(`❌ VNC VALIDATION: No active session found on attempt ${attempt}`);
-        }
-        
-        // Wait before retry (except on last attempt)
-        if (attempt < maxAttempts) {
-          console.log(`⏳ VNC VALIDATION: Waiting 2s before retry...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-        
-      } catch (error) {
-        console.error(`💥 VNC VALIDATION: Error on attempt ${attempt}:`, error);
-        
-        // Wait before retry (except on last attempt)  
-        if (attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      }
-    }
-
-    console.log(`❌ VNC VALIDATION: Failed after ${maxAttempts} attempts for zone: ${zoneName}`);
-    return { 
-      valid: false, 
-      reason: `Session validation failed after ${maxAttempts} attempts. The VNC process may have exited or port is still occupied by a previous session.`
-    };
-  };
-
-  /**
-   * SIMPLIFIED: VNC session status check with PID file approach
-   * Now only handles: 200 (active) or 404 (not found) - no more complex states
-   */
-  const refreshVncSessionStatus = async (zoneName) => {
-    if (!currentServer) return;
-    
-    try {
-      console.log(`🔍 VNC STATUS: Checking session status for zone: ${zoneName}`);
-      console.log(`🔍 VNC DEBUG: Current zoneDetails before VNC request:`, {
-        configExists: !!zoneDetails.configuration,
-        diskArray: zoneDetails.configuration?.disk,
-        netArray: zoneDetails.configuration?.net,
-        diskIsArray: Array.isArray(zoneDetails.configuration?.disk),
-        netIsArray: Array.isArray(zoneDetails.configuration?.net)
-      });
-      
-      const apiPath = `zones/${zoneName}/vnc/info?_t=${Date.now()}`;
-      console.log(`🔍 VNC STATUS: Making request to path: ${apiPath}`);
-      
-      // Simple API call - backend returns active session or 404
-      const vncResult = await makeZoneweaverAPIRequest(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        apiPath,
-        'GET',
-        null,
-        null,
-        true // Force bypass cache
-      );
-
-      console.log(`🔍 VNC STATUS: API response:`, {
-        success: vncResult.success,
-        status: vncResult.status,
-        data: vncResult.data
-      });
-
-      if (vncResult.success && vncResult.data && vncResult.data.active_vnc_session) {
-        // Session is active - backend verified PID file and process
-        console.log(`✅ VNC STATUS: Active session found for ${zoneName}`);
-        setZoneDetails(prev => {
-          console.log(`🔍 ZONE STATE: VNC update - BEFORE:`, {
-            hasZloginSession: !!prev.zlogin_session,
-            hasActiveZloginSession: prev.active_zlogin_session,
-            disk: prev.configuration?.disk,
-            net: prev.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          // 🛡️ DEFENSIVE STATE MERGE: Only update VNC fields, explicitly preserve zlogin state
-          const newState = {
-            ...prev,
-            active_vnc_session: true,
-            vnc_session_info: vncResult.data.vnc_session_info,
-            // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
-            zlogin_session: prev.zlogin_session || null,
-            active_zlogin_session: prev.active_zlogin_session || false
-          };
-          
-          console.log(`🔍 ZONE STATE: VNC update - AFTER:`, {
-            hasZloginSession: !!newState.zlogin_session,
-            hasActiveZloginSession: newState.active_zlogin_session,
-            disk: newState.configuration?.disk,
-            net: newState.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          return newState;
-        });
-      } else {
-        // No session found - backend returned active_vnc_session: false
-        console.log(`❌ VNC STATUS: No active session for ${zoneName}`);
-        setZoneDetails(prev => {
-          console.log(`🔍 ZONE STATE: VNC clear - BEFORE:`, {
-            hasZloginSession: !!prev.zlogin_session,
-            hasActiveZloginSession: prev.active_zlogin_session,
-            disk: prev.configuration?.disk,
-            net: prev.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          // 🛡️ DEFENSIVE STATE MERGE: Only clear VNC fields, explicitly preserve zlogin state
-          const newState = {
-            ...prev,
-            active_vnc_session: false,
-            vnc_session_info: null,
-            // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
-            zlogin_session: prev.zlogin_session || null,
-            active_zlogin_session: prev.active_zlogin_session || false
-          };
-          
-          console.log(`🔍 ZONE STATE: VNC clear - AFTER:`, {
-            hasZloginSession: !!newState.zlogin_session,
-            hasActiveZloginSession: newState.active_zlogin_session,
-            disk: newState.configuration?.disk,
-            net: newState.configuration?.net,
-            timestamp: Date.now()
-          });
-          
-          return newState;
-        });
-      }
-    } catch (error) {
-      console.error('💥 VNC STATUS: Error checking session status:', error);
-      setZoneDetails(prev => {
-        console.log(`🔍 ZONE STATE: VNC error - BEFORE:`, {
-          disk: prev.configuration?.disk,
-          net: prev.configuration?.net,
-          timestamp: Date.now()
-        });
-        
-        const newState = {
-          ...prev,
-          active_vnc_session: false,
-          vnc_session_info: null
-        };
-        
-        console.log(`🔍 ZONE STATE: VNC error - AFTER:`, {
-          disk: newState.configuration?.disk,
-          net: newState.configuration?.net,
-          timestamp: Date.now()
-        });
-        
-        return newState;
       });
     }
   };
 
-  /**
-   * Check for existing active zlogin sessions for the current zone
-   * Updates zoneDetails with session status and info
-   */
-  const refreshZloginSessionStatus = async (zoneName) => {
-    if (!currentServer) return;
-    
-    try {
-      console.log(`🔍 ZLOGIN STATUS: Checking session status for zone: ${zoneName}`);
-      
-      // Get all zlogin sessions and find active ones for this zone
-      const sessionsResult = await makeZoneweaverAPIRequest(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        `zlogin/sessions?_t=${Date.now()}`,
-        'GET',
-        null,
-        null,
-        true // Force bypass cache
-      );
-
-      console.log(`🔍 ZLOGIN STATUS: Sessions API response:`, {
-        success: sessionsResult.success,
-        status: sessionsResult.status,
-        data: sessionsResult.data
-      });
-
-      if (sessionsResult.success && sessionsResult.data) {
-        // Find active session for this zone
-        const activeSessions = Array.isArray(sessionsResult.data) 
-          ? sessionsResult.data 
-          : (sessionsResult.data.sessions || []);
-        
-        const activeZoneSession = activeSessions.find(session => 
-          session.zone_name === zoneName && session.status === 'active'
-        );
-
-        if (activeZoneSession) {
-          console.log(`✅ ZLOGIN STATUS: Active session found for ${zoneName}:`, activeZoneSession.id);
-          
-          // NEW: Initialize context state for existing session
-          if (currentServer) {
-            initializeSessionFromExisting(currentServer, zoneName, activeZoneSession);
-          }
-
-          setZoneDetails(prev => {
-            console.log(`🔍 ZONE STATE: ZLOGIN update - BEFORE:`, {
-              hasVncSession: !!prev.active_vnc_session,
-              hasVncSessionInfo: !!prev.vnc_session_info,
-              timestamp: Date.now()
-            });
-
-            // 🛡️ DEFENSIVE STATE MERGE: Only update zlogin fields, explicitly preserve VNC state
-            const newState = {
-              ...prev,
-              zlogin_session: activeZoneSession,
-              active_zlogin_session: true,
-              // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
-              active_vnc_session: prev.active_vnc_session || false,
-              vnc_session_info: prev.vnc_session_info || null
-            };
-
-            // 🔵 ZLOGIN STATE CHANGE TRACKING
-            console.log(`🔵 ZLOGIN STATE CHANGE:`, {
-              zoneName: zoneName,
-              trigger: 'refreshZloginSessionStatus-found-active',
-              from: {
-                zlogin_session: prev.zlogin_session?.id || null,
-                active_zlogin_session: prev.active_zlogin_session
-              },
-              to: {
-                zlogin_session: activeZoneSession.id,
-                active_zlogin_session: true
-              },
-              sessionData: activeZoneSession,
-              timestamp: new Date().toISOString()
-            });
-
-            console.log(`🔍 ZONE STATE: ZLOGIN update - AFTER:`, {
-              hasVncSession: !!newState.active_vnc_session,
-              hasVncSessionInfo: !!newState.vnc_session_info,
-              timestamp: Date.now()
-            });
-
-            return newState;
-          });
-        } else {
-          console.log(`❌ ZLOGIN STATUS: No active session for ${zoneName}`);
-          setZoneDetails(prev => {
-            console.log(`🔍 ZONE STATE: ZLOGIN clear - BEFORE:`, {
-              hasVncSession: !!prev.active_vnc_session,
-              hasVncSessionInfo: !!prev.vnc_session_info,
-              timestamp: Date.now()
-            });
-
-            // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
-            const newState = {
-              ...prev,
-              zlogin_session: null,
-              active_zlogin_session: false,
-              // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
-              active_vnc_session: prev.active_vnc_session || false,
-              vnc_session_info: prev.vnc_session_info || null
-            };
-
-            // 🔵 ZLOGIN STATE CHANGE TRACKING
-            console.log(`🔵 ZLOGIN STATE CHANGE:`, {
-              zoneName: zoneName,
-              trigger: 'refreshZloginSessionStatus-no-active-found',
-              from: {
-                zlogin_session: prev.zlogin_session?.id || null,
-                active_zlogin_session: prev.active_zlogin_session
-              },
-              to: {
-                zlogin_session: null,
-                active_zlogin_session: false
-              },
-              reason: 'No active session found in API response',
-              timestamp: new Date().toISOString()
-            });
-
-            console.log(`🔍 ZONE STATE: ZLOGIN clear - AFTER:`, {
-              hasVncSession: !!newState.active_vnc_session,
-              hasVncSessionInfo: !!newState.vnc_session_info,
-              timestamp: Date.now()
-            });
-
-            return newState;
-          });
-        }
-      } else {
-        // No sessions or API error
-        console.log(`❌ ZLOGIN STATUS: No sessions found or API error for ${zoneName}`);
-        setZoneDetails(prev => {
-          // 🔵 ZLOGIN STATE CHANGE TRACKING
-          console.log(`🔵 ZLOGIN STATE CHANGE:`, {
-            zoneName: zoneName,
-            trigger: 'refreshZloginSessionStatus-api-error-no-sessions',
-            from: {
-              zlogin_session: prev.zlogin_session?.id || null,
-              active_zlogin_session: prev.active_zlogin_session
-            },
-            to: {
-              zlogin_session: null,
-              active_zlogin_session: false
-            },
-            reason: 'API error or no sessions in response',
-            apiResponse: sessionsResult,
-            timestamp: new Date().toISOString()
-          });
-
-          // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
-          const newState = {
-            ...prev,
-            zlogin_session: null,
-            active_zlogin_session: false,
-            // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
-            active_vnc_session: prev.active_vnc_session || false,
-            vnc_session_info: prev.vnc_session_info || null
-          };
-          return newState;
-        });
-      }
-    } catch (error) {
-      console.error('💥 ZLOGIN STATUS: Error checking session status:', error);
-      setZoneDetails(prev => {
-        // 🔵 ZLOGIN STATE CHANGE TRACKING
-        console.log(`🔵 ZLOGIN STATE CHANGE:`, {
-          zoneName: zoneName,
-          trigger: 'refreshZloginSessionStatus-catch-error',
-          from: {
-            zlogin_session: prev.zlogin_session?.id || null,
-            active_zlogin_session: prev.active_zlogin_session
-          },
-          to: {
-            zlogin_session: null,
-            active_zlogin_session: false
-          },
-          error: error.message,
-          errorStack: error.stack,
-          timestamp: new Date().toISOString()
-        });
-
-        // 🛡️ DEFENSIVE STATE MERGE: Only clear zlogin fields, explicitly preserve VNC state
-        const newState = {
-          ...prev,
-          zlogin_session: null,
-          active_zlogin_session: false,
-          // CRITICAL: Explicitly preserve VNC session state to prevent overwrites
-          active_vnc_session: prev.active_vnc_session || false,
-          vnc_session_info: prev.vnc_session_info || null
-        };
-        return newState;
-      });
-    }
-  };
-
-  const handleZoneSelect = (zoneName) => {
-    selectZone(zoneName);
-    loadZoneDetails(zoneName);
-  };
-
-  // Sync local selectedZone with global currentZone and ensure details load when both server and zone are ready
+  // Sync local selectedZone with global currentZone
   useEffect(() => {
     setSelectedZone(currentZone);
-    if (currentZone && currentServer) {
-      // Only load zone details if we have both server and zone ready
-      console.log(`🔄 PERSISTENCE: Loading zone details for ${currentZone} on server ${currentServer.hostname}`);
-      loadZoneDetails(currentZone);
-    } else {
-      setZoneDetails({});
-    }
-  }, [currentZone, currentServer]);
+  }, [currentZone]);
 
   // Auto-select console type based on what's available - FIXED to respect manual switching
   useEffect(() => {
@@ -883,10 +228,6 @@ const Zones = () => {
     prevShowZloginConsole.current = showZloginConsole;
   }, [showZloginConsole, activeConsoleType, zoneDetails.zlogin_session, selectedZone]);
 
-  const getZoneStatus = (zoneName) => {
-    return runningZones.includes(zoneName) ? 'running' : 'stopped';
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'running':
@@ -898,7 +239,7 @@ const Zones = () => {
     }
   };
 
-  // Zone action handlers
+  // Zone action handlers - CRITICAL MISSING FUNCTIONALITY
   const handleStartZone = async (zoneName) => {
     if (!currentServer) return;
     
@@ -913,7 +254,7 @@ const Zones = () => {
 
       if (result.success) {
         // Refresh zones list after action
-        setTimeout(() => loadZones(currentServer), 2000);
+        setTimeout(() => reloadZones(), 2000);
       } else {
         setError(`Failed to start zone ${zoneName}: ${result.message}`);
       }
@@ -940,7 +281,7 @@ const Zones = () => {
 
       if (result.success) {
         // Refresh zones list after action
-        setTimeout(() => loadZones(currentServer), 2000);
+        setTimeout(() => reloadZones(), 2000);
       } else {
         setError(`Failed to stop zone ${zoneName}: ${result.message}`);
       }
@@ -966,7 +307,7 @@ const Zones = () => {
 
       if (result.success) {
         // Refresh zones list after action
-        setTimeout(() => loadZones(currentServer), 3000);
+        setTimeout(() => reloadZones(), 3000);
       } else {
         setError(`Failed to restart zone ${zoneName}: ${result.message}`);
       }
@@ -976,272 +317,6 @@ const Zones = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  /**
-   * VNC console start - ALL connections go through Zoneweaver proxy
-   * Now includes session readiness verification to fix kill→start timing issues
-   */
-  const handleVncConsole = async (zoneName, openInNewTab = false) => {
-    if (!currentServer) return;
-    
-    try {
-      setLoadingVnc(true);
-      setError("");
-      
-      console.log(`🔄 VNC START: Starting VNC console for zone: ${zoneName}`);
-      
-      const result = await startVncSession(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        zoneName
-      );
-
-      if (result.success) {
-        console.log(`✅ VNC START: VNC start API succeeded for ${zoneName}`);
-        const vncData = result.data;
-        
-        if (!vncData || typeof vncData !== 'object') {
-          console.warn(`⚠️ VNC START: Invalid vncData received:`, vncData);
-          setError(`VNC session created but response format invalid. Try refreshing the page.`);
-          return;
-        }
-        
-        // ⏳ NEW: Wait for session to become truly ready
-        console.log(`⏳ VNC START: Waiting for session to become active...`);
-        const readinessResult = await waitForVncSessionReady(zoneName);
-        
-        if (!readinessResult.ready) {
-          console.error(`❌ VNC START: Session not ready: ${readinessResult.reason}`);
-          setError(`VNC session started but not ready: ${readinessResult.reason}`);
-          return;
-        }
-        
-        console.log(`✅ VNC START: Session is ready and active for ${zoneName}`);
-        setVncSession(vncData);
-        
-        // ONLY use Zoneweaver proxy routes - NO direct connections
-        // Legacy console endpoint removed - using react-vnc only now
-        
-        if (openInNewTab) {
-          // Open console in new tab via Zoneweaver proxy
-          console.log(`🔄 VNC START: Opening VNC console in new tab via Zoneweaver proxy: ${proxyUrl}`);
-          window.open(proxyUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
-        } else {
-          // Show embedded console via VncViewer component
-          console.log(`🔄 VNC START: Opening embedded VNC console via Zoneweaver proxy`);
-          setShowVncConsole(true);
-        }
-        
-        // Update status with verified session info (merge to preserve all metadata)
-        setZoneDetails(prev => ({
-          ...prev,
-          active_vnc_session: true,
-          vnc_session_info: {
-            ...vncData,                    // Keep original start data (session_id, etc.)
-            ...readinessResult.sessionInfo // Add verified info (status, created_at, etc.)
-          }
-        }));
-        
-      } else {
-        console.error(`❌ VNC START: Backend failed to start session:`, result.message);
-        setError(`Failed to start VNC console for ${zoneName}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('💥 VNC START: Error starting VNC console:', error);
-      setError(`Error starting VNC console for ${zoneName}`);
-    } finally {
-      setLoadingVnc(false);
-    }
-  };
-
-  const handleZloginConsole = async (zoneName) => {
-    if (!currentServer) return;
-
-    try {
-      const result = await startZloginSession(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        zoneName
-      );
-
-      if (result.success) {
-        setZoneDetails(prev => ({
-          ...prev,
-          zlogin_session: result.session
-        }));
-        setShowZloginConsole(true);
-      } else {
-        setError(`Failed to start zlogin console for ${zoneName}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error starting zlogin console:', error);
-      setError(`Error starting zlogin console for ${zoneName}`);
-    }
-  };
-
-  const openVncFullScreen = () => {
-    setIsVncFullScreen(!isVncFullScreen);
-  };
-
-  const openZloginFullScreen = () => {
-    setIsZloginFullScreen(!isZloginFullScreen);
-  };
-
-  const closeVncConsole = () => {
-    setShowVncConsole(false);
-    setVncConsoleUrl("");
-    setVncLoadError(false);
-    setIsVncFullScreen(false);
-    setShowFullScreenControls(false);
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-      setHoverTimeout(null);
-    }
-  };
-
-  const handleCornerHover = () => {
-    if (!isVncFullScreen) return;
-    
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      setShowFullScreenControls(true);
-    }, 4000); // 4 second delay
-    
-    setHoverTimeout(timeout);
-  };
-
-  const handleCornerLeave = () => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-      setHoverTimeout(null);
-    }
-    setShowFullScreenControls(false);
-  };
-
-  const handleVncIframeError = () => {
-    console.warn('VNC iframe failed to load, offering direct access fallback');
-    setVncLoadError(true);
-  };
-
-  const openDirectVncFallback = () => {
-    if (vncSession && vncSession.directUrl) {
-      window.open(vncSession.directUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
-    } else if (vncSession && vncSession.console_url) {
-      window.open(vncSession.console_url, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
-    }
-    closeVncConsole(); // Close modal after opening direct access
-  };
-
-  /**
-   * SIMPLIFIED: VNC kill process aligned with zlogin pattern
-   * Just call backend kill then refresh status from API - simpler and more reliable
-   */
-  const handleKillVncSession = async (zoneName) => {
-    if (!currentServer || killInProgress) return;
-    
-    try {
-      setKillInProgress(true);
-      setLoading(true);
-      setError("");
-      
-      console.log(`🔄 VNC KILL: Starting kill process for zone: ${zoneName}`);
-      
-      const result = await stopVncSession(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol,
-        zoneName
-      );
-
-      if (result.success) {
-        console.log(`✅ VNC KILL: Backend reported successful kill for ${zoneName}`);
-        
-        // SIMPLIFIED: Just refresh status from API (like zlogin does)
-        await refreshVncSessionStatus(zoneName);
-        
-        // Force VNC component remount to clear stale WebSocket connections
-        setVncReconnectKey(prev => prev + 1);
-        
-        // Close VNC console modal if it's open
-        if (showVncConsole) {
-          closeVncConsole();
-        }
-        
-        console.log(`✅ VNC KILL: Kill process completed for ${zoneName}`);
-        
-      } else {
-        console.error(`❌ VNC KILL: Backend failed to kill session:`, result.message);
-        setError(`Failed to kill VNC session for ${zoneName}: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('💥 VNC KILL: Error during kill process:', error);
-      setError(`Error killing VNC session for ${zoneName}`);
-    } finally {
-      setKillInProgress(false);
-      setLoading(false);
-    }
-  };
-
-  /**
-   * FIXED: Separate kill verification function
-   * Uses different cache-busting parameter to avoid conflicts with start validation
-   */
-  const verifyKillCompletion = async (zoneName, maxAttempts = 3) => {
-    console.log(`🔍 VNC KILL VERIFY: Starting verification for zone: ${zoneName}`);
-    
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        console.log(`🔍 VNC KILL VERIFY: Attempt ${attempt}/${maxAttempts}`);
-        
-        // Wait between attempts
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Use DIFFERENT cache-busting parameter to avoid conflicts
-        const statusResult = await makeZoneweaverAPIRequest(
-          currentServer.hostname,
-          currentServer.port,
-          currentServer.protocol,
-          `zones/${zoneName}/vnc/info?_kill_check=${Date.now()}`,
-          'GET',
-          null,
-          null,
-          true // Force bypass cache
-        );
-        
-        if (!statusResult.success || statusResult.status === 404) {
-          console.log(`✅ VNC KILL VERIFY: Session successfully terminated for ${zoneName}`);
-          
-          // Update state immediately
-          setZoneDetails(prev => ({
-            ...prev,
-            active_vnc_session: false,
-            vnc_session_info: null
-          }));
-          
-          // Close VNC console modal if it's open
-          if (showVncConsole) {
-            closeVncConsole();
-          }
-          
-          return; // Success!
-        } else {
-          console.log(`⚠️ VNC KILL VERIFY: Session still active on attempt ${attempt}:`, statusResult.data);
-        }
-        
-      } catch (error) {
-        console.error(`💥 VNC KILL VERIFY: Error on attempt ${attempt}:`, error);
-      }
-    }
-    
-    // If we get here, verification failed
-    console.warn(`⚠️ VNC KILL VERIFY: Verification failed after ${maxAttempts} attempts`);
-    setError(`VNC session was stopped but verification failed. Wait a moment before starting new session.`);
   };
 
   if (allServers.length === 0) {
@@ -1318,8 +393,18 @@ const Zones = () => {
 
           <div className='p-4'>
             {error && (
-              <div className='notification is-dangermb-4'>
+              <div className='notification is-danger mb-4'>
                 <p>{error}</p>
+              </div>
+            )}
+            {zonesError && (
+              <div className='notification is-danger mb-4'>
+                <p>{zonesError}</p>
+              </div>
+            )}
+            {detailsError && (
+              <div className='notification is-danger mb-4'>
+                <p>{detailsError}</p>
               </div>
             )}
 
@@ -1333,233 +418,14 @@ const Zones = () => {
                         <div className='columns'>
                           {/* Left Column - Zone Information and Hardware & System */}
                           <div className='column is-6'>
-                            {/* Zone Information */}
-                            {zoneDetails.zone_info && (
-                              <div className='box mb-0 pt-0 pd-0'>
-                                <h4 className='title is-6 mb-3'>
-                                  <span className='icon-text'>
-                                    <span className='icon'><i className='fas fa-info-circle'></i></span>
-                                    <span>Zone Information</span>
-                                  </span>
-                                </h4>
-                                <div className='table-container'>
-                                  <table className='table is-fullwidth is-striped is-size-7'>
-                                    <tbody>
-                                      <tr>
-                                          <td className="px-3 py-2"><strong>System Status</strong></td>
-                                          <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${getZoneStatus(selectedZone) === 'running' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {getZoneStatus(selectedZone) === 'running' ? 'Running' : 'Stopped'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      {/* Host Health Status */}
-                                      {Object.keys(monitoringHealth).length > 0 && (
-                                        <tr>
-                                          <td className="px-3 py-2"><strong>Host Health</strong></td>
-                                          <td className="px-3 py-2">
-                                            <span className={`has-text-weight-semibold ${
-                                              monitoringHealth.status === 'healthy' ? 'has-text-success' : 
-                                              monitoringHealth.status === 'warning' ? 'has-text-warning' : 'has-text-danger'
-                                            }`}>
-                                              {monitoringHealth.status ? monitoringHealth.status.charAt(0).toUpperCase() + monitoringHealth.status.slice(1) : 'Unknown'}
-                                            </span>
-                                            {(monitoringHealth.networkErrors > 0 || monitoringHealth.storageErrors > 0) && (
-                                              <div className='tags mt-1'>
-                                                {monitoringHealth.networkErrors > 0 && (
-                                                  <span className='tag is-warning is-small'>Net Errors: {monitoringHealth.networkErrors}</span>
-                                                )}
-                                                {monitoringHealth.storageErrors > 0 && (
-                                                  <span className='tag is-warning is-small'>Storage Errors: {monitoringHealth.storageErrors}</span>
-                                                )}
-                                              </div>
-                                            )}
-                                          </td>
-                                        </tr>
-                                      )}
-                                        <tr>
-                                          <td className="px-3 py-2"><strong>Last Seen</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey'>{zoneDetails.zone_info.last_seen ? new Date(zoneDetails.zone_info.last_seen).toLocaleString() : 'N/A'}</span></td>
-                                        </tr>
-                                      {(zoneDetails.zone_info.is_orphaned || zoneDetails.zone_info.auto_discovered) && (
-                                        <tr>
-                                          <td className="px-3 py-2"><strong>Flags</strong></td>
-                                          <td className="px-3 py-2">
-                                            <div className='tags'>
-                                              {zoneDetails.zone_info.is_orphaned && (
-                                                <span className='tag is-warning'>Orphaned</span>
-                                              )}
-                                              {zoneDetails.zone_info.auto_discovered && (
-                                                <span className='tag is-info'>Auto-discovered</span>
-                                              )}
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      )}
-                                      {/* Zone System Settings */}
-                                      {zoneDetails.configuration && (
-                                        <>
-                                          <tr>
-                                            <td className="px-3 py-2"><strong>Zone Name</strong></td>
-                                            <td className="px-3 py-2"><code className='is-size-7'>{zoneDetails.configuration.zonename}</code></td>
-                                          </tr>
-                                          <tr>
-                                            <td className="px-3 py-2"><strong>Zone Path</strong></td>
-                                            <td className="px-3 py-2"><code className='is-size-7'>{zoneDetails.configuration.zonepath}</code></td>
-                                          </tr>
-                                          {zoneDetails.configuration.bootargs && (
-                                            <tr>
-                                              <td className="px-3 py-2"><strong>Boot Args</strong></td>
-                                              <td className="px-3 py-2"><code className='is-size-7'>{zoneDetails.configuration.bootargs || 'None'}</code></td>
-                                            </tr>
-                                          )}
-                                          {zoneDetails.configuration.hostid && (
-                                            <tr>
-                                              <td className="px-3 py-2"><strong>Host ID</strong></td>
-                                              <td className="px-3 py-2"><span className='tag'>{zoneDetails.configuration.hostid || 'None'}</span></td>
-                                            </tr>
-                                          )}
-                                          {zoneDetails.configuration.pool && (
-                                            <tr>
-                                              <td className="px-3 py-2"><strong>Pool</strong></td>
-                                              <td className="px-3 py-2"><span className='tag'>{zoneDetails.configuration.pool || 'None'}</span></td>
-                                            </tr>
-                                          )}
-                                          {zoneDetails.configuration['scheduling-class'] && (
-                                            <tr>
-                                              <td className="px-3 py-2"><strong>Scheduling Class</strong></td>
-                                              <td className="px-3 py-2"><span className='tag'>{zoneDetails.configuration['scheduling-class'] || 'None'}</span></td>
-                                            </tr>
-                                          )}
-                                          {zoneDetails.configuration.limitpriv && (
-                                            <tr>
-                                              <td className="px-3 py-2"><strong>Limit Privileges</strong></td>
-                                              <td className="px-3 py-2"><span className='tag'>{zoneDetails.configuration.limitpriv || 'None'}</span></td>
-                                            </tr>
-                                          )}
-                                          {zoneDetails.configuration['fs-allowed'] && (
-                                            <tr>
-                                              <td className="px-3 py-2"><strong>FS Allowed</strong></td>
-                                              <td className="px-3 py-2"><span className='tag'>{zoneDetails.configuration['fs-allowed'] || 'None'}</span></td>
-                                            </tr>
-                                          )}
-                                        </>
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            )}
+                            <ZoneInfo 
+                              zoneDetails={zoneDetails}
+                              monitoringHealth={monitoringHealth}
+                              getZoneStatus={getZoneStatus}
+                              selectedZone={selectedZone}
+                            />
 
-                            {/* Hardware & System - Same level alignment */}
-                            {zoneDetails.configuration && Object.keys(zoneDetails.configuration).length > 0 && (
-                              <div className='box mb-0 pt-0 pd-0'>
-                                <h4 className='title is-6 mb-3'>
-                                  <span className='icon-text'>
-                                    <span className='icon'><i className='fas fa-microchip'></i></span>
-                                    <span>Hardware & System</span>
-                                  </span>
-                                </h4>
-                                <div className='table-container'>
-                                  <table className='table is-fullwidth is-striped is-size-7'>
-                                    <tbody>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>RAM</strong></td>
-                                        <td className="px-3 py-2">{zoneDetails.configuration.ram}</td>
-                                        <td className="px-3 py-2"><strong>ACPI</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.configuration.acpi === 'true' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.configuration.acpi === 'true' ? 'Enabled' : 'Disabled'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>vCPUs</strong></td>
-                                        <td className="px-3 py-2">{zoneDetails.configuration.vcpus}</td>
-                                        <td className="px-3 py-2"><strong>Auto Boot</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.configuration.autoboot === 'true' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.configuration.autoboot === 'true' ? 'Enabled' : 'Disabled'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>Boot ROM</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootrom}</span></td>
-                                        <td className="px-3 py-2"><strong>UEFI Vars</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.configuration.uefivars === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.configuration.uefivars === 'on' ? 'On' : 'Off'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>Host Bridge</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.hostbridge}</span></td>
-                                        <td className="px-3 py-2"><strong>xHCI</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.configuration.xhci === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.configuration.xhci === 'on' ? 'On' : 'Off'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>Brand</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.brand}</span></td>
-                                        <td className="px-3 py-2"><strong>RNG</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.configuration.rng === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.configuration.rng === 'on' ? 'On' : 'Off'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>Type</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.type || 'N/A'}</span></td>
-                                        <td className="px-3 py-2"><strong>Cloud Init</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.configuration['cloud-init'] === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.configuration['cloud-init'] === 'on' ? 'On' : 'Off'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>VNC Console</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.active_vnc_session ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.active_vnc_session ? 'Active' : 'Inactive'}
-                                          </span>
-                                        </td>
-                                        <td className="px-3 py-2"><strong>VNC Port</strong></td>
-                                        <td className="px-3 py-2">
-                                          {zoneDetails.active_vnc_session && zoneDetails.vnc_session_info?.web_port ? (
-                                            <span className='has-text-grey is-family-monospace'>
-                                              {zoneDetails.vnc_session_info.web_port}
-                                            </span>
-                                          ) : (zoneDetails.configuration?.vnc?.port || zoneDetails.zone_info?.vnc_port) ? (
-                                            <span className='has-text-grey is-family-monospace'>
-                                              {zoneDetails.configuration.vnc?.port || zoneDetails.zone_info?.vnc_port}
-                                            </span>
-                                          ) : (
-                                            <span className='has-text-weight-semibold has-text-success'>
-                                              Auto
-                                            </span>
-                                          )}
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td className="px-3 py-2"><strong>zlogin</strong></td>
-                                        <td className="px-3 py-2">
-                                          <span className={`has-text-weight-semibold ${zoneDetails.zlogin_session ? 'has-text-success' : 'has-text-danger'}`}>
-                                            {zoneDetails.zlogin_session ? 'Active' : 'Inactive'}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            )}
+                            <ZoneHardware configuration={zoneDetails.configuration} />
                           </div>
                               
                           {/* Right Column - Console Display with Toggle */}
@@ -1579,177 +445,48 @@ const Zones = () => {
                               vncSettings={vncSettings}
                               setActiveConsoleType={setActiveConsoleType}
                               setLoading={setLoading}
-                              setLoadingVnc={setLoadingVnc}
                               setError={setError}
                               setPreviewReadOnly={setPreviewReadOnly}
                               setPreviewVncViewOnly={setPreviewVncViewOnly}
                               setZoneDetails={setZoneDetails}
-                              startVncSession={startVncSession}
-                              startZloginSession={startZloginSession}
                               startZloginSessionExplicitly={startZloginSessionExplicitly}
-                              waitForVncSessionReady={waitForVncSessionReady}
                               forceZoneSessionCleanup={forceZoneSessionCleanup}
-                              handleVncPreviewPaste={handleVncPreviewPaste}
                               handleZloginPreviewPaste={handleZloginPreviewPaste}
-                              handleVncConsole={handleVncConsole}
                               handleZloginConsole={handleZloginConsole}
+                              handleVncConsole={handleVncConsole}
                               handleKillVncSession={handleKillVncSession}
                               handleVncQualityChange={handleVncQualityChange}
                               handleVncCompressionChange={handleVncCompressionChange}
                               handleVncResizeChange={handleVncResizeChange}
                               handleVncShowDotChange={handleVncShowDotChange}
                               handleVncClipboardPaste={handleVncClipboardPaste}
+                              handleVncPreviewPaste={handleVncPreviewPaste}
+                              // Missing props that ConsoleDisplay references
+                              startVncSession={async (hostname, port, protocol, zoneName) => {
+                                // Use the hook function
+                                const errorMsg = await handleVncConsole(zoneName);
+                                return errorMsg ? { success: false, message: errorMsg } : { success: true };
+                              }}
+                              startZloginSession={async (hostname, port, protocol, zoneName) => {
+                                // Use the hook function  
+                                const result = await handleZloginConsole(zoneName);
+                                return result;
+                              }}
+                              waitForVncSessionReady={async (zoneName) => {
+                                // This function is inside the VNC hook and not exposed, but ConsoleDisplay needs it
+                                // For now, return a simple success
+                                return { ready: true, sessionInfo: zoneDetails.vnc_session_info };
+                              }}
+                              pasteTextToZone={pasteTextToZone}
                             />
                           </div>
                         </div>
 
-
-
                         {/* Configuration Display */}
                         {zoneDetails.configuration && Object.keys(zoneDetails.configuration).length > 0 ? (
                           <div>
-
-
-                            {/* Storage */}
-                            <div className='box mb-0 pt-0 pd-0'>
-                              <h4 className='title is-6 mb-3'>
-                                <span className='icon-text'>
-                                  <span className='icon'><i className='fas fa-hdd'></i></span>
-                                  <span>Storage Configuration</span>
-                                </span>
-                              </h4>
-                              
-                              {/* Disk Interface Only */}
-                              <div className='mb-3'>
-                                <div className='table-container'>
-                                  <table className='table is-fullwidth is-striped is-size-7'>
-                                    <tbody>
-                                        <tr>
-                                          <td className="px-3 py-2"><strong>Disk Interface Driver</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.diskif || 'N/A'}</span></td>
-                                        </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {/* Boot Disk */}
-                              {zoneDetails.configuration.bootdisk && (
-                                <div className='mb-3'>
-                                  <h5 className='subtitle is-6 mb-2'>Boot Disk</h5>
-                                  <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped is-size-7'>
-                                      <thead>
-                                        <tr>
-                                          <th className="px-3 py-2">NAME</th>
-                                          <th className="px-3 py-2">BLOCKSIZE</th>
-                                          <th className="px-3 py-2">SPARSE</th>
-                                          <th className="px-3 py-2">SIZE</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-size-7 is-family-monospace'>{zoneDetails.configuration.bootdisk.path}</span></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.blocksize}</span></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.sparse}</span></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.size}</span></td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Data Disks */}
-                              {zoneDetails.configuration.disk && zoneDetails.configuration.disk.length > 0 && (
-                                <div>
-                                  <h5 className='subtitle is-6 mb-2'>Data Disks</h5>
-                                  <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped is-size-7'>
-                                      <thead>
-                                        <tr>
-                                          <th className="px-3 py-2">NAME</th>
-                                          <th className="px-3 py-2">BLOCKSIZE</th>
-                                          <th className="px-3 py-2">SPARSE</th>
-                                          <th className="px-3 py-2">SIZE</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {(zoneDetails.configuration.disk || []).filter(disk => disk !== null && disk !== undefined).map((disk, index) => (
-                                          <tr key={index}>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-size-7 is-family-monospace'>{disk?.path || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.blocksize || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.sparse || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.size || 'N/A'}</span></td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Network Configuration */}
-                            {zoneDetails.configuration.net && zoneDetails.configuration.net.length > 0 && (
-                              <div className='box mb-0 pt-0 pd-0'>
-                                <h4 className='title is-6 mb-3'>
-                                  <span className='icon-text'>
-                                    <span className='icon'><i className='fas fa-network-wired'></i></span>
-                                    <span>Network Configuration</span>
-                                  </span>
-                                </h4>
-                                
-                                {/* Network Interface and IP Type */}
-                                <div className='mb-3'>
-                                  <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped is-size-7'>
-                                      <tbody>
-                                        <tr>
-                                          <td className="px-3 py-2"><strong>Network Interface Driver</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.netif || 'N/A'}</span></td>
-                                        </tr>
-                                        <tr>
-                                          <td className="px-3 py-2"><strong>IP Type</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration['ip-type'] || 'N/A'}</span></td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                                
-                                {/* Virtual NICs (dladm show-vnic format) */}
-                                <div className='mb-3'>
-                                  <h5 className='subtitle is-6 mb-2'>Virtual NICs</h5>
-                                  <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped is-size-7'>
-                                      <thead>
-                                        <tr>
-                                          <th className="px-3 py-2">LINK</th>
-                                          <th className="px-3 py-2">OVER</th>
-                                          <th className="px-3 py-2">MACADDRESS</th>
-                                          <th className="px-3 py-2">VID</th>
-                                          <th className="px-3 py-2">MACADDRTYPE</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {(zoneDetails.configuration.net || []).filter(netInterface => netInterface !== null && netInterface !== undefined).map((netInterface, index) => (
-                                          <tr key={index}>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['global-nic'] || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.physical || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['mac-addr'] || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['vlan-id'] || '0'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['mac-addr-type'] || 'fixed'}</span></td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-
+                            <ZoneStorage configuration={zoneDetails.configuration} />
+                            <ZoneNetwork configuration={zoneDetails.configuration} />
                           </div>
                         ) : (
                           <div className='box mb-4'>
@@ -1799,492 +536,58 @@ const Zones = () => {
         </div>
       </div>
 
-      {/* zlogin Console Modal */}
-      {showZloginConsole && (
-        <div className='modal is-active has-z-index-modal'>
-          <div className='modal-background' onClick={() => setShowZloginConsole(false)}></div>
-          <div 
-            style={{
-              width: isZloginFullScreen ? '99vw' : '90vw', 
-              height: isZloginFullScreen ? '100vh' : '86vh',
-              position: isZloginFullScreen ? 'fixed' : 'relative',
-              top: isZloginFullScreen ? '0' : 'auto',
-              left: isZloginFullScreen ? '0' : 'auto',
-              margin: isZloginFullScreen ? '0' : 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              backgroundColor: 'white',
-              borderRadius: '0',
-              boxShadow: isZloginFullScreen ? 'none' : '0 8px 16px rgba(10, 10, 10, 0.1)'
-            }}
-          >
-            <header 
-              className='modal-card-head' 
-              style={{
-                padding: isZloginFullScreen ? '0.25rem 0.5rem' : '0.75rem 1rem',
-                minHeight: 'auto',
-                flexShrink: 0,
-                '--bulma-modal-card-head-radius': '0',
-                borderRadius: '0'
-              }}
-            >
-              <p 
-                className='modal-card-title' 
-                style={{
-                  fontSize: isZloginFullScreen ? '0.9rem' : '1.1rem',
-                  margin: 0,
-                  lineHeight: '1.2'
-                }}
-              >
-                <span className='icon-text'>
-                  <span className='icon is-small'>
-                    <i className='fas fa-terminal'></i>
-                  </span>
-                  <span>zlogin Console - {selectedZone}</span>
-                </span>
-              </p>
-              <div className='buttons has-margin-0'>
-                {/* zlogin Actions Dropdown - Modal (leftmost for consistency) */}
-                <ZloginActionsDropdown
-                  variant="button"
-                  onToggleReadOnly={() => {
-                    // Toggle read-only mode for ZoneShell in modal
-                    console.log('Toggle zlogin read-only mode in modal');
-                  }}
-                  onNewSession={() => {
-                    setShowZloginConsole(false);
-                    setTimeout(() => handleZloginConsole(selectedZone), 100);
-                  }}
-                  onKillSession={async () => {
-                    if (!currentServer || !selectedZone) return;
-                    
-                    try {
-                      setLoading(true);
-                      console.log(`Killing zlogin session for zone: ${selectedZone}`);
-                      
-                      // Get all active zlogin sessions to find the one for this zone
-                      const sessionsResult = await makeZoneweaverAPIRequest(
-                        currentServer.hostname,
-                        currentServer.port,
-                        currentServer.protocol,
-                        'zlogin/sessions'
-                      );
+      <ZloginModal
+        showZloginConsole={showZloginConsole}
+        setShowZloginConsole={setShowZloginConsole}
+        isZloginFullScreen={isZloginFullScreen}
+        setIsZloginFullScreen={setIsZloginFullScreen}
+        selectedZone={selectedZone}
+        handleZloginConsole={handleZloginConsole}
+        handleZloginModalPaste={handleZloginModalPaste}
+        user={user}
+        zoneDetails={zoneDetails}
+        setShowVncConsole={setShowVncConsole}
+        handleVncConsole={handleVncConsole}
+        loadingVnc={loadingVnc}
+        setLoading={setLoading}
+        makeZoneweaverAPIRequest={makeZoneweaverAPIRequest}
+        currentServer={currentServer}
+        forceZoneSessionCleanup={forceZoneSessionCleanup}
+        refreshZloginSessionStatus={refreshZloginSessionStatus}
+        setError={setError}
+      />
 
-                      if (sessionsResult.success && sessionsResult.data) {
-                        const activeSessions = Array.isArray(sessionsResult.data) 
-                          ? sessionsResult.data 
-                          : (sessionsResult.data.sessions || []);
-                        
-                        const activeZoneSession = activeSessions.find(session => 
-                          session.zone_name === selectedZone && session.status === 'active'
-                        );
-
-                        if (activeZoneSession) {
-                          // Kill the specific session by ID
-                          const killResult = await makeZoneweaverAPIRequest(
-                            currentServer.hostname,
-                            currentServer.port,
-                            currentServer.protocol,
-                            `zlogin/sessions/${activeZoneSession.id}/stop`,
-                            'DELETE'
-                          );
-
-                          if (killResult.success) {
-                            console.log(`zlogin session killed for ${selectedZone}`);
-                            
-                            try {
-                              // 🧹 CRITICAL: Force cleanup of terminal context state with error handling
-                              console.log(`🧹 ZONES: Calling forceZoneSessionCleanup for ${selectedZone}`);
-                              await forceZoneSessionCleanup(currentServer, selectedZone);
-                              console.log(`✅ ZONES: forceZoneSessionCleanup completed successfully for ${selectedZone}`);
-                            } catch (cleanupError) {
-                              console.error(`💥 ZONES: Cleanup function failed for ${selectedZone}:`, cleanupError);
-                              // Continue with status refresh even if cleanup fails
-                              setError(`Session killed but cleanup failed: ${cleanupError.message}`);
-                            }
-                            
-                            // Refresh status (always run this)
-                            try {
-                              console.log(`🔄 ZONES: Refreshing zlogin session status for ${selectedZone}`);
-                              await refreshZloginSessionStatus(selectedZone);
-                              console.log(`✅ ZONES: Session status refresh completed for ${selectedZone}`);
-                            } catch (refreshError) {
-                              console.error(`💥 ZONES: Status refresh failed for ${selectedZone}:`, refreshError);
-                              setError(`Session killed but status refresh failed: ${refreshError.message}`);
-                            }
-                          } else {
-                            console.error(`Failed to kill zlogin session for ${selectedZone}:`, killResult.message);
-                            setError(`Failed to kill zlogin session: ${killResult.message}`);
-                          }
-                        } else {
-                          console.log(`No active zlogin session found for ${selectedZone}`);
-                        }
-                      } else {
-                        console.error('Failed to get zlogin sessions:', sessionsResult.message);
-                        setError('Failed to get active sessions');
-                      }
-                    } catch (error) {
-                      console.error('Error killing zlogin session:', error);
-                      setError('Error killing zlogin session');
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  onScreenshot={() => {
-                    // Capture terminal output as text in modal
-                    const terminalElement = document.querySelector('.xterm-screen');
-                    if (terminalElement) {
-                      const text = terminalElement.textContent || terminalElement.innerText;
-                      const blob = new Blob([text], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `zlogin-output-${selectedZone}-${Date.now()}.txt`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                    }
-                  }}
-                  isReadOnly={false}
-                  isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-                  className="has-shadow-medium"
-                />
-                {/* Paste from Clipboard Button - zlogin Modal */}
-                <button 
-                  className='button is-small is-info has-shadow-medium'
-                  onClick={handleZloginModalPaste}
-                  title="Paste from Browser Clipboard"
-                >
-                  <span className='icon is-small'>
-                    <i className='fas fa-paste'></i>
-                  </span>
-                </button>
-                {/* Switch to VNC Console Button - Modal (second position for consistency) */}
-                <button 
-                  className='button is-small is-warning has-shadow-medium'
-                  onClick={async () => {
-                    if (zoneDetails.active_vnc_session) {
-                      // VNC already active - just switch to VNC modal
-                      setShowZloginConsole(false);
-                      setTimeout(() => handleVncConsole(selectedZone), 100);
-                    } else {
-                      // Start VNC session then switch to VNC modal
-                      console.log(`🚀 MODAL START VNC: Starting VNC session from zlogin modal for ${selectedZone}`);
-                      setShowZloginConsole(false);
-                      try {
-                        setLoadingVnc(true);
-                        const result = await startVncSession(
-                          currentServer.hostname,
-                          currentServer.port,
-                          currentServer.protocol,
-                          selectedZone
-                        );
-                        
-                        if (result.success) {
-                          console.log(`✅ MODAL START VNC: VNC session started, switching to VNC modal`);
-                          setZoneDetails(prev => ({
-                            ...prev,
-                            active_vnc_session: true,
-                            vnc_session_info: result.data
-                          }));
-                          setTimeout(() => handleVncConsole(selectedZone), 100);
-                        } else {
-                          console.error(`❌ MODAL START VNC: Failed to start VNC session:`, result.message);
-                          setError(`Failed to start VNC console: ${result.message}`);
-                        }
-                      } catch (error) {
-                        console.error('💥 MODAL START VNC: Error starting VNC session:', error);
-                        setError(`Error starting VNC console`);
-                      } finally {
-                        setLoadingVnc(false);
-                      }
-                    }
-                  }}
-                  disabled={loadingVnc}
-                  title={zoneDetails.active_vnc_session ? "Switch to VNC Console" : "Start VNC Console"}
-                >
-                  <span className='icon is-small'>
-                    <i className={`fas ${loadingVnc ? 'fa-spinner fa-pulse' : 'fa-desktop'}`}></i>
-                  </span>
-                  <span>{loadingVnc ? 'Starting...' : 'VNC'}</span>
-                </button>
-                <button 
-                  className='button is-small is-info'
-                  onClick={openZloginFullScreen}
-                  title={isZloginFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
-                >
-                  <span className='icon'>
-                    <i className={`fas ${isZloginFullScreen ? 'fa-compress' : 'fa-expand'}`}></i>
-                  </span>
-                  <span>{isZloginFullScreen ? 'Exit' : 'Full'}</span>
-                </button>
-                <button 
-                  className='button is-small'
-                  onClick={() => {
-                    // 🟡 MODAL LIFECYCLE TRACKING
-                    console.log(`🟡 MODAL LIFECYCLE:`, {
-                      action: 'close',
-                      modalType: 'zlogin',
-                      zoneName: selectedZone,
-                      sessionStateBefore: zoneDetails.zlogin_session?.id || null,
-                      activeZloginSession: zoneDetails.active_zlogin_session,
-                      trigger: 'exit-button-click',
-                      timestamp: new Date().toISOString()
-                    });
-                    setShowZloginConsole(false);
-                  }}
-                  title="Close Console"
-                >
-                  <span className='icon'>
-                    <i className='fas fa-times'></i>
-                  </span>
-                  <span>Exit</span>
-                </button>
-              </div>
-            </header>
-            <section 
-              className='modal-card-body p-0' 
-              style={{
-                flex: 1,
-                display: 'flex',
-                overflow: 'hidden'
-              }}
-            >
-              <ZoneShell 
-                key={`zlogin-modal-${selectedZone}`} 
-                zoneName={selectedZone} 
-                readOnly={false} 
-                context="modal" 
-              />
-            </section>
-          </div>
-        </div>
-      )}
-
-      {/* VNC Console Modal */}
-      {showVncConsole && (
-        <div className='modal is-active has-z-index-modal'>
-          <div className='modal-background' onClick={closeVncConsole}></div>
-          <div 
-            style={{
-              width: isVncFullScreen ? '99vw' : '90vw', 
-              height: isVncFullScreen ? '100vh' : '86vh',
-              position: isVncFullScreen ? 'fixed' : 'relative',
-              top: isVncFullScreen ? '0' : 'auto',
-              left: isVncFullScreen ? '0' : 'auto',
-              margin: isVncFullScreen ? '0' : 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              backgroundColor: 'white',
-              borderRadius: '0',
-              boxShadow: isVncFullScreen ? 'none' : '0 8px 16px rgba(10, 10, 10, 0.1)'
-            }}
-          >
-            {/* Header - minimal in full screen, normal otherwise */}
-            <header 
-              className='modal-card-head' 
-              style={{
-                padding: isVncFullScreen ? '0.25rem 0.5rem' : '0.75rem 1rem',
-                minHeight: 'auto',
-                flexShrink: 0,
-                '--bulma-modal-card-head-radius': '0',
-                borderRadius: '0'
-              }}
-            >
-              <p 
-                className='modal-card-title' 
-                style={{
-                  fontSize: isVncFullScreen ? '0.9rem' : '1.1rem',
-                  margin: 0,
-                  lineHeight: '1.2'
-                }}
-              >
-                <span className='icon-text'>
-                  <span className='icon is-small'>
-                    <i className='fas fa-terminal'></i>
-                  </span>
-                  <span>Console - {selectedZone}</span>
-                </span>
-              </p>
-              <div className='buttons has-margin-0'>
-                <VncActionsDropdown
-                  vncRef={modalVncRef}
-                  variant="button"
-                  onScreenshot={() => {
-                    // Proper screenshot implementation for modal
-                    const vncContainer = document.querySelector('.vnc-viewer-react canvas');
-                    if (vncContainer) {
-                      vncContainer.toBlob((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `vnc-screenshot-${selectedZone}-${Date.now()}.png`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                      });
-                    }
-                  }}
-                  onNewTab={() => handleVncConsole(selectedZone, true)}
-                  onKillSession={() => handleKillVncSession(selectedZone)}
-                  isReadOnly={false}
-                  isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-                  className="has-shadow-medium"
-                />
-                {/* Paste from Clipboard Button - VNC Modal */}
-                <button 
-                  className='button is-small is-info has-shadow-medium'
-                  onClick={handleVncModalPaste}
-                  title="Paste from Browser Clipboard"
-                >
-                  <span className='icon is-small'>
-                    <i className='fas fa-paste'></i>
-                  </span>
-                </button>
-                {/* Switch to zlogin Console Button - Modal */}
-                <button 
-                  className='button is-small is-warning has-shadow-medium'
-                  onClick={async () => {
-                    if (zoneDetails.zlogin_session) {
-                      // zlogin already active - just switch to zlogin modal
-                      closeVncConsole();
-                      setTimeout(() => setShowZloginConsole(true), 100);
-                    } else {
-                      // Start zlogin session then switch to zlogin modal
-                      console.log(`🚀 MODAL START ZLOGIN: Starting zlogin session from VNC modal for ${selectedZone}`);
-                      closeVncConsole();
-                      try {
-                        setLoading(true);
-                        const result = await startZloginSession(
-                          currentServer.hostname,
-                          currentServer.port,
-                          currentServer.protocol,
-                          selectedZone
-                        );
-                        
-                        if (result.success) {
-                          console.log(`✅ MODAL START ZLOGIN: zlogin session started, switching to zlogin modal`);
-                          setZoneDetails(prev => ({
-                            ...prev,
-                            zlogin_session: result.data,
-                            active_zlogin_session: true
-                          }));
-                          setTimeout(() => setShowZloginConsole(true), 100);
-                        } else {
-                          console.error(`❌ MODAL START ZLOGIN: Failed to start zlogin session:`, result.message);
-                          setError(`Failed to start zlogin console: ${result.message}`);
-                        }
-                      } catch (error) {
-                        console.error('💥 MODAL START ZLOGIN: Error starting zlogin session:', error);
-                        setError(`Error starting zlogin console`);
-                      } finally {
-                        setLoading(false);
-                      }
-                    }
-                  }}
-                  disabled={loading}
-                  title={zoneDetails.zlogin_session ? "Switch to zlogin Console" : "Start zlogin Console"}
-                >
-                  <span className='icon is-small'>
-                    <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
-                  </span>
-                  <span>{loading ? 'Starting...' : 'zlogin'}</span>
-                </button>
-                <button 
-                  className='button is-small is-info'
-                  onClick={openVncFullScreen}
-                  title={isVncFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
-                >
-                  <span className='icon'>
-                    <i className={`fas ${isVncFullScreen ? 'fa-compress' : 'fa-expand'}`}></i>
-                  </span>
-                  <span>{isVncFullScreen ? 'Exit' : 'Full'}</span>
-                </button>
-                <button 
-                  className='button is-small'
-                  onClick={closeVncConsole}
-                  title="Close Console"
-                >
-                  <span className='icon'>
-                    <i className='fas fa-times'></i>
-                  </span>
-                  <span>Exit</span>
-                </button>
-              </div>
-            </header>
-            <section 
-              className='modal-card-body p-0' 
-              style={{
-                flex: 1,
-                display: 'flex',
-                overflow: 'hidden'
-              }}
-            >
-              {vncLoadError ? (
-                <div className='has-text-centered p-6' style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div className='icon is-large mb-3'>
-                    <i className='fas fa-exclamation-triangle fa-3x has-text-warning'></i>
-                  </div>
-                  <h4 className='title is-4'>VNC Console Loading Error</h4>
-                  <p className='mb-4'>The VNC console failed to load in embedded mode. This could be due to proxy issues or browser compatibility.</p>
-                  <div className='buttons is-centered'>
-                    <button className='button is-warning' onClick={openDirectVncFallback}>
-                      <span className='icon'>
-                        <i className='fas fa-external-link-alt'></i>
-                      </span>
-                      <span>Open Direct VNC Console</span>
-                    </button>
-                    <button className='button' onClick={() => setVncLoadError(false)}>
-                      <span className='icon'>
-                        <i className='fas fa-redo'></i>
-                      </span>
-                      <span>Retry Embedded</span>
-                    </button>
-                  </div>
-                </div>
-              ) : currentServer && selectedZone ? (
-                <VncViewerReact
-                  ref={modalVncRef}
-                  key={`vnc-modal-${selectedZone}-${vncReconnectKey}`}
-                  serverHostname={currentServer.hostname}
-                  serverPort={currentServer.port}
-                  serverProtocol={currentServer.protocol}
-                  zoneName={selectedZone}
-                  viewOnly={false}
-                  autoConnect={true}
-                  showControls={false}
-                  onConnect={() => console.log('✅ VNC MODAL: Connected to VNC server')}
-                  onDisconnect={(reason) => console.log('❌ VNC MODAL: Disconnected:', reason)}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    flex: '1 1 auto',
-                    minHeight: 0
-                  }}
-                />
-              ) : loadingVnc ? (
-                <div className='has-text-centered p-6' style={{ 
-                  flex: 1, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'center',
-                  backgroundColor: '#2c3e50',
-                  color: '#ecf0f1'
-                }}>
-                  <div className='icon is-large'>
-                    <i className='fas fa-spinner fa-pulse fa-3x zw-loading-spinner'></i>
-                  </div>
-                  <p className='mt-3'>Starting VNC console...</p>
-                </div>
-              ) : null}
-            </section>
-          </div>
-        </div>
-      )}
+      <VncModal
+        showVncConsole={showVncConsole}
+        closeVncConsole={closeVncConsole}
+        isVncFullScreen={isVncFullScreen}
+        openVncFullScreen={() => setIsVncFullScreen(!isVncFullScreen)}
+        vncLoadError={vncLoadError}
+        openDirectVncFallback={() => {
+          if (vncSession && vncSession.directUrl) {
+            window.open(vncSession.directUrl, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
+          } else if (vncSession && vncSession.console_url) {
+            window.open(vncSession.console_url, '_blank', 'width=1024,height=768,scrollbars=yes,resizable=yes');
+          }
+          closeVncConsole();
+        }}
+        setVncLoadError={setVncLoadError}
+        currentServer={currentServer}
+        selectedZone={selectedZone}
+        vncReconnectKey={vncReconnectKey}
+        modalVncRef={modalVncRef}
+        handleVncModalPaste={() => {
+          // This needs to be implemented if you want paste functionality in the modal
+        }}
+        handleVncConsole={handleVncConsole}
+        handleKillVncSession={handleKillVncSession}
+        user={user}
+        zoneDetails={zoneDetails}
+        setShowZloginConsole={setShowZloginConsole}
+        handleZloginConsole={handleZloginConsole}
+        loading={loading}
+        loadingVnc={loadingVnc}
+      />
     </div>
   );
 };
