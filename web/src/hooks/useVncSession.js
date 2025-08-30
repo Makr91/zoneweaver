@@ -135,20 +135,90 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
   const refreshVncSessionStatus = useCallback(async (zoneName) => {
     if (!currentServer) return;
     try {
+      console.log(`🔍 VNC STATUS: Checking session status for zone: ${zoneName}`);
+      
       const vncResult = await makeZoneweaverAPIRequest(
         currentServer.hostname, currentServer.port, currentServer.protocol,
         `zones/${zoneName}/vnc/info?_t=${Date.now()}`, 'GET', null, null, true
       );
 
-      const isActive = vncResult.success && vncResult.data?.active_vnc_session;
-      setZoneDetails(prev => ({
-        ...prev,
-        active_vnc_session: isActive,
-        vnc_session_info: isActive ? vncResult.data.vnc_session_info : null,
-      }));
+      console.log(`🔍 VNC STATUS: API response:`, {
+        success: vncResult.success,
+        status: vncResult.status,
+        data: vncResult.data
+      });
+
+      if (vncResult.success && vncResult.data && vncResult.data.active_vnc_session) {
+        // Session is active - backend verified PID file and process
+        console.log(`✅ VNC STATUS: Active session found for ${zoneName}`);
+        setZoneDetails(prev => {
+          console.log(`🔍 ZONE STATE: VNC update - BEFORE:`, {
+            hasZloginSession: !!prev.zlogin_session,
+            hasActiveZloginSession: prev.active_zlogin_session,
+            timestamp: Date.now()
+          });
+          
+          // 🛡️ DEFENSIVE STATE MERGE: Only update VNC fields, explicitly preserve zlogin state
+          const newState = {
+            ...prev,
+            active_vnc_session: true,
+            vnc_session_info: vncResult.data.vnc_session_info,
+            // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
+            zlogin_session: prev.zlogin_session || null,
+            active_zlogin_session: prev.active_zlogin_session || false
+          };
+          
+          console.log(`🔍 ZONE STATE: VNC update - AFTER:`, {
+            hasZloginSession: !!newState.zlogin_session,
+            hasActiveZloginSession: newState.active_zlogin_session,
+            timestamp: Date.now()
+          });
+          
+          return newState;
+        });
+      } else {
+        // No session found - backend returned active_vnc_session: false
+        console.log(`❌ VNC STATUS: No active session for ${zoneName}`);
+        setZoneDetails(prev => {
+          console.log(`🔍 ZONE STATE: VNC clear - BEFORE:`, {
+            hasZloginSession: !!prev.zlogin_session,
+            hasActiveZloginSession: prev.active_zlogin_session,
+            timestamp: Date.now()
+          });
+          
+          // 🛡️ DEFENSIVE STATE MERGE: Only clear VNC fields, explicitly preserve zlogin state
+          const newState = {
+            ...prev,
+            active_vnc_session: false,
+            vnc_session_info: null,
+            // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
+            zlogin_session: prev.zlogin_session || null,
+            active_zlogin_session: prev.active_zlogin_session || false
+          };
+          
+          console.log(`🔍 ZONE STATE: VNC clear - AFTER:`, {
+            hasZloginSession: !!newState.zlogin_session,
+            hasActiveZloginSession: newState.active_zlogin_session,
+            timestamp: Date.now()
+          });
+          
+          return newState;
+        });
+      }
     } catch (error) {
-      console.error('Error checking VNC session status:', error);
-      setZoneDetails(prev => ({ ...prev, active_vnc_session: false, vnc_session_info: null }));
+      console.error('💥 VNC STATUS: Error checking session status:', error);
+      setZoneDetails(prev => {
+        // 🛡️ DEFENSIVE STATE MERGE: Only clear VNC fields, explicitly preserve zlogin state
+        const newState = {
+          ...prev,
+          active_vnc_session: false,
+          vnc_session_info: null,
+          // CRITICAL: Explicitly preserve zlogin session state to prevent overwrites
+          zlogin_session: prev.zlogin_session || null,
+          active_zlogin_session: prev.active_zlogin_session || false
+        };
+        return newState;
+      });
     }
   }, [currentServer, makeZoneweaverAPIRequest, setZoneDetails]);
 
