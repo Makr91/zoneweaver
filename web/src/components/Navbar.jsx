@@ -612,12 +612,7 @@ const Navbar = () => {
               onClick={() => {
                 selectZone(zone);
               }}
-              className='dropdown-item'
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
+              className='dropdown-item zw-navbar-zone-item'
             >
               <span>{zone}</span>
               <span 

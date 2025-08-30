@@ -1237,6 +1237,22 @@ button {
   height: 100% !important;
 }
 
+// ZoneweaverAPISettings padding helpers
+.has-padding-left-20px {
+  padding-left: 20px !important;
+}
+
+.has-padding-left-0 {
+  padding-left: 0 !important;
+}
+
+// Navbar Styling Classes
+.zw-navbar-zone-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
 .zw-console-zone-shell {
   height: 100% !important;
   width: 100% !important;
