@@ -87,7 +87,7 @@ const SidebarFooter = () => {
             <div className='dropdown-trigger' style={{ width: '100%' }}>
               <button className='button is-ghost is-fullwidth p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
                 <GravatarImage />
-                <span className="pl-2" style={{ flexGrow: 1, textAlign: 'center' }}>{user?.username || 'User'}</span>
+                <span className="ml-2 is-flex-grow-1 has-text-centered">{user?.username || 'User'}</span>
               </button>
             </div>
             <div className='dropdown-menu has-z-index-sidebar-top' id='profile-management' role='menu'>
