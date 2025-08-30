@@ -234,7 +234,8 @@ $yellow: #ffe600;
   @include custom-scrollbar();
   will-change: height;
   contain: layout;
-  
+  padding-top: 30px; // Account for footer header bar height
+
   // Fix XTerm's built-in scrollbar in footer terminal
   .xterm .xterm-viewport {
     overflow-y: hidden !important;
