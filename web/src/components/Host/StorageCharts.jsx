@@ -244,26 +244,9 @@ const StorageCharts = ({
 
                             {/* Write Summary Chart */}
                             <div className='column is-4'>
-                                <div
-                                    style={{
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                        backgroundColor: '#1e2a3a',
-                                        padding: '10px',
-                                        border: '1px solid #37474f',
-                                        position: 'relative'
-                                    }}
-                                >
+                                <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost'
-                                        style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            right: '5px',
-                                            zIndex: 1000,
-                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                            border: 'none'
-                                        }}
+                                        className='button is-small is-ghost is-chart-expand-button'
                                         onClick={() => expandChart('summary-write', 'summary-write')}
                                         title="Expand chart to full size"
                                     >
@@ -382,26 +365,9 @@ const StorageCharts = ({
 
                             {/* Total Summary Chart */}
                             <div className='column is-4'>
-                                <div
-                                    style={{
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                        backgroundColor: '#1e2a3a',
-                                        padding: '10px',
-                                        border: '1px solid #37474f',
-                                        position: 'relative'
-                                    }}
-                                >
+                                <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost'
-                                        style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            right: '5px',
-                                            zIndex: 1000,
-                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                            border: 'none'
-                                        }}
+                                        className='button is-small is-ghost is-chart-expand-button'
                                         onClick={() => expandChart('summary-total', 'summary-total')}
                                         title="Expand chart to full size"
                                     >
@@ -647,26 +613,9 @@ const StorageCharts = ({
 
                                     return (
                                         <div key={deviceName} className='column is-6'>
-                                            <div
-                                                style={{
-                                                    borderRadius: '8px',
-                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                                    backgroundColor: '#1e2a3a',
-                                                    padding: '10px',
-                                                    border: '1px solid #37474f',
-                                                    position: 'relative'
-                                                }}
-                                            >
+                                            <div className='is-chart-container is-relative'>
                                                 <button
-                                                    className='button is-small is-ghost'
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: '5px',
-                                                        right: '5px',
-                                                        zIndex: 1000,
-                                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                                        border: 'none'
-                                                    }}
+                                                    className='button is-small is-ghost is-chart-expand-button'
                                                     onClick={() => expandChart(deviceName, 'individual')}
                                                     title="Expand chart to full size"
                                                 >
@@ -829,26 +778,9 @@ const StorageCharts = ({
 
                                         return (
                                             <div key={poolName} className='column is-6'>
-                                                <div
-                                                    style={{
-                                                        borderRadius: '8px',
-                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                                        backgroundColor: '#1e2a3a',
-                                                        padding: '10px',
-                                                        border: '1px solid #37474f',
-                                                        position: 'relative'
-                                                    }}
-                                                >
+                                                <div className='is-chart-container is-relative'>
                                                     <button
-                                                        className='button is-small is-ghost'
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: '5px',
-                                                            right: '5px',
-                                                            zIndex: 1000,
-                                                            backgroundColor: 'rgba(0,0,0,0.7)',
-                                                            border: 'none'
-                                                        }}
+                                                        className='button is-small is-ghost is-chart-expand-button'
                                                         onClick={() => expandChart(poolName, 'pool')}
                                                         title="Expand chart to full size"
                                                     >
@@ -895,26 +827,9 @@ const StorageCharts = ({
                             <div className='columns'>
                                 {/* Memory Allocation Chart */}
                                 <div className='column is-4'>
-                                    <div
-                                        style={{
-                                            borderRadius: '8px',
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                            backgroundColor: '#1e2a3a',
-                                            padding: '10px',
-                                            border: '1px solid #37474f',
-                                            position: 'relative'
-                                        }}
-                                    >
+                                    <div className='is-chart-container is-relative'>
                                         <button
-                                            className='button is-small is-ghost'
-                                            style={{
-                                                position: 'absolute',
-                                                top: '5px',
-                                                right: '5px',
-                                                zIndex: 1000,
-                                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                                border: 'none'
-                                            }}
+                                            className='button is-small is-ghost is-chart-expand-button'
                                             onClick={() => expandChart('arc-memory', 'arc-memory')}
                                             title="Expand chart to full size"
                                         >
@@ -1028,26 +943,9 @@ const StorageCharts = ({
 
                                 {/* Performance Efficiency Chart */}
                                 <div className='column is-4'>
-                                    <div
-                                        style={{
-                                            borderRadius: '8px',
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                            backgroundColor: '#1e2a3a',
-                                            padding: '10px',
-                                            border: '1px solid #37474f',
-                                            position: 'relative'
-                                        }}
-                                    >
+                                    <div className='is-chart-container is-relative'>
                                         <button
-                                            className='button is-small is-ghost'
-                                            style={{
-                                                position: 'absolute',
-                                                top: '5px',
-                                                right: '5px',
-                                                zIndex: 1000,
-                                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                                border: 'none'
-                                            }}
+                                            className='button is-small is-ghost is-chart-expand-button'
                                             onClick={() => expandChart('arc-efficiency', 'arc-efficiency')}
                                             title="Expand chart to full size"
                                         >
@@ -1155,26 +1053,9 @@ const StorageCharts = ({
 
                                 {/* Compression Chart */}
                                 <div className='column is-4'>
-                                    <div
-                                        style={{
-                                            borderRadius: '8px',
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                            backgroundColor: '#1e2a3a',
-                                            padding: '10px',
-                                            border: '1px solid #37474f',
-                                            position: 'relative'
-                                        }}
-                                    >
+                                    <div className='is-chart-container is-relative'>
                                         <button
-                                            className='button is-small is-ghost'
-                                            style={{
-                                                position: 'absolute',
-                                                top: '5px',
-                                                right: '5px',
-                                                zIndex: 1000,
-                                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                                border: 'none'
-                                            }}
+                                            className='button is-small is-ghost is-chart-expand-button'
                                             onClick={() => expandChart('arc-compression', 'arc-compression')}
                                             title="Expand chart to full size"
                                         >

@@ -57,26 +57,10 @@ const StorageIOChart = ({ chartData, storageSeriesVisibility, setStorageSeriesVi
         <div className='card-content p-2'>
           {chartData && Object.keys(chartData).length > 0 ? (
             <div>
-              <div 
-                style={{
-                  borderRadius: '8px',
-                  backgroundColor: '#1e2a3a',
-                  padding: '5px',
-                  border: '1px solid #37474f',
-                  position: 'relative'
-                }}
-              >
+            <div className='is-chart-container is-relative'>
                 <button 
-                  className='button is-small is-ghost'
-                  style={{
-                    position: 'absolute',
-                    top: '5px',
-                    right: '5px',
-                    zIndex: 1000,
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    border: 'none'
-                  }}
-                  onClick={() => expandChart('storage-io', 'storage-io')}
+                  className='button is-small is-ghost is-chart-expand-button'
+                  onClick={() => expandChart('storage', 'storage')}
                   title="Expand chart to full size"
                 >
                   <span className='icon has-text-white'>

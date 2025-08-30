@@ -624,7 +624,7 @@ const Navbar = () => {
                 className={`icon ${statusColor}`}
                 title={`Status: ${status}`}
               >
-                <i className='fas fa-circle' style={{ fontSize: '0.6rem' }}></i>
+                <i className='fas fa-circle is-size-7'></i>
               </span>
             </button>
           );

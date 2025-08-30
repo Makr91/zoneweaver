@@ -546,7 +546,7 @@ const Dashboard = () => {
                   <h2 className='title is-5 mb-3'>
                     <span className='icon-text'>
                       <span className={`icon ${statusColor}`} title={statusTooltip}>
-                        <i className='fas fa-circle' style={{fontSize: '0.6rem'}}></i>
+                        <i className='fas fa-circle is-size-7'></i>
                       </span>
                       <span>{server.hostname}</span>
                     </span>

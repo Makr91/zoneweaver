@@ -82,7 +82,7 @@ const Tasks = () => {
   };
 
   return (
-    <div onScroll={handleScroll} ref={tableContainerRef} style={{ height: '100%', overflowY: 'auto' }}>
+    <div onScroll={handleScroll} ref={tableContainerRef} className='has-height-100 has-overflow-y-auto'>
       {loadingTasks && <p>Loading tasks...</p>}
       {tasksError && <p className="has-text-danger">{tasksError}</p>}
       {!loadingTasks && !tasksError && (

@@ -39,7 +39,7 @@ const SidebarFooter = () => {
 
   return (
     <nav className='level'>
-      <div className='level-left' style={{ width: '100%' }}>
+      <div className='level-left is-fullwidth'>
         <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ width: '100%', overflow: 'visible' }} ref={dropdownRef}>
           <div className='dropdown-trigger' style={{ width: '100%' }}>
             <button className='button is-ghost is-fullwidth p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>

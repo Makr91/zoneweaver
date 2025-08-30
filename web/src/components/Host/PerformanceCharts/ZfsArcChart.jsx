@@ -16,25 +16,9 @@ const ZfsArcChart = ({ arcChartData, expandChart }) => {
         </header>
         <div className='card-content p-2'>
           {arcChartData && (arcChartData.sizeData.length > 0 || arcChartData.targetData.length > 0 || arcChartData.hitRateData.length > 0) ? (
-            <div 
-              style={{
-                borderRadius: '8px',
-                backgroundColor: '#1e2a3a',
-                padding: '5px',
-                border: '1px solid #37474f',
-                position: 'relative'
-              }}
-            >
+            <div className='is-chart-container is-relative'>
               <button 
-                className='button is-small is-ghost'
-                style={{
-                  position: 'absolute',
-                  top: '5px',
-                  right: '5px',
-                  zIndex: 1000,
-                  backgroundColor: 'rgba(0,0,0,0.7)',
-                  border: 'none'
-                }}
+                className='button is-small is-ghost is-chart-expand-button'
                 onClick={() => expandChart('arc', 'arc')}
                 title="Expand chart to full size"
               >
