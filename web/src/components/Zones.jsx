@@ -2081,7 +2081,7 @@ const Zones = () => {
                                             color: '#ecf0f1'
                                           }}
                                         >
-                                          <div style={{ textAlign: 'center' }}>
+                                          <div className="has-text-centered">
                                             <div style={{ marginBottom: '12px' }}>
                                               <img 
                                                 src="/images/startcloud.svg" 
@@ -2094,10 +2094,10 @@ const Zones = () => {
                                                 }} 
                                               />
                                             </div>
-                                            <div style={{ fontSize: '0.9rem', fontWeight: '500' }}>
+                                            <div className="is-size-6 has-text-weight-medium">
                                               No Console Session
                                             </div>
-                                            <div style={{ fontSize: '0.75rem', marginTop: '6px', opacity: 0.7 }}>
+                                            <div className="is-size-7" style={{ marginTop: '6px', opacity: 0.7 }}>
                                               Click Console to start session
                                             </div>
                                           </div>
@@ -2241,7 +2241,7 @@ const Zones = () => {
                                         overflow: 'hidden'
                                       }}
                                     >
-                                      <div className="zw-text-placeholder" style={{ textAlign: 'center' }}>
+                                      <div className="zw-text-placeholder has-text-centered">
                                         <div style={{ marginBottom: '12px' }}>
                                           <img 
                                             src="/images/startcloud.svg" 
@@ -2254,10 +2254,10 @@ const Zones = () => {
                                             }} 
                                           />
                                         </div>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: '500', marginBottom: '8px' }}>
+                                        <div className="is-size-6 has-text-weight-medium mb-2">
                                           <strong>No Active Console Session</strong>
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                        <div className="is-size-7" style={{ opacity: 0.8 }}>
                                           Click the buttons above to start VNC or zlogin console
                                         </div>
                                       </div>

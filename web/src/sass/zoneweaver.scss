@@ -90,6 +90,11 @@ $yellow: #ffe600;
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
 }
 
+// Need a size smaller than 7
+.is-size-8 {
+    font-size: .50rem !important;
+}
+
 // Color utility classes using our CSS variables
 .zw-loading-spinner {
   color: var(--zw-loading-spinner);

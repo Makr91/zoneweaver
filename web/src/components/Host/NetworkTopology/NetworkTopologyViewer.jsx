@@ -264,13 +264,13 @@ const NetworkTopologyViewer = ({
 
   return (
     <div 
+      className={isFullscreen ? 'has-z-index-modal' : ''}
       style={{ 
         width: '100%', 
         height: isFullscreen ? '100vh' : '500px',
         position: isFullscreen ? 'fixed' : 'relative',
         top: isFullscreen ? 0 : 'auto',
         left: isFullscreen ? 0 : 'auto',
-        zIndex: isFullscreen ? 9999 : 'auto',
         backgroundColor: isFullscreen ? 'white' : 'transparent'
       }}
     >
