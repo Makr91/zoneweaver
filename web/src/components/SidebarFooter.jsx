@@ -39,48 +39,90 @@ const SidebarFooter = () => {
 
   return (
     <nav className='level'>
-      <div className='level-left is-fullwidth'>
-        <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ width: '100%', overflow: 'visible' }} ref={dropdownRef}>
-          <div className='dropdown-trigger' style={{ width: '100%' }}>
-            <button className='button is-ghost is-fullwidth p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
-              <GravatarImage />
-              {!userContext.sidebarMinimized && (
-                <span className="pl-2" style={{ flexGrow: 1, textAlign: 'center' }}>{user?.username || 'User'}</span>
-              )}
-            </button>
-          </div>
-          <div className='dropdown-menu has-z-index-sidebar-top' id='profile-management' role='menu'>
-            <div className='dropdown-content'>
-              <a 
-                className='dropdown-item' 
-                href='https://zoneweaver.startcloud.com' 
-                target='_blank' 
-                rel='noopener noreferrer'
-              >
-                <span className='icon mr-2'><i className='fas fa-info-circle'></i></span>
-                <span>Help and Docs</span>
-              </a>
-              <a onClick={toggleTheme} className='dropdown-item'>
-                <span className='icon mr-2'><i className='fas fa-palette'></i></span>
-                <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, '')}</span>
-              </a>
-              <a className='dropdown-item' href='/ui/notifications'>
-                <span className='icon mr-2'><i className='fas fa-bell'></i></span>
-                <span>Notifications</span>
-              </a>
-              <a className='dropdown-item' href='/ui/profile'>
-                <span className='icon mr-2'><i className='fas fa-user'></i></span>
-                <span>Profile</span>
-              </a>
-              <hr className='dropdown-divider' />
-              <a onClick={handleLogout} className='dropdown-item'>
-                <span className='icon has-text-danger mr-2'><i className='fas fa-sign-out-alt'></i></span>
-                <span>Log Out</span>
-              </a>
+      {userContext.sidebarMinimized ? (
+        // Collapsed: Center the dropdown
+        <div className='level-item'>
+          <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ overflow: 'visible' }} ref={dropdownRef}>
+            <div className='dropdown-trigger'>
+              <button className='button is-ghost p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
+                <GravatarImage />
+              </button>
+            </div>
+            <div className='dropdown-menu has-z-index-sidebar-top' id='profile-management' role='menu'>
+              <div className='dropdown-content'>
+                <a 
+                  className='dropdown-item' 
+                  href='https://zoneweaver.startcloud.com' 
+                  target='_blank' 
+                  rel='noopener noreferrer'
+                >
+                  <span className='icon mr-2'><i className='fas fa-info-circle'></i></span>
+                  <span>Help and Docs</span>
+                </a>
+                <a onClick={toggleTheme} className='dropdown-item'>
+                  <span className='icon mr-2'><i className='fas fa-palette'></i></span>
+                  <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, '')}</span>
+                </a>
+                <a className='dropdown-item' href='/ui/notifications'>
+                  <span className='icon mr-2'><i className='fas fa-bell'></i></span>
+                  <span>Notifications</span>
+                </a>
+                <a className='dropdown-item' href='/ui/profile'>
+                  <span className='icon mr-2'><i className='fas fa-user'></i></span>
+                  <span>Profile</span>
+                </a>
+                <hr className='dropdown-divider' />
+                <a onClick={handleLogout} className='dropdown-item'>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-sign-out-alt'></i></span>
+                  <span>Log Out</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        // Expanded: Current left-aligned structure
+        <div className='level-left is-fullwidth'>
+          <div className={`dropdown is-up is-relative ${isDropdownActive ? 'is-active' : ''}`} style={{ width: '100%', overflow: 'visible' }} ref={dropdownRef}>
+            <div className='dropdown-trigger' style={{ width: '100%' }}>
+              <button className='button is-ghost is-fullwidth p-0 is-flex is-align-items-center' aria-haspopup='true' onClick={() => setIsDropdownActive(!isDropdownActive)}>
+                <GravatarImage />
+                <span className="pl-2" style={{ flexGrow: 1, textAlign: 'center' }}>{user?.username || 'User'}</span>
+              </button>
+            </div>
+            <div className='dropdown-menu has-z-index-sidebar-top' id='profile-management' role='menu'>
+              <div className='dropdown-content'>
+                <a 
+                  className='dropdown-item' 
+                  href='https://zoneweaver.startcloud.com' 
+                  target='_blank' 
+                  rel='noopener noreferrer'
+                >
+                  <span className='icon mr-2'><i className='fas fa-info-circle'></i></span>
+                  <span>Help and Docs</span>
+                </a>
+                <a onClick={toggleTheme} className='dropdown-item'>
+                  <span className='icon mr-2'><i className='fas fa-palette'></i></span>
+                  <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, '')}</span>
+                </a>
+                <a className='dropdown-item' href='/ui/notifications'>
+                  <span className='icon mr-2'><i className='fas fa-bell'></i></span>
+                  <span>Notifications</span>
+                </a>
+                <a className='dropdown-item' href='/ui/profile'>
+                  <span className='icon mr-2'><i className='fas fa-user'></i></span>
+                  <span>Profile</span>
+                </a>
+                <hr className='dropdown-divider' />
+                <a onClick={handleLogout} className='dropdown-item'>
+                  <span className='icon has-text-danger mr-2'><i className='fas fa-sign-out-alt'></i></span>
+                  <span>Log Out</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
