@@ -1467,16 +1467,16 @@ const Zones = () => {
                                         <>
                                           <tr>
                                             <td className="px-3 py-2"><strong>Zone Name</strong></td>
-                                            <td className="px-3 py-2"><code style={{fontSize: '0.85rem'}}>{zoneDetails.configuration.zonename}</code></td>
+                                            <td className="px-3 py-2"><code className='is-size-7'>{zoneDetails.configuration.zonename}</code></td>
                                           </tr>
                                           <tr>
                                             <td className="px-3 py-2"><strong>Zone Path</strong></td>
-                                            <td className="px-3 py-2"><code style={{fontSize: '0.85rem'}}>{zoneDetails.configuration.zonepath}</code></td>
+                                            <td className="px-3 py-2"><code className='is-size-7'>{zoneDetails.configuration.zonepath}</code></td>
                                           </tr>
                                           {zoneDetails.configuration.bootargs && (
                                             <tr>
                                               <td className="px-3 py-2"><strong>Boot Args</strong></td>
-                                              <td className="px-3 py-2"><code style={{fontSize: '0.85rem'}}>{zoneDetails.configuration.bootargs || 'None'}</code></td>
+                                              <td className="px-3 py-2"><code className='is-size-7'>{zoneDetails.configuration.bootargs || 'None'}</code></td>
                                             </tr>
                                           )}
                                           {zoneDetails.configuration.hostid && (
@@ -1527,7 +1527,7 @@ const Zones = () => {
                                   </span>
                                 </h4>
                                 <div className='table-container'>
-                                  <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                  <table className='table is-fullwidth is-striped is-size-7'>
                                     <tbody>
                                       <tr>
                                         <td className="px-3 py-2"><strong>RAM</strong></td>
@@ -1551,7 +1551,7 @@ const Zones = () => {
                                       </tr>
                                       <tr>
                                         <td className="px-3 py-2"><strong>Boot ROM</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.bootrom}</span></td>
+                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootrom}</span></td>
                                         <td className="px-3 py-2"><strong>UEFI Vars</strong></td>
                                         <td className="px-3 py-2">
                                           <span className={`has-text-weight-semibold ${zoneDetails.configuration.uefivars === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
@@ -1561,7 +1561,7 @@ const Zones = () => {
                                       </tr>
                                       <tr>
                                         <td className="px-3 py-2"><strong>Host Bridge</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.hostbridge}</span></td>
+                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.hostbridge}</span></td>
                                         <td className="px-3 py-2"><strong>xHCI</strong></td>
                                         <td className="px-3 py-2">
                                           <span className={`has-text-weight-semibold ${zoneDetails.configuration.xhci === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
@@ -1571,7 +1571,7 @@ const Zones = () => {
                                       </tr>
                                       <tr>
                                         <td className="px-3 py-2"><strong>Brand</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.brand}</span></td>
+                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.brand}</span></td>
                                         <td className="px-3 py-2"><strong>RNG</strong></td>
                                         <td className="px-3 py-2">
                                           <span className={`has-text-weight-semibold ${zoneDetails.configuration.rng === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
@@ -1581,7 +1581,7 @@ const Zones = () => {
                                       </tr>
                                       <tr>
                                         <td className="px-3 py-2"><strong>Type</strong></td>
-                                        <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.type || 'N/A'}</span></td>
+                                        <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.type || 'N/A'}</span></td>
                                         <td className="px-3 py-2"><strong>Cloud Init</strong></td>
                                         <td className="px-3 py-2">
                                           <span className={`has-text-weight-semibold ${zoneDetails.configuration['cloud-init'] === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
@@ -1599,11 +1599,11 @@ const Zones = () => {
                                         <td className="px-3 py-2"><strong>VNC Port</strong></td>
                                         <td className="px-3 py-2">
                                           {zoneDetails.active_vnc_session && zoneDetails.vnc_session_info?.web_port ? (
-                                            <span className='has-text-grey' style={{fontFamily: 'monospace'}}>
+                                            <span className='has-text-grey is-family-monospace'>
                                               {zoneDetails.vnc_session_info.web_port}
                                             </span>
                                           ) : (zoneDetails.configuration?.vnc?.port || zoneDetails.zone_info?.vnc_port) ? (
-                                            <span className='has-text-grey' style={{fontFamily: 'monospace'}}>
+                                            <span className='has-text-grey is-family-monospace'>
                                               {zoneDetails.configuration.vnc?.port || zoneDetails.zone_info?.vnc_port}
                                             </span>
                                           ) : (
@@ -1672,7 +1672,7 @@ const Zones = () => {
                                           </p>
                                         )}
                                       </div>
-                                      <div className='buttons' style={{margin: 0}}>
+                                      <div className='buttons has-margin-0'>
                                         <ZloginActionsDropdown
                                           variant="button"
                                           onToggleReadOnly={() => {
@@ -1717,14 +1717,13 @@ const Zones = () => {
                                           }}
                                           isReadOnly={previewReadOnly}
                                           isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+                                          className='has-box-shadow'
                                         />
                                         {/* Paste from Clipboard Button - zlogin Preview */}
                                         <button 
-                                          className='button is-small is-info'
+                                          className='button is-small is-info has-box-shadow'
                                           onClick={handleZloginPreviewPaste}
                                           title="Paste from Browser Clipboard"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-paste'></i>
@@ -1751,7 +1750,6 @@ const Zones = () => {
                                           }}
                                           disabled={loading}
                                           title="Expand zlogin Console"
-                                          style={{boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
                                         >
                                           <span className='icon is-small'>
                                             <i className='fas fa-expand'></i>
@@ -1895,7 +1893,7 @@ const Zones = () => {
                                           </p>
                                         )}
                                       </div>
-                                      <div className='buttons' style={{margin: 0}}>
+                                      <div className='buttons has-margin-0'>
                                         <VncActionsDropdown
                                           vncRef={previewVncRef}
                                           variant="button"
@@ -2290,11 +2288,11 @@ const Zones = () => {
                               {/* Disk Interface Only */}
                               <div className='mb-3'>
                                 <div className='table-container'>
-                                  <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                  <table className='table is-fullwidth is-striped is-size-7'>
                                     <tbody>
                                         <tr>
                                           <td className="px-3 py-2"><strong>Disk Interface Driver</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.diskif || 'N/A'}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.diskif || 'N/A'}</span></td>
                                         </tr>
                                     </tbody>
                                   </table>
@@ -2306,7 +2304,7 @@ const Zones = () => {
                                 <div className='mb-3'>
                                   <h5 className='subtitle is-6 mb-2'>Boot Disk</h5>
                                   <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                    <table className='table is-fullwidth is-striped is-size-7'>
                                       <thead>
                                         <tr>
                                           <th className="px-3 py-2">NAME</th>
@@ -2317,10 +2315,10 @@ const Zones = () => {
                                       </thead>
                                       <tbody>
                                         <tr>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace', fontSize: '0.85rem'}}>{zoneDetails.configuration.bootdisk.path}</span></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.bootdisk.blocksize}</span></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.bootdisk.sparse}</span></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.bootdisk.size}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-size-7' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.bootdisk.path}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.blocksize}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.sparse}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.size}</span></td>
                                         </tr>
                                       </tbody>
                                     </table>
@@ -2333,7 +2331,7 @@ const Zones = () => {
                                 <div>
                                   <h5 className='subtitle is-6 mb-2'>Data Disks</h5>
                                   <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                    <table className='table is-fullwidth is-striped is-size-7'>
                                       <thead>
                                         <tr>
                                           <th className="px-3 py-2">NAME</th>
@@ -2345,10 +2343,10 @@ const Zones = () => {
                                       <tbody>
                                         {(zoneDetails.configuration.disk || []).filter(disk => disk !== null && disk !== undefined).map((disk, index) => (
                                           <tr key={index}>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace', fontSize: '0.85rem'}}>{disk?.path || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{disk?.blocksize || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{disk?.sparse || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{disk?.size || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-size-7' style={{fontFamily: 'monospace'}}>{disk?.path || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.blocksize || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.sparse || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.size || 'N/A'}</span></td>
                                           </tr>
                                         ))}
                                       </tbody>
@@ -2375,11 +2373,11 @@ const Zones = () => {
                                       <tbody>
                                         <tr>
                                           <td className="px-3 py-2"><strong>Network Interface Driver</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.netif || 'N/A'}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.netif || 'N/A'}</span></td>
                                         </tr>
                                         <tr>
                                           <td className="px-3 py-2"><strong>IP Type</strong></td>
-                                          <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration['ip-type'] || 'N/A'}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration['ip-type'] || 'N/A'}</span></td>
                                         </tr>
                                       </tbody>
                                     </table>
@@ -2403,11 +2401,11 @@ const Zones = () => {
                                       <tbody>
                                         {(zoneDetails.configuration.net || []).filter(netInterface => netInterface !== null && netInterface !== undefined).map((netInterface, index) => (
                                           <tr key={index}>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{netInterface?.['global-nic'] || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{netInterface?.physical || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{netInterface?.['mac-addr'] || 'N/A'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{netInterface?.['vlan-id'] || '0'}</span></td>
-                                            <td className="px-3 py-2"><span className='has-text-grey' style={{fontFamily: 'monospace'}}>{netInterface?.['mac-addr-type'] || 'fixed'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['global-nic'] || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.physical || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['mac-addr'] || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['vlan-id'] || '0'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{netInterface?.['mac-addr-type'] || 'fixed'}</span></td>
                                           </tr>
                                         ))}
                                       </tbody>
