@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useHostStorageData } from "./Host/useHostStorageData";
 import StorageHeader from "./Host/StorageHeader";
@@ -68,8 +68,12 @@ const HostStorage = () => {
         user,
         getServers,
         handleServerChange,
-        loadStorageData
+        loadStorageData,
+        servers
     } = useHostStorageData();
+
+    // Use useMemo to prevent getServers() calls on every render
+    const serverList = useMemo(() => getServers(), [servers]);
 
     if (!user) {
         return (
@@ -97,7 +101,6 @@ const HostStorage = () => {
         );
     }
 
-    const serverList = getServers();
     if (serverList.length === 0) {
         return (
             <div className='hero-body mainbody p-0 is-align-items-stretch'>

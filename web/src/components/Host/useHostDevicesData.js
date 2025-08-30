@@ -274,6 +274,7 @@ export const useHostDevicesData = () => {
         getSortIcon,
         user,
         getServers,
+        servers, // Added for useMemo dependency
         handleServerChange,
         handleDeviceRefresh,
         applyFilters,

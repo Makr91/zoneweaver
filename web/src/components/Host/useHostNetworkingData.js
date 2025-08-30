@@ -710,6 +710,7 @@ export const useHostNetworkingData = () => {
         getSortedChartEntries,
         user,
         getServers: () => currentServer ? [currentServer] : [],
+        servers: currentServer ? [currentServer] : [], // Added for useMemo dependency
         handleServerChange,
         loadNetworkData,
         loadHistoricalChartData

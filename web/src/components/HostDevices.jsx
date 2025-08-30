@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useHostDevicesData } from "./Host/useHostDevicesData";
 import DeviceHeader from "./Host/DeviceHeader";
@@ -32,8 +32,12 @@ const HostDevices = () => {
         handleServerChange,
         handleDeviceRefresh,
         applyFilters,
-        loadDeviceData
+        loadDeviceData,
+        servers
     } = useHostDevicesData();
+
+    // Use useMemo to prevent getServers() calls on every render
+    const serverList = useMemo(() => getServers(), [servers]);
 
     if (!user) {
         return (
@@ -61,7 +65,6 @@ const HostDevices = () => {
         );
     }
 
-    const serverList = getServers();
     if (serverList.length === 0) {
         return (
             <div className='hero-body mainbody p-0 is-align-items-stretch'>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useHostNetworkingData } from "./Host/useHostNetworkingData";
 import NetworkingHeader from "./Host/NetworkingHeader";
@@ -62,15 +62,18 @@ const HostNetworking = () => {
         user,
         getServers,
         handleServerChange,
-        loadNetworkData
+        loadNetworkData,
+        servers
     } = useHostNetworkingData();
     
     console.log('🐛 DEBUG: Hook data destructured successfully, user:', !!user, 'getServers type:', typeof getServers);
 
+    // Use useMemo to prevent getServers() calls on every render
+    const serverList = useMemo(() => getServers(), [servers]);
+
     // Network monitoring is accessible to all authenticated users
     // No permission check needed - removed the user access restriction
 
-    const serverList = getServers();
     if (serverList.length === 0) {
         return (
             <div className='hero-body mainbody p-0 is-align-items-stretch'>

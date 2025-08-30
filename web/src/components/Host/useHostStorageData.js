@@ -1062,6 +1062,7 @@ export const useHostStorageData = () => {
         setSeriesVisibility,
         user,
         getServers,
+        servers, // Added for useMemo dependency
         handleServerChange,
         loadStorageData,
         parseSize
