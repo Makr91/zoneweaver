@@ -143,16 +143,23 @@ const Footer = () => {
         <div className='level-item is-justify-content-flex-end'>
           <div className="field has-addons is-grouped mr-2 mb-0 is-relative">
             <p className="control">
-              <button className={`button is-small ${footerActiveView === 'shell' ? 'is-info' : ''}`} onClick={handleShellButtonClick}>
+              <button className={`button is-small ${footerActiveView === 'shell' ? 'is-info' : 'is-dark'}`} onClick={handleShellButtonClick}>
                 <span className="icon">
                   <i className="fas fa-terminal"></i>
                 </span>
               </button>
             </p>
             <p className="control">
-              <button className={`button is-small ${footerActiveView === 'tasks' ? 'is-info' : ''}`} onClick={() => handleViewChange('tasks')}>
+              <button className={`button is-small ${footerActiveView === 'tasks' ? 'is-info' : 'is-dark'}`} onClick={() => handleViewChange('tasks')}>
                 <span className="icon">
                   <i className="fas fa-tasks"></i>
+                </span>
+              </button>
+            </p>
+            <p className="control">
+              <button className='button is-small is-dark' onClick={handleToggle}>
+                <span className="icon">
+                  <i className={footerIsActive ? "is-small fa fa-angle-down" : "is-small fa fa-angle-up"}></i>
                 </span>
               </button>
             </p>
@@ -170,9 +177,6 @@ const Footer = () => {
                 </div>
               </div>
             )}
-          </div>
-          <div className='icon ' onClick={handleToggle}>
-            <i className={footerIsActive ? "is-small fa fa-angle-down" : "is-small fa fa-angle-up"}></i>
           </div>
         </div>
       </nav>
