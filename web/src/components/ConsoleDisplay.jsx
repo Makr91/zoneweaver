@@ -45,10 +45,20 @@ const ConsoleDisplay = ({
   const previewVncRef = useRef(null);
 
   const hasVnc = zoneDetails.active_vnc_session;
-  const hasZlogin = zoneDetails.zlogin_session;
+  const hasZlogin = zoneDetails.zlogin_session && zoneDetails.zlogin_session.id;
+  
+  console.log(`🔍 CONSOLE DISPLAY: Determining which console to show:`, {
+    hasVnc,
+    hasZlogin,
+    activeConsoleType,
+    zloginSessionId: hasZlogin?.id,
+    vncSessionInfo: hasVnc ? 'present' : 'absent',
+    timestamp: Date.now()
+  });
   
   // Show the selected console type
   if ((activeConsoleType === 'zlogin' && hasZlogin) || (hasZlogin && !hasVnc)) {
+    console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console`);
     return (
       <div 
         style={{
@@ -553,7 +563,7 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* VNC Console Preview */}
+        {/* VNC Console Content */}
         <div 
           style={{
             position: 'relative',
