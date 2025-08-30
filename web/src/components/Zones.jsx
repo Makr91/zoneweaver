@@ -1409,11 +1409,11 @@ const Zones = () => {
                                   </span>
                                 </h4>
                                 <div className='table-container'>
-                                  <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                  <table className='table is-fullwidth is-striped is-size-7'>
                                     <tbody>
                                       <tr>
-                                        <td style={{padding: '0.5rem 0.75rem'}}><strong>System Status</strong></td>
-                                        <td style={{padding: '0.5rem 0.75rem'}}>
+                                          <td className="px-3 py-2"><strong>System Status</strong></td>
+                                          <td className="px-3 py-2">
                                           <span className={`has-text-weight-semibold ${getZoneStatus(selectedZone) === 'running' ? 'has-text-success' : 'has-text-danger'}`}>
                                             {getZoneStatus(selectedZone) === 'running' ? 'Running' : 'Stopped'}
                                           </span>

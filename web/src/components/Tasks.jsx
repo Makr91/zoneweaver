@@ -18,7 +18,7 @@ const TaskRow = memo(({ task }) => {
     if (status === 'running') {
       return (
         <span>
-          <i className="fas fa-spinner fa-spin" style={{ marginRight: '5px' }}></i>
+          <i className="fas fa-spinner fa-spin mr-1"></i>
           {status}
         </span>
       );
@@ -86,7 +86,7 @@ const Tasks = () => {
       {loadingTasks && <p>Loading tasks...</p>}
       {tasksError && <p className="has-text-danger">{tasksError}</p>}
       {!loadingTasks && !tasksError && (
-        <table className="table is-fullwidth is-striped" style={{ marginTop: '1.75rem' }}>
+        <table className="table is-fullwidth is-striped mt-5">
           <thead>
             <tr>
               <th>ID</th>

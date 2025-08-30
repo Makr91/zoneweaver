@@ -15,8 +15,7 @@ const DatasetsTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={resetDatasetSort}
                         title="Click to reset sorting to default"
                     >
@@ -51,49 +50,49 @@ const DatasetsTable = ({
                                 <thead>
                                     <tr>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('name', e)}
                                             title="Click to sort by dataset name. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Dataset Name <i className={`fas ${getSortIcon(datasetSort, 'name')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('type', e)}
                                             title="Click to sort by dataset type. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Type <i className={`fas ${getSortIcon(datasetSort, 'type')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('used', e)}
                                             title="Click to sort by used space. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Used <i className={`fas ${getSortIcon(datasetSort, 'used')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('available', e)}
                                             title="Click to sort by available space. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Available <i className={`fas ${getSortIcon(datasetSort, 'available')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('referenced', e)}
                                             title="Click to sort by referenced space. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Referenced <i className={`fas ${getSortIcon(datasetSort, 'referenced')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('compression', e)}
                                             title="Click to sort by compression. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Compression <i className={`fas ${getSortIcon(datasetSort, 'compression')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handleDatasetSort('mountpoint', e)}
                                             title="Click to sort by mountpoint. Hold Ctrl/Cmd to add to existing sort."
                                         >
@@ -105,7 +104,7 @@ const DatasetsTable = ({
                                     {storageDatasets.map((dataset, index) => (
                                         <tr key={index}>
                                             <td>
-                                                <code style={{ fontSize: '0.85rem' }}>
+                                                <code className="is-size-7">
                                                     {dataset.name || dataset.dataset}
                                                 </code>
                                             </td>
@@ -123,7 +122,7 @@ const DatasetsTable = ({
                                                 </span>
                                             </td>
                                             <td>
-                                                <code style={{ fontSize: '0.8rem' }}>
+                                                <code className="is-size-7">
                                                     {dataset.mountpoint || dataset.mount || 'N/A'}
                                                 </code>
                                             </td>

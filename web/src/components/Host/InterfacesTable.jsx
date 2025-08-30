@@ -15,8 +15,7 @@ const InterfacesTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={resetInterfaceSort}
                         title="Click to reset sorting to default"
                     >
@@ -50,56 +49,56 @@ const InterfacesTable = ({
                             <thead>
                                 <tr>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('link')}
                                         title="Click to sort by interface name"
                                     >
                                         Link <i className={`fas ${getSortIcon(interfaceSort, 'link')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('class')}
                                         title="Click to sort by interface class"
                                     >
                                         Class <i className={`fas ${getSortIcon(interfaceSort, 'class')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('state')}
                                         title="Click to sort by interface state"
                                     >
                                         State <i className={`fas ${getSortIcon(interfaceSort, 'state')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('speed')}
                                         title="Click to sort by interface speed"
                                     >
                                         Speed <i className={`fas ${getSortIcon(interfaceSort, 'speed')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('mtu')}
                                         title="Click to sort by MTU"
                                     >
                                         MTU <i className={`fas ${getSortIcon(interfaceSort, 'mtu')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('macaddress')}
                                         title="Click to sort by MAC address"
                                     >
                                         MAC Address <i className={`fas ${getSortIcon(interfaceSort, 'macaddress')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('vid')}
                                         title="Click to sort by VLAN ID"
                                     >
                                         VLAN <i className={`fas ${getSortIcon(interfaceSort, 'vid')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleInterfaceSort('zone')}
                                         title="Click to sort by zone"
                                     >
@@ -130,14 +129,12 @@ const InterfacesTable = ({
                                         <td>
                                             {iface.zone && iface.zone !== '--' ? (
                                                 <button
-                                                    className='button is-small is-warning'
+                                                    className='button is-small is-warning py-1 px-2 is-size-7'
                                                     onClick={() => window.location.href = `/ui/zones?zone=${encodeURIComponent(iface.zone)}`}
                                                     title={`Go to zone: ${iface.zone}`}
                                                     style={{
                                                         border: 'none',
-                                                        height: 'auto',
-                                                        padding: '0.25rem 0.5rem',
-                                                        fontSize: '0.75rem'
+                                                        height: 'auto'
                                                     }}
                                                 >
                                                     <span className='icon-text'>

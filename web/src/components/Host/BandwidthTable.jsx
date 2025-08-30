@@ -15,8 +15,7 @@ const BandwidthTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={resetBandwidthSort}
                         title="Click to reset sorting to default"
                     >
@@ -50,49 +49,49 @@ const BandwidthTable = ({
                             <thead>
                                 <tr>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('link')}
                                         title="Click to sort by interface name"
                                     >
                                         Interface <i className={`fas ${getSortIcon(bandwidthSort, 'link')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('totalMbps')}
                                         title="Click to sort by total bandwidth"
                                     >
                                         Total Bandwidth <i className={`fas ${getSortIcon(bandwidthSort, 'totalMbps')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('rxMbps')}
                                         title="Click to sort by RX rate"
                                     >
                                         RX Rate <i className={`fas ${getSortIcon(bandwidthSort, 'rxMbps')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('txMbps')}
                                         title="Click to sort by TX rate"
                                     >
                                         TX Rate <i className={`fas ${getSortIcon(bandwidthSort, 'txMbps')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('time_delta_seconds')}
                                         title="Click to sort by measurement interval"
                                     >
                                         Interval <i className={`fas ${getSortIcon(bandwidthSort, 'time_delta_seconds')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('ipackets_delta')}
                                         title="Click to sort by RX packet count"
                                     >
                                         RX Packets <i className={`fas ${getSortIcon(bandwidthSort, 'ipackets_delta')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleBandwidthSort('opackets_delta')}
                                         title="Click to sort by TX packet count"
                                     >

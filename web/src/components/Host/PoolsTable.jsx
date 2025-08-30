@@ -15,8 +15,7 @@ const PoolsTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={resetPoolSort}
                         title="Click to reset sorting to default"
                     >
@@ -51,14 +50,14 @@ const PoolsTable = ({
                                 <thead>
                                     <tr>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handlePoolSort('pool', e)}
                                             title="Click to sort by pool name. Hold Ctrl/Cmd to add to existing sort."
                                         >
                                             Pool Name <i className={`fas ${getSortIcon(poolSort, 'pool')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={(e) => handlePoolSort('health', e)}
                                             title="Click to sort by health status. Hold Ctrl/Cmd to add to existing sort."
                                         >

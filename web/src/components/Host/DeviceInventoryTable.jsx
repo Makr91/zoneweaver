@@ -17,8 +17,7 @@ const DeviceInventoryTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={() => handleDeviceSort('device_name')}
                         title="Click to reset sorting to default"
                     >
@@ -69,49 +68,49 @@ const DeviceInventoryTable = ({
                             <thead>
                                 <tr>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('device_name')}
                                         title="Click to sort by device name"
                                     >
                                         Device Name <i className={`fas ${getSortIcon(deviceSort, 'device_name')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('vendor_name')}
                                         title="Click to sort by vendor"
                                     >
                                         Vendor <i className={`fas ${getSortIcon(deviceSort, 'vendor_name')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('pci_address')}
                                         title="Click to sort by PCI address"
                                     >
                                         PCI Address <i className={`fas ${getSortIcon(deviceSort, 'pci_address')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('device_category')}
                                         title="Click to sort by category"
                                     >
                                         Category <i className={`fas ${getSortIcon(deviceSort, 'device_category')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('driver_name')}
                                         title="Click to sort by driver"
                                     >
                                         Driver <i className={`fas ${getSortIcon(deviceSort, 'driver_name')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('driver_attached')}
                                         title="Click to sort by driver status"
                                     >
                                         Status <i className={`fas ${getSortIcon(deviceSort, 'driver_attached')}`}></i>
                                     </th>
                                     <th
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => handleDeviceSort('ppt_enabled')}
                                         title="Click to sort by PPT status"
                                     >
@@ -124,7 +123,7 @@ const DeviceInventoryTable = ({
                                 {devices.map((device, index) => (
                                     <tr
                                         key={device.id || index}
-                                        style={{ cursor: 'pointer' }}
+                                        className="is-clickable"
                                         onClick={() => setSelectedDevice(device)}
                                         title="Click to view device details"
                                     >

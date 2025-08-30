@@ -15,8 +15,7 @@ const DisksTable = ({
             <div className='level is-mobile mb-3'>
                 <div className='level-left'>
                     <h4
-                        className='title is-5 mb-0'
-                        style={{ cursor: 'pointer' }}
+                        className='title is-5 mb-0 is-clickable'
                         onClick={resetDiskSort}
                         title="Click to reset sorting to default"
                     >
@@ -51,56 +50,56 @@ const DisksTable = ({
                                 <thead>
                                     <tr>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('device_name')}
                                             title="Click to sort by device name"
                                         >
                                             Device <i className={`fas ${getSortIcon(diskSort, 'device_name')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('model')}
                                             title="Click to sort by model"
                                         >
                                             Model <i className={`fas ${getSortIcon(diskSort, 'model')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('serial_number')}
                                             title="Click to sort by serial number"
                                         >
                                             Serial <i className={`fas ${getSortIcon(diskSort, 'serial_number')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('capacity_bytes')}
                                             title="Click to sort by capacity"
                                         >
                                             Size <i className={`fas ${getSortIcon(diskSort, 'capacity_bytes')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('disk_type')}
                                             title="Click to sort by disk type"
                                         >
                                             Type <i className={`fas ${getSortIcon(diskSort, 'disk_type')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('health')}
                                             title="Click to sort by health status"
                                         >
                                             Health <i className={`fas ${getSortIcon(diskSort, 'health')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('temperature')}
                                             title="Click to sort by temperature"
                                         >
                                             Temperature <i className={`fas ${getSortIcon(diskSort, 'temperature')}`}></i>
                                         </th>
                                         <th
-                                            style={{ cursor: 'pointer' }}
+                                            className="is-clickable"
                                             onClick={() => handleDiskSort('pool_assignment')}
                                             title="Click to sort by pool assignment"
                                         >
@@ -114,7 +113,7 @@ const DisksTable = ({
                                             <td><strong>{disk.device_name || disk.device || disk.name}</strong></td>
                                             <td>{disk.model || disk.product || 'N/A'}</td>
                                             <td>
-                                                <code style={{ fontSize: '0.8rem' }}>
+                                                <code className="is-size-7">
                                                     {disk.serial_number || disk.serial || disk.serialNumber || 'N/A'}
                                                 </code>
                                             </td>
