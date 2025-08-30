@@ -1630,8 +1630,8 @@ const Zones = () => {
                               
                           {/* Right Column - Console Display with Toggle */}
                           <div className='column is-6'>
-                            {/* Console Display Logic - Memoized for Performance */}
-                            {useMemo(() => {
+                            {/* Console Display Logic */}
+                            {(() => {
                               const hasVnc = zoneDetails.active_vnc_session;
                               const hasZlogin = zoneDetails.zlogin_session;
                               
@@ -2259,7 +2259,7 @@ const Zones = () => {
                                   </div>
                                 );
                               }
-                            }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session, activeConsoleType, selectedZone, previewReadOnly, previewVncViewOnly, loading, loadingVnc])}
+                            })()}
                           </div>
                         </div>
 
