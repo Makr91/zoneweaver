@@ -230,7 +230,6 @@ $yellow: #ffe600;
 
 .log-console {
   height: 100%;
-  align-items: flex-start !important;
   overflow-y: auto;
   @include custom-scrollbar();
 }
