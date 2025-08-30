@@ -9,6 +9,6 @@ export default function GravatarImage() {
     }
  
     return (
-        <img src={ user.gravatar.avatar_url + '?size=64' } className="is-32x32 is-rounded" />
+        <img src={ user.gravatar.avatar_url + '?size=64' } className="is-32x32" style={{ borderRadius: '50%' }} />
     )
 }
