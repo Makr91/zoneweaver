@@ -577,7 +577,7 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* VNC Console Preview - Live when active, static screenshot when inactive */}
+        {/* VNC Console Content - CRITICAL MISSING PIECE! */}
         <div 
           style={{
             position: 'relative',
