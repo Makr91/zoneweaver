@@ -112,7 +112,7 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
   return (
     <div className='modal is-active'>
       <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card' style={{ width: '40%', maxWidth: '500px' }}>
+      <div className='modal-card modal-card-small'>
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>

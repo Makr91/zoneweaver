@@ -205,7 +205,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
   return (
     <div className='modal is-active'>
       <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card' style={{ width: '60%', maxWidth: '720px' }}>
+      <div className='modal-card modal-card-large'>
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>

@@ -35,7 +35,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
   return (
     <div className='modal is-active'>
       <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card' style={{ width: '60%', maxWidth: '1200px' }}>
+      <div className='modal-card modal-card-xl'>
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>

@@ -170,7 +170,7 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
   return (
     <div className='modal is-active'>
       <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card' style={{ width: '50%', maxWidth: '700px' }}>
+      <div className='modal-card modal-card-medium'>
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
