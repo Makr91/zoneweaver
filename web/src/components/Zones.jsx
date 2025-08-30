@@ -41,7 +41,6 @@ const Zones = () => {
   const [modalReadOnly, setModalReadOnly] = useState(false); // Track modal zlogin read-only state
   
   // VNC component refs to pass to action dropdowns
-  const previewVncRef = useRef(null);
   const modalVncRef = useRef(null);
   
   const { user } = useAuth();
@@ -52,22 +51,19 @@ const Zones = () => {
     currentZone, 
     selectZone,
     // Get raw session functions for ConsoleDisplay
-    startVncSession: rawStartVncSession,
-    startZloginSession: rawStartZloginSession
+    startVncSession: rawStartVncSession
   } = useServers();
 
-  const { zones, runningZones, error: zonesError, getZoneStatus, loadZones: reloadZones } = useZoneManager(currentServer);
+  const { zones, runningZones, error: zonesError, getZoneStatus } = useZoneManager(currentServer);
 
   const {
     zoneDetails,
     setZoneDetails,
     monitoringHealth,
     error: detailsError,
-    loadZoneDetails,
   } = useZoneDetails(currentServer, currentZone);
 
   const {
-    vncSession,
     loadingVnc,
     setLoadingVnc,
     showVncConsole,
@@ -85,9 +81,7 @@ const Zones = () => {
     handleVncConsole,
     closeVncConsole,
     handleKillVncSession,
-    refreshVncSessionStatus,
     handleVncClipboardPaste,
-    handleVncPreviewPaste,
     handleVncModalPaste,
     openDirectVncFallback,
     waitForVncSessionReady,
@@ -100,7 +94,6 @@ const Zones = () => {
     setIsZloginFullScreen,
     handleZloginConsole,
     refreshZloginSessionStatus,
-    handleZloginPreviewPaste,
     handleZloginModalPaste,
   } = useZloginSession(currentServer, currentZone, setZoneDetails);
 
@@ -345,7 +338,6 @@ const Zones = () => {
                               setZoneDetails={setZoneDetails}
                               startZloginSessionExplicitly={startZloginSessionExplicitly}
                               forceZoneSessionCleanup={forceZoneSessionCleanup}
-                              handleZloginPreviewPaste={handleZloginPreviewPaste}
                               handleZloginConsole={handleZloginConsole}
                               handleVncConsole={handleVncConsole}
                               handleKillVncSession={handleKillVncSession}
@@ -354,10 +346,7 @@ const Zones = () => {
                               handleVncResizeChange={handleVncResizeChange}
                               handleVncShowDotChange={handleVncShowDotChange}
                               handleVncClipboardPaste={handleVncClipboardPaste}
-                              handleVncPreviewPaste={handleVncPreviewPaste}
-                              // FIXED: Pass raw session functions, not modal-opening wrappers
                               startVncSession={rawStartVncSession}
-                              startZloginSession={rawStartZloginSession}
                               waitForVncSessionReady={waitForVncSessionReady}
                               pasteTextToZone={pasteTextToZone}
                               setShowZloginConsole={setShowZloginConsole}
