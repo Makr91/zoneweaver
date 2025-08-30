@@ -120,12 +120,11 @@ const ZloginActionsDropdown = ({
     <div className={`dropdown is-right ${isActive ? 'is-active' : ''} ${className}`} style={style} ref={dropdownRef}>
       <div className="dropdown-trigger">
         <span 
-          className="has-text-link is-clickable"
+          className="has-text-link is-clickable is-size-7"
           aria-haspopup="true"
           aria-controls="zlogin-dropdown-menu"
           onClick={() => setIsActive(!isActive)}
           disabled={disabled}
-          style={{ fontSize: '0.875rem' }}
         >
           zlogin Actions
           <span className="icon ml-1">

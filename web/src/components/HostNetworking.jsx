@@ -173,7 +173,7 @@ const HostNetworking = () => {
                             </div>
 
                             {!sectionsCollapsed.topology && (
-                                <div className='content' style={{ minHeight: '600px' }}>
+                                <div className='content has-min-height-600'>
                                     <NetworkTopologyViewer
                                         networkData={{
                                             networkInterfaces: networkInterfaces || [],

@@ -445,7 +445,7 @@ const ZoneweaverAPISettings = () => {
 
                 <div className="tab-content">
                   {organizeBySection(settings).map(section => (
-                    <div key={section.name} className="tab-pane" style={{ display: activeTab === section.name ? 'block' : 'none' }}>
+                    <div key={section.name} className={`tab-pane ${activeTab !== section.name ? 'is-hidden' : ''}`}>
                       {section.name === 'host_monitoring' ? (
                         <div className="columns">
                           <div className="column is-8">
@@ -464,7 +464,7 @@ const ZoneweaverAPISettings = () => {
                       )}
                     </div>
                   ))}
-                  <div className="tab-pane" style={{ display: activeTab === 'api_management' ? 'block' : 'none' }}>
+                  <div className={`tab-pane ${activeTab !== 'api_management' ? 'is-hidden' : ''}`}>
                     <ApiKeysTab />
                   </div>
                 </div>

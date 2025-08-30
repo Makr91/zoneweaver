@@ -704,17 +704,12 @@ const Navbar = () => {
             </button>
 
             {zones && <ZoneList zones={zones} />}
-            <div className='px-1 button' style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
+            <div className='px-1 button is-flex is-align-items-center is-justify-content-space-between'>
               <span>{currentZone}</span>
               {currentZone && (
                 <span 
-                  className={`icon is-small ${getStatusDotColor(getZoneStatus(currentZone))}`}
+                  className={`icon is-small ml-2 ${getStatusDotColor(getZoneStatus(currentZone))}`}
                   title={`Status: ${getZoneStatus(currentZone)}`}
-                  style={{marginLeft: '8px'}}
                 >
                   <i className='fas fa-circle' style={{ fontSize: '0.6rem' }}></i>
                 </span>

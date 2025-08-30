@@ -365,8 +365,7 @@ const Dashboard = () => {
             </div>
 
             <div className='column is-3'>
-              <div className='box has-text-centered' 
-                style={{cursor: summary.serversWithIssues > 0 ? 'pointer' : 'default'}}
+              <div className={`box has-text-centered ${summary.serversWithIssues > 0 ? 'is-clickable' : ''}`}
                 onClick={() => {
                   if (summary.serversWithIssues > 0) {
                     setShowHealthModal(true);
