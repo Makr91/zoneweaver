@@ -46,10 +46,9 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 {bandwidthRanges.map((range, index) => (
                   <div key={index} className="control">
                     <span 
-                      className="tag is-small"
+                      className="tag is-small zw-bandwidth-tag"
                       style={{ 
-                        backgroundColor: range.color, 
-                        color: 'white'
+                        backgroundColor: range.color
                       }}
                       title={range.description}
                     >
@@ -93,13 +92,13 @@ const BandwidthLegend = ({ horizontal = false }) => {
                         </span>
                       ) : (
                         <div 
-                          className="mr-1"
+                          className={`mr-1 zw-traffic-line-16 ${
+                            indicator.style === 'dashed' ? 'zw-traffic-line-dashed' : 'zw-traffic-line-solid'
+                          } ${
+                            indicator.style === 'thick' ? 'zw-traffic-line-thick-16' : 'zw-traffic-line-normal'
+                          }`}
                           style={{
-                            width: '16px',
-                            height: '2px',
                             backgroundColor: indicator.color || '#6b7280',
-                            borderStyle: indicator.style === 'dashed' ? 'dashed' : 'solid',
-                            borderWidth: indicator.style === 'thick' ? '2px' : '1px',
                             borderColor: indicator.color || '#6b7280'
                           }}
                         />
@@ -146,11 +145,9 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 <div className="level-left">
                   <div className="level-item">
                     <span 
-                      className="tag is-small"
+                      className="tag is-small zw-bandwidth-tag-vertical"
                       style={{ 
-                        backgroundColor: range.color, 
-                        color: 'white',
-                        minWidth: '60px'
+                        backgroundColor: range.color
                       }}
                     >
                       {range.label}
@@ -205,13 +202,13 @@ const BandwidthLegend = ({ horizontal = false }) => {
                       </span>
                     ) : (
                       <div 
-                        className="mr-2"
+                        className={`mr-2 zw-traffic-line-20 ${
+                          indicator.style === 'dashed' ? 'zw-traffic-line-dashed' : 'zw-traffic-line-solid'
+                        } ${
+                          indicator.style === 'thick' ? 'zw-traffic-line-thick' : 'zw-traffic-line-normal'
+                        }`}
                         style={{
-                          width: '20px',
-                          height: '3px',
                           backgroundColor: indicator.color || '#6b7280',
-                          borderStyle: indicator.style === 'dashed' ? 'dashed' : 'solid',
-                          borderWidth: indicator.style === 'thick' ? '3px' : '1px',
                           borderColor: indicator.color || '#6b7280'
                         }}
                       />

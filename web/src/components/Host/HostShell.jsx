@@ -58,11 +58,7 @@ const HostShell = () => {
 
   return (
     <div 
-      className="is-fullheight is-fullwidth has-box-sizing-border-box"
-      style={{
-        marginTop: '1.75rem',
-        paddingBottom: '1.5rem'
-      }}
+      className="is-fullheight is-fullwidth has-box-sizing-border-box mt-5 pb-5"
     >
       <div ref={terminalRef} className="is-fullheight is-fullwidth" />
     </div>

@@ -42,23 +42,20 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
 
   return (
     <div 
-      className="react-flow__node-default zw-node-base" 
-      style={{ backgroundColor: isActive ? 'var(--zw-nic-active)' : 'var(--zw-nic-inactive)' }}
+      className={`react-flow__node-default zw-node-base ${isActive ? 'zw-nic-active-bg' : 'zw-nic-inactive-bg'}`}
       title={tooltipContent}
     >
       {/* Handles - Top for input (from network), Bottom for output (to VNICs) */}
       <Handle
         type="target"
         position={Position.Top}
-        className="zw-node-handle"
-        style={{ background: isActive ? 'var(--zw-nic-active)' : 'var(--zw-nic-inactive)' }}
+        className={`zw-node-handle ${isActive ? 'zw-nic-active-bg' : 'zw-nic-inactive-bg'}`}
       />
       
       <Handle
         type="source"
         position={Position.Bottom}
-        className="zw-node-handle"
-        style={{ background: isActive ? 'var(--zw-nic-active)' : 'var(--zw-nic-inactive)' }}
+        className={`zw-node-handle ${isActive ? 'zw-nic-active-bg' : 'zw-nic-inactive-bg'}`}
       />
 
       {/* Icon */}

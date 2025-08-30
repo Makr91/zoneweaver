@@ -129,13 +129,9 @@ const InterfacesTable = ({
                                         <td>
                                             {iface.zone && iface.zone !== '--' ? (
                                                 <button
-                                                    className='button is-small is-warning py-1 px-2 is-size-7'
+                                                    className='button is-small is-warning py-1 px-2 is-size-7 is-borderless has-height-auto'
                                                     onClick={() => window.location.href = `/ui/zones?zone=${encodeURIComponent(iface.zone)}`}
                                                     title={`Go to zone: ${iface.zone}`}
-                                                    style={{
-                                                        border: 'none',
-                                                        height: 'auto'
-                                                    }}
                                                 >
                                                     <span className='icon-text'>
                                                         <span className='icon is-small'>

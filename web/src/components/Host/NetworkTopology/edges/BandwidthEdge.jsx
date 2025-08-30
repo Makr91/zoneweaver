@@ -309,35 +309,29 @@ const BandwidthEdge = ({
             
             {/* Secondary labels */}
             {type === 'vlan' && vlanId && bandwidth && bandwidth.totalMbps > 0 && (
-              <div style={{ 
-                fontSize: '7px', 
-                color: getVlanColor(vlanId),
-                fontWeight: 'bold',
-                marginTop: '1px'
-              }}>
+              <div 
+                className="zw-edge-label-secondary"
+                style={{ 
+                  color: getVlanColor(vlanId)
+                }}
+              >
                 VLAN {vlanId}
               </div>
             )}
             
             {type === 'aggregation' && bandwidth && bandwidth.totalMbps > 0 && (
-              <div style={{ 
-                fontSize: '7px', 
-                color: '#3273dc',
-                fontWeight: 'bold',
-                marginTop: '1px'
-              }}>
+              <div 
+                className="zw-edge-label-secondary has-text-color-blue-3273dc"
+              >
                 LACP
               </div>
             )}
             
             {/* Idle indicator */}
             {bandwidth && bandwidth.totalMbps === 0 && (
-              <div style={{ 
-                fontSize: '7px', 
-                color: '#9ca3af',
-                fontStyle: 'italic',
-                marginTop: '1px'
-              }}>
+              <div 
+                className="zw-edge-label-idle has-text-color-muted"
+              >
                 idle
               </div>
             )}

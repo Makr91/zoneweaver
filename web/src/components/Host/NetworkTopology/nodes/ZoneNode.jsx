@@ -29,25 +29,19 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
 
   return (
     <div 
-      className="react-flow__node-default zw-node-base" 
-      style={{ backgroundColor: isRunning ? 'var(--zw-zone-active)' : 'var(--zw-zone-inactive)' }}
+      className={`react-flow__node-default zw-node-base ${isRunning ? 'zw-zone-running' : 'zw-zone-stopped'}`}
       title={tooltipContent}
     >
       {/* Handles - Both target and source for bidirectional traffic */}
       <Handle
         type="target"
         position={Position.Top}
-        className="zw-node-handle"
-        style={{ background: 'var(--zw-zone-active)' }}
+        className="zw-node-handle zw-zone-active-bg"
       />
       <Handle
         type="source"
         position={Position.Top}
-        className="zw-node-handle"
-        style={{ 
-          background: 'var(--zw-zone-active)',
-          left: '75%'
-        }}
+        className="zw-node-handle zw-zone-active-bg has-left-75-percent"
       />
 
       {/* Icon */}
@@ -55,8 +49,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
       
       {/* Status indicator */}
       <div 
-        className="zw-zone-status-indicator"
-        style={{ backgroundColor: isRunning ? 'var(--zw-nic-active)' : 'var(--zw-zone-active)' }}
+        className={`zw-zone-status-indicator ${isRunning ? 'zw-nic-active-bg' : 'zw-zone-active-bg'}`}
       />
       
       {/* Label below */}

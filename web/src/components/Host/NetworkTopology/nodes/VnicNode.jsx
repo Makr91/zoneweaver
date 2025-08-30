@@ -66,15 +66,13 @@ ${ipAddresses?.length ? `IP: ${ipAddresses.map(ip => ip.ip_address).join(', ')}`
       <Handle
         type="target"
         position={Position.Top}
-        className="zw-node-handle"
-        style={{ background: 'var(--zw-vnic-color)' }}
+        className="zw-node-handle zw-vnic-bg"
       />
       
       <Handle
         type="source"
         position={Position.Bottom}
-        className="zw-node-handle"
-        style={{ background: 'var(--zw-vnic-color)' }}
+        className="zw-node-handle zw-vnic-bg"
       />
 
       {/* Icon */}

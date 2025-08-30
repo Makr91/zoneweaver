@@ -264,15 +264,7 @@ const NetworkTopologyViewer = ({
 
   return (
     <div 
-      className={isFullscreen ? 'has-z-index-modal' : ''}
-      style={{ 
-        width: '100%', 
-        height: isFullscreen ? '100vh' : '500px',
-        position: isFullscreen ? 'fixed' : 'relative',
-        top: isFullscreen ? 0 : 'auto',
-        left: isFullscreen ? 0 : 'auto',
-        backgroundColor: isFullscreen ? 'white' : 'transparent'
-      }}
+      className={`${isFullscreen ? 'has-z-index-modal zw-topology-container-fullscreen' : 'zw-topology-container-normal'}`}
     >
       {/* Hide React Flow attribution and handles for floating edges */}
       <style>{`
@@ -288,7 +280,7 @@ const NetworkTopologyViewer = ({
       `}</style>
       
       {/* Header with View Switcher and Fullscreen Toggle */}
-      <div className="level is-mobile mb-3" style={{ padding: isFullscreen ? '1rem' : '0' }}>
+      <div className={`level is-mobile mb-3 ${isFullscreen ? 'zw-topology-header-fullscreen' : 'zw-topology-header-normal'}`}>
         <div className="level-left">
           <div className="level-item">
             <TopologyViewSwitcher
@@ -332,7 +324,7 @@ const NetworkTopologyViewer = ({
       </div>
       
       {/* Filters - Horizontal layout */}
-      <div className="mb-3" style={{ padding: isFullscreen ? '0 1rem' : '0' }}>
+      <div className={`mb-3 ${isFullscreen ? 'zw-topology-filters-fullscreen' : 'zw-topology-filters-normal'}`}>
         <NetworkTopologyControls
           filters={filters}
           onFilterChange={handleFilterChange}
@@ -347,11 +339,7 @@ const NetworkTopologyViewer = ({
       
       {/* Main Content Area - ReactFlow takes full width */}
       <div 
-        style={{ 
-          height: isFullscreen ? 'calc(100vh - 280px)' : '500px',
-          padding: isFullscreen ? '0 1rem 0 1rem' : '0',
-          position: 'relative'
-        }}
+        className={isFullscreen ? 'zw-topology-content-fullscreen' : 'zw-topology-content-normal'}
       >
         <ReactFlow
           nodes={nodes}

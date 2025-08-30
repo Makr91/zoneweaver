@@ -34,23 +34,20 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
 
   return (
     <div 
-      className="react-flow__node-default zw-node-base" 
-      style={{ backgroundColor: 'var(--zw-aggregate-color)' }}
+      className="react-flow__node-default zw-node-base zw-aggregate-bg"
       title={tooltipContent}
     >
       {/* Handles */}
       <Handle
         type="target"
         position={Position.Left}
-        className="zw-node-handle"
-        style={{ background: 'var(--zw-aggregate-color)' }}
+        className="zw-node-handle zw-aggregate-bg"
       />
       
       <Handle
         type="source"
         position={Position.Right}
-        className="zw-node-handle"
-        style={{ background: 'var(--zw-aggregate-color)' }}
+        className="zw-node-handle zw-aggregate-bg"
       />
 
       {/* Icon */}
