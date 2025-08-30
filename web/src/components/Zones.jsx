@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -1630,8 +1630,8 @@ const Zones = () => {
                               
                           {/* Right Column - Console Display with Toggle */}
                           <div className='column is-6'>
-                            {/* Console Display Logic */}
-                            {(() => {
+                            {/* Console Display Logic - Memoized for Performance */}
+                            {useMemo(() => {
                               const hasVnc = zoneDetails.active_vnc_session;
                               const hasZlogin = zoneDetails.zlogin_session;
                               
@@ -2259,7 +2259,7 @@ const Zones = () => {
                                   </div>
                                 );
                               }
-                            })()}
+                            }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session, activeConsoleType, selectedZone, previewReadOnly, previewVncViewOnly, loading, loadingVnc])}
                           </div>
                         </div>
 

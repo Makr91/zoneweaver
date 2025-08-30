@@ -51,4 +51,4 @@ const ProvisioningStatus = ({ currentServer }) => {
     );
 };
 
-export default ProvisioningStatus;
+export default React.memo(ProvisioningStatus);
