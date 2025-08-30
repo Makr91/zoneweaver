@@ -40,38 +40,13 @@ const VncModal = ({
     <div className='modal is-active has-z-index-modal'>
       <div className='modal-background' onClick={closeVncConsole}></div>
       <div 
-        style={{
-          width: isVncFullScreen ? '99vw' : '90vw', 
-          height: isVncFullScreen ? '100vh' : '86vh',
-          position: isVncFullScreen ? 'fixed' : 'relative',
-          top: isVncFullScreen ? '0' : 'auto',
-          left: isVncFullScreen ? '0' : 'auto',
-          margin: isVncFullScreen ? '0' : 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          backgroundColor: 'white',
-          borderRadius: '0',
-          boxShadow: isVncFullScreen ? 'none' : '0 8px 16px rgba(10, 10, 10, 0.1)'
-        }}
+        className={isVncFullScreen ? 'zw-modal-container-fullscreen' : 'zw-modal-container-normal'}
       >
         <header 
-          className='modal-card-head' 
-          style={{
-            padding: isVncFullScreen ? '0.25rem 0.5rem' : '0.75rem 1rem',
-            minHeight: 'auto',
-            flexShrink: 0,
-            '--bulma-modal-card-head-radius': '0',
-            borderRadius: '0'
-          }}
+          className={`modal-card-head ${isVncFullScreen ? 'zw-modal-header-fullscreen' : 'zw-modal-header-normal'}`}
         >
           <p 
-            className='modal-card-title' 
-            style={{
-              fontSize: isVncFullScreen ? '0.9rem' : '1.1rem',
-              margin: 0,
-              lineHeight: '1.2'
-            }}
+            className={`modal-card-title ${isVncFullScreen ? 'zw-modal-title-fullscreen' : 'zw-modal-title-normal'}`}
           >
             <span className='icon-text'>
               <span className='icon is-small'>
@@ -175,15 +150,10 @@ const VncModal = ({
           </div>
         </header>
         <section 
-          className='modal-card-body p-0' 
-          style={{
-            flex: 1,
-            display: 'flex',
-            overflow: 'hidden'
-          }}
+          className='modal-card-body p-0 zw-modal-body'
         >
           {vncLoadError ? (
-            <div className='has-text-centered p-6' style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div className='has-text-centered p-6 zw-error-container'>
               <div className='icon is-large mb-3'>
                 <i className='fas fa-exclamation-triangle fa-3x has-text-warning'></i>
               </div>
@@ -225,22 +195,10 @@ const VncModal = ({
               onClipboard={(event) => {
                 console.log('📋 VNC MODAL: Clipboard received from server:', event);
               }}
-              style={{
-                width: '100%',
-                height: '100%',
-                flex: '1 1 auto',
-                minHeight: 0
-              }}
+              className="zw-vnc-container"
             />
           ) : loadingVnc ? (
-            <div className='has-text-centered p-6' style={{ 
-              flex: 1, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              justifyContent: 'center',
-              backgroundColor: '#2c3e50',
-              color: '#ecf0f1'
-            }}>
+            <div className='has-text-centered p-6 zw-loading-container'>
               <div className='icon is-large'>
                 <i className='fas fa-spinner fa-pulse fa-3x zw-loading-spinner'></i>
               </div>

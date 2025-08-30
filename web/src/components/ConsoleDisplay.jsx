@@ -58,16 +58,7 @@ const ConsoleDisplay = ({
     // Only zlogin active → Show zlogin
     console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console (only zlogin active)`);
     return (
-      <div 
-        style={{
-          border: '2px solid var(--zw-border-light)',
-          borderRadius: '6px',
-          overflow: 'visible',
-          backgroundColor: '#000',
-          height: 'calc(100vh - 250px - 10vh)',
-          minHeight: '450px'
-        }}
-      >
+      <div className="zw-console-container">
         {/* zlogin Console Header */}
         <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
           <div>
@@ -208,45 +199,22 @@ const ConsoleDisplay = ({
         </div>
 
         {/* zlogin Console Content */}
-        <div 
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: 'calc(100% - 60px)',
-            backgroundColor: '#000',
-            overflow: 'visible'
-          }}
-        >
+        <div className="zw-console-content">
           <ZoneShell 
             key={`preview-zlogin-${selectedZone}-${previewReconnectKey}-${previewReadOnly ? 'ro' : 'rw'}`}
             zoneName={selectedZone} 
             readOnly={previewReadOnly}
             context="preview"
-            style={{
-              height: '100%',
-              width: '100%',
-              fontSize: '10px'
-            }}
+            className="zw-console-zone-shell"
           />
           
-          <div 
-            style={{
-              position: 'absolute',
-              top: '8px',
-              left: '8px',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '3px',
-              fontSize: '0.7rem',
-              fontWeight: 'bold'
-            }}
-          >
+          <div className="zw-console-status-overlay">
             <span className='icon is-small has-margin-right-3px'>
-              <i className='fas fa-circle' style={{
-                color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
-                fontSize: '0.4rem'
-              }}></i>
+              <i 
+                className={`fas fa-circle zw-console-status-icon ${
+                  zoneDetails.zlogin_session ? 'zw-status-icon-active' : 'zw-status-icon-inactive'
+                }`}
+              ></i>
             </span>
             {zoneDetails.zlogin_session ? 'Live' : 'Offline'}
           </div>
@@ -257,16 +225,7 @@ const ConsoleDisplay = ({
     // Only VNC active → Show VNC
     console.log(`🔍 CONSOLE DISPLAY: Showing VNC console (only VNC active)`);
     return (
-      <div 
-        style={{
-          border: '2px solid var(--zw-border-light)',
-          borderRadius: '6px',
-          overflow: 'visible',
-          backgroundColor: '#000',
-          height: 'calc(100vh - 250px - 10vh)',
-          minHeight: '450px'
-        }}
-      >
+      <div className="zw-console-container">
         {/* VNC Console Header */}
         <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
           <div>
@@ -383,15 +342,7 @@ const ConsoleDisplay = ({
         </div>
 
         {/* VNC Console Content */}
-        <div 
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: 'calc(100% - 60px)',
-            backgroundColor: '#000',
-            overflow: 'visible'
-          }}
-        >
+        <div className="zw-console-content">
           {zoneDetails.vnc_session_info ? (
             <VncViewerReact
               ref={previewVncRef}
@@ -411,18 +362,13 @@ const ConsoleDisplay = ({
               onClipboard={(event) => {
                 console.log('📋 VNC PREVIEW: Clipboard received from server:', event);
               }}
-              style={{ width: '100%', height: '100%' }}
+              className="zw-vnc-container"
             />
           ) : zoneDetails.configuration?.zonepath ? (
             <img
               src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
               alt={`Screenshot of ${selectedZone}`}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                backgroundColor: '#2c3e50'
-              }}
+              className="zw-console-screenshot"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextElementSibling.style.display = 'flex';
@@ -437,30 +383,14 @@ const ConsoleDisplay = ({
           
           {!(zoneDetails.vnc_session_info?.proxy_url || zoneDetails.vnc_session_info?.console_url) && (
             <div 
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                display: zoneDetails.configuration?.zonepath ? 'none' : 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#2c3e50',
-                color: '#ecf0f1'
-              }}
+              className={zoneDetails.configuration?.zonepath ? 'zw-console-placeholder-none' : 'zw-console-placeholder-hidden'}
             >
               <div className="has-text-centered">
                 <div className="has-margin-bottom-12px">
                   <img 
                     src="/images/startcloud.svg" 
                     alt="Start Console" 
-                    style={{ 
-                      width: '64px', 
-                      height: '64px',
-                      opacity: 0.8,
-                      filter: 'brightness(0.9)'
-                    }} 
+                    className="zw-startup-icon"
                   />
                 </div>
                 <div className="is-size-6 has-text-weight-medium">
@@ -482,16 +412,7 @@ const ConsoleDisplay = ({
     if (activeConsoleType === 'zlogin') {
       // Show zlogin (user switched to it)
       return (
-        <div 
-          style={{
-            border: '2px solid var(--zw-border-light)',
-            borderRadius: '6px',
-            overflow: 'visible',
-            backgroundColor: '#000',
-            height: 'calc(100vh - 250px - 10vh)',
-            minHeight: '450px'
-          }}
-        >
+        <div className="zw-console-container">
           {/* zlogin Console Header */}
           <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
             <div>
@@ -602,45 +523,22 @@ const ConsoleDisplay = ({
           </div>
 
           {/* zlogin Console Content */}
-          <div 
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: 'calc(100% - 60px)',
-              backgroundColor: '#000',
-              overflow: 'visible'
-            }}
-          >
+          <div className="zw-console-content">
             <ZoneShell 
               key={`preview-zlogin-${selectedZone}-${previewReconnectKey}-${previewReadOnly ? 'ro' : 'rw'}`}
               zoneName={selectedZone} 
               readOnly={previewReadOnly}
               context="preview"
-              style={{
-                height: '100%',
-                width: '100%',
-                fontSize: '10px'
-              }}
+              className="zw-console-zone-shell"
             />
             
-            <div 
-              style={{
-                position: 'absolute',
-                top: '8px',
-                left: '8px',
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                color: 'white',
-                padding: '4px 8px',
-                borderRadius: '3px',
-                fontSize: '0.7rem',
-                fontWeight: 'bold'
-              }}
-            >
+            <div className="zw-console-status-overlay">
               <span className='icon is-small has-margin-right-3px'>
-                <i className='fas fa-circle' style={{
-                  color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
-                  fontSize: '0.4rem'
-                }}></i>
+                <i 
+                  className={`fas fa-circle zw-console-status-icon ${
+                    zoneDetails.zlogin_session ? 'zw-status-icon-active' : 'zw-status-icon-inactive'
+                  }`}
+                ></i>
               </span>
               {zoneDetails.zlogin_session ? 'Live' : 'Offline'}
             </div>
@@ -650,16 +548,7 @@ const ConsoleDisplay = ({
     } else {
       // Show VNC (default when both active)
       return (
-        <div 
-          style={{
-            border: '2px solid var(--zw-border-light)',
-            borderRadius: '6px',
-            overflow: 'visible',
-            backgroundColor: '#000',
-            height: 'calc(100vh - 250px - 10vh)',
-            minHeight: '450px'
-          }}
-        >
+        <div className="zw-console-container">
           {/* VNC Console Header */}
           <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
             <div>
@@ -758,15 +647,7 @@ const ConsoleDisplay = ({
           </div>
 
           {/* VNC Console Content */}
-          <div 
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: 'calc(100% - 60px)',
-              backgroundColor: '#000',
-              overflow: 'visible'
-            }}
-          >
+          <div className="zw-console-content">
             {zoneDetails.vnc_session_info ? (
               <VncViewerReact
                 ref={previewVncRef}
@@ -786,18 +667,13 @@ const ConsoleDisplay = ({
                 onClipboard={(event) => {
                   console.log('📋 VNC PREVIEW: Clipboard received from server:', event);
                 }}
-                style={{ width: '100%', height: '100%' }}
+                className="zw-vnc-container"
               />
             ) : zoneDetails.configuration?.zonepath ? (
               <img
                 src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
                 alt={`Screenshot of ${selectedZone}`}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  backgroundColor: '#2c3e50'
-                }}
+                className="zw-console-screenshot"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextElementSibling.style.display = 'flex';
@@ -812,30 +688,14 @@ const ConsoleDisplay = ({
             
             {!(zoneDetails.vnc_session_info?.proxy_url || zoneDetails.vnc_session_info?.console_url) && (
               <div 
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  display: zoneDetails.configuration?.zonepath ? 'none' : 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#2c3e50',
-                  color: '#ecf0f1'
-                }}
+                className={zoneDetails.configuration?.zonepath ? 'zw-console-placeholder-none' : 'zw-console-placeholder-hidden'}
               >
                 <div className="has-text-centered">
                   <div className="has-margin-bottom-12px">
                     <img 
                       src="/images/startcloud.svg" 
                       alt="Start Console" 
-                      style={{ 
-                        width: '64px', 
-                        height: '64px',
-                        opacity: 0.8,
-                        filter: 'brightness(0.9)'
-                      }} 
+                      className="zw-startup-icon"
                     />
                   </div>
                   <div className="is-size-6 has-text-weight-medium">
@@ -855,16 +715,7 @@ const ConsoleDisplay = ({
     // Neither active → Show start buttons (no expand button)
     console.log(`🔍 CONSOLE DISPLAY: Showing inactive console (no sessions)`);
     return (
-      <div 
-        style={{
-          border: '2px solid var(--zw-border-light)',
-          borderRadius: '6px',
-          overflow: 'hidden',
-          backgroundColor: '#000',
-          height: 'calc(100vh - 250px - 10vh)',
-          minHeight: '450px'
-        }}
-      >
+      <div className="zw-console-container-hidden">
         {/* Inactive Console Header */}
         <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
           <div>
@@ -951,29 +802,13 @@ const ConsoleDisplay = ({
         </div>
 
         {/* Console Content - Inactive State */}
-        <div 
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: 'calc(100% - 60px)',
-            backgroundColor: '#2c3e50',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}
-        >
+        <div className="zw-inactive-console-content">
           <div className="zw-text-placeholder has-text-centered">
             <div className="has-margin-bottom-12px">
               <img 
                 src="/images/startcloud.svg" 
                 alt="Start Console" 
-                style={{ 
-                  width: '64px', 
-                  height: '64px',
-                  opacity: 0.8,
-                  filter: 'brightness(0.9)'
-                }} 
+                className="zw-startup-icon"
               />
             </div>
             <div className="is-size-6 has-text-weight-medium mb-2">

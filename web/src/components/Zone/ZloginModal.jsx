@@ -32,38 +32,13 @@ const ZloginModal = ({
     <div className='modal is-active has-z-index-modal'>
       <div className='modal-background' onClick={() => setShowZloginConsole(false)}></div>
       <div 
-        style={{
-          width: isZloginFullScreen ? '99vw' : '90vw', 
-          height: isZloginFullScreen ? '100vh' : '86vh',
-          position: isZloginFullScreen ? 'fixed' : 'relative',
-          top: isZloginFullScreen ? '0' : 'auto',
-          left: isZloginFullScreen ? '0' : 'auto',
-          margin: isZloginFullScreen ? '0' : 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          backgroundColor: 'white',
-          borderRadius: '0',
-          boxShadow: isZloginFullScreen ? 'none' : '0 8px 16px rgba(10, 10, 10, 0.1)'
-        }}
+        className={isZloginFullScreen ? 'zw-modal-container-fullscreen' : 'zw-modal-container-normal'}
       >
         <header 
-          className='modal-card-head' 
-          style={{
-            padding: isZloginFullScreen ? '0.25rem 0.5rem' : '0.75rem 1rem',
-            minHeight: 'auto',
-            flexShrink: 0,
-            '--bulma-modal-card-head-radius': '0',
-            borderRadius: '0'
-          }}
+          className={`modal-card-head ${isZloginFullScreen ? 'zw-modal-header-fullscreen' : 'zw-modal-header-normal'}`}
         >
           <p 
-            className='modal-card-title' 
-            style={{
-              fontSize: isZloginFullScreen ? '0.9rem' : '1.1rem',
-              margin: 0,
-              lineHeight: '1.2'
-            }}
+            className={`modal-card-title ${isZloginFullScreen ? 'zw-modal-title-fullscreen' : 'zw-modal-title-normal'}`}
           >
             <span className='icon-text'>
               <span className='icon is-small'>
@@ -191,12 +166,7 @@ const ZloginModal = ({
           </div>
         </header>
         <section 
-          className='modal-card-body p-0' 
-          style={{
-            flex: 1,
-            display: 'flex',
-            overflow: 'hidden'
-          }}
+          className='modal-card-body p-0 zw-modal-body'
         >
           <ZoneShell 
             key={`zlogin-modal-${selectedZone}-${modalReadOnly ? 'ro' : 'rw'}`} 
