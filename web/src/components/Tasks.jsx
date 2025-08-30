@@ -86,7 +86,7 @@ const Tasks = () => {
       {loadingTasks && <p>Loading tasks...</p>}
       {tasksError && <p className="has-text-danger">{tasksError}</p>}
       {!loadingTasks && !tasksError && (
-        <table className="table is-fullwidth is-striped mt-5">
+        <table className="table is-fullwidth is-striped">
           <thead>
             <tr>
               <th>ID</th>

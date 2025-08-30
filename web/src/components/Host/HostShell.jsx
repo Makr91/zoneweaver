@@ -22,6 +22,9 @@ const HostShell = () => {
     }
   }, [attachTerminal]);
 
+  // ResizeObserver disabled to prevent footer terminal resize conflicts
+  // The Footer component now handles all terminal resizing via its ResizableBox onResize callback
+  /*
   // Add ResizeObserver for automatic terminal resizing - with aggressive throttling
   useEffect(() => {
     if (!terminalRef.current || !window.ResizeObserver) return;
@@ -55,6 +58,7 @@ const HostShell = () => {
       console.log('🔍 HOSTSHELL: ResizeObserver disconnected');
     };
   }, [resizeTerminal]);
+  */
 
   return (
     <div ref={terminalRef} className="is-fullheight is-fullwidth" />
