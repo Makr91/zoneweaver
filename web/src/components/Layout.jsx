@@ -59,7 +59,7 @@ const LayoutContent = () => {
   // Simple URL Parameter Reader (one-time on load only)
   const URLParameterReader = () => {
     const [searchParams] = useSearchParams();
-    const processedParamsRef = useRef(new Set());
+    const processedRef = useRef(false);
     const { 
       servers, 
       selectServer, 
@@ -69,33 +69,25 @@ const LayoutContent = () => {
     } = useServers();
 
     /**
-     * Read URL parameters ONCE on initial load to support shared links
+     * Read URL parameters ONCE when servers first become available
      */
     useEffect(() => {
-      if (!isAuthenticated || servers.length === 0) return;
+      if (!isAuthenticated || servers.length === 0 || processedRef.current) return;
 
       const hostParam = searchParams.get('host');
       const zoneParam = searchParams.get('zone');
       
-      // Create a unique key for this parameter combination
-      const paramKey = `${hostParam || 'null'}-${zoneParam || 'null'}`;
-      
-      // Check if we've already processed this exact combination
-      if (processedParamsRef.current.has(paramKey)) {
-        return;
-      }
-      
-      console.log('🔗 LAYOUT: URLParameterReader processing new params', {
+      console.log('🔗 LAYOUT: URLParameterReader processing params (one-time)', {
         host: hostParam,
         zone: zoneParam,
-        paramKey,
+        serversCount: servers.length,
         timestamp: new Date().toISOString()
       });
       
       if (!hostParam && !zoneParam) {
         console.log('🔗 LAYOUT: No URL parameters to process');
-        processedParamsRef.current.add(paramKey);
-        return; // No parameters to process
+        processedRef.current = true;
+        return;
       }
       
       console.log('🔗 URL LOAD: Reading URL parameters:', { host: hostParam, zone: zoneParam });
@@ -115,9 +107,9 @@ const LayoutContent = () => {
         }
       }
       
-      // Mark this parameter combination as processed
-      processedParamsRef.current.add(paramKey);
-    }, [isAuthenticated, servers.length, searchParams]);
+      // Mark as processed to prevent future runs
+      processedRef.current = true;
+    }, [isAuthenticated, servers.length]); // Only run when servers first become available
 
     return null; // This component doesn't render anything
   };

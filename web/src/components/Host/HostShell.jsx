@@ -22,23 +22,35 @@ const HostShell = () => {
     }
   }, [attachTerminal]);
 
-  // Add ResizeObserver for automatic terminal resizing - much more efficient
+  // Add ResizeObserver for automatic terminal resizing - with aggressive throttling
   useEffect(() => {
     if (!terminalRef.current || !window.ResizeObserver) return;
 
+    let resizeTimeout;
     const resizeObserver = new ResizeObserver(entries => {
-      // Use requestAnimationFrame to avoid performance issues
-      requestAnimationFrame(() => {
-        if (resizeTerminal) {
-          resizeTerminal();
-        }
-      });
+      // Clear existing timeout to prevent excessive calls
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+      
+      // Aggressive throttling - only resize after 500ms of no changes
+      resizeTimeout = setTimeout(() => {
+        requestAnimationFrame(() => {
+          if (resizeTerminal) {
+            console.log('🔍 HOSTSHELL: ResizeObserver triggering terminal resize (throttled)');
+            resizeTerminal();
+          }
+        });
+      }, 500);
     });
 
     resizeObserver.observe(terminalRef.current);
-    console.log('🔍 HOSTSHELL: ResizeObserver attached for automatic terminal resizing');
+    console.log('🔍 HOSTSHELL: ResizeObserver attached with aggressive throttling');
 
     return () => {
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
       resizeObserver.disconnect();
       console.log('🔍 HOSTSHELL: ResizeObserver disconnected');
     };
