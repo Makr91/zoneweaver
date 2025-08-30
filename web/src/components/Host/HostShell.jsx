@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useFooter } from '../../contexts/FooterContext';
 import '@xterm/xterm/css/xterm.css';
 

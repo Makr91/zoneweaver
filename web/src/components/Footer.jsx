@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { ResizableBox } from "react-resizable";
 import { UserSettings } from "../contexts/UserSettingsContext";
 import { useFooter } from "../contexts/FooterContext";
