@@ -143,49 +143,8 @@ const Zones = () => {
 
   const handleZoneSelect = (zoneName) => {
     selectZone(zoneName);
-    // Manually trigger zone details load with session refresh orchestration
-    if (currentServer && zoneName) {
-      loadZoneDetails(currentServer, zoneName).then(() => {
-        // Run serialized session checks after zone details load
-        (async () => {
-          try {
-            console.log(`🔍 RACE FIX: Starting serialized session status checks for ${zoneName}`);
-            
-            // VNC session refresh - don't silently ignore failures
-            try {
-              await refreshVncSessionStatus(zoneName);
-              console.log(`✅ VNC STATUS: Successfully refreshed VNC status for ${zoneName}`);
-            } catch (vncError) {
-              console.error(`❌ VNC STATUS: Failed to refresh VNC status for ${zoneName}:`, vncError);
-              // Force clear VNC session state on refresh failure to prevent stale data
-              setZoneDetails(prev => ({
-                ...prev,
-                active_vnc_session: false,
-                vnc_session_info: null
-              }));
-            }
-            
-            // Zlogin session refresh - don't silently ignore failures  
-            try {
-              await refreshZloginSessionStatus(zoneName);
-              console.log(`✅ ZLOGIN STATUS: Successfully refreshed zlogin status for ${zoneName}`);
-            } catch (zloginError) {
-              console.error(`❌ ZLOGIN STATUS: Failed to refresh zlogin status for ${zoneName}:`, zloginError);
-              // Force clear zlogin session state on refresh failure to prevent stale data
-              setZoneDetails(prev => ({
-                ...prev,
-                zlogin_session: null,
-                active_zlogin_session: false
-              }));
-            }
-            
-            console.log(`✅ RACE FIX: All serialized session checks completed for ${zoneName}`);
-          } catch (error) {
-            console.error(`💥 RACE FIX: Error in serialized session checks for ${zoneName}:`, error);
-          }
-        })();
-      });
-    }
+    // Zone details load now automatically includes session detection
+    // No need for separate session refresh orchestration
   };
 
   // Sync local selectedZone with global currentZone

@@ -62,9 +62,88 @@ export const useZoneDetails = (currentServer, currentZone) => {
       );
 
       if (result.success) {
-        setZoneDetails(result.data);
+        let zoneData = { ...result.data };
+        
         // Fire off monitoring data load in the background
         loadMonitoringData(server);
+        
+        // Automatically poll VNC session info (like zlogin does)
+        try {
+          console.log(`🔍 VNC AUTO-POLL: Checking for existing VNC session for ${zoneName}`);
+          const vncResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `zones/${zoneName}/vnc/info?_t=${Date.now()}`,
+            'GET',
+            null,
+            null,
+            true // bypass cache
+          );
+
+          if (vncResult.success && vncResult.data && vncResult.data.active_vnc_session) {
+            console.log(`✅ VNC AUTO-POLL: Found existing VNC session for ${zoneName}`);
+            // Use VNC-specific data instead of basic zone API flag
+            zoneData.active_vnc_session = vncResult.data.active_vnc_session;
+            zoneData.vnc_session_info = vncResult.data.vnc_session_info;
+          } else {
+            console.log(`❌ VNC AUTO-POLL: No existing VNC session for ${zoneName}`);
+            // Clear any stale VNC flags from basic zone API
+            zoneData.active_vnc_session = false;
+            zoneData.vnc_session_info = null;
+          }
+        } catch (vncError) {
+          console.warn(`⚠️ VNC AUTO-POLL: Failed to check VNC session for ${zoneName}:`, vncError);
+          // Clear VNC flags on polling failure to prevent stale data
+          zoneData.active_vnc_session = false;
+          zoneData.vnc_session_info = null;
+        }
+        
+        // Automatically poll zlogin sessions (like existing zlogin system)
+        try {
+          console.log(`🔍 ZLOGIN AUTO-POLL: Checking for existing zlogin sessions for ${zoneName}`);
+          const zloginResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `zlogin/sessions?_t=${Date.now()}`,
+            'GET',
+            null,
+            null,
+            true // bypass cache
+          );
+
+          if (zloginResult.success && zloginResult.data) {
+            const activeSessions = Array.isArray(zloginResult.data) 
+              ? zloginResult.data 
+              : (zloginResult.data.sessions || []);
+            
+            const activeZoneSession = activeSessions.find(session => 
+              session.zone_name === zoneName && session.status === 'active'
+            );
+
+            if (activeZoneSession) {
+              console.log(`✅ ZLOGIN AUTO-POLL: Found existing zlogin session for ${zoneName}`);
+              zoneData.zlogin_session = activeZoneSession;
+              zoneData.active_zlogin_session = true;
+            } else {
+              console.log(`❌ ZLOGIN AUTO-POLL: No existing zlogin session for ${zoneName}`);
+              zoneData.zlogin_session = null;
+              zoneData.active_zlogin_session = false;
+            }
+          } else {
+            console.log(`❌ ZLOGIN AUTO-POLL: No zlogin sessions found for ${zoneName}`);
+            zoneData.zlogin_session = null;
+            zoneData.active_zlogin_session = false;
+          }
+        } catch (zloginError) {
+          console.warn(`⚠️ ZLOGIN AUTO-POLL: Failed to check zlogin sessions for ${zoneName}:`, zloginError);
+          // Clear zlogin flags on polling failure
+          zoneData.zlogin_session = null;
+          zoneData.active_zlogin_session = false;
+        }
+
+        setZoneDetails(zoneData);
       } else {
         setError(`Failed to fetch details for zone ${zoneName}: ${result.message}`);
         setZoneDetails({});
