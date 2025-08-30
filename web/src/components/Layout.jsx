@@ -56,63 +56,68 @@ const LayoutContent = () => {
   const userSettings = useContext(UserSettings);
   const [isResizing, setIsResizing] = useState(false);
 
-  // Simple URL Parameter Reader (one-time on load only)
-  const URLParameterReader = () => {
-    const [searchParams] = useSearchParams();
-    const processedRef = useRef(false);
-    const { 
-      servers, 
-      selectServer, 
-      selectZone,
-      currentServer,
-      currentZone
-    } = useServers();
+  // URL Parameter Reader - isolated with global session storage
+  const { 
+    servers, 
+    selectServer, 
+    selectZone,
+    currentServer,
+    currentZone
+  } = useServers();
+  const [searchParams] = useSearchParams();
 
-    /**
-     * Read URL parameters ONCE when servers first become available
-     */
-    useEffect(() => {
-      if (!isAuthenticated || servers.length === 0 || processedRef.current) return;
+  /**
+   * Process URL parameters with session-based tracking to prevent re-processing
+   * Uses sessionStorage to persist across re-renders and avoid resize-triggered loops
+   */
+  useEffect(() => {
+    if (!isAuthenticated || servers.length === 0) return;
 
-      const hostParam = searchParams.get('host');
-      const zoneParam = searchParams.get('zone');
-      
-      console.log('🔗 LAYOUT: URLParameterReader processing params (one-time)', {
-        host: hostParam,
-        zone: zoneParam,
-        serversCount: servers.length,
-        timestamp: new Date().toISOString()
-      });
-      
-      if (!hostParam && !zoneParam) {
-        console.log('🔗 LAYOUT: No URL parameters to process');
-        processedRef.current = true;
-        return;
+    // Use sessionStorage key to track if URL params have been processed for this session
+    const sessionKey = `zw_url_params_processed_${window.location.pathname}${window.location.search}`;
+    const alreadyProcessed = sessionStorage.getItem(sessionKey);
+    
+    if (alreadyProcessed) {
+      return; // Already processed these URL parameters in this session
+    }
+
+    const hostParam = searchParams.get('host');
+    const zoneParam = searchParams.get('zone');
+    
+    console.log('🔗 LAYOUT: Processing URL params (session-isolated)', {
+      host: hostParam,
+      zone: zoneParam,
+      serversCount: servers.length,
+      sessionKey,
+      timestamp: new Date().toISOString()
+    });
+    
+    if (!hostParam && !zoneParam) {
+      console.log('🔗 LAYOUT: No URL parameters to process');
+      sessionStorage.setItem(sessionKey, 'true');
+      return;
+    }
+    
+    console.log('🔗 URL LOAD: Reading URL parameters:', { host: hostParam, zone: zoneParam });
+    
+    // Find server by hostname if specified in URL
+    if (hostParam) {
+      const matchingServer = servers.find(server => server.hostname === hostParam);
+      if (matchingServer && (!currentServer || currentServer.hostname !== hostParam)) {
+        console.log('🔗 URL LOAD: Setting server from URL:', hostParam);
+        selectServer(matchingServer);
       }
       
-      console.log('🔗 URL LOAD: Reading URL parameters:', { host: hostParam, zone: zoneParam });
-      
-      // Find server by hostname if specified in URL
-      if (hostParam) {
-        const matchingServer = servers.find(server => server.hostname === hostParam);
-        if (matchingServer && (!currentServer || currentServer.hostname !== hostParam)) {
-          console.log('🔗 URL LOAD: Setting server from URL:', hostParam);
-          selectServer(matchingServer);
-        }
-        
-        // Set zone if specified, server matches, and zone isn't already set
-        if (zoneParam && matchingServer && (!currentZone || currentZone !== zoneParam)) {
-          console.log('🔗 URL LOAD: Setting zone from URL:', zoneParam);
-          selectZone(zoneParam);
-        }
+      // Set zone if specified, server matches, and zone isn't already set
+      if (zoneParam && matchingServer && (!currentZone || currentZone !== zoneParam)) {
+        console.log('🔗 URL LOAD: Setting zone from URL:', zoneParam);
+        selectZone(zoneParam);
       }
-      
-      // Mark as processed to prevent future runs
-      processedRef.current = true;
-    }, [isAuthenticated, servers.length]); // Only run when servers first become available
-
-    return null; // This component doesn't render anything
-  };
+    }
+    
+    // Mark as processed for this session
+    sessionStorage.setItem(sessionKey, 'true');
+  }, [isAuthenticated, servers.length]); // Only run when servers first become available
 
   // Handle resize events
   const handleResize = (e, { size }) => {
@@ -138,7 +143,6 @@ const LayoutContent = () => {
 
   return (
     <div className='columns is-gapless'>
-      <URLParameterReader />
       <ResizableBox
         onResize={handleResize}
         onResizeStart={handleResizeStart}
