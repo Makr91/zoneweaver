@@ -25,7 +25,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         width: '46px',
         height: '46px',
         borderRadius: '23px',
-        backgroundColor: '#ffdd57',
+        backgroundColor: 'var(--zw-etherstub-color)',
         border: '2px solid white',
         display: 'flex',
         alignItems: 'center',
@@ -40,7 +40,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         type="target"
         position={Position.Left}
         style={{ 
-          background: '#ffdd57',
+          background: 'var(--zw-etherstub-color)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -51,7 +51,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         type="source"
         position={Position.Right}
         style={{ 
-          background: '#ffdd57',
+          background: 'var(--zw-etherstub-color)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -73,7 +73,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         top: '48px',
         fontSize: '10px',
         fontWeight: 'bold',
-        color: '#374151',
+        color: 'var(--zw-node-text)',
         textAlign: 'center',
         width: '60px',
         left: '50%',

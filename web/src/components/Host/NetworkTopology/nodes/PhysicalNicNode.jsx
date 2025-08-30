@@ -47,7 +47,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         width: '46px',
         height: '46px',
         borderRadius: '23px',
-        backgroundColor: isActive ? '#48c78e' : '#6b7280',
+        backgroundColor: isActive ? 'var(--zw-nic-active)' : 'var(--zw-nic-inactive)',
         border: '2px solid white',
         display: 'flex',
         alignItems: 'center',
@@ -62,7 +62,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         type="target"
         position={Position.Top}
         style={{ 
-          background: isActive ? '#48c78e' : '#6b7280',
+          background: isActive ? 'var(--zw-nic-active)' : 'var(--zw-nic-inactive)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -73,7 +73,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         type="source"
         position={Position.Bottom}
         style={{ 
-          background: isActive ? '#48c78e' : '#6b7280',
+          background: isActive ? 'var(--zw-nic-active)' : 'var(--zw-nic-inactive)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -95,7 +95,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         top: '48px',
         fontSize: '10px',
         fontWeight: 'bold',
-        color: '#374151',
+        color: 'var(--zw-node-text)',
         textAlign: 'center',
         width: '60px',
         left: '50%',

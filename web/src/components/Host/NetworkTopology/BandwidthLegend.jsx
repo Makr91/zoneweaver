@@ -111,7 +111,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 <div className="control">
                   <span className="tag is-small is-white">
                     <span className="icon is-small mr-1">
-                      <i className="fas fa-circle" style={{ color: '#48c78e', fontSize: '6px' }}></i>
+                      <i className="fas fa-circle zw-status-success" style={{ fontSize: '6px' }}></i>
                     </span>
                     <span className="is-size-7">Live Traffic</span>
                   </span>
@@ -231,7 +231,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div className="level-left">
                 <div className="level-item">
                   <span className="icon is-small">
-                    <i className="fas fa-circle" style={{ color: '#48c78e', fontSize: '6px' }}></i>
+                    <i className="fas fa-circle zw-status-success" style={{ fontSize: '6px' }}></i>
                   </span>
                   <span className="ml-2 is-size-7">Animated particles show live traffic</span>
                 </div>
@@ -241,7 +241,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div className="level-left">
                 <div className="level-item">
                   <span className="icon is-small">
-                    <i className="fas fa-bolt" style={{ color: '#ffdd57', fontSize: '8px' }}></i>
+                    <i className="fas fa-bolt zw-status-warning" style={{ fontSize: '8px' }}></i>
                   </span>
                   <span className="ml-2 is-size-7">Faster animation = higher traffic</span>
                 </div>

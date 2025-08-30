@@ -1650,7 +1650,7 @@ const Zones = () => {
                                 return (
                                   <div 
                                     style={{
-                                      border: '2px solid #dbdbdb',
+                                      border: '2px solid var(--zw-border-light)',
                                       borderRadius: '6px',
                                       overflow: 'visible',
                                       backgroundColor: '#000',
@@ -1858,7 +1858,7 @@ const Zones = () => {
                                       >
                                         <span className='icon is-small' style={{marginRight: '3px'}}>
                                           <i className='fas fa-circle' style={{
-                                            color: zoneDetails.zlogin_session ? '#48c78e' : '#6c757d', 
+                                            color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
                                             fontSize: '0.4rem'
                                           }}></i>
                                         </span>
@@ -1871,7 +1871,7 @@ const Zones = () => {
                                 return (
                                   <div 
                                     style={{
-                                      border: '2px solid #dbdbdb',
+                                      border: '2px solid var(--zw-border-light)',
                                       borderRadius: '6px',
                                       overflow: 'visible',
                                       backgroundColor: '#000',
@@ -2111,7 +2111,7 @@ const Zones = () => {
                                 return (
                                   <div 
                                     style={{
-                                      border: '2px solid #dbdbdb',
+                                      border: '2px solid var(--zw-border-light)',
                                       borderRadius: '6px',
                                       overflow: 'hidden',
                                       backgroundColor: '#000',
@@ -2241,7 +2241,7 @@ const Zones = () => {
                                         overflow: 'hidden'
                                       }}
                                     >
-                                      <div style={{ textAlign: 'center', color: '#ecf0f1' }}>
+                                      <div className="zw-text-placeholder" style={{ textAlign: 'center' }}>
                                         <div style={{ marginBottom: '12px' }}>
                                           <img 
                                             src="/images/startcloud.svg" 
@@ -2946,7 +2946,7 @@ const Zones = () => {
                   color: '#ecf0f1'
                 }}>
                   <div className='icon is-large'>
-                    <i className='fas fa-spinner fa-pulse fa-3x' style={{ color: '#95a5a6' }}></i>
+                    <i className='fas fa-spinner fa-pulse fa-3x zw-loading-spinner'></i>
                   </div>
                   <p className='mt-3'>Starting VNC console...</p>
                 </div>

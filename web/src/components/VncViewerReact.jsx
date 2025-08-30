@@ -389,7 +389,7 @@ const VncViewerReact = forwardRef(({
       {/* Conditional VNC Control Bar */}
       {showControls && (
         <div className="vnc-controls" style={{
-          backgroundColor: '#363636',
+          backgroundColor: 'var(--zw-controls-bg)',
           color: 'white',
           padding: '8px 12px',
           display: 'flex',
@@ -449,7 +449,7 @@ const VncViewerReact = forwardRef(({
         position: 'relative',
         height: showControls ? 'calc(100% - 50px)' : '100%', // Account for control bar when shown
         backgroundColor: '#000',
-        border: showControls ? '2px solid #dbdbdb' : 'none',
+        border: showControls ? '2px solid var(--zw-border-light)' : 'none',
         borderTop: showControls ? 'none' : 'none',
         borderRadius: showControls ? '0 0 6px 6px' : '0',
         overflow: 'hidden'
@@ -470,7 +470,7 @@ const VncViewerReact = forwardRef(({
           }}>
             <div className="has-text-centered">
               <div className="icon is-large">
-                <i className="fas fa-spinner fa-pulse fa-2x" style={{ color: '#95a5a6' }}></i>
+                <i className="fas fa-spinner fa-pulse fa-2x zw-loading-spinner"></i>
               </div>
               <p className="mt-2">Connecting to VNC...</p>
               <p className="is-size-7 has-text-grey-light mt-1">Using react-vnc • Single WebSocket</p>

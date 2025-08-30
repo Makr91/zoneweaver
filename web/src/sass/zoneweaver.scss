@@ -37,6 +37,125 @@ $yellow: #ffe600;
   @include setup.setup-theme;
 }
 
+// Custom color variables for enhanced theming support
+:root {
+  // Text colors - Light theme defaults
+  --zw-text-placeholder: #6c757d; // Medium gray for placeholders
+  --zw-loading-spinner: #6c757d;  // Medium gray for loading spinners
+  
+  // Status colors (inherit from Bulma variables)
+  --zw-status-success: var(--bulma-success);
+  --zw-status-warning: var(--bulma-warning);
+  
+  // Chart colors - Light theme
+  --zw-chart-background: #ffffff;
+  --zw-chart-border: #dee2e6;
+  
+  // Network topology node colors - Light theme
+  --zw-zone-active: #f14668;        // Zone running state
+  --zw-zone-inactive: #6b7280;      // Zone stopped state  
+  --zw-nic-active: #48c78e;         // NIC up state
+  --zw-nic-inactive: #6b7280;       // NIC down state
+  --zw-vnic-color: #ff9f43;         // VNIC nodes
+  --zw-aggregate-color: #3273dc;    // Aggregate nodes
+  --zw-etherstub-color: #ffdd57;    // Etherstub nodes
+  --zw-node-text: #374151;          // Node labels
+  
+  // UI chrome colors - Light theme
+  --zw-border-light: #dbdbdb;       // Component borders
+  --zw-controls-bg: #363636;        // VNC controls background
+}
+
+[data-theme="dark"] {
+  // Text colors for dark theme
+  --zw-text-placeholder: #ecf0f1; // Light gray for dark backgrounds
+  --zw-loading-spinner: #95a5a6;  // Muted gray for dark theme spinners
+  
+  // Chart colors - Dark theme  
+  --zw-chart-background: #1e2a3a; // Dark blue-gray background
+  --zw-chart-border: #37474f;     // Darker border for contrast
+  
+  // Network topology node colors - Dark theme (same colors work well in dark mode)
+  --zw-zone-active: #f14668;        // Zone running state
+  --zw-zone-inactive: #6b7280;      // Zone stopped state  
+  --zw-nic-active: #48c78e;         // NIC up state
+  --zw-nic-inactive: #6b7280;       // NIC down state
+  --zw-vnic-color: #ff9f43;         // VNIC nodes
+  --zw-aggregate-color: #3273dc;    // Aggregate nodes
+  --zw-etherstub-color: #ffdd57;    // Etherstub nodes
+  --zw-node-text: #f8f9fa;          // Node labels (lighter for dark theme)
+  
+  // UI chrome colors - Dark theme
+  --zw-border-light: #4a5568;       // Darker borders for dark theme
+  --zw-controls-bg: #2d3748;        // Darker VNC controls background
+}
+
+// Color utility classes using our CSS variables
+.zw-loading-spinner {
+  color: var(--zw-loading-spinner);
+}
+
+.zw-text-placeholder {
+  color: var(--zw-text-placeholder);
+}
+
+.zw-status-success {
+  color: var(--zw-status-success);
+}
+
+.zw-status-warning {
+  color: var(--zw-status-warning);
+}
+
+.zw-chart-bg {
+  background-color: var(--zw-chart-background);
+}
+
+.zw-chart-border {
+  border-color: var(--zw-chart-border);
+}
+
+// Network topology node colors for theming
+.zw-zone-active {
+  background-color: var(--zw-zone-active);
+}
+
+.zw-zone-inactive {
+  background-color: var(--zw-zone-inactive);
+}
+
+.zw-nic-active {
+  background-color: var(--zw-nic-active);
+}
+
+.zw-nic-inactive {
+  background-color: var(--zw-nic-inactive);
+}
+
+.zw-vnic-color {
+  background-color: var(--zw-vnic-color);
+}
+
+.zw-aggregate-color {
+  background-color: var(--zw-aggregate-color);
+}
+
+.zw-etherstub-color {
+  background-color: var(--zw-etherstub-color);
+}
+
+.zw-node-text {
+  color: var(--zw-node-text);
+}
+
+.zw-border-light {
+  border-color: var(--zw-border-light);
+}
+
+.zw-controls-bg {
+  background-color: var(--zw-controls-bg);
+}
+
 // Remove all box shadows globally
 * {
   --bulma-box-shadow: none !important;

@@ -78,7 +78,7 @@ ${ipAddresses?.length ? `IP: ${ipAddresses.map(ip => ip.ip_address).join(', ')}`
         type="target"
         position={Position.Top}
         style={{ 
-          background: '#ff9f43',
+          background: 'var(--zw-vnic-color)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -89,7 +89,7 @@ ${ipAddresses?.length ? `IP: ${ipAddresses.map(ip => ip.ip_address).join(', ')}`
         type="source"
         position={Position.Bottom}
         style={{ 
-          background: '#ff9f43',
+          background: 'var(--zw-vnic-color)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -130,7 +130,7 @@ ${ipAddresses?.length ? `IP: ${ipAddresses.map(ip => ip.ip_address).join(', ')}`
         top: '48px',
         fontSize: '10px',
         fontWeight: 'bold',
-        color: '#374151',
+        color: 'var(--zw-node-text)',
         textAlign: 'center',
         width: '60px',
         left: '50%',

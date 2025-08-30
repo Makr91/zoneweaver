@@ -34,7 +34,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
         width: '46px',
         height: '46px',
         borderRadius: '23px',
-        backgroundColor: isRunning ? '#f14668' : '#6b7280',
+        backgroundColor: isRunning ? 'var(--zw-zone-active)' : 'var(--zw-zone-inactive)',
         border: '2px solid white',
         display: 'flex',
         alignItems: 'center',
@@ -49,7 +49,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
         type="target"
         position={Position.Top}
         style={{ 
-          background: '#f14668',
+          background: 'var(--zw-zone-active)',
           border: '2px solid white',
           width: '8px',
           height: '8px'
@@ -59,7 +59,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
         type="source"
         position={Position.Top}
         style={{ 
-          background: '#f14668',
+          background: 'var(--zw-zone-active)',
           border: '2px solid white',
           width: '8px',
           height: '8px',
@@ -84,7 +84,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
         width: '14px',
         height: '14px',
         borderRadius: '50%',
-        backgroundColor: isRunning ? '#48c78e' : '#f14668',
+        backgroundColor: isRunning ? 'var(--zw-nic-active)' : 'var(--zw-zone-active)',
         border: '2px solid white'
       }} />
       
@@ -94,7 +94,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
         top: '48px',
         fontSize: '10px',
         fontWeight: 'bold',
-        color: '#374151',
+        color: 'var(--zw-node-text)',
         textAlign: 'center',
         width: '60px',
         left: '50%',
