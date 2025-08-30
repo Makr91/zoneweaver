@@ -141,7 +141,7 @@ const Footer = () => {
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
-          <div className="field has-addons is-grouped mr-2 mb-0 is-relative">
+          <div className="field has-addons mb-0 is-relative">
             <p className="control">
               <button className={`button is-small ${footerActiveView === 'shell' ? 'is-info' : 'is-dark'}`} onClick={handleShellButtonClick}>
                 <span className="icon">
