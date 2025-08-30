@@ -260,14 +260,13 @@ const VncActionsDropdown = ({
         {/* Keyboard Input Submenu */}
         {showKeyboardInput && (
           <div 
-            className="dropdown-menu" 
+            className="dropdown-menu has-z-index-modal-high" 
             style={{
               position: 'absolute',
               ...calculateSubmenuPosition(350),
               top: '0',
               minWidth: '250px',
-              maxWidth: '350px',
-              zIndex: 10000
+              maxWidth: '350px'
             }}
           >
             <div className="dropdown-content">
@@ -385,13 +384,12 @@ const VncActionsDropdown = ({
                 {/* Function Keys Sub-submenu */}
                 {showFunctionKeys && (
                   <div 
-                    className="dropdown-menu" 
+                    className="dropdown-menu has-z-index-modal-top" 
                     style={{
                       position: 'absolute',
                       left: '100%',
                       top: '0',
-                      minWidth: '140px',
-                      zIndex: 10001
+                      minWidth: '140px'
                     }}
                   >
                     <div className="dropdown-content">
@@ -441,14 +439,13 @@ const VncActionsDropdown = ({
         {/* Display Settings Submenu */}
         {showDisplaySettings && (
           <div 
-            className="dropdown-menu" 
+            className="dropdown-menu has-z-index-dropdown-top" 
             style={{
               position: 'absolute',
               ...calculateSubmenuPosition(350),
               top: '0',
               minWidth: '300px',
-              maxWidth: '350px',
-              zIndex: 20001
+              maxWidth: '350px'
             }}
           >
             <div className="dropdown-content">
@@ -592,14 +589,13 @@ const VncActionsDropdown = ({
         {/* Actions Submenu */}
         {showActions && (
           <div 
-            className="dropdown-menu" 
+            className="dropdown-menu has-z-index-dropdown-top" 
             style={{
               position: 'absolute',
               ...calculateSubmenuPosition(300),
               top: '0',
               minWidth: '260px',
-              maxWidth: '300px',
-              zIndex: 20001
+              maxWidth: '300px'
             }}
           >
             <div className="dropdown-content">
@@ -718,7 +714,7 @@ const VncActionsDropdown = ({
             </span>
           </button>
         </div>
-        <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 20000}}>
+        <div className="dropdown-menu has-z-index-dropdown" id="vnc-dropdown-menu" role="menu">
           {dropdownContent}
         </div>
       </div>
@@ -741,7 +737,7 @@ const VncActionsDropdown = ({
           </span>
         </span>
       </div>
-      <div className="dropdown-menu" id="vnc-dropdown-menu" role="menu" style={{zIndex: 20000}}>
+      <div className="dropdown-menu has-z-index-dropdown" id="vnc-dropdown-menu" role="menu">
         {dropdownContent}
       </div>
     </div>

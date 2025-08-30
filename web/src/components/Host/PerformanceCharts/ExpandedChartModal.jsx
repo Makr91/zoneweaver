@@ -24,9 +24,9 @@ const ExpandedChartModal = ({
   if (!expandedChart) return null;
 
   return (
-    <div className='modal is-active' style={{ zIndex: 9999 }}>
+    <div className='modal is-active has-z-index-modal'>
       <div className='modal-background' onClick={closeExpandedChart}></div>
-      <div className='modal-card' style={{ width: '95vw', height: '90vh', zIndex: 10000 }}>
+      <div className='modal-card has-z-index-modal-high' style={{ width: '95vw', height: '90vh' }}>
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon-text'>

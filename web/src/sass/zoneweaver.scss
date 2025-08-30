@@ -156,6 +156,39 @@ $yellow: #ffe600;
   background-color: var(--zw-controls-bg);
 }
 
+// Z-index utility classes for consistent layering
+.has-z-index-sidebar {
+  z-index: 1000;
+}
+
+.has-z-index-sidebar-top {
+  z-index: 1001;
+}
+
+.has-z-index-modal {
+  z-index: 9999;
+}
+
+.has-z-index-modal-high {
+  z-index: 10000;
+}
+
+.has-z-index-modal-top {
+  z-index: 10001;
+}
+
+.has-z-index-dropdown {
+  z-index: 20000;
+}
+
+.has-z-index-dropdown-top {
+  z-index: 20001;
+}
+
+.has-z-index-overlay {
+  z-index: 10;
+}
+
 // Remove all box shadows globally
 * {
   --bulma-box-shadow: none !important;

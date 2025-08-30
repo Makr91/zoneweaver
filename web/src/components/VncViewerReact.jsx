@@ -455,7 +455,7 @@ const VncViewerReact = forwardRef(({
         overflow: 'hidden'
       }}>
         {connecting && !connected && (
-          <div style={{
+          <div className="has-z-index-overlay" style={{
             position: 'absolute',
             top: 0,
             left: 0,
@@ -465,7 +465,6 @@ const VncViewerReact = forwardRef(({
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: 'rgba(44, 62, 80, 0.9)',
-            zIndex: 10,
             color: '#ecf0f1'
           }}>
             <div className="has-text-centered">

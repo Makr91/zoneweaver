@@ -146,12 +146,11 @@ const Footer = () => {
               </button>
             </p>
             {showShellDropdown && (
-              <div className="dropdown is-active" style={{ 
+              <div className="dropdown is-active has-z-index-sidebar" style={{ 
                 position: 'absolute', 
                 bottom: '100%', 
                 right: '0', 
-                minWidth: '150px',
-                zIndex: 1000
+                minWidth: '150px'
               }}>
                 <div className="dropdown-menu">
                   <div className="dropdown-content">

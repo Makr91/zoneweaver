@@ -49,7 +49,7 @@ const SidebarFooter = () => {
               )}
             </button>
           </div>
-          <div className='dropdown-menu' id='profile-management' role='menu' style={{zIndex: 1001}}>
+          <div className='dropdown-menu has-z-index-sidebar-top' id='profile-management' role='menu'>
             <div className='dropdown-content'>
               <a 
                 className='dropdown-item' 

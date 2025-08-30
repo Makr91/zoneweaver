@@ -2467,7 +2467,7 @@ const Zones = () => {
 
       {/* zlogin Console Modal */}
       {showZloginConsole && (
-        <div className='modal is-active' style={{zIndex: 9999}}>
+        <div className='modal is-active has-z-index-modal'>
           <div className='modal-background' onClick={() => setShowZloginConsole(false)}></div>
           <div 
             style={{
@@ -2733,7 +2733,7 @@ const Zones = () => {
 
       {/* VNC Console Modal */}
       {showVncConsole && (
-        <div className='modal is-active' style={{zIndex: 9999}}>
+        <div className='modal is-active has-z-index-modal'>
           <div className='modal-background' onClick={closeVncConsole}></div>
           <div 
             style={{
