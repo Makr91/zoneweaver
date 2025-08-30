@@ -48,7 +48,10 @@ const Zones = () => {
     servers: allServers, 
     currentServer, 
     currentZone, 
-    selectZone
+    selectZone,
+    // Get raw session functions for ConsoleDisplay
+    startVncSession: rawStartVncSession,
+    startZloginSession: rawStartZloginSession
   } = useServers();
 
   const { zones, runningZones, error: zonesError, getZoneStatus, loadZones: reloadZones } = useZoneManager(currentServer);
@@ -371,15 +374,9 @@ const Zones = () => {
                               handleVncShowDotChange={handleVncShowDotChange}
                               handleVncClipboardPaste={handleVncClipboardPaste}
                               handleVncPreviewPaste={handleVncPreviewPaste}
-                              // Fixed function wrappers with proper return formats
-                              startVncSession={async (hostname, port, protocol, zoneName) => {
-                                const errorMsg = await handleVncConsole(zoneName);
-                                return errorMsg ? { success: false, message: errorMsg } : { success: true };
-                              }}
-                              startZloginSession={async (hostname, port, protocol, zoneName) => {
-                                const result = await handleZloginConsole(zoneName);
-                                return result; // Already returns {success: boolean}
-                              }}
+                              // FIXED: Pass raw session functions, not modal-opening wrappers
+                              startVncSession={rawStartVncSession}
+                              startZloginSession={rawStartZloginSession}
                               waitForVncSessionReady={waitForVncSessionReady}
                               pasteTextToZone={pasteTextToZone}
                               setShowZloginConsole={setShowZloginConsole}
