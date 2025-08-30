@@ -611,22 +611,21 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
     };
 
     return (
-        <div className='modal is-active' style={{ zIndex: 10000 }}>
+        <div className='modal is-active has-z-index-10000'>
             <div className='modal-background' onClick={close}></div>
-            <div className='modal-content' style={{ width: '95vw', height: '85vh', marginTop: '6vh' }}>
-                <div className='box' style={{ height: '100%', backgroundColor: '#1e2a3a', border: '1px solid #37474f', padding: '5px' }}>
+            <div className='modal-content is-95vw is-85vh has-margin-top-6vh'>
+                <div className='box has-height-100' style={{ backgroundColor: '#1e2a3a', border: '1px solid #37474f', padding: '5px' }}>
                     <HighchartsReact
                         highcharts={Highcharts}
                         options={getExpandedChartOptions(chartId, type)}
-                        style={{ height: '100%' }}
+                        className='has-height-100'
                     />
                 </div>
             </div>
             <button
-                className='modal-close is-large'
+                className='modal-close is-large has-z-index-10001'
                 aria-label='close'
                 onClick={close}
-                style={{ zIndex: 10001 }}
             ></button>
         </div>
     );

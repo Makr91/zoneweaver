@@ -47,10 +47,9 @@ const CpuChart = ({ cpuChartData, cpuSeriesVisibility, setCpuSeriesVisibility, e
         </header>
         <div className='card-content p-2'>
           {cpuChartData.overall.length > 0 ? (
-            <div style={{ position: 'relative' }}>
+            <div className='is-relative'>
               <button
-                className='button is-small is-ghost'
-                style={{ position: 'absolute', top: '5px', right: '5px', zIndex: 1000, backgroundColor: 'rgba(0,0,0,0.7)', border: 'none' }}
+                className='button is-small is-ghost is-chart-expand-button'
                 onClick={() => expandChart('cpu', 'cpu')}
                 title="Expand chart to full size"
               >
