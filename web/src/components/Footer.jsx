@@ -186,7 +186,7 @@ const Footer = () => {
         handle={ResizeHandle()}
       >
         <div className='log-console has-background-black has-text-white is-fullheight is-flex is-flex-direction-column'>
-          <div className="is-flex-grow-1 is-clipped is-fullwidth">
+          <div className="is-flex-grow-1 is-fullwidth">
             {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
           </div>
         </div>

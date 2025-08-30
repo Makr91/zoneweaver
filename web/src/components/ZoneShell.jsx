@@ -16,8 +16,21 @@ const ZoneShell = React.memo(({ zoneName, readOnly = false, context = 'preview',
   }, [attachTerminal, zoneName, readOnly, context]);
 
   return (
-    <div className={`is-fullheight is-fullwidth has-box-sizing-border-box ${className || ''}`} style={style}>
-      <div ref={terminalRef} className="is-fullheight is-fullwidth" />
+    <div 
+      className={`has-box-sizing-border-box ${className || ''}`} 
+      style={{
+        width: '100%',
+        height: '100%',
+        ...style
+      }}
+    >
+      <div 
+        ref={terminalRef} 
+        style={{
+          width: '100%',
+          height: '100%'
+        }}
+      />
     </div>
   );
 });

@@ -987,13 +987,9 @@ button {
   margin-top: 6px !important;
 }
 
-.has-margin-top-175rem {
-  margin-top: 1.75rem !important;
-}
-
-.has-padding-bottom-15rem {
-  padding-bottom: 1.5rem !important;
-}
+// Remove problematic terminal spacing helpers (moved back to inline)
+// .has-margin-top-175rem - REMOVED (causing terminal layout issues)
+// .has-padding-bottom-15rem - REMOVED (causing terminal layout issues)
 
 // Box Sizing helper
 .has-box-sizing-border-box {
