@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useServers } from '../contexts/ServerContext';
+import { useZoneTerminal } from '../contexts/ZoneTerminalContext';
 
 /**
  * Custom hook to manage fetching and state for the details of a specific zone.
@@ -23,6 +24,8 @@ export const useZoneDetails = (currentServer, currentZone) => {
     getStoragePools,
     getStorageDatasets 
   } = useServers();
+
+  const { initializeSessionFromExisting } = useZoneTerminal();
 
   const loadMonitoringData = useCallback(async (server) => {
     if (!server) return;
@@ -126,6 +129,10 @@ export const useZoneDetails = (currentServer, currentZone) => {
               console.log(`✅ ZLOGIN AUTO-POLL: Found existing zlogin session for ${zoneName}`);
               zoneData.zlogin_session = activeZoneSession;
               zoneData.active_zlogin_session = true;
+              
+              // Initialize ZoneTerminalContext with the existing session
+              console.log(`🔄 ZLOGIN AUTO-INIT: Initializing ZoneTerminalContext for existing session`);
+              initializeSessionFromExisting(server, zoneName, activeZoneSession);
             } else {
               console.log(`❌ ZLOGIN AUTO-POLL: No existing zlogin session for ${zoneName}`);
               zoneData.zlogin_session = null;
