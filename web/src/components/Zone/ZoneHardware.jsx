@@ -81,13 +81,13 @@ const ZoneHardware = ({ zoneDetails }) => {
             <tr>
               <td className="px-3 py-2"><strong>VNC Console</strong></td>
               <td className="px-3 py-2">
-                <span className={`has-text-weight-semibold ${zoneDetails.active_vnc_session ? 'has-text-success' : 'has-text-danger'}`}>
-                  {zoneDetails.active_vnc_session ? 'Active' : 'Inactive'}
+                <span className={`has-text-weight-semibold ${zoneDetails.vnc_session_info ? 'has-text-success' : 'has-text-danger'}`}>
+                  {zoneDetails.vnc_session_info ? 'Active' : 'Inactive'}
                 </span>
               </td>
               <td className="px-3 py-2"><strong>VNC Port</strong></td>
               <td className="px-3 py-2">
-                {zoneDetails.active_vnc_session && zoneDetails.vnc_session_info?.web_port ? (
+                {zoneDetails.vnc_session_info?.web_port ? (
                   <span className='has-text-grey is-family-monospace'>
                     {zoneDetails.vnc_session_info.web_port}
                   </span>
