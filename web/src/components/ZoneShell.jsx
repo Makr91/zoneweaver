@@ -17,19 +17,12 @@ const ZoneShell = React.memo(({ zoneName, readOnly = false, context = 'preview',
 
   return (
     <div 
-      className={`has-box-sizing-border-box ${className || ''}`} 
-      style={{
-        width: '100%',
-        height: '100%',
-        ...style
-      }}
+      className={`has-box-sizing-border-box zw-zone-shell-container ${className || ''}`} 
+      style={style}
     >
       <div 
         ref={terminalRef} 
-        style={{
-          width: '100%',
-          height: '100%'
-        }}
+        className="zw-zone-shell-terminal"
       />
     </div>
   );

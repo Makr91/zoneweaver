@@ -6,14 +6,13 @@ const VncActionsDropdown = ({
   onFullScreen, 
   onNewTab,
   onKillSession,
-  onToggleViewOnly, // Kept for backward compatibility
+  onToggleViewOnly, // Kept for backward compatibility: why though? just clutter otherwise right?
   onToggleReadOnly,
-  isViewOnly, // Kept for backward compatibility
+  isViewOnly, // Kept for backward compatibility: why? just clutter otherwise right?
   isReadOnly,
   isAdmin = false,
   className = '',
   variant = 'default', // 'default' or 'button'
-  // New VNC feature props
   quality = 6,
   compression = 2,
   resize = 'scale',
@@ -234,12 +233,7 @@ const VncActionsDropdown = ({
   const actualToggleHandler = onToggleReadOnly || onToggleViewOnly;
 
   const dropdownContent = (
-    <div 
-      className="dropdown-content"
-      style={{
-        minWidth: '250px'
-      }}
-    >
+    <div className="dropdown-content zw-dropdown-content">
       
       {/* Keyboard & Input Submenu */}
       <div 
@@ -260,13 +254,9 @@ const VncActionsDropdown = ({
         {/* Keyboard Input Submenu */}
         {showKeyboardInput && (
           <div 
-            className="dropdown-menu has-z-index-modal-high" 
+            className="dropdown-menu has-z-index-modal-high zw-dropdown-submenu-right" 
             style={{
-              position: 'absolute',
-              ...calculateSubmenuPosition(350),
-              top: '0',
-              minWidth: '250px',
-              maxWidth: '350px'
+              ...calculateSubmenuPosition(350)
             }}
           >
             <div className="dropdown-content">
@@ -384,13 +374,7 @@ const VncActionsDropdown = ({
                 {/* Function Keys Sub-submenu */}
                 {showFunctionKeys && (
                   <div 
-                    className="dropdown-menu has-z-index-modal-top" 
-                    style={{
-                      position: 'absolute',
-                      left: '100%',
-                      top: '0',
-                      minWidth: '140px'
-                    }}
+                    className="dropdown-menu has-z-index-modal-top zw-dropdown-function-keys"
                   >
                     <div className="dropdown-content">
                       {[...Array(12)].map((_, i) => {
@@ -439,13 +423,9 @@ const VncActionsDropdown = ({
         {/* Display Settings Submenu */}
         {showDisplaySettings && (
           <div 
-            className="dropdown-menu has-z-index-dropdown-top" 
+            className="dropdown-menu has-z-index-dropdown-top zw-dropdown-settings" 
             style={{
-              position: 'absolute',
-              ...calculateSubmenuPosition(350),
-              top: '0',
-              minWidth: '300px',
-              maxWidth: '350px'
+              ...calculateSubmenuPosition(350)
             }}
           >
             <div className="dropdown-content">
@@ -481,7 +461,7 @@ const VncActionsDropdown = ({
                   <label className="label is-small">Quality Level: {quality}</label>
                   <div className="control mt-5 mb-5">
                     <input 
-                      className="slider is-small is-fullwidth is-primary"
+                      className="zw-range-slider-primary"
                       type="range"
                       min="0"
                       max="9"
@@ -493,14 +473,7 @@ const VncActionsDropdown = ({
                       }}
                       onClick={(e) => e.stopPropagation()}
                       style={{
-                        width: '100%',
-                        accentColor: '#007bff',
-                        background: `linear-gradient(to right, #007bff 0%, #007bff ${(quality/9)*100}%, #ccc ${(quality/9)*100}%, #ccc 100%)`,
-                        height: '8px',
-                        borderRadius: '4px',
-                        outline: 'none',
-                        WebkitAppearance: 'none',
-                        appearance: 'none'
+                        background: `linear-gradient(to right, #007bff 0%, #007bff ${(quality/9)*100}%, #ccc ${(quality/9)*100}%, #ccc 100%)`
                       }}
                     />
                   </div>
@@ -516,7 +489,7 @@ const VncActionsDropdown = ({
                   <label className="label is-small" >Compression Level: {compression}</label>
                   <div className="control mt-5 mb-5">
                     <input 
-                      className="slider is-small is-fullwidth is-info"
+                      className="zw-range-slider-info"
                       type="range"
                       min="0"
                       max="9"
@@ -528,14 +501,7 @@ const VncActionsDropdown = ({
                       }}
                       onClick={(e) => e.stopPropagation()}
                       style={{
-                        width: '100%',
-                        accentColor: '#17a2b8',
-                        background: `linear-gradient(to right, #17a2b8 0%, #17a2b8 ${(compression/9)*100}%, #ccc ${(compression/9)*100}%, #ccc 100%)`,
-                        height: '8px',
-                        borderRadius: '4px',
-                        outline: 'none',
-                        WebkitAppearance: 'none',
-                        appearance: 'none'
+                        background: `linear-gradient(to right, #17a2b8 0%, #17a2b8 ${(compression/9)*100}%, #ccc ${(compression/9)*100}%, #ccc 100%)`
                       }}
                     />
                   </div>
@@ -589,13 +555,9 @@ const VncActionsDropdown = ({
         {/* Actions Submenu */}
         {showActions && (
           <div 
-            className="dropdown-menu has-z-index-dropdown-top" 
+            className="dropdown-menu has-z-index-dropdown-top zw-dropdown-actions" 
             style={{
-              position: 'absolute',
-              ...calculateSubmenuPosition(300),
-              top: '0',
-              minWidth: '260px',
-              maxWidth: '300px'
+              ...calculateSubmenuPosition(300)
             }}
           >
             <div className="dropdown-content">

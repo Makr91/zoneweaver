@@ -388,16 +388,7 @@ const VncViewerReact = forwardRef(({
     <div className={`vnc-viewer-react ${className}`} style={style}>
       {/* Conditional VNC Control Bar */}
       {showControls && (
-        <div className="vnc-controls" style={{
-          backgroundColor: 'var(--zw-controls-bg)',
-          color: 'white',
-          padding: '8px 12px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderRadius: '6px 6px 0 0',
-          fontSize: '0.875rem'
-        }}>
+        <div className="vnc-controls zw-vnc-controls">
           <div className="vnc-status">
             <span className="icon-text">
               <span className="icon is-small">
@@ -443,28 +434,9 @@ const VncViewerReact = forwardRef(({
       )}
       
       {/* VNC Display Area */}
-      <div style={{
-        position: 'relative',
-        height: showControls ? 'calc(100% - 50px)' : '100%', // Account for control bar when shown
-        backgroundColor: '#000',
-        border: showControls ? '2px solid var(--zw-border-light)' : 'none',
-        borderTop: showControls ? 'none' : 'none',
-        borderRadius: showControls ? '0 0 6px 6px' : '0',
-        overflow: 'hidden'
-      }}>
+      <div className={showControls ? 'zw-vnc-display-with-controls' : 'zw-vnc-display-no-controls'}>
         {connecting && !connected && (
-          <div className="has-z-index-overlay" style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(44, 62, 80, 0.9)',
-            color: '#ecf0f1'
-          }}>
+          <div className="has-z-index-overlay zw-vnc-connecting-overlay">
             <div className="has-text-centered">
               <div className="icon is-large">
                 <i className="fas fa-spinner fa-pulse fa-2x zw-loading-spinner"></i>
@@ -488,11 +460,7 @@ const VncViewerReact = forwardRef(({
           showDotCursor={showDot}
           retryDuration={5000}
           debug={false} // Set to true for debugging
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'block'
-          }}
+          className="zw-vnc-screen"
           onConnect={handleVncConnect}
           onDisconnect={handleVncDisconnect}
           onCredentialsRequired={handleCredentialsRequired}
