@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Helmet } from '@dr.pogodin/react-helmet';
 import axios from 'axios';
@@ -254,44 +254,49 @@ const Accounts = () => {
   };
 
   /**
-   * Check if current user can modify organization
+   * Pre-calculate organization permissions to prevent excessive re-renders
+   * Uses useMemo to cache the results until organizations or user changes
+   */
+  const orgPermissions = useMemo(() => {
+    const permissions = {};
+    
+    organizations.forEach(org => {
+      // Super admin can modify any organization except their own
+      if (user.role === 'super-admin') {
+        // Use organizationId from user object (fixed backend response)
+        const userOrgId = user.organizationId || user.organization_id;
+        
+        // Convert both to numbers for comparison to avoid type mismatch
+        const normalizedUserOrgId = userOrgId ? parseInt(userOrgId) : null;
+        const normalizedOrgId = parseInt(org.id);
+        
+        // If user has an organization, prevent them from modifying it
+        if (normalizedUserOrgId && normalizedUserOrgId === normalizedOrgId) {
+          permissions[org.id] = false;
+        }
+        // Special case: If super admin has no organization (undefined), 
+        // prevent them from modifying the "Default Organization" (typically org ID 1)
+        else if (!normalizedUserOrgId && org.name === 'Default Organization') {
+          permissions[org.id] = false;
+        }
+        else {
+          permissions[org.id] = true;
+        }
+      } else {
+        permissions[org.id] = false;
+      }
+    });
+    
+    return permissions;
+  }, [organizations, user]);
+
+  /**
+   * Check if current user can modify organization (optimized)
    * @param {object} org - Organization to check
    * @returns {boolean} Whether current user can modify organization
    */
   const canModifyOrg = (org) => {
-    // Super admin can modify any organization except their own
-    if (user.role === 'super-admin') {
-      // Use organizationId from user object (fixed backend response)
-      const userOrgId = user.organizationId || user.organization_id;
-      
-      console.log('canModifyOrg DEBUG:', {
-        userOrgId: userOrgId,
-        userOrgIdType: typeof userOrgId,
-        orgId: org.id,
-        orgIdType: typeof org.id,
-        orgName: org.name,
-        userObject: user
-      });
-      
-      // Convert both to numbers for comparison to avoid type mismatch
-      const normalizedUserOrgId = userOrgId ? parseInt(userOrgId) : null;
-      const normalizedOrgId = parseInt(org.id);
-      
-      // If user has an organization, prevent them from modifying it
-      if (normalizedUserOrgId && normalizedUserOrgId === normalizedOrgId) {
-        return false;
-      }
-      
-      // Special case: If super admin has no organization (undefined), 
-      // prevent them from modifying the "Default Organization" (typically org ID 1)
-      // This prevents the system's first super admin from deleting the default org
-      if (!normalizedUserOrgId && org.name === 'Default Organization') {
-        return false;
-      }
-      
-      return true;
-    }
-    return false;
+    return orgPermissions[org.id] || false;
   };
 
   /**
