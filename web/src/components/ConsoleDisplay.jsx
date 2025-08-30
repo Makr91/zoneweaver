@@ -51,13 +51,13 @@ const ConsoleDisplay = ({
     hasVnc,
     hasZlogin,
     activeConsoleType,
-    zloginSessionId: hasZlogin?.id,
+    zloginSessionId: zoneDetails.zlogin_session?.id,
     vncSessionInfo: hasVnc ? 'present' : 'absent',
     vncSessionInfoExists: !!zoneDetails.vnc_session_info,
     timestamp: Date.now()
   });
 
-  // FIXED: New logic according to user requirements
+  // FIXED: Clean logic according to user requirements
   if (hasZlogin && !hasVnc) {
     // Only zlogin active → Show zlogin
     console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console (only zlogin active)`);
@@ -90,7 +90,7 @@ const ConsoleDisplay = ({
             <ZloginActionsDropdown
               variant="button"
               onToggleReadOnly={() => {
-                console.log(`Toggling preview read-only mode from ${previewReadOnly} to ${!previewReadOnly}`);
+                console.log(`🔧 ZLOGIN READ-ONLY: Toggling from ${previewReadOnly} to ${!previewReadOnly}`);
                 setPreviewReadOnly(!previewReadOnly);
               }}
               onNewSession={() => handleZloginConsole(selectedZone)}
@@ -104,7 +104,6 @@ const ConsoleDisplay = ({
                     zlogin_session: null,
                     active_zlogin_session: false
                   }));
-                  console.log(`✅ UI: zlogin session state cleared for ${selectedZone}`);
                 } catch (error) {
                   console.error('Error killing zlogin session:', error);
                   setError('Error killing zlogin session');
@@ -131,7 +130,6 @@ const ConsoleDisplay = ({
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
               className="has-shadow-medium"
             />
-            {/* FIXED: Preview clipboard button that actually works */}
             <button 
               className='button is-small is-info has-box-shadow'
               onClick={async () => {
@@ -140,11 +138,9 @@ const ConsoleDisplay = ({
                   if (text && currentServer && selectedZone) {
                     console.log(`📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`);
                     await pasteTextToZone(currentServer, selectedZone, text);
-                  } else {
-                    console.warn('📋 ZLOGIN PREVIEW PASTE: No text or session unavailable');
                   }
                 } catch (error) {
-                  console.error('📋 ZLOGIN PREVIEW PASTE: Clipboard access error:', error);
+                  console.error('📋 ZLOGIN PREVIEW PASTE: Error:', error);
                 }
               }}
               title="Paste from Browser Clipboard"
@@ -157,10 +153,8 @@ const ConsoleDisplay = ({
               className='button is-small is-primary'
               onClick={() => {
                 if (zoneDetails.zlogin_session) {
-                  // Session exists - just open modal (don't create new session!)
                   setShowZloginConsole(true);
                 } else {
-                  // No session - start new one then open modal
                   handleZloginConsole(selectedZone);
                 }
               }}
@@ -171,12 +165,10 @@ const ConsoleDisplay = ({
                 <i className='fas fa-expand'></i>
               </span>
             </button>
-            {/* Start/Switch to VNC button */}
             <button 
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
-                // Start VNC session for preview (not modal)
-                console.log(`🚀 START VNC: Starting VNC session for preview from zlogin header`);
+                console.log(`🚀 START VNC: Starting VNC for preview from zlogin`);
                 try {
                   setLoadingVnc(true);
                   const result = await startVncSession(
@@ -187,33 +179,22 @@ const ConsoleDisplay = ({
                   );
                   
                   if (result.success) {
-                    console.log(`✅ START VNC: VNC start API succeeded, waiting for readiness...`);
-                    
                     const readinessResult = await waitForVncSessionReady(selectedZone);
-                    
-                    if (!readinessResult.ready) {
-                      console.error(`❌ START VNC: Session not ready: ${readinessResult.reason}`);
-                      setError(`VNC session started but not ready: ${readinessResult.reason}`);
-                      return;
+                    if (readinessResult.ready) {
+                      setZoneDetails(prev => ({
+                        ...prev,
+                        active_vnc_session: true,
+                        vnc_session_info: {
+                          ...result.data,
+                          ...readinessResult.sessionInfo
+                        }
+                      }));
+                      setActiveConsoleType('vnc');
                     }
-                    
-                    console.log(`✅ START VNC: VNC session ready, switching to VNC preview`);
-                    setZoneDetails(prev => ({
-                      ...prev,
-                      active_vnc_session: true,
-                      vnc_session_info: {
-                        ...result.data,
-                        ...readinessResult.sessionInfo
-                      }
-                    }));
-                    setActiveConsoleType('vnc');
-                  } else {
-                    console.error(`❌ START VNC: Failed to start VNC session:`, result.message);
-                    setError(`Failed to start VNC console: ${result.message}`);
                   }
                 } catch (error) {
-                  console.error('💥 START VNC: Error starting VNC session:', error);
-                  setError(`Error starting VNC console`);
+                  console.error('Error starting VNC:', error);
+                  setError('Error starting VNC console');
                 } finally {
                   setLoadingVnc(false);
                 }
@@ -250,7 +231,6 @@ const ConsoleDisplay = ({
             }}
           />
           
-          {/* Session Status Indicator */}
           <div 
             style={{
               position: 'absolute',
@@ -308,7 +288,7 @@ const ConsoleDisplay = ({
               vncRef={previewVncRef}
               variant="button"
               onToggleReadOnly={() => {
-                console.log(`Toggling preview VNC read-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
+                console.log(`🔧 VNC READ-ONLY: Toggling from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
                 setPreviewVncViewOnly(!previewVncViewOnly);
               }}
               onScreenshot={() => {
@@ -341,7 +321,6 @@ const ConsoleDisplay = ({
               onClipboardPaste={handleVncClipboardPaste}
               className="has-shadow-medium"
             />
-            {/* FIXED: Preview clipboard button that actually works */}
             <button 
               className='button is-small is-info has-shadow-medium'
               onClick={async () => {
@@ -350,11 +329,9 @@ const ConsoleDisplay = ({
                   if (text && previewVncRef.current?.clipboardPaste) {
                     console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
                     previewVncRef.current.clipboardPaste(text);
-                  } else {
-                    console.warn('📋 VNC PREVIEW PASTE: No text or VNC ref unavailable');
                   }
                 } catch (error) {
-                  console.error('📋 VNC PREVIEW PASTE: Clipboard access error:', error);
+                  console.error('📋 VNC PREVIEW PASTE: Error:', error);
                 }
               }}
               title="Paste from Browser Clipboard"
@@ -373,31 +350,24 @@ const ConsoleDisplay = ({
                 <i className='fas fa-expand'></i>
               </span>
             </button>
-            {/* Start/Switch to zlogin button */}
             <button 
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
-                // Start zlogin session for preview (not modal)
-                console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
+                console.log(`🚀 START ZLOGIN: Starting zlogin for preview from VNC`);
                 try {
                   setLoading(true);
                   const result = await startZloginSessionExplicitly(currentServer, selectedZone);
-                  
                   if (result) {
-                    console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
                     setZoneDetails(prev => ({
                       ...prev,
                       zlogin_session: result,
                       active_zlogin_session: true
                     }));
                     setActiveConsoleType('zlogin');
-                  } else {
-                    console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
-                    setError(`Failed to start zlogin console`);
                   }
                 } catch (error) {
-                  console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
-                  setError(`Error starting zlogin console`);
+                  console.error('Error starting zlogin:', error);
+                  setError('Error starting zlogin console');
                 } finally {
                   setLoading(false);
                 }
@@ -412,191 +382,7 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* zlogin Console Content - FIXED: This should be zlogin, not VNC! */}
-        <div 
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: 'calc(100% - 60px)',
-            backgroundColor: '#000',
-            overflow: 'visible'
-          }}
-        >
-          <ZoneShell 
-            key={`preview-zlogin-${selectedZone}-${previewReconnectKey}-${previewReadOnly ? 'ro' : 'rw'}`}
-            zoneName={selectedZone} 
-            readOnly={previewReadOnly}
-            context="preview"
-            style={{
-              height: '100%',
-              width: '100%',
-              fontSize: '10px'
-            }}
-          />
-          
-          {/* Session Status Indicator */}
-          <div 
-            style={{
-              position: 'absolute',
-              top: '8px',
-              left: '8px',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '3px',
-              fontSize: '0.7rem',
-              fontWeight: 'bold'
-            }}
-          >
-            <span className='icon is-small has-margin-right-3px'>
-              <i className='fas fa-circle' style={{
-                color: zoneDetails.zlogin_session ? 'var(--zw-nic-active)' : 'var(--zw-zone-inactive)',
-                fontSize: '0.4rem'
-              }}></i>
-            </span>
-            {zoneDetails.zlogin_session ? 'Live' : 'Offline'}
-          </div>
-        </div>
-      </div>
-    );
-  } else if (hasVnc && !hasZlogin) {
-    // Only VNC active → Show VNC
-    console.log(`🔍 CONSOLE DISPLAY: Showing VNC console (only VNC active)`);
-    return (
-      <div 
-        style={{
-          border: '2px solid var(--zw-border-light)',
-          borderRadius: '6px',
-          overflow: 'visible',
-          backgroundColor: '#000',
-          height: 'calc(100vh - 250px - 10vh)',
-          minHeight: '450px'
-        }}
-      >
-        {/* VNC Console Header */}
-        <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
-          <div>
-            <h6 className='title is-7 has-text-white mb-1'>Active VNC Session</h6>
-            {zoneDetails.vnc_session_info && zoneDetails.vnc_session_info.web_port && (
-              <p className='is-size-7 has-text-white-ter mb-0'>
-                Port: {zoneDetails.vnc_session_info.web_port} | 
-                Started: {zoneDetails.vnc_session_info.created_at ? 
-                  new Date(zoneDetails.vnc_session_info.created_at).toLocaleString() : 
-                  'Unknown'
-                }
-              </p>
-            )}
-          </div>
-          <div className='buttons has-margin-0'>
-            <VncActionsDropdown
-              vncRef={previewVncRef}
-              variant="button"
-              onToggleReadOnly={() => {
-                console.log(`Toggling preview VNC read-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
-                setPreviewVncViewOnly(!previewVncViewOnly);
-              }}
-              onScreenshot={() => {
-                const vncContainer = document.querySelector('.vnc-viewer-react canvas');
-                if (vncContainer) {
-                  vncContainer.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `vnc-screenshot-${selectedZone}-${Date.now()}.png`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                  });
-                }
-              }}
-              onNewTab={() => handleVncConsole(selectedZone, true)}
-              onKillSession={() => handleKillVncSession(selectedZone)}
-              isReadOnly={previewVncViewOnly}
-              isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-              quality={vncSettings.quality}
-              compression={vncSettings.compression}
-              resize={vncSettings.resize}
-              showDot={vncSettings.showDot}
-              onQualityChange={handleVncQualityChange}
-              onCompressionChange={handleVncCompressionChange}
-              onResizeChange={handleVncResizeChange}
-              onShowDotChange={handleVncShowDotChange}
-              onClipboardPaste={handleVncClipboardPaste}
-              className="has-shadow-medium"
-            />
-            {/* FIXED: Preview clipboard button that actually works */}
-            <button 
-              className='button is-small is-info has-shadow-medium'
-              onClick={async () => {
-                try {
-                  const text = await navigator.clipboard.readText();
-                  if (text && previewVncRef.current?.clipboardPaste) {
-                    console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
-                    previewVncRef.current.clipboardPaste(text);
-                  } else {
-                    console.warn('📋 VNC PREVIEW PASTE: No text or VNC ref unavailable');
-                  }
-                } catch (error) {
-                  console.error('📋 VNC PREVIEW PASTE: Clipboard access error:', error);
-                }
-              }}
-              title="Paste from Browser Clipboard"
-            >
-              <span className='icon is-small'>
-                <i className='fas fa-paste'></i>
-              </span>
-            </button>
-            <button 
-              className='button is-small is-primary'
-              onClick={() => handleVncConsole(selectedZone)}
-              disabled={loading || loadingVnc}
-              title="Expand VNC Console"
-            >
-              <span className='icon is-small'>
-                <i className='fas fa-expand'></i>
-              </span>
-            </button>
-            {/* Start/Switch to zlogin button */}
-            <button 
-              className='button is-small is-warning has-shadow-medium'
-              onClick={async () => {
-                // Start zlogin session for preview (not modal)
-                console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
-                try {
-                  setLoading(true);
-                  const result = await startZloginSessionExplicitly(currentServer, selectedZone);
-                  
-                  if (result) {
-                    console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
-                    setZoneDetails(prev => ({
-                      ...prev,
-                      zlogin_session: result,
-                      active_zlogin_session: true
-                    }));
-                    setActiveConsoleType('zlogin');
-                  } else {
-                    console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
-                    setError(`Failed to start zlogin console`);
-                  }
-                } catch (error) {
-                  console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
-                  setError(`Error starting zlogin console`);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-              title="Start zlogin Console"
-            >
-              <span className='icon is-small'>
-                <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* VNC Console Content - CRITICAL FIX: Screenshot fallback when session info missing */}
+        {/* VNC Console Content */}
         <div 
           style={{
             position: 'relative',
@@ -607,7 +393,6 @@ const ConsoleDisplay = ({
           }}
         >
           {zoneDetails.vnc_session_info ? (
-            // Active session - show live preview with toggleable view-only mode
             <VncViewerReact
               ref={previewVncRef}
               key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
@@ -629,7 +414,6 @@ const ConsoleDisplay = ({
               style={{ width: '100%', height: '100%' }}
             />
           ) : zoneDetails.configuration?.zonepath ? (
-            // FIXED: No session details but VNC active - show static screenshot (like original)
             <img
               src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
               alt={`Screenshot of ${selectedZone}`}
@@ -640,12 +424,10 @@ const ConsoleDisplay = ({
                 backgroundColor: '#2c3e50'
               }}
               onError={(e) => {
-                // Fallback to generic placeholder on error
                 e.target.style.display = 'none';
                 e.target.nextElementSibling.style.display = 'flex';
               }}
               onLoad={(e) => {
-                // Hide placeholder when image loads successfully
                 if (e.target.nextElementSibling) {
                   e.target.nextElementSibling.style.display = 'none';
                 }
@@ -653,7 +435,6 @@ const ConsoleDisplay = ({
             />
           ) : null}
           
-          {/* Fallback placeholder - only show when no screenshot */}
           {!(zoneDetails.vnc_session_info?.proxy_url || zoneDetails.vnc_session_info?.console_url) && (
             <div 
               style={{
@@ -727,7 +508,7 @@ const ConsoleDisplay = ({
               vncRef={previewVncRef}
               variant="button"
               onToggleReadOnly={() => {
-                console.log(`Toggling preview VNC read-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
+                console.log(`🔧 VNC READ-ONLY: Toggling from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
                 setPreviewVncViewOnly(!previewVncViewOnly);
               }}
               onScreenshot={() => {
@@ -760,7 +541,6 @@ const ConsoleDisplay = ({
               onClipboardPaste={handleVncClipboardPaste}
               className="has-shadow-medium"
             />
-            {/* FIXED: Preview clipboard button that actually works */}
             <button 
               className='button is-small is-info has-shadow-medium'
               onClick={async () => {
@@ -769,11 +549,9 @@ const ConsoleDisplay = ({
                   if (text && previewVncRef.current?.clipboardPaste) {
                     console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
                     previewVncRef.current.clipboardPaste(text);
-                  } else {
-                    console.warn('📋 VNC PREVIEW PASTE: No text or VNC ref unavailable');
                   }
                 } catch (error) {
-                  console.error('📋 VNC PREVIEW PASTE: Clipboard access error:', error);
+                  console.error('📋 VNC PREVIEW PASTE: Error:', error);
                 }
               }}
               title="Paste from Browser Clipboard"
@@ -792,31 +570,24 @@ const ConsoleDisplay = ({
                 <i className='fas fa-expand'></i>
               </span>
             </button>
-            {/* Start/Switch to zlogin button */}
             <button 
               className='button is-small is-warning has-shadow-medium'
               onClick={async () => {
-                // Start zlogin session for preview (not modal)
-                console.log(`🚀 START ZLOGIN: Starting zlogin session for preview from VNC header`);
+                console.log(`🚀 START ZLOGIN: Starting zlogin for preview from VNC`);
                 try {
                   setLoading(true);
                   const result = await startZloginSessionExplicitly(currentServer, selectedZone);
-                  
                   if (result) {
-                    console.log(`✅ START ZLOGIN: zlogin session started, switching to zlogin preview`);
                     setZoneDetails(prev => ({
                       ...prev,
                       zlogin_session: result,
                       active_zlogin_session: true
                     }));
                     setActiveConsoleType('zlogin');
-                  } else {
-                    console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
-                    setError(`Failed to start zlogin console`);
                   }
                 } catch (error) {
-                  console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
-                  setError(`Error starting zlogin console`);
+                  console.error('Error starting zlogin:', error);
+                  setError('Error starting zlogin console');
                 } finally {
                   setLoading(false);
                 }
@@ -831,7 +602,7 @@ const ConsoleDisplay = ({
           </div>
         </div>
 
-        {/* VNC Console Content - CRITICAL FIX: Screenshot fallback when session info missing */}
+        {/* VNC Console Content */}
         <div 
           style={{
             position: 'relative',
@@ -842,7 +613,6 @@ const ConsoleDisplay = ({
           }}
         >
           {zoneDetails.vnc_session_info ? (
-            // Active session - show live preview with toggleable view-only mode
             <VncViewerReact
               ref={previewVncRef}
               key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
@@ -864,7 +634,6 @@ const ConsoleDisplay = ({
               style={{ width: '100%', height: '100%' }}
             />
           ) : zoneDetails.configuration?.zonepath ? (
-            // FIXED: No session details but VNC active - show static screenshot (like original)
             <img
               src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
               alt={`Screenshot of ${selectedZone}`}
@@ -875,12 +644,10 @@ const ConsoleDisplay = ({
                 backgroundColor: '#2c3e50'
               }}
               onError={(e) => {
-                // Fallback to generic placeholder on error
                 e.target.style.display = 'none';
                 e.target.nextElementSibling.style.display = 'flex';
               }}
               onLoad={(e) => {
-                // Hide placeholder when image loads successfully
                 if (e.target.nextElementSibling) {
                   e.target.nextElementSibling.style.display = 'none';
                 }
@@ -888,7 +655,6 @@ const ConsoleDisplay = ({
             />
           ) : null}
           
-          {/* Fallback placeholder - only show when no screenshot */}
           {!(zoneDetails.vnc_session_info?.proxy_url || zoneDetails.vnc_session_info?.console_url) && (
             <div 
               style={{
@@ -930,7 +696,7 @@ const ConsoleDisplay = ({
       </div>
     );
   } else if (hasVnc && hasZlogin) {
-    // Both active → Show VNC by default, allow switching via activeConsoleType
+    // Both active → Show based on activeConsoleType
     console.log(`🔍 CONSOLE DISPLAY: Both sessions active, showing ${activeConsoleType === 'zlogin' ? 'zlogin' : 'VNC'}`);
     
     if (activeConsoleType === 'zlogin') {
@@ -964,7 +730,7 @@ const ConsoleDisplay = ({
               <ZloginActionsDropdown
                 variant="button"
                 onToggleReadOnly={() => {
-                  console.log(`Toggling preview read-only mode from ${previewReadOnly} to ${!previewReadOnly}`);
+                  console.log(`🔧 ZLOGIN READ-ONLY: Toggling from ${previewReadOnly} to ${!previewReadOnly}`);
                   setPreviewReadOnly(!previewReadOnly);
                 }}
                 onNewSession={() => handleZloginConsole(selectedZone)}
@@ -978,7 +744,6 @@ const ConsoleDisplay = ({
                       zlogin_session: null,
                       active_zlogin_session: false
                     }));
-                    console.log(`✅ UI: zlogin session state cleared for ${selectedZone}`);
                   } catch (error) {
                     console.error('Error killing zlogin session:', error);
                     setError('Error killing zlogin session');
@@ -1005,20 +770,16 @@ const ConsoleDisplay = ({
                 isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
                 className="has-shadow-medium"
               />
-              {/* FIXED: Preview clipboard button that actually works */}
               <button 
                 className='button is-small is-info has-box-shadow'
                 onClick={async () => {
                   try {
                     const text = await navigator.clipboard.readText();
                     if (text && currentServer && selectedZone) {
-                      console.log(`📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`);
                       await pasteTextToZone(currentServer, selectedZone, text);
-                    } else {
-                      console.warn('📋 ZLOGIN PREVIEW PASTE: No text or session unavailable');
                     }
                   } catch (error) {
-                    console.error('📋 ZLOGIN PREVIEW PASTE: Clipboard access error:', error);
+                    console.error('📋 ZLOGIN PREVIEW PASTE: Error:', error);
                   }
                 }}
                 title="Paste from Browser Clipboard"
@@ -1031,10 +792,8 @@ const ConsoleDisplay = ({
                 className='button is-small is-primary'
                 onClick={() => {
                   if (zoneDetails.zlogin_session) {
-                    // Session exists - just open modal (don't create new session!)
                     setShowZloginConsole(true);
                   } else {
-                    // No session - start new one then open modal
                     handleZloginConsole(selectedZone);
                   }
                 }}
@@ -1045,11 +804,9 @@ const ConsoleDisplay = ({
                   <i className='fas fa-expand'></i>
                 </span>
               </button>
-              {/* Switch to VNC button */}
               <button 
                 className='button is-small is-warning has-shadow-medium'
                 onClick={() => {
-                  // VNC already active - just switch to it in preview
                   console.log(`🔄 PREVIEW SWITCH: Switching to VNC preview from zlogin`);
                   setActiveConsoleType('vnc');
                 }}
@@ -1084,7 +841,6 @@ const ConsoleDisplay = ({
               }}
             />
             
-            {/* Session Status Indicator */}
             <div 
               style={{
                 position: 'absolute',
@@ -1141,7 +897,7 @@ const ConsoleDisplay = ({
                 vncRef={previewVncRef}
                 variant="button"
                 onToggleReadOnly={() => {
-                  console.log(`Toggling preview VNC read-only mode from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
+                  console.log(`🔧 VNC READ-ONLY: Toggling from ${previewVncViewOnly} to ${!previewVncViewOnly}`);
                   setPreviewVncViewOnly(!previewVncViewOnly);
                 }}
                 onScreenshot={() => {
@@ -1174,20 +930,16 @@ const ConsoleDisplay = ({
                 onClipboardPaste={handleVncClipboardPaste}
                 className="has-shadow-medium"
               />
-              {/* FIXED: Preview clipboard button that actually works */}
               <button 
                 className='button is-small is-info has-shadow-medium'
                 onClick={async () => {
                   try {
                     const text = await navigator.clipboard.readText();
                     if (text && previewVncRef.current?.clipboardPaste) {
-                      console.log(`📋 VNC PREVIEW PASTE: Pasting ${text.length} characters`);
                       previewVncRef.current.clipboardPaste(text);
-                    } else {
-                      console.warn('📋 VNC PREVIEW PASTE: No text or VNC ref unavailable');
                     }
                   } catch (error) {
-                    console.error('📋 VNC PREVIEW PASTE: Clipboard access error:', error);
+                    console.error('📋 VNC PREVIEW PASTE: Error:', error);
                   }
                 }}
                 title="Paste from Browser Clipboard"
@@ -1206,11 +958,9 @@ const ConsoleDisplay = ({
                   <i className='fas fa-expand'></i>
                 </span>
               </button>
-              {/* Switch to zlogin button */}
               <button 
                 className='button is-small is-warning has-shadow-medium'
                 onClick={() => {
-                  // zlogin already active - just switch to it in preview
                   console.log(`🔄 PREVIEW SWITCH: Switching to zlogin preview from VNC`);
                   setActiveConsoleType('zlogin');
                 }}
@@ -1234,7 +984,6 @@ const ConsoleDisplay = ({
             }}
           >
             {zoneDetails.vnc_session_info ? (
-              // Active session - show live preview with toggleable view-only mode
               <VncViewerReact
                 ref={previewVncRef}
                 key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
@@ -1256,7 +1005,6 @@ const ConsoleDisplay = ({
                 style={{ width: '100%', height: '100%' }}
               />
             ) : zoneDetails.configuration?.zonepath ? (
-              // FIXED: No session details but VNC active - show static screenshot (like original)
               <img
                 src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
                 alt={`Screenshot of ${selectedZone}`}
@@ -1267,12 +1015,10 @@ const ConsoleDisplay = ({
                   backgroundColor: '#2c3e50'
                 }}
                 onError={(e) => {
-                  // Fallback to generic placeholder on error
                   e.target.style.display = 'none';
                   e.target.nextElementSibling.style.display = 'flex';
                 }}
                 onLoad={(e) => {
-                  // Hide placeholder when image loads successfully
                   if (e.target.nextElementSibling) {
                     e.target.nextElementSibling.style.display = 'none';
                   }
@@ -1280,7 +1026,6 @@ const ConsoleDisplay = ({
               />
             ) : null}
             
-            {/* Fallback placeholder - only show when no screenshot */}
             {!(zoneDetails.vnc_session_info?.proxy_url || zoneDetails.vnc_session_info?.console_url) && (
               <div 
                 style={{
@@ -1345,11 +1090,10 @@ const ConsoleDisplay = ({
             </p>
           </div>
           <div className='buttons has-margin-0'>
-            {/* FIXED: Start buttons that work in preview, not modal */}
             <button 
               className='button is-small is-info'
               onClick={async () => {
-                console.log(`🚀 START VNC: Starting VNC session for preview in ${selectedZone}`);
+                console.log(`🚀 START VNC: Starting VNC for preview in ${selectedZone}`);
                 try {
                   setLoadingVnc(true);
                   const result = await startVncSession(
@@ -1360,33 +1104,22 @@ const ConsoleDisplay = ({
                   );
                   
                   if (result.success) {
-                    console.log(`✅ START VNC: VNC start API succeeded, waiting for readiness...`);
-                    
                     const readinessResult = await waitForVncSessionReady(selectedZone);
-                    
-                    if (!readinessResult.ready) {
-                      console.error(`❌ START VNC: Session not ready: ${readinessResult.reason}`);
-                      setError(`VNC session started but not ready: ${readinessResult.reason}`);
-                      return;
+                    if (readinessResult.ready) {
+                      setZoneDetails(prev => ({
+                        ...prev,
+                        active_vnc_session: true,
+                        vnc_session_info: {
+                          ...result.data,
+                          ...readinessResult.sessionInfo
+                        }
+                      }));
+                      setActiveConsoleType('vnc');
                     }
-                    
-                    console.log(`✅ START VNC: VNC session ready, switching to VNC preview for ${selectedZone}`);
-                    setZoneDetails(prev => ({
-                      ...prev,
-                      active_vnc_session: true,
-                      vnc_session_info: {
-                        ...result.data,
-                        ...readinessResult.sessionInfo
-                      }
-                    }));
-                    setActiveConsoleType('vnc');
-                  } else {
-                    console.error(`❌ START VNC: Failed to start VNC session:`, result.message);
-                    setError(`Failed to start VNC console: ${result.message}`);
                   }
                 } catch (error) {
-                  console.error('💥 START VNC: Error starting VNC session:', error);
-                  setError(`Error starting VNC console`);
+                  console.error('Error starting VNC:', error);
+                  setError('Error starting VNC console');
                 } finally {
                   setLoadingVnc(false);
                 }
@@ -1403,26 +1136,21 @@ const ConsoleDisplay = ({
               className='button is-small is-success'
               onClick={async () => {
                 if (!currentServer || !selectedZone) return;
-                console.log(`🚀 START ZLOGIN: Starting zlogin session for preview in ${selectedZone}`);
+                console.log(`🚀 START ZLOGIN: Starting zlogin for preview in ${selectedZone}`);
                 try {
                   setLoading(true);
                   const result = await startZloginSessionExplicitly(currentServer, selectedZone);
-                  
                   if (result) {
-                    console.log(`✅ START ZLOGIN: Session started, updating UI for ${selectedZone}`);
                     setZoneDetails(prev => ({
                       ...prev,
                       zlogin_session: result,
                       active_zlogin_session: true
                     }));
                     setActiveConsoleType('zlogin');
-                  } else {
-                    console.error(`❌ START ZLOGIN: Failed to start zlogin session`);
-                    setError(`Failed to start zlogin console`);
                   }
                 } catch (error) {
-                  console.error('💥 START ZLOGIN: Error starting zlogin session:', error);
-                  setError(`Error starting zlogin console`);
+                  console.error('Error starting zlogin:', error);
+                  setError('Error starting zlogin console');
                 } finally {
                   setLoading(false);
                 }
