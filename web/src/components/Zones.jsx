@@ -425,7 +425,7 @@ const Zones = () => {
                               selectedZone={selectedZone}
                             />
 
-                            <ZoneHardware configuration={zoneDetails.configuration} />
+                            <ZoneHardware zoneDetails={zoneDetails} />
                           </div>
                               
                           {/* Right Column - Console Display with Toggle */}

@@ -15,7 +15,7 @@ export const useZoneManager = (currentServer) => {
   const { makeZoneweaverAPIRequest } = useServers();
 
   const loadZones = useCallback(async (server) => {
-    if (!server || loading) return;
+    if (!server) return;
 
     try {
       setLoading(true);
@@ -45,7 +45,7 @@ export const useZoneManager = (currentServer) => {
     } finally {
       setLoading(false);
     }
-  }, [makeZoneweaverAPIRequest, loading]);
+  }, [makeZoneweaverAPIRequest]); // FIXED: Remove loading dependency to prevent re-creation
 
   useEffect(() => {
     if (currentServer) {
@@ -55,7 +55,7 @@ export const useZoneManager = (currentServer) => {
       setZones([]);
       setRunningZones([]);
     }
-  }, [currentServer, loadZones]);
+  }, [currentServer]); // FIXED: Remove loadZones dependency to prevent infinite loop
 
   const getZoneStatus = (zoneName) => {
     return runningZones.includes(zoneName) ? 'running' : 'stopped';

@@ -1,9 +1,11 @@
 import React from 'react';
 
-const ZoneHardware = ({ configuration }) => {
-  if (!configuration || Object.keys(configuration).length === 0) {
+const ZoneHardware = ({ zoneDetails }) => {
+  if (!zoneDetails?.configuration || Object.keys(zoneDetails.configuration).length === 0) {
     return null;
   }
+
+  const { configuration } = zoneDetails;
 
   return (
     <div className='box mb-0 pt-0 pd-0'>
@@ -73,6 +75,38 @@ const ZoneHardware = ({ configuration }) => {
               <td className="px-3 py-2">
                 <span className={`has-text-weight-semibold ${configuration['cloud-init'] === 'on' ? 'has-text-success' : 'has-text-danger'}`}>
                   {configuration['cloud-init'] === 'on' ? 'On' : 'Off'}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td className="px-3 py-2"><strong>VNC Console</strong></td>
+              <td className="px-3 py-2">
+                <span className={`has-text-weight-semibold ${zoneDetails.active_vnc_session ? 'has-text-success' : 'has-text-danger'}`}>
+                  {zoneDetails.active_vnc_session ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td className="px-3 py-2"><strong>VNC Port</strong></td>
+              <td className="px-3 py-2">
+                {zoneDetails.active_vnc_session && zoneDetails.vnc_session_info?.web_port ? (
+                  <span className='has-text-grey is-family-monospace'>
+                    {zoneDetails.vnc_session_info.web_port}
+                  </span>
+                ) : (configuration?.vnc?.port || zoneDetails.zone_info?.vnc_port) ? (
+                  <span className='has-text-grey is-family-monospace'>
+                    {configuration.vnc?.port || zoneDetails.zone_info?.vnc_port}
+                  </span>
+                ) : (
+                  <span className='has-text-weight-semibold has-text-success'>
+                    Auto
+                  </span>
+                )}
+              </td>
+            </tr>
+            <tr>
+              <td className="px-3 py-2"><strong>zlogin</strong></td>
+              <td className="px-3 py-2">
+                <span className={`has-text-weight-semibold ${zoneDetails.zlogin_session ? 'has-text-success' : 'has-text-danger'}`}>
+                  {zoneDetails.zlogin_session ? 'Active' : 'Inactive'}
                 </span>
               </td>
             </tr>

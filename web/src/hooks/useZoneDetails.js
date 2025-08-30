@@ -88,7 +88,7 @@ export const useZoneDetails = (currentServer, currentZone) => {
       setStoragePools([]);
       setStorageDatasets([]);
     }
-  }, [currentServer, currentZone, loadZoneDetails]);
+  }, [currentServer, currentZone]); // FIXED: Remove loadZoneDetails dependency to prevent infinite loop
 
   return {
     zoneDetails,
