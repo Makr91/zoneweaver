@@ -705,7 +705,7 @@ button {
 .zw-console-container {
   border: 2px solid var(--zw-border-light) !important;
   border-radius: 6px !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   background-color: #000 !important;
   height: calc(100vh - 250px - 10vh) !important;
   min-height: 450px !important;
@@ -1013,14 +1013,6 @@ button {
 }
 
 // Console Display Styling Classes
-.zw-console-container {
-  border: 2px solid var(--zw-border-light) !important;
-  border-radius: 6px !important;
-  overflow: visible !important;
-  background-color: #000 !important;
-  height: calc(100vh - 250px - 10vh) !important;
-  min-height: 450px !important;
-}
 
 .zw-console-container-hidden {
   border: 2px solid var(--zw-border-light) !important;

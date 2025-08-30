@@ -37,19 +37,22 @@ const VncActionsDropdown = ({
 
   // Dynamic submenu positioning to prevent viewport overflow
   const calculateSubmenuPosition = (submenuWidth = 300) => {
-    if (!dropdownRef.current) return { left: '100%' };
+    if (!dropdownRef.current) return 'zw-dropdown-submenu-right';
     
     const dropdownRect = dropdownRef.current.getBoundingClientRect();
-    const rightSpace = window.innerWidth - dropdownRect.right;
-    const shouldFlipLeft = rightSpace < submenuWidth + 20; // 20px buffer
+    const containerRect = dropdownRef.current.closest('.column')?.getBoundingClientRect() || 
+                         dropdownRef.current.closest('.zw-console-container')?.getBoundingClientRect() ||
+                         document.body.getBoundingClientRect();
     
-    return shouldFlipLeft ? {
-      right: '100%',
-      left: 'auto'
-    } : {
-      left: '100%',
-      right: 'auto'
-    };
+    // Check available space within the actual container, not just viewport
+    const rightSpace = Math.min(
+      window.innerWidth - dropdownRect.right,
+      containerRect.right - dropdownRect.right
+    );
+    
+    const shouldFlipLeft = rightSpace < submenuWidth + 40; // 40px buffer for scrollbars/padding
+    
+    return shouldFlipLeft ? 'zw-dropdown-submenu-left' : 'zw-dropdown-submenu-right';
   };
 
   useEffect(() => {
@@ -254,10 +257,7 @@ const VncActionsDropdown = ({
         {/* Keyboard Input Submenu */}
         {showKeyboardInput && (
           <div 
-            className="dropdown-menu has-z-index-modal-high zw-dropdown-submenu-right" 
-            style={{
-              ...calculateSubmenuPosition(350)
-            }}
+            className={`dropdown-menu has-z-index-modal-high ${calculateSubmenuPosition(350)}`}
           >
             <div className="dropdown-content">
               {/* Common Shortcuts */}
@@ -423,10 +423,7 @@ const VncActionsDropdown = ({
         {/* Display Settings Submenu */}
         {showDisplaySettings && (
           <div 
-            className="dropdown-menu has-z-index-dropdown-top zw-dropdown-settings" 
-            style={{
-              ...calculateSubmenuPosition(350)
-            }}
+            className={`dropdown-menu has-z-index-dropdown-top ${calculateSubmenuPosition(350)}`}
           >
             <div className="dropdown-content">
               {/* Scaling Options */}
@@ -555,10 +552,7 @@ const VncActionsDropdown = ({
         {/* Actions Submenu */}
         {showActions && (
           <div 
-            className="dropdown-menu has-z-index-dropdown-top zw-dropdown-actions" 
-            style={{
-              ...calculateSubmenuPosition(300)
-            }}
+            className={`dropdown-menu has-z-index-dropdown-top ${calculateSubmenuPosition(300)}`}
           >
             <div className="dropdown-content">
               {/* Enable Interactive/Read Only */}
