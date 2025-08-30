@@ -28,12 +28,15 @@ function App() {
               <HelmetProvider>
                 <BrowserRouter>
                   <Routes>
-                    <Route exact path='/' element={<Landing />} />
-                    <Route exact path='/login' element={<Login />} />
-                    <Route path='/register' element={<Register />} />
-                    <Route path='/setup' element={<ServerSetup />} />
-                    <Route path='/ui/settings' element={<Navigate to="/ui/settings/zoneweaver" />} />
-                    <Route path='/ui/*' element={<Layout />} />
+                    <Route exact path="/" element={<Landing />} />
+                    <Route exact path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/setup" element={<ServerSetup />} />
+                    <Route
+                      path="/ui/settings"
+                      element={<Navigate to="/ui/settings/zoneweaver" />}
+                    />
+                    <Route path="/ui/*" element={<Layout />} />
                   </Routes>
                 </BrowserRouter>
               </HelmetProvider>
