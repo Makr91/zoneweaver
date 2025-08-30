@@ -7,6 +7,20 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import '@xterm/xterm/css/xterm.css';
 import axios from 'axios';
 
+// Throttle utility for performance optimization
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  }
+};
+
 const FooterContext = createContext();
 
 export const useFooter = () => {
@@ -449,17 +463,30 @@ export const FooterProvider = ({ children }) => {
     return () => cleanup();
   }, [createPersistentTerminal]);
 
+  // Throttled resize function for optimal performance
+  const resizeTerminalThrottled = useCallback(
+    throttle(() => {
+      if (persistentTerminal.current && persistentFitAddon.current && persistentTerminal.current.element) {
+        try {
+          // Use requestAnimationFrame for smoother performance
+          requestAnimationFrame(() => {
+            if (persistentFitAddon.current) {
+              console.log('🔄 FOOTER: Resizing terminal with RAF (throttled)');
+              persistentFitAddon.current.fit();
+            }
+          });
+        } catch (error) {
+          console.warn('Failed to resize terminal:', error);
+        }
+      }
+    }, 100), // 100ms throttle - prevents excessive calls during rapid resize
+    []
+  );
+
   // Function to resize terminal when footer expands/collapses
   const resizeTerminal = useCallback(() => {
-    if (persistentTerminal.current && persistentFitAddon.current && persistentTerminal.current.element) {
-      try {
-        console.log('🔄 FOOTER: Resizing terminal');
-        persistentFitAddon.current.fit();
-      } catch (error) {
-        console.warn('Failed to resize terminal:', error);
-      }
-    }
-  }, []);
+    resizeTerminalThrottled();
+  }, [resizeTerminalThrottled]);
 
   // Function to restart the shell session
   const restartShell = useCallback(async () => {

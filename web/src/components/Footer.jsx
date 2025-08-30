@@ -82,8 +82,8 @@ const Footer = () => {
     }
   }, [footerIsActive, footerActiveView, resizeTerminal]);
 
-  // Handle resize - only save when expanded and add debounced terminal fit
-  const handleResize = (e, { size }) => {
+  // Handle resize - optimized with requestAnimationFrame throttling
+  const handleResize = useCallback((e, { size }) => {
     if (footerIsActive) {
       userSettings.setFooterHeight(size.height);
       
@@ -92,15 +92,22 @@ const Footer = () => {
         clearTimeout(resizeTimeoutRef.current);
       }
       
-      // Set new timeout to resize terminal after 5 seconds of no changes
+      // Use requestAnimationFrame for immediate smooth resize
+      if (footerActiveView === 'shell') {
+        requestAnimationFrame(() => {
+          resizeTerminal();
+        });
+      }
+      
+      // Set shorter timeout for final resize (reduced from 5s to 300ms)
       resizeTimeoutRef.current = setTimeout(() => {
         if (footerActiveView === 'shell' && footerIsActive) {
-          console.log('🔄 FOOTER: Auto-fitting terminal after resize completion');
+          console.log('🔄 FOOTER: Final terminal fit after resize');
           resizeTerminal();
         }
-      }, 5000);
+      }, 300);
     }
-  };
+  }, [footerIsActive, footerActiveView, resizeTerminal, userSettings]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

@@ -4,7 +4,7 @@ import '@xterm/xterm/css/xterm.css';
 
 const HostShell = () => {
   const terminalRef = useRef(null);
-  const { attachTerminal } = useFooter();
+  const { attachTerminal, resizeTerminal } = useFooter();
 
   useEffect(() => {
     console.log('🖥️ HOSTSHELL: Component mounted/updated', {
@@ -21,6 +21,28 @@ const HostShell = () => {
       };
     }
   }, [attachTerminal]);
+
+  // Add ResizeObserver for automatic terminal resizing - much more efficient
+  useEffect(() => {
+    if (!terminalRef.current || !window.ResizeObserver) return;
+
+    const resizeObserver = new ResizeObserver(entries => {
+      // Use requestAnimationFrame to avoid performance issues
+      requestAnimationFrame(() => {
+        if (resizeTerminal) {
+          resizeTerminal();
+        }
+      });
+    });
+
+    resizeObserver.observe(terminalRef.current);
+    console.log('🔍 HOSTSHELL: ResizeObserver attached for automatic terminal resizing');
+
+    return () => {
+      resizeObserver.disconnect();
+      console.log('🔍 HOSTSHELL: ResizeObserver disconnected');
+    };
+  }, [resizeTerminal]);
 
   return (
     <div 
