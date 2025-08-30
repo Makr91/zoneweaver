@@ -151,13 +151,33 @@ const Zones = () => {
           try {
             console.log(`🔍 RACE FIX: Starting serialized session status checks for ${zoneName}`);
             
-            await refreshVncSessionStatus(zoneName).catch(err => 
-              console.warn('Background VNC status check failed:', err)
-            );
+            // VNC session refresh - don't silently ignore failures
+            try {
+              await refreshVncSessionStatus(zoneName);
+              console.log(`✅ VNC STATUS: Successfully refreshed VNC status for ${zoneName}`);
+            } catch (vncError) {
+              console.error(`❌ VNC STATUS: Failed to refresh VNC status for ${zoneName}:`, vncError);
+              // Force clear VNC session state on refresh failure to prevent stale data
+              setZoneDetails(prev => ({
+                ...prev,
+                active_vnc_session: false,
+                vnc_session_info: null
+              }));
+            }
             
-            await refreshZloginSessionStatus(zoneName).catch(err => 
-              console.warn('Background zlogin status check failed:', err)  
-            );
+            // Zlogin session refresh - don't silently ignore failures  
+            try {
+              await refreshZloginSessionStatus(zoneName);
+              console.log(`✅ ZLOGIN STATUS: Successfully refreshed zlogin status for ${zoneName}`);
+            } catch (zloginError) {
+              console.error(`❌ ZLOGIN STATUS: Failed to refresh zlogin status for ${zoneName}:`, zloginError);
+              // Force clear zlogin session state on refresh failure to prevent stale data
+              setZoneDetails(prev => ({
+                ...prev,
+                zlogin_session: null,
+                active_zlogin_session: false
+              }));
+            }
             
             console.log(`✅ RACE FIX: All serialized session checks completed for ${zoneName}`);
           } catch (error) {
