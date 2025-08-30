@@ -711,7 +711,7 @@ const Navbar = () => {
                   className={`icon is-small ml-2 ${getStatusDotColor(getZoneStatus(currentZone))}`}
                   title={`Status: ${getZoneStatus(currentZone)}`}
                 >
-                  <i className='fas fa-circle' style={{ fontSize: '0.6rem' }}></i>
+                  <i className='fas fa-circle is-size-8'></i>
                 </span>
               )}
             </div>

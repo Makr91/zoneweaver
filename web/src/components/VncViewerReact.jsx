@@ -411,7 +411,7 @@ const VncViewerReact = forwardRef(({
           </div>
           
           <div className="vnc-actions">
-            <div className="buttons is-small" style={{margin: 0}}>
+            <div className="buttons is-small has-margin-0">
               {/* Ctrl+Alt+Del Button */}
               <button 
                 className="button is-small is-warning" 

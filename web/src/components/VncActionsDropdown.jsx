@@ -243,17 +243,11 @@ const VncActionsDropdown = ({
       
       {/* Keyboard & Input Submenu */}
       <div 
-        className="dropdown-item" 
-        style={{
-          position: 'relative', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center'
-        }}
+        className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center" 
         onMouseEnter={() => setShowKeyboardInput(true)}
         onMouseLeave={() => setShowKeyboardInput(false)}
       >
-        <div style={{display: 'flex', alignItems: 'center'}}>
+        <div className='is-flex is-align-items-center'>
           <span className="icon mr-2">
             <i className="fas fa-keyboard"></i>
           </span>
@@ -430,17 +424,11 @@ const VncActionsDropdown = ({
 
       {/* Display Settings Submenu */}
       <div 
-        className="dropdown-item" 
-        style={{
-          position: 'relative', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center'
-        }}
+        className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center" 
         onMouseEnter={() => setShowDisplaySettings(true)}
         onMouseLeave={() => setShowDisplaySettings(false)}
       >
-        <div style={{display: 'flex', alignItems: 'center'}}>
+        <div className='is-flex is-align-items-center'>
           <span className="icon mr-2">
             <i className="fas fa-desktop"></i>
           </span>
@@ -587,17 +575,11 @@ const VncActionsDropdown = ({
 
       {/* Actions Submenu */}
       <div 
-        className="dropdown-item" 
-        style={{
-          position: 'relative', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center'
-        }}
+        className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center" 
         onMouseEnter={() => setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
       >
-        <div style={{display: 'flex', alignItems: 'center'}}>
+        <div className='is-flex is-align-items-center'>
           <span className="icon mr-2">
             <i className="fas fa-tools"></i>
           </span>

@@ -2315,7 +2315,7 @@ const Zones = () => {
                                       </thead>
                                       <tbody>
                                         <tr>
-                                          <td className="px-3 py-2"><span className='has-text-grey is-size-7' style={{fontFamily: 'monospace'}}>{zoneDetails.configuration.bootdisk.path}</span></td>
+                                          <td className="px-3 py-2"><span className='has-text-grey is-size-7 is-family-monospace'>{zoneDetails.configuration.bootdisk.path}</span></td>
                                           <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.blocksize}</span></td>
                                           <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.sparse}</span></td>
                                           <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{zoneDetails.configuration.bootdisk.size}</span></td>
@@ -2343,7 +2343,7 @@ const Zones = () => {
                                       <tbody>
                                         {(zoneDetails.configuration.disk || []).filter(disk => disk !== null && disk !== undefined).map((disk, index) => (
                                           <tr key={index}>
-                                            <td className="px-3 py-2"><span className='has-text-grey is-size-7' style={{fontFamily: 'monospace'}}>{disk?.path || 'N/A'}</span></td>
+                                            <td className="px-3 py-2"><span className='has-text-grey is-size-7 is-family-monospace'>{disk?.path || 'N/A'}</span></td>
                                             <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.blocksize || 'N/A'}</span></td>
                                             <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.sparse || 'N/A'}</span></td>
                                             <td className="px-3 py-2"><span className='has-text-grey is-family-monospace'>{disk?.size || 'N/A'}</span></td>
@@ -2369,7 +2369,7 @@ const Zones = () => {
                                 {/* Network Interface and IP Type */}
                                 <div className='mb-3'>
                                   <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                    <table className='table is-fullwidth is-striped is-size-7'>
                                       <tbody>
                                         <tr>
                                           <td className="px-3 py-2"><strong>Network Interface Driver</strong></td>
@@ -2388,7 +2388,7 @@ const Zones = () => {
                                 <div className='mb-3'>
                                   <h5 className='subtitle is-6 mb-2'>Virtual NICs</h5>
                                   <div className='table-container'>
-                                    <table className='table is-fullwidth is-striped' style={{fontSize: '0.875rem'}}>
+                                    <table className='table is-fullwidth is-striped is-size-7'>
                                       <thead>
                                         <tr>
                                           <th className="px-3 py-2">LINK</th>
@@ -2434,9 +2434,9 @@ const Zones = () => {
 
                         {/* Raw Data (for debugging) */}
                         <details>
-                          <summary className='title is-6' style={{cursor: 'pointer'}}>Raw Data (Debug)</summary>
+                          <summary className='title is-6 is-clickable'>Raw Data (Debug)</summary>
                           <div className='box'>
-                            <pre style={{fontSize: '0.8rem', overflow: 'auto'}}>{JSON.stringify(zoneDetails, null, 2)}</pre>
+                            <pre className='is-size-7' style={{overflow: 'auto'}}>{JSON.stringify(zoneDetails, null, 2)}</pre>
                           </div>
                         </details>
                       </div>
