@@ -144,7 +144,7 @@ const Footer = () => {
         width={Infinity}
         resizeHandles={["n"]}
         axis='y'
-        maxConstraints={[Infinity, 850]}
+        maxConstraints={[Infinity, window.innerHeight - 100]} // Allow footer to grow to almost full screen
         minConstraints={[Infinity, 0]}
         handle={ResizeHandle()}
       >
