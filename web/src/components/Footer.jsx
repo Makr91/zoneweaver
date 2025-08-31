@@ -8,33 +8,18 @@ import Tasks from "./Tasks";
 const Footer = () => {
   const userSettings = useContext(UserSettings);
   const { footerIsActive, setFooterIsActive, footerActiveView, setFooterActiveView } = userSettings;
-  const { resizeTerminal, restartShell } = useFooter();
+  const { restartShell } = useFooter();
   const [showShellDropdown, setShowShellDropdown] = useState(false);
   const resizeTimeoutRef = useRef(null);
 
   // Handle footer expand/collapse
   const handleToggle = () => {
-    const wasActive = footerIsActive;
     setFooterIsActive(!footerIsActive);
-    
-    // If expanding footer and shell view is active, resize terminal after DOM update
-    if (!wasActive && footerActiveView === 'shell') {
-      setTimeout(() => {
-        resizeTerminal();
-      }, 100);
-    }
   };
 
   // Handle view change
   const handleViewChange = (view) => {
     setFooterActiveView(view);
-    
-    // If switching to shell view and footer is active, resize terminal after DOM update
-    if (view === 'shell' && footerIsActive) {
-      setTimeout(() => {
-        resizeTerminal();
-      }, 100);
-    }
   };
 
   // Handle shell button click - show dropdown if already selected
@@ -53,10 +38,6 @@ const Footer = () => {
   const handleRestartShell = async () => {
     setShowShellDropdown(false);
     await restartShell();
-    // Force resize after restart
-    setTimeout(() => {
-      resizeTerminal();
-    }, 500);
   };
 
   // Close dropdown when clicking outside
@@ -73,41 +54,12 @@ const Footer = () => {
     };
   }, [showShellDropdown]);
 
-  // Resize terminal when footer becomes active and shell view is selected
-  useEffect(() => {
-    if (footerIsActive && footerActiveView === 'shell') {
-      setTimeout(() => {
-        resizeTerminal();
-      }, 100);
-    }
-  }, [footerIsActive, footerActiveView, resizeTerminal]);
-
-  // Handle resize - optimized with requestAnimationFrame throttling
+  // Handle resize - react-xtermjs handles terminal resizing automatically
   const handleResize = useCallback((e, { size }) => {
     if (footerIsActive) {
       userSettings.setFooterHeight(size.height);
-      
-      // Clear existing timeout
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-      }
-      
-      // Use requestAnimationFrame for immediate smooth resize
-      if (footerActiveView === 'shell') {
-        requestAnimationFrame(() => {
-          resizeTerminal();
-        });
-      }
-      
-      // Set shorter timeout for final resize (reduced from 5s to 300ms)
-      resizeTimeoutRef.current = setTimeout(() => {
-        if (footerActiveView === 'shell' && footerIsActive) {
-          console.log('🔄 FOOTER: Final terminal fit after resize');
-          resizeTerminal();
-        }
-      }, 300);
     }
-  }, [footerIsActive, footerActiveView, resizeTerminal, userSettings]);
+  }, [footerIsActive, userSettings]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

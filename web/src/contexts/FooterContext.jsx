@@ -1,10 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useServers } from './ServerContext';
 import { UserSettings } from './UserSettingsContext';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import '@xterm/xterm/css/xterm.css';
 import axios from 'axios';
 
 // Throttle utility for performance optimization
@@ -45,23 +41,16 @@ export const FooterProvider = ({ children }) => {
   const { footerActiveView, footerIsActive } = useContext(UserSettings);
   const [tasks, setTasks] = useState([]);
   const [tasksError, setTasksError] = useState('');
-  const [term, setTerm] = useState(null);
   const [session, setSession] = useState(null);
   
   // Use ref to track current tasks for since parameter
   const tasksRef = useRef([]);
   const intervalRef = useRef(null);
   
-  // Use refs to prevent multiple terminal initializations and manage persistent session
-  const terminalInitializing = useRef(false);
-  const terminalInitialized = useRef(false);
-  const persistentTerminal = useRef(null);
+  // Simplified session management for react-xtermjs
   const persistentSession = useRef(null);
   const persistentWs = useRef(null);
-  const persistentFitAddon = useRef(null);
-  const terminalCreating = useRef(false); // Guard against race conditions
-  const terminalAttaching = useRef(false); // Guard against multiple attach calls
-  const initialPromptSent = useRef(false); // Track if the initial prompt has been sent for the session
+  const terminalCreating = useRef(false);
   
   // Update ref when tasks change
   useEffect(() => {
@@ -219,17 +208,16 @@ export const FooterProvider = ({ children }) => {
     }
   }, [currentServer, makeZoneweaverAPIRequest]);
 
-  // Clean up persistent terminal when server changes
+  // Clean up session when server changes
   useEffect(() => {
     console.log('🔄 FOOTER: Server change detected - cleanup check', {
       serverHostname: currentServer?.hostname || 'null',
       hasWs: !!persistentWs.current,
       hasSession: !!persistentSession.current,
-      hasTerminal: !!persistentTerminal.current,
       timestamp: new Date().toISOString()
     });
     
-    // Clean up previous terminal session when server changes
+    // Clean up previous session when server changes
     if (persistentWs.current) {
       console.log('🔄 FOOTER: Closing WebSocket');
       persistentWs.current.close();
@@ -240,46 +228,34 @@ export const FooterProvider = ({ children }) => {
       axios.delete(`/api/servers/${currentServer.hostname}/terminal/sessions/${persistentSession.current.id}/stop`).catch(console.error);
       persistentSession.current = null;
     }
-    if (persistentTerminal.current) {
-      console.log('🔄 FOOTER: Disposing terminal');
-      persistentTerminal.current.dispose();
-      persistentTerminal.current = null;
-    }
     
-    // Reset terminal state
-    setTerm(null);
+    // Reset session state
     setSession(null);
-    terminalInitializing.current = false;
-    terminalInitialized.current = false;
-    initialPromptSent.current = false; // Reset prompt flag for new session
   }, [currentServer?.hostname]); // Only trigger when server hostname changes
 
-  // Create persistent session and WebSocket (not terminal instance)
-  const createPersistentTerminal = useCallback(async () => {
-    console.log('🛠️ FOOTER: Creating persistent session', {
+  // Create session and WebSocket for react-xtermjs
+  const createSession = useCallback(async () => {
+    console.log('🛠️ FOOTER: Creating session', {
       currentServer: currentServer?.hostname || 'null',
       existingSession: !!persistentSession.current,
-      existingWs: !!persistentWs.current,
       currentlyCreating: terminalCreating.current,
       timestamp: new Date().toISOString()
     });
     
-    // Guard against race conditions - only allow one creation at a time
     if (!currentServer || persistentSession.current || terminalCreating.current) {
       console.log('🚫 FOOTER: Session creation blocked - already exists or creating');
       return;
     }
 
-    // Set the creation guard
     terminalCreating.current = true;
 
     try {
-      // Create backend session with terminal cookie
+      // Create backend session
       const terminalCookie = `terminal_${currentServer.hostname}_${currentServer.port}_${crypto.randomUUID()}_${Date.now()}`;
       const res = await axios.post(`/api/servers/${currentServer.hostname}/terminal/start`, {
         terminal_cookie: terminalCookie
       });
-      // Handle double-nested response structure from backend
+      
       const sessionData = res.data.data?.data || res.data.data;
       console.log(`🔍 FOOTER: Parsed session data:`, {
         websocket_url: sessionData.websocket_url,
@@ -287,28 +263,14 @@ export const FooterProvider = ({ children }) => {
         reused: sessionData.reused
       });
       
-      // Create WebSocket connection using backend-provided URL
+      // Create WebSocket for react-xtermjs
       const ws = new WebSocket(`wss://${window.location.host}${sessionData.websocket_url}`);
       
-      // Single persistent message handler that forwards to current terminal
-      const handlePersistentMessage = (event) => {
-        if (persistentTerminal.current) {
-          if (event.data instanceof Blob) {
-            event.data.text().then(text => {
-              persistentTerminal.current.write(text);
-            });
-          } else {
-            persistentTerminal.current.write(event.data);
-          }
-        }
-      };
-
       ws.onopen = () => {
         console.log('🔗 FOOTER: WebSocket connected for session:', sessionData.id);
-        // Don't send initial newline here - wait for terminal to attach
+        // Send initial prompt
+        ws.send('\n');
       };
-
-      ws.onmessage = handlePersistentMessage;
 
       ws.onclose = (event) => {
         console.log('🔗 FOOTER: WebSocket closed for session:', sessionData.id, 'Code:', event.code, 'Reason:', event.reason);
@@ -318,184 +280,41 @@ export const FooterProvider = ({ children }) => {
         console.error('🚨 FOOTER: WebSocket error for session:', sessionData.id, error);
       };
 
-      // Store persistent session and WebSocket
-      persistentSession.current = sessionData;
-      persistentWs.current = ws;
-      setSession(sessionData);
+      // Store session with WebSocket for HostShell
+      const sessionWithWs = {
+        ...sessionData,
+        websocket: ws
+      };
       
-      console.log('✅ FOOTER: Persistent session created:', sessionData.id);
+      persistentSession.current = sessionWithWs;
+      persistentWs.current = ws;
+      setSession(sessionWithWs);
+      
+      console.log('✅ FOOTER: Session created:', sessionData.id);
       
     } catch (error) {
-      console.error('Failed to create persistent session:', error);
+      console.error('Failed to create session:', error);
     } finally {
-      // Always reset the creation guard
       terminalCreating.current = false;
     }
   }, [currentServer]);
 
-  // Create persistent session immediately when server is available (independent of UI state)
+  // Create session when server is available
   useEffect(() => {
     if (currentServer && !persistentSession.current) {
       console.log('🛠️ FOOTER: Auto-creating session for server:', currentServer.hostname);
-      createPersistentTerminal();
+      createSession();
     }
-  }, [currentServer, createPersistentTerminal]);
+  }, [currentServer, createSession]);
 
-  // Create a fresh terminal instance that connects to the persistent session
-  const attachTerminal = useCallback((terminalRef) => {
-    console.log('🔗 FOOTER: Creating fresh terminal for HostShell', {
-      hasSession: !!persistentSession.current,
-      hasWs: !!persistentWs.current,
-      hasRef: !!terminalRef.current,
-      attaching: terminalAttaching.current,
-      timestamp: new Date().toISOString()
-    });
-    
-    if (!terminalRef.current || terminalAttaching.current) {
-      console.log('🚫 FOOTER: No terminal ref provided or attach is already in progress');
-      return () => {};
-    }
-
-    terminalAttaching.current = true;
-
-    let cleanup = () => {};
-    let terminalInstance = null;
-
-    const createTerminalInstance = async () => {
-      // Wait for session to be ready (with timeout)
-      let attempts = 0;
-      const maxAttempts = 50; // 5 seconds max wait
-      
-      while ((!persistentSession.current || !persistentWs.current) && attempts < maxAttempts) {
-        if (attempts === 0) {
-          console.log('🔗 FOOTER: Waiting for session to be ready...');
-          // Trigger session creation if it doesn't exist
-          if (!persistentSession.current && !terminalCreating.current) {
-            createPersistentTerminal();
-          }
-        }
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      if (!persistentSession.current || !persistentWs.current) {
-        console.error('🚫 FOOTER: Timeout waiting for session');
-        return;
-      }
-
-      // Create a fresh terminal instance for this mount
-      const newTerm = new Terminal({
-        cursorBlink: true,
-        theme: {
-          background: '#000000',
-        },
-      });
-      const fitAddon = new FitAddon();
-      newTerm.loadAddon(fitAddon);
-      newTerm.loadAddon(new WebLinksAddon());
-
-      // Connect new terminal to persistent WebSocket for input only
-      const ws = persistentWs.current;
-      
-      // Set up terminal data handling (input to WebSocket)
-      newTerm.onData((data) => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(data);
-        }
-      });
-
-      // Open terminal in DOM
-      console.log('🔗 FOOTER: Opening fresh terminal in DOM');
-      try {
-        newTerm.open(terminalRef.current);
-        
-        // Store current terminal instance (for resizing and message forwarding)
-        persistentTerminal.current = newTerm;
-        persistentFitAddon.current = fitAddon;
-        setTerm(newTerm);
-        terminalInstance = newTerm;
-        
-        // Fit terminal after DOM is ready and trigger shell prompt
-        setTimeout(() => {
-          try {
-            fitAddon.fit();
-            
-            // Send initial newline to trigger shell prompt only if it hasn't been sent for this session
-            if (ws && ws.readyState === WebSocket.OPEN && !initialPromptSent.current) {
-              console.log('🔗 FOOTER: Triggering initial shell prompt for attached terminal');
-              ws.send('\n');
-              initialPromptSent.current = true; // Mark as sent
-            }
-          } catch (error) {
-            console.warn('Error fitting terminal during attach:', error);
-          }
-        }, 100);
-        
-        // Set up cleanup function
-        cleanup = () => {
-          console.log('🔗 FOOTER: Disposing terminal instance');
-          try {
-            // Dispose terminal instance
-            newTerm.dispose();
-            
-            // Clear refs if this was the current terminal
-            if (persistentTerminal.current === newTerm) {
-              persistentTerminal.current = null;
-              persistentFitAddon.current = null;
-              setTerm(null);
-            }
-          } catch (error) {
-            console.warn('Error during terminal cleanup:', error);
-          }
-        };
-        
-      } catch (error) {
-        console.error('Error opening fresh terminal:', error);
-      } finally {
-        terminalAttaching.current = false;
-      }
-    };
-
-    // Start terminal creation asynchronously
-    createTerminalInstance();
-
-    // Return cleanup function
-    return () => cleanup();
-  }, [createPersistentTerminal]);
-
-  // Throttled resize function for optimal performance
-  const resizeTerminalThrottled = useCallback(
-    throttle(() => {
-      if (persistentTerminal.current && persistentFitAddon.current && persistentTerminal.current.element) {
-        try {
-          // Use requestAnimationFrame for smoother performance
-          requestAnimationFrame(() => {
-            if (persistentFitAddon.current) {
-              console.log('🔄 FOOTER: Resizing terminal with RAF (throttled)');
-              persistentFitAddon.current.fit();
-            }
-          });
-        } catch (error) {
-          console.warn('Failed to resize terminal:', error);
-        }
-      }
-    }, 100), // 100ms throttle - prevents excessive calls during rapid resize
-    []
-  );
-
-  // Function to resize terminal when footer expands/collapses
-  const resizeTerminal = useCallback(() => {
-    resizeTerminalThrottled();
-  }, [resizeTerminalThrottled]);
-
-  // Function to restart the shell session
+  // Restart shell session
   const restartShell = useCallback(async () => {
     console.log('🔄 FOOTER: Restarting shell session');
     
     if (!currentServer) return;
 
     try {
-      // Clean up current terminal session
+      // Clean up current session
       if (persistentWs.current) {
         persistentWs.current.close();
         persistentWs.current = null;
@@ -504,33 +323,24 @@ export const FooterProvider = ({ children }) => {
         await axios.delete(`/api/servers/${currentServer.hostname}/terminal/sessions/${persistentSession.current.id}/stop`).catch(console.error);
         persistentSession.current = null;
       }
-      if (persistentTerminal.current) {
-        persistentTerminal.current.dispose();
-        persistentTerminal.current = null;
-      }
 
       // Reset state
-      setTerm(null);
       setSession(null);
-      terminalInitializing.current = false;
-      terminalInitialized.current = false;
 
-      // Create new terminal session (which will be fresh/cleared)
-      await createPersistentTerminal();
+      // Create new session
+      await createSession();
     } catch (error) {
       console.error('Failed to restart shell:', error);
     }
-  }, [currentServer, createPersistentTerminal]);
+  }, [currentServer, createSession]);
 
   const value = React.useMemo(() => ({
     tasks,
     tasksError,
     fetchTasks,
-    term,
-    attachTerminal,
-    resizeTerminal,
+    session,
     restartShell,
-  }), [tasks, tasksError, fetchTasks, term, attachTerminal, resizeTerminal, restartShell]);
+  }), [tasks, tasksError, fetchTasks, session, restartShell]);
 
   return (
     <FooterContext.Provider value={value}>
