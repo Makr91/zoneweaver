@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { XTerm } from 'react-xtermjs';
 import { FitAddon } from '@xterm/addon-fit';
 import { AttachAddon } from '@xterm/addon-attach';
@@ -10,40 +10,48 @@ const HostShell = () => {
   const [addons, setAddons] = useState([]);
   const { session, restartShell } = useFooter();
   const fitAddon = addons[0];
+  const initializedSessionRef = useRef(null);
 
-  // Initialize addons when session WebSocket is available
+  // Initialize addons only once per session
   useEffect(() => {
-    if (session?.websocket && session.websocket.readyState === WebSocket.OPEN) {
-      console.log('🖥️ HOSTSHELL: Setting up addons for session:', session.id);
+    // Only initialize if we have a new session and haven't initialized it yet
+    if (session?.id && session?.websocket && initializedSessionRef.current !== session.id) {
+      console.log('🖥️ HOSTSHELL: Setting up addons for NEW session:', session.id);
       
-      const newFitAddon = new FitAddon();
-      const attachAddon = new AttachAddon(session.websocket);
-      const webLinksAddon = new WebLinksAddon();
-      
-      setAddons([newFitAddon, attachAddon, webLinksAddon]);
-    } else if (session?.websocket && session.websocket.readyState === WebSocket.CONNECTING) {
-      // Wait for WebSocket to open
-      const handleOpen = () => {
-        console.log('🖥️ HOSTSHELL: WebSocket opened, setting up addons');
+      const setupAddons = () => {
         const newFitAddon = new FitAddon();
         const attachAddon = new AttachAddon(session.websocket);
         const webLinksAddon = new WebLinksAddon();
         
         setAddons([newFitAddon, attachAddon, webLinksAddon]);
-        session.websocket.removeEventListener('open', handleOpen);
+        initializedSessionRef.current = session.id;
+        console.log('🖥️ HOSTSHELL: Addons initialized for session:', session.id);
       };
-      
-      session.websocket.addEventListener('open', handleOpen);
-      
-      return () => {
-        if (session.websocket) {
+
+      if (session.websocket.readyState === WebSocket.OPEN) {
+        setupAddons();
+      } else if (session.websocket.readyState === WebSocket.CONNECTING) {
+        // Wait for WebSocket to open
+        const handleOpen = () => {
+          console.log('🖥️ HOSTSHELL: WebSocket opened, setting up addons');
+          setupAddons();
           session.websocket.removeEventListener('open', handleOpen);
-        }
-      };
-    } else {
+        };
+        
+        session.websocket.addEventListener('open', handleOpen);
+        
+        return () => {
+          if (session.websocket) {
+            session.websocket.removeEventListener('open', handleOpen);
+          }
+        };
+      }
+    } else if (!session?.id) {
+      // Clear addons when no session
       setAddons([]);
+      initializedSessionRef.current = null;
     }
-  }, [session?.websocket?.readyState, session?.id]);
+  }, [session?.id]); // Only depend on session ID, not WebSocket state
 
   // Handle terminal resize
   const onResize = useCallback((cols, rows) => {
