@@ -3,8 +3,11 @@ import { XTerm } from 'react-xtermjs';
 import { FitAddon } from '@xterm/addon-fit';
 import { AttachAddon } from '@xterm/addon-attach';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import { SerializeAddon } from '@xterm/addon-serialize';
+import { ClipboardAddon } from '@xterm/addon-clipboard';
+import { SearchAddon } from '@xterm/addon-search';
+import { WebglAddon } from '@xterm/addon-webgl';
 import { useFooter } from '../../contexts/FooterContext';
-import '@xterm/xterm/css/xterm.css';
 
 // Memoized XTerm component to prevent unnecessary re-renders
 const MemoizedXTerm = memo(XTerm);
@@ -15,6 +18,14 @@ const HostShell = () => {
   // Persistent addon instances to prevent history loss
   const fitAddonRef = useRef(null);
   const webLinksAddonRef = useRef(null);
+  const serializeAddonRef = useRef(null);
+  const clipboardAddonRef = useRef(null);
+  const searchAddonRef = useRef(null);
+  const webglAddonRef = useRef(null);
+  const terminalInstanceRef = useRef(null);
+  
+  // Terminal history preservation
+  const terminalHistoryRef = useRef('');
   
   // Current addons state for react-xtermjs
   const [addons, setAddons] = useState([]);
@@ -25,15 +36,59 @@ const HostShell = () => {
     wsState: session?.websocket?.readyState,
     addonsCount: addons.length,
     isReady,
+    hasHistory: terminalHistoryRef.current.length > 0,
     timestamp: new Date().toISOString()
   });
 
   // Initialize persistent addons only once
   useEffect(() => {
     if (!fitAddonRef.current) {
-      console.log('🖥️ HOSTSHELL: Initializing persistent addons');
+      console.log('🖥️ HOSTSHELL: Initializing enhanced addons');
+      
+      // Core addons
       fitAddonRef.current = new FitAddon();
       webLinksAddonRef.current = new WebLinksAddon();
+      
+      // Enhanced addons for better UX
+      serializeAddonRef.current = new SerializeAddon();
+      clipboardAddonRef.current = new ClipboardAddon();
+      searchAddonRef.current = new SearchAddon();
+      
+      // Performance addon (try WebGL, fallback gracefully if not supported)
+      try {
+        webglAddonRef.current = new WebglAddon();
+        console.log('🖥️ HOSTSHELL: WebGL renderer available');
+      } catch (error) {
+        console.log('🖥️ HOSTSHELL: WebGL not supported, using canvas renderer');
+        webglAddonRef.current = null;
+      }
+    }
+  }, []);
+
+  // Preserve terminal content before WebSocket changes
+  const preserveTerminalHistory = useCallback(() => {
+    if (serializeAddonRef.current && terminalInstanceRef.current) {
+      try {
+        const serializedContent = serializeAddonRef.current.serialize();
+        terminalHistoryRef.current = serializedContent;
+        console.log('🖥️ HOSTSHELL: Terminal history preserved', serializedContent.length, 'characters');
+      } catch (error) {
+        console.warn('🖥️ HOSTSHELL: Failed to preserve terminal history:', error);
+      }
+    }
+  }, []);
+
+  // Restore terminal content after WebSocket reconnection
+  const restoreTerminalHistory = useCallback(() => {
+    if (terminalHistoryRef.current && terminalInstanceRef.current) {
+      try {
+        // Clear current content and restore from history
+        terminalInstanceRef.current.clear();
+        terminalInstanceRef.current.write(terminalHistoryRef.current);
+        console.log('🖥️ HOSTSHELL: Terminal history restored');
+      } catch (error) {
+        console.warn('🖥️ HOSTSHELL: Failed to restore terminal history:', error);
+      }
     }
   }, []);
 
@@ -51,15 +106,40 @@ const HostShell = () => {
       // Create new AttachAddon for this WebSocket
       const attachAddon = new AttachAddon(session.websocket);
       
-      // Set addons with persistent fit/weblinks and new attach addon
-      setAddons([fitAddonRef.current, attachAddon, webLinksAddonRef.current]);
+      // Create addon array (order matters!)
+      const addonArray = [
+        fitAddonRef.current,
+        attachAddon,
+        webLinksAddonRef.current,
+        serializeAddonRef.current,
+        clipboardAddonRef.current,
+        searchAddonRef.current,
+      ];
+      
+      // Add WebGL addon if available
+      if (webglAddonRef.current) {
+        addonArray.push(webglAddonRef.current);
+      }
+      
+      setAddons(addonArray);
       setIsReady(true);
+      
+      // Restore history after connection is established
+      setTimeout(() => {
+        restoreTerminalHistory();
+      }, 200);
     };
 
     const handleWebSocketError = () => {
-      console.log('🖥️ HOSTSHELL: WebSocket error, clearing addons');
+      console.log('🖥️ HOSTSHELL: WebSocket error, preserving history and clearing addons');
+      preserveTerminalHistory();
       setAddons([]);
       setIsReady(false);
+    };
+
+    const handleWebSocketClose = () => {
+      console.log('🖥️ HOSTSHELL: WebSocket closed, preserving history');
+      preserveTerminalHistory();
     };
 
     if (session.websocket.readyState === WebSocket.OPEN) {
@@ -67,15 +147,15 @@ const HostShell = () => {
     } else if (session.websocket.readyState === WebSocket.CONNECTING) {
       session.websocket.addEventListener('open', handleWebSocketReady);
       session.websocket.addEventListener('error', handleWebSocketError);
-      session.websocket.addEventListener('close', handleWebSocketError);
+      session.websocket.addEventListener('close', handleWebSocketClose);
       
       return () => {
         session.websocket.removeEventListener('open', handleWebSocketReady);
         session.websocket.removeEventListener('error', handleWebSocketError);
-        session.websocket.removeEventListener('close', handleWebSocketError);
+        session.websocket.removeEventListener('close', handleWebSocketClose);
       };
     }
-  }, [session?.websocket, session?.id]);
+  }, [session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
 
   // Handle terminal resize
   const onResize = useCallback((cols, rows) => {
@@ -85,6 +165,9 @@ const HostShell = () => {
   // Handle when terminal instance is ready
   const onTerminalReady = useCallback((terminal) => {
     console.log('🖥️ HOSTSHELL: Terminal instance ready');
+    
+    // Store terminal instance reference for history preservation
+    terminalInstanceRef.current = terminal;
     
     // Fit terminal after a brief delay to ensure container is sized
     if (fitAddonRef.current) {
