@@ -1,9 +1,12 @@
 import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useServers } from './ServerContext';
-import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
+import { AttachAddon } from '@xterm/addon-attach';
 import { WebLinksAddon } from '@xterm/addon-web-links';
-import '@xterm/xterm/css/xterm.css';
+import { SerializeAddon } from '@xterm/addon-serialize';
+import { ClipboardAddon } from '@xterm/addon-clipboard';
+import { SearchAddon } from '@xterm/addon-search';
+import { WebglAddon } from '@xterm/addon-webgl';
 import axios from 'axios';
 
 const ZoneTerminalContext = createContext();
@@ -14,20 +17,113 @@ export const useZoneTerminal = () => {
 
 export const ZoneTerminalProvider = ({ children }) => {
   const { currentServer, stopZloginSession: apiStopZloginSession } = useServers();
-  const [term, setTerm] = useState(null);
 
-  const terminalsMap = useRef(new Map());
+  // Zone session and WebSocket management (similar to FooterContext)
   const sessionsMap = useRef(new Map());
   const websocketsMap = useRef(new Map());
-  const fitAddonsMap = useRef(new Map());
-  const onDataListenersMap = useRef(new Map());
   const creatingSessionsSet = useRef(new Set());
-
+  const historyMap = useRef(new Map()); // Store serialized content per zone
+  
+  // Persistent addon instances per zone (prevent history loss)
+  const fitAddonsMap = useRef(new Map());
+  const webLinksAddonsMap = useRef(new Map());
+  const serializeAddonsMap = useRef(new Map());
+  const clipboardAddonsMap = useRef(new Map());
+  const searchAddonsMap = useRef(new Map());
+  const webglAddonsMap = useRef(new Map());
+  
   const getZoneKey = useCallback((server, zoneName) => {
     if (!server || !zoneName) return null;
     return `${server.hostname}:${server.port}:${zoneName}`;
   }, []);
 
+  // Initialize persistent addons for a zone
+  const initializeZoneAddons = useCallback((zoneKey) => {
+    if (!fitAddonsMap.current.has(zoneKey)) {
+      console.log(`🔧 ZONE ADDONS: Initializing addons for ${zoneKey}`);
+      
+      fitAddonsMap.current.set(zoneKey, new FitAddon());
+      webLinksAddonsMap.current.set(zoneKey, new WebLinksAddon());
+      serializeAddonsMap.current.set(zoneKey, new SerializeAddon());
+      clipboardAddonsMap.current.set(zoneKey, new ClipboardAddon());
+      searchAddonsMap.current.set(zoneKey, new SearchAddon());
+      
+      // Try WebGL, fallback gracefully
+      try {
+        webglAddonsMap.current.set(zoneKey, new WebglAddon());
+        console.log(`🔧 ZONE ADDONS: WebGL available for ${zoneKey}`);
+      } catch (error) {
+        console.log(`🔧 ZONE ADDONS: WebGL not supported for ${zoneKey}`);
+        webglAddonsMap.current.set(zoneKey, null);
+      }
+    }
+  }, []);
+
+  // Get addons array for a specific zone
+  const getZoneAddons = useCallback((zoneName, readOnly = false) => {
+    const zoneKey = getZoneKey(currentServer, zoneName);
+    if (!zoneKey) return null;
+
+    initializeZoneAddons(zoneKey);
+
+    const ws = websocketsMap.current.get(zoneKey);
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      // No WebSocket connection yet, return base addons without AttachAddon
+      const baseAddons = [
+        fitAddonsMap.current.get(zoneKey),
+        null, // AttachAddon placeholder
+        webLinksAddonsMap.current.get(zoneKey),
+        serializeAddonsMap.current.get(zoneKey),
+        clipboardAddonsMap.current.get(zoneKey),
+        searchAddonsMap.current.get(zoneKey),
+      ];
+      
+      const webglAddon = webglAddonsMap.current.get(zoneKey);
+      if (webglAddon) {
+        baseAddons.push(webglAddon);
+      }
+      
+      return baseAddons.filter(addon => addon !== null);
+    }
+
+    // WebSocket is available, create AttachAddon
+    const attachAddon = new AttachAddon(ws);
+    
+    const addons = [
+      fitAddonsMap.current.get(zoneKey),
+      attachAddon,
+      webLinksAddonsMap.current.get(zoneKey),
+      serializeAddonsMap.current.get(zoneKey),
+      clipboardAddonsMap.current.get(zoneKey),
+      searchAddonsMap.current.get(zoneKey),
+    ];
+    
+    const webglAddon = webglAddonsMap.current.get(zoneKey);
+    if (webglAddon) {
+      addons.push(webglAddon);
+    }
+    
+    return addons;
+  }, [currentServer, getZoneKey, initializeZoneAddons]);
+
+  // Get terminal options for a specific zone
+  const getZoneOptions = useCallback((readOnly = false) => {
+    return {
+      cursorBlink: !readOnly,
+      theme: {
+        background: '#000000',
+        foreground: '#ffffff',
+      },
+      scrollback: 10000,
+      fontSize: 12,
+      fontFamily: '"Cascadia Code", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+      allowTransparency: false,
+      disableStdin: readOnly,
+      convertEol: false,
+    };
+  }, []);
+
+  // Create or reuse terminal session (simplified for react-xtermjs)
   const createOrReuseTerminalSession = useCallback(async (server, zoneName) => {
     const zoneKey = getZoneKey(server, zoneName);
     if (!zoneKey) return null;
@@ -69,18 +165,6 @@ export const ZoneTerminalProvider = ({ children }) => {
       };
       ws.onerror = (error) => console.error(`🚨 ZONE TERMINAL: WebSocket error for ${zoneKey}:`, error);
 
-      ws.onmessage = (event) => {
-        const terminal = terminalsMap.current.get(zoneKey);
-        if (terminal) {
-          const data = event.data;
-          if (data instanceof Blob) {
-            data.text().then(text => terminal.write(text));
-          } else {
-            terminal.write(data);
-          }
-        }
-      };
-
       sessionsMap.current.set(zoneKey, sessionData);
       websocketsMap.current.set(zoneKey, ws);
 
@@ -94,132 +178,42 @@ export const ZoneTerminalProvider = ({ children }) => {
     }
   }, [getZoneKey]);
 
-  const attachTerminal = useCallback((terminalRef, zoneName, readOnly = false) => {
-    const zoneKey = getZoneKey(currentServer, zoneName);
-    if (!terminalRef.current || !zoneKey) return () => {};
-
-    if (terminalsMap.current.has(zoneKey)) {
-        const oldTerminal = terminalsMap.current.get(zoneKey);
-        try {
-            oldTerminal.dispose();
-        } catch (e) {
-            console.warn("Old terminal already disposed");
-        }
-    }
-
-    const newTerm = new Terminal({
-      cursorBlink: !readOnly,
-      theme: { background: '#000000' },
-      disableStdin: readOnly,
-    });
-    const fitAddon = new FitAddon();
-    newTerm.loadAddon(fitAddon);
-    newTerm.loadAddon(new WebLinksAddon());
-    newTerm.open(terminalRef.current);
-
-    if (readOnly) {
-        newTerm.write('\r\n\x1b[33m[READ-ONLY MODE]\x1b[0m\r\n');
-    }
-
-    terminalsMap.current.set(zoneKey, newTerm);
-    fitAddonsMap.current.set(zoneKey, fitAddon);
-    if (getZoneKey(currentServer, zoneName) === zoneKey) {
-      setTerm(newTerm);
-    }
-
-    const sessionData = sessionsMap.current.get(zoneKey);
-    const ws = websocketsMap.current.get(zoneKey);
-
-    // Helper function to setup terminal connection
-    const setupTerminalConnection = () => {
-      console.log(`✅ ZONE ATTACH: Connecting UI to existing session for ${zoneKey}`);
-      if (sessionData.buffer) {
-        newTerm.write(sessionData.buffer);
+  // Preserve terminal history before WebSocket disconnect
+  const preserveZoneHistory = useCallback((zoneKey) => {
+    const serializeAddon = serializeAddonsMap.current.get(zoneKey);
+    if (serializeAddon) {
+      try {
+        const serializedContent = serializeAddon.serialize();
+        historyMap.current.set(zoneKey, serializedContent);
+        console.log(`🔧 ZONE HISTORY: Preserved for ${zoneKey}:`, serializedContent.length, 'characters');
+      } catch (error) {
+        console.warn(`🔧 ZONE HISTORY: Failed to preserve for ${zoneKey}:`, error);
       }
-      if (!readOnly) {
-        if (onDataListenersMap.current.has(zoneKey)) {
-          onDataListenersMap.current.get(zoneKey).dispose();
-        }
-        const onDataListener = newTerm.onData((data) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(data);
-          }
-        });
-        onDataListenersMap.current.set(zoneKey, onDataListener);
-      } else {
-         if (onDataListenersMap.current.has(zoneKey)) {
-          onDataListenersMap.current.get(zoneKey).dispose();
-          onDataListenersMap.current.delete(zoneKey);
-        }
-      }
-    };
-
-    if (sessionData && ws) {
-      // Check WebSocket connection state
-      if (ws.readyState === WebSocket.OPEN) {
-        // WebSocket is ready - connect immediately
-        setupTerminalConnection();
-      } else if (ws.readyState === WebSocket.CONNECTING) {
-        // WebSocket is still connecting - wait for it to open
-        console.log(`⏳ ZONE ATTACH: WebSocket connecting for ${zoneKey}, waiting for connection...`);
-        newTerm.write('\r\n\x1b[33m[Connecting to existing session...]\x1b[0m\r\n');
-        
-        const onWsOpen = () => {
-          console.log(`✅ ZONE ATTACH: WebSocket connected, setting up terminal for ${zoneKey}`);
-          // Clear the connecting message and setup connection
-          newTerm.clear();
-          if (readOnly) {
-            newTerm.write('\r\n\x1b[33m[READ-ONLY MODE]\x1b[0m\r\n');
-          }
-          setupTerminalConnection();
-          ws.removeEventListener('open', onWsOpen);
-        };
-        
-        const onWsError = () => {
-          console.error(`❌ ZONE ATTACH: WebSocket failed to connect for ${zoneKey}`);
-          newTerm.clear();
-          newTerm.write('\r\n\x1b[31m[Connection failed]\x1b[0m\r\n');
-          newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
-          newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
-          ws.removeEventListener('open', onWsOpen);
-          ws.removeEventListener('error', onWsError);
-        };
-        
-        ws.addEventListener('open', onWsOpen);
-        ws.addEventListener('error', onWsError);
-      } else {
-        // WebSocket is closed or closing - treat as no session
-        console.log(`❌ ZONE ATTACH: WebSocket in invalid state ${ws.readyState} for ${zoneKey}`);
-        newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
-        newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
-      }
-    } else {
-      newTerm.write('\r\n\x1b[33m[NO ACTIVE ZLOGIN SESSION]\x1b[0m\r\n');
-      newTerm.write('\x1b[37m[Click the zlogin button to start a new session]\x1b[0m\r\n');
     }
+  }, []);
 
-    fitAddon.fit();
-
-    return () => {
-        try {
-            newTerm.dispose();
-            terminalsMap.current.delete(zoneKey);
-            fitAddonsMap.current.delete(zoneKey);
-            if (onDataListenersMap.current.has(zoneKey)) {
-                onDataListenersMap.current.get(zoneKey).dispose();
-                onDataListenersMap.current.delete(zoneKey);
-            }
-        } catch (e) {
-            console.warn("Terminal already disposed during cleanup");
-        }
-    };
-  }, [getZoneKey, currentServer]);
+  // Restore terminal history after WebSocket reconnect
+  const restoreZoneHistory = useCallback((zoneKey, terminal) => {
+    const history = historyMap.current.get(zoneKey);
+    if (history && terminal) {
+      try {
+        terminal.clear();
+        terminal.write(history);
+        console.log(`🔧 ZONE HISTORY: Restored for ${zoneKey}`);
+      } catch (error) {
+        console.warn(`🔧 ZONE HISTORY: Failed to restore for ${zoneKey}:`, error);
+      }
+    }
+  }, []);
 
   const forceZoneSessionCleanup = useCallback(async (server, zoneName) => {
     const zoneKey = getZoneKey(server, zoneName);
     if (!zoneKey) return;
 
     console.log(`🧹 ZLOGIN CLEANUP: Force cleaning up session state for ${zoneKey}`);
+    
+    // Preserve history before cleanup
+    preserveZoneHistory(zoneKey);
     
     const sessionData = sessionsMap.current.get(zoneKey);
     if (sessionData) {
@@ -234,24 +228,13 @@ export const ZoneTerminalProvider = ({ children }) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.close();
     }
-    
-    const terminal = terminalsMap.current.get(zoneKey);
-    if (terminal) {
-      terminal.dispose();
-    }
 
-    if (onDataListenersMap.current.has(zoneKey)) {
-      onDataListenersMap.current.get(zoneKey).dispose();
-    }
-
+    // Clean up session and WebSocket maps
     sessionsMap.current.delete(zoneKey);
     websocketsMap.current.delete(zoneKey);
-    terminalsMap.current.delete(zoneKey);
-    fitAddonsMap.current.delete(zoneKey);
-    onDataListenersMap.current.delete(zoneKey);
 
     console.log(`✅ ZLOGIN CLEANUP: Complete cleanup finished for ${zoneKey}`);
-  }, [getZoneKey, apiStopZloginSession]);
+  }, [getZoneKey, apiStopZloginSession, preserveZoneHistory]);
 
   const startZloginSessionExplicitly = useCallback(async (server, zoneName) => {
     console.log(`🎬 START ZLOGIN: User explicitly requested session start for ${getZoneKey(server, zoneName)}`);
@@ -298,18 +281,7 @@ export const ZoneTerminalProvider = ({ children }) => {
     };
     ws.onerror = (error) => console.error(`🚨 ZLOGIN RECONNECT: WebSocket error for ${zoneKey}:`, error);
 
-    ws.onmessage = (event) => {
-      const terminal = terminalsMap.current.get(zoneKey);
-      if (terminal) {
-        const data = event.data;
-        if (data instanceof Blob) {
-          data.text().then(text => terminal.write(text));
-        } else {
-          terminal.write(data);
-        }
-      }
-    };
-
+    // WebSocket message handling is now done by react-xtermjs AttachAddon
     sessionsMap.current.set(zoneKey, sessionData);
     websocketsMap.current.set(zoneKey, ws);
 
@@ -332,13 +304,29 @@ export const ZoneTerminalProvider = ({ children }) => {
   }, [getZoneKey]);
 
   const value = React.useMemo(() => ({
-    term,
-    attachTerminal,
+    // React-xtermjs specific methods
+    getZoneAddons,
+    getZoneOptions,
+    
+    // Session management methods (for compatibility)
     forceZoneSessionCleanup,
     startZloginSessionExplicitly,
     initializeSessionFromExisting,
-    pasteTextToZone
-  }), [term, attachTerminal, forceZoneSessionCleanup, startZloginSessionExplicitly, initializeSessionFromExisting, pasteTextToZone]);
+    pasteTextToZone,
+    
+    // History management
+    preserveZoneHistory,
+    restoreZoneHistory,
+  }), [
+    getZoneAddons, 
+    getZoneOptions, 
+    forceZoneSessionCleanup, 
+    startZloginSessionExplicitly, 
+    initializeSessionFromExisting, 
+    pasteTextToZone,
+    preserveZoneHistory,
+    restoreZoneHistory
+  ]);
 
   return (
     <ZoneTerminalContext.Provider value={value}>
