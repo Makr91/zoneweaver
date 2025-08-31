@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, memo } from 'react';
 import { XTerm } from 'react-xtermjs';
 import { FitAddon } from '@xterm/addon-fit';
 import { AttachAddon } from '@xterm/addon-attach';
@@ -6,84 +6,61 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { useFooter } from '../../contexts/FooterContext';
 import '@xterm/xterm/css/xterm.css';
 
+// Memoized XTerm component to prevent unnecessary re-renders (like Qovery's approach)
+const MemoizedXTerm = memo(XTerm);
+
 const HostShell = () => {
   const [addons, setAddons] = useState([]);
-  const { session, restartShell } = useFooter();
+  const { session } = useFooter();
   const fitAddon = addons[0];
-  const initializedSessionRef = useRef(null);
 
-  // Initialize addons only once per session
+  // Initialize addons when WebSocket opens (following Qovery's onOpenHandler pattern)
   useEffect(() => {
-    // Only initialize if we have a new session and haven't initialized it yet
-    if (session?.id && session?.websocket && initializedSessionRef.current !== session.id) {
-      console.log('🖥️ HOSTSHELL: Setting up addons for NEW session:', session.id);
-      
-      const setupAddons = () => {
+    if (session?.websocket) {
+      const handleWebSocketOpen = () => {
+        console.log('🖥️ HOSTSHELL: WebSocket opened, creating addons');
         const newFitAddon = new FitAddon();
         const attachAddon = new AttachAddon(session.websocket);
         const webLinksAddon = new WebLinksAddon();
         
         setAddons([newFitAddon, attachAddon, webLinksAddon]);
-        initializedSessionRef.current = session.id;
-        console.log('🖥️ HOSTSHELL: Addons initialized for session:', session.id);
       };
 
       if (session.websocket.readyState === WebSocket.OPEN) {
-        setupAddons();
+        handleWebSocketOpen();
       } else if (session.websocket.readyState === WebSocket.CONNECTING) {
-        // Wait for WebSocket to open
-        const handleOpen = () => {
-          console.log('🖥️ HOSTSHELL: WebSocket opened, setting up addons');
-          setupAddons();
-          session.websocket.removeEventListener('open', handleOpen);
-        };
-        
-        session.websocket.addEventListener('open', handleOpen);
-        
+        session.websocket.addEventListener('open', handleWebSocketOpen);
         return () => {
-          if (session.websocket) {
-            session.websocket.removeEventListener('open', handleOpen);
-          }
+          session.websocket.removeEventListener('open', handleWebSocketOpen);
         };
       }
-    } else if (!session?.id) {
-      // Clear addons when no session
+    } else {
       setAddons([]);
-      initializedSessionRef.current = null;
     }
-  }, [session?.id]); // Only depend on session ID, not WebSocket state
+  }, [session?.websocket, session?.id]);
 
   // Handle terminal resize
   const onResize = useCallback((cols, rows) => {
     console.log('🖥️ HOSTSHELL: Terminal resized to', cols, 'columns and', rows, 'rows');
   }, []);
 
-  // Fit terminal when container size changes
+  // Fit terminal when container changes (following Qovery's pattern)
   useEffect(() => {
     if (fitAddon) {
-      const timer = setTimeout(() => {
-        try {
-          fitAddon.fit();
-          console.log('🖥️ HOSTSHELL: Terminal fitted to container');
-        } catch (error) {
-          console.warn('🖥️ HOSTSHELL: Error fitting terminal:', error);
-        }
-      }, 50);
-      
-      return () => clearTimeout(timer);
+      setTimeout(() => fitAddon.fit(), 0);
     }
   }, [fitAddon]);
 
-  if (!session) {
+  if (!session || addons.length === 0) {
     return (
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
           <div className="icon is-large mb-2">
             <i className="fas fa-terminal fa-2x"></i>
           </div>
-          <p>No terminal session available</p>
+          <p>Loading terminal...</p>
           <p className="is-size-7 has-text-grey">
-            Wait for connection or restart the shell
+            Establishing connection
           </p>
         </div>
       </div>
@@ -91,7 +68,7 @@ const HostShell = () => {
   }
 
   return (
-    <XTerm
+    <MemoizedXTerm
       className="is-fullheight is-fullwidth"
       style={{ height: '100%', width: '100%' }}
       addons={addons}
