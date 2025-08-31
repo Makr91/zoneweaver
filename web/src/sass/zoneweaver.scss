@@ -235,25 +235,26 @@ $yellow: #ffe600;
   will-change: height;
   contain: layout;
   display: flex;
+  padding-top: 30px;
   flex-direction: column;
   
   // Fix XTerm's built-in scrollbar in footer terminal
- //  .xterm .xterm-viewport {
- //    overflow-y: hidden !important;
- //  }
+  .xterm .xterm-viewport {
+    overflow-y: hidden !important;
+  }
   
- //  // Force XTerm to fill its container completely without height limits
- //  .xterm {
- //    height: 100% !important;
- //    width: 100% !important;
- //    max-height: none !important;
- //    flex: 1 1 auto !important;
- //  }
-  
- //  .xterm-screen {
- //    height: 100% !important;
- //    max-height: none !important;
- //  }
+  // Force XTerm to fill its container completely without height limits
+  .xterm {
+    height: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    flex: 1 1 auto !important;
+  }
+
+  .xterm-screen {
+    height: 100% !important;
+    max-height: none !important;
+  }
   
   // Ensure react-xtermjs container fills completely
   .react-xterm {
