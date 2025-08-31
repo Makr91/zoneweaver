@@ -239,32 +239,22 @@ $yellow: #ffe600;
   flex-direction: column;
   
   // Fix XTerm's built-in scrollbar in footer terminal
-  .xterm .xterm-viewport {
-    overflow-y: hidden !important;
-  }
+ //  .xterm .xterm-viewport {
+ //    overflow-y: hidden !important;
+ //  }
   
-  // Ensure HostShell component fills available space in flex container
-  .is-fullheight.is-fullwidth {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: none; // Remove any height constraints
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
+ //  // Force XTerm to fill its container completely without height limits
+ //  .xterm {
+ //    height: 100% !important;
+ //    width: 100% !important;
+ //    max-height: none !important;
+ //    flex: 1 1 auto !important;
+ //  }
   
-  // Force XTerm to fill its container completely without height limits
-  .xterm {
-    height: 100% !important;
-    width: 100% !important;
-    max-height: none !important;
-    flex: 1 1 auto !important;
-  }
-  
-  .xterm-screen {
-    height: 100% !important;
-    max-height: none !important;
-  }
+ //  .xterm-screen {
+ //    height: 100% !important;
+ //    max-height: none !important;
+ //  }
   
   // Ensure react-xtermjs container fills completely
   .react-xterm {
