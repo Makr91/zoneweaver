@@ -55,7 +55,7 @@ const SidebarFooter = () => {
               >
                 <div className="dropdown-content">
                   <a
-                    className="dropdown-item"
+                    className="dropdown-item is-flex is-justify-content-flex-start"
                     href="https://zoneweaver.startcloud.com"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -65,7 +65,7 @@ const SidebarFooter = () => {
                     </span>
                     <span>Help and Docs</span>
                   </a>
-                  <a onClick={toggleTheme} className="dropdown-item">
+                  <a onClick={toggleTheme} className="dropdown-item is-flex is-justify-content-flex-start">
                     <span className="icon mr-2">
                       <i className="fas fa-palette"></i>
                     </span>
@@ -73,20 +73,20 @@ const SidebarFooter = () => {
                       Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}
                     </span>
                   </a>
-                  <a className="dropdown-item" href="/ui/notifications">
+                  <a className="dropdown-item is-flex is-justify-content-flex-start" href="/ui/notifications">
                     <span className="icon mr-2">
                       <i className="fas fa-bell"></i>
                     </span>
                     <span>Notifications</span>
                   </a>
-                  <a className="dropdown-item" href="/ui/profile">
+                  <a className="dropdown-item is-flex is-justify-content-flex-start" href="/ui/profile">
                     <span className="icon mr-2">
                       <i className="fas fa-user"></i>
                     </span>
                     <span>Profile</span>
                   </a>
                   <hr className="dropdown-divider" />
-                  <a onClick={handleLogout} className="dropdown-item">
+                  <a onClick={handleLogout} className="dropdown-item is-flex is-justify-content-flex-start">
                     <span className="icon has-text-danger mr-2">
                       <i className="fas fa-sign-out-alt"></i>
                     </span>
@@ -115,7 +115,7 @@ const SidebarFooter = () => {
               >
                 <div className="dropdown-content">
                   <a
-                    className="dropdown-item"
+                    className="dropdown-item is-flex is-justify-content-flex-start"
                     href="https://zoneweaver.startcloud.com"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -125,7 +125,7 @@ const SidebarFooter = () => {
                     </span>
                     <span>Help and Docs</span>
                   </a>
-                  <a onClick={toggleTheme} className="dropdown-item">
+                  <a onClick={toggleTheme} className="dropdown-item is-flex is-justify-content-flex-start">
                     <span className="icon mr-2">
                       <i className="fas fa-palette"></i>
                     </span>
@@ -133,20 +133,20 @@ const SidebarFooter = () => {
                       Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}
                     </span>
                   </a>
-                  <a className="dropdown-item" href="/ui/notifications">
+                  <a className="dropdown-item is-flex is-justify-content-flex-start" href="/ui/notifications">
                     <span className="icon mr-2">
                       <i className="fas fa-bell"></i>
                     </span>
                     <span>Notifications</span>
                   </a>
-                  <a className="dropdown-item" href="/ui/profile">
+                  <a className="dropdown-item is-flex is-justify-content-flex-start" href="/ui/profile">
                     <span className="icon mr-2">
                       <i className="fas fa-user"></i>
                     </span>
                     <span>Profile</span>
                   </a>
                   <hr className="dropdown-divider" />
-                  <a onClick={handleLogout} className="dropdown-item">
+                  <a onClick={handleLogout} className="dropdown-item is-flex is-justify-content-flex-start">
                     <span className="icon has-text-danger mr-2">
                       <i className="fas fa-sign-out-alt"></i>
                     </span>
