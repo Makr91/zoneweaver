@@ -28,11 +28,11 @@ const SidebarHeader = () => {
     } else {
       return (
         <>
-          <span className="level-item is-justify-content-flex-start icon">
+          <span className="level-item icon is-flex-grow-0">
             <i className="icon-zoneweaver-logo"></i>
           </span>
           <span className="level-item">Zoneweaver</span>
-          <span className="level-item is-justify-content-flex-end icon">
+          <span className="level-item is-justify-content-flex-end is-flex-grow-0 icon">
             <i className="fa fa-angle-left"></i>
           </span>
         </>

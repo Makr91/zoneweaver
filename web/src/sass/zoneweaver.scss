@@ -423,11 +423,6 @@ button {
 // ResizableBox styling for sidebar
 .react-resizable {
   position: relative;
-  
-  // Ensure the sidebar content takes full height
-  .hero.column.is-narrow {
-    height: 100vh;
-  }
 }
 
 // Style the default react-resizable-handle-e for sidebar

@@ -38,7 +38,7 @@ const SidebarFooter = () => {
 
   return (
     <div class="hero-foot">
-      <nav className="level button is-fullwidth">
+      <nav className="level button">
         {userContext.sidebarMinimized ? (
           <div className="level-item">
             <div
