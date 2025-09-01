@@ -44,7 +44,7 @@ const SidebarHeader = () => {
     userContext.sidebarMinimized || userContext.sidebarWidth <= 38;
 
   return (
-    <nav onClick={handleClick} className={`${isIconOnly ? "level button is-fullwidth" : "level button is-fullwidth"}`}>
+    <nav onClick={handleClick} className={`${isIconOnly ? "level button" : "level button"}`}>
         {getHeaderContent()}
     </nav>
   );
