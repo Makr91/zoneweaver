@@ -38,6 +38,7 @@ $yellow: #ffe600;
 
 // Custom color variables for enhanced theming support
 :root {
+  --bulma-box-shadow: none;
   // Text colors - Light theme defaults
   --zw-text-placeholder: #6c757d; // Medium gray for placeholders
   --zw-loading-spinner: #6c757d;  // Medium gray for loading spinners
@@ -193,12 +194,6 @@ $yellow: #ffe600;
   z-index: 10;
 }
 
-// Remove all box shadows globally
-// * {
-//   --bulma-box-shadow: none !important;
-//   box-shadow: none !important;
-// }
-
 .log-console {
   height: 100%;
   overflow-y: auto;
@@ -214,70 +209,23 @@ $yellow: #ffe600;
   width: 100%;
 }
 
-.react-resizable-handle.content {
-  padding-top: 2vh;
-}
-
-.react-resizable-handle-sw {
-  bottom: 0;
-  left: 0;
-  cursor: sw-resize;
-  transform: rotate(90deg);
-}
-
-.react-resizable-handle-se {
-  bottom: 0;
-  right: 0;
-  cursor: se-resize;
-}
-
-.react-resizable-handle-nw {
-  top: 0;
-  left: 0;
-  cursor: nw-resize;
-  transform: rotate(180deg);
-}
-
-.react-resizable-handle-ne {
-  top: 0;
-  right: 0;
-  cursor: ne-resize;
-  transform: rotate(270deg);
-}
-
-.react-resizable-handle-w,
 .react-resizable-handle-e {
   top: 50%;
   margin-top: -10px;
   cursor: ew-resize;
-}
-
-.react-resizable-handle-w {
-  left: 0;
-  transform: rotate(135deg);
-}
-
-.react-resizable-handle-e {
   right: 0;
   transform: rotate(315deg);
 }
 
-.react-resizable-handle-n,
-.react-resizable-handle-s {
+.react-resizable-handle-n {
+  position: absolute;
+  width: 100%;
   align-items: center;
+  top: 0;
 }
 
 .react-resizable-handle-n-icon {
   cursor: ns-resize;
-}
-
-.react-resizable-handle-n {
-  top: 0;
-}
-
-.react-resizable-handle-s {
-  bottom: 0;
-  transform: rotate(45deg);
 }
 
 .is-collapsible {
@@ -292,12 +240,12 @@ $yellow: #ffe600;
   }
 }
 
-// Clean dropdown styling that respects themes
+// Clean dropdown styling that respects themes  -- Find Way to over bulma border for all dropdowns to have this
 .dropdown-content {
   border: 1px solid var(--bulma-border) !important;
 }
 
-// Button styling for remaining buttons (non-dropdown)
+// Button styling for remaining buttons (non-dropdown) -- Remove if possible is-radiusless
 .button,
 button {
   border-radius: 0 !important;
@@ -361,12 +309,6 @@ button {
   }
 }
 
-// When sidebar is minimized or very narrow, hide the resize handle
-.hero.is-minimized .react-resizable-handle-e,
-.react-resizable[style*="width: 38px"] .react-resizable-handle-e {
-  display: none;
-}
-
 // Dark theme adjustments for resize handle
 [data-theme="dark"] .react-resizable .react-resizable-handle-e {
   background: var(--bulma-scheme-main);
@@ -374,13 +316,6 @@ button {
   &:hover {
     background: var(--bulma-scheme-main-ter);
   }
-}
-
-// The components handle collapsed state themselves - just ensure proper sizing
-.hero.is-minimized {
-  width: 38px !important;
-  min-width: 38px !important;
-  max-width: 38px !important;
 }
 
 // Ensure ResizableBox respects the collapsed width
