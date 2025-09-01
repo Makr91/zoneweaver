@@ -486,24 +486,16 @@ button {
 
 // The components handle collapsed state themselves - just ensure proper sizing
 .hero.is-minimized {
-  width: 60px !important;
-  min-width: 60px !important;
-  max-width: 60px !important;
-  
-  .button.is-fullwidth {
-    justify-content: center !important;
-  }
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
 }
 
 // Ensure ResizableBox respects the collapsed width
-.react-resizable[style*="width: 60px"] .hero {
-  width: 60px !important;
-  min-width: 60px !important;
-  max-width: 60px !important;
-  
-  .button.is-fullwidth {
-    justify-content: center !important;
-  }
+.react-resizable[style*="width: 38px"] .hero {
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
 }
 
 // Ensure the ResizableBox allows proper resizing

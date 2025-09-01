@@ -8,11 +8,11 @@ const SideMenu = () => {
   const { sidebarMinimized } = useContext(UserSettings);
   
   return (
-    <section className={`hero is-fullheight is-narrow ${sidebarMinimized ? 'is-minimized px-1' : ''}`}>
+    <section className={`hero is-fullheight is-narrow ${sidebarMinimized ? 'is-minimized' : ''}`}>
       <div className='hero-head'>
         <SidebarHeader />
       </div>
-      <div className='hero-body p-0 is-align-items-flex-start'>
+      <div className='hero-body p-0 is-align-items-flex-start is-justify-content-center  is-flex'>
         <Sidebar />
       </div>
       <SidebarFooter />
