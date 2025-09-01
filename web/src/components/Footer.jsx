@@ -58,10 +58,18 @@ const Footer = () => {
   const handleResize = useCallback((e, { size }) => {
     if (footerIsActive) {
       // Snap to minimum if dragged too small
-      if (size.height <= 50 && footerIsActive) {
+      if (size.height <= 30 && footerIsActive) {
         setFooterIsActive(false);
       } else {
         userSettings.setFooterHeight(size.height);
+        
+        // Trigger terminal resize after a brief delay to ensure layout updates
+        setTimeout(() => {
+          // Dispatch custom event to trigger FitAddon in HostShell
+          window.dispatchEvent(new CustomEvent('footer-resized', { 
+            detail: { height: size.height } 
+          }));
+        }, 100);
       }
     }
   }, [footerIsActive, userSettings, setFooterIsActive]);
@@ -150,7 +158,7 @@ const Footer = () => {
         resizeHandles={["n"]}
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]} // Max 70% of viewport
-        minConstraints={[Infinity, 50]} // Minimum useful size
+        minConstraints={[Infinity, 30]} // Match collapsed height
         handle={ResizeHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>

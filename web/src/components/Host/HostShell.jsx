@@ -180,6 +180,23 @@ const HostShell = () => {
     }
   }, []);
 
+  // Listen for footer resize events to trigger terminal resize
+  useEffect(() => {
+    const handleFooterResize = () => {
+      if (fitAddonRef.current && terminalInstanceRef.current) {
+        setTimeout(() => {
+          fitAddonRef.current.fit();
+          console.log('🖥️ HOSTSHELL: Terminal refitted after footer resize');
+        }, 50);
+      }
+    };
+
+    window.addEventListener('footer-resized', handleFooterResize);
+    return () => {
+      window.removeEventListener('footer-resized', handleFooterResize);
+    };
+  }, []);
+
   // Handle terminal data for debugging
   const onData = useCallback((data) => {
     // Data is handled by AttachAddon, but we can log for debugging
