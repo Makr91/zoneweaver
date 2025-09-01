@@ -14,7 +14,8 @@ $beige-lighter: #eff0eb;
   $warning: $yellow,
   $button-border-width: 0px,
   $box-shadow: none,
-  $dropdown-content-shadow: none
+  $dropdown-content-shadow: none,
+  $dropdown-content-z: 20001
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -53,6 +54,10 @@ $beige-lighter: #eff0eb;
   border-width: var(--bulma-control-border-width);
 }
 
+.dropdown.is-center .dropdown-menu {
+  left: 0;
+  right: 0;
+}
 
 // Custom color variables for enhanced theming support
 :root {
@@ -260,10 +265,6 @@ $beige-lighter: #eff0eb;
   z-index: 1000;
 }
 
-.has-z-index-sidebar-top {
-  z-index: 1001;
-}
-
 .has-z-index-modal {
   z-index: 9999;
 }
@@ -274,14 +275,6 @@ $beige-lighter: #eff0eb;
 
 .has-z-index-modal-top {
   z-index: 10001;
-}
-
-.has-z-index-dropdown {
-  z-index: 20000;
-}
-
-.has-z-index-dropdown-top {
-  z-index: 20001;
 }
 
 .has-z-index-overlay {

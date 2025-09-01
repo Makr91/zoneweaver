@@ -423,7 +423,7 @@ const VncActionsDropdown = ({
         {/* Display Settings Submenu */}
         {showDisplaySettings && (
           <div 
-            className={`dropdown-menu has-z-index-dropdown-top ${calculateSubmenuPosition(350)}`}
+            className={`dropdown-menu  ${calculateSubmenuPosition(350)}`}
           >
             <div className="dropdown-content">
               {/* Scaling Options */}
@@ -552,7 +552,7 @@ const VncActionsDropdown = ({
         {/* Actions Submenu */}
         {showActions && (
           <div 
-            className={`dropdown-menu has-z-index-dropdown-top ${calculateSubmenuPosition(300)}`}
+            className={`dropdown-menu  ${calculateSubmenuPosition(300)}`}
           >
             <div className="dropdown-content">
               {/* Enable Interactive/Read Only */}
@@ -670,7 +670,7 @@ const VncActionsDropdown = ({
             </span>
           </button>
         </div>
-        <div className="dropdown-menu has-z-index-dropdown" id="vnc-dropdown-menu" role="menu">
+        <div className="dropdown-menu " id="vnc-dropdown-menu" role="menu">
           {dropdownContent}
         </div>
       </div>
@@ -693,7 +693,7 @@ const VncActionsDropdown = ({
           </span>
         </span>
       </div>
-      <div className="dropdown-menu has-z-index-dropdown" id="vnc-dropdown-menu" role="menu">
+      <div className="dropdown-menu " id="vnc-dropdown-menu" role="menu">
         {dropdownContent}
       </div>
     </div>

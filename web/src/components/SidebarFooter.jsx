@@ -40,7 +40,7 @@ const SidebarFooter = () => {
     <div class="hero-foot">
         {userContext.sidebarMinimized ? (
           <nav
-            className={`level button dropdown is-up dropdown-trigger is-justify-content-space-around ${isDropdownActive ? "is-active" : ""}`}
+            className={`level button dropdown is-center is-up dropdown-trigger is-justify-content-space-around ${isDropdownActive ? "is-active" : ""}`}
             ref={dropdownRef}
             onClick={() => setIsDropdownActive(!isDropdownActive)}
             >
@@ -50,7 +50,7 @@ const SidebarFooter = () => {
                   </figure>
               </div>
               <div id="profile-management"
-                className="dropdown-menu has-z-index-sidebar-top"
+                className="dropdown-menu"
                 role="menu"
               >
                 <div className="dropdown-content">
@@ -97,7 +97,7 @@ const SidebarFooter = () => {
           </nav>
         ) : (
           <nav
-            className={`level button dropdown is-up dropdown-trigger is-justify-content-space-around ${isDropdownActive ? "is-active" : ""}`}
+            className={`level button dropdown is-center is-up dropdown-trigger is-justify-content-space-around ${isDropdownActive ? "is-active" : ""}`}
             ref={dropdownRef}
             onClick={() => setIsDropdownActive(!isDropdownActive)}
             >
@@ -110,7 +110,7 @@ const SidebarFooter = () => {
                   <span>{user?.username || "User"}</span>
               </div>
               <div id="profile-management"
-                className="dropdown-menu has-z-index-sidebar-top"
+                className="dropdown-menu"
                 role="menu"
               >
                 <div className="dropdown-content">
