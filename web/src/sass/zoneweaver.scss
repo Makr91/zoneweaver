@@ -49,11 +49,9 @@ $beige-lighter: #eff0eb;
   @include setup.setup-theme;
 }
 
-
-//// Clean dropdown styling that respects themes  -- Find Way to over bulma border for all dropdowns to have this
-//.dropdown-content {
-//  border: 1px solid var(--bulma-border) !important;
-//}
+.dropdown-content {
+  border: var(--bulma-control-border-width);
+}
 
 
 // Custom color variables for enhanced theming support
