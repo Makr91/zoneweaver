@@ -116,26 +116,28 @@ const LayoutContent = () => {
       </ResizableBox>
       <section className="column hero is-fullheight">
         <Navbar />
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="" element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="accounts" element={<Accounts />} />
-            <Route
-              path="settings/zoneweaver"
-              element={<ZoneweaverSettings />}
-            />
-            <Route path="settings/zapi" element={<ZoneweaverAPISettings />} />
-            <Route path="zones" element={<Zones />} />
-            <Route path="hosts" element={<Hosts />} />
-            <Route path="host-manage" element={<HostManage />} />
-            <Route path="host-networking" element={<HostNetworking />} />
-            <Route path="host-storage" element={<HostStorage />} />
-            <Route path="host-devices" element={<HostDevices />} />
-            <Route path="zone-register" element={<ZoneRegister />} />
-            <Route path="profile" element={<Profile />} />
-          </Routes>
-        </Suspense>
+        <div className="hero-body zw-main-content-scrollable">
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="" element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="accounts" element={<Accounts />} />
+              <Route
+                path="settings/zoneweaver"
+                element={<ZoneweaverSettings />}
+              />
+              <Route path="settings/zapi" element={<ZoneweaverAPISettings />} />
+              <Route path="zones" element={<Zones />} />
+              <Route path="hosts" element={<Hosts />} />
+              <Route path="host-manage" element={<HostManage />} />
+              <Route path="host-networking" element={<HostNetworking />} />
+              <Route path="host-storage" element={<HostStorage />} />
+              <Route path="host-devices" element={<HostDevices />} />
+              <Route path="zone-register" element={<ZoneRegister />} />
+              <Route path="profile" element={<Profile />} />
+            </Routes>
+          </Suspense>
+        </div>
         <Footer />
       </section>
     </div>

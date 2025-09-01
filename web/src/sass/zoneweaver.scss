@@ -119,6 +119,19 @@ $beige-lighter: #eff0eb;
     font-size: .50rem !important;
 }
 
+// Main content scrollable area for fullheight hero layout
+.zw-main-content-scrollable {
+  height: 100%;
+  overflow-y: auto;
+  padding: 0;
+}
+
+// Page content wrapper that fills the scrollable container
+.zw-page-content-scrollable {
+  height: 100%;
+  width: 100%;
+}
+
 .log-console {
   height: 100%;
   overflow-y: auto;
