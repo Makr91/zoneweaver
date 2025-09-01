@@ -13,7 +13,8 @@ $beige-lighter: #eff0eb;
   $primary: $orange,
   $warning: $yellow,
   $button-border-width: 0px,
-  $box-shadow: none
+  $box-shadow: none,
+  $dropdown-content-border-width: 1px
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -148,11 +149,6 @@ $beige-lighter: #eff0eb;
   .icon {
     color: var(--bulma-text-weak) !important;
   }
-}
-
-// Clean dropdown styling that respects themes  -- Find Way to over bulma border for all dropdowns to have this
-.dropdown-content {
-  border: 1px solid var(--bulma-border) !important;
 }
 
 // ResizableBox styling for sidebar
