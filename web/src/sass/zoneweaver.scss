@@ -10,10 +10,6 @@ $beige-light: #d0d1cd;
 $beige-lighter: #eff0eb;
 
 @use "bulma/sass" with (
-
-);
-
-@use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
   $family-primary: '"Nunito", sans-serif',
