@@ -40,7 +40,7 @@ const SidebarFooter = () => {
     <div class="hero-foot">
         {userContext.sidebarMinimized ? (
           <nav
-            className={`level button dropdown is-center is-up dropdown-trigger is-justify-content-space-around ${isDropdownActive ? "is-active" : ""}`}
+            className={`level button dropdown is-up dropdown-trigger is-justify-content-space-around ${isDropdownActive ? "is-active" : ""}`}
             ref={dropdownRef}
             onClick={() => setIsDropdownActive(!isDropdownActive)}
             >
