@@ -12,7 +12,7 @@ const SideMenu = () => {
       <div className='hero-head'>
         <SidebarHeader />
       </div>
-      <div className='hero-body p-0 is-align-items-flex-start is-flex'>
+      <div className='hero-body p-0 is-align-items-flex-start'>
         <Sidebar />
       </div>
       <SidebarFooter />

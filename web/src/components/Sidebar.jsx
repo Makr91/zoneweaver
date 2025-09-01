@@ -35,7 +35,7 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   return (
-    <aside className='menu'>
+    <aside className='menu is-flex-grow-1'>
       <DashEntry title={"Dashboard"} link={"/ui/dashboard"} icon={"fas fa-solid fa-gauge"} />
 
       <div>
