@@ -53,7 +53,7 @@ const Organizations = () => {
   // Check if user has permission to view organizations
   if (user?.role !== 'super-admin') {
     return (
-      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <div className='hero-body p-0 is-align-items-stretch'>
         <div className='container is-fluid m-2'>
           <div className='box'>
             <div className='notification is-danger'>
@@ -67,7 +67,7 @@ const Organizations = () => {
   }
 
   return (
-    <div className='hero-body mainbody p-0 is-align-items-stretch'>
+    <div className='hero-body p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>Organization Management - Zoneweaver</title>

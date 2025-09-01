@@ -207,7 +207,7 @@ const Zones = () => {
 
   if (allServers.length === 0) {
     return (
-      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <div className='hero-body p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>Zones - Zoneweaver</title>
@@ -241,7 +241,7 @@ const Zones = () => {
   }
 
   return (
-    <div className='hero-body mainbody p-0 is-align-items-stretch'>
+    <div className='hero-body p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>Zones - Zoneweaver</title>

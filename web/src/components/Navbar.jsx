@@ -651,8 +651,8 @@ const Navbar = () => {
   }, [currentServer, user]);
 
   return (
-    <div className='hero-head z-index-set-behind'>
-      <nav className='level hero-head' role='navigation' aria-label='main navigation'>
+    <div className='hero-head'>
+      <nav className='level' role='navigation' aria-label='main navigation'>
         <Modal />
         <div className='level-left'>
           {currentServer ? (

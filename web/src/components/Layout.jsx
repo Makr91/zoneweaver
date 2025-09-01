@@ -114,7 +114,7 @@ const LayoutContent = () => {
       >
         <SideMenu />
       </ResizableBox>
-      <section className="hero column has-background-dark is-fullheight">
+      <section className="column hero is-fullheight">
         <Navbar />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>

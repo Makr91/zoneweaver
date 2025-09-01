@@ -71,7 +71,7 @@ const Footer = () => {
   }, []);
 
   // Use collapsed height (0) when not active, persistent height when active
-  const effectiveHeight = footerIsActive ? userSettings.footerHeight : 0;
+  const effectiveHeight = footerIsActive ? userSettings.footerHeight : 30;
 
   const ResizeHandle = () => {
     return (
@@ -136,7 +136,7 @@ const Footer = () => {
   };
 
   return (
-    <div className='z-index-set-behind'>
+    <div id="hero-foot">
       <ResizableBox
         onResize={handleResize}
         className={footerIsActive ? "" : "is-minimized"}

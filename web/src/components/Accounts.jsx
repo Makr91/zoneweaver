@@ -463,7 +463,7 @@ const Accounts = () => {
   };
 
   return (
-    <div className='hero-body mainbody p-0 is-align-items-stretch'>
+    <div className='hero-body p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>User Management - Zoneweaver</title>

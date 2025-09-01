@@ -203,7 +203,7 @@ const Dashboard = () => {
   // Loading state
   if (serversLoading || (loading && !infrastructureData.servers)) {
     return (
-      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <div className='hero-body p-0 is-align-items-stretch'>
         <div className='container has-text-centered p-6'>
           <div className='button is-loading is-large is-ghost'></div>
           <p className='mt-2'>Loading infrastructure overview...</p>
@@ -215,7 +215,7 @@ const Dashboard = () => {
   // No servers state
   if (!servers || servers.length === 0) {
     return (
-      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <div className='hero-body p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>Infrastructure Overview - Zoneweaver</title>
@@ -243,7 +243,7 @@ const Dashboard = () => {
   const { summary } = infrastructureData;
 
   return (
-    <div className='hero-body mainbody p-0 is-align-items-stretch'>
+    <div className='hero-body p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>Infrastructure Overview - Zoneweaver</title>

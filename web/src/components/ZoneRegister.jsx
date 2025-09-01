@@ -49,7 +49,7 @@ const ZoneRegister = () => {
   };
 
   return (
-    <section className='hero-body mainbody p-0  is-align-items-stretch has-background-gray'>
+    <section className='hero-body p-0  is-align-items-stretch has-background-gray'>
       <div className='hero-body'>
         <div className='container'>
           <form onSubmit={Register} className='box' autoComplete='off'>

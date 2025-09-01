@@ -127,7 +127,7 @@ const Hosts = () => {
   // No servers available
   if (!servers || servers.length === 0) {
     return (
-      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <div className='hero-body p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>Host Overview - Zoneweaver</title>
@@ -163,7 +163,7 @@ const Hosts = () => {
   // No current server selected
   if (!currentServer) {
     return (
-      <div className='hero-body mainbody p-0 is-align-items-stretch'>
+      <div className='hero-body p-0 is-align-items-stretch'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>Host Overview - Zoneweaver</title>
@@ -189,7 +189,7 @@ const Hosts = () => {
   }
 
   return (
-    <div className='hero-body mainbody p-0 is-align-items-stretch'>
+    <div className='hero-body p-0 is-align-items-stretch'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>Host Overview - Zoneweaver</title>

@@ -26,7 +26,6 @@ $yellow: #ffe600;
   @include light.light-theme;
 }
 
-// Manual theme control via data-theme attributes and CSS classes
 @include cv.bulma-theme($name: "dark") {
   @include dark.dark-theme;
   @include setup.setup-theme;
@@ -266,32 +265,11 @@ $yellow: #ffe600;
   }
 }
 
-.sidebar {
-  width: 100%;
-  align-items: flex-start !important;
-  @include custom-scrollbar(0px);
-}
-
-.mainbody {
-  height: 1vh;
-  align-items: flex-start !important;
-  overflow-y: auto;
-  @include custom-scrollbar();
-}
-
 // Apply dark scrollbar theming to main content areas
 .hero-body,
 [class*="has-overflow-auto"],
 .box,
 .container {
-  @include custom-scrollbar();
-}
-
-.sidebarbody {
-  height: 23vh;
-  align-items: flex-start !important;
-  overflow-y: auto;
-  overflow-x: hidden;
   @include custom-scrollbar();
 }
 
