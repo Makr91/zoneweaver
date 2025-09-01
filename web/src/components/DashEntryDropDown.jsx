@@ -71,7 +71,7 @@ const DashEntryDropDown = ({ title, icon }) => {
             </span>
           </a>
         </p>
-        <p className="control">
+        <p className="control pr-2">
           <a className="button" onClick={handleToggle}>
             <span className="icon">
               <i

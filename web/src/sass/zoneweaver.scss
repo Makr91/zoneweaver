@@ -435,11 +435,11 @@ button {
   cursor: ew-resize;
   z-index: 1000;
   background: var(--bulma-scheme-main-bis);
-//  border-left: 1px solid var(--bulma-border);
+  border-left: none !important;
   opacity: 0.8;
   transition: all 0.2s ease;
-  transform: none !important; // Remove the default rotation
-  margin-top: 0 !important; // Remove default margin
+  transform: none !important;
+  margin-top: 0 !important;
   
   &:hover {
     opacity: 1;
