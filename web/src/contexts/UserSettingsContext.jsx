@@ -52,7 +52,7 @@ const UserSettingsProvider = ({ children }) => {
   }, [sidebarMinimized]);
 
   useEffect(() => {
-    if (sidebarWidth < 140) {
+    if (sidebarWidth < 180) {
       setSidebarMinimized(true);
     }
     localStorage.setItem('zoneweaver_sidebar_width', sidebarWidth.toString());
