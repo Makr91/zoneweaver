@@ -471,7 +471,7 @@ button {
 
 // When sidebar is minimized or very narrow, hide the resize handle
 .hero.is-minimized .react-resizable-handle-e,
-.react-resizable[style*="width: 60px"] .react-resizable-handle-e {
+.react-resizable[style*="width: 38px"] .react-resizable-handle-e {
   display: none;
 }
 
