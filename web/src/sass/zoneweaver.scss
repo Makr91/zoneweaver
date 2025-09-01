@@ -3,11 +3,27 @@
 // Set your brand colors
 $orange: #ff6600;
 $yellow: #ffe600;
+$purple: #8a4d76;
+$pink: #fa7c91;
+$brown: #757763;
+$beige-light: #d0d1cd;
+$beige-lighter: #eff0eb;
 
-// Import Bulma with custom variables
+@use "bulma/sass" with (
+
+);
+
 @use "bulma/sass" with (
   $primary: $orange,
-  $warning: $yellow
+  $warning: $yellow,
+  $family-primary: '"Nunito", sans-serif',
+  $grey-dark: $brown,
+  $grey-light: $beige-light,
+  $primary: $purple,
+  $link: $pink,
+  $control-border-width: 2px,
+  $input-shadow: none,
+  $box-shadow: none
 );
 
 // Import theme utilities for dark mode implementation
@@ -38,7 +54,6 @@ $yellow: #ffe600;
 
 // Custom color variables for enhanced theming support
 :root {
-  --bulma-box-shadow: none;
   // Text colors - Light theme defaults
   --zw-text-placeholder: #6c757d; // Medium gray for placeholders
   --zw-loading-spinner: #6c757d;  // Medium gray for loading spinners
