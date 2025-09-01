@@ -16,8 +16,9 @@ $beige-lighter: #eff0eb;
   $box-shadow: none,
   $dropdown-content-shadow: none,
   $dropdown-content-z: 4,
-  $body-overflow-y: auto,
-  $control-radius: none
+  $control-radius: none,
+  $card-shadow: none,
+  $body-overflow-y: auto
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -121,8 +122,10 @@ $beige-lighter: #eff0eb;
 
 // Main content scrollable area for fullheight hero layout
 .zw-main-content-scrollable {
-  height: 100%;
-  overflow-y: auto;
+  flex: 1;           // Grow to fill available space
+  min-height: 0;     // Allow flexbox shrinking
+  overflow-y: auto;  // Scroll when content overflows
+  overflow-x: hidden; // Hide horizontal scroll
   padding: 0;
 }
 
