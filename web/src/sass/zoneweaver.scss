@@ -448,7 +448,7 @@ button {
   cursor: ew-resize;
   z-index: 1000;
   background: var(--bulma-scheme-main-bis);
-  border-left: 1px solid var(--bulma-border);
+//  border-left: 1px solid var(--bulma-border);
   opacity: 0.8;
   transition: all 0.2s ease;
   transform: none !important; // Remove the default rotation
@@ -527,12 +527,18 @@ button {
   font-family: 'fontello' !important;
   font-style: normal !important;
   font-weight: normal !important;
-  display: inline-block;
-  text-decoration: inherit;
-  text-align: center;
-  font-variant: normal;
   text-transform: none;
-  line-height: 1em;
+  text-decoration: inherit;
+  font-size: 200%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: var(--fa-display, inline-block);
+  font-feature-settings: normal;
+  font-synthesis: none;
+  font-variant: normal;
+  line-height: 1;
+  text-align: center;
+  text-rendering: auto;
 }
 
 @font-face {
@@ -543,21 +549,29 @@ button {
       format("truetype");
 }
 
-[class^="icon-"]:before,
-[class*=" icon-"]:before {
-  font-family: "fontello";
-  font-style: normal;
-  font-variant: normal;
-  text-transform: none;
-  font-size: 200%;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 .icon-zoneweaver-logo:before {
   content: '\e801';
 }
+
+//[class^="icon-"]:before,
+//[class*=" icon-"]:before {
+//  font-family: 'fontello' !important;
+//  font-style: normal !important;
+//  font-weight: normal !important;
+//  text-transform: none;
+//  text-decoration: inherit;
+//  font-size: 200%;
+//  -webkit-font-smoothing: antialiased;
+//  -moz-osx-font-smoothing: grayscale;
+//  display: var(--fa-display, inline-block);
+//  font-feature-settings: normal;
+//  font-synthesis: none;
+//  font-variant: normal;
+//  line-height: 1;
+//  text-align: center;
+//  text-rendering: auto;
+//}
+//
 
 // Task status row styling
 .task-failed {
