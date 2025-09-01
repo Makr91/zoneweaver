@@ -90,9 +90,9 @@ const LayoutContent = () => {
 
   const handleResize = (e, { size }) => {
     userSettings.setSidebarWidth(size.width);
-    if (size.width <= 60 && !userSettings.sidebarMinimized) {
+    if (size.width <= 38 && !userSettings.sidebarMinimized) {
       userSettings.setSidebarMinimized(true);
-    } else if (size.width > 60 && userSettings.sidebarMinimized) {
+    } else if (size.width > 38 && userSettings.sidebarMinimized) {
       userSettings.setSidebarMinimized(false);
     }
   };
@@ -106,8 +106,8 @@ const LayoutContent = () => {
   };
 
   const effectiveWidth = userSettings.sidebarMinimized
-    ? 60
-    : Math.max(userSettings.sidebarWidth, 60);
+    ? 38
+    : Math.max(userSettings.sidebarWidth, 38);
 
   return (
     <div className="columns is-gapless">
