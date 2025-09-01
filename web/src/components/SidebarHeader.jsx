@@ -16,7 +16,7 @@ const SidebarHeader = () => {
   const getHeaderContent = () => {
     const width = userContext.sidebarWidth;
 
-    if (userContext.sidebarMinimized || width <= 60) {
+    if (userContext.sidebarMinimized || width <= 38) {
       return (
         <span
           className="icon has-tooltip-arrow has-tooltip-right"
@@ -28,7 +28,7 @@ const SidebarHeader = () => {
     } else {
       return (
         <>
-          <span className="icon">
+          <span className="level-item is-justify-content-flex-start icon pl-1">
             <i className="icon-zoneweaver-logo"></i>
           </span>
           <span className="level-item">Zoneweaver</span>
@@ -41,7 +41,7 @@ const SidebarHeader = () => {
   };
 
   const isIconOnly =
-    userContext.sidebarMinimized || userContext.sidebarWidth <= 60;
+    userContext.sidebarMinimized || userContext.sidebarWidth <= 38;
 
   return (
     <nav className="level">
