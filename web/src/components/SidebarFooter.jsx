@@ -38,85 +38,19 @@ const SidebarFooter = () => {
 
   return (
     <div class="hero-foot">
-      <nav className="level button">
         {userContext.sidebarMinimized ? (
-            <div
-              className={`level-item dropdown is-up is-relative ${isDropdownActive ? "is-active" : ""}`}
-              ref={dropdownRef}
-            >
-              <div className="dropdown-trigger">
-                <button
-                  className="button is-ghost p-0 is-flex is-align-items-center"
-                  aria-haspopup="true"
-                  onClick={() => setIsDropdownActive(!isDropdownActive)}
-                >
-                  <GravatarImage />
-                </button>
-              </div>
-              <div
-                className="dropdown-menu has-z-index-sidebar-top"
-                id="profile-management"
-                role="menu"
-              >
-                <div className="dropdown-content">
-                  <a
-                    className="dropdown-item"
-                    href="https://zoneweaver.startcloud.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <span className="icon mr-2">
-                      <i className="fas fa-info-circle"></i>
-                    </span>
-                    <span>Help and Docs</span>
-                  </a>
-                  <a onClick={toggleTheme} className="dropdown-item">
-                    <span className="icon mr-2">
-                      <i className="fas fa-palette"></i>
-                    </span>
-                    <span>
-                      Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}
-                    </span>
-                  </a>
-                  <a className="dropdown-item" href="/ui/notifications">
-                    <span className="icon mr-2">
-                      <i className="fas fa-bell"></i>
-                    </span>
-                    <span>Notifications</span>
-                  </a>
-                  <a className="dropdown-item" href="/ui/profile">
-                    <span className="icon mr-2">
-                      <i className="fas fa-user"></i>
-                    </span>
-                    <span>Profile</span>
-                  </a>
-                  <hr className="dropdown-divider" />
-                  <a onClick={handleLogout} className="dropdown-item">
-                    <span className="icon has-text-danger mr-2">
-                      <i className="fas fa-sign-out-alt"></i>
-                    </span>
-                    <span>Log Out</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-        ) : (
-            <div
-              className={`level-item dropdown is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}
-              ref={dropdownRef}
-              onClick={() => setIsDropdownActive(!isDropdownActive)}
+          <nav
+            className={`level button dropdown is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}
+            ref={dropdownRef}
+            onClick={() => setIsDropdownActive(!isDropdownActive)}
             >
                 <div className="level-item icon is-flex-grow-0">
                   <figure className="image is-32x32">
                     <GravatarImage />
                   </figure>
-                </div>
-                <div className="level-item">
-                  <span>{user?.username || "User"}</span>
-                </div>
-              <div
+              </div>
+              <div id="profile-management"
                 className="dropdown-menu has-z-index-sidebar-top"
-                id="profile-management"
                 role="menu"
               >
                 <div className="dropdown-content">
@@ -160,9 +94,68 @@ const SidebarFooter = () => {
                   </a>
                 </div>
               </div>
-            </div>
+          </nav>
+        ) : (
+          <nav
+            className={`level button dropdown is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}
+            ref={dropdownRef}
+            onClick={() => setIsDropdownActive(!isDropdownActive)}
+            >
+              <div className="level-item icon is-flex-grow-0">
+                  <figure className="image is-32x32">
+                    <GravatarImage />
+                  </figure>
+              </div>
+              <div className="level-item">
+                  <span>{user?.username || "User"}</span>
+              </div>
+              <div id="profile-management"
+                className="dropdown-menu has-z-index-sidebar-top"
+                role="menu"
+              >
+                <div className="dropdown-content">
+                  <a
+                    className="dropdown-item"
+                    href="https://zoneweaver.startcloud.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span className="icon mr-2">
+                      <i className="fas fa-info-circle"></i>
+                    </span>
+                    <span>Help and Docs</span>
+                  </a>
+                  <a onClick={toggleTheme} className="dropdown-item">
+                    <span className="icon mr-2">
+                      <i className="fas fa-palette"></i>
+                    </span>
+                    <span>
+                      Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}
+                    </span>
+                  </a>
+                  <a className="dropdown-item" href="/ui/notifications">
+                    <span className="icon mr-2">
+                      <i className="fas fa-bell"></i>
+                    </span>
+                    <span>Notifications</span>
+                  </a>
+                  <a className="dropdown-item" href="/ui/profile">
+                    <span className="icon mr-2">
+                      <i className="fas fa-user"></i>
+                    </span>
+                    <span>Profile</span>
+                  </a>
+                  <hr className="dropdown-divider" />
+                  <a onClick={handleLogout} className="dropdown-item">
+                    <span className="icon has-text-danger mr-2">
+                      <i className="fas fa-sign-out-alt"></i>
+                    </span>
+                    <span>Log Out</span>
+                  </a>
+                </div>
+              </div>
+          </nav>
         )}
-      </nav>
     </div>
   );
 };
