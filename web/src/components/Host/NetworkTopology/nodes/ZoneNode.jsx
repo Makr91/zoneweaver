@@ -41,7 +41,7 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
       <Handle
         type="source"
         position={Position.Top}
-        className="zw-node-handle zw-zone-active-bg has-left-75-percent"
+        className="zw-node-handle zw-zone-active-bg"
       />
 
       {/* Icon */}

@@ -70,7 +70,7 @@ const ServiceDetailsModal = ({ service, onClose }) => {
                   <tbody>
                     {detailsArray.map((detail, index) => (
                       <tr key={index}>
-                        <td className="has-width-30">
+                        <td>
                           <strong>{detail.label}</strong>
                         </td>
                         <td>

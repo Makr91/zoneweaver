@@ -89,7 +89,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                 <table className='table is-fullwidth is-striped'>
                   <thead>
                     <tr>
-                      <th className="has-width-30">Property</th>
+                      <th>Property</th>
                       <th>Value</th>
                     </tr>
                   </thead>

@@ -12,6 +12,7 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
+  $button-border-width: 0px,
   $box-shadow: none
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
@@ -984,18 +985,4 @@ $beige-lighter: #eff0eb;
 
 .zw-zone-active-bg {
   background-color: var(--zw-zone-active) !important;
-}
-
-// Percentage Width helpers
-.has-width-30 {
-  width: 30% !important;
-}
-
-// Additional Bulma-style helpers for missing utilities
-.is-borderless {
-  border: none !important;
-}
-
-.has-left-75-percent {
-  left: 75% !important;
 }

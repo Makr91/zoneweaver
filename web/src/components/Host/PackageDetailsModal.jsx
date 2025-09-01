@@ -116,7 +116,7 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
                   <tbody>
                     {statusInfo.map((info, index) => (
                       <tr key={index}>
-                        <td className="has-width-30">
+                        <td >
                           <strong>{info.label}</strong>
                         </td>
                         <td>{info.value}</td>
@@ -137,7 +137,7 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
                   <tbody>
                     {detailsArray.map((detail, index) => (
                       <tr key={index}>
-                        <td className="has-width-30">
+                        <td>
                           <strong>{detail.label}</strong>
                         </td>
                         <td>
