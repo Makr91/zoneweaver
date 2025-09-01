@@ -9,7 +9,7 @@ const DashEntry = ({ link, title, icon, isSubmenu }) => {
   if (!userContext.sidebarMinimized) {
     return (
       <NavLink
-        className={`button is-justify-content-start ${isSubmenu ? "pl-6" : ""}`}
+        className={`button is-fullwidth is-justify-content-start ${isSubmenu ? "pl-5" : ""}`}
         to={link}
       >
         <span className="icon">
