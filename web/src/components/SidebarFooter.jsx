@@ -106,11 +106,8 @@ const SidebarFooter = () => {
           <div
             className={`dropdown is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}
             ref={dropdownRef}
+            onClick={() => setIsDropdownActive(!isDropdownActive)}
           >
-            <nav
-              className="level button"
-              onClick={() => setIsDropdownActive(!isDropdownActive)}
-            >
               <div className="level-item">
                 <figure className="image is-32x32">
                   <GravatarImage />
@@ -119,7 +116,6 @@ const SidebarFooter = () => {
               <div className="level-item">
                 <span>{user?.username || "User"}</span>
               </div>
-            </nav>
             <div
               className="dropdown-menu has-z-index-sidebar-top"
               id="profile-management"
