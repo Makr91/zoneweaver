@@ -229,6 +229,17 @@ $beige-lighter: #eff0eb;
   }
 }
 
+// Hide resize handle when sidebar is minimized
+.is-sidebar-minimized .react-resizable-handle-e {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+// Ensure minimized sidebar doesn't show resize cursor
+.is-sidebar-minimized {
+  cursor: default !important;
+}
+
 // Fix for custom icon fonts
 .icon-zoneweaver-logo {
   font-family: 'fontello' !important;
