@@ -120,13 +120,20 @@ $beige-lighter: #eff0eb;
     font-size: .50rem !important;
 }
 
-// Main content scrollable area for fullheight hero layout
+// Override nested hero layout with CSS Grid for reliable fullheight behavior
+.column.hero.is-fullheight {
+  display: grid !important;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+// Main content scrollable area for CSS Grid layout
 .zw-main-content-scrollable {
-  flex: 1;           // Grow to fill available space
-  min-height: 0;     // Allow flexbox shrinking
   overflow-y: auto;  // Scroll when content overflows
   overflow-x: hidden; // Hide horizontal scroll
   padding: 0;
+  min-height: 0;     // Allow grid shrinking
 }
 
 // Page content wrapper that fills the scrollable container
