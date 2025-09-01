@@ -151,23 +151,16 @@ $beige-lighter: #eff0eb;
   flex-direction: column;
 }
 
-// Fix react-xtermjs to fill the full log-console height (handle overlays, doesn't take space)
+// Fix react-xtermjs wrapper to fill the available space, let xterm.js handle internal sizing
 .log-console .is-fullheight.is-fullwidth {
-  height: 100% !important;
+  height: calc(100% - 30px) !important;
   width: 100% !important;
 }
 
-// Force terminal div to fill its wrapper completely
+// Don't override xterm.js internal sizing - let FitAddon handle it
 .log-console .terminal.xterm {
-  height: 100% !important;
   width: 100% !important;
-}
-
-// Ensure xterm internal elements scale properly
-.log-console .xterm-viewport,
-.log-console .xterm-screen {
-  height: 100% !important;
-  width: 100% !important;
+  /* Remove height override to let xterm.js handle it */
 }
 
 .react-resizable-handle {

@@ -250,7 +250,7 @@ const Dashboard = () => {
         <link rel='canonical' href={window.location.origin} />
       </Helmet>
 
-      <div className='container has-background-grey is-fluid p-3'>
+      <div className='container is-fluid p-3 has-background-grey'>
         {/* Header with rounded corners */}
         <div className='box mb-3'>
           <div className='level is-mobile'>
