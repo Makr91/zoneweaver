@@ -379,7 +379,7 @@ const Zones = () => {
                         <details>
                           <summary className='title is-6 is-clickable'>Raw Data (Debug)</summary>
                           <div className='box'>
-                            <pre className='is-size-7 has-overflow-auto'>{JSON.stringify(zoneDetails, null, 2)}</pre>
+                            <pre className='is-size-7'>{JSON.stringify(zoneDetails, null, 2)}</pre>
                           </div>
                         </details>
                       </div>

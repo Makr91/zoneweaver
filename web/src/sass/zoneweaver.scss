@@ -12,8 +12,7 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
-  $box-shadow: none,
-  $dropdown-content: 
+  $box-shadow: none
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -106,105 +105,6 @@ $beige-lighter: #eff0eb;
     font-size: .50rem !important;
 }
 
-// Color utility classes using our CSS variables
-.zw-loading-spinner {
-  color: var(--zw-loading-spinner);
-}
-
-.zw-text-placeholder {
-  color: var(--zw-text-placeholder);
-}
-
-.zw-status-success {
-  color: var(--zw-status-success);
-}
-
-.zw-status-warning {
-  color: var(--zw-status-warning);
-}
-
-.zw-chart-bg {
-  background-color: var(--zw-chart-background);
-}
-
-.zw-chart-border {
-  border-color: var(--zw-chart-border);
-}
-
-// Network topology node colors for theming
-.zw-zone-active {
-  background-color: var(--zw-zone-active);
-}
-
-.zw-zone-inactive {
-  background-color: var(--zw-zone-inactive);
-}
-
-.zw-nic-active {
-  background-color: var(--zw-nic-active);
-}
-
-.zw-nic-inactive {
-  background-color: var(--zw-nic-inactive);
-}
-
-.zw-vnic-color {
-  background-color: var(--zw-vnic-color);
-}
-
-.zw-aggregate-color {
-  background-color: var(--zw-aggregate-color);
-}
-
-.zw-etherstub-color {
-  background-color: var(--zw-etherstub-color);
-}
-
-.zw-node-text {
-  color: var(--zw-node-text);
-}
-
-.zw-border-light {
-  border-color: var(--zw-border-light);
-}
-
-.zw-controls-bg {
-  background-color: var(--zw-controls-bg);
-}
-
-// Z-index utility classes for consistent layering
-.has-z-index-sidebar {
-  z-index: 1000;
-}
-
-.has-z-index-sidebar-top {
-  z-index: 1001;
-}
-
-.has-z-index-modal {
-  z-index: 9999;
-}
-
-.has-z-index-modal-high {
-  z-index: 10000;
-}
-
-.has-z-index-modal-top {
-  z-index: 10001;
-}
-
-.has-z-index-dropdown {
-  z-index: 20000;
-}
-
-.has-z-index-dropdown-top {
-  z-index: 20001;
-}
-
-.has-z-index-overlay {
-  z-index: 10;
-}
-
 .log-console {
   height: 100%;
   overflow-y: auto;
@@ -229,8 +129,6 @@ $beige-lighter: #eff0eb;
 }
 
 .react-resizable-handle-n {
-  position: absolute;
-  width: 100%;
   align-items: center;
   top: 0;
 }
@@ -355,25 +253,38 @@ $beige-lighter: #eff0eb;
   content: '\e801';
 }
 
-//[class^="icon-"]:before,
-//[class*=" icon-"]:before {
-//  font-family: 'fontello' !important;
-//  font-style: normal !important;
-//  font-weight: normal !important;
-//  text-transform: none;
-//  text-decoration: inherit;
-//  font-size: 200%;
-//  -webkit-font-smoothing: antialiased;
-//  -moz-osx-font-smoothing: grayscale;
-//  display: var(--fa-display, inline-block);
-//  font-feature-settings: normal;
-//  font-synthesis: none;
-//  font-variant: normal;
-//  line-height: 1;
-//  text-align: center;
-//  text-rendering: auto;
-//}
-//
+// Z-index utility classes for consistent layering
+.has-z-index-sidebar {
+  z-index: 1000;
+}
+
+.has-z-index-sidebar-top {
+  z-index: 1001;
+}
+
+.has-z-index-modal {
+  z-index: 9999;
+}
+
+.has-z-index-modal-high {
+  z-index: 10000;
+}
+
+.has-z-index-modal-top {
+  z-index: 10001;
+}
+
+.has-z-index-dropdown {
+  z-index: 20000;
+}
+
+.has-z-index-dropdown-top {
+  z-index: 20001;
+}
+
+.has-z-index-overlay {
+  z-index: 10;
+}
 
 // Task status row styling
 .task-failed {
@@ -384,92 +295,70 @@ $beige-lighter: #eff0eb;
   background-color: rgba(var(--bulma-warning-h), var(--bulma-warning-s), var(--bulma-warning-l), 0.1) !important;
 }
 
-// Custom helper classes for replacing inline styles
-// Box Shadow helpers
-.has-shadow-small {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+// Color utility classes using our CSS variables
+.zw-loading-spinner {
+  color: var(--zw-loading-spinner);
 }
 
-.has-shadow-medium {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+.zw-text-placeholder {
+  color: var(--zw-text-placeholder);
 }
 
-// Max Height helpers
-.has-max-height-150 {
-  max-height: 150px !important;
+.zw-status-success {
+  color: var(--zw-status-success);
 }
 
-.has-max-height-200 {
-  max-height: 200px !important;
+.zw-status-warning {
+  color: var(--zw-status-warning);
 }
 
-.has-max-height-300 {
-  max-height: 300px !important;
+.zw-chart-bg {
+  background-color: var(--zw-chart-background);
 }
 
-// Viewport Units helpers
-.has-width-95vw {
-  width: 95vw !important;
+.zw-chart-border {
+  border-color: var(--zw-chart-border);
 }
 
-.has-height-90vh {
-  height: 90vh !important;
+// Network topology node colors for theming
+.zw-zone-active {
+  background-color: var(--zw-zone-active);
 }
 
-.has-height-85vh {
-  height: 85vh !important;
+.zw-zone-inactive {
+  background-color: var(--zw-zone-inactive);
 }
 
-// Percentage Width helpers
-.has-width-30 {
-  width: 30% !important;
+.zw-nic-active {
+  background-color: var(--zw-nic-active);
 }
 
-// Card width helpers for legend components
-.has-min-width-250-max-300 {
-  min-width: 250px !important;
-  max-width: 300px !important;
+.zw-nic-inactive {
+  background-color: var(--zw-nic-inactive);
 }
 
-// Combined Max Height + Overflow helpers (common patterns)
-.has-max-height-150-auto {
-  max-height: 150px !important;
-  overflow: auto !important;
+.zw-vnic-color {
+  background-color: var(--zw-vnic-color);
 }
 
-.has-max-height-200-auto {
-  max-height: 200px !important;
-  overflow: auto !important;
+.zw-aggregate-color {
+  background-color: var(--zw-aggregate-color);
 }
 
-.has-max-height-300-auto {
-  max-height: 300px !important;
-  overflow: auto !important;
+.zw-etherstub-color {
+  background-color: var(--zw-etherstub-color);
 }
 
-// Additional margin helpers for specific pixel values
-.has-margin-right-3px {
-  margin-right: 3px !important;
+.zw-node-text {
+  color: var(--zw-node-text);
 }
 
-.has-margin-bottom-12px {
-  margin-bottom: 12px !important;
+.zw-border-light {
+  border-color: var(--zw-border-light);
 }
 
-.has-margin-top-6px {
-  margin-top: 6px !important;
-}
-
-// Additional font size helpers
-.has-font-size-6px {
-  font-size: 6px !important;
-}
-
-// Flex helpers for complex layouts
-.is-flex-column-center {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
+.zw-controls-bg {
+  background-color: var(--zw-controls-bg);
 }
 
 // Chart container styling
@@ -477,26 +366,6 @@ $beige-lighter: #eff0eb;
   background-color: var(--zw-chart-background) !important;
   border: 1px solid var(--zw-chart-border) !important;
   padding: 5px !important;
-}
-
-// Small padding helper
-.has-padding-5px {
-  padding: 5px !important;
-}
-
-// Padding helpers
-.has-padding-10px {
-  padding: 10px !important;
-}
-
-// Border radius helpers
-.has-border-radius-8px {
-  border-radius: 8px !important;
-}
-
-// Viewport calculations for chart heights
-.has-height-calc-90vh-180px {
-  height: calc(90vh - 180px) !important;
 }
 
 // Complex chart container styling
@@ -533,20 +402,6 @@ $beige-lighter: #eff0eb;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
   min-width: 20px !important;
   text-align: center !important;
-}
-
-// Opacity helpers
-.has-opacity-70 {
-  opacity: 0.7 !important;
-}
-
-.has-opacity-80 {
-  opacity: 0.8 !important;
-}
-
-// Margin reset helper -- REMOVE ME? Replace with Bulma?
-.has-margin-0 {
-  margin: 0 !important;
 }
 
 // Complex flex layouts for console containers
@@ -662,92 +517,6 @@ $beige-lighter: #eff0eb;
   color: #ecf0f1 !important;
 }
 
-// Overflow helpers
-.has-overflow-auto {
-  overflow: auto !important;
-}
-
-// Line Height helpers
-.has-line-height-12 {
-  line-height: 1.2 !important;
-}
-
-// Font Size helpers (smaller than Bulma's is-size-7)
-.has-font-size-8px {
-  font-size: 8px !important;
-}
-
-.has-font-size-9px {
-  font-size: 9px !important;
-}
-
-.has-font-size-12px {
-  font-size: 12px !important;
-}
-
-// Min Width helpers
-.has-min-width-150 {
-  min-width: 150px !important;
-}
-
-.has-min-width-250 {
-  min-width: 250px !important;
-}
-
-.has-max-width-300 {
-  max-width: 300px !important;
-}
-
-// Font size helpers for network topology
-.has-font-size-6px {
-  font-size: 6px !important;
-}
-
-.has-font-size-8px {
-  font-size: 8px !important;
-}
-
-.has-font-size-9px {
-  font-size: 9px !important;
-}
-
-.has-font-size-12px {
-  font-size: 12px !important;
-}
-
-// Line height helpers
-.has-line-height-12 {
-  line-height: 1.2 !important;
-}
-
-// Opacity helpers for subtle styling
-.has-opacity-07 {
-  opacity: 0.7 !important;
-}
-
-.has-opacity-08 {
-  opacity: 0.8 !important;
-}
-
-// Combined margin and opacity helpers
-.has-margin-top-6px-opacity-07 {
-  margin-top: 6px !important;
-  opacity: 0.7 !important;
-}
-
-// Margin top helper for specific spacing
-.has-margin-top-6px {
-  margin-top: 6px !important;
-}
-
-// Flex layout helpers
-.has-flex-basis-150px {
-  flex-basis: 150px !important;
-}
-
-.has-flex-grow-0 {
-  flex-grow: 0 !important;
-}
 
 // VNC/Loading container complex flex layout
 .zw-vnc-loading-container {
@@ -819,49 +588,7 @@ $beige-lighter: #eff0eb;
   transform: translateX(-50%) !important;
 }
 
-// Border Radius helpers (if not using is-radiusless)
-.has-border-radius-0 {
-  border-radius: 0 !important;
-}
-
-// Margin helpers for specific values not in Bulma's scale
-.has-margin-right-3px {
-  margin-right: 3px !important;
-}
-
-.has-margin-bottom-12px {
-  margin-bottom: 12px !important;
-}
-
-.has-margin-top-6px {
-  margin-top: 6px !important;
-}
-
-// Remove problematic terminal spacing helpers (moved back to inline)
-// .has-margin-top-175rem - REMOVED (causing terminal layout issues)
-// .has-padding-bottom-15rem - REMOVED (causing terminal layout issues)
-
-// Box Sizing helper
-.has-box-sizing-border-box {
-  box-sizing: border-box !important;
-}
-
-// Position helpers
-.is-absolute {
-  position: absolute !important;
-}
-
-// Position helpers for specific values
-.has-bottom-100-percent {
-  bottom: 100% !important;
-}
-
-.has-right-0 {
-  right: 0 !important;
-}
-
 // Console Display Styling Classes
-
 .zw-console-container-hidden {
   border: 2px solid var(--zw-border-light) !important;
   border-radius: 6px !important;
@@ -1011,11 +738,6 @@ $beige-lighter: #eff0eb;
   cursor: pointer !important;
 }
 
-// Flex Width helper
-.has-width-100 {
-  width: 100% !important;
-}
-
 // VNC Viewer Styling Classes
 .zw-vnc-controls {
   background-color: var(--zw-controls-bg) !important;
@@ -1075,15 +797,6 @@ $beige-lighter: #eff0eb;
 .zw-zone-shell-terminal {
   width: 100% !important;
   height: 100% !important;
-}
-
-// ZoneweaverAPISettings padding helpers
-.has-padding-left-20px {
-  padding-left: 20px !important;
-}
-
-.has-padding-left-0 {
-  padding-left: 0 !important;
 }
 
 // Navbar Styling Classes
@@ -1226,27 +939,9 @@ $beige-lighter: #eff0eb;
   filter: brightness(0.9) !important;
 }
 
-// Additional Bulma-style helpers for missing utilities
-.is-borderless {
-  border: none !important;
-}
-
-.has-height-auto {
-  height: auto !important;
-}
-
-// Additional font size helpers
-.has-font-size-7px {
-  font-size: 7px !important;
-}
-
-// Typography helpers
-.has-margin-top-1px {
-  margin-top: 1px !important;
-}
-
 // Combined typography helpers for edge labels
 .zw-edge-label-secondary {
+  color: #3273dc !important;
   font-size: 7px !important;
   font-weight: bold !important;
   margin-top: 1px !important;
@@ -1256,19 +951,6 @@ $beige-lighter: #eff0eb;
   font-size: 7px !important;
   font-style: italic !important;
   margin-top: 1px !important;
-}
-
-// Additional small helpers for edge labels
-.has-font-size-7px {
-  font-size: 7px !important;
-}
-
-.has-margin-top-1px {
-  margin-top: 1px !important;
-}
-
-.has-text-color-muted {
-  color: #9ca3af !important;
 }
 
 // Conditional CSS Variable Classes for Network Topology Nodes
@@ -1304,12 +986,16 @@ $beige-lighter: #eff0eb;
   background-color: var(--zw-zone-active) !important;
 }
 
-// Position helpers for specific values
-.has-left-75-percent {
-  left: 75% !important;
+// Percentage Width helpers
+.has-width-30 {
+  width: 30% !important;
 }
 
-// Specific color helpers for static values
-.has-text-color-blue-3273dc {
-  color: #3273dc !important;
+// Additional Bulma-style helpers for missing utilities
+.is-borderless {
+  border: none !important;
+}
+
+.has-left-75-percent {
+  left: 75% !important;
 }

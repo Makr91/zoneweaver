@@ -44,7 +44,7 @@ const VncConsoleDisplay = ({
             </p>
           )}
         </div>
-        <div className='buttons has-margin-0'>
+        <div className='buttons m-0'>
           <VncActionsDropdown
             vncRef={vncRef}
             variant="button"
@@ -80,11 +80,10 @@ const VncConsoleDisplay = ({
             onResizeChange={handleVncResizeChange}
             onShowDotChange={handleVncShowDotChange}
             onClipboardPaste={handleVncClipboardPaste}
-            className="has-shadow-medium"
           />
           {!previewVncViewOnly && (
             <button 
-              className='button is-small is-info has-shadow-medium'
+              className='button is-small is-info'
               onClick={async () => {
                 try {
                   const text = await navigator.clipboard.readText();
@@ -115,7 +114,7 @@ const VncConsoleDisplay = ({
           </button>
           {hasZlogin ? (
             <button 
-              className='button is-small is-warning has-shadow-medium'
+              className='button is-small is-warning'
               onClick={() => {
                 console.log(`🔄 PREVIEW SWITCH: Switching to zlogin preview from VNC`);
                 setActiveConsoleType('zlogin');
@@ -128,7 +127,7 @@ const VncConsoleDisplay = ({
             </button>
           ) : (
             <button 
-              className='button is-small is-warning has-shadow-medium'
+              className='button is-small is-warning'
               onClick={async () => {
                 console.log(`🚀 START ZLOGIN: Starting zlogin for preview from VNC`);
                 try {
@@ -215,7 +214,7 @@ const VncConsoleDisplay = ({
               <div className="is-size-6 has-text-weight-medium">
                 No Console Session
               </div>
-              <div className="is-size-7 has-margin-top-6px-opacity-07">
+              <div className="is-size-7 mt-6 opacity-07">
                 Click Console to start session
               </div>
             </div>

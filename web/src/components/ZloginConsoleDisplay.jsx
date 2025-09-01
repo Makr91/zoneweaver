@@ -41,7 +41,7 @@ const ZloginConsoleDisplay = ({
             </p>
           )}
         </div>
-        <div className='buttons has-margin-0'>
+        <div className='buttons m-0'>
           <ZloginActionsDropdown
             variant="button"
             onToggleReadOnly={() => {
@@ -83,7 +83,6 @@ const ZloginConsoleDisplay = ({
             }}
             isReadOnly={previewReadOnly}
             isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-            className="has-shadow-medium"
           />
           {!previewReadOnly && (
             <button 
@@ -124,7 +123,7 @@ const ZloginConsoleDisplay = ({
           </button>
           {hasVnc ? (
             <button 
-              className='button is-small is-warning has-shadow-medium'
+              className='button is-small is-warning'
               onClick={() => {
                 console.log(`🔄 PREVIEW SWITCH: Switching to VNC preview from zlogin`);
                 setActiveConsoleType('vnc');
@@ -137,7 +136,7 @@ const ZloginConsoleDisplay = ({
             </button>
           ) : (
             <button 
-              className='button is-small is-warning has-shadow-medium'
+              className='button is-small is-warning'
               onClick={async () => {
                 console.log(`🚀 START VNC: Starting VNC for preview from zlogin`);
                 try {

@@ -24,7 +24,7 @@ const InactiveConsoleDisplay = ({
             No active sessions • Click to start
           </p>
         </div>
-        <div className='buttons has-margin-0'>
+        <div className='buttons m-0'>
           <button 
             className='button is-small is-info'
             onClick={async () => {
@@ -114,7 +114,7 @@ const InactiveConsoleDisplay = ({
           <div className="is-size-6 has-text-weight-medium mb-2">
             <strong>No Active Console Session</strong>
           </div>
-          <div className="is-size-7 has-opacity-08">
+          <div className="is-size-7">
             Click the buttons above to start VNC or zlogin console
           </div>
         </div>

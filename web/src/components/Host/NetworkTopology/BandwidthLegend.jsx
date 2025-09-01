@@ -85,7 +85,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
                     <span className="tag is-small is-white">
                       {indicator.symbol ? (
                         <span 
-                          className="has-text-weight-bold mr-1 has-font-size-12px"
+                          className="has-text-weight-bold mr-1"
                           style={{ color: indicator.color }}
                         >
                           {indicator.symbol}
@@ -110,7 +110,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 <div className="control">
                   <span className="tag is-small is-white">
                     <span className="icon is-small mr-1">
-                    <i className="fas fa-circle zw-status-success has-font-size-6px"></i>
+                    <i className="fas fa-circle zw-status-success "></i>
                     </span>
                     <span className="is-size-7">Live Traffic</span>
                   </span>
@@ -125,7 +125,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
   // Vertical layout for sidebar placement
   return (
-    <div className="card has-min-width-250-max-300">
+    <div className="card">
       <div className="card-content p-3">
         <h6 className="title is-6 mb-3">
           <span className="icon-text">
@@ -195,7 +195,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
                   <div className="level-item">
                     {indicator.symbol ? (
                       <span 
-                        className="has-text-weight-bold mr-2 has-font-size-12px"
+                        className="has-text-weight-bold mr-2"
                         style={{ color: indicator.color }}
                       >
                         {indicator.symbol}
@@ -228,7 +228,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div className="level-left">
                 <div className="level-item">
                   <span className="icon is-small">
-                    <i className="fas fa-circle zw-status-success has-font-size-6px"></i>
+                    <i className="fas fa-circle zw-status-success "></i>
                   </span>
                   <span className="ml-2 is-size-7">Animated particles show live traffic</span>
                 </div>
@@ -238,7 +238,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div className="level-left">
                 <div className="level-item">
                   <span className="icon is-small">
-                    <i className="fas fa-bolt zw-status-warning has-font-size-8px"></i>
+                    <i className="fas fa-bolt zw-status-warning "></i>
                   </span>
                   <span className="ml-2 is-size-7">Faster animation = higher traffic</span>
                 </div>

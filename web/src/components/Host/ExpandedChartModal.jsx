@@ -613,7 +613,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
     return (
         <div className='modal is-active has-z-index-10000'>
             <div className='modal-background' onClick={close}></div>
-            <div className='modal-content is-95vw is-85vh has-margin-top-6vh'>
+            <div className='modal-content is-95vw is-85vh'>
                 <div className='box has-height-100 zw-chart-container'>
                     <HighchartsReact
                         highcharts={Highcharts}

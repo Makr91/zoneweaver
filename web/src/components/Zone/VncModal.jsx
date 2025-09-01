@@ -55,7 +55,7 @@ const VncModal = ({
               <span>Console - {selectedZone}</span>
             </span>
           </p>
-          <div className='buttons has-margin-0'>
+          <div className='buttons m-0'>
             <VncActionsDropdown
               vncRef={modalVncRef}
               variant="button"
@@ -92,11 +92,10 @@ const VncModal = ({
               onResizeChange={handleVncResizeChange}
               onShowDotChange={handleVncShowDotChange}
               onClipboardPaste={handleVncClipboardPaste}
-              className="has-shadow-medium"
             />
             {!modalVncViewOnly && (
               <button 
-                className='button is-small is-info has-shadow-medium'
+                className='button is-small is-info'
                 onClick={handleVncModalPaste}
                 title="Paste from Browser Clipboard"
               >
@@ -106,7 +105,7 @@ const VncModal = ({
               </button>
             )}
             <button 
-              className='button is-small is-warning has-shadow-medium'
+              className='button is-small is-warning'
               onClick={async () => {
                 if (zoneDetails.zlogin_session) {
                   closeVncConsole();

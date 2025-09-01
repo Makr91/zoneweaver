@@ -47,7 +47,7 @@ const ZloginModal = ({
               <span>zlogin Console - {selectedZone}</span>
             </span>
           </p>
-          <div className='buttons has-margin-0'>
+          <div className='buttons m-0'>
             <ZloginActionsDropdown
               variant="button"
               onToggleReadOnly={() => {
@@ -110,11 +110,10 @@ const ZloginModal = ({
               }}
               isReadOnly={modalReadOnly}
               isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
-              className="has-shadow-medium"
             />
             {!modalReadOnly && (
               <button 
-                className='button is-small is-info has-shadow-medium'
+                className='button is-small is-info'
                 onClick={handleZloginModalPaste}
                 title="Paste from Browser Clipboard"
               >
@@ -124,7 +123,7 @@ const ZloginModal = ({
               </button>
             )}
             <button 
-              className='button is-small is-warning has-shadow-medium'
+              className='button is-small is-warning'
               onClick={async () => {
                 if (zoneDetails.active_vnc_session) {
                   setShowZloginConsole(false);

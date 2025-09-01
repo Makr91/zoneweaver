@@ -285,20 +285,20 @@ const BandwidthEdge = ({
           className="nodrag nopan zw-edge-label has-text-centered"
         >
           {/* Primary Label Based on Type */}
-          <div className="has-line-height-12">
+          <div>
             {/* Show bandwidth if available and > 0 */}
             {bandwidth && bandwidth.totalMbps > 0 ? (
               <>
                 <div>{formatBandwidth(bandwidth.totalMbps)}</div>
                 {bandwidth.totalMbps > 1 && (
-                  <div className="has-font-size-8px has-opacity-08">
+                  <div>
                     ↓{formatBandwidth(bandwidth.rxMbps)} ↑{formatBandwidth(bandwidth.txMbps)}
                   </div>
                 )}
               </>
             ) : (
               /* Show connection type when no bandwidth */
-              <div className="has-font-size-9px">
+              <div className="is-size-5">
                 {type === 'vlan' && vlanId ? `VLAN ${vlanId}` :
                  type === 'aggregation' ? 'LACP Bond' :
                  type === 'direct' ? 'Direct' :
@@ -330,7 +330,7 @@ const BandwidthEdge = ({
             {/* Idle indicator */}
             {bandwidth && bandwidth.totalMbps === 0 && (
               <div 
-                className="zw-edge-label-idle has-text-color-muted"
+                className="zw-edge-label-idle"
               >
                 idle
               </div>

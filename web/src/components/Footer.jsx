@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef, useCallback } from "react";
+import { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { ResizableBox } from "react-resizable";
 import { UserSettings } from "../contexts/UserSettingsContext";
 import { useFooter } from "../contexts/FooterContext";
@@ -116,7 +116,7 @@ const Footer = () => {
               </button>
             </p>
             {showShellDropdown && (
-              <div className="dropdown is-active has-z-index-sidebar is-absolute has-bottom-100-percent has-right-0 has-min-width-150">
+              <div className="dropdown is-right">
                 <div className="dropdown-menu">
                   <div className="dropdown-content">
                     <a className="dropdown-item is-clickable" onClick={handleRestartShell}>

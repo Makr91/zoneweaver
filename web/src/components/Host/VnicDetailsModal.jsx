@@ -154,7 +154,7 @@ const VnicDetailsModal = ({ vnic, onClose }) => {
                         </td>
                         <td>
                           {detail.value.includes('\n') ? (
-                            <pre className='is-size-7 has-background-dark has-text-light p-2 has-max-height-150-auto'>
+                            <pre className='is-size-7 has-background-dark has-text-light p-2'>
                               {detail.value}
                             </pre>
                           ) : (

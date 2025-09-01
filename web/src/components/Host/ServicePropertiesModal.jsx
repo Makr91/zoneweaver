@@ -17,7 +17,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
     // Handle different types of property values
     if (value.includes('\n') || value.length > 100) {
       return (
-        <pre className='is-size-7 has-background-dark has-text-light p-2 has-max-height-150-auto'>
+        <pre className='is-size-7 has-background-dark has-text-light p-2'>
           {value}
         </pre>
       );

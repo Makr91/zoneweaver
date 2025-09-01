@@ -336,7 +336,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
                   </button>
                   
                   {showRawOutput && (
-                    <pre className='box mt-2 has-background-black has-text-light is-size-7 has-max-height-300-auto'>
+                    <pre className='box mt-2 has-background-black has-text-light is-size-7'>
                       {updateData.raw_output}
                     </pre>
                   )}

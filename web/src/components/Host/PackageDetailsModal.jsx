@@ -142,7 +142,7 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
                         </td>
                         <td>
                           {detail.value.includes('\n') ? (
-                            <pre className='is-size-7 has-background-grey-lightest p-2 has-max-height-200-auto'>
+                            <pre className='is-size-7 has-background-grey-lightest p-2'>
                               {detail.value}
                             </pre>
                           ) : (

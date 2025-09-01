@@ -27,7 +27,7 @@ const ZoneShell = memo(({ zoneName, readOnly = false, context = 'preview', style
   if (!addons || addons.length === 0) {
     return (
       <div 
-        className={`has-box-sizing-border-box zw-zone-shell-container ${className || ''}`} 
+        className={`zw-zone-shell-container ${className || ''}`} 
         style={style}
       >
         <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
@@ -47,7 +47,7 @@ const ZoneShell = memo(({ zoneName, readOnly = false, context = 'preview', style
 
   return (
     <div 
-      className={`has-box-sizing-border-box zw-zone-shell-container ${className || ''}`} 
+      className={`zw-zone-shell-container ${className || ''}`} 
       style={style}
     >
       <XTerm
