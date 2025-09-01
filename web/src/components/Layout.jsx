@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, Suspense } from "react";
+import React, { useEffect, useContext, Suspense } from "react";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import { ResizableBox } from "react-resizable";
 import Navbar from "./Navbar";
@@ -40,7 +40,6 @@ const LoadingSpinner = () => (
 const LayoutContent = () => {
   const { isAuthenticated } = useAuth();
   const userSettings = useContext(UserSettings);
-  const [setIsResizing] = useState(false);
 
   const { servers, selectServer, selectZone, currentServer, currentZone } =
     useServers();
@@ -97,14 +96,6 @@ const LayoutContent = () => {
     }
   };
 
-  const handleResizeStart = () => {
-    setIsResizing(true);
-  };
-
-  const handleResizeStop = () => {
-    setIsResizing(false);
-  };
-
   const effectiveWidth = userSettings.sidebarMinimized
     ? 38
     : Math.max(userSettings.sidebarWidth, 38);
@@ -114,8 +105,6 @@ const LayoutContent = () => {
       <ResizableBox
         className="column is-one-fifth"
         onResize={handleResize}
-        onResizeStart={handleResizeStart}
-        onResizeStop={handleResizeStop}
         width={effectiveWidth}
         height={Infinity}
         resizeHandles={["e"]}
