@@ -1,14 +1,22 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { UserSettings } from "../contexts/UserSettingsContext";
 
 const DashEntryDropDown = ({ title, icon }) => {
   const navigate = useNavigate();
   const userContext = useContext(UserSettings);
-  const { hostsExpanded, setHostsExpanded, zonesExpanded, setZonesExpanded, settingsExpanded, setSettingsExpanded } = userContext;
+  const {
+    hostsExpanded,
+    setHostsExpanded,
+    zonesExpanded,
+    setZonesExpanded,
+    settingsExpanded,
+    setSettingsExpanded,
+  } = userContext;
 
   const handleToggle = (e) => {
-    e.stopPropagation(); // Prevent navigation when clicking the toggle
+    e.stopPropagation();
     if (title === "Hosts") {
       setHostsExpanded(!hostsExpanded);
       if (!hostsExpanded) {
@@ -40,15 +48,23 @@ const DashEntryDropDown = ({ title, icon }) => {
     }
   };
 
-  const isExpanded = title === "Hosts" ? hostsExpanded : title === "Zones" ? zonesExpanded : settingsExpanded;
+  const isExpanded =
+    title === "Hosts"
+      ? hostsExpanded
+      : title === "Zones"
+        ? zonesExpanded
+        : settingsExpanded;
 
   if (!userContext.sidebarMinimized) {
     return (
       <div className="field has-addons mb-0">
         <p className="control is-expanded">
-          <a className="button is-fullwidth is-justify-content-start" onClick={handleNavigate}>
+          <a
+            className="button is-fullwidth is-justify-content-start"
+            onClick={handleNavigate}
+          >
             <span>
-              <span className='icon'>
+              <span className="icon">
                 <i className={icon}></i>
               </span>
               <span>{title}</span>
@@ -57,8 +73,11 @@ const DashEntryDropDown = ({ title, icon }) => {
         </p>
         <p className="control">
           <a className="button" onClick={handleToggle}>
-            <span className='icon'>
-              <i className={`fas fa-angle-${isExpanded ? 'up' : 'down'}`} aria-hidden='false'></i>
+            <span className="icon">
+              <i
+                className={`fas fa-angle-${isExpanded ? "up" : "down"}`}
+                aria-hidden="false"
+              ></i>
             </span>
           </a>
         </p>
@@ -66,12 +85,17 @@ const DashEntryDropDown = ({ title, icon }) => {
     );
   }
   return (
-    <button className='button is-fullwidth' onClick={handleToggle}>
-      <span className='icon'>
+    <button className="button" onClick={handleToggle}>
+      <span className="icon">
         <i className={icon}></i>
       </span>
     </button>
   );
+};
+
+DashEntryDropDown.propTypes = {
+  title: PropTypes.string.isRequired,
+  icon: PropTypes.string.isRequired,
 };
 
 export default DashEntryDropDown;
