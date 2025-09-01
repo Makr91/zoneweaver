@@ -151,6 +151,17 @@ $beige-lighter: #eff0eb;
   flex-direction: column;
 }
 
+// Fix react-xtermjs height to account for log-console padding
+.log-console .is-fullheight.is-fullwidth {
+  height: calc(100% - 30px) !important;
+}
+
+// Also target the actual xterm element for complete coverage
+.log-console .xterm {
+  height: calc(100% - 30px) !important;
+  width: 100% !important;
+}
+
 .react-resizable-handle {
   position: absolute;
   width: 100%;
