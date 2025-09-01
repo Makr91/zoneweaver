@@ -14,8 +14,7 @@ $beige-lighter: #eff0eb;
   $warning: $yellow,
   $button-border-width: 0px,
   $box-shadow: none,
-  $navbar-dropdown-border-width: 1px
-
+  $border: 1px solid
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -49,6 +48,13 @@ $beige-lighter: #eff0eb;
   @include light.light-theme;
   @include setup.setup-theme;
 }
+
+
+//// Clean dropdown styling that respects themes  -- Find Way to over bulma border for all dropdowns to have this
+//.dropdown-content {
+//  border: 1px solid var(--bulma-border) !important;
+//}
+
 
 // Custom color variables for enhanced theming support
 :root {
