@@ -15,7 +15,7 @@ $beige-lighter: #eff0eb;
   $button-border-width: 0px,
   $box-shadow: none,
   $dropdown-content-shadow: none,
-  $dropdown-content-z: 20001
+  $dropdown-content-z: 4
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -174,7 +174,7 @@ $beige-lighter: #eff0eb;
   width: 0.5rem;
   height: 100%;
   cursor: ew-resize;
-  z-index: 1000;
+  z-index: 5;
   background: var(--bulma-scheme-main-bis);
   border-left: none !important;
   opacity: 0.8;
