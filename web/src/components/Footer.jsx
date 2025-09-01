@@ -54,12 +54,17 @@ const Footer = () => {
     };
   }, [showShellDropdown]);
 
-  // Handle resize - react-xtermjs handles terminal resizing automatically
+  // Handle resize with snapping behavior like sidebar
   const handleResize = useCallback((e, { size }) => {
     if (footerIsActive) {
-      userSettings.setFooterHeight(size.height);
+      // Snap to minimum if dragged too small
+      if (size.height <= 50 && footerIsActive) {
+        setFooterIsActive(false);
+      } else {
+        userSettings.setFooterHeight(size.height);
+      }
     }
-  }, [footerIsActive, userSettings]);
+  }, [footerIsActive, userSettings, setFooterIsActive]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -144,8 +149,8 @@ const Footer = () => {
         width={Infinity}
         resizeHandles={["n"]}
         axis='y'
-        maxConstraints={[Infinity, window.innerHeight - 100]} // Allow footer to grow to almost full screen
-        minConstraints={[Infinity, 0]}
+        maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]} // Max 70% of viewport
+        minConstraints={[Infinity, 50]} // Minimum useful size
         handle={ResizeHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>

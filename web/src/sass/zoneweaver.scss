@@ -151,20 +151,22 @@ $beige-lighter: #eff0eb;
   flex-direction: column;
 }
 
-// Fix react-xtermjs height to account for log-console padding
+// Fix react-xtermjs to fill the full log-console height (handle overlays, doesn't take space)
 .log-console .is-fullheight.is-fullwidth {
-  height: calc(100% - 30px) !important;
+  height: 100% !important;
+  width: 100% !important;
 }
 
-// Force terminal div to fill its wrapper completely (fixes 30px gap)
+// Force terminal div to fill its wrapper completely
 .log-console .terminal.xterm {
   height: 100% !important;
   width: 100% !important;
 }
 
-// Also target the actual xterm element for complete coverage
-.log-console .xterm {
-  height: calc(100% - 30px) !important;
+// Ensure xterm internal elements scale properly
+.log-console .xterm-viewport,
+.log-console .xterm-screen {
+  height: 100% !important;
   width: 100% !important;
 }
 
