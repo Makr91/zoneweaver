@@ -156,6 +156,12 @@ $beige-lighter: #eff0eb;
   height: calc(100% - 30px) !important;
 }
 
+// Force terminal div to fill its wrapper completely (fixes 30px gap)
+.log-console .terminal.xterm {
+  height: 100% !important;
+  width: 100% !important;
+}
+
 // Also target the actual xterm element for complete coverage
 .log-console .xterm {
   height: calc(100% - 30px) !important;
