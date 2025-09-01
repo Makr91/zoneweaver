@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef, Suspense } from "react";
+import React, { useEffect, useState, useContext, Suspense } from "react";
 import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import { ResizableBox } from "react-resizable";
 import Navbar from "./Navbar";
@@ -9,10 +9,11 @@ import { useServers } from "../contexts/ServerContext";
 import { UserSettings } from "../contexts/UserSettingsContext";
 import { FooterProvider } from "../contexts/FooterContext";
 
-// Lazy load heavy components to reduce main bundle size
 const Dashboard = React.lazy(() => import("./Dashboard"));
 const ZoneweaverSettings = React.lazy(() => import("./ZoneweaverSettings"));
-const ZoneweaverAPISettings = React.lazy(() => import("./ZoneweaverAPISettings"));
+const ZoneweaverAPISettings = React.lazy(
+  () => import("./ZoneweaverAPISettings")
+);
 const Hosts = React.lazy(() => import("./Hosts"));
 const Zones = React.lazy(() => import("./Zones"));
 const HostManage = React.lazy(() => import("./HostManage"));
@@ -23,7 +24,6 @@ const ZoneRegister = React.lazy(() => import("./ZoneRegister"));
 const Accounts = React.lazy(() => import("./Accounts"));
 const Profile = React.lazy(() => import("./Profile"));
 
-// Loading component for lazy-loaded routes
 const LoadingSpinner = () => (
   <div className="hero">
     <div className="hero-body">
@@ -37,92 +37,59 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Layout content component that uses UserSettings context - moved outside to prevent remounting
 const LayoutContent = () => {
-  // Add mount/unmount debugging for LayoutContent
-  useEffect(() => {
-    console.log('🔄 LAYOUT CONTENT: Component mounted', {
-      timestamp: new Date().toISOString()
-    });
-    
-    return () => {
-      console.log('🔄 LAYOUT CONTENT: Component unmounting', {
-        timestamp: new Date().toISOString()
-      });
-    };
-  }, []);
-
   const { isAuthenticated } = useAuth();
   const userSettings = useContext(UserSettings);
-  const [isResizing, setIsResizing] = useState(false);
+  const [setIsResizing] = useState(false);
 
-  // URL Parameter Reader - isolated with global session storage
-  const { 
-    servers, 
-    selectServer, 
-    selectZone,
-    currentServer,
-    currentZone
-  } = useServers();
+  const { servers, selectServer, selectZone, currentServer, currentZone } =
+    useServers();
   const [searchParams] = useSearchParams();
 
-  /**
-   * Process URL parameters with session-based tracking to prevent re-processing
-   * Uses sessionStorage to persist across re-renders and avoid resize-triggered loops
-   */
   useEffect(() => {
     if (!isAuthenticated || servers.length === 0) return;
 
-    // Use sessionStorage key to track if URL params have been processed for this session
     const sessionKey = `zw_url_params_processed_${window.location.pathname}${window.location.search}`;
     const alreadyProcessed = sessionStorage.getItem(sessionKey);
-    
-    if (alreadyProcessed) {
-      return; // Already processed these URL parameters in this session
-    }
 
-    const hostParam = searchParams.get('host');
-    const zoneParam = searchParams.get('zone');
-    
-    console.log('🔗 LAYOUT: Processing URL params (session-isolated)', {
-      host: hostParam,
-      zone: zoneParam,
-      serversCount: servers.length,
-      sessionKey,
-      timestamp: new Date().toISOString()
-    });
-    
-    if (!hostParam && !zoneParam) {
-      console.log('🔗 LAYOUT: No URL parameters to process');
-      sessionStorage.setItem(sessionKey, 'true');
+    if (alreadyProcessed) {
       return;
     }
-    
-    console.log('🔗 URL LOAD: Reading URL parameters:', { host: hostParam, zone: zoneParam });
-    
-    // Find server by hostname if specified in URL
+
+    const hostParam = searchParams.get("host");
+    const zoneParam = searchParams.get("zone");
+
+    if (!hostParam && !zoneParam) {
+      console.log("🔗 LAYOUT: No URL parameters to process");
+      sessionStorage.setItem(sessionKey, "true");
+      return;
+    }
+
     if (hostParam) {
-      const matchingServer = servers.find(server => server.hostname === hostParam);
-      if (matchingServer && (!currentServer || currentServer.hostname !== hostParam)) {
-        console.log('🔗 URL LOAD: Setting server from URL:', hostParam);
+      const matchingServer = servers.find(
+        (server) => server.hostname === hostParam
+      );
+      if (
+        matchingServer &&
+        (!currentServer || currentServer.hostname !== hostParam)
+      ) {
         selectServer(matchingServer);
       }
-      
-      // Set zone if specified, server matches, and zone isn't already set
-      if (zoneParam && matchingServer && (!currentZone || currentZone !== zoneParam)) {
-        console.log('🔗 URL LOAD: Setting zone from URL:', zoneParam);
+
+      if (
+        zoneParam &&
+        matchingServer &&
+        (!currentZone || currentZone !== zoneParam)
+      ) {
         selectZone(zoneParam);
       }
     }
-    
-    // Mark as processed for this session
-    sessionStorage.setItem(sessionKey, 'true');
-  }, [isAuthenticated, servers.length]); // Only run when servers first become available
 
-  // Handle resize events
+    sessionStorage.setItem(sessionKey, "true");
+  }, [isAuthenticated, servers.length]);
+
   const handleResize = (e, { size }) => {
     userSettings.setSidebarWidth(size.width);
-    // Sync the sidebarMinimized state with the actual width
     if (size.width <= 60 && !userSettings.sidebarMinimized) {
       userSettings.setSidebarMinimized(true);
     } else if (size.width > 60 && userSettings.sidebarMinimized) {
@@ -138,41 +105,46 @@ const LayoutContent = () => {
     setIsResizing(false);
   };
 
-  // Use actual width for ResizableBox, but collapse to 60px when minimized
-  const effectiveWidth = userSettings.sidebarMinimized ? 60 : Math.max(userSettings.sidebarWidth, 60);
+  const effectiveWidth = userSettings.sidebarMinimized
+    ? 60
+    : Math.max(userSettings.sidebarWidth, 60);
 
   return (
-    <div className='columns is-gapless'>
+    <div className="columns is-gapless">
       <ResizableBox
+        className="column is-one-fifth"
         onResize={handleResize}
         onResizeStart={handleResizeStart}
         onResizeStop={handleResizeStop}
         width={effectiveWidth}
         height={Infinity}
         resizeHandles={["e"]}
-        axis='x'
+        axis="x"
         maxConstraints={[400, Infinity]}
         minConstraints={[60, Infinity]}
       >
         <SideMenu />
       </ResizableBox>
-      <section className='hero column has-background-dark is-fullheight'>
+      <section className="hero column has-background-dark is-fullheight">
         <Navbar />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            <Route path='' element={<Dashboard />} />
-            <Route path='dashboard' element={<Dashboard />} />
-            <Route path='accounts' element={<Accounts />} />
-            <Route path='settings/zoneweaver' element={<ZoneweaverSettings />} />
-            <Route path='settings/zapi' element={<ZoneweaverAPISettings />} />
-            <Route path='zones' element={<Zones />} />
-            <Route path='hosts' element={<Hosts />} />
-            <Route path='host-manage' element={<HostManage />} />
-            <Route path='host-networking' element={<HostNetworking />} />
-            <Route path='host-storage' element={<HostStorage />} />
-            <Route path='host-devices' element={<HostDevices />} />
-            <Route path='zone-register' element={<ZoneRegister />} />
-            <Route path='profile' element={<Profile />} />
+            <Route path="" element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="accounts" element={<Accounts />} />
+            <Route
+              path="settings/zoneweaver"
+              element={<ZoneweaverSettings />}
+            />
+            <Route path="settings/zapi" element={<ZoneweaverAPISettings />} />
+            <Route path="zones" element={<Zones />} />
+            <Route path="hosts" element={<Hosts />} />
+            <Route path="host-manage" element={<HostManage />} />
+            <Route path="host-networking" element={<HostNetworking />} />
+            <Route path="host-storage" element={<HostStorage />} />
+            <Route path="host-devices" element={<HostDevices />} />
+            <Route path="zone-register" element={<ZoneRegister />} />
+            <Route path="profile" element={<Profile />} />
           </Routes>
         </Suspense>
         <Footer />
@@ -186,38 +158,19 @@ const LayoutContent = () => {
  * @returns {JSX.Element} Layout component
  */
 const Layout = () => {
-  // Add mount/unmount debugging
-  useEffect(() => {
-    console.log('🔄 LAYOUT: Component mounted', {
-      timestamp: new Date().toISOString()
-    });
-    
-    return () => {
-      console.log('🔄 LAYOUT: Component unmounting', {
-        timestamp: new Date().toISOString()
-      });
-    };
-  }, []);
-
   const navigate = useNavigate();
-  const { isAuthenticated, loading, user } = useAuth();
-  const { loadServers } = useServers();
+  const { isAuthenticated, loading } = useAuth();
 
-  /**
-   * Check authentication and redirect if necessary
-   */
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      // Store the current URL (including parameters) for post-login redirect
       const currentUrl = window.location.pathname + window.location.search;
-      if (currentUrl !== '/ui' && currentUrl !== '/ui/') {
-        localStorage.setItem('zoneweaver_intended_url', currentUrl);
+      if (currentUrl !== "/ui" && currentUrl !== "/ui/") {
+        localStorage.setItem("zoneweaver_intended_url", currentUrl);
       }
       navigate("/login");
     }
   }, [isAuthenticated, loading, navigate]);
 
-  // Show loading spinner while checking authentication
   if (loading) {
     return (
       <div className="hero is-fullheight">
@@ -233,7 +186,6 @@ const Layout = () => {
     );
   }
 
-  // Don't render layout if not authenticated
   if (!isAuthenticated) {
     return null;
   }

@@ -31,9 +31,7 @@ const SidebarHeader = () => {
           <span className="level-item is-justify-content-flex-start icon">
             <i className="icon-zoneweaver-logo"></i>
           </span>
-          <span className="level-item is-justify-content-flex-space-between">
-            Zoneweaver
-          </span>
+          <span className="level-item">Zoneweaver</span>
           <span className="level-item is-justify-content-flex-end icon">
             <i className="fa fa-angle-left"></i>
           </span>
@@ -49,7 +47,7 @@ const SidebarHeader = () => {
     <nav className="level">
       <div
         onClick={handleClick}
-        className={`${isIconOnly ? "button is-fullwidth" : "level button"}`}
+        className={`${isIconOnly ? "button is-fullwidth" : "level button is-fullwidth"}`}
       >
         {getHeaderContent()}
       </div>

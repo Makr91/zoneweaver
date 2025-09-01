@@ -413,14 +413,6 @@ button {
   }
 }
 
-// Specifically target navbar buttons to ensure no rounded corners
-.navbar .button,
-.navbar button,
-.level .button,
-.level button {
-  border-radius: 0 !important;
-}
-
 // Fix navbar background to match dropdown background in both themes
 .level.hero-head,
 .navbar,
