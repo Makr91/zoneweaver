@@ -37,7 +37,7 @@ const SidebarFooter = () => {
   }, [dropdownRef]);
 
   return (
-    <div class="hero-foot">
+    <div class="hero-foot has-z-index-sidebar">
         {userContext.sidebarMinimized ? (
           <nav
             className={`level button dropdown is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}

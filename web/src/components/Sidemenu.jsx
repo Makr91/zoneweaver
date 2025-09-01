@@ -9,7 +9,7 @@ const SideMenu = () => {
   
   return (
     <section className={`hero is-fullheight ${sidebarMinimized ? 'is-minimized' : ''}`}>
-      <div className='hero-head'>
+      <div className='hero-head has-z-index-sidebar'>
         <SidebarHeader />
       </div>
       <div className='hero-body p-0 is-align-items-flex-start'>
