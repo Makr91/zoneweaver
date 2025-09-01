@@ -121,7 +121,7 @@ const LayoutContent = () => {
         resizeHandles={["e"]}
         axis="x"
         maxConstraints={[400, Infinity]}
-        minConstraints={[60, Infinity]}
+        minConstraints={[38, Infinity]}
       >
         <SideMenu />
       </ResizableBox>
