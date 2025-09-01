@@ -136,7 +136,7 @@ const Footer = () => {
   };
 
   return (
-    <div id="hero-foot">
+    <div className="hero-foot">
       <ResizableBox
         onResize={handleResize}
         className={footerIsActive ? "" : "is-minimized"}
