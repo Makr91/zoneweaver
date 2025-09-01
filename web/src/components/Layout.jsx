@@ -114,7 +114,7 @@ const LayoutContent = () => {
       >
         <SideMenu />
       </ResizableBox>
-      <section className="column hero is-fullheight">
+      <section className="column hero is-fullheight is-flex is-flex-direction-column">
         <Navbar />
         <div className="hero-body zw-main-content-scrollable">
           <Suspense fallback={<LoadingSpinner />}>
