@@ -194,84 +194,19 @@ $yellow: #ffe600;
 }
 
 // Remove all box shadows globally
-* {
-  --bulma-box-shadow: none !important;
-  box-shadow: none !important;
-}
-
-// Only apply max-height: 0 to collapsible sections within the sidebar
-.sidebar .is-collapsible.is-minimized,
-#accordion .is-collapsible.is-minimized {
-  max-height: 0;
-}
-
-// Common scrollbar mixin
-@mixin custom-scrollbar($width: 10px) {
-  &::-webkit-scrollbar {
-    background: transparent;
-    width: $width;
-  }
-
-  &::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 5px var(--bulma-border);
-    border-radius: 10px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--bulma-border);
-    border-radius: 10px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--bulma-text-weak);
-  }
-}
+// * {
+//   --bulma-box-shadow: none !important;
+//   box-shadow: none !important;
+// }
 
 .log-console {
   height: 100%;
   overflow-y: auto;
-  @include custom-scrollbar();
   will-change: height;
   contain: layout;
   display: flex;
   padding-top: 30px;
   flex-direction: column;
-  
-  // Fix XTerm's built-in scrollbar in footer terminal
-  .xterm .xterm-viewport {
-    overflow-y: hidden !important;
-  }
-  
-  // Force XTerm to fill its container completely without height limits
-  .xterm {
-    height: 100% !important;
-    width: 100% !important;
-    max-height: none !important;
-    flex: 1 1 auto !important;
-  }
-
-  .xterm-screen {
-    height: 100% !important;
-    max-height: none !important;
-  }
-  
-  // Ensure react-xtermjs container fills completely
-  .react-xterm {
-    height: 100% !important;
-    width: 100% !important;
-    flex: 1 1 auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-}
-
-// Apply dark scrollbar theming to main content areas
-.hero-body,
-[class*="has-overflow-auto"],
-.box,
-.container {
-  @include custom-scrollbar();
-}
 
 .react-resizable-handle {
   position: absolute;
@@ -344,13 +279,11 @@ $yellow: #ffe600;
   transform: rotate(45deg);
 }
 
-
 .is-collapsible {
   overflow-y: hidden;
   transition: height 0.2s ease;
   overflow-x: hidden;
 }
-
 
 .is-submenu-collapsed {
   .icon {
@@ -360,15 +293,7 @@ $yellow: #ffe600;
 
 // Clean dropdown styling that respects themes
 .dropdown-content {
-  border-radius: 6px !important;
   border: 1px solid var(--bulma-border) !important;
-}
-
-.dropdown-menu {
-  .dropdown-content {
-    border-radius: 6px !important;
-    border: 1px solid var(--bulma-border) !important;
-  }
 }
 
 // Button styling for remaining buttons (non-dropdown)
@@ -389,13 +314,6 @@ button {
     border: none !important;
     --bulma-box-shadow: none !important;
   }
-}
-
-// Fix navbar background to match dropdown background in both themes
-.level.hero-head,
-.navbar,
-.level {
-  background-color: var(--bulma-scheme-main) !important;
 }
 
 // ResizableBox styling for sidebar
@@ -699,7 +617,7 @@ button {
   opacity: 0.8 !important;
 }
 
-// Margin reset helper
+// Margin reset helper -- REMOVE ME? Replace with Bulma?
 .has-margin-0 {
   margin: 0 !important;
 }

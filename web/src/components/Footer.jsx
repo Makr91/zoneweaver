@@ -148,7 +148,7 @@ const Footer = () => {
         minConstraints={[Infinity, 0]}
         handle={ResizeHandle()}
       >
-        <div className='log-console has-background-black has-text-white is-fullheight is-flex is-flex-direction-column'>
+        <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
         </div>
       </ResizableBox>
