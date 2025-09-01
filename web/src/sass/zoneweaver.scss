@@ -12,13 +12,14 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
-  $family-primary: '"Nunito", sans-serif',
-  $grey-dark: $brown,
-  $grey-light: $beige-light,
-  $link: $pink,
-  $control-border-width: 2px,
-  $input-shadow: none,
-  $box-shadow: none
+  $box-shadow: none,
+  $dropdown-content: 
+//  $family-primary: '"Nunito", sans-serif',
+//  $grey-dark: $brown,
+//  $grey-light: $beige-light,
+//  $link: $pink,
+//  $control-border-width: 2px,
+//  $input-shadow: none,
 );
 
 // Import theme utilities for dark mode implementation
@@ -253,26 +254,6 @@ $beige-lighter: #eff0eb;
 // Clean dropdown styling that respects themes  -- Find Way to over bulma border for all dropdowns to have this
 .dropdown-content {
   border: 1px solid var(--bulma-border) !important;
-}
-
-// Button styling for remaining buttons (non-dropdown) -- Remove if possible is-radiusless
-.button,
-button {
-  border-radius: 0 !important;
-  border: none !important;
-  --bulma-button-border-style: none !important;
-  --bulma-box-shadow: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  
-  &:focus,
-  &:active,
-  &:hover {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-    --bulma-box-shadow: none !important;
-  }
 }
 
 // ResizableBox styling for sidebar
