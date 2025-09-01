@@ -134,6 +134,7 @@ $beige-lighter: #eff0eb;
   overflow-x: hidden; // Hide horizontal scroll
   padding: 0;
   min-height: 0;     // Allow grid shrinking
+  width: 100%;       // Ensure full width in grid
 }
 
 // Page content wrapper that fills the scrollable container
@@ -151,16 +152,17 @@ $beige-lighter: #eff0eb;
   flex-direction: column;
 }
 
-// Fix react-xtermjs wrapper to fill the available space, let xterm.js handle internal sizing
+// Fix react-xtermjs wrapper - let it fill naturally but account for padding
 .log-console .is-fullheight.is-fullwidth {
-  height: calc(100% - 30px) !important;
+  flex: 1;
   width: 100% !important;
+  min-height: 0;
 }
 
-// Don't override xterm.js internal sizing - let FitAddon handle it
+// Ensure terminal fills its wrapper
 .log-console .terminal.xterm {
+  height: 100% !important;
   width: 100% !important;
-  /* Remove height override to let xterm.js handle it */
 }
 
 .react-resizable-handle {
