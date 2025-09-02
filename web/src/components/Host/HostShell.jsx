@@ -83,69 +83,12 @@ const HostShell = () => {
       fitAddonRef.current.fit();
     }
 
-    // Debounced backend communication
-    debounceTimeoutRef.current = setTimeout(() => {
-      if (instance && session?.websocket?.readyState === WebSocket.OPEN) {
-        try {
-          session.websocket.send(
-            JSON.stringify({
-              type: "resize",
-              rows: instance.rows,
-              cols: instance.cols,
-            })
-          );
-          console.log("🖥️ HOSTSHELL: Debounced size communicated to backend");
-        } catch (error) {
-          console.warn(
-            "🖥️ HOSTSHELL: Failed to communicate debounced size:",
-            error
-          );
-        }
-      }
-    }, 300); // Wait 300ms after user stops dragging
-
     console.log("🖥️ HOSTSHELL: Terminal fitted");
-  }, [instance, session?.websocket]);
+  }, []);
 
   // Handle terminal data
   const handleData = useCallback((data) => {
     console.log("🖥️ HOSTSHELL: Terminal data:", data.length, "bytes");
-  }, []);
-
-  // Preserve terminal history utility
-  const preserveTerminalHistory = useCallback(() => {
-    if (serializeAddonRef.current && instance) {
-      try {
-        const serializedContent = serializeAddonRef.current.serialize();
-        terminalHistoryRef.current = serializedContent;
-        console.log(
-          "🖥️ HOSTSHELL: Terminal history preserved",
-          serializedContent.length,
-          "characters"
-        );
-      } catch (error) {
-        console.warn(
-          "🖥️ HOSTSHELL: Failed to preserve terminal history:",
-          error
-        );
-      }
-    }
-  }, [instance]);
-
-  // Restore terminal history utility
-  const restoreTerminalHistory = useCallback(() => {
-    if (terminalHistoryRef.current && instance) {
-      try {
-        instance.clear();
-        instance.write(terminalHistoryRef.current);
-        console.log("🖥️ HOSTSHELL: Terminal history restored");
-      } catch (error) {
-        console.warn(
-          "🖥️ HOSTSHELL: Failed to restore terminal history:",
-          error
-        );
-      }
-    }
   }, []);
 
   // Create addon array based on WebSocket state (safe with null checks)
@@ -213,6 +156,42 @@ const HostShell = () => {
   // Use useXTerm with stable params (Komodo pattern)
   const { instance, ref } = useXTerm(terminalParams);
 
+  // Preserve terminal history utility - AFTER instance is defined
+  const preserveTerminalHistory = useCallback(() => {
+    if (serializeAddonRef.current && instance) {
+      try {
+        const serializedContent = serializeAddonRef.current.serialize();
+        terminalHistoryRef.current = serializedContent;
+        console.log(
+          "🖥️ HOSTSHELL: Terminal history preserved",
+          serializedContent.length,
+          "characters"
+        );
+      } catch (error) {
+        console.warn(
+          "🖥️ HOSTSHELL: Failed to preserve terminal history:",
+          error
+        );
+      }
+    }
+  }, [instance]);
+
+  // Restore terminal history utility - AFTER instance is defined
+  const restoreTerminalHistory = useCallback(() => {
+    if (terminalHistoryRef.current && instance) {
+      try {
+        instance.clear();
+        instance.write(terminalHistoryRef.current);
+        console.log("🖥️ HOSTSHELL: Terminal history restored");
+      } catch (error) {
+        console.warn(
+          "🖥️ HOSTSHELL: Failed to restore terminal history:",
+          error
+        );
+      }
+    }
+  }, [instance]);
+
   // Manage AttachAddon based on WebSocket state (like your working version)
   useEffect(() => {
     if (!session?.websocket) {
@@ -278,12 +257,7 @@ const HostShell = () => {
         session.websocket.removeEventListener("close", handleWebSocketClose);
       };
     }
-  }, [
-    session?.websocket,
-    session?.id,
-    preserveTerminalHistory,
-    restoreTerminalHistory,
-  ]);
+  }, [session?.websocket, session?.id, instance, preserveTerminalHistory, restoreTerminalHistory]);
 
   // Handle resize communication to backend
   useEffect(() => {
