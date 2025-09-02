@@ -9,6 +9,8 @@ import { SearchAddon } from '@xterm/addon-search';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { useFooter } from '../../contexts/FooterContext';
 
+const isWebGl2Supported = !!document.createElement("canvas").getContext("webgl2");
+
 const HostShell = () => {
   const { session } = useFooter();
   
@@ -29,13 +31,13 @@ const HostShell = () => {
   });
 
   const fitAddonRef = useRef(null);
-  const addonsLoadedRef = useRef(false);
-  const attachAddonLoadedRef = useRef(false);
 
-  // Load static addons ONCE when instance is ready - prevent WebGL leak
+  // Load static addons ONCE when instance is ready (following JetKVM pattern)
   useEffect(() => {
-    if (!instance || addonsLoadedRef.current) return;
+    if (!instance) return;
 
+    console.log('🖥️ HOSTSHELL: Loading static addons');
+    
     const fitAddon = new FitAddon();
     fitAddonRef.current = fitAddon;
     
@@ -46,19 +48,19 @@ const HostShell = () => {
     instance.loadAddon(new SerializeAddon());
     instance.loadAddon(new SearchAddon());
 
-    // Try WebGL addon ONCE - prevent memory leak
-    try {
-      const webglAddon = new WebglAddon();
-      instance.loadAddon(webglAddon);
-      console.log('🖥️ HOSTSHELL: WebGL renderer loaded');
-    } catch (error) {
-      console.log('🖥️ HOSTSHELL: WebGL not supported, using canvas renderer');
+    // Try WebGL addon if supported
+    if (isWebGl2Supported) {
+      try {
+        const webglAddon = new WebglAddon();
+        webglAddon.onContextLoss(() => webglAddon.dispose());
+        instance.loadAddon(webglAddon);
+        console.log('🖥️ HOSTSHELL: WebGL renderer loaded');
+      } catch (error) {
+        console.log('🖥️ HOSTSHELL: WebGL failed to load:', error);
+      }
     }
 
-    // Mark addons as loaded to prevent re-loading
-    addonsLoadedRef.current = true;
-
-    // Window resize listener like JetKVM
+    // Window resize listener
     const handleResize = () => {
       if (fitAddon) {
         setTimeout(() => fitAddon.fit(), 0);
@@ -68,7 +70,7 @@ const HostShell = () => {
 
     window.addEventListener('resize', handleResize);
 
-    // Initial fit
+    // Initial fit after brief delay
     setTimeout(() => fitAddon.fit(), 100);
 
     return () => {
@@ -76,28 +78,19 @@ const HostShell = () => {
     };
   }, [instance]);
 
-  // Handle WebSocket-specific functionality - prevent infinite loop
+  // Handle WebSocket connection and data communication (simplified JetKVM pattern)
   useEffect(() => {
-    if (!instance || !session?.websocket || attachAddonLoadedRef.current) return;
+    if (!instance || !session?.websocket) return;
+    if (session.websocket.readyState !== 'open') return;
+    
+    console.log('🖥️ HOSTSHELL: WebSocket ready, setting up AttachAddon');
     
     const websocket = session.websocket;
     
-    // Wait for WebSocket to be ready
-    const handleWebSocketReady = () => {
-      if (attachAddonLoadedRef.current) return; // Prevent double loading
-      
-      console.log('🖥️ HOSTSHELL: WebSocket ready, loading AttachAddon');
-      
-      // AttachAddon for WebSocket communication
-      const attachAddon = new AttachAddon(websocket);
-      instance.loadAddon(attachAddon);
-      attachAddonLoadedRef.current = true;
-      
-      // Send initial newline to prompt terminal
-      websocket.send('\n');
-      console.log('🖥️ HOSTSHELL: AttachAddon loaded and initial prompt sent');
-    };
-
+    // Create and load AttachAddon for this WebSocket connection
+    const attachAddon = new AttachAddon(websocket);
+    instance.loadAddon(attachAddon);
+    
     // Handle terminal resize - communicate to backend
     const onResizeDisposable = instance.onResize(({ cols, rows }) => {
       console.log('🖥️ HOSTSHELL: Terminal resized to', cols, 'columns and', rows, 'rows');
@@ -116,17 +109,22 @@ const HostShell = () => {
       }
     });
 
+    // Send initial sizing information
     if (websocket.readyState === WebSocket.OPEN) {
-      handleWebSocketReady();
-    } else if (websocket.readyState === WebSocket.CONNECTING) {
-      websocket.addEventListener('open', handleWebSocketReady, { once: true });
+      websocket.send(JSON.stringify({ 
+        type: 'resize',
+        rows: instance.rows, 
+        cols: instance.cols 
+      }));
+      console.log('🖥️ HOSTSHELL: Initial terminal size sent to backend');
     }
 
     return () => {
+      console.log('🖥️ HOSTSHELL: Cleaning up WebSocket connection');
       onResizeDisposable.dispose();
-      websocket.removeEventListener('open', handleWebSocketReady);
+      attachAddon.dispose();
     };
-  }, [instance, session?.websocket]);
+  }, [instance, session?.websocket?.readyState]);
 
   // Listen for footer resize events
   useEffect(() => {

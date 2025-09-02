@@ -289,7 +289,7 @@ const Dashboard = () => {
         </div>
 
         {error && (
-          <div className='notification is-dangermb-4'>
+          <div className='notification is-danger mb-4'>
             <p>{error}</p>
           </div>
         )}
