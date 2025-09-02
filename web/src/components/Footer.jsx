@@ -7,40 +7,33 @@ import Tasks from "./Tasks";
 
 const Footer = () => {
   const userSettings = useContext(UserSettings);
-  const { footerIsActive, setFooterIsActive, footerActiveView, setFooterActiveView } = userSettings;
+  const { footerIsActive, setFooterIsActive, footerActiveView, setFooterActiveView, footerMinimized } = userSettings;
   const { restartShell } = useFooter();
   const [showShellDropdown, setShowShellDropdown] = useState(false);
   const resizeTimeoutRef = useRef(null);
 
-  // Handle footer expand/collapse
   const handleToggle = () => {
     setFooterIsActive(!footerIsActive);
   };
 
-  // Handle view change
   const handleViewChange = (view) => {
     setFooterActiveView(view);
   };
 
-  // Handle shell button click - show dropdown if already selected
   const handleShellButtonClick = () => {
     if (footerActiveView === 'shell') {
-      // Already in shell view, toggle dropdown
       setShowShellDropdown(!showShellDropdown);
     } else {
-      // Switch to shell view
       handleViewChange('shell');
       setShowShellDropdown(false);
     }
   };
 
-  // Handle restart shell
   const handleRestartShell = async () => {
     setShowShellDropdown(false);
     await restartShell();
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showShellDropdown && !event.target.closest('.field.has-addons')) {
@@ -54,27 +47,18 @@ const Footer = () => {
     };
   }, [showShellDropdown]);
 
-  // Handle resize with snapping behavior like sidebar
   const handleResize = useCallback((e, { size }) => {
     if (footerIsActive) {
-      // Snap to minimum if dragged too small
-      if (size.height <= 30 && footerIsActive) {
-        setFooterIsActive(false);
-      } else {
-        userSettings.setFooterHeight(size.height);
-        
-        // Trigger terminal resize after a brief delay to ensure layout updates
-        setTimeout(() => {
-          // Dispatch custom event to trigger FitAddon in HostShell
-          window.dispatchEvent(new CustomEvent('footer-resized', { 
-            detail: { height: size.height } 
-          }));
-        }, 100);
-      }
+      userSettings.setFooterHeight(size.height);
+      
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('footer-resized', { 
+          detail: { height: size.height } 
+        }));
+      }, 100);
     }
-  }, [footerIsActive, userSettings, setFooterIsActive]);
+  }, [footerIsActive, userSettings]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (resizeTimeoutRef.current) {
@@ -83,7 +67,6 @@ const Footer = () => {
     };
   }, []);
 
-  // Use collapsed height (0) when not active, persistent height when active
   const effectiveHeight = footerIsActive ? userSettings.footerHeight : 30;
 
   const ResizeHandle = () => {
@@ -152,13 +135,13 @@ const Footer = () => {
     <div className="hero-foot">
       <ResizableBox
         onResize={handleResize}
-        className={footerIsActive ? "" : "is-minimized"}
+        className={footerMinimized ? "is-footer-minimized" : ""}
         height={effectiveHeight}
         width={Infinity}
-        resizeHandles={["n"]}
+        resizeHandles={footerMinimized ? [] : ["n"]}
         axis='y'
-        maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]} // Max 70% of viewport
-        minConstraints={[Infinity, 30]} // Match collapsed height
+        maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
+        minConstraints={[Infinity, 30]}
         handle={ResizeHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>

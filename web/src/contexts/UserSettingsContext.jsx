@@ -29,6 +29,11 @@ const UserSettingsProvider = ({ children }) => {
     return saved ? saved : 'tasks';
   });
 
+  const [footerMinimized, setFooterMinimized] = useState(() => {
+    const saved = localStorage.getItem('zoneweaver_footer_minimized');
+    return saved ? JSON.parse(saved) : false;
+  });
+
   const [tasksScrollPosition, setTasksScrollPosition] = useState(0);
 
   const [hostsExpanded, setHostsExpanded] = useState(() => {
@@ -59,6 +64,9 @@ const UserSettingsProvider = ({ children }) => {
   }, [sidebarWidth]);
 
   useEffect(() => {
+    if (footerHeight < 120) {
+      setFooterMinimized(true);
+    }
     localStorage.setItem('zoneweaver_footer_height', footerHeight.toString());
   }, [footerHeight]);
 
@@ -69,6 +77,10 @@ const UserSettingsProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('zoneweaver_footer_active_view', footerActiveView);
   }, [footerActiveView]);
+
+  useEffect(() => {
+    localStorage.setItem('zoneweaver_footer_minimized', JSON.stringify(footerMinimized));
+  }, [footerMinimized]);
 
   useEffect(() => {
     localStorage.setItem('zoneweaver_hosts_expanded', JSON.stringify(hostsExpanded));
@@ -95,6 +107,8 @@ const UserSettingsProvider = ({ children }) => {
         setFooterIsActive,
         footerActiveView,
         setFooterActiveView,
+        footerMinimized,
+        setFooterMinimized,
         tasksScrollPosition,
         setTasksScrollPosition,
         hostsExpanded,

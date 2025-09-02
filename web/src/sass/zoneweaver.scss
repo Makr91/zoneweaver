@@ -279,6 +279,17 @@ $beige-lighter: #eff0eb;
   cursor: default !important;
 }
 
+// Hide resize handle when footer is minimized
+.is-footer-minimized .react-resizable-handle-n {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+// Ensure minimized footer doesn't show resize cursor
+.is-footer-minimized {
+  cursor: default !important;
+}
+
 // Fix for custom icon fonts
 .icon-zoneweaver-logo {
   font-family: 'fontello' !important;

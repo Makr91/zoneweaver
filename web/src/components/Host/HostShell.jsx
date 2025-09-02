@@ -177,27 +177,14 @@ const HostShell = () => {
   }
 
   return (
-    <div style={{ position: "relative", height: "100%", width: "100%" }}>
+    <div className="is-fullheight is-fullwidth">
       <div
         ref={ref}
-        style={{ height: "100%", width: "100%" }}
         className="terminal xterm is-fullheight is-fullwidth"
       />
       
       {!isReady && (
-        <div 
-          style={{
-            position: "absolute",
-            top: "8px",
-            right: "8px",
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            color: "white",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontSize: "0.7rem",
-            zIndex: 20
-          }}
-        >
+        <div className="notification is-dark is-small is-pulled-right mt-1 mr-1">
           <i className="fas fa-plug fa-pulse mr-1"></i>
           {session?.websocket?.readyState === WebSocket.CONNECTING
             ? "Connecting..."
