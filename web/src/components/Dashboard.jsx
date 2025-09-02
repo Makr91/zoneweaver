@@ -675,7 +675,7 @@ const Dashboard = () => {
                   }
                   
                   return (
-                    <div key={index} className={`notification ${statusColor}mb-3`}>
+                    <div key={index} className={`notification ${statusColor} mb-3`}>
                       <strong>{serverResult.server.hostname}</strong>
                       <ul className='mt-2'>
                         {issues.map((issue, idx) => (

@@ -103,7 +103,7 @@ const LayoutContent = () => {
   return (
     <div className="columns is-gapless">
       <ResizableBox
-        className={`column is-one-fifth ${userSettings.sidebarMinimized ? 'is-sidebar-minimized' : ''}`}
+        className={`column is-one-fifth ${userSettings.sidebarMinimized ? "is-sidebar-minimized" : ""}`}
         onResize={handleResize}
         width={effectiveWidth}
         height={Infinity}
