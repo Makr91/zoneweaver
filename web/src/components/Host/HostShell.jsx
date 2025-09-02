@@ -12,22 +12,29 @@ import { useFooter } from "../../contexts/FooterContext";
 const HostShell = () => {
   const { session } = useFooter();
 
-  // Create stable addons like Komodo
-  const fitAddon = useRef(new FitAddon()).current;
-  const webLinksAddon = useRef(new WebLinksAddon()).current;
-  const serializeAddon = useRef(new SerializeAddon()).current;
-  const clipboardAddon = useRef(new ClipboardAddon()).current;
-  const searchAddon = useRef(new SearchAddon()).current;
-
-  // WebGL addon with error handling
-  const webglAddon = useRef(null);
-  if (!webglAddon.current) {
+  // Create stable addon refs
+  const fitAddonRef = useRef(null);
+  const webLinksAddonRef = useRef(null);
+  const serializeAddonRef = useRef(null);
+  const clipboardAddonRef = useRef(null);
+  const searchAddonRef = useRef(null);
+  const webglAddonRef = useRef(null);
+  
+  // Initialize addons once
+  if (!fitAddonRef.current) {
+    fitAddonRef.current = new FitAddon();
+    webLinksAddonRef.current = new WebLinksAddon();
+    serializeAddonRef.current = new SerializeAddon();
+    clipboardAddonRef.current = new ClipboardAddon();
+    searchAddonRef.current = new SearchAddon();
+    
+    // WebGL addon with error handling
     try {
-      webglAddon.current = new WebglAddon();
-      webglAddon.current.onContextLoss(() => webglAddon.current.dispose());
+      webglAddonRef.current = new WebglAddon();
+      webglAddonRef.current.onContextLoss(() => webglAddonRef.current.dispose());
     } catch {
       console.log("🖥️ HOSTSHELL: WebGL not supported, using canvas renderer");
-      webglAddon.current = null;
+      webglAddonRef.current = null;
     }
   }
 
@@ -57,7 +64,9 @@ const HostShell = () => {
     }
 
     // Immediate fit for responsiveness
-    fitAddon.fit();
+    if (fitAddonRef.current) {
+      fitAddonRef.current.fit();
+    }
 
     // Debounced backend communication
     debounceTimeoutRef.current = setTimeout(() => {
@@ -81,7 +90,7 @@ const HostShell = () => {
     }, 300); // Wait 300ms after user stops dragging
 
     console.log("🖥️ HOSTSHELL: Terminal fitted");
-  }, [fitAddon, instance, session?.websocket]);
+  }, [instance, session?.websocket]);
 
   // Handle terminal data
   const handleData = useCallback((data) => {
@@ -90,9 +99,9 @@ const HostShell = () => {
 
   // Preserve terminal history utility
   const preserveTerminalHistory = useCallback(() => {
-    if (serializeAddon && instance) {
+    if (serializeAddonRef.current && instance) {
       try {
-        const serializedContent = serializeAddon.serialize();
+        const serializedContent = serializeAddonRef.current.serialize();
         terminalHistoryRef.current = serializedContent;
         console.log(
           "🖥️ HOSTSHELL: Terminal history preserved",
@@ -106,7 +115,7 @@ const HostShell = () => {
         );
       }
     }
-  }, [serializeAddon]);
+  }, [instance]);
 
   // Restore terminal history utility
   const restoreTerminalHistory = useCallback(() => {
@@ -127,16 +136,16 @@ const HostShell = () => {
   // Create addon array based on WebSocket state
   const addons = useMemo(() => {
     const baseAddons = [
-      fitAddon,
-      webLinksAddon,
-      serializeAddon,
-      clipboardAddon,
-      searchAddon,
+      fitAddonRef.current,
+      webLinksAddonRef.current,
+      serializeAddonRef.current,
+      clipboardAddonRef.current,
+      searchAddonRef.current,
     ];
 
     // Add WebGL if available
-    if (webglAddon.current) {
-      baseAddons.push(webglAddon.current);
+    if (webglAddonRef.current) {
+      baseAddons.push(webglAddonRef.current);
     }
 
     // Add AttachAddon if WebSocket is ready
@@ -144,15 +153,8 @@ const HostShell = () => {
       baseAddons.push(attachAddon);
     }
 
-    return baseAddons;
-  }, [
-    attachAddon,
-    fitAddon,
-    webLinksAddon,
-    serializeAddon,
-    clipboardAddon,
-    searchAddon,
-  ]);
+    return baseAddons.filter(addon => addon !== null);
+  }, [attachAddon]);
 
   // Stable useXTerm params using useMemo (Komodo pattern)
   const terminalParams = useMemo(
@@ -210,8 +212,8 @@ const HostShell = () => {
 
         // Ensure terminal is properly fitted and scrolled after content load
         setTimeout(() => {
-          if (fitAddon && instance) {
-            fitAddon.fit();
+          if (fitAddonRef.current && instance) {
+            fitAddonRef.current.fit();
             // Scroll to bottom to show latest content
             instance.scrollToBottom();
             console.log(
@@ -294,9 +296,9 @@ const HostShell = () => {
   // Listen for footer resize events
   useEffect(() => {
     const handleFooterResize = () => {
-      if (fitAddon && instance) {
+      if (fitAddonRef.current && instance) {
         setTimeout(() => {
-          fitAddon.fit();
+          fitAddonRef.current.fit();
           console.log("🖥️ HOSTSHELL: Terminal refitted after footer resize");
         }, 50);
       }
@@ -306,7 +308,7 @@ const HostShell = () => {
     return () => {
       window.removeEventListener("footer-resized", handleFooterResize);
     };
-  }, [fitAddon, instance]);
+  }, [instance]);
 
   if (!session) {
     return (
