@@ -51,12 +51,8 @@ const HostShell = () => {
         // Basic terminal setup
         instance.writeln("Host terminal ready...");
         
-        // Set up local echo ONLY when WebSocket is not connected
-        instance.onData((data) => {
-          if (!session?.websocket || session.websocket.readyState !== WebSocket.OPEN) {
-            instance.write(data); // Local echo when no WebSocket
-          }
-        });
+        // NOTE: Removed local echo to prevent double character input
+        // AttachAddon handles all input/output when WebSocket connects
 
         // Load addons
         instance.loadAddon(addonsRef.current.fitAddon);
