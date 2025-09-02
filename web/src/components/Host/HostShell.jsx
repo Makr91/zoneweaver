@@ -25,7 +25,7 @@ const HostShell = () => {
     try {
       webglAddon.current = new WebglAddon();
       webglAddon.current.onContextLoss(() => webglAddon.current.dispose());
-    } catch (error) {
+    } catch {
       console.log("🖥️ HOSTSHELL: WebGL not supported, using canvas renderer");
       webglAddon.current = null;
     }
@@ -48,34 +48,39 @@ const HostShell = () => {
 
   // Debounced resize handling
   const debounceTimeoutRef = useRef(null);
-  
+
   // Handle resize function with debouncing
   const handleResize = useCallback(() => {
     // Clear any existing timeout
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
-    
+
     // Immediate fit for responsiveness
     fitAddon.fit();
-    
+
     // Debounced backend communication
     debounceTimeoutRef.current = setTimeout(() => {
       if (instance && session?.websocket?.readyState === WebSocket.OPEN) {
         try {
-          session.websocket.send(JSON.stringify({ 
-            type: 'resize',
-            rows: instance.rows, 
-            cols: instance.cols 
-          }));
-          console.log('🖥️ HOSTSHELL: Debounced size communicated to backend');
+          session.websocket.send(
+            JSON.stringify({
+              type: "resize",
+              rows: instance.rows,
+              cols: instance.cols,
+            })
+          );
+          console.log("🖥️ HOSTSHELL: Debounced size communicated to backend");
         } catch (error) {
-          console.warn('🖥️ HOSTSHELL: Failed to communicate debounced size:', error);
+          console.warn(
+            "🖥️ HOSTSHELL: Failed to communicate debounced size:",
+            error
+          );
         }
       }
     }, 300); // Wait 300ms after user stops dragging
-    
-    console.log('🖥️ HOSTSHELL: Terminal fitted');
+
+    console.log("🖥️ HOSTSHELL: Terminal fitted");
   }, [fitAddon, instance, session?.websocket]);
 
   // Handle terminal data
@@ -202,14 +207,16 @@ const HostShell = () => {
       // Restore history after connection is established
       setTimeout(() => {
         restoreTerminalHistory();
-        
+
         // Ensure terminal is properly fitted and scrolled after content load
         setTimeout(() => {
           if (fitAddon && instance) {
             fitAddon.fit();
             // Scroll to bottom to show latest content
             instance.scrollToBottom();
-            console.log('🖥️ HOSTSHELL: Terminal fitted and scrolled to bottom after history restore');
+            console.log(
+              "🖥️ HOSTSHELL: Terminal fitted and scrolled to bottom after history restore"
+            );
           }
         }, 100);
       }, 200);
