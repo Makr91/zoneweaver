@@ -1,6 +1,7 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useXTerm } from 'react-xtermjs';
 import { FitAddon } from '@xterm/addon-fit';
+import { AttachAddon } from '@xterm/addon-attach';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { SerializeAddon } from '@xterm/addon-serialize';
 import { ClipboardAddon } from '@xterm/addon-clipboard';
@@ -8,38 +9,53 @@ import { SearchAddon } from '@xterm/addon-search';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { useFooter } from '../../contexts/FooterContext';
 
-const isWebGl2Supported = !!document.createElement("canvas").getContext("webgl2");
-
 const HostShell = () => {
   const { session } = useFooter();
   
-  // Use useXTerm hook exactly like JetKVM
-  const { instance, ref } = useXTerm({
-    options: {
-      cursorBlink: true,
-      theme: {
-        background: '#000000',
-        foreground: '#ffffff',
-      },
-      scrollback: 10000,
-      fontSize: 14,
-      fontFamily: '"Cascadia Code", Consolas, "Liberation Mono", Menlo, Courier, monospace',
-      allowTransparency: false,
-      convertEol: false,
-    }
-  });
-  
-  // Create addons once like JetKVM
+  // Create stable addons like Komodo
   const fitAddon = useRef(new FitAddon()).current;
+  const webLinksAddon = useRef(new WebLinksAddon()).current;
   const serializeAddon = useRef(new SerializeAddon()).current;
+  const clipboardAddon = useRef(new ClipboardAddon()).current;
+  const searchAddon = useRef(new SearchAddon()).current;
+  
+  // WebGL addon with error handling
+  const webglAddon = useRef(null);
+  if (!webglAddon.current) {
+    try {
+      webglAddon.current = new WebglAddon();
+      webglAddon.current.onContextLoss(() => webglAddon.current.dispose());
+    } catch (error) {
+      console.log('🖥️ HOSTSHELL: WebGL not supported, using canvas renderer');
+      webglAddon.current = null;
+    }
+  }
+  
+  // Terminal history preservation
   const terminalHistoryRef = useRef('');
+  
+  // Addon state management (like your working version)
+  const [attachAddon, setAttachAddon] = useState(null);
+  const [isReady, setIsReady] = useState(false);
 
   console.log('🖥️ HOSTSHELL: Render with session:', {
     sessionId: session?.id,
     wsState: session?.websocket?.readyState,
-    hasInstance: !!instance,
+    isReady,
+    hasHistory: terminalHistoryRef.current.length > 0,
     timestamp: new Date().toISOString()
   });
+
+  // Handle resize function
+  const handleResize = useCallback(() => {
+    fitAddon.fit();
+    console.log('🖥️ HOSTSHELL: Terminal fitted');
+  }, [fitAddon]);
+
+  // Handle terminal data
+  const handleData = useCallback((data) => {
+    console.log('🖥️ HOSTSHELL: Terminal data:', data.length, 'bytes');
+  }, []);
 
   // Preserve terminal history utility
   const preserveTerminalHistory = useCallback(() => {
@@ -52,9 +68,9 @@ const HostShell = () => {
         console.warn('🖥️ HOSTSHELL: Failed to preserve terminal history:', error);
       }
     }
-  }, [instance, serializeAddon]);
+  }, [serializeAddon]);
 
-  // Restore terminal history utility
+  // Restore terminal history utility  
   const restoreTerminalHistory = useCallback(() => {
     if (terminalHistoryRef.current && instance) {
       try {
@@ -65,96 +81,117 @@ const HostShell = () => {
         console.warn('🖥️ HOSTSHELL: Failed to restore terminal history:', error);
       }
     }
-  }, [instance]);
+  }, []);
 
-  // Load static addons when instance is ready (exactly like JetKVM)
+  // Create addon array based on WebSocket state
+  const addons = useMemo(() => {
+    const baseAddons = [
+      fitAddon,
+      webLinksAddon,
+      serializeAddon,
+      clipboardAddon,
+      searchAddon,
+    ];
+    
+    // Add WebGL if available
+    if (webglAddon.current) {
+      baseAddons.push(webglAddon.current);
+    }
+    
+    // Add AttachAddon if WebSocket is ready
+    if (attachAddon) {
+      baseAddons.push(attachAddon);
+    }
+    
+    return baseAddons;
+  }, [attachAddon, fitAddon, webLinksAddon, serializeAddon, clipboardAddon, searchAddon]);
+
+  // Stable useXTerm params using useMemo (Komodo pattern)
+  const terminalParams = useMemo(() => ({
+    options: {
+      cursorBlink: true,
+      theme: {
+        background: '#000000',
+        foreground: '#ffffff',
+      },
+      scrollback: 10000,
+      fontSize: 14,
+      fontFamily: '"Cascadia Code", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+      allowTransparency: false,
+      convertEol: false,
+    },
+    listeners: {
+      onResize: handleResize,
+      onData: handleData,
+    },
+    addons: addons, // Pass addons as props like Komodo!
+  }), [addons, handleResize, handleData]);
+
+  // Use useXTerm with stable params (Komodo pattern)
+  const { instance, ref } = useXTerm(terminalParams);
+
+  // Manage AttachAddon based on WebSocket state (like your working version)
   useEffect(() => {
-    if (!instance) return;
-
-    console.log('🖥️ HOSTSHELL: Loading static addons');
-    
-    // Load the fit addon
-    instance.loadAddon(fitAddon);
-    
-    // Load other static addons
-    instance.loadAddon(new ClipboardAddon());
-    instance.loadAddon(new WebLinksAddon());
-    instance.loadAddon(serializeAddon);
-    instance.loadAddon(new SearchAddon());
-
-    // Try WebGL addon if supported (like JetKVM)
-    if (isWebGl2Supported) {
-      try {
-        const webGl2Addon = new WebglAddon();
-        webGl2Addon.onContextLoss(() => webGl2Addon.dispose());
-        instance.loadAddon(webGl2Addon);
-        console.log('🖥️ HOSTSHELL: WebGL renderer loaded');
-      } catch (error) {
-        console.log('🖥️ HOSTSHELL: WebGL failed to load:', error);
-      }
+    if (!session?.websocket) {
+      setAttachAddon(null);
+      setIsReady(false);
+      return;
     }
 
-    const handleResize = () => fitAddon.fit();
-
-    // Handle resize event (exactly like JetKVM)
-    window.addEventListener('resize', handleResize);
-    
-    // Initial fit
-    setTimeout(() => fitAddon.fit(), 100);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
+    const handleWebSocketReady = () => {
+      console.log('🖥️ HOSTSHELL: WebSocket ready, creating AttachAddon for session:', session.id);
+      
+      // Preserve history before changing connection
+      preserveTerminalHistory();
+      
+      // Create new AttachAddon for this WebSocket
+      const newAttachAddon = new AttachAddon(session.websocket);
+      setAttachAddon(newAttachAddon);
+      setIsReady(true);
+      
+      // Restore history after connection is established
+      setTimeout(() => {
+        restoreTerminalHistory();
+      }, 200);
     };
-  }, [instance]);
 
-  // Manual WebSocket handling (exactly like JetKVM RTCDataChannel pattern)
-  const websocketReadyState = session?.websocket?.readyState;
+    const handleWebSocketError = () => {
+      console.log('🖥️ HOSTSHELL: WebSocket error, preserving history');
+      preserveTerminalHistory();
+      setAttachAddon(null);
+      setIsReady(false);
+    };
+
+    const handleWebSocketClose = () => {
+      console.log('🖥️ HOSTSHELL: WebSocket closed, preserving history');
+      preserveTerminalHistory();
+    };
+
+    if (session.websocket.readyState === WebSocket.OPEN) {
+      handleWebSocketReady();
+    } else if (session.websocket.readyState === WebSocket.CONNECTING) {
+      session.websocket.addEventListener('open', handleWebSocketReady);
+      session.websocket.addEventListener('error', handleWebSocketError);
+      session.websocket.addEventListener('close', handleWebSocketClose);
+      
+      return () => {
+        session.websocket.removeEventListener('open', handleWebSocketReady);
+        session.websocket.removeEventListener('error', handleWebSocketError);
+        session.websocket.removeEventListener('close', handleWebSocketClose);
+      };
+    }
+  }, [session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
+
+  // Handle resize communication to backend
   useEffect(() => {
-    if (!instance) return;
-    if (!session?.websocket) return;
-    if (websocketReadyState !== WebSocket.OPEN) return;
-
-    console.log('🖥️ HOSTSHELL: WebSocket ready, setting up manual communication');
+    if (!instance || !session?.websocket) return;
     
-    const websocket = session.websocket;
-    const abortController = new AbortController();
-
-    // Preserve history before setting up new connection
-    preserveTerminalHistory();
-
-    // Manual WebSocket message handling (like JetKVM does with RTCDataChannel)
-    websocket.addEventListener(
-      "message",
-      (e) => {
-        try {
-          // Handle text data from WebSocket
-          if (typeof e.data === 'string') {
-            instance.write(e.data);
-          } else {
-            // Handle binary data if server sends it  
-            instance.write(new Uint8Array(e.data));
-          }
-        } catch (error) {
-          console.warn('🖥️ HOSTSHELL: Error writing to terminal:', error);
-        }
-      },
-      { signal: abortController.signal },
-    );
-
-    // Manual terminal data sending (like JetKVM)
-    const onDataHandler = instance.onData(data => {
-      if (websocket.readyState === WebSocket.OPEN) {
-        websocket.send(data);
-      }
-    });
-
-    // Manual resize handling (like JetKVM)
-    const onResizeHandler = instance.onResize(({ cols, rows }) => {
+    const onResizeDisposable = instance.onResize(({ cols, rows }) => {
       console.log('🖥️ HOSTSHELL: Terminal resized to', cols, 'columns and', rows, 'rows');
       
-      if (websocket.readyState === WebSocket.OPEN) {
+      if (session.websocket.readyState === WebSocket.OPEN) {
         try {
-          websocket.send(JSON.stringify({ 
+          session.websocket.send(JSON.stringify({ 
             type: 'resize',
             rows: rows, 
             cols: cols 
@@ -166,36 +203,19 @@ const HostShell = () => {
       }
     });
 
-    // Send initial terminal size (like JetKVM)
-    if (websocket.readyState === WebSocket.OPEN) {
-      try {
-        websocket.send(JSON.stringify({ 
-          rows: instance.rows, 
-          cols: instance.cols 
-        }));
-        console.log('🖥️ HOSTSHELL: Initial terminal size sent');
-      } catch (error) {
-        console.warn('🖥️ HOSTSHELL: Failed to send initial size:', error);
-      }
-    }
-
-    // Restore history after brief delay
-    setTimeout(() => {
-      restoreTerminalHistory();
-    }, 200);
-
     return () => {
-      abortController.abort();
-      onDataHandler.dispose();
-      onResizeHandler.dispose();
+      onResizeDisposable.dispose();
     };
-  }, [instance, websocketReadyState, session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
+  }, [instance, session?.websocket]);
 
   // Listen for footer resize events
   useEffect(() => {
     const handleFooterResize = () => {
-      if (fitAddon) {
-        setTimeout(() => fitAddon.fit(), 50);
+      if (fitAddon && instance) {
+        setTimeout(() => {
+          fitAddon.fit();
+          console.log('🖥️ HOSTSHELL: Terminal refitted after footer resize');
+        }, 50);
       }
     };
 
@@ -203,7 +223,7 @@ const HostShell = () => {
     return () => {
       window.removeEventListener('footer-resized', handleFooterResize);
     };
-  }, [fitAddon]);
+  }, [fitAddon, instance]);
 
   if (!session) {
     return (
@@ -221,7 +241,7 @@ const HostShell = () => {
     );
   }
 
-  if (!instance) {
+  if (!isReady || !attachAddon) {
     return (
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
@@ -230,14 +250,14 @@ const HostShell = () => {
           </div>
           <p>Connecting to terminal...</p>
           <p className="is-size-7 has-text-grey">
-            Loading terminal interface...
+            {session.websocket?.readyState === WebSocket.CONNECTING ? 'Establishing connection' : 'Preparing session'}
           </p>
         </div>
       </div>
     );
   }
 
-  // Simple div with ref (JetKVM pattern)
+  // Simple div with ref (Komodo/useXTerm pattern)
   return (
     <div 
       ref={ref} 
