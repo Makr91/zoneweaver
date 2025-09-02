@@ -337,31 +337,71 @@ const HostShell = () => {
     );
   }
 
-  if (!instance || !isReady) {
+  if (!instance) {
     return (
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
           <div className="icon is-large mb-2">
             <i className="fas fa-terminal fa-2x fa-pulse"></i>
           </div>
-          <p>Connecting to terminal...</p>
+          <p>Loading terminal...</p>
           <p className="is-size-7 has-text-grey">
-            {session?.websocket?.readyState === WebSocket.CONNECTING
-              ? "Establishing connection"
-              : "Preparing session"}
+            Initializing xterm.js
           </p>
         </div>
       </div>
     );
   }
 
-  // Simple div with ref like official Qovery example
+  // ALWAYS render the terminal div when instance exists - let terminal attach to DOM
+  console.log("🔥 HOSTSHELL: Rendering terminal div with ref:", {
+    hasInstance: !!instance,
+    hasRef: !!ref,
+    isReady,
+    refCurrent: ref?.current,
+    timestamp: new Date().toISOString(),
+  });
+
   return (
-    <div
-      ref={ref}
-      style={{ height: "100%", width: "100%" }}
-      className="terminal xterm is-fullheight is-fullwidth"
-    />
+    <div style={{ position: "relative", height: "100%", width: "100%" }}>
+      {/* Terminal div - ALWAYS render when instance exists */}
+      <div
+        ref={ref}
+        style={{ height: "100%", width: "100%" }}
+        className="terminal xterm is-fullheight is-fullwidth"
+      />
+      
+      {/* Overlay when not ready */}
+      {!isReady && (
+        <div 
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10
+          }}
+          className="has-text-white-ter"
+        >
+          <div className="has-text-centered">
+            <div className="icon is-large mb-2">
+              <i className="fas fa-terminal fa-2x fa-pulse"></i>
+            </div>
+            <p>Connecting to server...</p>
+            <p className="is-size-7 has-text-grey">
+              {session?.websocket?.readyState === WebSocket.CONNECTING
+                ? "Establishing connection"
+                : "Waiting for WebSocket"}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
