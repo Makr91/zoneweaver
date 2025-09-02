@@ -75,16 +75,24 @@ const HostShell = () => {
     };
   }, [instance]);
 
-  // Handle WebSocket-specific functionality separately
+  // Handle WebSocket-specific functionality - fix timing issue
   useEffect(() => {
     if (!instance || !session?.websocket) return;
     
     const websocket = session.websocket;
-    if (websocket.readyState !== WebSocket.OPEN) return;
-
-    // AttachAddon for WebSocket communication
-    const attachAddon = new AttachAddon(websocket);
-    instance.loadAddon(attachAddon);
+    
+    // Wait for WebSocket to be ready
+    const handleWebSocketReady = () => {
+      console.log('🖥️ HOSTSHELL: WebSocket ready, loading AttachAddon');
+      
+      // AttachAddon for WebSocket communication
+      const attachAddon = new AttachAddon(websocket);
+      instance.loadAddon(attachAddon);
+      
+      // Send initial newline to prompt terminal
+      websocket.send('\n');
+      console.log('🖥️ HOSTSHELL: AttachAddon loaded and initial prompt sent');
+    };
 
     // Handle terminal resize - communicate to backend
     const onResizeDisposable = instance.onResize(({ cols, rows }) => {
@@ -104,8 +112,15 @@ const HostShell = () => {
       }
     });
 
+    if (websocket.readyState === WebSocket.OPEN) {
+      handleWebSocketReady();
+    } else if (websocket.readyState === WebSocket.CONNECTING) {
+      websocket.addEventListener('open', handleWebSocketReady, { once: true });
+    }
+
     return () => {
       onResizeDisposable.dispose();
+      websocket.removeEventListener('open', handleWebSocketReady);
     };
   }, [instance, session?.websocket]);
 
