@@ -135,8 +135,16 @@ const HostShell = () => {
     }
   }, []);
 
-  // Create addon array based on WebSocket state
+  // Create addon array based on WebSocket state (safe with null checks)
   const addons = useMemo(() => {
+    // Wait until base addons are initialized
+    if (!fitAddonRef.current) {
+      console.log("🖥️ HOSTSHELL: Addons not ready yet, returning empty array");
+      return [];
+    }
+
+    console.log("🖥️ HOSTSHELL: Building addon array");
+    
     const baseAddons = [
       fitAddonRef.current,
       webLinksAddonRef.current,
@@ -155,7 +163,7 @@ const HostShell = () => {
       baseAddons.push(attachAddon);
     }
 
-    return baseAddons.filter((addon) => addon !== null);
+    return baseAddons.filter(addon => addon !== null);
   }, [attachAddon]);
 
   // Stable useXTerm params using useMemo (Komodo pattern)
