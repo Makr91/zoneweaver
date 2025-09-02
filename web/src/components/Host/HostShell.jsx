@@ -223,7 +223,7 @@ const HostShell = () => {
     <div
       ref={ref}
       style={{ height: "100%", width: "100%" }}
-      className="is-fullheight is-fullwidth"
+      className="terminal xterm is-fullheight is-fullwidth"
     />
   );
 };
