@@ -36,7 +36,6 @@ const HostShell = () => {
   useEffect(() => {
     if (instance && ref?.current) {
       try {
-        // CRITICAL: Manually attach terminal to DOM element
         instance.open(ref.current);
       } catch (error) {
         console.error("HOSTSHELL: Failed to attach terminal to DOM:", error);
@@ -44,17 +43,11 @@ const HostShell = () => {
     }
   }, [instance, ref?.current]);
 
-  // Terminal initialization following GitHub issue #1 pattern
   useEffect(() => {
     if (instance) {
       try {
-        // Basic terminal setup
         instance.writeln("Host terminal ready...");
-        
-        // NOTE: Removed local echo to prevent double character input
-        // AttachAddon handles all input/output when WebSocket connects
 
-        // Load addons
         instance.loadAddon(addonsRef.current.fitAddon);
         instance.loadAddon(addonsRef.current.clipboardAddon);
         instance.loadAddon(addonsRef.current.webLinksAddon);
@@ -77,7 +70,6 @@ const HostShell = () => {
     }
   }, [instance]);
 
-  // Handle WebSocket attachment separately
   useEffect(() => {
 
     if (!instance || !session?.websocket) {
@@ -93,31 +85,30 @@ const HostShell = () => {
         instance.loadAddon(attachAddon);
         setIsReady(true);
 
-        const onResizeDisposable = instance.onResize?.(({ cols, rows }) => {
-          if (websocket.readyState === WebSocket.OPEN) {
-            try {
-              websocket.send(
-                JSON.stringify({
-                  type: "resize",
-                  rows: rows,
-                  cols: cols,
-                })
-              );
-            } catch (error) {
-              console.error("HOSTSHELL: Failed to communicate size:", error);
-            }
-          }
-        });
+        // TEST: Comment out resize communication to prevent JSON garbage
+        // const onResizeDisposable = instance.onResize?.(({ cols, rows }) => {
+        //   if (websocket.readyState === WebSocket.OPEN) {
+        //     try {
+        //       websocket.send(
+        //         JSON.stringify({
+        //           type: "resize",
+        //           rows: rows,
+        //           cols: cols,
+        //         })
+        //       );
+        //     } catch (error) {
+        //       console.error("HOSTSHELL: Failed to communicate size:", error);
+        //     }
+        //   }
+        // });
 
         // NOTE: Removed initial size send to prevent JSON garbage in terminal
 
         return () => {
-          onResizeDisposable?.dispose();
+          // onResizeDisposable?.dispose(); // Commented out with resize code above
           attachAddon?.dispose();
           setIsReady(false);
         };
-      }
-    };
 
     checkConnection();
 
@@ -136,9 +127,8 @@ const HostShell = () => {
       websocket.removeEventListener('open', onOpen);
       websocket.removeEventListener('close', onClose);
     };
-  }, [instance, session?.websocket]); // Simplified dependencies
+  }, [instance, session?.websocket]);
 
-  // Handle footer resize events
   useEffect(() => {
     const handleFooterResize = () => {
       if (addonsRef.current?.fitAddon && instance) {
@@ -186,14 +176,12 @@ const HostShell = () => {
 
   return (
     <div style={{ position: "relative", height: "100%", width: "100%" }}>
-      {/* Terminal div - ALWAYS render when instance exists */}
       <div
         ref={ref}
         style={{ height: "100%", width: "100%" }}
         className="terminal xterm is-fullheight is-fullwidth"
       />
       
-      {/* Connection status overlay when not ready */}
       {!isReady && (
         <div 
           style={{
