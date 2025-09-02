@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useCallback, memo, useRef } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { useXTerm } from 'react-xtermjs';
 import { FitAddon } from '@xterm/addon-fit';
-import { AttachAddon } from '@xterm/addon-attach';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { SerializeAddon } from '@xterm/addon-serialize';
 import { ClipboardAddon } from '@xterm/addon-clipboard';
@@ -9,10 +8,12 @@ import { SearchAddon } from '@xterm/addon-search';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { useFooter } from '../../contexts/FooterContext';
 
+const isWebGl2Supported = !!document.createElement("canvas").getContext("webgl2");
+
 const HostShell = () => {
   const { session } = useFooter();
   
-  // Use useXTerm hook as requested
+  // Use useXTerm hook like JetKVM
   const { instance, ref } = useXTerm({
     options: {
       cursorBlink: true,
@@ -28,71 +29,21 @@ const HostShell = () => {
     }
   });
   
-  // Persistent addon instances to prevent history loss (like working version)
+  // Track addon refs for cleanup and history
   const fitAddonRef = useRef(null);
-  const webLinksAddonRef = useRef(null);
   const serializeAddonRef = useRef(null);
-  const clipboardAddonRef = useRef(null);
-  const searchAddonRef = useRef(null);
-  const webglAddonRef = useRef(null);
-  const terminalInstanceRef = useRef(null);
-  
-  // Terminal history preservation
   const terminalHistoryRef = useRef('');
-  
-  // Manage addon state like working version
-  const [addons, setAddons] = useState([]);
-  const [isReady, setIsReady] = useState(false);
-  const addonsInitializedRef = useRef(false);
 
   console.log('🖥️ HOSTSHELL: Render with session:', {
     sessionId: session?.id,
     wsState: session?.websocket?.readyState,
-    addonsCount: addons.length,
-    isReady,
-    hasHistory: terminalHistoryRef.current.length > 0,
     hasInstance: !!instance,
     timestamp: new Date().toISOString()
   });
 
-  // Initialize persistent addons only once (like working version)
-  useEffect(() => {
-    if (!fitAddonRef.current && !addonsInitializedRef.current) {
-      console.log('🖥️ HOSTSHELL: Initializing enhanced addons');
-      
-      // Core addons
-      fitAddonRef.current = new FitAddon();
-      webLinksAddonRef.current = new WebLinksAddon();
-      
-      // Enhanced addons for better UX
-      serializeAddonRef.current = new SerializeAddon();
-      clipboardAddonRef.current = new ClipboardAddon();
-      searchAddonRef.current = new SearchAddon();
-      
-      // Performance addon (try WebGL, fallback gracefully if not supported)
-      try {
-        webglAddonRef.current = new WebglAddon();
-        console.log('🖥️ HOSTSHELL: WebGL renderer available');
-      } catch (error) {
-        console.log('🖥️ HOSTSHELL: WebGL not supported, using canvas renderer');
-        webglAddonRef.current = null;
-      }
-      
-      addonsInitializedRef.current = true;
-    }
-  }, []);
-
-  // Store instance reference when ready
-  useEffect(() => {
-    if (instance) {
-      terminalInstanceRef.current = instance;
-      console.log('🖥️ HOSTSHELL: Terminal instance ready');
-    }
-  }, [instance]);
-
-  // Preserve terminal content before WebSocket changes
+  // Preserve terminal history utility
   const preserveTerminalHistory = useCallback(() => {
-    if (serializeAddonRef.current && terminalInstanceRef.current) {
+    if (serializeAddonRef.current && instance) {
       try {
         const serializedContent = serializeAddonRef.current.serialize();
         terminalHistoryRef.current = serializedContent;
@@ -101,128 +52,161 @@ const HostShell = () => {
         console.warn('🖥️ HOSTSHELL: Failed to preserve terminal history:', error);
       }
     }
-  }, []);
+  }, [instance]);
 
-  // Restore terminal content after WebSocket reconnection
+  // Restore terminal history utility
   const restoreTerminalHistory = useCallback(() => {
-    if (terminalHistoryRef.current && terminalInstanceRef.current) {
+    if (terminalHistoryRef.current && instance) {
       try {
-        // Clear current content and restore from history
-        terminalInstanceRef.current.clear();
-        terminalInstanceRef.current.write(terminalHistoryRef.current);
+        instance.clear();
+        instance.write(terminalHistoryRef.current);
         console.log('🖥️ HOSTSHELL: Terminal history restored');
       } catch (error) {
         console.warn('🖥️ HOSTSHELL: Failed to restore terminal history:', error);
       }
     }
-  }, []);
+  }, [instance]);
 
-  // Manage addons based on WebSocket state (like working version)
+  // Load static addons once when instance is ready (JetKVM pattern)
   useEffect(() => {
-    if (!session?.websocket || !fitAddonRef.current || !addonsInitializedRef.current) {
-      setAddons([]);
-      setIsReady(false);
-      return;
-    }
+    if (!instance) return;
 
-    const handleWebSocketReady = () => {
-      console.log('🖥️ HOSTSHELL: WebSocket ready, creating AttachAddon for session:', session.id);
-      
-      // Create new AttachAddon for this WebSocket
-      const attachAddon = new AttachAddon(session.websocket);
-      
-      // Create addon array (order matters!)
-      const addonArray = [
-        fitAddonRef.current,
-        attachAddon,
-        webLinksAddonRef.current,
-        serializeAddonRef.current,
-        clipboardAddonRef.current,
-        searchAddonRef.current,
-      ];
-      
-      // Add WebGL addon if available
-      if (webglAddonRef.current) {
-        addonArray.push(webglAddonRef.current);
-      }
-      
-      setAddons(addonArray);
-      setIsReady(true);
-      
-      // Restore history after connection is established
-      setTimeout(() => {
-        restoreTerminalHistory();
-      }, 200);
-    };
-
-    const handleWebSocketError = () => {
-      console.log('🖥️ HOSTSHELL: WebSocket error, preserving history and clearing addons');
-      preserveTerminalHistory();
-      setAddons([]);
-      setIsReady(false);
-    };
-
-    const handleWebSocketClose = () => {
-      console.log('🖥️ HOSTSHELL: WebSocket closed, preserving history');
-      preserveTerminalHistory();
-    };
-
-    if (session.websocket.readyState === WebSocket.OPEN) {
-      handleWebSocketReady();
-    } else if (session.websocket.readyState === WebSocket.CONNECTING) {
-      session.websocket.addEventListener('open', handleWebSocketReady);
-      session.websocket.addEventListener('error', handleWebSocketError);
-      session.websocket.addEventListener('close', handleWebSocketClose);
-      
-      return () => {
-        session.websocket.removeEventListener('open', handleWebSocketReady);
-        session.websocket.removeEventListener('error', handleWebSocketError);
-        session.websocket.removeEventListener('close', handleWebSocketClose);
-      };
-    }
-  }, [session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
-
-  // Handle terminal resize
-  const onResize = useCallback((cols, rows) => {
-    console.log('🖥️ HOSTSHELL: Terminal resized to', cols, 'columns and', rows, 'rows');
+    console.log('🖥️ HOSTSHELL: Loading static addons');
     
-    // Communicate resize to backend if WebSocket is open
-    if (session?.websocket?.readyState === WebSocket.OPEN) {
+    // Load the fit addon
+    const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
+    instance.loadAddon(fitAddon);
+
+    // Load other static addons
+    instance.loadAddon(new ClipboardAddon());
+    instance.loadAddon(new WebLinksAddon());
+    
+    // Serialize addon for history preservation
+    const serializeAddon = new SerializeAddon();
+    serializeAddonRef.current = serializeAddon;
+    instance.loadAddon(serializeAddon);
+    
+    instance.loadAddon(new SearchAddon());
+
+    // Try WebGL addon if supported
+    if (isWebGl2Supported) {
       try {
-        session.websocket.send(JSON.stringify({ 
-          type: 'resize',
-          rows: rows, 
-          cols: cols 
-        }));
-        console.log('🖥️ HOSTSHELL: Size communicated to backend');
+        const webGl2Addon = new WebglAddon();
+        webGl2Addon.onContextLoss(() => webGl2Addon.dispose());
+        instance.loadAddon(webGl2Addon);
+        console.log('🖥️ HOSTSHELL: WebGL renderer loaded');
       } catch (error) {
-        console.warn('🖥️ HOSTSHELL: Failed to communicate size to backend:', error);
+        console.log('🖥️ HOSTSHELL: WebGL failed to load:', error);
       }
     }
-  }, [session?.websocket]);
 
-  // Handle when terminal instance is ready
-  const onTerminalReady = useCallback((terminal) => {
-    console.log('🖥️ HOSTSHELL: Terminal instance ready for useXTerm hook');
+    const handleResize = () => {
+      if (fitAddon) {
+        setTimeout(() => fitAddon.fit(), 0);
+        console.log('🖥️ HOSTSHELL: Terminal refitted on window resize');
+      }
+    };
+
+    // Handle resize event
+    window.addEventListener("resize", handleResize);
     
-    // Store terminal instance reference for history preservation
-    terminalInstanceRef.current = terminal;
+    // Initial fit
+    setTimeout(() => fitAddon.fit(), 100);
     
-    // Fit terminal after a brief delay to ensure container is sized
-    if (fitAddonRef.current) {
-      setTimeout(() => {
-        if (fitAddonRef.current) {
-          fitAddonRef.current.fit();
-          console.log('🖥️ HOSTSHELL: Terminal fitted');
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [instance]);
+
+  // Handle WebSocket communication (exactly like JetKVM but for WebSocket instead of RTCDataChannel)
+  const websocketReadyState = session?.websocket?.readyState;
+  useEffect(() => {
+    if (!instance) return;
+    if (!session?.websocket) return;
+    if (websocketReadyState !== WebSocket.OPEN) return;
+
+    console.log('🖥️ HOSTSHELL: WebSocket ready, setting up communication');
+    
+    const websocket = session.websocket;
+    const abortController = new AbortController();
+
+    // Preserve history before setting up new connection
+    preserveTerminalHistory();
+
+    // Set up WebSocket message handling (like JetKVM dataChannel.addEventListener)
+    websocket.addEventListener(
+      "message",
+      (e) => {
+        try {
+          // Handle text data from WebSocket (most common case)
+          if (typeof e.data === 'string') {
+            instance.write(e.data);
+          } else {
+            // Handle binary data if server sends it
+            instance.write(new Uint8Array(e.data));
+          }
+        } catch (error) {
+          console.warn('🖥️ HOSTSHELL: Error writing to terminal:', error);
         }
-      }, 100);
-    }
-  }, []);
+      },
+      { signal: abortController.signal },
+    );
 
-  // Listen for footer resize events to trigger terminal resize
+    // Set up terminal data sending to WebSocket (like JetKVM onData)
+    const onDataHandler = instance.onData(data => {
+      if (websocket.readyState === WebSocket.OPEN) {
+        websocket.send(data);
+      }
+    });
+
+    // Handle terminal resize communication (like JetKVM)
+    const onResizeHandler = instance.onResize(({ cols, rows }) => {
+      console.log('🖥️ HOSTSHELL: Terminal resized to', cols, 'columns and', rows, 'rows');
+      
+      if (websocket.readyState === WebSocket.OPEN) {
+        try {
+          websocket.send(JSON.stringify({ 
+            type: 'resize',
+            rows: rows, 
+            cols: cols 
+          }));
+          console.log('🖥️ HOSTSHELL: Size communicated to backend');
+        } catch (error) {
+          console.warn('🖥️ HOSTSHELL: Failed to communicate size to backend:', error);
+        }
+      }
+    });
+
+    // Send initial terminal size (like JetKVM does)
+    if (websocket.readyState === WebSocket.OPEN) {
+      try {
+        websocket.send(JSON.stringify({ 
+          rows: instance.rows, 
+          cols: instance.cols 
+        }));
+        console.log('🖥️ HOSTSHELL: Initial terminal size sent');
+      } catch (error) {
+        console.warn('🖥️ HOSTSHELL: Failed to send initial size:', error);
+      }
+    }
+
+    // Restore history after brief delay
+    setTimeout(() => {
+      restoreTerminalHistory();
+    }, 200);
+
+    return () => {
+      abortController.abort();
+      onDataHandler.dispose();
+      onResizeHandler.dispose();
+    };
+  }, [instance, websocketReadyState, session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
+
+  // Listen for footer resize events
   useEffect(() => {
     const handleFooterResize = () => {
-      if (fitAddonRef.current && terminalInstanceRef.current) {
+      if (fitAddonRef.current && instance) {
         setTimeout(() => {
           fitAddonRef.current.fit();
           console.log('🖥️ HOSTSHELL: Terminal refitted after footer resize');
@@ -234,13 +218,7 @@ const HostShell = () => {
     return () => {
       window.removeEventListener('footer-resized', handleFooterResize);
     };
-  }, []);
-
-  // Handle terminal data for debugging
-  const onData = useCallback((data) => {
-    // Data is handled by AttachAddon, but we can log for debugging
-    console.log('🖥️ HOSTSHELL: Terminal data:', data.length, 'bytes');
-  }, []);
+  }, [instance]);
 
   if (!session) {
     return (
@@ -258,7 +236,7 @@ const HostShell = () => {
     );
   }
 
-  if (!isReady || addons.length === 0) {
+  if (!instance) {
     return (
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
@@ -267,14 +245,14 @@ const HostShell = () => {
           </div>
           <p>Connecting to terminal...</p>
           <p className="is-size-7 has-text-grey">
-            {session.websocket?.readyState === WebSocket.CONNECTING ? 'Establishing connection' : 'Preparing session'}
+            Loading terminal interface...
           </p>
         </div>
       </div>
     );
   }
 
-  // Use useXTerm with the properly managed addons
+  // Simple div with ref like JetKVM
   return (
     <div 
       ref={ref} 
