@@ -75,6 +75,51 @@ const HostShell = () => {
     timestamp: new Date().toISOString(),
   });
 
+  // MANUAL DOM attachment effect - critical for terminal display
+  useEffect(() => {
+    console.log("🔥 HOSTSHELL: DOM attachment effect triggered", {
+      hasInstance: !!instance,
+      hasRef: !!ref,
+      refCurrent: !!ref?.current,
+      refCurrentType: ref?.current?.constructor?.name,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (instance && ref?.current) {
+      console.log("🔥 HOSTSHELL: MANUALLY ATTACHING terminal to DOM element");
+      console.log("🔥 HOSTSHELL: Pre-attachment state:", {
+        refCurrentHTML: ref.current.innerHTML,
+        refCurrentChildren: ref.current.children.length,
+        instanceElement: instance.element,
+        instanceElementParent: instance.element?.parentNode,
+      });
+
+      try {
+        // CRITICAL: Manually attach terminal to DOM element
+        instance.open(ref.current);
+        console.log("🔥 HOSTSHELL: instance.open() called successfully");
+
+        // Check DOM after attachment
+        setTimeout(() => {
+          console.log("🔥 HOSTSHELL: Post-attachment DOM state:", {
+            refCurrentHTML: ref.current?.innerHTML?.substring(0, 200),
+            refCurrentChildren: ref.current?.children?.length,
+            refCurrentChildrenDetails: ref.current ? Array.from(ref.current.children).map(child => ({
+              tagName: child.tagName,
+              className: child.className,
+              id: child.id,
+            })) : [],
+            instanceElement: instance.element,
+            instanceElementParent: instance.element?.parentNode?.className,
+          });
+        }, 100);
+
+      } catch (error) {
+        console.error("🔥 HOSTSHELL: instance.open() FAILED:", error);
+      }
+    }
+  }, [instance, ref?.current]); // Re-run when ref.current changes
+
   // OFFICIAL StrictMode solution from GitHub issue #1
   useEffect(() => {
     console.log("🔥 HOSTSHELL: useEffect [instance] triggered", {
@@ -93,6 +138,7 @@ const HostShell = () => {
         hasWriteln: typeof instance.writeln === 'function',  
         hasOnData: typeof instance.onData === 'function',
         hasLoadAddon: typeof instance.loadAddon === 'function',
+        hasOpen: typeof instance.open === 'function',
         element: instance.element,
         elementType: instance.element?.constructor?.name,
         elementChildren: instance.element?.children?.length,
@@ -131,9 +177,10 @@ const HostShell = () => {
           });
         }, 100);
 
+        // Load addons AFTER DOM attachment happens
         console.log("🔥 HOSTSHELL: Loading addons...");
         
-        // Load addons with detailed logging
+        // Load addons with detailed logging  
         try {
           console.log("🔥 HOSTSHELL: Loading FitAddon");
           instance.loadAddon(addonsRef.current.fitAddon);
@@ -186,28 +233,6 @@ const HostShell = () => {
             console.error("🔥 HOSTSHELL: WebGL addon failed:", error);
           }
         }
-
-        console.log("🔥 HOSTSHELL: All addons loaded, checking final DOM state");
-        
-        // Final DOM check
-        setTimeout(() => {
-          console.log("🔥 HOSTSHELL: FINAL DOM STATE:", {
-            refCurrent: !!ref?.current,
-            refCurrentHTML: ref?.current?.innerHTML,
-            refCurrentChildren: ref?.current?.children?.length,
-            refCurrentChildrenDetails: ref?.current ? Array.from(ref.current.children).map(child => ({
-              tagName: child.tagName,
-              className: child.className,
-              id: child.id,
-              style: child.style?.cssText,
-              innerHTML: child.innerHTML?.substring(0, 100)
-            })) : [],
-            instanceElement: !!instance.element,
-            instanceElementHTML: instance.element?.innerHTML?.substring(0, 200),
-            instanceRows: instance.rows,
-            instanceCols: instance.cols,
-          });
-        }, 500);
 
         console.log("🔥 HOSTSHELL: Terminal initialization completed successfully");
 
@@ -353,7 +378,7 @@ const HostShell = () => {
     );
   }
 
-  // ALWAYS render the terminal div when instance exists - let terminal attach to DOM
+  // ALWAYS render the terminal div when instance exists - DOM attachment is critical
   console.log("🔥 HOSTSHELL: Rendering terminal div with ref:", {
     hasInstance: !!instance,
     hasRef: !!ref,
@@ -371,34 +396,25 @@ const HostShell = () => {
         className="terminal xterm is-fullheight is-fullwidth"
       />
       
-      {/* Overlay when not ready */}
+      {/* Connection status overlay when not ready */}
       {!isReady && (
         <div 
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10
+            top: "8px",
+            right: "8px",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "0.7rem",
+            zIndex: 20
           }}
-          className="has-text-white-ter"
         >
-          <div className="has-text-centered">
-            <div className="icon is-large mb-2">
-              <i className="fas fa-terminal fa-2x fa-pulse"></i>
-            </div>
-            <p>Connecting to server...</p>
-            <p className="is-size-7 has-text-grey">
-              {session?.websocket?.readyState === WebSocket.CONNECTING
-                ? "Establishing connection"
-                : "Waiting for WebSocket"}
-            </p>
-          </div>
+          <i className="fas fa-plug fa-pulse mr-1"></i>
+          {session?.websocket?.readyState === WebSocket.CONNECTING
+            ? "Connecting..."
+            : "Waiting for server"}
         </div>
       )}
     </div>
