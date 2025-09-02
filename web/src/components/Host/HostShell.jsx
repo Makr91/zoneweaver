@@ -46,42 +46,40 @@ const HostShell = () => {
     timestamp: new Date().toISOString(),
   });
 
-  // Follow official react-xtermjs pattern: setup base terminal when instance is ready
+  // OFFICIAL StrictMode solution from GitHub issue #1
   useEffect(() => {
-    if (!instance) return;
+    if (instance) {
+      console.log("🖥️ HOSTSHELL: Initializing terminal (GitHub issue #1 pattern)");
+      
+      // Follow the exact pattern from the maintainer's solution
+      instance.writeln("Host terminal ready...");
+      instance.onData((data) => {
+        if (!session?.websocket || session.websocket.readyState !== WebSocket.OPEN) {
+          instance.write(data); // Local echo when no WebSocket
+        }
+      });
 
-    console.log("🖥️ HOSTSHELL: Setting up base terminal functionality");
+      // Load addons after basic setup
+      instance.loadAddon(addonsRef.current.fitAddon);
+      instance.loadAddon(addonsRef.current.clipboardAddon);
+      instance.loadAddon(addonsRef.current.webLinksAddon);
+      instance.loadAddon(addonsRef.current.serializeAddon);
+      instance.loadAddon(addonsRef.current.searchAddon);
 
-    // Load base addons following official pattern
-    instance.loadAddon(addonsRef.current.fitAddon);
-    instance.loadAddon(addonsRef.current.clipboardAddon);
-    instance.loadAddon(addonsRef.current.webLinksAddon);
-    instance.loadAddon(addonsRef.current.serializeAddon);
-    instance.loadAddon(addonsRef.current.searchAddon);
-
-    if (addonsRef.current.webglAddon) {
-      try {
-        addonsRef.current.webglAddon.onContextLoss?.(() => 
-          addonsRef.current.webglAddon.dispose()
-        );
-        instance.loadAddon(addonsRef.current.webglAddon);
-      } catch (error) {
-        console.warn("🖥️ WebGL loading failed:", error);
+      if (addonsRef.current.webglAddon) {
+        try {
+          addonsRef.current.webglAddon.onContextLoss?.(() => 
+            addonsRef.current.webglAddon.dispose()
+          );
+          instance.loadAddon(addonsRef.current.webglAddon);
+        } catch (error) {
+          console.warn("🖥️ WebGL loading failed:", error);
+        }
       }
+
+      console.log("🖥️ HOSTSHELL: Terminal initialized successfully");
     }
-
-    // Set up local echo when no WebSocket (like official examples)
-    const onDataHandler = (data) => {
-      if (!session?.websocket || session.websocket.readyState !== WebSocket.OPEN) {
-        instance.write(data); // Local echo when disconnected
-      }
-    };
-
-    instance.onData(onDataHandler);
-
-    console.log("🖥️ HOSTSHELL: Base terminal setup complete");
-
-  }, [instance]); // Only [instance] dependency like official pattern
+  }, [instance]); // The effect will run only once when the `instance` is initialized.
 
   // Handle WebSocket attachment separately
   useEffect(() => {

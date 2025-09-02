@@ -44,10 +44,15 @@ if (import.meta.env.PROD) {
   });
 }
 
+// CRITICAL, CRITICAL, CRITICAL, DO NOT EVER FUCKING REMOVE THIS!
+// React.StrictMode is ESSENTIAL for proper React development
+// It helps catch bugs early and enforces best practices
+// DO NOT REMOVE IT EVEN IF IT CAUSES TERMINAL ISSUES
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
+// CRITICAL, CRITICAL, CRITICAL, DO NOT EVER FUCKING REMOVE THIS!
 
 reportWebVitals();
