@@ -1,315 +1,218 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from "react";
-import { useXTerm } from "react-xtermjs";
-import { FitAddon } from "@xterm/addon-fit";
-import { AttachAddon } from "@xterm/addon-attach";
-import { WebLinksAddon } from "@xterm/addon-web-links";
-import { SerializeAddon } from "@xterm/addon-serialize";
-import { ClipboardAddon } from "@xterm/addon-clipboard";
-import { SearchAddon } from "@xterm/addon-search";
-import { WebglAddon } from "@xterm/addon-webgl";
-import { useFooter } from "../../contexts/FooterContext";
+import React, { useEffect, useCallback, useRef } from 'react';
+import { useXTerm } from 'react-xtermjs';
+import { FitAddon } from '@xterm/addon-fit';
+import { AttachAddon } from '@xterm/addon-attach';
+import { WebLinksAddon } from '@xterm/addon-web-links';
+import { SerializeAddon } from '@xterm/addon-serialize';
+import { ClipboardAddon } from '@xterm/addon-clipboard';
+import { SearchAddon } from '@xterm/addon-search';
+import { WebglAddon } from '@xterm/addon-webgl';
+import { useFooter } from '../../contexts/FooterContext';
 
 const HostShell = () => {
   const { session } = useFooter();
-
-  // Create stable addon refs
-  const fitAddonRef = useRef(null);
-  const webLinksAddonRef = useRef(null);
-  const serializeAddonRef = useRef(null);
-  const clipboardAddonRef = useRef(null);
-  const searchAddonRef = useRef(null);
-  const webglAddonRef = useRef(null);
-
+  
+  // Simple useXTerm hook like working examples
+  const { instance, ref } = useXTerm();
+  
+  // Create addons directly like working examples
+  const fitAddon = new FitAddon();
+  const serializeAddon = new SerializeAddon();
+  
   // Terminal history preservation
-  const terminalHistoryRef = useRef("");
+  const terminalHistoryRef = useRef('');
+  const attachAddonRef = useRef(null);
 
-  // Addon state management (like your working version)
-  const [attachAddon, setAttachAddon] = useState(null);
-  const [isReady, setIsReady] = useState(false);
-  const [addonsInitialized, setAddonsInitialized] = useState(false);
-
-  // Initialize addons safely in useEffect (React best practice)
-  useEffect(() => {
-    if (!addonsInitialized) {
-      console.log("🖥️ HOSTSHELL: Initializing addons in useEffect");
-      
-      try {
-        fitAddonRef.current = new FitAddon();
-        webLinksAddonRef.current = new WebLinksAddon();
-        serializeAddonRef.current = new SerializeAddon();
-        clipboardAddonRef.current = new ClipboardAddon();
-        searchAddonRef.current = new SearchAddon();
-
-        // WebGL addon with error handling
-        try {
-          webglAddonRef.current = new WebglAddon();
-          webglAddonRef.current.onContextLoss(() =>
-            webglAddonRef.current.dispose()
-          );
-          console.log("🖥️ HOSTSHELL: WebGL addon initialized");
-        } catch {
-          console.log("🖥️ HOSTSHELL: WebGL not supported, using canvas renderer");
-          webglAddonRef.current = null;
-        }
-
-        setAddonsInitialized(true);
-        console.log("🖥️ HOSTSHELL: All addons initialized successfully");
-      } catch (error) {
-        console.error("🖥️ HOSTSHELL: Error initializing addons:", error);
-      }
-    }
-  }, [addonsInitialized]);
-
-  console.log("🖥️ HOSTSHELL: Render with session:", {
+  console.log('🖥️ HOSTSHELL: Render with session:', {
     sessionId: session?.id,
     wsState: session?.websocket?.readyState,
-    isReady,
-    hasHistory: terminalHistoryRef.current.length > 0,
-    timestamp: new Date().toISOString(),
+    hasInstance: !!instance,
+    timestamp: new Date().toISOString()
   });
 
-  // Debounced resize handling
-  const debounceTimeoutRef = useRef(null);
-
-  // Handle resize function with debouncing
-  const handleResize = useCallback(() => {
-    // Clear any existing timeout
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    // Immediate fit for responsiveness
-    if (fitAddonRef.current) {
-      fitAddonRef.current.fit();
-    }
-
-    console.log("🖥️ HOSTSHELL: Terminal fitted");
-  }, []);
-
-  // Handle terminal data
-  const handleData = useCallback((data) => {
-    console.log("🖥️ HOSTSHELL: Terminal data:", data.length, "bytes");
-  }, []);
-
-  // Create addon array based on WebSocket state (safe with null checks)
-  const addons = useMemo(() => {
-    // Wait until base addons are initialized
-    if (!addonsInitialized || !fitAddonRef.current) {
-      console.log("🖥️ HOSTSHELL: Addons not ready yet, returning empty array", {
-        addonsInitialized,
-        hasFitAddon: !!fitAddonRef.current
-      });
-      return [];
-    }
-
-    console.log("🖥️ HOSTSHELL: Building addon array with initialized addons");
-    
-    const baseAddons = [
-      fitAddonRef.current,
-      webLinksAddonRef.current,
-      serializeAddonRef.current,
-      clipboardAddonRef.current,
-      searchAddonRef.current,
-    ];
-
-    // Add WebGL if available
-    if (webglAddonRef.current) {
-      baseAddons.push(webglAddonRef.current);
-      console.log("🖥️ HOSTSHELL: Added WebGL addon to array");
-    }
-
-    // Add AttachAddon if WebSocket is ready
-    if (attachAddon) {
-      baseAddons.push(attachAddon);
-      console.log("🖥️ HOSTSHELL: Added AttachAddon to array");
-    }
-
-    console.log("🖥️ HOSTSHELL: Final addon array length:", baseAddons.length);
-    return baseAddons.filter(addon => addon !== null);
-  }, [addonsInitialized, attachAddon]);
-
-  // Stable useXTerm params using useMemo (Komodo pattern)
-  const terminalParams = useMemo(
-    () => ({
-      options: {
-        cursorBlink: true,
-        theme: {
-          background: "#000000",
-          foreground: "#ffffff",
-        },
-        scrollback: 10000,
-        fontSize: 14,
-        fontFamily:
-          '"Cascadia Code", Consolas, "Liberation Mono", Menlo, Courier, monospace',
-        allowTransparency: false,
-        convertEol: false,
-      },
-      listeners: {
-        onResize: handleResize,
-        onData: handleData,
-      },
-      addons: addons, // Pass addons as props like Komodo!
-    }),
-    [addons, handleResize, handleData]
-  );
-
-  // Use useXTerm with stable params (Komodo pattern)
-  const { instance, ref } = useXTerm(terminalParams);
-
-  // Preserve terminal history utility - AFTER instance is defined
+  // Preserve terminal history utility
   const preserveTerminalHistory = useCallback(() => {
-    if (serializeAddonRef.current && instance) {
+    if (serializeAddon && instance) {
       try {
-        const serializedContent = serializeAddonRef.current.serialize();
+        const serializedContent = serializeAddon.serialize();
         terminalHistoryRef.current = serializedContent;
-        console.log(
-          "🖥️ HOSTSHELL: Terminal history preserved",
-          serializedContent.length,
-          "characters"
-        );
+        console.log('🖥️ HOSTSHELL: Terminal history preserved', serializedContent.length, 'characters');
       } catch (error) {
-        console.warn(
-          "🖥️ HOSTSHELL: Failed to preserve terminal history:",
-          error
-        );
+        console.warn('🖥️ HOSTSHELL: Failed to preserve terminal history:', error);
       }
     }
   }, [instance]);
 
-  // Restore terminal history utility - AFTER instance is defined
+  // Restore terminal history utility
   const restoreTerminalHistory = useCallback(() => {
     if (terminalHistoryRef.current && instance) {
       try {
         instance.clear();
         instance.write(terminalHistoryRef.current);
-        console.log("🖥️ HOSTSHELL: Terminal history restored");
+        console.log('🖥️ HOSTSHELL: Terminal history restored');
       } catch (error) {
-        console.warn(
-          "🖥️ HOSTSHELL: Failed to restore terminal history:",
-          error
-        );
+        console.warn('🖥️ HOSTSHELL: Failed to restore terminal history:', error);
       }
     }
   }, [instance]);
 
-  // Manage AttachAddon based on WebSocket state (like your working version)
+  // Load addons when instance is ready (exactly like working examples)
   useEffect(() => {
-    if (!session?.websocket) {
-      setAttachAddon(null);
-      setIsReady(false);
+    if (instance) {
+      console.log('🖥️ HOSTSHELL: Loading addons on instance');
+      
+      // Load addons directly on instance
+      instance.loadAddon(fitAddon);
+      instance.loadAddon(new ClipboardAddon());
+      instance.loadAddon(new WebLinksAddon());
+      instance.loadAddon(serializeAddon);
+      instance.loadAddon(new SearchAddon());
+
+      // Try WebGL addon if supported
+      try {
+        const webglAddon = new WebglAddon();
+        webglAddon.onContextLoss(() => webglAddon.dispose());
+        instance.loadAddon(webglAddon);
+        console.log('🖥️ HOSTSHELL: WebGL renderer loaded');
+      } catch (error) {
+        console.log('🖥️ HOSTSHELL: WebGL failed to load:', error);
+      }
+
+      const handleResize = () => fitAddon.fit();
+
+      // Handle resize event
+      window.addEventListener('resize', handleResize);
+      
+      // Initial fit
+      setTimeout(() => fitAddon.fit(), 100);
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [instance]);
+
+  // Handle WebSocket and AttachAddon
+  useEffect(() => {
+    if (!instance || !session?.websocket) {
       return;
     }
 
-    const handleWebSocketReady = () => {
-      console.log(
-        "🖥️ HOSTSHELL: WebSocket ready, creating AttachAddon for session:",
-        session.id
-      );
+    const websocket = session.websocket;
 
+    const handleWebSocketReady = () => {
+      console.log('🖥️ HOSTSHELL: WebSocket ready, creating AttachAddon for session:', session.id);
+      
       // Preserve history before changing connection
       preserveTerminalHistory();
-
+      
+      // Clean up existing attach addon
+      if (attachAddonRef.current) {
+        attachAddonRef.current.dispose();
+        attachAddonRef.current = null;
+      }
+      
       // Create new AttachAddon for this WebSocket
-      const newAttachAddon = new AttachAddon(session.websocket);
-      setAttachAddon(newAttachAddon);
-      setIsReady(true);
+      const attachAddon = new AttachAddon(websocket);
+      attachAddonRef.current = attachAddon;
+      instance.loadAddon(attachAddon);
+      
+      // Handle terminal resize - communicate to backend
+      const onResizeDisposable = instance.onResize(({ cols, rows }) => {
+        console.log('🖥️ HOSTSHELL: Terminal resized to', cols, 'columns and', rows, 'rows');
+        
+        if (websocket.readyState === WebSocket.OPEN) {
+          try {
+            websocket.send(JSON.stringify({ 
+              type: 'resize',
+              rows: rows, 
+              cols: cols 
+            }));
+            console.log('🖥️ HOSTSHELL: Size communicated to backend');
+          } catch (error) {
+            console.warn('🖥️ HOSTSHELL: Failed to communicate size to backend:', error);
+          }
+        }
+      });
 
+      // Send initial terminal size
+      if (websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({ 
+          type: 'resize',
+          rows: instance.rows, 
+          cols: instance.cols 
+        }));
+        console.log('🖥️ HOSTSHELL: Initial terminal size sent to backend');
+      }
+      
       // Restore history after connection is established
       setTimeout(() => {
         restoreTerminalHistory();
-
-        // Ensure terminal is properly fitted and scrolled after content load
-        setTimeout(() => {
-          if (fitAddonRef.current && instance) {
-            fitAddonRef.current.fit();
-            // Scroll to bottom to show latest content
-            instance.scrollToBottom();
-            console.log(
-              "🖥️ HOSTSHELL: Terminal fitted and scrolled to bottom after history restore"
-            );
-          }
-        }, 100);
       }, 200);
+      
+      // Store cleanup function
+      attachAddonRef.current._onResizeDisposable = onResizeDisposable;
     };
 
     const handleWebSocketError = () => {
-      console.log("🖥️ HOSTSHELL: WebSocket error, preserving history");
+      console.log('🖥️ HOSTSHELL: WebSocket error, preserving history');
       preserveTerminalHistory();
-      setAttachAddon(null);
-      setIsReady(false);
     };
 
     const handleWebSocketClose = () => {
-      console.log("🖥️ HOSTSHELL: WebSocket closed, preserving history");
+      console.log('🖥️ HOSTSHELL: WebSocket closed, preserving history');
       preserveTerminalHistory();
     };
 
-    if (session.websocket.readyState === WebSocket.OPEN) {
+    if (websocket.readyState === WebSocket.OPEN) {
       handleWebSocketReady();
-    } else if (session.websocket.readyState === WebSocket.CONNECTING) {
-      session.websocket.addEventListener("open", handleWebSocketReady);
-      session.websocket.addEventListener("error", handleWebSocketError);
-      session.websocket.addEventListener("close", handleWebSocketClose);
-
+    } else if (websocket.readyState === WebSocket.CONNECTING) {
+      websocket.addEventListener('open', handleWebSocketReady);
+      websocket.addEventListener('error', handleWebSocketError);
+      websocket.addEventListener('close', handleWebSocketClose);
+      
       return () => {
-        session.websocket.removeEventListener("open", handleWebSocketReady);
-        session.websocket.removeEventListener("error", handleWebSocketError);
-        session.websocket.removeEventListener("close", handleWebSocketClose);
+        websocket.removeEventListener('open', handleWebSocketReady);
+        websocket.removeEventListener('error', handleWebSocketError);
+        websocket.removeEventListener('close', handleWebSocketClose);
+        
+        // Clean up attach addon and its resize handler
+        if (attachAddonRef.current) {
+          if (attachAddonRef.current._onResizeDisposable) {
+            attachAddonRef.current._onResizeDisposable.dispose();
+          }
+          attachAddonRef.current.dispose();
+          attachAddonRef.current = null;
+        }
       };
     }
-  }, [session?.websocket, session?.id, instance, preserveTerminalHistory, restoreTerminalHistory]);
-
-  // Handle resize communication to backend
-  useEffect(() => {
-    if (!instance || !session?.websocket) return;
-
-    const onResizeDisposable = instance.onResize(({ cols, rows }) => {
-      console.log(
-        "🖥️ HOSTSHELL: Terminal resized to",
-        cols,
-        "columns and",
-        rows,
-        "rows"
-      );
-
-      if (session.websocket.readyState === WebSocket.OPEN) {
-        try {
-          session.websocket.send(
-            JSON.stringify({
-              type: "resize",
-              rows: rows,
-              cols: cols,
-            })
-          );
-          console.log("🖥️ HOSTSHELL: Size communicated to backend");
-        } catch (error) {
-          console.warn(
-            "🖥️ HOSTSHELL: Failed to communicate size to backend:",
-            error
-          );
-        }
-      }
-    });
 
     return () => {
-      onResizeDisposable.dispose();
+      // Clean up attach addon and its resize handler
+      if (attachAddonRef.current) {
+        if (attachAddonRef.current._onResizeDisposable) {
+          attachAddonRef.current._onResizeDisposable.dispose();
+        }
+        attachAddonRef.current.dispose();
+        attachAddonRef.current = null;
+      }
     };
-  }, [instance, session?.websocket]);
+  }, [instance, session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
 
   // Listen for footer resize events
   useEffect(() => {
     const handleFooterResize = () => {
-      if (fitAddonRef.current && instance) {
+      if (fitAddon && instance) {
         setTimeout(() => {
-          fitAddonRef.current.fit();
-          console.log("🖥️ HOSTSHELL: Terminal refitted after footer resize");
+          fitAddon.fit();
+          console.log('🖥️ HOSTSHELL: Terminal refitted after footer resize');
         }, 50);
       }
     };
 
-    window.addEventListener("footer-resized", handleFooterResize);
+    window.addEventListener('footer-resized', handleFooterResize);
     return () => {
-      window.removeEventListener("footer-resized", handleFooterResize);
+      window.removeEventListener('footer-resized', handleFooterResize);
     };
   }, [instance]);
 
@@ -329,7 +232,7 @@ const HostShell = () => {
     );
   }
 
-  if (!isReady || !attachAddon) {
+  if (!instance) {
     return (
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
@@ -338,20 +241,18 @@ const HostShell = () => {
           </div>
           <p>Connecting to terminal...</p>
           <p className="is-size-7 has-text-grey">
-            {session.websocket?.readyState === WebSocket.CONNECTING
-              ? "Establishing connection"
-              : "Preparing session"}
+            Loading terminal interface...
           </p>
         </div>
       </div>
     );
   }
 
-  // Simple div with ref (Komodo/useXTerm pattern)
+  // Simple div with ref (exactly like working examples)
   return (
-    <div
-      ref={ref}
-      style={{ height: "100%", width: "100%" }}
+    <div 
+      ref={ref} 
+      style={{ height: '100%', width: '100%' }} 
       className="is-fullheight is-fullwidth"
     />
   );
