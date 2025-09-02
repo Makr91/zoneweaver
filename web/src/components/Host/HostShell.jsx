@@ -19,7 +19,7 @@ const HostShell = () => {
   const clipboardAddonRef = useRef(null);
   const searchAddonRef = useRef(null);
   const webglAddonRef = useRef(null);
-  
+
   // Initialize addons once
   if (!fitAddonRef.current) {
     fitAddonRef.current = new FitAddon();
@@ -27,11 +27,13 @@ const HostShell = () => {
     serializeAddonRef.current = new SerializeAddon();
     clipboardAddonRef.current = new ClipboardAddon();
     searchAddonRef.current = new SearchAddon();
-    
+
     // WebGL addon with error handling
     try {
       webglAddonRef.current = new WebglAddon();
-      webglAddonRef.current.onContextLoss(() => webglAddonRef.current.dispose());
+      webglAddonRef.current.onContextLoss(() =>
+        webglAddonRef.current.dispose()
+      );
     } catch {
       console.log("🖥️ HOSTSHELL: WebGL not supported, using canvas renderer");
       webglAddonRef.current = null;
@@ -153,7 +155,7 @@ const HostShell = () => {
       baseAddons.push(attachAddon);
     }
 
-    return baseAddons.filter(addon => addon !== null);
+    return baseAddons.filter((addon) => addon !== null);
   }, [attachAddon]);
 
   // Stable useXTerm params using useMemo (Komodo pattern)
