@@ -85,27 +85,7 @@ const HostShell = () => {
         instance.loadAddon(attachAddon);
         setIsReady(true);
 
-        // TEST: Comment out resize communication to prevent JSON garbage
-        // const onResizeDisposable = instance.onResize?.(({ cols, rows }) => {
-        //   if (websocket.readyState === WebSocket.OPEN) {
-        //     try {
-        //       websocket.send(
-        //         JSON.stringify({
-        //           type: "resize",
-        //           rows: rows,
-        //           cols: cols,
-        //         })
-        //       );
-        //     } catch (error) {
-        //       console.error("HOSTSHELL: Failed to communicate size:", error);
-        //     }
-        //   }
-        // });
-
-        // NOTE: Removed initial size send to prevent JSON garbage in terminal
-
         return () => {
-          // onResizeDisposable?.dispose(); // Commented out with resize code above
           attachAddon?.dispose();
           setIsReady(false);
         };
