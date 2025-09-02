@@ -29,27 +29,23 @@ const HostShell = () => {
   });
 
   const fitAddonRef = useRef(null);
+  const addonsLoadedRef = useRef(false);
 
-  // FitAddon and AttachAddon in separate useEffect like JetKVM/Qovery
+  // Load static addons ONCE when instance is ready - prevent WebGL leak
   useEffect(() => {
-    if (!instance || !session?.websocket) return;
-    
-    const websocket = session.websocket;
-    if (websocket.readyState !== WebSocket.OPEN) return;
+    if (!instance || addonsLoadedRef.current) return;
 
     const fitAddon = new FitAddon();
-    const attachAddon = new AttachAddon(websocket);
     fitAddonRef.current = fitAddon;
     
-    // Load all addons in proper sequence (order matters!)
+    // Load static addons once (not WebSocket dependent)
     instance.loadAddon(fitAddon);
-    instance.loadAddon(attachAddon);  // This handles WebSocket communication
     instance.loadAddon(new ClipboardAddon());
     instance.loadAddon(new WebLinksAddon());
     instance.loadAddon(new SerializeAddon());
     instance.loadAddon(new SearchAddon());
 
-    // Try WebGL addon
+    // Try WebGL addon ONCE - prevent memory leak
     try {
       const webglAddon = new WebglAddon();
       instance.loadAddon(webglAddon);
@@ -57,6 +53,38 @@ const HostShell = () => {
     } catch (error) {
       console.log('🖥️ HOSTSHELL: WebGL not supported, using canvas renderer');
     }
+
+    // Mark addons as loaded to prevent re-loading
+    addonsLoadedRef.current = true;
+
+    // Window resize listener like JetKVM
+    const handleResize = () => {
+      if (fitAddon) {
+        setTimeout(() => fitAddon.fit(), 0);
+        console.log('🖥️ HOSTSHELL: Terminal refitted on window resize');
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Initial fit
+    setTimeout(() => fitAddon.fit(), 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [instance]);
+
+  // Handle WebSocket-specific functionality separately
+  useEffect(() => {
+    if (!instance || !session?.websocket) return;
+    
+    const websocket = session.websocket;
+    if (websocket.readyState !== WebSocket.OPEN) return;
+
+    // AttachAddon for WebSocket communication
+    const attachAddon = new AttachAddon(websocket);
+    instance.loadAddon(attachAddon);
 
     // Handle terminal resize - communicate to backend
     const onResizeDisposable = instance.onResize(({ cols, rows }) => {
@@ -76,21 +104,7 @@ const HostShell = () => {
       }
     });
 
-    // Window resize listener like JetKVM
-    const handleResize = () => {
-      if (fitAddon) {
-        setTimeout(() => fitAddon.fit(), 0);
-        console.log('🖥️ HOSTSHELL: Terminal refitted on window resize');
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Initial fit
-    setTimeout(() => fitAddon.fit(), 100);
-
     return () => {
-      window.removeEventListener('resize', handleResize);
       onResizeDisposable.dispose();
     };
   }, [instance, session?.websocket]);
