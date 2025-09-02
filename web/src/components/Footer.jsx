@@ -52,7 +52,7 @@ const Footer = () => {
   }, [showShellDropdown]);
 
   const handleResize = useCallback((e, { size }) => {
-    if (footerIsActive) {
+    if (footerIsActive && !footerMinimized) {
       userSettings.setFooterHeight(size.height);
       
       setTimeout(() => {
@@ -61,7 +61,7 @@ const Footer = () => {
         }));
       }, 100);
     }
-  }, [footerIsActive, userSettings]);
+  }, [footerIsActive, footerMinimized, userSettings]);
 
   useEffect(() => {
     return () => {
@@ -73,21 +73,9 @@ const Footer = () => {
 
   const effectiveHeight = footerIsActive ? userSettings.footerHeight : 30;
 
-  const SimpleGrip = () => {
+  const ResizeHandle = () => {
     return (
-      <div className='level react-resizable-handle react-resizable-handle-n mb-0'>
-        <div className='level-item is-justify-content-center'>
-          <div className='icon'>
-            <i className={footerIsActive && !footerMinimized ? "fas fa-solid fa-grip-lines react-resizable-handle-n-icon" : ""}></i>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const FooterHeader = () => {
-    return (
-      <nav className='level mb-0'>
+      <nav className='level react-resizable-handle react-resizable-handle-n mb-0'>
         <div className='level-item is-justify-content-flex-start'>
           <div className='pl-1'>
             <a href='https://zoneweaver.startcloud.com/' className='has-text-primary'>
@@ -97,6 +85,11 @@ const Footer = () => {
             <a href='https://startcloud.com/' className='has-text-primary'>
               STARTcloud.com&#8482; {new Date().getFullYear()}
             </a>
+          </div>
+        </div>
+        <div className='level-item is-justify-content-space-between'>
+          <div className='icon'>
+            <i className={footerIsActive && !footerMinimized ? "fas fa-solid fa-grip-lines react-resizable-handle-n-icon" : ""}></i>
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
@@ -149,17 +142,14 @@ const Footer = () => {
         className={footerMinimized ? "is-footer-minimized" : ""}
         height={effectiveHeight}
         width={Infinity}
-        resizeHandles={footerMinimized ? [] : ["n"]}
+        resizeHandles={["n"]}
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
-        handle={SimpleGrip()}
+        handle={ResizeHandle()}
       >
-        <div className='is-flex is-flex-direction-column is-fullheight'>
-          <FooterHeader />
-          <div className='log-console has-text-white is-flex-grow-1 is-flex is-flex-direction-column'>
-            {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
-          </div>
+        <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
+          {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
         </div>
       </ResizableBox>
     </div>
