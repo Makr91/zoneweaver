@@ -30,6 +30,7 @@ const HostShell = () => {
 
   const fitAddonRef = useRef(null);
   const addonsLoadedRef = useRef(false);
+  const attachAddonLoadedRef = useRef(false);
 
   // Load static addons ONCE when instance is ready - prevent WebGL leak
   useEffect(() => {
@@ -75,19 +76,22 @@ const HostShell = () => {
     };
   }, [instance]);
 
-  // Handle WebSocket-specific functionality - fix timing issue
+  // Handle WebSocket-specific functionality - prevent infinite loop
   useEffect(() => {
-    if (!instance || !session?.websocket) return;
+    if (!instance || !session?.websocket || attachAddonLoadedRef.current) return;
     
     const websocket = session.websocket;
     
     // Wait for WebSocket to be ready
     const handleWebSocketReady = () => {
+      if (attachAddonLoadedRef.current) return; // Prevent double loading
+      
       console.log('🖥️ HOSTSHELL: WebSocket ready, loading AttachAddon');
       
       // AttachAddon for WebSocket communication
       const attachAddon = new AttachAddon(websocket);
       instance.loadAddon(attachAddon);
+      attachAddonLoadedRef.current = true;
       
       // Send initial newline to prompt terminal
       websocket.send('\n');
