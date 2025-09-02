@@ -52,21 +52,20 @@ const Footer = () => {
   }, [showShellDropdown]);
 
   const handleResize = useCallback((e, { size }) => {
-    userSettings.setFooterHeight(size.height);
-    
-    // Mirror sidebar minimize/un-minimize logic using footerIsActive
-    if (size.height <= 120 && footerIsActive) {
-      setFooterIsActive(false);
-    } else if (size.height > 120 && !footerIsActive) {
-      setFooterIsActive(true);
-      userSettings.setFooterHeight(130);
+    if (footerIsActive) {
+      userSettings.setFooterHeight(size.height);
+      
+      // Only handle minimizing - no auto-restore via dragging
+      if (size.height <= 120) {
+        setFooterIsActive(false);
+      }
+      
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('footer-resized', { 
+          detail: { height: size.height } 
+        }));
+      }, 100);
     }
-    
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('footer-resized', { 
-        detail: { height: size.height } 
-      }));
-    }, 100);
   }, [footerIsActive, setFooterIsActive, userSettings]);
 
   useEffect(() => {
