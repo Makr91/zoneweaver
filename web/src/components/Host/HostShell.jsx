@@ -109,6 +109,8 @@ const HostShell = () => {
           attachAddon?.dispose();
           setIsReady(false);
         };
+      }
+    };
 
     checkConnection();
 
