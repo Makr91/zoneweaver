@@ -12,15 +12,11 @@ import { useFooter } from "../../contexts/FooterContext";
 const HostShell = () => {
   const { session } = useFooter();
 
-  // useXTerm hook like official Qovery example
   const { instance, ref } = useXTerm();
 
-  // Create addons once (avoid recreating on every render)
   const addonsRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
-  const attachedRef = useRef(false);
 
-  // Initialize addons once
   if (!addonsRef.current) {
     addonsRef.current = {
       fitAddon: new FitAddon(),
@@ -30,58 +26,64 @@ const HostShell = () => {
       searchAddon: new SearchAddon(),
     };
 
-    // Try WebGL addon with fallback
     try {
       addonsRef.current.webglAddon = new WebglAddon();
     } catch (error) {
-      console.warn("🖥️ WebGL addon not available:", error);
       addonsRef.current.webglAddon = null;
     }
   }
 
-  // Manual DOM attachment - critical for terminal display
   useEffect(() => {
-    if (instance && ref?.current && !attachedRef.current) {
-      console.log("🖥️ HOSTSHELL: Attaching terminal to DOM");
-      
-      // CRITICAL: Manually attach terminal to DOM element
-      instance.open(ref.current);
-      attachedRef.current = true;
-      
-      console.log("🖥️ HOSTSHELL: Terminal attached successfully");
+    if (instance && ref?.current) {
+      try {
+        // CRITICAL: Manually attach terminal to DOM element
+        instance.open(ref.current);
+      } catch (error) {
+        console.error("HOSTSHELL: Failed to attach terminal to DOM:", error);
+      }
     }
   }, [instance, ref?.current]);
 
   // Terminal initialization following GitHub issue #1 pattern
   useEffect(() => {
     if (instance) {
-      console.log("🖥️ HOSTSHELL: Initializing terminal");
-      
-      // Basic terminal setup
-      instance.writeln("Host terminal ready...");
-      
-      // Load addons (no local echo needed since WebSocket handles all input)
-      instance.loadAddon(addonsRef.current.fitAddon);
-      instance.loadAddon(addonsRef.current.clipboardAddon);
-      instance.loadAddon(addonsRef.current.webLinksAddon);
-      instance.loadAddon(addonsRef.current.serializeAddon);
-      instance.loadAddon(addonsRef.current.searchAddon);
+      try {
+        // Basic terminal setup
+        instance.writeln("Host terminal ready...");
+        
+        // Set up local echo ONLY when WebSocket is not connected
+        instance.onData((data) => {
+          if (!session?.websocket || session.websocket.readyState !== WebSocket.OPEN) {
+            instance.write(data); // Local echo when no WebSocket
+          }
+        });
 
-      if (addonsRef.current.webglAddon) {
-        try {
-          addonsRef.current.webglAddon.onContextLoss?.(() => 
-            addonsRef.current.webglAddon.dispose()
-          );
-          instance.loadAddon(addonsRef.current.webglAddon);
-        } catch (error) {
-          console.warn("🖥️ WebGL loading failed:", error);
+        // Load addons
+        instance.loadAddon(addonsRef.current.fitAddon);
+        instance.loadAddon(addonsRef.current.clipboardAddon);
+        instance.loadAddon(addonsRef.current.webLinksAddon);
+        instance.loadAddon(addonsRef.current.serializeAddon);
+        instance.loadAddon(addonsRef.current.searchAddon);
+
+        if (addonsRef.current.webglAddon) {
+          try {
+            addonsRef.current.webglAddon.onContextLoss?.(() => 
+              addonsRef.current.webglAddon.dispose()
+            );
+            instance.loadAddon(addonsRef.current.webglAddon);
+          } catch (error) {
+            console.error("HOSTSHELL: WebGL addon failed:", error);
+          }
         }
+      } catch (error) {
+        console.error("HOSTSHELL: Terminal initialization failed:", error);
       }
     }
   }, [instance]);
 
   // Handle WebSocket attachment separately
   useEffect(() => {
+
     if (!instance || !session?.websocket) {
       setIsReady(false);
       return;
@@ -91,14 +93,10 @@ const HostShell = () => {
 
     const checkConnection = () => {
       if (websocket.readyState === WebSocket.OPEN) {
-        console.log("🖥️ HOSTSHELL: WebSocket ready, creating AttachAddon");
-
-        // Create AttachAddon for WebSocket communication
         const attachAddon = new AttachAddon(websocket);
         instance.loadAddon(attachAddon);
         setIsReady(true);
 
-        // Set up resize communication
         const onResizeDisposable = instance.onResize?.(({ cols, rows }) => {
           if (websocket.readyState === WebSocket.OPEN) {
             try {
@@ -110,7 +108,7 @@ const HostShell = () => {
                 })
               );
             } catch (error) {
-              console.warn("🖥️ HOSTSHELL: Failed to communicate size:", error);
+              console.error("HOSTSHELL: Failed to communicate size:", error);
             }
           }
         });
@@ -118,7 +116,6 @@ const HostShell = () => {
         // NOTE: Removed initial size send to prevent JSON garbage in terminal
 
         return () => {
-          console.log("🖥️ HOSTSHELL: Cleaning up AttachAddon");
           onResizeDisposable?.dispose();
           attachAddon?.dispose();
           setIsReady(false);
@@ -126,17 +123,13 @@ const HostShell = () => {
       }
     };
 
-    // Check immediately
     checkConnection();
 
-    // Listen for WebSocket events
     const onOpen = () => {
-      console.log("🖥️ HOSTSHELL: WebSocket opened");
       checkConnection();
     };
 
     const onClose = () => {
-      console.log("🖥️ HOSTSHELL: WebSocket closed");
       setIsReady(false);
     };
 
@@ -147,7 +140,7 @@ const HostShell = () => {
       websocket.removeEventListener('open', onOpen);
       websocket.removeEventListener('close', onClose);
     };
-  }, [instance, session?.websocket]);
+  }, [instance, session?.websocket]); // Simplified dependencies
 
   // Handle footer resize events
   useEffect(() => {
@@ -179,31 +172,53 @@ const HostShell = () => {
     );
   }
 
-  if (!instance || !isReady) {
+  if (!instance) {
     return (
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
           <div className="icon is-large mb-2">
             <i className="fas fa-terminal fa-2x fa-pulse"></i>
           </div>
-          <p>Connecting to terminal...</p>
+          <p>Loading terminal...</p>
           <p className="is-size-7 has-text-grey">
-            {session?.websocket?.readyState === WebSocket.CONNECTING
-              ? "Establishing connection"
-              : "Preparing session"}
+            Initializing xterm.js
           </p>
         </div>
       </div>
     );
   }
 
-  // Simple div with ref like official Qovery example
   return (
-    <div
-      ref={ref}
-      style={{ height: "100%", width: "100%" }}
-      className="terminal xterm is-fullheight is-fullwidth"
-    />
+    <div style={{ position: "relative", height: "100%", width: "100%" }}>
+      {/* Terminal div - ALWAYS render when instance exists */}
+      <div
+        ref={ref}
+        style={{ height: "100%", width: "100%" }}
+        className="terminal xterm is-fullheight is-fullwidth"
+      />
+      
+      {/* Connection status overlay when not ready */}
+      {!isReady && (
+        <div 
+          style={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "0.7rem",
+            zIndex: 20
+          }}
+        >
+          <i className="fas fa-plug fa-pulse mr-1"></i>
+          {session?.websocket?.readyState === WebSocket.CONNECTING
+            ? "Connecting..."
+            : "Waiting for server"}
+        </div>
+      )}
+    </div>
   );
 };
 
