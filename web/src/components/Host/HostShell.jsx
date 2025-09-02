@@ -12,8 +12,27 @@ import { useFooter } from "../../contexts/FooterContext";
 const HostShell = () => {
   const { session } = useFooter();
 
+  // EXTREME DEBUG: Track component lifecycle
+  console.log("🔥 HOSTSHELL: Component function called", {
+    timestamp: new Date().toISOString(),
+    renderCount: ++window.hostShellRenderCount || (window.hostShellRenderCount = 1)
+  });
+
   // Simple useXTerm hook like official Qovery example
   const { instance, ref } = useXTerm();
+
+  // EXTREME DEBUG: Track useXTerm hook state
+  console.log("🔥 HOSTSHELL: useXTerm hook result:", {
+    instanceType: typeof instance,
+    instanceConstructor: instance?.constructor?.name,
+    instanceMethods: instance ? Object.getOwnPropertyNames(instance) : [],
+    refType: typeof ref,
+    refCurrent: ref?.current,
+    refCurrentType: typeof ref?.current,
+    refCurrentChildren: ref?.current?.children?.length,
+    refCurrentHTML: ref?.current?.innerHTML,
+    timestamp: new Date().toISOString(),
+  });
 
   // Create addons once (avoid recreating on every render)
   const addonsRef = useRef(null);
@@ -21,6 +40,7 @@ const HostShell = () => {
 
   // Initialize addons once
   if (!addonsRef.current) {
+    console.log("🔥 HOSTSHELL: Initializing addons for first time");
     addonsRef.current = {
       fitAddon: new FitAddon(),
       serializeAddon: new SerializeAddon(),
@@ -32,52 +52,171 @@ const HostShell = () => {
     // Try WebGL addon with fallback
     try {
       addonsRef.current.webglAddon = new WebglAddon();
+      console.log("🔥 HOSTSHELL: WebGL addon created successfully");
     } catch (error) {
-      console.warn("🖥️ WebGL addon not available:", error);
+      console.warn("🔥 HOSTSHELL: WebGL addon failed:", error);
       addonsRef.current.webglAddon = null;
     }
+
+    console.log("🔥 HOSTSHELL: Addons initialized:", Object.keys(addonsRef.current));
+  } else {
+    console.log("🔥 HOSTSHELL: Reusing existing addons");
   }
 
-  console.log("🖥️ HOSTSHELL: Render with session:", {
+  // EXTREME DEBUG: Component state logging
+  console.log("🔥 HOSTSHELL: Current component state:", {
     sessionId: session?.id,
     wsState: session?.websocket?.readyState,
     hasInstance: !!instance,
+    instanceReady: !!instance && typeof instance.write === 'function',
     isReady,
+    refCurrent: !!ref?.current,
+    refCurrentType: ref?.current?.constructor?.name,
     timestamp: new Date().toISOString(),
   });
 
   // OFFICIAL StrictMode solution from GitHub issue #1
   useEffect(() => {
+    console.log("🔥 HOSTSHELL: useEffect [instance] triggered", {
+      hasInstance: !!instance,
+      instanceType: typeof instance,
+      instanceConstructor: instance?.constructor?.name,
+      effectRunCount: ++window.hostShellEffectCount || (window.hostShellEffectCount = 1),
+      timestamp: new Date().toISOString(),
+    });
+
     if (instance) {
-      console.log("🖥️ HOSTSHELL: Initializing terminal (GitHub issue #1 pattern)");
-      
-      // Follow the exact pattern from the maintainer's solution
-      instance.writeln("Host terminal ready...");
-      instance.onData((data) => {
-        if (!session?.websocket || session.websocket.readyState !== WebSocket.OPEN) {
-          instance.write(data); // Local echo when no WebSocket
-        }
+      console.log("🔥 HOSTSHELL: Instance exists, starting initialization");
+      console.log("🔥 HOSTSHELL: Instance details:", {
+        instanceMethods: Object.getOwnPropertyNames(instance).slice(0, 20), // First 20 methods
+        hasWrite: typeof instance.write === 'function',
+        hasWriteln: typeof instance.writeln === 'function',  
+        hasOnData: typeof instance.onData === 'function',
+        hasLoadAddon: typeof instance.loadAddon === 'function',
+        element: instance.element,
+        elementType: instance.element?.constructor?.name,
+        elementChildren: instance.element?.children?.length,
       });
 
-      // Load addons after basic setup
-      instance.loadAddon(addonsRef.current.fitAddon);
-      instance.loadAddon(addonsRef.current.clipboardAddon);
-      instance.loadAddon(addonsRef.current.webLinksAddon);
-      instance.loadAddon(addonsRef.current.serializeAddon);
-      instance.loadAddon(addonsRef.current.searchAddon);
+      try {
+        console.log("🔥 HOSTSHELL: Calling instance.writeln()");
+        const writeResult = instance.writeln("Host terminal ready...");
+        console.log("🔥 HOSTSHELL: writeln() result:", writeResult);
 
-      if (addonsRef.current.webglAddon) {
+        console.log("🔥 HOSTSHELL: Setting up onData handler");
+        const onDataResult = instance.onData((data) => {
+          console.log("🔥 HOSTSHELL: onData triggered with:", data);
+          if (!session?.websocket || session.websocket.readyState !== WebSocket.OPEN) {
+            console.log("🔥 HOSTSHELL: Writing local echo:", data);
+            instance.write(data); // Local echo when no WebSocket
+          } else {
+            console.log("🔥 HOSTSHELL: WebSocket active, skipping local echo");
+          }
+        });
+        console.log("🔥 HOSTSHELL: onData() result:", onDataResult);
+
+        // Check DOM state after writeln
+        setTimeout(() => {
+          console.log("🔥 HOSTSHELL: DOM state after writeln:", {
+            refCurrent: !!ref?.current,
+            refCurrentHTML: ref?.current?.innerHTML?.substring(0, 200),
+            refCurrentChildren: ref?.current?.children?.length,
+            refCurrentChildrenDetails: ref?.current ? Array.from(ref.current.children).map(child => ({
+              tagName: child.tagName,
+              className: child.className,
+              innerHTML: child.innerHTML?.substring(0, 100)
+            })) : [],
+            instanceElement: !!instance.element,
+            instanceElementHTML: instance.element?.innerHTML?.substring(0, 200)
+          });
+        }, 100);
+
+        console.log("🔥 HOSTSHELL: Loading addons...");
+        
+        // Load addons with detailed logging
         try {
-          addonsRef.current.webglAddon.onContextLoss?.(() => 
-            addonsRef.current.webglAddon.dispose()
-          );
-          instance.loadAddon(addonsRef.current.webglAddon);
+          console.log("🔥 HOSTSHELL: Loading FitAddon");
+          instance.loadAddon(addonsRef.current.fitAddon);
+          console.log("🔥 HOSTSHELL: FitAddon loaded successfully");
         } catch (error) {
-          console.warn("🖥️ WebGL loading failed:", error);
+          console.error("🔥 HOSTSHELL: FitAddon failed:", error);
         }
-      }
 
-      console.log("🖥️ HOSTSHELL: Terminal initialized successfully");
+        try {
+          console.log("🔥 HOSTSHELL: Loading ClipboardAddon");
+          instance.loadAddon(addonsRef.current.clipboardAddon);
+          console.log("🔥 HOSTSHELL: ClipboardAddon loaded successfully");
+        } catch (error) {
+          console.error("🔥 HOSTSHELL: ClipboardAddon failed:", error);
+        }
+
+        try {
+          console.log("🔥 HOSTSHELL: Loading WebLinksAddon");
+          instance.loadAddon(addonsRef.current.webLinksAddon);
+          console.log("🔥 HOSTSHELL: WebLinksAddon loaded successfully");
+        } catch (error) {
+          console.error("🔥 HOSTSHELL: WebLinksAddon failed:", error);
+        }
+
+        try {
+          console.log("🔥 HOSTSHELL: Loading SerializeAddon");
+          instance.loadAddon(addonsRef.current.serializeAddon);
+          console.log("🔥 HOSTSHELL: SerializeAddon loaded successfully");
+        } catch (error) {
+          console.error("🔥 HOSTSHELL: SerializeAddon failed:", error);
+        }
+
+        try {
+          console.log("🔥 HOSTSHELL: Loading SearchAddon");
+          instance.loadAddon(addonsRef.current.searchAddon);
+          console.log("🔥 HOSTSHELL: SearchAddon loaded successfully");
+        } catch (error) {
+          console.error("🔥 HOSTSHELL: SearchAddon failed:", error);
+        }
+
+        if (addonsRef.current.webglAddon) {
+          try {
+            console.log("🔥 HOSTSHELL: Loading WebGL addon");
+            addonsRef.current.webglAddon.onContextLoss?.(() => 
+              addonsRef.current.webglAddon.dispose()
+            );
+            instance.loadAddon(addonsRef.current.webglAddon);
+            console.log("🔥 HOSTSHELL: WebGL addon loaded successfully");
+          } catch (error) {
+            console.error("🔥 HOSTSHELL: WebGL addon failed:", error);
+          }
+        }
+
+        console.log("🔥 HOSTSHELL: All addons loaded, checking final DOM state");
+        
+        // Final DOM check
+        setTimeout(() => {
+          console.log("🔥 HOSTSHELL: FINAL DOM STATE:", {
+            refCurrent: !!ref?.current,
+            refCurrentHTML: ref?.current?.innerHTML,
+            refCurrentChildren: ref?.current?.children?.length,
+            refCurrentChildrenDetails: ref?.current ? Array.from(ref.current.children).map(child => ({
+              tagName: child.tagName,
+              className: child.className,
+              id: child.id,
+              style: child.style?.cssText,
+              innerHTML: child.innerHTML?.substring(0, 100)
+            })) : [],
+            instanceElement: !!instance.element,
+            instanceElementHTML: instance.element?.innerHTML?.substring(0, 200),
+            instanceRows: instance.rows,
+            instanceCols: instance.cols,
+          });
+        }, 500);
+
+        console.log("🔥 HOSTSHELL: Terminal initialization completed successfully");
+
+      } catch (error) {
+        console.error("🔥 HOSTSHELL: Terminal initialization FAILED:", error);
+        console.error("🔥 HOSTSHELL: Error stack:", error.stack);
+      }
+    } else {
+      console.log("🔥 HOSTSHELL: No instance available, skipping initialization");
     }
   }, [instance]); // The effect will run only once when the `instance` is initialized.
 
