@@ -20,32 +20,45 @@ const HostShell = () => {
   const searchAddonRef = useRef(null);
   const webglAddonRef = useRef(null);
 
-  // Initialize addons once
-  if (!fitAddonRef.current) {
-    fitAddonRef.current = new FitAddon();
-    webLinksAddonRef.current = new WebLinksAddon();
-    serializeAddonRef.current = new SerializeAddon();
-    clipboardAddonRef.current = new ClipboardAddon();
-    searchAddonRef.current = new SearchAddon();
-
-    // WebGL addon with error handling
-    try {
-      webglAddonRef.current = new WebglAddon();
-      webglAddonRef.current.onContextLoss(() =>
-        webglAddonRef.current.dispose()
-      );
-    } catch {
-      console.log("🖥️ HOSTSHELL: WebGL not supported, using canvas renderer");
-      webglAddonRef.current = null;
-    }
-  }
-
   // Terminal history preservation
   const terminalHistoryRef = useRef("");
 
   // Addon state management (like your working version)
   const [attachAddon, setAttachAddon] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const [addonsInitialized, setAddonsInitialized] = useState(false);
+
+  // Initialize addons safely in useEffect (React best practice)
+  useEffect(() => {
+    if (!addonsInitialized) {
+      console.log("🖥️ HOSTSHELL: Initializing addons in useEffect");
+      
+      try {
+        fitAddonRef.current = new FitAddon();
+        webLinksAddonRef.current = new WebLinksAddon();
+        serializeAddonRef.current = new SerializeAddon();
+        clipboardAddonRef.current = new ClipboardAddon();
+        searchAddonRef.current = new SearchAddon();
+
+        // WebGL addon with error handling
+        try {
+          webglAddonRef.current = new WebglAddon();
+          webglAddonRef.current.onContextLoss(() =>
+            webglAddonRef.current.dispose()
+          );
+          console.log("🖥️ HOSTSHELL: WebGL addon initialized");
+        } catch {
+          console.log("🖥️ HOSTSHELL: WebGL not supported, using canvas renderer");
+          webglAddonRef.current = null;
+        }
+
+        setAddonsInitialized(true);
+        console.log("🖥️ HOSTSHELL: All addons initialized successfully");
+      } catch (error) {
+        console.error("🖥️ HOSTSHELL: Error initializing addons:", error);
+      }
+    }
+  }, [addonsInitialized]);
 
   console.log("🖥️ HOSTSHELL: Render with session:", {
     sessionId: session?.id,
@@ -138,12 +151,15 @@ const HostShell = () => {
   // Create addon array based on WebSocket state (safe with null checks)
   const addons = useMemo(() => {
     // Wait until base addons are initialized
-    if (!fitAddonRef.current) {
-      console.log("🖥️ HOSTSHELL: Addons not ready yet, returning empty array");
+    if (!addonsInitialized || !fitAddonRef.current) {
+      console.log("🖥️ HOSTSHELL: Addons not ready yet, returning empty array", {
+        addonsInitialized,
+        hasFitAddon: !!fitAddonRef.current
+      });
       return [];
     }
 
-    console.log("🖥️ HOSTSHELL: Building addon array");
+    console.log("🖥️ HOSTSHELL: Building addon array with initialized addons");
     
     const baseAddons = [
       fitAddonRef.current,
@@ -156,15 +172,18 @@ const HostShell = () => {
     // Add WebGL if available
     if (webglAddonRef.current) {
       baseAddons.push(webglAddonRef.current);
+      console.log("🖥️ HOSTSHELL: Added WebGL addon to array");
     }
 
     // Add AttachAddon if WebSocket is ready
     if (attachAddon) {
       baseAddons.push(attachAddon);
+      console.log("🖥️ HOSTSHELL: Added AttachAddon to array");
     }
 
+    console.log("🖥️ HOSTSHELL: Final addon array length:", baseAddons.length);
     return baseAddons.filter(addon => addon !== null);
-  }, [attachAddon]);
+  }, [addonsInitialized, attachAddon]);
 
   // Stable useXTerm params using useMemo (Komodo pattern)
   const terminalParams = useMemo(
