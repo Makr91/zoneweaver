@@ -7,7 +7,7 @@ import Tasks from "./Tasks";
 
 const Footer = () => {
   const userSettings = useContext(UserSettings);
-  const { footerIsActive, setFooterIsActive, footerActiveView, setFooterActiveView, footerMinimized } = userSettings;
+  const { footerIsActive, setFooterIsActive, footerActiveView, setFooterActiveView } = userSettings;
   const { restartShell } = useFooter();
   const [showShellDropdown, setShowShellDropdown] = useState(false);
   const resizeTimeoutRef = useRef(null);
@@ -52,16 +52,22 @@ const Footer = () => {
   }, [showShellDropdown]);
 
   const handleResize = useCallback((e, { size }) => {
-    if (footerIsActive && !footerMinimized) {
-      userSettings.setFooterHeight(size.height);
-      
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('footer-resized', { 
-          detail: { height: size.height } 
-        }));
-      }, 100);
+    userSettings.setFooterHeight(size.height);
+    
+    // Mirror sidebar minimize/un-minimize logic using footerIsActive
+    if (size.height <= 120 && footerIsActive) {
+      setFooterIsActive(false);
+    } else if (size.height > 120 && !footerIsActive) {
+      setFooterIsActive(true);
+      userSettings.setFooterHeight(130);
     }
-  }, [footerIsActive, footerMinimized, userSettings]);
+    
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('footer-resized', { 
+        detail: { height: size.height } 
+      }));
+    }, 100);
+  }, [footerIsActive, setFooterIsActive, userSettings]);
 
   useEffect(() => {
     return () => {
@@ -89,7 +95,7 @@ const Footer = () => {
         </div>
         <div className='level-item is-justify-content-space-between'>
           <div className='icon'>
-            <i className={footerIsActive && !footerMinimized ? "fas fa-solid fa-grip-lines react-resizable-handle-n-icon" : ""}></i>
+            <i className={footerIsActive ? "fas fa-solid fa-grip-lines react-resizable-handle-n-icon" : ""}></i>
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
@@ -139,10 +145,10 @@ const Footer = () => {
     <div className="hero-foot">
       <ResizableBox
         onResize={handleResize}
-        className={footerMinimized ? "is-footer-minimized" : ""}
+        className={!footerIsActive ? "is-footer-minimized" : ""}
         height={effectiveHeight}
         width={Infinity}
-        resizeHandles={["n"]}
+        resizeHandles={footerIsActive ? ["n"] : []}
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
