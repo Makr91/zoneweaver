@@ -203,10 +203,12 @@ const Dashboard = () => {
   // Loading state
   if (serversLoading || (loading && !infrastructureData.servers)) {
     return (
-      <div className='hero-body p-0 is-align-items-stretch'>
-        <div className='container has-text-centered p-6'>
-          <div className='button is-loading is-large is-ghost'></div>
-          <p className='mt-2'>Loading infrastructure overview...</p>
+      <div className='zw-page-content-scrollable'>
+        <div className='container is-fluid p-3 has-background-grey'>
+          <div className='box has-text-centered p-6'>
+            <div className='button is-loading is-large is-ghost'></div>
+            <p className='mt-2'>Loading infrastructure overview...</p>
+          </div>
         </div>
       </div>
     );
@@ -215,13 +217,13 @@ const Dashboard = () => {
   // No servers state
   if (!servers || servers.length === 0) {
     return (
-      <div className='hero-body p-0 is-align-items-stretch'>
+      <div className='zw-page-content-scrollable'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>Infrastructure Overview - Zoneweaver</title>
           <link rel='canonical' href={window.location.origin} />
         </Helmet>
-        <div className='container p-6'>
+        <div className='container is-fluid p-3 has-background-grey'>
           <div className='notification is-info'>
             <h2 className='title is-4'>Welcome to Zoneweaver</h2>
             <p className='mb-4'>Get started by adding your first Zoneweaver API Server to begin managing your infrastructure.</p>
