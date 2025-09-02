@@ -37,8 +37,8 @@ const HostShell = () => {
     timestamp: new Date().toISOString()
   });
 
-  // Preserve terminal history utility
-  const preserveTerminalHistory = useCallback(() => {
+  // Simple functions (no useCallback to avoid circular dependencies)
+  const preserveTerminalHistory = () => {
     if (serializeAddonRef.current && instance) {
       try {
         const serializedContent = serializeAddonRef.current.serialize();
@@ -48,10 +48,9 @@ const HostShell = () => {
         console.warn('🖥️ HOSTSHELL: Failed to preserve terminal history:', error);
       }
     }
-  }, [instance]);
+  };
 
-  // Restore terminal history utility
-  const restoreTerminalHistory = useCallback(() => {
+  const restoreTerminalHistory = () => {
     if (terminalHistoryRef.current && instance) {
       try {
         instance.clear();
@@ -61,7 +60,7 @@ const HostShell = () => {
         console.warn('🖥️ HOSTSHELL: Failed to restore terminal history:', error);
       }
     }
-  }, [instance]);
+  };
 
   // Load addons when instance is ready (exactly like working examples)
   useEffect(() => {
@@ -212,7 +211,7 @@ const HostShell = () => {
         attachAddonRef.current = null;
       }
     };
-  }, [instance, session?.websocket, session?.id, preserveTerminalHistory, restoreTerminalHistory]);
+  }, [instance, session?.websocket, session?.id]);
 
   // Listen for footer resize events
   useEffect(() => {

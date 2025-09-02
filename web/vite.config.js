@@ -99,8 +99,7 @@ export default defineConfig({
           }
 
           // Terminal libraries (large, independent)
-          if (id.includes('node_modules/@xterm') ||
-              id.includes('node_modules/react-xtermjs')) {
+          if (id.includes('node_modules/react-xtermjs')) {
             return 'terminal';
           }
 
@@ -124,7 +123,6 @@ export default defineConfig({
     include: [
       // Terminal libraries that need special handling
       'react-xtermjs',
-      '@xterm/xterm',
       '@xterm/addon-fit',
       '@xterm/addon-attach',
       '@xterm/addon-web-links',
