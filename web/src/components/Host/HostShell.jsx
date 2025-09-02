@@ -12,16 +12,23 @@ import { useFooter } from '../../contexts/FooterContext';
 const HostShell = () => {
   const { session } = useFooter();
   
-  // Simple useXTerm hook like working examples
-  const { instance, ref } = useXTerm();
-  
-  // Create addons directly like working examples
-  const fitAddon = new FitAddon();
-  const serializeAddon = new SerializeAddon();
-  
-  // Terminal history preservation
+  // Create stable addon refs (prevents re-creation on every render)
+  const fitAddonRef = useRef(null);
+  const serializeAddonRef = useRef(null);
   const terminalHistoryRef = useRef('');
   const attachAddonRef = useRef(null);
+  
+  // Initialize addons once
+  useEffect(() => {
+    if (!fitAddonRef.current) {
+      fitAddonRef.current = new FitAddon();
+      serializeAddonRef.current = new SerializeAddon();
+      console.log('🖥️ HOSTSHELL: Stable addons created');
+    }
+  }, []); // Empty deps - only run once
+  
+  // Simple useXTerm hook like working examples
+  const { instance, ref } = useXTerm();
 
   console.log('🖥️ HOSTSHELL: Render with session:', {
     sessionId: session?.id,
@@ -32,9 +39,9 @@ const HostShell = () => {
 
   // Preserve terminal history utility
   const preserveTerminalHistory = useCallback(() => {
-    if (serializeAddon && instance) {
+    if (serializeAddonRef.current && instance) {
       try {
-        const serializedContent = serializeAddon.serialize();
+        const serializedContent = serializeAddonRef.current.serialize();
         terminalHistoryRef.current = serializedContent;
         console.log('🖥️ HOSTSHELL: Terminal history preserved', serializedContent.length, 'characters');
       } catch (error) {
@@ -58,14 +65,14 @@ const HostShell = () => {
 
   // Load addons when instance is ready (exactly like working examples)
   useEffect(() => {
-    if (instance) {
+    if (instance && fitAddonRef.current) {
       console.log('🖥️ HOSTSHELL: Loading addons on instance');
       
-      // Load addons directly on instance
-      instance.loadAddon(fitAddon);
+      // Load addons directly on instance using refs
+      instance.loadAddon(fitAddonRef.current);
       instance.loadAddon(new ClipboardAddon());
       instance.loadAddon(new WebLinksAddon());
-      instance.loadAddon(serializeAddon);
+      instance.loadAddon(serializeAddonRef.current);
       instance.loadAddon(new SearchAddon());
 
       // Try WebGL addon if supported
@@ -78,13 +85,21 @@ const HostShell = () => {
         console.log('🖥️ HOSTSHELL: WebGL failed to load:', error);
       }
 
-      const handleResize = () => fitAddon.fit();
+      const handleResize = () => {
+        if (fitAddonRef.current) {
+          fitAddonRef.current.fit();
+        }
+      };
 
       // Handle resize event
       window.addEventListener('resize', handleResize);
       
       // Initial fit
-      setTimeout(() => fitAddon.fit(), 100);
+      setTimeout(() => {
+        if (fitAddonRef.current) {
+          fitAddonRef.current.fit();
+        }
+      }, 100);
       
       return () => {
         window.removeEventListener('resize', handleResize);
@@ -202,9 +217,9 @@ const HostShell = () => {
   // Listen for footer resize events
   useEffect(() => {
     const handleFooterResize = () => {
-      if (fitAddon && instance) {
+      if (fitAddonRef.current && instance) {
         setTimeout(() => {
-          fitAddon.fit();
+          fitAddonRef.current.fit();
           console.log('🖥️ HOSTSHELL: Terminal refitted after footer resize');
         }, 50);
       }
