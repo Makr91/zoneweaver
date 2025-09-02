@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
 
 /**
@@ -18,14 +17,11 @@ const Dashboard = () => {
   const [lastRefresh, setLastRefresh] = useState(null);
   const [showHealthModal, setShowHealthModal] = useState(false);
 
-  const { user } = useAuth();
   const {
-    getServers,
     makeZoneweaverAPIRequest,
     servers,
     loading: serversLoading,
     selectServer,
-    selectZone,
   } = useServers();
   const navigate = useNavigate();
 
