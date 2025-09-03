@@ -10,6 +10,7 @@ const Footer = () => {
   const { footerIsActive, setFooterIsActive, footerActiveView, setFooterActiveView } = userSettings;
   const { restartShell } = useFooter();
   const [showShellDropdown, setShowShellDropdown] = useState(false);
+  const [versionClickCount, setVersionClickCount] = useState(0);
   const resizeTimeoutRef = useRef(null);
 
   const handleToggle = () => {
@@ -18,6 +19,24 @@ const Footer = () => {
       userSettings.setFooterHeight(130);
     }
     setFooterIsActive(!footerIsActive);
+  };
+
+  const triggerDestroyThis = () => {
+    window.KICKASSVERSION = '2.0';
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = '//hi.kickassapp.com/kickass.js';
+    document.body.appendChild(script);
+  };
+
+  const handleVersionClick = () => {
+    const newCount = versionClickCount + 1;
+    setVersionClickCount(newCount);
+    
+    if (newCount === 3) {
+      triggerDestroyThis();
+      setVersionClickCount(0);
+    }
   };
 
   const handleViewChange = (view) => {
@@ -84,9 +103,24 @@ const Footer = () => {
         <div className='level-item is-justify-content-flex-start'>
           <div className='pl-1'>
             <a href='https://zoneweaver.startcloud.com/' className='has-text-primary'>
-              Zoneweaver v{__APP_VERSION__ || '1.0.0'} &#169;
+              Zoneweaver
             </a>
             {' '}
+            <span 
+              onClick={handleVersionClick}
+              className='has-text-primary'
+              style={{ 
+                cursor: 'pointer',
+                transition: 'transform 0.1s ease',
+                display: 'inline-block'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+              title="Click me 3 times for a surprise!"
+            >
+              v{__APP_VERSION__ || '1.0.0'}
+            </span>
+            {' &#169; '}
             <a href='https://startcloud.com/' className='has-text-primary'>
               STARTcloud.com&#8482; {new Date().getFullYear()}
             </a>
