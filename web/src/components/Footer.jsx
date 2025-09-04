@@ -43,7 +43,13 @@ const Footer = () => {
   };
 
   const handleShellButtonClick = () => {
-    if (footerActiveView === 'shell') {
+    if (!footerIsActive) {
+      // Expand footer first if minimized
+      userSettings.setFooterHeight(130);
+      setFooterIsActive(true);
+      handleViewChange('shell');
+      setShowShellDropdown(false);
+    } else if (footerActiveView === 'shell') {
       setShowShellDropdown(!showShellDropdown);
     } else {
       handleViewChange('shell');
@@ -138,7 +144,13 @@ const Footer = () => {
               </button>
             </p>
             <p className="control">
-              <button className={`button is-small ${footerActiveView === 'tasks' ? 'is-info' : 'is-dark'}`} onClick={() => handleViewChange('tasks')}>
+              <button className={`button is-small ${footerActiveView === 'tasks' ? 'is-info' : 'is-dark'}`} onClick={() => {
+                if (!footerIsActive) {
+                  userSettings.setFooterHeight(130);
+                  setFooterIsActive(true);
+                }
+                handleViewChange('tasks');
+              }}>
                 <span className="icon">
                   <i className="fas fa-tasks"></i>
                 </span>
@@ -151,7 +163,7 @@ const Footer = () => {
                 </span>
               </button>
             </p>
-            <div className={`dropdown ${showShellDropdown ? 'is-active' : ''} is-right`}>
+            <div className={`dropdown ${showShellDropdown && footerIsActive ? 'is-active' : ''} is-right`}>
               <div className="dropdown-menu">
                 <div className="dropdown-content">
                   <a className="dropdown-item is-clickable" onClick={handleRestartShell}>
