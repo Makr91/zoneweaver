@@ -1,6 +1,4 @@
 import passport from '../auth/passport.js';
-import { config } from '../index.js';
-import db from '../models/index.js';
 
 /**
  * Authentication middleware for protecting routes (now using Passport.js)
