@@ -321,7 +321,8 @@ $beige-lighter: #eff0eb;
 
 // Footer dropdown z-index fix
 .hero-foot .dropdown-menu {
-  z-index: 15 !important;
+  right: 0;
+  left: auto;
 }
 
 // Fix for custom icon fonts

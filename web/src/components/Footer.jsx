@@ -174,14 +174,15 @@ const Footer = () => {
   // Footer handle that positions itself to overlay the header
   const FooterHandle = () => {
     return (
-      <div className="button is-small is-dark react-resizable-handle react-resizable-handle-n" 
+      <div className="is-small is-dark react-resizable-handle react-resizable-handle-n" 
            style={{
              position: 'absolute',
              top: '-30px',
              left: '50%',
              transform: 'translateX(-50%)',
              width: '60px',
-             zIndex: 10
+             zIndex: 10,
+             height: '50px'
            }}>
         <span className="icon">
           <i className="fas fa-solid fa-grip-lines"></i>
