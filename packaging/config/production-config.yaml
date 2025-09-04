@@ -699,6 +699,22 @@ authentication:
     required: true
     order: 1
     
+  external_domain_mappings:
+    type: textarea
+    value: |
+      {
+        "ORG001": ["m4kr.net", "example.com"],
+        "ORG002": ["company.com", "corp.local"]
+      }
+    description: "JSON mapping of organization codes to email domains. Format: {\"ORG_CODE\": [\"domain1.com\", \"domain2.com\"]}. Users with matching email domains will be auto-assigned to the specified organization."
+    section: "Authentication"
+    subsection: "External Providers"
+    required: false
+    conditional:
+      field: "authentication.external_domain_mapping_enabled"
+      value: true
+    order: 2
+    
   external_provisioning_enabled:
     type: boolean
     value: false
@@ -706,7 +722,7 @@ authentication:
     section: "Authentication"
     subsection: "External Providers"
     required: true
-    order: 2
+    order: 3
     
   external_provisioning_policy:
     type: select

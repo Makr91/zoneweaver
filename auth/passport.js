@@ -231,10 +231,15 @@ async function determineUserOrganization(email, profile) {
   console.log(`🏢 Determining organization for domain: ${domain}`);
 
   // 1. Check pending invitation (highest priority)
-  const invitation = await InvitationModel.scope('pending').findOne({
+  const invitation = await InvitationModel.findOne({
     where: { 
-      email: email
-    }
+      email: email,
+      used_at: null,
+      expires_at: {
+        [db.Sequelize.Op.gt]: new Date()
+      }
+    },
+    attributes: ['id', 'organization_id', 'email', 'invite_code', 'invited_by_user_id', 'expires_at', 'used_at']
   });
   
   if (invitation) {
