@@ -78,17 +78,25 @@ export const AuthProvider = ({ children }) => {
    * Login user with credentials
    * @param {string} identifier - Username or email
    * @param {string} password - Password
+   * @param {string} authMethod - Authentication method ('local' or 'ldap')
    * @returns {Promise<Object>} Login result
    */
-  const login = async (identifier, password) => {
+  const login = async (identifier, password, authMethod = 'local') => {
     try {
-      const response = await axios.post('/api/auth/login', {
-        identifier,
-        password
-      });
+      console.log(`🔐 Attempting ${authMethod.toUpperCase()} authentication for:`, identifier);
+      
+      // Route to appropriate endpoint based on auth method
+      const endpoint = authMethod === 'ldap' ? '/api/auth/ldap' : '/api/auth/login';
+      const payload = authMethod === 'ldap' ? 
+        { username: identifier, password } : 
+        { identifier, password };
+
+      const response = await axios.post(endpoint, payload);
 
       if (response.data.success) {
         const { token: newToken, user: userData } = response.data;
+        
+        console.log(`✅ ${authMethod.toUpperCase()} authentication successful for:`, userData.username);
         
         // Store token and user data
         localStorage.setItem('authToken', newToken);
@@ -102,13 +110,35 @@ export const AuthProvider = ({ children }) => {
 
         return { success: true, message: response.data.message };
       } else {
+        console.log(`❌ ${authMethod.toUpperCase()} authentication failed:`, response.data.message);
         return { success: false, message: response.data.message };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error(`${authMethod.toUpperCase()} login error:`, error);
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Login failed' 
+        message: error.response?.data?.message || `${authMethod.toUpperCase()} login failed` 
+      };
+    }
+  };
+
+  /**
+   * Get available authentication methods
+   * @returns {Promise<Object>} Available auth methods result
+   */
+  const getAuthMethods = async () => {
+    try {
+      const response = await axios.get('/api/auth/methods');
+      return { 
+        success: true, 
+        methods: response.data.methods || [] 
+      };
+    } catch (error) {
+      console.error('Get auth methods error:', error);
+      return { 
+        success: false, 
+        methods: [{ id: 'local', name: 'Local Account', enabled: true }], // Fallback
+        message: error.response?.data?.message || 'Failed to load authentication methods' 
       };
     }
   };
@@ -225,6 +255,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     changePassword,
     getProfile,
+    getAuthMethods,
     clearAuth
   };
 

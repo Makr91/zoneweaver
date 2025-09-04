@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import { useAuth } from "../contexts/AuthContext";
@@ -11,10 +11,13 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [authMethod, setAuthMethod] = useState("local");
+  const [authMethods, setAuthMethods] = useState([]);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [methodsLoading, setMethodsLoading] = useState(true);
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, getAuthMethods } = useAuth();
 
   /**
    * Redirect to dashboard if already authenticated
@@ -24,6 +27,62 @@ const Login = () => {
       navigate("/ui");
     }
   }, [isAuthenticated, navigate]);
+
+  /**
+   * Load available authentication methods on component mount
+   */
+  useEffect(() => {
+    loadAuthMethods();
+  }, []);
+
+  /**
+   * Load available authentication methods
+   */
+  const loadAuthMethods = async () => {
+    try {
+      setMethodsLoading(true);
+      const result = await getAuthMethods();
+      
+      if (result.success && result.methods.length > 0) {
+        setAuthMethods(result.methods);
+        
+        // Set default method from localStorage or first available method
+        const savedMethod = localStorage.getItem('zoneweaver_auth_method');
+        const validSavedMethod = result.methods.find(m => m.id === savedMethod && m.enabled);
+        
+        if (validSavedMethod) {
+          setAuthMethod(savedMethod);
+        } else {
+          // Use first enabled method
+          const firstMethod = result.methods.find(m => m.enabled);
+          if (firstMethod) {
+            setAuthMethod(firstMethod.id);
+          }
+        }
+      } else {
+        // Fallback to local authentication only
+        console.warn('Failed to load auth methods, using local fallback');
+        setAuthMethods([{ id: 'local', name: 'Local Account', enabled: true }]);
+        setAuthMethod('local');
+      }
+    } catch (error) {
+      console.error('Error loading auth methods:', error);
+      // Fallback to local authentication
+      setAuthMethods([{ id: 'local', name: 'Local Account', enabled: true }]);
+      setAuthMethod('local');
+    } finally {
+      setMethodsLoading(false);
+    }
+  };
+
+  /**
+   * Handle auth method selection change
+   */
+  const handleAuthMethodChange = (newMethod) => {
+    setAuthMethod(newMethod);
+    localStorage.setItem('zoneweaver_auth_method', newMethod);
+    setMsg(""); // Clear any previous error messages
+  };
 
   /**
    * Handle login form submission
@@ -41,7 +100,7 @@ const Login = () => {
       setLoading(true);
       setMsg("");
       
-      const result = await login(identifier, password);
+      const result = await login(identifier, password, authMethod);
       
       if (result.success) {
         // Check for stored intended URL and redirect there
@@ -83,18 +142,47 @@ const Login = () => {
                     <p>{msg}</p>
                   </div>
                 )}
+                {/* Authentication Method Selector - Show only if multiple methods available */}
+                {!methodsLoading && authMethods.length > 1 && (
+                  <div className='field mt-5'>
+                    <label className='label'>Authentication Method</label>
+                    <div className='control'>
+                      <div className='select is-fullwidth'>
+                        <select
+                          value={authMethod}
+                          onChange={(e) => handleAuthMethodChange(e.target.value)}
+                          disabled={loading}
+                        >
+                          {authMethods.map((method) => (
+                            <option key={method.id} value={method.id}>
+                              {method.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <p className='help is-size-7 has-text-grey'>
+                      {authMethod === 'ldap' ? 
+                        'Use your directory credentials' : 
+                        'Use your local account credentials'
+                      }
+                    </p>
+                  </div>
+                )}
                 <div className='field mt-5'>
-                  <label className='label'>Email or Username</label>
+                  <label className='label'>
+                    {authMethod === 'ldap' ? 'Username' : 'Email or Username'}
+                  </label>
                   <div className='controls'>
                     <input 
                       type='text' 
                       className='input' 
                       name='identifier' 
                       autoComplete='username' 
-                      placeholder='Username or Email' 
+                      placeholder={authMethod === 'ldap' ? 'Username' : 'Username or Email'} 
                       value={identifier} 
                       onChange={(e) => setIdentifier(e.target.value)}
-                      disabled={loading}
+                      disabled={loading || methodsLoading}
                     />
                   </div>
                 </div>

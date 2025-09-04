@@ -62,11 +62,18 @@ passport.deserializeUser(async (userId, done) => {
 async function setupLdapStrategy() {
   // Only setup LDAP if enabled in configuration
   if (!config.authentication?.ldap_enabled?.value) {
-    console.log('LDAP authentication disabled in configuration');
+    console.log('🔧 LDAP authentication disabled in configuration');
     return;
   }
 
   console.log('🔧 Setting up LDAP authentication strategy...');
+  console.log('📋 LDAP Configuration:');
+  console.log('  URL:', config.authentication.ldap_url.value);
+  console.log('  Bind DN:', config.authentication.ldap_bind_dn.value);
+  console.log('  Search Base:', config.authentication.ldap_search_base.value);
+  console.log('  Search Filter:', config.authentication.ldap_search_filter.value);
+  console.log('  Search Attributes:', config.authentication.ldap_search_attributes.value);
+  console.log('  TLS Reject Unauthorized:', config.authentication.ldap_tls_reject_unauthorized?.value);
 
   passport.use('ldap', new LdapStrategy({
     server: {
@@ -75,23 +82,35 @@ async function setupLdapStrategy() {
       bindCredentials: config.authentication.ldap_bind_credentials.value,
       searchBase: config.authentication.ldap_search_base.value,
       searchFilter: config.authentication.ldap_search_filter.value,
-      searchAttributes: config.authentication.ldap_search_attributes.value.split(',').map(s => s.trim()) || ['displayName', 'mail', 'memberOf']
+      searchAttributes: config.authentication.ldap_search_attributes.value.split(',').map(s => s.trim()) || ['displayName', 'mail', 'memberOf'],
+      tlsOptions: {
+        rejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value || false
+      }
     }
   }, async (ldapUser, done) => {
     try {
-      console.log('🔐 LDAP authentication attempt for user:', ldapUser.uid || ldapUser.cn);
+      console.log('🔐 LDAP authentication successful for user:', ldapUser.uid || ldapUser.cn || 'unknown');
+      console.log('📄 LDAP User Profile:');
+      console.log('  UID:', ldapUser.uid);
+      console.log('  CN:', ldapUser.cn);
+      console.log('  Display Name:', ldapUser.displayName);
+      console.log('  Mail:', ldapUser.mail);
+      console.log('  Member Of:', ldapUser.memberOf);
+      console.log('  Raw Profile Keys:', Object.keys(ldapUser));
       
       // Handle external user authentication and provisioning
-      const result = await handleExternalUser('ldap', ldapUser, done);
+      const result = await handleExternalUser('ldap', ldapUser);
+      console.log('✅ LDAP user processing complete:', result.username);
       return done(null, result);
       
     } catch (error) {
-      console.error('❌ LDAP Strategy error:', error.message);
+      console.error('❌ LDAP Strategy error during user processing:', error.message);
+      console.error('❌ Error stack:', error.stack);
       return done(error, false);
     }
   }));
 
-  console.log('✅ LDAP authentication strategy configured');
+  console.log('✅ LDAP authentication strategy configured successfully');
 }
 
 /**

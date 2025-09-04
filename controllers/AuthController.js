@@ -1649,6 +1649,93 @@ class AuthController {
 
   /**
    * @swagger
+   * /api/auth/methods:
+   *   get:
+   *     summary: Get available authentication methods (Public)
+   *     description: Retrieve list of enabled authentication methods for the login form
+   *     tags: [Authentication]
+   *     responses:
+   *       200:
+   *         description: Authentication methods retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 methods:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id:
+   *                         type: string
+   *                         description: Method identifier
+   *                         example: "ldap"
+   *                       name:
+   *                         type: string
+   *                         description: Human-readable method name
+   *                         example: "LDAP Directory"
+   *                       enabled:
+   *                         type: boolean
+   *                         description: Whether method is enabled
+   *                         example: true
+   *                   example:
+   *                     - id: "local"
+   *                       name: "Local Account"
+   *                       enabled: true
+   *                     - id: "ldap"
+   *                       name: "LDAP Directory"
+   *                       enabled: true
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async getAuthMethods(req, res) {
+    try {
+      const methods = [];
+
+      // Local authentication - always available
+      if (config.authentication?.local_enabled?.value !== false) {
+        methods.push({
+          id: 'local',
+          name: 'Local Account',
+          enabled: true
+        });
+      }
+
+      // LDAP authentication
+      if (config.authentication?.ldap_enabled?.value === true) {
+        methods.push({
+          id: 'ldap',
+          name: 'LDAP Directory',
+          enabled: true
+        });
+      }
+
+      // Future auth methods can be added here
+      // OIDC, OAuth, SAML, etc.
+
+      res.json({
+        success: true,
+        methods
+      });
+    } catch (error) {
+      console.error('Get auth methods error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Internal server error' 
+      });
+    }
+  }
+
+  /**
+   * @swagger
    * /api/invitations/send:
    *   post:
    *     summary: Send invitation email (Admin only)

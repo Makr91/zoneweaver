@@ -81,6 +81,7 @@ router.post("/api/auth/change-password", authLimiter, authenticate, AuthControll
 router.delete("/api/auth/delete-account", authLimiter, authenticate, AuthController.deleteSelfAccount);
 router.get("/api/auth/verify", standardLimiter, AuthController.verifyToken);
 router.get("/api/auth/setup-status", standardLimiter, AuthController.checkSetupStatus);
+router.get("/api/auth/methods", standardLimiter, AuthController.getAuthMethods);
 
 /**
  * @swagger
