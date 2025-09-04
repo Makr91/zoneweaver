@@ -27,14 +27,15 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
+  $light: hsl(221, 14%, 35%), // Darker light for better dark mode compatibility
+  $grey-lighter: hsl(221, 14%, 40%), // Override grey-lighter for light variants
   $button-border-width: 0px,
   $box-shadow: none,
   $dropdown-content-shadow: none,
   $dropdown-content-z: 4,
   $control-radius: none,
   $card-shadow: none,
-  $body-overflow-y: auto,
-  $tag-background: 25%
+  $body-overflow-y: auto
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -132,15 +133,6 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
-  
-  // Override is-light color variants for dark mode visibility
-  --bulma-primary-light: #4a5568;   // Darker primary light
-  --bulma-link-light: #4a5568;      // Darker link light
-  --bulma-info-light: #4a5568;      // Darker info light
-  --bulma-success-light: #4a5568;   // Darker success light
-  --bulma-warning-light: #4a5568;   // Darker warning light
-  --bulma-danger-light: #4a5568;    // Darker danger light
-  
 }
 
 // Need a size smaller than 7
