@@ -760,24 +760,8 @@ const ZoneweaverSettings = () => {
     setRequiresRestart(false);
     
     try {
-      // Convert flat values back to nested structure for backend
-      const nestedSettings = {};
-      
-      Object.entries(values).forEach(([path, value]) => {
-        const keys = path.split('.');
-        let current = nestedSettings;
-        
-        for (let i = 0; i < keys.length - 1; i++) {
-          if (!current[keys[i]]) {
-            current[keys[i]] = {};
-          }
-          current = current[keys[i]];
-        }
-        
-        current[keys[keys.length - 1]] = value;
-      });
-
-      const response = await axios.put('/api/settings', nestedSettings);
+      // Send flat key-value pairs to preserve metadata structure
+      const response = await axios.put('/api/settings', values);
       
       if (response.data.success) {
         setMsg(response.data.message);
