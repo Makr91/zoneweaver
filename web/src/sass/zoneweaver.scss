@@ -1,5 +1,8 @@
 @charset "utf-8";
 
+// Import Bulma Switch Control first, before any other rules
+@import "node_modules/bulma-switch-control/bulma-switch-control";
+
 // Rules for  AIs
 // Try NOT to make custom CSS classes
 // Try to use the Bulma CSS Classes
@@ -23,9 +26,6 @@ $pink: #fa7c91;
 $brown: #757763;
 $beige-light: #d0d1cd;
 $beige-lighter: #eff0eb;
-
-// Import Bulma Switch Control before Bulma
-@import "node_modules/bulma-switch-control/bulma-switch-control";
 
 @use "bulma/sass" with (
   $primary: $orange,
