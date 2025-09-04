@@ -258,7 +258,14 @@ async function handleExternalUser(provider, profile) {
     console.log(`✅ Created user with organization_id: ${user.organization_id}`);
 
     // Create credential record
-    await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
+    console.log(`🔗 Creating credential: userId=${user.id}, provider=${provider}, subject=${subject}`);
+    try {
+      const credential = await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
+      console.log(`✅ Created credential: ID=${credential.id}, subject=${credential.subject}`);
+    } catch (credentialError) {
+      console.error(`❌ Failed to create credential:`, credentialError.message);
+      throw credentialError;
+    }
 
     console.log(`✅ Created new ${provider} user: ${user.username} (${user.email})`);
     return user;
