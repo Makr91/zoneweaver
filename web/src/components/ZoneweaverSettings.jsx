@@ -252,7 +252,7 @@ const ZoneweaverSettings = () => {
           
           // Determine section from metadata or infer from path
           const section = value.section || inferSection(fullPath) || sectionName;
-          const subsection = value.subsection || null;
+          const subsection = value.subsection || inferSubsection(fullPath, section);
           
           if (!organizedSections[section]) {
             const metadata = sectionMetadata[section] || {};
@@ -329,11 +329,27 @@ const ZoneweaverSettings = () => {
       'logging': 'Logging',
       'limits': 'Performance',
       'environment': 'Environment',
-      'gravatar': 'Integrations'
+      'integrations': 'Integrations',
+      'gravatar': 'Integrations'  // Map gravatar to Integrations
     };
     
     const pathParts = path.split('.');
     return sectionMap[pathParts[0]];
+  };
+  
+  // Infer subsection from field path for integrations
+  const inferSubsection = (path, section) => {
+    if (section === 'Integrations') {
+      const pathParts = path.split('.');
+      if (pathParts[0] === 'integrations' && pathParts[1]) {
+        // Convert subsection name to title case
+        return pathParts[1].charAt(0).toUpperCase() + pathParts[1].slice(1);
+      }
+      if (pathParts[0] === 'gravatar') {
+        return 'Gravatar';
+      }
+    }
+    return null;
   };
 
   // Generate human-readable label from field name
@@ -436,6 +452,12 @@ const ZoneweaverSettings = () => {
     }
     
     return dependentValue === showWhen;
+  };
+
+  // Check if subsection should be shown based on conditional logic of its fields
+  const shouldShowSubsection = (subsection) => {
+    // If any field in the subsection should be shown, show the subsection
+    return subsection.fields.some(field => shouldShowField(field));
   };
 
   // SSL file field renderer for certificate, key, and CA files
@@ -600,15 +622,20 @@ const ZoneweaverSettings = () => {
     switch (field.type) {
       case 'boolean':
         inputElement = (
-          <label className='checkbox'>
+          <div className='field'>
             <input
+              id={`switch-${field.path}`}
               type='checkbox'
+              name={`switch-${field.path}`}
+              className='switch is-medium is-success'
               checked={!!currentValue}
               onChange={fieldProps.onChange}
               disabled={fieldProps.disabled}
             />
-            <span className='ml-2'>{field.label}</span>
-          </label>
+            <label htmlFor={`switch-${field.path}`} className='has-text-weight-semibold'>
+              {field.label}
+            </label>
+          </div>
         );
         break;
 
@@ -648,11 +675,22 @@ const ZoneweaverSettings = () => {
         inputElement = (
           <div className='select is-fullwidth'>
             <select {...fieldProps}>
-              {field.options && field.options.map(option => (
-                <option key={option.value || option} value={option.value || option}>
-                  {option.label || option}
-                </option>
-              ))}
+              {field.options && field.options.map((option, index) => {
+                // Handle both string and object options
+                const optionValue = typeof option === 'object' ? option.value : option;
+                const optionLabel = typeof option === 'object' ? option.label : option;
+                
+                // Skip empty/null values unless they're intentionally empty strings
+                if (optionValue === null || optionValue === undefined) {
+                  return null;
+                }
+                
+                return (
+                  <option key={`${optionValue}-${index}`} value={optionValue}>
+                    {optionLabel}
+                  </option>
+                );
+              }).filter(Boolean)}
             </select>
           </div>
         );
@@ -1033,13 +1071,13 @@ const ZoneweaverSettings = () => {
             </ul>
           </div>
 
-          <div className='p-4'>
+          <div className='p-0'>
             {msg && (
               <div className={`notification ${
                 msg.includes('successfully') ? 'is-success' : 
                 msg.includes('Error') ? 'is-danger' : 
                 'is-warning'
-              } mb-4`}>
+              } mb-4 mx-4 mt-4`}>
                 <p>{msg}</p>
               </div>
             )}
@@ -1111,7 +1149,7 @@ const ZoneweaverSettings = () => {
                       
                       {/* Section description from config */}
                       {section.description && (
-                        <p className='subtitle is-6 has-text-grey mb-4'>
+                        <p className='subtitle is-6 has-text-grey mt-2 mb-4'>
                           {section.description}
                         </p>
                       )}
@@ -1237,6 +1275,11 @@ const ZoneweaverSettings = () => {
 
                   {/* Subsections with Collapsible Cards */}
                   {Object.entries(section.subsections || {}).map(([subsectionName, subsection]) => {
+                    // Skip subsection if none of its fields should be shown
+                    if (!shouldShowSubsection(subsection)) {
+                      return null;
+                    }
+                    
                     const isCollapsed = isSubsectionCollapsed(sectionName, subsectionName);
                     return (
                       <div key={subsectionName} className='box mb-4'>

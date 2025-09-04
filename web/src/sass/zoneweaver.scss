@@ -15,8 +15,6 @@
 // 
 // There are many other components and classes as well in other parts of the documentation
 
-
-
 // Set your brand colors
 $orange: #ff6600;
 $yellow: #ffe600;
@@ -130,6 +128,14 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
+  
+  // Override is-light color variants for dark mode visibility
+  --bulma-primary-light: #4a5568;   // Darker primary light
+  --bulma-link-light: #4a5568;      // Darker link light
+  --bulma-info-light: #4a5568;      // Darker info light
+  --bulma-success-light: #4a5568;   // Darker success light
+  --bulma-warning-light: #4a5568;   // Darker warning light
+  --bulma-danger-light: #4a5568;    // Darker danger light
 }
 
 // Need a size smaller than 7

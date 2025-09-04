@@ -175,19 +175,25 @@ const ApiKeysTab = () => {
                                     <td>
                                         <div className="buttons">
                                             <button
-                                                className="button is-info is-small"
+                                                className="button is-primary is-small"
                                                 onClick={() => {
                                                     setGeneratedKey(key.api_key);
                                                 }}
                                             >
-                                                View
+                                                <span className="icon is-small">
+                                                    <i className="fas fa-eye"></i>
+                                                </span>
+                                                <span>View</span>
                                             </button>
                                             <button
                                                 className="button is-danger is-small"
                                                 onClick={() => handleDeleteKey(key.id)}
                                                 disabled={loading}
                                             >
-                                                Delete
+                                                <span className="icon is-small">
+                                                    <i className="fas fa-trash"></i>
+                                                </span>
+                                                <span>Delete</span>
                                             </button>
                                         </div>
                                     </td>
