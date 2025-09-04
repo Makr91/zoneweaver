@@ -32,8 +32,8 @@
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.5",
     "multer": "^2.0.2",
-    "mysql2": "^3.6.0",
-    "nodemailer": "^7.0.5",
+    "mysql2": "^3.14.4",
+    "nodemailer": "^7.0.6",
     "nodemon": "^3.1.9",
     "openid-client": "^6.7.1",
     "passport": "^0.7.0",
@@ -54,6 +54,6 @@
   },
   "devDependencies": {
     "@rollup/wasm-node": "^4.46.3",
-    "concurrently": "^9.2.0"
+    "concurrently": "^9.2.1"
   }
 }
