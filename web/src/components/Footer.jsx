@@ -121,7 +121,7 @@ const Footer = () => {
             >
               v{__APP_VERSION__ || '1.0.0'}
             </span>
-            {' &#169; '}
+            {' © '}
             <a href='https://startcloud.com/' className='has-text-primary'>
               STARTcloud.com&#8482; {new Date().getFullYear()}
             </a>
@@ -178,18 +178,18 @@ const Footer = () => {
   // 3-section handle for ResizableBox - only middle section draggable
   const FooterHandle = () => {
     return (
-      <div className="level zw-footer-overlay-sections react-resizable-handle react-resizable-handle-n">
+      <div className="level mb-0 is-mobile">
         {/* Left section - clicks pass through to header below */}
-        <div className="level-item is-justify-content-flex-start zw-footer-overlay-passthrough">
+        <div className="level-item is-justify-content-flex-start">
         </div>
         {/* Middle section - draggable grip area */}
-        <div className="level-item is-justify-content-space-between zw-footer-overlay-handle">
-          <div className='icon'>
-            <i className="fas fa-solid fa-grip-lines has-text-grey"></i>
-          </div>
+        <div className="level-item button is-small is-dark is-justify-content-center react-resizable-handle react-resizable-handle-n">
+          <span className='icon'>
+            <i className="fas fa-solid fa-grip-lines"></i>
+          </span>
         </div>
         {/* Right section - clicks pass through to header below */}
-        <div className="level-item is-justify-content-flex-end zw-footer-overlay-passthrough">
+        <div className="level-item is-justify-content-flex-end">
         </div>
       </div>
     );
