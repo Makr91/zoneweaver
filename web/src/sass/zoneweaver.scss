@@ -1,8 +1,5 @@
 @charset "utf-8";
 
-// Import Bulma Switch Control first, before any other rules
-@import "node_modules/bulma-switch-control/bulma-switch-control";
-
 // Rules for  AIs
 // Try NOT to make custom CSS classes
 // Try to use the Bulma CSS Classes
@@ -70,6 +67,10 @@ $beige-lighter: #eff0eb;
   @include light.light-theme;
   @include setup.setup-theme;
 }
+
+// Import Bulma Switch Control first, before any other rules
+@import "node_modules/bulma-switch-control/bulma-switch-control";
+
 
 .dropdown-content {
   border-width: var(--bulma-control-border-width);
