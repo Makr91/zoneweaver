@@ -116,11 +116,7 @@ export default function(sequelize) {
    */
   Credential.findByProviderAndSubject = async function(provider, subject) {
     return await this.findOne({
-      where: { provider, subject },
-      include: [{
-        model: sequelize.models.User,
-        as: 'user'
-      }]
+      where: { provider, subject }
     });
   };
 
@@ -159,13 +155,14 @@ export default function(sequelize) {
    * @returns {Promise<Credential>}
    */
   Credential.linkToUser = async function(userId, provider, profile) {
-    const email = profile.email || profile.emails?.[0]?.value;
+    const email = profile.mail || profile.email || profile.emails?.[0]?.value;
+    const subject = profile.subject || profile.id || profile.sub || profile.uid;
     
     return await this.create({
       user_id: userId,
       provider: provider,
-      subject: profile.id || profile.sub,
-      external_id: profile.id,
+      subject: subject,
+      external_id: profile.id || profile.uid,
       external_email: email,
       linked_at: new Date()
     });

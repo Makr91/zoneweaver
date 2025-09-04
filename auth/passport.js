@@ -174,7 +174,7 @@ async function handleExternalUser(provider, profile) {
       console.log(`🔗 Linking ${provider} account to existing user: ${email}`);
       
       // Create credential link
-      await CredentialModel.linkToUser(user.id, provider, profile);
+      await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
       
       // Update user's auth provider and linked timestamp
       await user.update({
