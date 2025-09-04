@@ -33,7 +33,8 @@ $beige-lighter: #eff0eb;
   $dropdown-content-z: 4,
   $control-radius: none,
   $card-shadow: none,
-  $body-overflow-y: auto
+  $body-overflow-y: auto,
+  $tag-background-l: 25%
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
@@ -140,8 +141,6 @@ $beige-lighter: #eff0eb;
   --bulma-warning-light: #4a5568;   // Darker warning light
   --bulma-danger-light: #4a5568;    // Darker danger light
   
-  // Fix tag background lightness for dark mode
-  --bulma-tag-background-l: 25%;   // Much darker for better contrast in dark mode
 }
 
 // Need a size smaller than 7
