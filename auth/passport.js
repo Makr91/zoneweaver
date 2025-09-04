@@ -336,12 +336,29 @@ async function determineUserOrganization(email, profile) {
         if (Array.isArray(domains) && domains.includes(domain)) {
           console.log(`🗺️ Found domain mapping: ${domain} -> ${orgCode}`);
           
-          const org = await OrganizationModel.findByOrganizationCode(orgCode);
+          let org = await OrganizationModel.findByOrganizationCode(orgCode);
           if (org) {
             console.log(`✅ Using mapped organization: ${org.name} (${org.id})`);
             return org.id;
           } else {
             console.log(`❌ Organization with code ${orgCode} not found in database`);
+            
+            // Check if there's an existing organization for this domain that just doesn't have a code yet
+            const existingOrg = await OrganizationModel.findOne({
+              where: {
+                [db.Sequelize.Op.or]: [
+                  { name: { [db.Sequelize.Op.like]: `%${domain}%` } },
+                  { name: { [db.Sequelize.Op.like]: `%${domain.toUpperCase()}%` } }
+                ]
+              }
+            });
+            
+            if (existingOrg && !existingOrg.organization_code) {
+              console.log(`🔄 Found existing organization without code: ${existingOrg.name}, assigning code ${orgCode}`);
+              await existingOrg.update({ organization_code: orgCode });
+              console.log(`✅ Assigned code ${orgCode} to existing organization: ${existingOrg.name} (${existingOrg.id})`);
+              return existingOrg.id;
+            }
           }
         }
       }

@@ -1093,9 +1093,19 @@ class AuthController {
         });
       }
       
+      // Transform the data to flatten organization information for frontend compatibility
+      const transformedUsers = users.map(user => {
+        const userJson = user.toJSON();
+        if (userJson.organization) {
+          userJson.organization_name = userJson.organization.name;
+          userJson.organization_id = userJson.organization.id;
+        }
+        return userJson;
+      });
+      
       res.json({
         success: true,
-        users,
+        users: transformedUsers,
         viewScope: currentUserRole === 'super-admin' ? 'all' : 'organization'
       });
     } catch (error) {
