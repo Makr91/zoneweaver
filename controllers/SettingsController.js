@@ -306,14 +306,20 @@ class SettingsController {
    */
   static async updateSettings(req, res) {
     try {
-      const newConfig = req.body;
+      const newValues = req.body; // Flat key-value pairs from frontend
       
       // Create backup of current config
       const backupPath = `${SettingsController.configPath}.backup.${Date.now()}`;
       fs.copyFileSync(SettingsController.configPath, backupPath);
 
-      // Write updated config directly - config.yaml is now the definitive source!
-      const updatedYaml = YAML.stringify(newConfig, {
+      // Load current config with metadata structure
+      const currentConfig = loadConfig();
+      
+      // Update values while preserving metadata structure
+      const updatedConfig = SettingsController.updateConfigValues(currentConfig, newValues);
+
+      // Write updated config with preserved metadata
+      const updatedYaml = YAML.stringify(updatedConfig, {
         indent: 2,
         lineWidth: 120
       });
@@ -327,7 +333,7 @@ class SettingsController {
       res.json({
         success: true,
         message: 'Settings updated successfully. Some changes may require a server restart to take effect.',
-        requiresRestart: SettingsController.requiresRestart(newConfig),
+        requiresRestart: SettingsController.requiresRestart(newValues),
         backupPath: backupPath
       });
 
@@ -727,6 +733,53 @@ class SettingsController {
         message: 'SSL file upload failed: ' + error.message
       });
     }
+  }
+
+  /**
+   * Update config values while preserving metadata structure
+   * @param {Object} currentConfig - Current config with metadata structure
+   * @param {Object} newValues - Flat key-value pairs from frontend
+   * @returns {Object} Updated config with preserved metadata
+   */
+  static updateConfigValues(currentConfig, newValues) {
+    // Create a deep copy to avoid modifying original
+    const updatedConfig = JSON.parse(JSON.stringify(currentConfig));
+    
+    // Helper function to set nested value by path
+    const setNestedValue = (obj, path, value) => {
+      const keys = path.split('.');
+      let current = obj;
+      
+      // Navigate to the parent object
+      for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        if (!current[key]) {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+      
+      const finalKey = keys[keys.length - 1];
+      
+      // If the target is a metadata object with a 'value' property, update it
+      if (current[finalKey] && typeof current[finalKey] === 'object' && current[finalKey].hasOwnProperty('value')) {
+        current[finalKey].value = value;
+      } else {
+        // Otherwise, set the value directly
+        current[finalKey] = value;
+      }
+    };
+    
+    // Update each value in the config structure
+    for (const [path, value] of Object.entries(newValues)) {
+      try {
+        setNestedValue(updatedConfig, path, value);
+      } catch (error) {
+        console.warn(`Failed to update config path ${path}:`, error.message);
+      }
+    }
+    
+    return updatedConfig;
   }
 
   /**
