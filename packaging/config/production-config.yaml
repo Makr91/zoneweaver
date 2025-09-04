@@ -2,7 +2,7 @@
 # This file is installed to /etc/zoneweaver/config.yaml
 # All settings use metadata format for configuration-driven UI
 
-app:
+frontend:
   name:
     type: string
     value: Zoneweaver
@@ -17,6 +17,30 @@ app:
     type: string
     value: https://localhost:3443
     description: "Base URL for the frontend application"
+    required: true
+  port:
+    type: integer
+    value: 3443
+    min: 1
+    max: 65535
+    description: "Frontend serving port"
+    required: true
+  auto_refresh_interval:
+    type: integer
+    value: 5
+    min: 1
+    max: 300
+    description: "Dashboard auto-refresh interval in seconds"
+    required: true
+  enable_notifications:
+    type: boolean
+    value: true
+    description: "Enable browser notifications for alerts"
+    required: true
+  enable_dark_mode:
+    type: boolean
+    value: true
+    description: "Enable dark mode theme by default"
     required: true
 
 mail:
@@ -93,32 +117,6 @@ server:
     depends_on: ssl_enabled
     show_when: [true]
 
-frontend:
-  port:
-    type: integer
-    value: 3443
-    min: 1
-    max: 65535
-    description: "Frontend serving port"
-    required: true
-  auto_refresh_interval:
-    type: integer
-    value: 5
-    min: 1
-    max: 300
-    description: "Dashboard auto-refresh interval in seconds"
-    required: true
-  enable_notifications:
-    type: boolean
-    value: true
-    description: "Enable browser notifications for alerts"
-    required: true
-  enable_dark_mode:
-    type: boolean
-    value: true
-    description: "Enable dark mode theme by default"
-    required: true
-
 cors:
   whitelist:
     type: array
@@ -144,12 +142,6 @@ cors:
     description: "Allow credentials in CORS requests"
     required: true
 
-backend_servers:
-  type: array
-  value: []
-  description: "List of backend Zoneweaver API servers"
-  required: false
-
 environment:
   trust_proxy:
     type: integer
@@ -172,7 +164,9 @@ logging:
     description: "Enable application logging"
     required: true
 
+# Security & Performance Limits Configuration
 limits:
+  # General Limits
   max_servers_per_user:
     type: integer
     value: 10
@@ -180,6 +174,109 @@ limits:
     max: 1000
     description: "Maximum number of servers a user can manage"
     required: true
+  
+  # Rate Limiting Configuration (CodeQL Security Fix)
+  authentication:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Authentication rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 25
+      description: "Maximum authentication attempts per window (5X higher limit)"
+      required: true
+    message:
+      type: string
+      value: "Too many authentication attempts, please try again later"
+      description: "Error message for authentication rate limit"
+      required: true
+  
+  admin:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Admin operations rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 500
+      description: "Maximum admin requests per window (5X higher limit)"
+      required: true
+    message:
+      type: string
+      value: "Too many admin requests, please try again later"
+      description: "Error message for admin rate limit"
+      required: true
+      
+  apiProxy:
+    windowMs:
+      type: integer
+      value: 60000
+      description: "API proxy rate limit window in milliseconds (1 minute)"
+      required: true
+    max:
+      type: integer
+      value: 100
+      description: "Maximum API proxy requests per window (5X higher limit)"
+      required: true
+    message:
+      type: string
+      value: "Too many API proxy requests, please try again later"
+      description: "Error message for API proxy rate limit"
+      required: true
+      
+  realtime:
+    windowMs:
+      type: integer
+      value: 60000
+      description: "Real-time operations rate limit window in milliseconds (1 minute)"
+      required: true
+    max:
+      type: integer
+      value: 250
+      description: "Maximum real-time requests per window (5X higher limit)"
+      required: true
+    message:
+      type: string
+      value: "Too many real-time requests, please try again later"
+      description: "Error message for real-time rate limit"
+      required: true
+      
+  standard:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Standard operations rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 1000
+      description: "Maximum standard requests per window (5X higher limit)"
+      required: true
+    message:
+      type: string
+      value: "Too many requests, please try again later"
+      description: "Error message for standard rate limit"
+      required: true
+      
+  staticFiles:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Static file serving rate limit window in milliseconds (15 minutes)"
+      required: true
+    max:
+      type: integer
+      value: 5000
+      description: "Maximum static file requests per window (5X higher limit for normal browsing)"
+      required: true
+    message:
+      type: string
+      value: "Too many static file requests, please try again later"
+      description: "Error message for static file rate limit"
+      required: true
 
 # Authentication Configuration (Phase 3: LDAP Integration)
 authentication:
@@ -510,119 +607,9 @@ database:
     description: "Log SQL queries to console (for debugging)"
     required: true
 
-
-# Legacy database path (kept for migration compatibility)
-# Remove this after migration is complete
-# database:
-#   path: /var/lib/zoneweaver/database/zoneweaver.db
-
 gravatar:
   api_key:
     type: string
     value: ""
     description: "Gravatar API key for enhanced profile images (get from https://gravatar.com/)"
     required: false
-
-# Rate Limiting Configuration (CodeQL Security Fix)
-rateLimiting:
-  authentication:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Authentication rate limit window in milliseconds (15 minutes)"
-      required: true
-    max:
-      type: integer
-      value: 25
-      description: "Maximum authentication attempts per window (5X higher limit)"
-      required: true
-    message:
-      type: string
-      value: "Too many authentication attempts, please try again later"
-      description: "Error message for authentication rate limit"
-      required: true
-  
-  admin:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Admin operations rate limit window in milliseconds (15 minutes)"
-      required: true
-    max:
-      type: integer
-      value: 500
-      description: "Maximum admin requests per window (5X higher limit)"
-      required: true
-    message:
-      type: string
-      value: "Too many admin requests, please try again later"
-      description: "Error message for admin rate limit"
-      required: true
-      
-  apiProxy:
-    windowMs:
-      type: integer
-      value: 60000
-      description: "API proxy rate limit window in milliseconds (1 minute)"
-      required: true
-    max:
-      type: integer
-      value: 100
-      description: "Maximum API proxy requests per window (5X higher limit)"
-      required: true
-    message:
-      type: string
-      value: "Too many API proxy requests, please try again later"
-      description: "Error message for API proxy rate limit"
-      required: true
-      
-  realtime:
-    windowMs:
-      type: integer
-      value: 60000
-      description: "Real-time operations rate limit window in milliseconds (1 minute)"
-      required: true
-    max:
-      type: integer
-      value: 250
-      description: "Maximum real-time requests per window (5X higher limit)"
-      required: true
-    message:
-      type: string
-      value: "Too many real-time requests, please try again later"
-      description: "Error message for real-time rate limit"
-      required: true
-      
-  standard:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Standard operations rate limit window in milliseconds (15 minutes)"
-      required: true
-    max:
-      type: integer
-      value: 1000
-      description: "Maximum standard requests per window (5X higher limit)"
-      required: true
-    message:
-      type: string
-      value: "Too many requests, please try again later"
-      description: "Error message for standard rate limit"
-      required: true
-      
-  staticFiles:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Static file serving rate limit window in milliseconds (15 minutes)"
-      required: true
-    max:
-      type: integer
-      value: 5000
-      description: "Maximum static file requests per window (5X higher limit for normal browsing)"
-      required: true
-    message:
-      type: string
-      value: "Too many static file requests, please try again later"
-      description: "Error message for static file rate limit"
-      required: true

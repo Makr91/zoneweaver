@@ -17,16 +17,18 @@ class SettingsController {
     return getConfigFilePath();
   }
 
-  static getZoneweaverAPIServerInfo() {
-    const config = loadConfig();
-    const zapi = config.backend_servers[0];
-    if (!zapi) {
-      throw new Error('Zoneweaver API server not found in config.yaml');
+  static async getZoneweaverAPIServerInfo() {
+    // Get first server from database instead of config
+    const server = await ServerModel.findOne({ 
+      order: [['created_at', 'ASC']] 
+    });
+    if (!server) {
+      throw new Error('No Zoneweaver API servers found in database');
     }
     return {
-      hostname: zapi.hostname,
-      port: zapi.port,
-      protocol: zapi.protocol
+      hostname: server.hostname,
+      port: server.port,
+      protocol: server.protocol
     };
   }
 
@@ -310,10 +312,10 @@ class SettingsController {
       let config = YAML.parse(configFile);
 
       // Update config with new settings - preserve existing structure
-      config.app = config.app || {};
-      if (newSettings.appName !== undefined) config.app.name = newSettings.appName;
-      if (newSettings.appVersion !== undefined) config.app.version = newSettings.appVersion;
-      if (newSettings.frontendUrl !== undefined) config.app.frontend_url = newSettings.frontendUrl;
+      config.frontend = config.frontend || {};
+      if (newSettings.appName !== undefined) config.frontend.name = newSettings.appName;
+      if (newSettings.appVersion !== undefined) config.frontend.version = newSettings.appVersion;
+      if (newSettings.frontendUrl !== undefined) config.frontend.frontend_url = newSettings.frontendUrl;
 
       // Limits
       config.limits = config.limits || {};
@@ -453,62 +455,62 @@ class SettingsController {
       config.gravatar.api_key = config.gravatar.api_key || { type: 'string', value: '' };
       if (newSettings.gravatarApiKey !== undefined) config.gravatar.api_key.value = newSettings.gravatarApiKey;
 
-      // Rate limiting settings
-      config.rateLimiting = config.rateLimiting || {};
+      // Rate limiting settings (now under limits section)
+      config.limits = config.limits || {};
       
       // Rate limiting - Authentication
-      config.rateLimiting.authentication = config.rateLimiting.authentication || {};
-      config.rateLimiting.authentication.windowMs = config.rateLimiting.authentication.windowMs || { type: 'integer', value: 900000 };
-      config.rateLimiting.authentication.max = config.rateLimiting.authentication.max || { type: 'integer', value: 25 };
-      config.rateLimiting.authentication.message = config.rateLimiting.authentication.message || { type: 'string', value: 'Too many authentication attempts' };
-      if (newSettings.rateLimitAuthWindowMs !== undefined) config.rateLimiting.authentication.windowMs.value = newSettings.rateLimitAuthWindowMs;
-      if (newSettings.rateLimitAuthMax !== undefined) config.rateLimiting.authentication.max.value = newSettings.rateLimitAuthMax;
-      if (newSettings.rateLimitAuthMessage !== undefined) config.rateLimiting.authentication.message.value = newSettings.rateLimitAuthMessage;
+      config.limits.authentication = config.limits.authentication || {};
+      config.limits.authentication.windowMs = config.limits.authentication.windowMs || { type: 'integer', value: 900000 };
+      config.limits.authentication.max = config.limits.authentication.max || { type: 'integer', value: 25 };
+      config.limits.authentication.message = config.limits.authentication.message || { type: 'string', value: 'Too many authentication attempts' };
+      if (newSettings.rateLimitAuthWindowMs !== undefined) config.limits.authentication.windowMs.value = newSettings.rateLimitAuthWindowMs;
+      if (newSettings.rateLimitAuthMax !== undefined) config.limits.authentication.max.value = newSettings.rateLimitAuthMax;
+      if (newSettings.rateLimitAuthMessage !== undefined) config.limits.authentication.message.value = newSettings.rateLimitAuthMessage;
 
       // Rate limiting - Admin
-      config.rateLimiting.admin = config.rateLimiting.admin || {};
-      config.rateLimiting.admin.windowMs = config.rateLimiting.admin.windowMs || { type: 'integer', value: 900000 };
-      config.rateLimiting.admin.max = config.rateLimiting.admin.max || { type: 'integer', value: 500 };
-      config.rateLimiting.admin.message = config.rateLimiting.admin.message || { type: 'string', value: 'Too many admin requests' };
-      if (newSettings.rateLimitAdminWindowMs !== undefined) config.rateLimiting.admin.windowMs.value = newSettings.rateLimitAdminWindowMs;
-      if (newSettings.rateLimitAdminMax !== undefined) config.rateLimiting.admin.max.value = newSettings.rateLimitAdminMax;
-      if (newSettings.rateLimitAdminMessage !== undefined) config.rateLimiting.admin.message.value = newSettings.rateLimitAdminMessage;
+      config.limits.admin = config.limits.admin || {};
+      config.limits.admin.windowMs = config.limits.admin.windowMs || { type: 'integer', value: 900000 };
+      config.limits.admin.max = config.limits.admin.max || { type: 'integer', value: 500 };
+      config.limits.admin.message = config.limits.admin.message || { type: 'string', value: 'Too many admin requests' };
+      if (newSettings.rateLimitAdminWindowMs !== undefined) config.limits.admin.windowMs.value = newSettings.rateLimitAdminWindowMs;
+      if (newSettings.rateLimitAdminMax !== undefined) config.limits.admin.max.value = newSettings.rateLimitAdminMax;
+      if (newSettings.rateLimitAdminMessage !== undefined) config.limits.admin.message.value = newSettings.rateLimitAdminMessage;
 
       // Rate limiting - API Proxy
-      config.rateLimiting.apiProxy = config.rateLimiting.apiProxy || {};
-      config.rateLimiting.apiProxy.windowMs = config.rateLimiting.apiProxy.windowMs || { type: 'integer', value: 60000 };
-      config.rateLimiting.apiProxy.max = config.rateLimiting.apiProxy.max || { type: 'integer', value: 100 };
-      config.rateLimiting.apiProxy.message = config.rateLimiting.apiProxy.message || { type: 'string', value: 'Too many API proxy requests' };
-      if (newSettings.rateLimitApiProxyWindowMs !== undefined) config.rateLimiting.apiProxy.windowMs.value = newSettings.rateLimitApiProxyWindowMs;
-      if (newSettings.rateLimitApiProxyMax !== undefined) config.rateLimiting.apiProxy.max.value = newSettings.rateLimitApiProxyMax;
-      if (newSettings.rateLimitApiProxyMessage !== undefined) config.rateLimiting.apiProxy.message.value = newSettings.rateLimitApiProxyMessage;
+      config.limits.apiProxy = config.limits.apiProxy || {};
+      config.limits.apiProxy.windowMs = config.limits.apiProxy.windowMs || { type: 'integer', value: 60000 };
+      config.limits.apiProxy.max = config.limits.apiProxy.max || { type: 'integer', value: 100 };
+      config.limits.apiProxy.message = config.limits.apiProxy.message || { type: 'string', value: 'Too many API proxy requests' };
+      if (newSettings.rateLimitApiProxyWindowMs !== undefined) config.limits.apiProxy.windowMs.value = newSettings.rateLimitApiProxyWindowMs;
+      if (newSettings.rateLimitApiProxyMax !== undefined) config.limits.apiProxy.max.value = newSettings.rateLimitApiProxyMax;
+      if (newSettings.rateLimitApiProxyMessage !== undefined) config.limits.apiProxy.message.value = newSettings.rateLimitApiProxyMessage;
 
       // Rate limiting - Realtime
-      config.rateLimiting.realtime = config.rateLimiting.realtime || {};
-      config.rateLimiting.realtime.windowMs = config.rateLimiting.realtime.windowMs || { type: 'integer', value: 60000 };
-      config.rateLimiting.realtime.max = config.rateLimiting.realtime.max || { type: 'integer', value: 250 };
-      config.rateLimiting.realtime.message = config.rateLimiting.realtime.message || { type: 'string', value: 'Too many real-time requests' };
-      if (newSettings.rateLimitRealtimeWindowMs !== undefined) config.rateLimiting.realtime.windowMs.value = newSettings.rateLimitRealtimeWindowMs;
-      if (newSettings.rateLimitRealtimeMax !== undefined) config.rateLimiting.realtime.max.value = newSettings.rateLimitRealtimeMax;
-      if (newSettings.rateLimitRealtimeMessage !== undefined) config.rateLimiting.realtime.message.value = newSettings.rateLimitRealtimeMessage;
+      config.limits.realtime = config.limits.realtime || {};
+      config.limits.realtime.windowMs = config.limits.realtime.windowMs || { type: 'integer', value: 60000 };
+      config.limits.realtime.max = config.limits.realtime.max || { type: 'integer', value: 250 };
+      config.limits.realtime.message = config.limits.realtime.message || { type: 'string', value: 'Too many real-time requests' };
+      if (newSettings.rateLimitRealtimeWindowMs !== undefined) config.limits.realtime.windowMs.value = newSettings.rateLimitRealtimeWindowMs;
+      if (newSettings.rateLimitRealtimeMax !== undefined) config.limits.realtime.max.value = newSettings.rateLimitRealtimeMax;
+      if (newSettings.rateLimitRealtimeMessage !== undefined) config.limits.realtime.message.value = newSettings.rateLimitRealtimeMessage;
 
       // Rate limiting - Standard
-      config.rateLimiting.standard = config.rateLimiting.standard || {};
-      config.rateLimiting.standard.windowMs = config.rateLimiting.standard.windowMs || { type: 'integer', value: 900000 };
-      config.rateLimiting.standard.max = config.rateLimiting.standard.max || { type: 'integer', value: 1000 };
-      config.rateLimiting.standard.message = config.rateLimiting.standard.message || { type: 'string', value: 'Too many requests' };
-      if (newSettings.rateLimitStandardWindowMs !== undefined) config.rateLimiting.standard.windowMs.value = newSettings.rateLimitStandardWindowMs;
-      if (newSettings.rateLimitStandardMax !== undefined) config.rateLimiting.standard.max.value = newSettings.rateLimitStandardMax;
-      if (newSettings.rateLimitStandardMessage !== undefined) config.rateLimiting.standard.message.value = newSettings.rateLimitStandardMessage;
+      config.limits.standard = config.limits.standard || {};
+      config.limits.standard.windowMs = config.limits.standard.windowMs || { type: 'integer', value: 900000 };
+      config.limits.standard.max = config.limits.standard.max || { type: 'integer', value: 1000 };
+      config.limits.standard.message = config.limits.standard.message || { type: 'string', value: 'Too many requests' };
+      if (newSettings.rateLimitStandardWindowMs !== undefined) config.limits.standard.windowMs.value = newSettings.rateLimitStandardWindowMs;
+      if (newSettings.rateLimitStandardMax !== undefined) config.limits.standard.max.value = newSettings.rateLimitStandardMax;
+      if (newSettings.rateLimitStandardMessage !== undefined) config.limits.standard.message.value = newSettings.rateLimitStandardMessage;
 
       // Rate limiting - Static Files
-      config.rateLimiting.staticFiles = config.rateLimiting.staticFiles || {};
-      config.rateLimiting.staticFiles.windowMs = config.rateLimiting.staticFiles.windowMs || { type: 'integer', value: 900000 };
-      config.rateLimiting.staticFiles.max = config.rateLimiting.staticFiles.max || { type: 'integer', value: 5000 };
-      config.rateLimiting.staticFiles.message = config.rateLimiting.staticFiles.message || { type: 'string', value: 'Too many static file requests' };
-      if (newSettings.rateLimitStaticFilesWindowMs !== undefined) config.rateLimiting.staticFiles.windowMs.value = newSettings.rateLimitStaticFilesWindowMs;
-      if (newSettings.rateLimitStaticFilesMax !== undefined) config.rateLimiting.staticFiles.max.value = newSettings.rateLimitStaticFilesMax;
-      if (newSettings.rateLimitStaticFilesMessage !== undefined) config.rateLimiting.staticFiles.message.value = newSettings.rateLimitStaticFilesMessage;
+      config.limits.staticFiles = config.limits.staticFiles || {};
+      config.limits.staticFiles.windowMs = config.limits.staticFiles.windowMs || { type: 'integer', value: 900000 };
+      config.limits.staticFiles.max = config.limits.staticFiles.max || { type: 'integer', value: 5000 };
+      config.limits.staticFiles.message = config.limits.staticFiles.message || { type: 'string', value: 'Too many static file requests' };
+      if (newSettings.rateLimitStaticFilesWindowMs !== undefined) config.limits.staticFiles.windowMs.value = newSettings.rateLimitStaticFilesWindowMs;
+      if (newSettings.rateLimitStaticFilesMax !== undefined) config.limits.staticFiles.max.value = newSettings.rateLimitStaticFilesMax;
+      if (newSettings.rateLimitStaticFilesMessage !== undefined) config.limits.staticFiles.message.value = newSettings.rateLimitStaticFilesMessage;
 
       // Update mail settings
       if (newSettings.mailSmtpHost !== undefined || newSettings.mailSmtpPort !== undefined || 
@@ -531,17 +533,11 @@ class SettingsController {
         if (newSettings.mailFromAddress !== undefined) config.mail.from_address.value = newSettings.mailFromAddress;
       }
 
-      // Preserve backend_servers
-      const backendServers = config.backend_servers;
-
       // Create backup of current config
       const backupPath = `${SettingsController.configPath}.backup.${Date.now()}`;
       fs.copyFileSync(SettingsController.configPath, backupPath);
 
       // Write updated config
-      if (backendServers) {
-        config.backend_servers = backendServers;
-      }
       const updatedYaml = YAML.stringify(config, {
         indent: 2,
         lineWidth: 120
@@ -1079,14 +1075,12 @@ class SettingsController {
         // Update the allow_insecure setting in the config.yaml file
         const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
         let config = YAML.parse(configFile);
-        const zapi = config.backend_servers.find(s => s.hostname === hostname && s.port === port && s.protocol === protocol);
-        if (zapi && allow_insecure !== undefined) {
-          zapi.allow_insecure = allow_insecure;
-          const updatedYaml = YAML.stringify(config, {
-            indent: 2,
-            lineWidth: 120
-          });
-          fs.writeFileSync(SettingsController.configPath, updatedYaml, 'utf8');
+        // Update allow_insecure setting in database instead since servers are now stored there
+        if (allow_insecure !== undefined) {
+          await ServerModel.update(
+            { allow_insecure: allow_insecure },
+            { where: { hostname, port, protocol } }
+          );
         }
 
         res.json({ success: true, message: 'Settings updated successfully' });

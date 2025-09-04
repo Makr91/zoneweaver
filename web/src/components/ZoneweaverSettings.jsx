@@ -284,9 +284,8 @@ const ZoneweaverSettings = () => {
   // Infer section from field path
   const inferSection = (path) => {
     const sectionMap = {
-      'app': 'Application',
+      'frontend': 'Frontend',
       'server': 'Server',
-      'frontend': 'Application',
       'database': 'Database',
       'mail': 'Mail',
       'authentication': 'Authentication',
@@ -294,8 +293,7 @@ const ZoneweaverSettings = () => {
       'logging': 'Logging',
       'limits': 'Performance',
       'environment': 'Environment',
-      'gravatar': 'Integrations',
-      'rateLimiting': 'Security'
+      'gravatar': 'Integrations'
     };
     
     const pathParts = path.split('.');
