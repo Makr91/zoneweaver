@@ -22,11 +22,10 @@ const config = loadConfig();
 
 // 🛡️ Static File Rate Limiting Configuration (CodeQL Security Fix)
 // Create rate limiter for static file serving endpoints
-const rlConfig = config.rateLimiting || {};
 const staticFileLimiter = rateLimit({
-  windowMs: rlConfig.staticFiles?.windowMs?.value || 15 * 60 * 1000,
-  max: rlConfig.staticFiles?.max?.value || 5000,
-  message: { error: rlConfig.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
+  windowMs: config.limits?.staticFiles?.windowMs?.value || 15 * 60 * 1000,
+  max: config.limits?.staticFiles?.max?.value || 5000,
+  message: { error: config.limits?.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });

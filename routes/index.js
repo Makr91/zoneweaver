@@ -14,60 +14,59 @@ const router = express.Router();
 // 🛡️ Rate Limiting Configuration (CodeQL Security Fix)
 // Configurable tiered approach based on endpoint sensitivity and resource usage
 
-// Load rate limiting configuration from config.yaml
+// Load configuration from config.yaml
 const config = loadConfig();
-const rlConfig = config.rateLimiting || {};
 
 // Authentication - Strict (prevent brute force attacks)
 const authLimiter = rateLimit({
-  windowMs: rlConfig.authentication?.windowMs?.value || 15 * 60 * 1000,
-  max: rlConfig.authentication?.max?.value || 25,
-  message: { error: rlConfig.authentication?.message?.value || 'Too many authentication attempts, please try again later' },
+  windowMs: config.limits?.authentication?.windowMs?.value || 15 * 60 * 1000,
+  max: config.limits?.authentication?.max?.value || 25,
+  message: { error: config.limits?.authentication?.message?.value || 'Too many authentication attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Admin operations - Moderate (protect admin functions)
 const adminLimiter = rateLimit({
-  windowMs: rlConfig.admin?.windowMs?.value || 15 * 60 * 1000,
-  max: rlConfig.admin?.max?.value || 500,
-  message: { error: rlConfig.admin?.message?.value || 'Too many admin requests, please try again later' },
+  windowMs: config.limits?.admin?.windowMs?.value || 15 * 60 * 1000,
+  max: config.limits?.admin?.max?.value || 500,
+  message: { error: config.limits?.admin?.message?.value || 'Too many admin requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // External API proxy - Restrictive (protect downstream Zoneweaver servers)
 const apiProxyLimiter = rateLimit({
-  windowMs: rlConfig.apiProxy?.windowMs?.value || 60 * 1000,
-  max: rlConfig.apiProxy?.max?.value || 2000,
-  message: { error: rlConfig.apiProxy?.message?.value || 'Too many API proxy requests, please try again later' },
+  windowMs: config.limits?.apiProxy?.windowMs?.value || 60 * 1000,
+  max: config.limits?.apiProxy?.max?.value || 2000,
+  message: { error: config.limits?.apiProxy?.message?.value || 'Too many API proxy requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Real-time operations - Lenient (maintain VNC/terminal functionality)
 const realtimeLimiter = rateLimit({
-  windowMs: rlConfig.realtime?.windowMs?.value || 60 * 1000,
-  max: rlConfig.realtime?.max?.value || 250,
-  message: { error: rlConfig.realtime?.message?.value || 'Too many real-time requests, please try again later' },
+  windowMs: config.limits?.realtime?.windowMs?.value || 60 * 1000,
+  max: config.limits?.realtime?.max?.value || 250,
+  message: { error: config.limits?.realtime?.message?.value || 'Too many real-time requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Standard operations - Normal (general purpose)
 const standardLimiter = rateLimit({
-  windowMs: rlConfig.standard?.windowMs?.value || 15 * 60 * 1000,
-  max: rlConfig.standard?.max?.value || 1000,
-  message: { error: rlConfig.standard?.message?.value || 'Too many requests, please try again later' },
+  windowMs: config.limits?.standard?.windowMs?.value || 15 * 60 * 1000,
+  max: config.limits?.standard?.max?.value || 1000,
+  message: { error: config.limits?.standard?.message?.value || 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Static file serving - High limit (prevent file system abuse, CodeQL flagged endpoints)
 const staticFileLimiter = rateLimit({
-  windowMs: rlConfig.staticFiles?.windowMs?.value || 15 * 60 * 1000,
-  max: rlConfig.staticFiles?.max?.value || 5000,
-  message: { error: rlConfig.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
+  windowMs: config.limits?.staticFiles?.windowMs?.value || 15 * 60 * 1000,
+  max: config.limits?.staticFiles?.max?.value || 5000,
+  message: { error: config.limits?.staticFiles?.message?.value || 'Too many static file requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
