@@ -652,9 +652,9 @@ const Navbar = () => {
 
   return (
     <div className='hero-head'>
-      <nav className='level' role='navigation' aria-label='main navigation'>
+      <nav className='navbar' role='navigation' aria-label='main navigation'>
         <Modal />
-        <div className='level-left'>
+        <div className='navbar-brand'>
           {currentServer ? (
             <div className='dropdown is-hoverable'>
               <button className='dropdown-trigger button px-2' aria-haspopup='true' aria-controls='dropdown-menu'>
@@ -712,7 +712,13 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-        <div className='level-right'>{currentZone ? <ZoneControlDropdown /> : <HostControlDropdown />}</div>
+        <div className='navbar-menu'>
+          <div className='navbar-end'>
+            <div className='navbar-item'>
+              {currentZone ? <ZoneControlDropdown /> : <HostControlDropdown />}
+            </div>
+          </div>
+        </div>
       </nav>
     </div>
   );
