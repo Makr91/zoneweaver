@@ -48,6 +48,9 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass/themes/dark";
 @use "bulma/sass/themes/setup";
 
+// Import Bulma Switch Control using @use
+@use "node_modules/bulma-switch-control/bulma-switch-control";
+
 // Implement Bulma's theme system
 // System theme (follows OS preference)
 @include cv.system-theme($name: "dark") {
@@ -67,10 +70,6 @@ $beige-lighter: #eff0eb;
   @include light.light-theme;
   @include setup.setup-theme;
 }
-
-// Import Bulma Switch Control first, before any other rules
-@import "node_modules/bulma-switch-control/bulma-switch-control";
-
 
 .dropdown-content {
   border-width: var(--bulma-control-border-width);
