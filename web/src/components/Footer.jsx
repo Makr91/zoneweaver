@@ -15,7 +15,6 @@ const Footer = () => {
 
   const handleToggle = () => {
     if (!footerIsActive) {
-      // When expanding from collapsed, restore to 130px to prevent minimize loop
       userSettings.setFooterHeight(130);
     }
     setFooterIsActive(!footerIsActive);
@@ -74,7 +73,6 @@ const Footer = () => {
     if (footerIsActive) {
       userSettings.setFooterHeight(size.height);
       
-      // Only handle minimizing - no auto-restore via dragging
       if (size.height <= 120) {
         setFooterIsActive(false);
       }
@@ -97,7 +95,6 @@ const Footer = () => {
 
   const effectiveHeight = footerIsActive ? userSettings.footerHeight : 30;
 
-  // Header component that's always visible (separate from resize handle)
   const FooterHeader = () => {
     return (
       <nav className='level mb-0'>
@@ -129,7 +126,6 @@ const Footer = () => {
         </div>
         <div className='level-item is-justify-content-space-between'>
           <div className='icon zw-footer-grip-visual'>
-            {/* Empty space - grip moved to handle overlay */}
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
@@ -175,30 +171,28 @@ const Footer = () => {
     );
   };
 
-  // 3-section handle for ResizableBox - only middle section draggable
-  const FooterHandle = () => {
-    return (
-      <div className="level mb-0 is-mobile">
-        {/* Left section - flex-grow to take up space */}
-        <div className="level-item is-flex-grow-1">
-        </div>
-        {/* Middle section - draggable grip area */}
-        <div className="level-item button is-small is-dark is-justify-content-center react-resizable-handle react-resizable-handle-n">
-          <span className='icon'>
+
+  return (
+    <div className="hero-foot is-relative">
+      <FooterHeader />
+      
+      {footerIsActive && (
+        <div 
+          className="button is-small is-dark react-resizable-handle react-resizable-handle-n" 
+          style={{
+            position: 'absolute',
+            top: '0',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '60px',
+            zIndex: 10
+          }}
+        >
+          <span className="icon">
             <i className="fas fa-solid fa-grip-lines"></i>
           </span>
         </div>
-        {/* Right section - flex-grow to take up space */}
-        <div className="level-item is-flex-grow-1">
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="hero-foot" style={{ position: 'relative' }}>
-      {/* Header always visible, positioned above ResizableBox */}
-      <FooterHeader />
+      )}
       
       <ResizableBox
         onResize={handleResize}
@@ -209,7 +203,6 @@ const Footer = () => {
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
-        handle={FooterHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}

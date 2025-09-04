@@ -160,7 +160,7 @@ const HostShell = () => {
     <div className="is-fullheight is-fullwidth">
       <div
         ref={ref}
-        className="terminal xterm is-fullheight is-fullwidth"
+        className="is-fullheight is-fullwidth"
       />
       
       {!isReady && (
