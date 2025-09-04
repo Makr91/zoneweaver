@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Sequelize } from 'sequelize';
 import { loadConfig } from '../utils/config.js';
+import { createMigrationHelper } from '../config/DatabaseMigrations.js';
 
 let config;
 try {
@@ -100,16 +101,15 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
-// Test database connection and sync
+// Test database connection and run migrations
 try {
   await sequelize.authenticate();
   console.log(`✅ Database connection established successfully (${sequelizeConfig.dialect})`);
   
-  // Sync database in development
-  if (process.env.NODE_ENV !== 'production') {
-    await sequelize.sync({ alter: true });
-    console.log('✅ Database synchronized');
-  }
+  // Initialize automatic migration system
+  const migrationHelper = createMigrationHelper(sequelize);
+  await migrationHelper.setupDatabase();
+  
 } catch (error) {
   console.error('❌ Unable to connect to database:', error.message);
   throw error;
