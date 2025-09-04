@@ -24,6 +24,9 @@ $brown: #757763;
 $beige-light: #d0d1cd;
 $beige-lighter: #eff0eb;
 
+// Import Bulma Switch Control before Bulma
+@import "node_modules/bulma-switch-control/bulma-switch-control";
+
 @use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
@@ -136,6 +139,9 @@ $beige-lighter: #eff0eb;
   --bulma-success-light: #4a5568;   // Darker success light
   --bulma-warning-light: #4a5568;   // Darker warning light
   --bulma-danger-light: #4a5568;    // Darker danger light
+  
+  // Fix tag background lightness for dark mode
+  --bulma-tag-background-l: 25%;   // Much darker for better contrast in dark mode
 }
 
 // Need a size smaller than 7

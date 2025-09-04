@@ -489,7 +489,7 @@ const ZoneweaverSettings = () => {
           accept: '.crt,.pem,.cer',
           description: 'SSL certificate file (.crt, .pem, or .cer format)'
         };
-      } else if (path.includes('ssl_ca_path')) {
+      } else if (path.includes('ssl_ca_path') || path.includes('ca_cert') || path.includes('ca_certificate')) {
         return {
           type: 'CA Certificate',
           icon: 'fas fa-shield-alt',
@@ -678,11 +678,22 @@ const ZoneweaverSettings = () => {
               {field.options && field.options.map((option, index) => {
                 // Handle both string and object options
                 const optionValue = typeof option === 'object' ? option.value : option;
-                const optionLabel = typeof option === 'object' ? option.label : option;
+                let optionLabel = typeof option === 'object' ? option.label : option;
                 
                 // Skip empty/null values unless they're intentionally empty strings
                 if (optionValue === null || optionValue === undefined) {
                   return null;
+                }
+                
+                // Special handling for CORS allow_origin field
+                if (field.path === 'security.cors.allow_origin') {
+                  if (optionValue === true) {
+                    optionLabel = 'Allow all origins in whitelist';
+                  } else if (optionValue === false) {
+                    optionLabel = 'Deny all origins';
+                  } else if (optionValue === 'specific') {
+                    optionLabel = 'Use exact whitelist matching';
+                  }
                 }
                 
                 return (
@@ -1200,29 +1211,30 @@ const ZoneweaverSettings = () => {
                               </label>
                               <div className='control'>
                                 <div className='field'>
-                                  <label className='checkbox is-large'>
-                                    <input
-                                      type='checkbox'
-                                      checked={!!values['logging.enabled']}
-                                      onChange={(e) => handleFieldChange('logging.enabled', e.target.checked)}
-                                      disabled={loading}
-                                    />
-                                    <span className='ml-3 has-text-weight-normal'>
-                                      {values['logging.enabled'] ? 
-                                        <span className='has-text-success'>
-                                          <span className='icon is-small'>
-                                            <i className='fas fa-check-circle'></i>
-                                          </span>
-                                          Logging is enabled
-                                        </span> : 
-                                        <span className='has-text-danger'>
-                                          <span className='icon is-small'>
-                                            <i className='fas fa-times-circle'></i>
-                                          </span>
-                                          Logging is disabled
+                                  <input
+                                    id='switch-logging-enabled'
+                                    type='checkbox'
+                                    name='switch-logging-enabled'
+                                    className='switch is-medium is-success'
+                                    checked={!!values['logging.enabled']}
+                                    onChange={(e) => handleFieldChange('logging.enabled', e.target.checked)}
+                                    disabled={loading}
+                                  />
+                                  <label htmlFor='switch-logging-enabled' className='has-text-weight-semibold'>
+                                    {values['logging.enabled'] ? 
+                                      <span className='has-text-success'>
+                                        <span className='icon is-small mr-2'>
+                                          <i className='fas fa-check-circle'></i>
                                         </span>
-                                      }
-                                    </span>
+                                        Logging is enabled
+                                      </span> : 
+                                      <span className='has-text-danger'>
+                                        <span className='icon is-small mr-2'>
+                                          <i className='fas fa-times-circle'></i>
+                                        </span>
+                                        Logging is disabled
+                                      </span>
+                                    }
                                   </label>
                                 </div>
                               </div>

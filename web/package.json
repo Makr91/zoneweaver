@@ -21,7 +21,7 @@
     "axios": "^1.7.0",
     "bulma": "^1.0.0",
     "bulma-o-steps": "^1.1.0",
-    "bulma-switch": "^2.0.4",
+    "bulma-switch-control": "^1.2.2",
     "dagre": "^0.8.5",
     "elkjs": "^0.10.0",
     "highcharts": "^12.3.0",
