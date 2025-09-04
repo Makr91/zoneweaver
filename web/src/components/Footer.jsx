@@ -97,9 +97,10 @@ const Footer = () => {
 
   const effectiveHeight = footerIsActive ? userSettings.footerHeight : 30;
 
-  const ResizeHandle = () => {
+  // Header component that's always visible (separate from resize handle)
+  const FooterHeader = () => {
     return (
-      <nav className='level react-resizable-handle react-resizable-handle-n mb-0'>
+      <nav className='level mb-0' style={{ position: 'relative' }}>
         <div className='level-item is-justify-content-flex-start'>
           <div className='pl-1'>
             <a href='https://zoneweaver.startcloud.com/' className='has-text-primary'>
@@ -127,8 +128,8 @@ const Footer = () => {
           </div>
         </div>
         <div className='level-item is-justify-content-space-between'>
-          <div className='icon'>
-            <i className={footerIsActive ? "fas fa-solid fa-grip-lines react-resizable-handle-n-icon" : ""}></i>
+          <div className='icon zw-footer-grip-visual'>
+            <i className={`fas fa-solid fa-grip-lines ${footerIsActive ? 'has-text-grey' : 'has-text-grey-light'}`}></i>
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
@@ -170,12 +171,33 @@ const Footer = () => {
             )}
           </div>
         </div>
+        
+        {/* Floating resize handle overlay - only shows when footer is active */}
+        {footerIsActive && (
+          <div 
+            className="zw-footer-resize-overlay react-resizable-handle react-resizable-handle-n"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '60px',
+              height: '30px',
+              zIndex: 10,
+              cursor: 'ns-resize',
+              pointerEvents: 'auto'
+            }}
+          />
+        )}
       </nav>
     );
   };
 
   return (
-    <div className="hero-foot">
+    <div className="hero-foot" style={{ position: 'relative' }}>
+      {/* Header always visible, positioned above ResizableBox */}
+      <FooterHeader />
+      
       <ResizableBox
         onResize={handleResize}
         className={!footerIsActive ? "is-footer-minimized" : ""}
@@ -185,7 +207,7 @@ const Footer = () => {
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
-        handle={ResizeHandle()}
+        handle={footerIsActive ? <div className="react-resizable-handle react-resizable-handle-n" style={{ position: 'absolute', top: 0, width: '100%', height: '30px', background: 'transparent' }} /> : undefined}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}

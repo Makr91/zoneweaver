@@ -290,6 +290,40 @@ $beige-lighter: #eff0eb;
   cursor: default !important;
 }
 
+// Footer floating resize overlay
+.zw-footer-resize-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 60px !important;
+  height: 30px !important;
+  z-index: 10 !important;
+  cursor: ns-resize !important;
+  pointer-events: auto !important;
+  background: transparent !important;
+  
+  // Visual feedback on hover
+  &:hover {
+    background: rgba(var(--bulma-scheme-main-ter-h), var(--bulma-scheme-main-ter-s), var(--bulma-scheme-main-ter-l), 0.1) !important;
+  }
+}
+
+// Visual grip area styling
+.zw-footer-grip-visual {
+  width: 60px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  pointer-events: none !important; // Prevent interference with overlay
+}
+
+// Ensure footer header positioning
+.hero-foot nav.level {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
 // Fix for custom icon fonts
 .icon-zoneweaver-logo {
   font-family: 'fontello' !important;
