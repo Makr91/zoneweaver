@@ -10,6 +10,7 @@ import db from "./models/index.js";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { specs, swaggerUi } from "./config/swagger.js";
 import { loadConfig } from "./utils/config.js";
+import passport from "./auth/passport.js";
 
 // Prevent server crashes from unhandled WebSocket errors
 process.on('uncaughtException', (err) => {
@@ -56,6 +57,9 @@ app.set("trust proxy", config.environment.trust_proxy);
 app.use(cors(corsOptions));
 app.options("*splat", cors(corsOptions));
 app.use(express.json());
+
+// Initialize Passport.js
+app.use(passport.initialize());
 
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));

@@ -8,7 +8,7 @@ import rateLimit from "express-rate-limit";
 import AuthController from "../controllers/AuthController.js";
 import ServerController from "../controllers/ServerController.js";
 import SettingsController from "../controllers/SettingsController.js";
-import { authenticate, requireAdmin, requireSuperAdmin, optionalAuth } from "../middleware/auth.js";
+import { authenticate, requireAdmin, requireSuperAdmin, optionalAuth } from "../auth/auth.js";
 import { loadConfig } from "../utils/config.js";
 
 const router = express.Router();

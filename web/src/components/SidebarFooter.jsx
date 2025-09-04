@@ -25,7 +25,7 @@ const SidebarFooter = () => {
 
   const handleProfileClick = (e) => {
     e.preventDefault();
-    navigate('profile');
+    navigate('/ui/profile');
   };
 
   useEffect(() => {

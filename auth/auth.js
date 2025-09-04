@@ -1,68 +1,49 @@
-import jwt from 'jsonwebtoken';
+import passport from '../config/passport.js';
 import { config } from '../index.js';
 import db from '../models/index.js';
 
 /**
- * Authentication middleware for protecting routes
+ * Authentication middleware for protecting routes (now using Passport.js)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-export const authenticateToken = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-      return res.status(401).json({ 
+export const authenticateToken = (req, res, next) => {
+  passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    if (err) {
+      console.error('Token authentication error:', err);
+      return res.status(500).json({ 
         success: false, 
-        message: 'Access token required' 
+        message: 'Authentication error' 
       });
     }
 
-    // Verify JWT token
-    const decoded = jwt.verify(token, config.security.jwt_secret || 'fallback-secret');
-    
-    // Get fresh user data to ensure user is still active
-    const { user: UserModel } = db;
-    const user = await UserModel.findByPk(decoded.userId);
-    
     if (!user) {
+      // Map Passport.js info to existing error messages for consistency
+      let message = 'Invalid token';
+      
+      if (info && info.message) {
+        if (info.message.includes('user not found')) {
+          message = 'Invalid token - user not found';
+        } else if (info.name === 'TokenExpiredError' || info.message.includes('expired')) {
+          message = 'Token expired';
+        } else if (info.name === 'JsonWebTokenError') {
+          message = 'Invalid token';
+        } else if (info.message.includes('required') || info.message.includes('No auth token')) {
+          message = 'Access token required';
+        }
+      }
+      
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid token - user not found' 
+        message 
       });
     }
 
-    // Add user info to request object
-    req.user = {
-      userId: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role
-    };
-
+    // Set user on request (same format as before)
+    req.user = user;
     next();
-  } catch (error) {
-    console.error('Token authentication error:', error);
-    
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid token' 
-      });
-    } else if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Token expired' 
-      });
-    }
-    
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Authentication error' 
-    });
-  }
+  })(req, res, next);
 };
 
 
@@ -159,34 +140,19 @@ export const requireSuperAdmin = (req, res, next) => {
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-export const optionalAuth = async (req, res, next) => {
-  try {
-    // Try JWT authentication only (sessions removed for CSRF security)
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, config.security.jwt_secret || 'fallback-secret');
-        const { user: UserModel } = db;
-        const user = await UserModel.findByPk(decoded.userId);
-        
-        if (user) {
-          req.user = {
-            userId: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role
-          };
-        }
-      } catch (error) {
-        // Ignore JWT errors for optional auth
-      }
-    }
-
-    next();
-  } catch (error) {
-    // Continue without authentication for optional auth
-    next();
+export const optionalAuth = (req, res, next) => {
+  // Only try authentication if Authorization header is present
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next(); // No auth header, continue without user
   }
+
+  passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    // Always continue to next middleware, regardless of auth result
+    if (user) {
+      req.user = user; // Set user if authentication succeeded
+    }
+    // Ignore errors and failed authentication for optional auth
+    next();
+  })(req, res, next);
 };
