@@ -252,18 +252,30 @@ async function determineUserOrganization(email, profile) {
 
   // 2. Check domain mapping
   if (config.authentication?.external_domain_mapping_enabled?.value) {
-    const mappings = config.authentication.external_domain_mappings?.value || {};
-    
-    for (const [orgCode, domains] of Object.entries(mappings)) {
-      if (Array.isArray(domains) && domains.includes(domain)) {
-        console.log(`🗺️ Found domain mapping: ${domain} -> ${orgCode}`);
-        
-        const org = await OrganizationModel.findByOrganizationCode(orgCode);
-        if (org) {
-          console.log(`✅ Using mapped organization: ${org.name} (${org.id})`);
-          return org.id;
+    try {
+      const mappingsJson = config.authentication.external_domain_mappings?.value || '{}';
+      console.log(`🔍 Raw domain mappings config: ${mappingsJson}`);
+      
+      const mappings = JSON.parse(mappingsJson);
+      console.log(`🔍 Parsed domain mappings:`, mappings);
+      
+      for (const [orgCode, domains] of Object.entries(mappings)) {
+        console.log(`🔍 Checking org code ${orgCode} with domains:`, domains);
+        if (Array.isArray(domains) && domains.includes(domain)) {
+          console.log(`🗺️ Found domain mapping: ${domain} -> ${orgCode}`);
+          
+          const org = await OrganizationModel.findByOrganizationCode(orgCode);
+          if (org) {
+            console.log(`✅ Using mapped organization: ${org.name} (${org.id})`);
+            return org.id;
+          } else {
+            console.log(`❌ Organization with code ${orgCode} not found in database`);
+          }
         }
       }
+    } catch (error) {
+      console.error(`❌ Failed to parse domain mappings JSON:`, error.message);
+      console.error(`❌ Raw value:`, config.authentication.external_domain_mappings?.value);
     }
   }
 
