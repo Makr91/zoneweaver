@@ -383,6 +383,82 @@ class DatabaseMigrations {
     }
 
     /**
+     * Add missing timestamp columns to existing tables
+     * @description Adds created_at and updated_at columns to tables that are missing them
+     * @returns {Promise<boolean>} True if migration successful
+     */
+    async addTimestampColumns() {
+        console.log('🔧 Adding missing timestamp columns to existing tables...');
+        
+        const tablesToUpdate = ['users', 'organizations', 'invitations', 'servers'];
+        let allSuccessful = true;
+        
+        for (const tableName of tablesToUpdate) {
+            const tableExists = await this.tableExists(tableName);
+            if (!tableExists) {
+                console.log(`  ⚠️ Table ${tableName} does not exist, skipping...`);
+                continue;
+            }
+            
+            console.log(`  + Checking ${tableName} table for timestamp columns...`);
+            
+            // Add created_at column
+            const createdAtSuccess = await this.addColumnIfNotExists(tableName, 'created_at', {
+                type: Sequelize.DATE,
+                allowNull: true,
+                defaultValue: Sequelize.NOW,
+                comment: 'Record creation timestamp'
+            });
+            
+            // Add updated_at column  
+            const updatedAtSuccess = await this.addColumnIfNotExists(tableName, 'updated_at', {
+                type: Sequelize.DATE,
+                allowNull: true,
+                defaultValue: Sequelize.NOW,
+                comment: 'Record last update timestamp'
+            });
+            
+            if (!createdAtSuccess || !updatedAtSuccess) {
+                allSuccessful = false;
+            }
+            
+            // Set default values for existing records
+            if (createdAtSuccess || updatedAtSuccess) {
+                try {
+                    console.log(`  + Setting default timestamps for existing ${tableName} records...`);
+                    const now = new Date().toISOString();
+                    
+                    if (createdAtSuccess) {
+                        await this.sequelize.query(
+                            `UPDATE ${tableName} SET created_at = ? WHERE created_at IS NULL`,
+                            { replacements: [now] }
+                        );
+                    }
+                    
+                    if (updatedAtSuccess) {
+                        await this.sequelize.query(
+                            `UPDATE ${tableName} SET updated_at = ? WHERE updated_at IS NULL`,
+                            { replacements: [now] }
+                        );
+                    }
+                    
+                    console.log(`  ✅ Updated timestamp defaults for ${tableName}`);
+                } catch (error) {
+                    console.warn(`  ⚠️ Failed to set default timestamps for ${tableName}:`, error.message);
+                }
+            }
+        }
+        
+        if (allSuccessful) {
+            console.log('✅ Timestamp columns migration completed successfully');
+        } else {
+            console.warn('⚠️ Timestamp columns migration completed with some errors');
+        }
+        
+        return allSuccessful;
+    }
+
+    /**
      * Run all pending migrations
      * @description Executes all necessary database migrations for Passport.js authentication
      * @returns {Promise<boolean>} True if all migrations successful
@@ -391,6 +467,9 @@ class DatabaseMigrations {
         console.log('🔄 Running Passport.js database migrations...');
         
         try {
+            // Add missing timestamp columns first (fixes JWT authentication)
+            await this.addTimestampColumns();
+            
             // Migrate users table (add auth fields)
             await this.migrateUsersTable();
             
