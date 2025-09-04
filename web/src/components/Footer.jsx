@@ -73,7 +73,7 @@ const Footer = () => {
     if (footerIsActive) {
       userSettings.setFooterHeight(size.height);
       
-      if (size.height <= 120) {
+      if (size.height <= 100) {
         setFooterIsActive(false);
       }
       
@@ -93,7 +93,7 @@ const Footer = () => {
     };
   }, []);
 
-  const effectiveHeight = footerIsActive ? userSettings.footerHeight : 30;
+  const effectiveHeight = footerIsActive ? userSettings.footerHeight : 0;
 
   const FooterHeader = () => {
     return (
@@ -203,7 +203,7 @@ const Footer = () => {
         resizeHandles={footerIsActive ? ["n"] : []}
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
-        minConstraints={[Infinity, 30]}
+        minConstraints={[Infinity, 0]}
         handle={FooterHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
