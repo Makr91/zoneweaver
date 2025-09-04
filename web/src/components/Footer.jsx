@@ -151,20 +151,18 @@ const Footer = () => {
                 </span>
               </button>
             </p>
-            {showShellDropdown && (
-              <div className="dropdown is-right">
-                <div className="dropdown-menu">
-                  <div className="dropdown-content">
-                    <a className="dropdown-item is-clickable" onClick={handleRestartShell}>
-                      <span className="icon mr-2">
-                        <i className="fas fa-refresh"></i>
-                      </span>
-                      <span>Restart Shell</span>
-                    </a>
-                  </div>
+            <div className={`dropdown ${showShellDropdown ? 'is-active' : ''} is-right`}>
+              <div className="dropdown-menu">
+                <div className="dropdown-content">
+                  <a className="dropdown-item is-clickable" onClick={handleRestartShell}>
+                    <span className="icon mr-2">
+                      <i className="fas fa-refresh"></i>
+                    </span>
+                    <span>Restart Shell</span>
+                  </a>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </nav>
@@ -174,15 +172,14 @@ const Footer = () => {
   // Footer handle that positions itself to overlay the header
   const FooterHandle = () => {
     return (
-      <div className="is-small is-dark react-resizable-handle react-resizable-handle-n" 
+      <div className="button is-small is-dark react-resizable-handle react-resizable-handle-n" 
            style={{
              position: 'absolute',
              top: '-30px',
              left: '50%',
              transform: 'translateX(-50%)',
              width: '60px',
-             zIndex: 10,
-             height: '50px'
+             zIndex: 10
            }}>
         <span className="icon">
           <i className="fas fa-solid fa-grip-lines"></i>
