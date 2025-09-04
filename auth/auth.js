@@ -1,4 +1,4 @@
-import passport from '../config/passport.js';
+import passport from '../auth/passport.js';
 import { config } from '../index.js';
 import db from '../models/index.js';
 
