@@ -69,15 +69,10 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
               <td>{server.entityName}</td>
               <td>
                 <div className='field has-addons'>
-                  <div className='control'>
-                    <span className='tag is-light'>
-                      {maskApiKey(server.api_key)}
-                    </span>
-                  </div>
                   {server.api_key && (
                     <div className='control'>
                       <button
-                        className={`button is-small ${copiedKey === server.id ? 'is-success' : 'is-light'}`}
+                        className={`button is-small ${copiedKey === server.id ? 'is-success' : 'is-info'}`}
                         onClick={() => copyApiKey(server.api_key, server.id)}
                         title={copiedKey === server.id ? 'Copied!' : 'Copy API Key'}
                         disabled={loading}
@@ -88,6 +83,11 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
                       </button>
                     </div>
                   )}
+                  <div className='control'>
+                    <span className='tag is-primary is-medium'>
+                      {maskApiKey(server.api_key)}
+                    </span>
+                  </div>
                 </div>
               </td>
               <td>

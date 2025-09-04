@@ -2,6 +2,36 @@
 # This file is installed to /etc/zoneweaver/config.yaml
 # All settings use metadata format for configuration-driven UI
 
+# Section metadata - descriptions for each settings category
+_sections:
+  Frontend:
+    description: "Configure user interface behavior, appearance, and client-side functionality."
+    icon: "fas fa-desktop"
+  Server:
+    description: "Configure server networking, SSL certificates, and connection settings."
+    icon: "fas fa-server"
+  Security:
+    description: "Configure Cross-Origin Resource Sharing (CORS) and access control policies."
+    icon: "fas fa-lock"
+  Database:
+    description: "Configure database connection, pooling, and storage settings."
+    icon: "fas fa-database"
+  Mail:
+    description: "Configure SMTP email settings for notifications and user invitations."
+    icon: "fas fa-envelope"
+  Authentication:
+    description: "Configure user authentication methods, security policies, and external providers."
+    icon: "fas fa-shield-alt"
+  Logging:
+    description: "Configure application logging levels and output settings."
+    icon: "fas fa-file-alt"
+  Performance:
+    description: "Configure rate limiting, resource usage limits, and performance optimization."
+    icon: "fas fa-tachometer-alt"
+  Integrations:
+    description: "Configure third-party service integrations and API connections."
+    icon: "fas fa-puzzle-piece"
+
 frontend:
   name:
     type: string
@@ -56,40 +86,61 @@ frontend:
     section: "Frontend"
     required: true
     order: 7
+  trust_proxy:
+    type: integer
+    value: 1
+    min: 0
+    max: 10
+    description: "Trust proxy level for Express.js: 0=Direct connection (no proxies), 1=Behind single proxy (nginx/Apache/CloudFlare), 2=Behind 2 proxies (load balancer + nginx), 3+=Behind multiple proxies (complex setups). Controls X-Forwarded headers trust for accurate client IPs."
+    section: "Frontend"
+    required: true
+    order: 8
 
 mail:
   smtp_host:
     type: string
     value: localhost
-    description: "SMTP server hostname (e.g., smtp.gmail.com)"
+    description: "SMTP server hostname (e.g., smtp.gmail.com, smtp.office365.com)"
+    section: "Mail"
     required: true
+    order: 1
   smtp_port:
     type: integer
     value: 587
     min: 1
     max: 65535
-    description: "SMTP server port (587 for TLS, 465 for SSL, 25 for plain)"
+    description: "SMTP server port: 587=TLS/STARTTLS (recommended), 465=SSL/TLS (secure), 25=plain (not recommended)"
+    section: "Mail"
     required: true
+    order: 2
   smtp_secure:
     type: boolean
     value: false
-    description: "Use SSL/TLS encryption (true for port 465, false for 587)"
+    description: "Use SSL/TLS encryption: true=SSL (port 465), false=STARTTLS (port 587)"
+    section: "Mail"
     required: true
+    order: 3
   smtp_user:
     type: string
     value: ""
-    description: "SMTP authentication username (usually your email address)"
+    description: "SMTP authentication username (usually your email address or app-specific username)"
+    section: "Mail"
     required: false
+    order: 4
   smtp_password:
     type: password
     value: ""
-    description: "SMTP authentication password (use app passwords for Gmail)"
+    description: "SMTP authentication password (use app-specific passwords for Gmail/Outlook)"
+    section: "Mail"
     required: false
+    order: 5
   smtp_from:
     type: string
     value: "Zoneweaver <noreply@localhost>"
-    description: "From address for outgoing emails"
+    description: "From address for outgoing emails (must be authorized by SMTP server)"
+    section: "Mail"
     required: true
+    order: 6
 
 server:
   hostname:
@@ -131,52 +182,56 @@ server:
     depends_on: ssl_enabled
     show_when: [true]
 
-cors:
-  whitelist:
-    type: array
-    value: 
-      - "https://localhost:3443"
-      - "https://localhost"
-    description: "List of allowed CORS origins (one per line)"
-    required: true
-  allow_origin:
-    type: select
-    value: true
-    options: [true, false, "specific"]
-    description: "CORS origin policy"
-    required: true
-  preflight_continue:
-    type: boolean
-    value: true
-    description: "Pass CORS preflight response to next handler"
-    required: true
-  credentials:
-    type: boolean
-    value: true
-    description: "Allow credentials in CORS requests"
-    required: true
-
-environment:
-  trust_proxy:
-    type: integer
-    value: 1
-    min: 0
-    max: 10
-    description: "Number of proxy servers to trust (0 = none, 1+ = trust N proxies)"
-    required: true
+security:
+  cors:
+    whitelist:
+      type: array
+      value: 
+        - "https://localhost:3443"
+        - "https://localhost"
+      description: "List of allowed CORS origins (one per line). CORS (Cross-Origin Resource Sharing) controls which web origins can access your API from browsers. Add each allowed domain/protocol/port combination on a separate line."
+      section: "Security"
+      required: true
+      order: 1
+    allow_origin:
+      type: select
+      value: true
+      options: [true, false, "specific"]
+      description: "CORS origin policy: true=allow all origins in whitelist, false=deny all, specific=use exact whitelist matching"
+      section: "Security"
+      required: true
+      order: 2
+    preflight_continue:
+      type: boolean
+      value: true
+      description: "Pass CORS preflight response to next handler (recommended: true for most configurations)"
+      section: "Security"
+      required: true
+      order: 3
+    credentials:
+      type: boolean
+      value: true
+      description: "Allow credentials (cookies, authorization headers) in CORS requests (required for authenticated API calls)"
+      section: "Security"
+      required: true
+      order: 4
 
 logging:
   level:
     type: select
     value: info
     options: ["error", "warn", "info", "debug"]
-    description: "Minimum logging level"
+    description: "Minimum logging level: error=critical issues only, warn=errors + warnings, info=general operations, debug=detailed diagnostics"
+    section: "Logging"
     required: true
+    order: 1
   enabled:
     type: boolean
     value: true
-    description: "Enable application logging"
+    description: "Enable application logging to console and files (disable only for testing)"
+    section: "Logging"
     required: true
+    order: 2
 
 # Security & Performance Limits Configuration
 limits:
@@ -186,111 +241,204 @@ limits:
     value: 10
     min: 1
     max: 1000
-    description: "Maximum number of servers a user can manage"
+    description: "Maximum number of servers a single user can manage (prevents resource abuse)"
+    section: "Performance"
+    subsection: "General Limits"
     required: true
+    order: 1
   
-  # Rate Limiting Configuration (CodeQL Security Fix)
+  # Authentication Rate Limiting (CodeQL Security Fix)
   authentication:
     windowMs:
       type: integer
       value: 900000
-      description: "Authentication rate limit window in milliseconds (15 minutes)"
+      description: "Time window in milliseconds (900000 = 15 minutes)"
+      section: "Performance"
+      subsection: "Authentication Rate Limits"
       required: true
+      validation:
+        min: 60000
+        max: 3600000
+      order: 1
     max:
       type: integer
       value: 25
-      description: "Maximum authentication attempts per window (5X higher limit)"
+      description: "Maximum login/registration attempts allowed per time window"
+      section: "Performance"
+      subsection: "Authentication Rate Limits"
       required: true
+      validation:
+        min: 5
+        max: 1000
+      order: 2
     message:
       type: string
       value: "Too many authentication attempts, please try again later"
-      description: "Error message for authentication rate limit"
+      description: "Error message shown when rate limit is exceeded"
+      section: "Performance"
+      subsection: "Authentication Rate Limits"
       required: true
+      order: 3
   
   admin:
     windowMs:
       type: integer
       value: 900000
-      description: "Admin operations rate limit window in milliseconds (15 minutes)"
+      description: "Time window in milliseconds (900000 = 15 minutes)"
+      section: "Performance"
+      subsection: "Administrative Rate Limits"
       required: true
+      validation:
+        min: 60000
+        max: 3600000
+      order: 1
     max:
       type: integer
       value: 500
-      description: "Maximum admin requests per window (5X higher limit)"
+      description: "Maximum admin operations allowed per time window"
+      section: "Performance"
+      subsection: "Administrative Rate Limits"
       required: true
+      validation:
+        min: 10
+        max: 10000
+      order: 2
     message:
       type: string
       value: "Too many admin requests, please try again later"
-      description: "Error message for admin rate limit"
+      description: "Error message shown when admin rate limit is exceeded"
+      section: "Performance"
+      subsection: "Administrative Rate Limits"
       required: true
+      order: 3
       
   apiProxy:
     windowMs:
       type: integer
       value: 60000
-      description: "API proxy rate limit window in milliseconds (1 minute)"
+      description: "Time window in milliseconds (60000 = 1 minute)"
+      section: "Performance"
+      subsection: "API Proxy Rate Limits"
       required: true
+      validation:
+        min: 10000
+        max: 600000
+      order: 1
     max:
       type: integer
       value: 100
-      description: "Maximum API proxy requests per window (5X higher limit)"
+      description: "Maximum API proxy requests allowed per time window"
+      section: "Performance"
+      subsection: "API Proxy Rate Limits"
       required: true
+      validation:
+        min: 10
+        max: 10000
+      order: 2
     message:
       type: string
       value: "Too many API proxy requests, please try again later"
-      description: "Error message for API proxy rate limit"
+      description: "Error message shown when API proxy rate limit is exceeded"
+      section: "Performance"
+      subsection: "API Proxy Rate Limits"
       required: true
+      order: 3
       
   realtime:
     windowMs:
       type: integer
       value: 60000
-      description: "Real-time operations rate limit window in milliseconds (1 minute)"
+      description: "Time window in milliseconds (60000 = 1 minute)"
+      section: "Performance"
+      subsection: "Real-time Rate Limits"
       required: true
+      validation:
+        min: 10000
+        max: 600000
+      order: 1
     max:
       type: integer
       value: 250
-      description: "Maximum real-time requests per window (5X higher limit)"
+      description: "Maximum real-time requests (VNC, terminal, WebSocket) per time window"
+      section: "Performance"
+      subsection: "Real-time Rate Limits"
       required: true
+      validation:
+        min: 50
+        max: 10000
+      order: 2
     message:
       type: string
       value: "Too many real-time requests, please try again later"
-      description: "Error message for real-time rate limit"
+      description: "Error message shown when real-time rate limit is exceeded"
+      section: "Performance"
+      subsection: "Real-time Rate Limits"
       required: true
+      order: 3
       
   standard:
     windowMs:
       type: integer
       value: 900000
-      description: "Standard operations rate limit window in milliseconds (15 minutes)"
+      description: "Time window in milliseconds (900000 = 15 minutes)"
+      section: "Performance"
+      subsection: "Standard Rate Limits"
       required: true
+      validation:
+        min: 60000
+        max: 3600000
+      order: 1
     max:
       type: integer
       value: 1000
-      description: "Maximum standard requests per window (5X higher limit)"
+      description: "Maximum standard API requests allowed per time window"
+      section: "Performance"
+      subsection: "Standard Rate Limits"
       required: true
+      validation:
+        min: 100
+        max: 100000
+      order: 2
     message:
       type: string
       value: "Too many requests, please try again later"
-      description: "Error message for standard rate limit"
+      description: "Error message shown when standard rate limit is exceeded"
+      section: "Performance"
+      subsection: "Standard Rate Limits"
       required: true
+      order: 3
       
   staticFiles:
     windowMs:
       type: integer
       value: 900000
-      description: "Static file serving rate limit window in milliseconds (15 minutes)"
+      description: "Time window in milliseconds (900000 = 15 minutes)"
+      section: "Performance"
+      subsection: "Static File Rate Limits"
       required: true
+      validation:
+        min: 60000
+        max: 3600000
+      order: 1
     max:
       type: integer
       value: 5000
-      description: "Maximum static file requests per window (5X higher limit for normal browsing)"
+      description: "Maximum static file requests (CSS, JS, images) per time window"
+      section: "Performance"
+      subsection: "Static File Rate Limits"
       required: true
+      validation:
+        min: 1000
+        max: 100000
+      order: 2
     message:
       type: string
       value: "Too many static file requests, please try again later"
-      description: "Error message for static file rate limit"
+      description: "Error message shown when static file rate limit is exceeded"
+      section: "Performance"
+      subsection: "Static File Rate Limits"
       required: true
+      order: 3
 
 # Authentication Configuration (Phase 3: LDAP Integration)
 authentication:
@@ -298,52 +446,76 @@ authentication:
     type: array
     value: ["local", "jwt"]
     description: "List of enabled authentication strategies"
+    section: "Authentication"
+    subsection: "General"
     required: true
+    order: 1
     
   default_strategy:
     type: select
     value: local
     options: ["local", "jwt", "ldap", "oidc"]
     description: "Default authentication strategy"
+    section: "Authentication"
+    subsection: "General"
     required: true
+    order: 2
   
   # JWT Strategy Settings
   jwt_secret:
     type: password
     value: "__JWT_SECRET_FROM_FILE__"
     description: "JWT signing secret (use strong random string)"
+    section: "Authentication"
+    subsection: "JWT Settings"
     required: true
+    order: 1
     
   jwt_expiration:
     type: string
     value: "24h"
     description: "JWT token expiration time (e.g., '24h', '7d', '1h')"
+    section: "Authentication"
+    subsection: "JWT Settings"
     required: true
+    order: 2
     
   jwt_issuer:
     type: string
     value: "zoneweaver"
     description: "JWT token issuer identifier"
+    section: "Authentication"
+    subsection: "JWT Settings"
     required: true
+    order: 3
     
   jwt_audience:
     type: string
     value: "zoneweaver-api"
     description: "JWT token audience identifier"
+    section: "Authentication"
+    subsection: "JWT Settings"
     required: true
+    order: 4
   
   # Local Authentication Settings
   local_enabled:
     type: boolean
     value: true
     description: "Enable username/password authentication"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 1
     
   local_require_email_verification:
     type: boolean
     value: false
     description: "Require email verification for new local accounts"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 2
     
   local_password_min_length:
     type: integer
@@ -351,31 +523,46 @@ authentication:
     min: 4
     max: 128
     description: "Minimum password length for local accounts"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 3
     
   local_password_require_uppercase:
     type: boolean
     value: false
     description: "Require uppercase letters in passwords"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 4
     
   local_password_require_lowercase:
     type: boolean
     value: false
     description: "Require lowercase letters in passwords"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 5
     
   local_password_require_numbers:
     type: boolean
     value: false
     description: "Require numbers in passwords"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 6
     
   local_password_require_symbols:
     type: boolean
     value: false
     description: "Require special symbols in passwords"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 7
     
   local_bcrypt_rounds:
     type: integer
@@ -383,7 +570,10 @@ authentication:
     min: 8
     max: 15
     description: "Bcrypt hashing rounds (higher = more secure but slower)"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 8
     
   local_session_timeout:
     type: integer
@@ -391,138 +581,192 @@ authentication:
     min: 1
     max: 168
     description: "Session timeout in hours"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 9
     
   local_allow_new_organizations:
     type: boolean
     value: true
     description: "Allow users to create new organizations during registration"
+    section: "Authentication"
+    subsection: "Local Authentication"
     required: true
+    order: 10
   
   # LDAP Configuration
   ldap_enabled:
     type: boolean
     value: false
     description: "Enable LDAP authentication"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: true
+    order: 1
     
   ldap_url:
     type: string
     value: "ldap://localhost:389"
     description: "LDAP server URL (ldap:// for plain, ldaps:// for SSL)"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 2
     
   ldap_bind_dn:
     type: string
     value: "cn=admin,dc=example,dc=com"
     description: "LDAP bind DN for authentication"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 3
     
   ldap_bind_credentials:
     type: password
     value: "admin_password"
     description: "LDAP bind password"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 4
     
   ldap_search_base:
     type: string
     value: "ou=users,dc=example,dc=com"
     description: "LDAP search base DN"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 5
     
   ldap_search_filter:
     type: string
     value: "(uid={{username}})"
     description: "LDAP search filter ({{username}} will be replaced)"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 6
     
   ldap_search_attributes:
     type: string
     value: "displayName,mail,memberOf"
     description: "Comma-separated list of LDAP attributes to retrieve"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 7
     
   ldap_tls_reject_unauthorized:
     type: boolean
     value: false
     description: "Reject unauthorized TLS certificates for LDAPS"
+    section: "Authentication"
+    subsection: "LDAP Configuration"
     required: false
     depends_on: ldap_enabled
     show_when: [true]
+    order: 8
   
   # External Provider Settings
   external_domain_mapping_enabled:
     type: boolean
     value: false
     description: "Enable automatic organization assignment based on email domain"
+    section: "Authentication"
+    subsection: "External Providers"
     required: true
+    order: 1
     
   external_provisioning_enabled:
     type: boolean
     value: false
     description: "Enable automatic user provisioning for external authentication"
+    section: "Authentication"
+    subsection: "External Providers"
     required: true
+    order: 2
     
   external_provisioning_policy:
     type: select
     value: "invite_only"
     options: ["invite_only", "auto_provision", "manual_approval", "disabled"]
     description: "Policy for handling new external users"
+    section: "Authentication"
+    subsection: "External Providers"
     required: false
     depends_on: external_provisioning_enabled
     show_when: [true]
+    order: 3
     
   external_provisioning_default_role:
     type: select
     value: "user"
     options: ["user", "admin", "super-admin"]
     description: "Default role for auto-provisioned users"
+    section: "Authentication"
+    subsection: "External Providers"
     required: false
     depends_on: external_provisioning_enabled
     show_when: [true]
+    order: 4
     
   external_provisioning_fallback_action:
     type: select
     value: "require_invite"
     options: ["require_invite", "create_org", "deny_access"]
     description: "Action when no organization mapping found"
+    section: "Authentication"
+    subsection: "External Providers"
     required: false
     depends_on: external_provisioning_enabled
     show_when: [true]
+    order: 5
     
   external_profile_sync_enabled:
     type: boolean
     value: true
     description: "Sync user profile from external providers"
+    section: "Authentication"
+    subsection: "External Providers"
     required: true
+    order: 6
     
   external_profile_update_on_login:
     type: boolean
     value: true
     description: "Update profile information on each login"
+    section: "Authentication"
+    subsection: "External Providers"
     required: false
     depends_on: external_profile_sync_enabled
     show_when: [true]
+    order: 7
     
   external_profile_sync_fields:
     type: string
     value: "displayName,email,groups"
     description: "Comma-separated list of profile fields to sync"
+    section: "Authentication"
+    subsection: "External Providers"
     required: false
     depends_on: external_profile_sync_enabled
     show_when: [true]
+    order: 8
 
 # Database configuration with UI metadata
 database:
@@ -531,99 +775,164 @@ database:
     value: sqlite
     options: ["sqlite", "mysql", "postgresql", "mariadb"]
     description: "Database type - SQLite for simple deployments, MySQL/PostgreSQL/MariaDB for production"
+    section: "Database"
+    subsection: "General"
     required: true
-  
-  # Connection pooling settings (non-SQLite databases)
-  pool:
-    max:
-      type: integer
-      value: 5
-      description: "Maximum number of connections in pool"
-      required: false
-      depends_on: dialect
-      show_when: ["mysql", "postgresql", "mariadb"]
-    min:
-      type: integer
-      value: 0
-      description: "Minimum number of connections in pool"
-      required: false
-      depends_on: dialect
-      show_when: ["mysql", "postgresql", "mariadb"]
-    acquire:
-      type: integer
-      value: 30000
-      description: "Maximum time (ms) to get connection before throwing error"
-      required: false
-      depends_on: dialect
-      show_when: ["mysql", "postgresql", "mariadb"]
-    idle:
-      type: integer
-      value: 10000
-      description: "Maximum time (ms) a connection can be idle before being released"
-      required: false
-      depends_on: dialect
-      show_when: ["mysql", "postgresql", "mariadb"]
+    order: 1
   
   # SQLite specific settings
   storage:
     type: string
     value: "/var/lib/zoneweaver/database/zoneweaver.db"
-    description: "SQLite database file path"
+    description: "SQLite database file path (absolute path recommended)"
+    section: "Database"
+    subsection: "SQLite Configuration"
     required: false
-    depends_on: dialect
-    show_when: sqlite
+    conditional:
+      field: "database.dialect"
+      value: "sqlite"
+    order: 1
   
   # Network database settings (MySQL, PostgreSQL, MariaDB)
   host:
     type: host
     value: localhost
-    description: "Database host"
+    description: "Database server hostname or IP address"
+    section: "Database"
+    subsection: "Network Database"
     required: false
-    depends_on: dialect
-    show_when: ["mysql", "postgresql", "mariadb"]
+    conditional:
+      field: "database.dialect"
+      value: ["mysql", "postgresql", "mariadb"]
+    order: 1
   
   port:
     type: integer
     value: 3306
-    description: "Database port (3306 for MySQL/MariaDB, 5432 for PostgreSQL)"
+    description: "Database server port (3306=MySQL/MariaDB, 5432=PostgreSQL)"
+    section: "Database"
+    subsection: "Network Database"
     required: false
-    depends_on: dialect
-    show_when: ["mysql", "postgresql", "mariadb"]
+    conditional:
+      field: "database.dialect"
+      value: ["mysql", "postgresql", "mariadb"]
+    validation:
+      min: 1
+      max: 65535
+    order: 2
   
   user:
     type: string
     value: zoneweaver
-    description: "Database user"
+    description: "Database username for authentication"
+    section: "Database"
+    subsection: "Network Database"
     required: false
-    depends_on: dialect
-    show_when: ["mysql", "postgresql", "mariadb"]
+    conditional:
+      field: "database.dialect"
+      value: ["mysql", "postgresql", "mariadb"]
+    order: 3
   
   password:
     type: password
     value: ""
-    description: "Database password"
+    description: "Database password for authentication"
+    section: "Database"
+    subsection: "Network Database"
     required: false
-    depends_on: dialect
-    show_when: ["mysql", "postgresql", "mariadb"]
+    conditional:
+      field: "database.dialect"
+      value: ["mysql", "postgresql", "mariadb"]
+    order: 4
   
   database_name:
     type: string
     value: zoneweaver
-    description: "Database name"
+    description: "Name of the database to connect to"
+    section: "Database"
+    subsection: "Network Database"
     required: false
-    depends_on: dialect
-    show_when: ["mysql", "postgresql", "mariadb"]
+    conditional:
+      field: "database.dialect"
+      value: ["mysql", "postgresql", "mariadb"]
+    order: 5
+
+  # Connection pooling settings (non-SQLite databases)
+  pool:
+    max:
+      type: integer
+      value: 5
+      description: "Maximum number of simultaneous database connections"
+      section: "Database"
+      subsection: "Connection Pooling"
+      required: false
+      conditional:
+        field: "database.dialect"
+        value: ["mysql", "postgresql", "mariadb"]
+      validation:
+        min: 1
+        max: 100
+      order: 1
+    min:
+      type: integer
+      value: 0
+      description: "Minimum number of idle connections to maintain"
+      section: "Database"
+      subsection: "Connection Pooling"
+      required: false
+      conditional:
+        field: "database.dialect"
+        value: ["mysql", "postgresql", "mariadb"]
+      validation:
+        min: 0
+        max: 20
+      order: 2
+    acquire:
+      type: integer
+      value: 30000
+      description: "Maximum time (ms) to wait for a connection before timeout"
+      section: "Database"
+      subsection: "Connection Pooling"
+      required: false
+      conditional:
+        field: "database.dialect"
+        value: ["mysql", "postgresql", "mariadb"]
+      validation:
+        min: 1000
+        max: 300000
+      order: 3
+    idle:
+      type: integer
+      value: 10000
+      description: "Maximum time (ms) a connection can be idle before being released"
+      section: "Database"
+      subsection: "Connection Pooling"
+      required: false
+      conditional:
+        field: "database.dialect"
+        value: ["mysql", "postgresql", "mariadb"]
+      validation:
+        min: 1000
+        max: 300000
+      order: 4
   
   # General database settings
   logging:
     type: boolean
     value: false
-    description: "Log SQL queries to console (for debugging)"
+    description: "Log SQL queries to console (for debugging - may impact performance)"
+    section: "Database"
+    subsection: "General"
     required: true
+    order: 2
 
-gravatar:
-  api_key:
-    type: string
-    value: ""
-    description: "Gravatar API key for enhanced profile images (get from https://gravatar.com/)"
-    required: false
+# Third-party integrations
+integrations:
+  gravatar:
+    api_key:
+      type: string
+      value: ""
+      description: "Gravatar API key for enhanced profile images and user info (get from https://gravatar.com/). Optional but provides better user experience with profile photos."
+      section: "Integrations"
+      required: false
+      order: 1

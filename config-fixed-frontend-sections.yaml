@@ -239,6 +239,163 @@ limits:
       max: 100
     order: 1
 
+  # Rate Limiting Configuration (moved from rateLimiting section)
+  authentication:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Authentication rate limit window in milliseconds (15 minutes)"
+      section: "Performance"
+      required: true
+      order: 2
+    max:
+      type: integer
+      value: 25
+      description: "Maximum authentication attempts per window"
+      section: "Performance"
+      required: true
+      validation:
+        min: 1
+        max: 1000
+      order: 3
+    message:
+      type: string
+      value: "Too many authentication attempts, please try again later"
+      description: "Error message for authentication rate limit"
+      section: "Performance"
+      required: true
+      order: 4
+
+  admin:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Admin operations rate limit window in milliseconds (15 minutes)"
+      section: "Performance"
+      required: true
+      order: 5
+    max:
+      type: integer
+      value: 500
+      description: "Maximum admin requests per window"
+      section: "Performance"
+      required: true
+      validation:
+        min: 1
+        max: 10000
+      order: 6
+    message:
+      type: string
+      value: "Too many admin requests, please try again later"
+      description: "Error message for admin rate limit"
+      section: "Performance"
+      required: true
+      order: 7
+
+  apiProxy:
+    windowMs:
+      type: integer
+      value: 60000
+      description: "API proxy rate limit window in milliseconds (1 minute)"
+      section: "Performance"
+      required: true
+      order: 8
+    max:
+      type: integer
+      value: 100
+      description: "Maximum API proxy requests per window"
+      section: "Performance"
+      required: true
+      validation:
+        min: 1
+        max: 10000
+      order: 9
+    message:
+      type: string
+      value: "Too many API proxy requests, please try again later"
+      description: "Error message for API proxy rate limit"
+      section: "Performance"
+      required: true
+      order: 10
+
+  realtime:
+    windowMs:
+      type: integer
+      value: 60000
+      description: "Real-time operations rate limit window in milliseconds (1 minute)"
+      section: "Performance"
+      required: true
+      order: 11
+    max:
+      type: integer
+      value: 250
+      description: "Maximum real-time requests per window"
+      section: "Performance"
+      required: true
+      validation:
+        min: 1
+        max: 10000
+      order: 12
+    message:
+      type: string
+      value: "Too many real-time requests, please try again later"
+      description: "Error message for real-time rate limit"
+      section: "Performance"
+      required: true
+      order: 13
+
+  standard:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Standard operations rate limit window in milliseconds (15 minutes)"
+      section: "Performance"
+      required: true
+      order: 14
+    max:
+      type: integer
+      value: 1000
+      description: "Maximum standard requests per window"
+      section: "Performance"
+      required: true
+      validation:
+        min: 1
+        max: 100000
+      order: 15
+    message:
+      type: string
+      value: "Too many requests, please try again later"
+      description: "Error message for standard rate limit"
+      section: "Performance"
+      required: true
+      order: 16
+
+  staticFiles:
+    windowMs:
+      type: integer
+      value: 900000
+      description: "Static file serving rate limit window in milliseconds (15 minutes)"
+      section: "Performance"
+      required: true
+      order: 17
+    max:
+      type: integer
+      value: 5000
+      description: "Maximum static file requests per window"
+      section: "Performance"
+      required: true
+      validation:
+        min: 1
+        max: 100000
+      order: 18
+    message:
+      type: string
+      value: "Too many static file requests, please try again later"
+      description: "Error message for static file rate limit"
+      section: "Performance"
+      required: true
+      order: 19
+
 # Authentication Configuration
 authentication:
   enabled_strategies:
@@ -643,161 +800,3 @@ gravatar:
     description: "Gravatar API key for profile images"
     section: "Integrations"
     order: 1
-
-# Rate Limiting Configuration
-rateLimiting:
-  authentication:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Authentication rate limit window in milliseconds (15 minutes)"
-      section: "Security"
-      required: true
-      order: 1
-    max:
-      type: integer
-      value: 25
-      description: "Maximum authentication attempts per window"
-      section: "Security"
-      required: true
-      validation:
-        min: 1
-        max: 1000
-      order: 2
-    message:
-      type: string
-      value: "Too many authentication attempts, please try again later"
-      description: "Error message for authentication rate limit"
-      section: "Security"
-      required: true
-      order: 3
-
-  admin:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Admin operations rate limit window in milliseconds (15 minutes)"
-      section: "Security"
-      required: true
-      order: 4
-    max:
-      type: integer
-      value: 500
-      description: "Maximum admin requests per window"
-      section: "Security"
-      required: true
-      validation:
-        min: 1
-        max: 10000
-      order: 5
-    message:
-      type: string
-      value: "Too many admin requests, please try again later"
-      description: "Error message for admin rate limit"
-      section: "Security"
-      required: true
-      order: 6
-
-  apiProxy:
-    windowMs:
-      type: integer
-      value: 60000
-      description: "API proxy rate limit window in milliseconds (1 minute)"
-      section: "Security"
-      required: true
-      order: 7
-    max:
-      type: integer
-      value: 100
-      description: "Maximum API proxy requests per window"
-      section: "Security"
-      required: true
-      validation:
-        min: 1
-        max: 10000
-      order: 8
-    message:
-      type: string
-      value: "Too many API proxy requests, please try again later"
-      description: "Error message for API proxy rate limit"
-      section: "Security"
-      required: true
-      order: 9
-
-  realtime:
-    windowMs:
-      type: integer
-      value: 60000
-      description: "Real-time operations rate limit window in milliseconds (1 minute)"
-      section: "Security"
-      required: true
-      order: 10
-    max:
-      type: integer
-      value: 250
-      description: "Maximum real-time requests per window"
-      section: "Security"
-      required: true
-      validation:
-        min: 1
-        max: 10000
-      order: 11
-    message:
-      type: string
-      value: "Too many real-time requests, please try again later"
-      description: "Error message for real-time rate limit"
-      section: "Security"
-      required: true
-      order: 12
-
-  standard:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Standard operations rate limit window in milliseconds (15 minutes)"
-      section: "Security"
-      required: true
-      order: 13
-    max:
-      type: integer
-      value: 1000
-      description: "Maximum standard requests per window"
-      section: "Security"
-      required: true
-      validation:
-        min: 1
-        max: 100000
-      order: 14
-    message:
-      type: string
-      value: "Too many requests, please try again later"
-      description: "Error message for standard rate limit"
-      section: "Security"
-      required: true
-      order: 15
-
-  staticFiles:
-    windowMs:
-      type: integer
-      value: 900000
-      description: "Static file serving rate limit window in milliseconds (15 minutes)"
-      section: "Security"
-      required: true
-      order: 16
-    max:
-      type: integer
-      value: 5000
-      description: "Maximum static file requests per window"
-      section: "Security"
-      required: true
-      validation:
-        min: 1
-        max: 100000
-      order: 17
-    message:
-      type: string
-      value: "Too many static file requests, please try again later"
-      description: "Error message for static file rate limit"
-      section: "Security"
-      required: true
-      order: 18

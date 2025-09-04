@@ -21,6 +21,9 @@ const ZoneweaverSettings = () => {
   const [loading, setLoading] = useState(false);
   const [requiresRestart, setRequiresRestart] = useState(false);
 
+  // Subsection collapse state
+  const [collapsedSubsections, setCollapsedSubsections] = useState({});
+
   // Backup management state
   const [backups, setBackups] = useState([]);
   const [showBackupModal, setShowBackupModal] = useState(false);
@@ -226,13 +229,17 @@ const ZoneweaverSettings = () => {
     }
   };
 
-  // Process configuration to extract values and organize by sections
+  // Process configuration to extract values and organize by sections and subsections
   const processConfig = (config) => {
     const extractedValues = {};
     const organizedSections = {};
+    const sectionMetadata = config._sections || {};
 
     const processObject = (obj, path = '', sectionName = 'General') => {
       for (const [key, value] of Object.entries(obj || {})) {
+        // Skip metadata sections
+        if (key === '_sections') continue;
+        
         const fullPath = path ? `${path}.${key}` : key;
         
         if (value && typeof value === 'object' && value.type && value.hasOwnProperty('value')) {
@@ -241,16 +248,20 @@ const ZoneweaverSettings = () => {
           
           // Determine section from metadata or infer from path
           const section = value.section || inferSection(fullPath) || sectionName;
+          const subsection = value.subsection || null;
           
           if (!organizedSections[section]) {
+            const metadata = sectionMetadata[section] || {};
             organizedSections[section] = {
               title: section,
-              icon: getSectionIcon(section),
-              fields: []
+              icon: metadata.icon || getSectionIcon(section),
+              description: metadata.description || '',
+              fields: [],
+              subsections: {}
             };
           }
           
-          organizedSections[section].fields.push({
+          const fieldData = {
             key: fullPath,
             path: fullPath,
             type: value.type,
@@ -263,7 +274,21 @@ const ZoneweaverSettings = () => {
             conditional: value.conditional || null,
             order: value.order || 0,
             value: value.value
-          });
+          };
+
+          if (subsection) {
+            // Organize into subsections
+            if (!organizedSections[section].subsections[subsection]) {
+              organizedSections[section].subsections[subsection] = {
+                title: subsection,
+                fields: []
+              };
+            }
+            organizedSections[section].subsections[subsection].fields.push(fieldData);
+          } else {
+            // Add to main section
+            organizedSections[section].fields.push(fieldData);
+          }
         } else if (value && typeof value === 'object' && !Array.isArray(value) && !value.hasOwnProperty('type')) {
           // This is a nested object, recurse with section inference
           const inferredSection = inferSection(fullPath) || sectionName;
@@ -277,9 +302,12 @@ const ZoneweaverSettings = () => {
 
     processObject(config);
 
-    // Sort fields within each section by order
+    // Sort fields within each section and subsection by order
     Object.values(organizedSections).forEach(section => {
       section.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
+      Object.values(section.subsections).forEach(subsection => {
+        subsection.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
+      });
     });
 
     return { extractedValues, organizedSections };
@@ -338,11 +366,26 @@ const ZoneweaverSettings = () => {
     }));
   };
 
+  // Toggle subsection collapse state
+  const toggleSubsection = (sectionName, subsectionName) => {
+    const key = `${sectionName}-${subsectionName}`;
+    setCollapsedSubsections(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Check if subsection is collapsed
+  const isSubsectionCollapsed = (sectionName, subsectionName) => {
+    const key = `${sectionName}-${subsectionName}`;
+    return collapsedSubsections[key] || false;
+  };
+
   // Check if field should be shown based on conditional logic
   const shouldShowField = (field) => {
     if (!field.conditional) return true;
     
-    const { dependsOn, showWhen } = field.conditional;
+    const { field: dependsOn, value: showWhen } = field.conditional;
     const dependentValue = values[dependsOn];
     
     if (Array.isArray(showWhen)) {
@@ -786,7 +829,6 @@ const ZoneweaverSettings = () => {
                   </button>
                 </>
               )}
-              <span className='tag is-danger'>Super Admin Only</span>
             </div>
           </div>
 
@@ -878,28 +920,180 @@ const ZoneweaverSettings = () => {
             {Object.entries(sections).map(([sectionName, section]) => 
               activeTab === sectionName && (
                 <div key={sectionName}>
-                  <div className='box mb-4'>
-                    <h2 className='title is-5'>
-                      <span className='icon is-small mr-2'>
-                        <i className={section.icon}></i>
-                      </span>
-                      {section.title} Settings
-                    </h2>
-                    
-                    {/* Render fields in columns for better layout */}
-                    <div className='columns is-multiline'>
-                      {section.fields.map((field, index) => (
-                        <div 
-                          key={field.path} 
-                          className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
-                        >
-                          {renderField(field)}
+                  {/* Main Section Fields */}
+                  {section.fields.length > 0 && (
+                    <div className='box mb-4'>
+                      <h2 className='title is-5'>
+                        <span className='icon is-small mr-2'>
+                          <i className={section.icon}></i>
+                        </span>
+                        {section.title} Settings
+                      </h2>
+                      
+                      {/* Section description from config */}
+                      {section.description && (
+                        <p className='subtitle is-6 has-text-grey mb-4'>
+                          {section.description}
+                        </p>
+                      )}
+                      
+                      {/* Special formatting for Logging section */}
+                      {sectionName === 'Logging' ? (
+                        <div className='columns is-vcentered'>
+                          {/* Logging Level - Left Column */}
+                          <div className='column is-6'>
+                            <div className='field'>
+                              <label className='label has-text-weight-semibold'>
+                                <span className='icon is-small mr-2'>
+                                  <i className='fas fa-layer-group'></i>
+                                </span>
+                                Logging Level
+                              </label>
+                              <div className='control has-icons-left'>
+                                <div className='select is-fullwidth'>
+                                  <select 
+                                    value={values['logging.level'] || 'info'}
+                                    onChange={(e) => handleFieldChange('logging.level', e.target.value)}
+                                    disabled={loading}
+                                  >
+                                    <option value="error">Error - Critical issues only</option>
+                                    <option value="warn">Warning - Errors + warnings</option>
+                                    <option value="info">Info - General operations</option>
+                                    <option value="debug">Debug - Detailed diagnostics</option>
+                                  </select>
+                                </div>
+                                <span className='icon is-small is-left'>
+                                  <i className='fas fa-list-ul'></i>
+                                </span>
+                              </div>
+                              <p className='help has-text-grey'>
+                                Controls the minimum level of messages that will be logged to console and files
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Logging Enabled - Right Column */}
+                          <div className='column is-6'>
+                            <div className='field'>
+                              <label className='label has-text-weight-semibold'>
+                                <span className='icon is-small mr-2'>
+                                  <i className='fas fa-power-off'></i>
+                                </span>
+                                Enable Logging
+                              </label>
+                              <div className='control'>
+                                <div className='field'>
+                                  <label className='checkbox is-large'>
+                                    <input
+                                      type='checkbox'
+                                      checked={!!values['logging.enabled']}
+                                      onChange={(e) => handleFieldChange('logging.enabled', e.target.checked)}
+                                      disabled={loading}
+                                    />
+                                    <span className='ml-3 has-text-weight-normal'>
+                                      {values['logging.enabled'] ? 
+                                        <span className='has-text-success'>
+                                          <span className='icon is-small'>
+                                            <i className='fas fa-check-circle'></i>
+                                          </span>
+                                          Logging is enabled
+                                        </span> : 
+                                        <span className='has-text-danger'>
+                                          <span className='icon is-small'>
+                                            <i className='fas fa-times-circle'></i>
+                                          </span>
+                                          Logging is disabled
+                                        </span>
+                                      }
+                                    </span>
+                                  </label>
+                                </div>
+                              </div>
+                              <p className='help has-text-grey'>
+                                Disable only for testing - logging is essential for troubleshooting
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      ))}
+                      ) : (
+                        /* Standard column layout for other sections */
+                        <div className='columns is-multiline'>
+                          {section.fields.map((field) => (
+                            <div 
+                              key={field.path} 
+                              className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                            >
+                              {renderField(field)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
 
-                  {/* Action buttons are now in the titlebar */}
+                  {/* Subsections with Collapsible Cards */}
+                  {Object.entries(section.subsections || {}).map(([subsectionName, subsection]) => {
+                    const isCollapsed = isSubsectionCollapsed(sectionName, subsectionName);
+                    return (
+                      <div key={subsectionName} className='box mb-4'>
+                        <div 
+                          className='is-clickable pb-2'
+                          onClick={() => toggleSubsection(sectionName, subsectionName)}
+                        >
+                          <h3 className='title is-6 mb-2'>
+                            <span className='icon is-small mr-2'>
+                              <i className={`fas ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'}`}></i>
+                            </span>
+                            <span className='icon is-small mr-2'>
+                              <i className={section.icon}></i>
+                            </span>
+                            {subsection.title}
+                            <span className='tag is-light is-small ml-2'>
+                              {subsection.fields.length} setting{subsection.fields.length !== 1 ? 's' : ''}
+                            </span>
+                          </h3>
+                        </div>
+
+                        {/* Collapsible Content */}
+                        {!isCollapsed && (
+                          <div className='mt-3'>
+                            <div className='columns is-multiline'>
+                              {subsection.fields.map((field) => (
+                                <div 
+                                  key={field.path} 
+                                  className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                                >
+                                  {renderField(field)}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Show default message if section has no fields or subsections */}
+                  {section.fields.length === 0 && Object.keys(section.subsections || {}).length === 0 && (
+                    <div className='box mb-4'>
+                      <h2 className='title is-5'>
+                        <span className='icon is-small mr-2'>
+                          <i className={section.icon}></i>
+                        </span>
+                        {section.title} Settings
+                      </h2>
+                      
+                      {section.description && (
+                        <p className='subtitle is-6 has-text-grey mb-4'>
+                          {section.description}
+                        </p>
+                      )}
+
+                      <div className='notification is-info'>
+                        <p>No settings available in this section yet.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             )}

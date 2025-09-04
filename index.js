@@ -39,18 +39,18 @@ const activeVncSessions = new Map();
 // CORS configuration from YAML
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || config.cors.whitelist.value.indexOf(origin) !== -1) {
+    if (!origin || config.security.cors.whitelist.value.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  origin: config.cors.options.origin.value,
-  preflightContinue: config.cors.options.preflightContinue.value,
-  credentials: config.cors.options.credentials.value,
+  origin: config.security.cors.allow_origin.value,
+  preflightContinue: config.security.cors.preflight_continue.value,
+  credentials: config.security.cors.credentials.value,
 };
 
-app.set("trust proxy", config.environment.trust_proxy.value);
+app.set("trust proxy", config.frontend.trust_proxy.value);
 app.use(cors(corsOptions));
 app.options("*splat", cors(corsOptions));
 app.use(express.json());
