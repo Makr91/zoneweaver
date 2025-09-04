@@ -31,6 +31,15 @@ const ZoneweaverSettings = () => {
   // Backup management state
   const [backups, setBackups] = useState([]);
   const [showBackupModal, setShowBackupModal] = useState(false);
+  
+  // Test functionality state
+  const [testResults, setTestResults] = useState({});
+  const [testLoading, setTestLoading] = useState({});
+  const [testEmail, setTestEmail] = useState('');
+  const [ldapTestCredentials, setLdapTestCredentials] = useState({
+    testUsername: '',
+    testPassword: ''
+  });
 
   // Server management state
   const [servers, setServers] = useState([]);
@@ -947,6 +956,110 @@ const ZoneweaverSettings = () => {
     }
   };
 
+  // Test functionality functions
+  const testLdapConnection = async () => {
+    const testKey = 'ldap';
+    try {
+      setTestLoading(prev => ({ ...prev, [testKey]: true }));
+      setTestResults(prev => ({ ...prev, [testKey]: null }));
+      setMsg('Testing LDAP connection...');
+
+      const payload = {};
+      if (ldapTestCredentials.testUsername && ldapTestCredentials.testPassword) {
+        payload.testUsername = ldapTestCredentials.testUsername;
+        payload.testPassword = ldapTestCredentials.testPassword;
+      }
+
+      const response = await axios.post('/api/auth/ldap/test', payload);
+      
+      if (response.data.success) {
+        setTestResults(prev => ({ 
+          ...prev, 
+          [testKey]: { 
+            success: true, 
+            message: response.data.message,
+            details: response.data.details
+          } 
+        }));
+        setMsg('LDAP connection test successful!');
+      } else {
+        setTestResults(prev => ({ 
+          ...prev, 
+          [testKey]: { 
+            success: false, 
+            message: response.data.message,
+            error: response.data.error
+          } 
+        }));
+        setMsg(`LDAP connection test failed: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('LDAP test error:', error);
+      setTestResults(prev => ({ 
+        ...prev, 
+        [testKey]: { 
+          success: false, 
+          message: 'LDAP test failed',
+          error: error.response?.data?.error || error.message
+        } 
+      }));
+      setMsg(`LDAP test error: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setTestLoading(prev => ({ ...prev, [testKey]: false }));
+    }
+  };
+
+  const testMailConnection = async () => {
+    const testKey = 'mail';
+    if (!testEmail) {
+      setMsg('Please enter a test email address');
+      return;
+    }
+
+    try {
+      setTestLoading(prev => ({ ...prev, [testKey]: true }));
+      setTestResults(prev => ({ ...prev, [testKey]: null }));
+      setMsg('Testing SMTP connection and sending test email...');
+
+      const response = await axios.post('/api/mail/test', { testEmail });
+      
+      if (response.data.success) {
+        setTestResults(prev => ({ 
+          ...prev, 
+          [testKey]: { 
+            success: true, 
+            message: response.data.message,
+            details: response.data.details
+          } 
+        }));
+        setMsg('Test email sent successfully! Check your inbox.');
+      } else {
+        setTestResults(prev => ({ 
+          ...prev, 
+          [testKey]: { 
+            success: false, 
+            message: response.data.message,
+            error: response.data.error
+          } 
+        }));
+        setMsg(`Mail test failed: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('Mail test error:', error);
+      setTestResults(prev => ({ 
+        ...prev, 
+        [testKey]: { 
+          success: false, 
+          message: 'Mail test failed',
+          error: error.response?.data?.error || error.message
+        } 
+      }));
+      setMsg(`Mail test error: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setTestLoading(prev => ({ ...prev, [testKey]: false }));
+    }
+  };
+
   // Check permissions - only super-admin can access
   if (!user || !canManageSettings(user.role)) {
     return (
@@ -1228,6 +1341,281 @@ const ZoneweaverSettings = () => {
                             </div>
                           </div>
                         </div>
+                      ) : sectionName === 'Authentication' ? (
+                        /* Special Authentication section with LDAP testing */
+                        <>
+                          <div className='columns is-multiline'>
+                            {section.fields.map((field) => (
+                              <div 
+                                key={field.path} 
+                                className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                              >
+                                {renderField(field)}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* LDAP Connection Test */}
+                          {values['authentication.ldap_enabled'] && (
+                            <div className='box mt-4 has-background-light'>
+                              <h3 className='title is-6'>
+                                <span className='icon is-small mr-2'>
+                                  <i className='fas fa-vial'></i>
+                                </span>
+                                Test LDAP Connection
+                              </h3>
+                              
+                              <div className='columns'>
+                                <div className='column is-6'>
+                                  <div className='field'>
+                                    <label className='label'>Test Username (Optional)</label>
+                                    <div className='control'>
+                                      <input 
+                                        className='input'
+                                        type='text'
+                                        placeholder='test.user'
+                                        value={ldapTestCredentials.testUsername}
+                                        onChange={(e) => setLdapTestCredentials(prev => ({
+                                          ...prev,
+                                          testUsername: e.target.value
+                                        }))}
+                                        disabled={testLoading.ldap || loading}
+                                      />
+                                    </div>
+                                    <p className='help is-size-7'>
+                                      Optional: Provide a username to test user authentication
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className='column is-6'>
+                                  <div className='field'>
+                                    <label className='label'>Test Password (Optional)</label>
+                                    <div className='control'>
+                                      <input 
+                                        className='input'
+                                        type='password'
+                                        placeholder='user-password'
+                                        value={ldapTestCredentials.testPassword}
+                                        onChange={(e) => setLdapTestCredentials(prev => ({
+                                          ...prev,
+                                          testPassword: e.target.value
+                                        }))}
+                                        disabled={testLoading.ldap || loading}
+                                      />
+                                    </div>
+                                    <p className='help is-size-7'>
+                                      Optional: Password for the test user
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className='field'>
+                                <div className='control'>
+                                  <button 
+                                    className={`button is-info ${testLoading.ldap ? 'is-loading' : ''}`}
+                                    onClick={testLdapConnection}
+                                    disabled={testLoading.ldap || loading}
+                                  >
+                                    <span className='icon'>
+                                      <i className='fas fa-plug'></i>
+                                    </span>
+                                    <span>Test LDAP Connection</span>
+                                  </button>
+                                </div>
+                                <p className='help has-text-grey'>
+                                  Tests server connection, bind credentials, search functionality, and optional user authentication
+                                </p>
+                              </div>
+
+                              {/* Test Results */}
+                              {testResults.ldap && (
+                                <div className={`notification mt-3 ${testResults.ldap.success ? 'is-success' : 'is-danger'}`}>
+                                  <div className='media'>
+                                    <div className='media-left'>
+                                      <span className='icon is-large'>
+                                        <i className={`fas fa-2x ${testResults.ldap.success ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
+                                      </span>
+                                    </div>
+                                    <div className='media-content'>
+                                      <p className='is-size-6 has-text-weight-semibold'>
+                                        {testResults.ldap.message}
+                                      </p>
+                                      {testResults.ldap.details && (
+                                        <div className='content mt-2'>
+                                          <ul className='is-size-7'>
+                                            <li>
+                                              <span className={`icon is-small ${testResults.ldap.details.connectionTest ? 'has-text-success' : 'has-text-danger'}`}>
+                                                <i className={`fas ${testResults.ldap.details.connectionTest ? 'fa-check' : 'fa-times'}`}></i>
+                                              </span>
+                                              <span className='ml-1'>Server Connection</span>
+                                            </li>
+                                            <li>
+                                              <span className={`icon is-small ${testResults.ldap.details.bindTest ? 'has-text-success' : 'has-text-danger'}`}>
+                                                <i className={`fas ${testResults.ldap.details.bindTest ? 'fa-check' : 'fa-times'}`}></i>
+                                              </span>
+                                              <span className='ml-1'>Bind with Service Account</span>
+                                            </li>
+                                            <li>
+                                              <span className={`icon is-small ${testResults.ldap.details.searchTest ? 'has-text-success' : 'has-text-danger'}`}>
+                                                <i className={`fas ${testResults.ldap.details.searchTest ? 'fa-check' : 'fa-times'}`}></i>
+                                              </span>
+                                              <span className='ml-1'>Directory Search</span>
+                                            </li>
+                                            {testResults.ldap.details.authTest !== null && (
+                                              <li>
+                                                <span className={`icon is-small ${testResults.ldap.details.authTest ? 'has-text-success' : 'has-text-warning'}`}>
+                                                  <i className={`fas ${testResults.ldap.details.authTest ? 'fa-check' : 'fa-exclamation-triangle'}`}></i>
+                                                </span>
+                                                <span className='ml-1'>User Authentication Test</span>
+                                              </li>
+                                            )}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {testResults.ldap.error && (
+                                        <p className='is-size-7 has-text-grey mt-1'>
+                                          <strong>Error:</strong> {testResults.ldap.error}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      ) : sectionName === 'Mail' ? (
+                        /* Special Mail section with SMTP testing */
+                        <>
+                          <div className='columns is-multiline'>
+                            {section.fields.map((field) => (
+                              <div 
+                                key={field.path} 
+                                className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                              >
+                                {renderField(field)}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* SMTP Connection Test */}
+                          <div className='box mt-4 has-background-light'>
+                            <h3 className='title is-6'>
+                              <span className='icon is-small mr-2'>
+                                <i className='fas fa-paper-plane'></i>
+                              </span>
+                              Test Email Configuration
+                            </h3>
+                            
+                            <div className='field'>
+                              <label className='label'>Test Email Address</label>
+                              <div className='control has-icons-right'>
+                                <input 
+                                  className='input'
+                                  type='email'
+                                  placeholder='test@example.com'
+                                  value={testEmail}
+                                  onChange={(e) => setTestEmail(e.target.value)}
+                                  disabled={testLoading.mail || loading}
+                                />
+                                <span className='icon is-small is-right'>
+                                  <i className='fas fa-envelope'></i>
+                                </span>
+                              </div>
+                              <p className='help has-text-grey'>
+                                Send a test email to verify SMTP configuration
+                              </p>
+                            </div>
+
+                            <div className='field'>
+                              <div className='control'>
+                                <button 
+                                  className={`button is-info ${testLoading.mail ? 'is-loading' : ''}`}
+                                  onClick={testMailConnection}
+                                  disabled={testLoading.mail || loading || !testEmail}
+                                >
+                                  <span className='icon'>
+                                    <i className='fas fa-paper-plane'></i>
+                                  </span>
+                                  <span>Send Test Email</span>
+                                </button>
+                              </div>
+                              <p className='help has-text-grey'>
+                                Tests SMTP server connection and sends a test email
+                              </p>
+                            </div>
+
+                            {/* Test Results */}
+                            {testResults.mail && (
+                              <div className={`notification mt-3 ${testResults.mail.success ? 'is-success' : 'is-danger'}`}>
+                                <div className='media'>
+                                  <div className='media-left'>
+                                    <span className='icon is-large'>
+                                      <i className={`fas fa-2x ${testResults.mail.success ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
+                                    </span>
+                                  </div>
+                                  <div className='media-content'>
+                                    <p className='is-size-6 has-text-weight-semibold'>
+                                      {testResults.mail.message}
+                                    </p>
+                                    {testResults.mail.details && (
+                                      <div className='content mt-2'>
+                                        <p className='is-size-7'>
+                                          <strong>Host:</strong> {testResults.mail.details.host} <br />
+                                          <strong>Port:</strong> {testResults.mail.details.port} <br />
+                                          <strong>Secure:</strong> {testResults.mail.details.secure ? 'Yes' : 'No'}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {testResults.mail.error && (
+                                      <p className='is-size-7 has-text-grey mt-1'>
+                                        <strong>Error:</strong> {testResults.mail.error}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Configuration Help */}
+                            <div className='content mt-4'>
+                              <h4 className='title is-6'>Configuration Help</h4>
+                              <div className='columns'>
+                                <div className='column'>
+                                  <p><strong>Gmail:</strong></p>
+                                  <ul className='is-size-7'>
+                                    <li>Host: smtp.gmail.com</li>
+                                    <li>Port: 587 (TLS) or 465 (SSL)</li>
+                                    <li>Use App Password (not regular password)</li>
+                                  </ul>
+                                  <p><strong>Outlook/Hotmail:</strong></p>
+                                  <ul className='is-size-7'>
+                                    <li>Host: smtp-mail.outlook.com</li>
+                                    <li>Port: 587</li>
+                                  </ul>
+                                </div>
+                                <div className='column'>
+                                  <p><strong>Yahoo:</strong></p>
+                                  <ul className='is-size-7'>
+                                    <li>Host: smtp.mail.yahoo.com</li>
+                                    <li>Port: 587 or 465</li>
+                                  </ul>
+                                  <p><strong>Custom SMTP:</strong></p>
+                                  <ul className='is-size-7'>
+                                    <li>Contact your hosting provider</li>
+                                    <li>Check documentation for settings</li>
+                                  </ul>
+                                </div>
+                              </div>
+                              <div className='notification is-info is-light'>
+                                <p className='is-size-7'>
+                                  <strong>Note:</strong> Save settings first, then use the test button to verify configuration.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </>
                       ) : sectionName === 'Server' ? (
                         /* Special SSL file upload layout for Server section */
                         <div className='columns is-multiline'>

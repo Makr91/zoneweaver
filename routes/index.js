@@ -82,6 +82,7 @@ router.delete("/api/auth/delete-account", authLimiter, authenticate, AuthControl
 router.get("/api/auth/verify", standardLimiter, AuthController.verifyToken);
 router.get("/api/auth/setup-status", standardLimiter, AuthController.checkSetupStatus);
 router.get("/api/auth/methods", standardLimiter, AuthController.getAuthMethods);
+router.post("/api/auth/ldap/test", adminLimiter, authenticate, requireSuperAdmin, AuthController.testLdap);
 
 /**
  * @swagger

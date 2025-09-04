@@ -3729,6 +3729,335 @@ class AuthController {
 
   /**
    * @swagger
+   * /api/auth/ldap/test:
+   *   post:
+   *     summary: Test LDAP connection (Super-admin only)
+   *     description: Test the LDAP configuration by attempting to connect and authenticate
+   *     tags: [Authentication Testing]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: false
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               testUsername:
+   *                 type: string
+   *                 description: Optional test username for authentication test
+   *                 example: "testuser"
+   *               testPassword:
+   *                 type: string
+   *                 description: Optional test password for authentication test
+   *                 example: "testpass"
+   *     responses:
+   *       200:
+   *         description: LDAP connection test completed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   description: Whether LDAP connection was successful
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   description: Result message
+   *                   example: "LDAP connection successful"
+   *                 details:
+   *                   type: object
+   *                   description: Connection details
+   *                   properties:
+   *                     connectionTest:
+   *                       type: boolean
+   *                       description: Whether basic connection succeeded
+   *                       example: true
+   *                     bindTest:
+   *                       type: boolean
+   *                       description: Whether bind with service account succeeded
+   *                       example: true
+   *                     searchTest:
+   *                       type: boolean
+   *                       description: Whether search test succeeded
+   *                       example: true
+   *                     authTest:
+   *                       type: boolean
+   *                       description: Whether user authentication test succeeded (if credentials provided)
+   *                       example: true
+   *       400:
+   *         description: LDAP not enabled or connection failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "LDAP connection failed"
+   *                 error:
+   *                   type: string
+   *                   description: Detailed error message
+   *                   example: "Connection timeout"
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async testLdap(req, res) {
+    try {
+      // Check if LDAP is enabled
+      if (!config.authentication?.ldap_enabled?.value) {
+        return res.status(400).json({
+          success: false,
+          message: 'LDAP authentication is not enabled'
+        });
+      }
+
+      console.log('🔧 Starting LDAP connection test...');
+
+      const { testUsername, testPassword } = req.body || {};
+      const testResults = {
+        connectionTest: false,
+        bindTest: false,
+        searchTest: false,
+        authTest: null
+      };
+
+      // Test 1: Basic Connection
+      try {
+        console.log('📡 Testing LDAP connection...');
+        
+        const ldap = await import('ldapjs');
+        const client = ldap.createClient({
+          url: config.authentication.ldap_url.value,
+          tlsOptions: {
+            rejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value || false
+          },
+          timeout: 10000,
+          connectTimeout: 10000
+        });
+
+        await new Promise((resolve, reject) => {
+          client.on('connect', () => {
+            console.log('✅ LDAP connection established');
+            testResults.connectionTest = true;
+            resolve();
+          });
+
+          client.on('error', (err) => {
+            console.error('❌ LDAP connection error:', err.message);
+            reject(err);
+          });
+
+          setTimeout(() => {
+            reject(new Error('Connection timeout after 10 seconds'));
+          }, 10000);
+        });
+
+        // Test 2: Bind with service account
+        try {
+          console.log('🔑 Testing LDAP bind...');
+          
+          await new Promise((resolve, reject) => {
+            client.bind(
+              config.authentication.ldap_bind_dn.value, 
+              config.authentication.ldap_bind_credentials.value,
+              (err) => {
+                if (err) {
+                  console.error('❌ LDAP bind failed:', err.message);
+                  reject(err);
+                } else {
+                  console.log('✅ LDAP bind successful');
+                  testResults.bindTest = true;
+                  resolve();
+                }
+              }
+            );
+          });
+
+          // Test 3: Search test
+          try {
+            console.log('🔍 Testing LDAP search...');
+            
+            const searchOptions = {
+              scope: 'sub',
+              filter: config.authentication.ldap_search_filter.value.replace('{{identifier}}', 'testuser'),
+              attributes: config.authentication.ldap_search_attributes.value.split(',').map(s => s.trim())
+            };
+
+            await new Promise((resolve, reject) => {
+              client.search(
+                config.authentication.ldap_search_base.value,
+                searchOptions,
+                (err, searchResult) => {
+                  if (err) {
+                    console.error('❌ LDAP search failed:', err.message);
+                    reject(err);
+                    return;
+                  }
+
+                  let entryCount = 0;
+                  searchResult.on('searchEntry', (entry) => {
+                    entryCount++;
+                    console.log('📄 Found LDAP entry:', entry.dn);
+                  });
+
+                  searchResult.on('error', (err) => {
+                    console.error('❌ LDAP search error:', err.message);
+                    reject(err);
+                  });
+
+                  searchResult.on('end', (result) => {
+                    console.log(`✅ LDAP search completed, found ${entryCount} entries`);
+                    testResults.searchTest = true;
+                    resolve();
+                  });
+                }
+              );
+            });
+
+            // Test 4: User authentication (if credentials provided)
+            if (testUsername && testPassword) {
+              try {
+                console.log('🔐 Testing user authentication...');
+                
+                // First find the user
+                const userSearchOptions = {
+                  scope: 'sub',
+                  filter: config.authentication.ldap_search_filter.value.replace('{{identifier}}', testUsername),
+                  attributes: ['dn']
+                };
+
+                const userDn = await new Promise((resolve, reject) => {
+                  client.search(
+                    config.authentication.ldap_search_base.value,
+                    userSearchOptions,
+                    (err, searchResult) => {
+                      if (err) {
+                        reject(err);
+                        return;
+                      }
+
+                      let foundDn = null;
+                      searchResult.on('searchEntry', (entry) => {
+                        foundDn = entry.dn;
+                      });
+
+                      searchResult.on('error', (err) => {
+                        reject(err);
+                      });
+
+                      searchResult.on('end', () => {
+                        if (foundDn) {
+                          resolve(foundDn);
+                        } else {
+                          reject(new Error(`User '${testUsername}' not found`));
+                        }
+                      });
+                    }
+                  );
+                });
+
+                // Try to authenticate as the user
+                const userClient = ldap.createClient({
+                  url: config.authentication.ldap_url.value,
+                  tlsOptions: {
+                    rejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value || false
+                  },
+                  timeout: 10000
+                });
+
+                await new Promise((resolve, reject) => {
+                  userClient.bind(userDn, testPassword, (err) => {
+                    userClient.destroy();
+                    if (err) {
+                      console.error('❌ User authentication failed:', err.message);
+                      testResults.authTest = false;
+                      resolve(); // Don't fail the whole test
+                    } else {
+                      console.log('✅ User authentication successful');
+                      testResults.authTest = true;
+                      resolve();
+                    }
+                  });
+                });
+
+              } catch (authError) {
+                console.error('❌ User authentication test failed:', authError.message);
+                testResults.authTest = false;
+              }
+            }
+
+          } catch (searchError) {
+            console.error('❌ LDAP search test failed:', searchError.message);
+            throw searchError;
+          }
+
+        } catch (bindError) {
+          console.error('❌ LDAP bind test failed:', bindError.message);
+          throw bindError;
+        }
+
+        client.destroy();
+
+      } catch (connectionError) {
+        console.error('❌ LDAP connection test failed:', connectionError.message);
+        throw connectionError;
+      }
+
+      // Determine overall success
+      const overallSuccess = testResults.connectionTest && testResults.bindTest && testResults.searchTest;
+      
+      let message = 'LDAP connection test completed';
+      if (overallSuccess) {
+        message = 'LDAP connection successful - all tests passed';
+        if (testResults.authTest === true) {
+          message += ' (including user authentication)';
+        } else if (testResults.authTest === false) {
+          message += ' (user authentication failed - check credentials)';
+        }
+      } else {
+        message = 'LDAP connection test failed - check configuration';
+      }
+
+      res.json({
+        success: overallSuccess,
+        message,
+        details: testResults
+      });
+
+    } catch (error) {
+      console.error('LDAP test error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'LDAP connection test failed',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * @swagger
    * /api/mail/test:
    *   post:
    *     summary: Test SMTP mail configuration (Super-admin only)
