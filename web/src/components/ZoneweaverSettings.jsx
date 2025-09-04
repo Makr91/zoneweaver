@@ -518,22 +518,23 @@ const ZoneweaverSettings = () => {
           {field.label}
         </label>
         
-        {/* Current file path display */}
-        {currentValue && (
-          <div className='field'>
-            <label className='label is-small'>Current File Path:</label>
-            <div className='control'>
-              <input 
-                className='input is-small'
-                type='text'
-                value={currentValue || ''}
-                onChange={(e) => handleFieldChange(field.path, e.target.value)}
-                placeholder={field.placeholder}
-                disabled={loading}
-              />
-            </div>
+        {/* File path input - always visible */}
+        <div className='field'>
+          <label className='label is-small'>File Path:</label>
+          <div className='control'>
+            <input 
+              className='input is-small'
+              type='text'
+              value={currentValue || ''}
+              onChange={(e) => handleFieldChange(field.path, e.target.value)}
+              placeholder={field.placeholder || 'Enter file path...'}
+              disabled={loading}
+            />
           </div>
-        )}
+          <p className='help is-size-7'>
+            Specify where the uploaded file should be saved. The upload will update this path automatically.
+          </p>
+        </div>
 
         {/* File upload component */}
         <div className={`file has-name ${config.color} ${isUploading ? 'is-loading' : ''}`}>
