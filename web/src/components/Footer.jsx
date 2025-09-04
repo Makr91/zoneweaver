@@ -100,7 +100,7 @@ const Footer = () => {
   // Header component that's always visible (separate from resize handle)
   const FooterHeader = () => {
     return (
-      <nav className='level mb-0' style={{ position: 'relative' }}>
+      <nav className='level mb-0'>
         <div className='level-item is-justify-content-flex-start'>
           <div className='pl-1'>
             <a href='https://zoneweaver.startcloud.com/' className='has-text-primary'>
@@ -129,6 +129,7 @@ const Footer = () => {
         </div>
         <div className='level-item is-justify-content-space-between'>
           <div className='icon zw-footer-grip-visual'>
+            {/* Empty space - grip moved to handle overlay */}
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
@@ -170,25 +171,27 @@ const Footer = () => {
             )}
           </div>
         </div>
-        
-        {/* 3-section overlay mirroring header layout */}
-        {footerIsActive && (
-          <div className="level zw-footer-overlay-sections">
-            {/* Left section - low z-index, clicks pass through */}
-            <div className="level-item is-justify-content-flex-start zw-footer-overlay-passthrough">
-            </div>
-            {/* Middle section - high z-index, draggable grip */}
-            <div className="level-item is-justify-content-space-between zw-footer-overlay-handle react-resizable-handle react-resizable-handle-n">
-              <div className='icon'>
-                <i className="fas fa-solid fa-grip-lines has-text-grey"></i>
-              </div>
-            </div>
-            {/* Right section - low z-index, clicks pass through */}
-            <div className="level-item is-justify-content-flex-end zw-footer-overlay-passthrough">
-            </div>
-          </div>
-        )}
       </nav>
+    );
+  };
+
+  // 3-section handle for ResizableBox - only middle section draggable
+  const FooterHandle = () => {
+    return (
+      <div className="level zw-footer-overlay-sections react-resizable-handle react-resizable-handle-n">
+        {/* Left section - clicks pass through to header below */}
+        <div className="level-item is-justify-content-flex-start zw-footer-overlay-passthrough">
+        </div>
+        {/* Middle section - draggable grip area */}
+        <div className="level-item is-justify-content-space-between zw-footer-overlay-handle">
+          <div className='icon'>
+            <i className="fas fa-solid fa-grip-lines has-text-grey"></i>
+          </div>
+        </div>
+        {/* Right section - clicks pass through to header below */}
+        <div className="level-item is-justify-content-flex-end zw-footer-overlay-passthrough">
+        </div>
+      </div>
     );
   };
 
@@ -202,10 +205,11 @@ const Footer = () => {
         className={!footerIsActive ? "is-footer-minimized" : ""}
         height={effectiveHeight}
         width={Infinity}
-        resizeHandles={[]}
+        resizeHandles={footerIsActive ? ["n"] : []}
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
+        handle={FooterHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}

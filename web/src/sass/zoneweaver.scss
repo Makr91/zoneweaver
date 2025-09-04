@@ -290,15 +290,18 @@ $beige-lighter: #eff0eb;
   cursor: default !important;
 }
 
-// Footer 3-section overlay system
+// Footer 3-section handle system (ResizableBox handle prop)
 .zw-footer-overlay-sections {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   height: 30px !important;
+  width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 // Passthrough sections (left/right) - clicks go to header below
@@ -306,6 +309,7 @@ $beige-lighter: #eff0eb;
   z-index: 1 !important;
   pointer-events: none !important;
   background: transparent !important;
+  flex: 1 !important;
 }
 
 // Draggable middle section - only this area responds to drag
@@ -314,6 +318,10 @@ $beige-lighter: #eff0eb;
   pointer-events: auto !important;
   cursor: ns-resize !important;
   background: transparent !important;
+  width: 60px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
   
   // Visual feedback on hover
   &:hover {
@@ -321,7 +329,7 @@ $beige-lighter: #eff0eb;
   }
 }
 
-// Visual grip area styling (now just spacer)
+// Visual grip area styling (empty spacer in header)
 .zw-footer-grip-visual {
   width: 60px !important;
   display: flex !important;
@@ -329,7 +337,7 @@ $beige-lighter: #eff0eb;
   align-items: center !important;
 }
 
-// Ensure footer header positioning
+// Ensure footer header positioning below handle
 .hero-foot nav.level {
   position: relative !important;
   z-index: 5 !important;
