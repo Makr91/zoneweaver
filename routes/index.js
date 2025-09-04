@@ -246,6 +246,8 @@ router.put("/api/settings", adminLimiter, authenticate, requireSuperAdmin, Setti
 router.post("/api/settings/reset", adminLimiter, authenticate, requireSuperAdmin, SettingsController.resetSettings);
 router.post("/api/settings/restart", adminLimiter, authenticate, requireSuperAdmin, SettingsController.restartServer);
 router.get("/api/settings/backups", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getBackups);
+router.post("/api/settings/restore/:filename", adminLimiter, authenticate, requireSuperAdmin, SettingsController.restoreFromBackup);
+router.delete("/api/settings/backups/:filename", adminLimiter, authenticate, requireSuperAdmin, SettingsController.deleteBackup);
 
 // Mail testing endpoint - Protected with admin rate limiting
 router.post("/api/mail/test", adminLimiter, authenticate, requireSuperAdmin, AuthController.testMail);

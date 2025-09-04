@@ -21,6 +21,10 @@ const ZoneweaverSettings = () => {
   const [loading, setLoading] = useState(false);
   const [requiresRestart, setRequiresRestart] = useState(false);
 
+  // Backup management state
+  const [backups, setBackups] = useState([]);
+  const [showBackupModal, setShowBackupModal] = useState(false);
+
   // Server management state
   const [servers, setServers] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -578,6 +582,119 @@ const ZoneweaverSettings = () => {
     }
   };
 
+  // Backup management functions
+  const loadBackups = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/settings/backups');
+      
+      if (response.data.success) {
+        setBackups(response.data.backups);
+      } else {
+        setMsg('Failed to load backups: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error loading backups:', error);
+      setMsg('Error loading backups: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createManualBackup = async () => {
+    try {
+      setLoading(true);
+      setMsg("Creating backup...");
+      
+      // Create backup by saving current settings (which auto-creates backup)
+      const response = await axios.put('/api/settings', {});
+      
+      if (response.data.success) {
+        setMsg('Manual backup created successfully!');
+        await loadBackups(); // Refresh backup list
+      } else {
+        setMsg('Failed to create backup: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      setMsg('Error creating backup: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const restoreFromBackup = async (backupFilename) => {
+    if (!window.confirm(`Are you sure you want to restore settings from backup "${backupFilename}"? Current settings will be lost.`)) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setMsg(`Restoring from backup ${backupFilename}...`);
+      
+      const response = await axios.post(`/api/settings/restore/${backupFilename}`);
+      
+      if (response.data.success) {
+        setMsg('Settings restored successfully. Page will reload to reflect changes.');
+        await loadSettings();
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setMsg('Failed to restore backup: ' + response.data.message);
+      }
+      
+    } catch (error) {
+      console.error('Error restoring backup:', error);
+      setMsg('Error restoring backup: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteBackup = async (backupFilename) => {
+    if (!window.confirm(`Are you sure you want to delete backup "${backupFilename}"? This cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setMsg(`Deleting backup ${backupFilename}...`);
+      
+      const response = await axios.delete(`/api/settings/backups/${backupFilename}`);
+      
+      if (response.data.success) {
+        setMsg('Backup deleted successfully.');
+        await loadBackups(); // Refresh backup list
+      } else {
+        setMsg('Failed to delete backup: ' + response.data.message);
+      }
+      
+    } catch (error) {
+      console.error('Error deleting backup:', error);
+      setMsg('Error deleting backup: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createBackup = async () => {
+    try {
+      setLoading(true);
+      setMsg("Creating backup...");
+      
+      // Trigger a save which creates a backup automatically
+      await saveSettings();
+      await loadBackups();
+      setMsg("Backup created successfully");
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      setMsg("Error creating backup: " + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Check permissions - only super-admin can access
   if (!user || !canManageSettings(user.role)) {
     return (
@@ -621,6 +738,54 @@ const ZoneweaverSettings = () => {
               <strong>Zoneweaver System Settings</strong>
             </div>
             <div className='level-right'>
+              {/* Action buttons for settings pages (not servers) */}
+              {activeTab !== 'servers' && Object.keys(sections).length > 0 && (
+                <>
+                  <button 
+                    className="button is-small is-primary mr-2" 
+                    onClick={saveSettings}
+                    disabled={loading || !Object.keys(values).length}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-save"></i>
+                    </span>
+                    <span>Save</span>
+                  </button>
+                  <button 
+                    className="button is-small is-info mr-2" 
+                    onClick={createBackup}
+                    disabled={loading}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-download"></i>
+                    </span>
+                    <span>Backup</span>
+                  </button>
+                  <button 
+                    className="button is-small is-warning mr-2" 
+                    onClick={async () => {
+                      await loadBackups();
+                      setShowBackupModal(true);
+                    }}
+                    disabled={loading}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-history"></i>
+                    </span>
+                    <span>Restore</span>
+                  </button>
+                  <button 
+                    className="button is-small is-danger mr-2" 
+                    onClick={restartServer}
+                    disabled={loading}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-redo"></i>
+                    </span>
+                    <span>Restart</span>
+                  </button>
+                </>
+              )}
               <span className='tag is-danger'>Super Admin Only</span>
             </div>
           </div>
@@ -734,33 +899,7 @@ const ZoneweaverSettings = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className='field is-grouped is-grouped-centered'>
-                    <div className='control'>
-                      <button 
-                        className={`button is-primary ${loading ? 'is-loading' : ''}`}
-                        onClick={saveSettings}
-                        disabled={loading}
-                      >
-                        <span className='icon'>
-                          <i className='fas fa-save'></i>
-                        </span>
-                        <span>Save Settings</span>
-                      </button>
-                    </div>
-                    <div className='control'>
-                      <button 
-                        className='button is-warning'
-                        onClick={resetToDefaults}
-                        disabled={loading}
-                      >
-                        <span className='icon'>
-                          <i className='fas fa-undo'></i>
-                        </span>
-                        <span>Reset to Defaults</span>
-                      </button>
-                    </div>
-                  </div>
+                  {/* Action buttons are now in the titlebar */}
                 </div>
               )
             )}
@@ -798,6 +937,67 @@ const ZoneweaverSettings = () => {
                 </ul>
                 <p className='mt-3'><strong>Current User:</strong> {user.username} <span className='tag is-danger is-small'>Super Admin</span></p>
               </div>
+            </div>
+          </div>
+
+          {/* Backup Modal */}
+          <div className={`modal ${showBackupModal ? 'is-active' : ''}`}>
+            <div className="modal-background" onClick={() => setShowBackupModal(false)}></div>
+            <div className="modal-card">
+              <header className="modal-card-head">
+                <p className="modal-card-title">Configuration Backups</p>
+                <button className="delete" onClick={() => setShowBackupModal(false)}></button>
+              </header>
+              <section className="modal-card-body">
+                {backups.length === 0 ? (
+                  <p className="has-text-grey">No backups available</p>
+                ) : (
+                  <table className="table is-fullwidth is-striped">
+                    <thead>
+                      <tr>
+                        <th>Filename</th>
+                        <th>Created</th>
+                        <th className="has-text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {backups.map(backup => (
+                        <tr key={backup.filename}>
+                          <td>
+                            <code className="is-size-7">{backup.filename}</code>
+                          </td>
+                          <td>{new Date(backup.created).toLocaleString()}</td>
+                          <td className="has-text-right">
+                            <div className="field is-grouped is-grouped-right">
+                              <p className="control is-expanded">
+                                <button 
+                                  className="button is-small is-warning is-fullwidth" 
+                                  onClick={() => {
+                                    restoreFromBackup(backup.filename);
+                                    setShowBackupModal(false);
+                                  }}
+                                  disabled={loading}
+                                >
+                                  Restore
+                                </button>
+                              </p>
+                              <p className="control is-expanded">
+                                <button 
+                                  className="button is-small is-danger is-fullwidth" 
+                                  onClick={() => deleteBackup(backup.filename)}
+                                  disabled={loading}
+                                >
+                                  Delete
+                                </button>
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </section>
             </div>
           </div>
         </div>
