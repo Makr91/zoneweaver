@@ -622,20 +622,16 @@ const ZoneweaverSettings = () => {
     switch (field.type) {
       case 'boolean':
         inputElement = (
-          <div className='field'>
+          <label className='switch is-medium'>
             <input
-              id={`switch-${field.path}`}
               type='checkbox'
-              name={`switch-${field.path}`}
-              className='switch is-medium is-success'
               checked={!!currentValue}
               onChange={fieldProps.onChange}
               disabled={fieldProps.disabled}
             />
-            <label htmlFor={`switch-${field.path}`} className='has-text-weight-semibold'>
-              {field.label}
-            </label>
-          </div>
+            <span className='check'></span>
+            <span className='control-label'>{field.label}</span>
+          </label>
         );
         break;
 
@@ -1211,30 +1207,30 @@ const ZoneweaverSettings = () => {
                               </label>
                               <div className='control'>
                                 <div className='field'>
-                                  <input
-                                    id='switch-logging-enabled'
-                                    type='checkbox'
-                                    name='switch-logging-enabled'
-                                    className='switch is-medium is-success'
-                                    checked={!!values['logging.enabled']}
-                                    onChange={(e) => handleFieldChange('logging.enabled', e.target.checked)}
-                                    disabled={loading}
-                                  />
-                                  <label htmlFor='switch-logging-enabled' className='has-text-weight-semibold'>
-                                    {values['logging.enabled'] ? 
-                                      <span className='has-text-success'>
-                                        <span className='icon is-small mr-2'>
-                                          <i className='fas fa-check-circle'></i>
+                                  <label className='switch is-medium'>
+                                    <input
+                                      type='checkbox'
+                                      checked={!!values['logging.enabled']}
+                                      onChange={(e) => handleFieldChange('logging.enabled', e.target.checked)}
+                                      disabled={loading}
+                                    />
+                                    <span className='check'></span>
+                                    <span className='control-label'>
+                                      {values['logging.enabled'] ? 
+                                        <span className='has-text-success'>
+                                          <span className='icon is-small mr-2'>
+                                            <i className='fas fa-check-circle'></i>
+                                          </span>
+                                          Logging is enabled
+                                        </span> : 
+                                        <span className='has-text-danger'>
+                                          <span className='icon is-small mr-2'>
+                                            <i className='fas fa-times-circle'></i>
+                                          </span>
+                                          Logging is disabled
                                         </span>
-                                        Logging is enabled
-                                      </span> : 
-                                      <span className='has-text-danger'>
-                                        <span className='icon is-small mr-2'>
-                                          <i className='fas fa-times-circle'></i>
-                                        </span>
-                                        Logging is disabled
-                                      </span>
-                                    }
+                                      }
+                                    </span>
                                   </label>
                                 </div>
                               </div>
