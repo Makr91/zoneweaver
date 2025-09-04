@@ -131,9 +131,22 @@ async function handleExternalUser(provider, profile) {
       throw new Error(`No email found in ${provider} profile`);
     }
 
-    // Extract user identifier (subject)
-    const subject = profile.uid || profile.sub || profile.id || profile.cn;
+    // Extract user identifier (subject) - handle different LDAP server formats
+    let subject = profile.uid || profile.sub || profile.id || profile.cn;
+    
+    // If no direct identifier, try to extract from DN (Distinguished Name)
+    if (!subject && profile.dn) {
+      console.log(`🔍 No direct identifier found, extracting from DN: ${profile.dn}`);
+      const dnMatch = profile.dn.match(/^uid=([^,]+)/i) || profile.dn.match(/^cn=([^,]+)/i);
+      if (dnMatch) {
+        subject = dnMatch[1];
+        console.log(`✅ Extracted identifier from DN: ${subject}`);
+      }
+    }
+    
     if (!subject) {
+      console.error('❌ Available profile fields:', Object.keys(profile));
+      console.error('❌ Profile DN:', profile.dn);
       throw new Error(`No user identifier found in ${provider} profile`);
     }
 
