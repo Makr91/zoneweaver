@@ -242,6 +242,7 @@ router.delete("/api/servers/:serverAddress/terminal/sessions/:sessionId/stop", r
 // Settings endpoints - Protected with admin rate limiting
 router.get("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getSettings);
 router.put("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.updateSettings);
+router.post("/api/settings/ssl/upload", adminLimiter, authenticate, requireSuperAdmin, SettingsController.uploadSSLFile);
 router.post("/api/settings/reset", adminLimiter, authenticate, requireSuperAdmin, SettingsController.resetSettings);
 router.post("/api/settings/restart", adminLimiter, authenticate, requireSuperAdmin, SettingsController.restartServer);
 router.get("/api/settings/backups", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getBackups);

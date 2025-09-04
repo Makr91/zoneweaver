@@ -24,6 +24,10 @@ const ZoneweaverSettings = () => {
   // Subsection collapse state
   const [collapsedSubsections, setCollapsedSubsections] = useState({});
 
+  // SSL file upload state
+  const [sslFiles, setSslFiles] = useState({});
+  const [uploadingFiles, setUploadingFiles] = useState({});
+
   // Backup management state
   const [backups, setBackups] = useState([]);
   const [showBackupModal, setShowBackupModal] = useState(false);
@@ -381,6 +385,45 @@ const ZoneweaverSettings = () => {
     return collapsedSubsections[key] || false;
   };
 
+  // SSL file upload handlers
+  const handleSslFileUpload = async (fieldPath, file) => {
+    if (!file) return;
+    
+    setUploadingFiles(prev => ({ ...prev, [fieldPath]: true }));
+    
+    try {
+      const formData = new FormData();
+      formData.append('sslFile', file);
+      formData.append('fieldPath', fieldPath);
+      
+      const response = await axios.post('/api/settings/ssl/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data.success) {
+        handleFieldChange(fieldPath, response.data.filePath);
+        setSslFiles(prev => ({ 
+          ...prev, 
+          [fieldPath]: { 
+            name: file.name, 
+            size: file.size, 
+            uploadedPath: response.data.filePath 
+          } 
+        }));
+        setMsg(`SSL certificate uploaded successfully: ${file.name}`);
+      } else {
+        setMsg(`Failed to upload SSL certificate: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('SSL file upload error:', error);
+      setMsg(`Error uploading SSL certificate: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setUploadingFiles(prev => ({ ...prev, [fieldPath]: false }));
+    }
+  };
+
   // Check if field should be shown based on conditional logic
   const shouldShowField = (field) => {
     if (!field.conditional) return true;
@@ -393,6 +436,142 @@ const ZoneweaverSettings = () => {
     }
     
     return dependentValue === showWhen;
+  };
+
+  // SSL file field renderer for certificate, key, and CA files
+  const renderSSLFileField = (field) => {
+    // Skip field if conditional logic says to hide it
+    if (!shouldShowField(field)) {
+      return null;
+    }
+
+    const currentValue = values[field.path] !== undefined ? values[field.path] : field.value;
+    const isUploading = uploadingFiles[field.path];
+    const uploadedFile = sslFiles[field.path];
+    
+    // Determine SSL file type and appropriate settings
+    const getSSLFileConfig = (path) => {
+      if (path.includes('ssl_key_path')) {
+        return {
+          type: 'Private Key',
+          icon: 'fas fa-key',
+          color: 'is-danger',
+          accept: '.key,.pem',
+          description: 'Private key file (.key or .pem format)'
+        };
+      } else if (path.includes('ssl_cert_path')) {
+        return {
+          type: 'Certificate',
+          icon: 'fas fa-certificate',
+          color: 'is-success', 
+          accept: '.crt,.pem,.cer',
+          description: 'SSL certificate file (.crt, .pem, or .cer format)'
+        };
+      } else if (path.includes('ssl_ca_path')) {
+        return {
+          type: 'CA Certificate',
+          icon: 'fas fa-shield-alt',
+          color: 'is-info',
+          accept: '.ca,.crt,.pem,.cer',
+          description: 'Certificate Authority file (.ca, .crt, .pem, or .cer format)'
+        };
+      }
+      return {
+        type: 'SSL File',
+        icon: 'fas fa-file',
+        color: 'is-primary',
+        accept: '.pem,.crt,.key,.cer,.ca',
+        description: 'SSL certificate file'
+      };
+    };
+
+    const config = getSSLFileConfig(field.path);
+
+    return (
+      <div className='field' key={field.path}>
+        <label className='label'>
+          <span className='icon is-small mr-2'>
+            <i className={config.icon}></i>
+          </span>
+          {field.label}
+        </label>
+        
+        {/* Current file path display */}
+        {currentValue && (
+          <div className='field'>
+            <label className='label is-small'>Current File Path:</label>
+            <div className='control'>
+              <input 
+                className='input is-small'
+                type='text'
+                value={currentValue || ''}
+                onChange={(e) => handleFieldChange(field.path, e.target.value)}
+                placeholder={field.placeholder}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* File upload component */}
+        <div className={`file has-name ${config.color} ${isUploading ? 'is-loading' : ''}`}>
+          <label className='file-label'>
+            <input 
+              className='file-input'
+              type='file'
+              accept={config.accept}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  handleSslFileUpload(field.path, file);
+                }
+              }}
+              disabled={loading || isUploading}
+            />
+            <span className='file-cta'>
+              <span className='file-icon'>
+                <i className={isUploading ? 'fas fa-spinner fa-pulse' : config.icon}></i>
+              </span>
+              <span className='file-label'>
+                {isUploading ? 'Uploading...' : `Upload ${config.type}`}
+              </span>
+            </span>
+            <span className='file-name'>
+              {uploadedFile ? uploadedFile.name : 'No file selected'}
+            </span>
+          </label>
+        </div>
+
+        {/* File status and info */}
+        {uploadedFile && (
+          <div className='notification is-success is-small mt-2'>
+            <div className='columns is-mobile is-vcentered'>
+              <div className='column'>
+                <p className='is-size-7'>
+                  <strong>{uploadedFile.name}</strong> ({(uploadedFile.size / 1024).toFixed(1)} KB)
+                </p>
+                <p className='is-size-7 has-text-grey'>
+                  Uploaded to: <code className='is-size-7'>{uploadedFile.uploadedPath}</code>
+                </p>
+              </div>
+              <div className='column is-narrow'>
+                <span className='icon has-text-success'>
+                  <i className='fas fa-check-circle'></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {field.description && (
+          <p className='help has-text-grey'>
+            {field.description}
+            <br />
+            <small><strong>Supported formats:</strong> {config.accept.replace(/\./g, '').toUpperCase()}</small>
+          </p>
+        )}
+      </div>
+    );
   };
 
   // Dynamic field renderer based on metadata type
@@ -1014,6 +1193,31 @@ const ZoneweaverSettings = () => {
                               </p>
                             </div>
                           </div>
+                        </div>
+                      ) : sectionName === 'Server' ? (
+                        /* Special SSL file upload layout for Server section */
+                        <div className='columns is-multiline'>
+                          {section.fields.map((field) => {
+                            // Check if this is an SSL certificate field
+                            const isSSLField = field.path.includes('ssl_') && field.path.includes('_path');
+                            
+                            if (isSSLField) {
+                              return (
+                                <div key={field.path} className='column is-full'>
+                                  {renderSSLFileField(field)}
+                                </div>
+                              );
+                            }
+                            
+                            return (
+                              <div 
+                                key={field.path} 
+                                className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                              >
+                                {renderField(field)}
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         /* Standard column layout for other sections */
