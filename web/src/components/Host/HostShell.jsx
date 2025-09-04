@@ -157,10 +157,10 @@ const HostShell = () => {
   }
 
   return (
-    <div className="is-fullheight is-fullwidth">
+    <div className="is-fullheight is-fullwidth is-flex is-flex-direction-column">
       <div
         ref={ref}
-        className="is-fullheight is-fullwidth"
+        className="is-fullheight is-fullwidth is-flex-grow-1"
       />
       
       {!isReady && (

@@ -118,7 +118,7 @@ const Footer = () => {
             >
               v{__APP_VERSION__ || '1.0.0'}
             </span>
-            {' © '}
+            <span className="has-text-primary"> © </span>
             <a href='https://startcloud.com/' className='has-text-primary'>
               STARTcloud.com&#8482; {new Date().getFullYear()}
             </a>
@@ -206,7 +206,7 @@ const Footer = () => {
         minConstraints={[Infinity, 0]}
         handle={FooterHandle()}
       >
-        <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
+        <div className='log-console has-text-white is-fullheight'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
         </div>
       </ResizableBox>
