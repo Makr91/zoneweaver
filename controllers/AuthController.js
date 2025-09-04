@@ -2140,14 +2140,36 @@ class AuthController {
    */
   static async getAllOrganizations(req, res) {
     try {
+      // Get organizations with user statistics
       const organizations = await OrganizationModel.findAll({
         where: { is_active: true },
+        include: [{
+          model: UserModel,
+          as: 'users',
+          attributes: ['id', 'role', 'is_active'],
+          required: false
+        }],
         order: [['name', 'ASC']]
+      });
+      
+      // Calculate statistics for each organization
+      const organizationsWithStats = organizations.map(org => {
+        const orgJson = org.toJSON();
+        const users = orgJson.users || [];
+        
+        orgJson.total_users = users.length;
+        orgJson.active_users = users.filter(user => user.is_active).length;
+        orgJson.admin_users = users.filter(user => user.role === 'admin' && user.is_active).length;
+        
+        // Remove the users array to keep response clean
+        delete orgJson.users;
+        
+        return orgJson;
       });
       
       res.json({
         success: true,
-        organizations
+        organizations: organizationsWithStats
       });
     } catch (error) {
       console.error('Get all organizations error:', error);
