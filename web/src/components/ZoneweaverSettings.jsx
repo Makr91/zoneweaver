@@ -64,9 +64,21 @@ const ZoneweaverSettings = () => {
     }
   }, [searchParams, setSearchParams, sections, activeTab]);
 
-  const loadServers = () => {
-    const serverList = getServers();
-    setServers(serverList);
+  const loadServers = async () => {
+    try {
+      // Load servers with API keys for settings page display
+      const response = await axios.get('/api/servers?includeApiKeys=true');
+      if (response.data.success) {
+        setServers(response.data.servers);
+      } else {
+        const serverList = getServers(); // Fallback to context
+        setServers(serverList);
+      }
+    } catch (error) {
+      console.warn('Failed to load servers with API keys, using fallback:', error.message);
+      const serverList = getServers();
+      setServers(serverList);
+    }
   };
 
   // Server management functions
@@ -274,7 +286,7 @@ const ZoneweaverSettings = () => {
     const sectionMap = {
       'app': 'Application',
       'server': 'Server',
-      'frontend': 'Frontend',
+      'frontend': 'Application',
       'database': 'Database',
       'mail': 'Mail',
       'authentication': 'Authentication',
@@ -324,8 +336,27 @@ const ZoneweaverSettings = () => {
     }));
   };
 
+  // Check if field should be shown based on conditional logic
+  const shouldShowField = (field) => {
+    if (!field.conditional) return true;
+    
+    const { dependsOn, showWhen } = field.conditional;
+    const dependentValue = values[dependsOn];
+    
+    if (Array.isArray(showWhen)) {
+      return showWhen.includes(dependentValue);
+    }
+    
+    return dependentValue === showWhen;
+  };
+
   // Dynamic field renderer based on metadata type
   const renderField = (field) => {
+    // Skip field if conditional logic says to hide it
+    if (!shouldShowField(field)) {
+      return null;
+    }
+    
     const currentValue = values[field.path] !== undefined ? values[field.path] : field.value;
     
     const fieldProps = {
@@ -599,11 +630,11 @@ const ZoneweaverSettings = () => {
           {/* Dynamic Tab Navigation */}
           <div className='tabs is-boxed'>
             <ul>
-              {/* Server Management Tab - Always First */}
+              {/* API Servers Tab - Always First */}
               <li className={activeTab === 'servers' ? 'is-active' : ''}>
                 <a onClick={() => setActiveTab('servers')}>
                   <span className='icon is-small'><i className='fas fa-server'></i></span>
-                  <span>Server Management</span>
+                  <span>API Servers</span>
                 </a>
               </li>
               {/* Dynamic Tabs from Sections */}

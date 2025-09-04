@@ -459,6 +459,66 @@ class DatabaseMigrations {
     }
 
     /**
+     * Migrate servers table to add missing columns
+     * @description Adds allow_insecure, created_by and other missing fields for servers table
+     * @returns {Promise<boolean>} True if migration successful
+     */
+    async migrateServersTable() {
+        console.log('🔧 Migrating servers table for missing columns...');
+        
+        const tableName = 'servers';
+        const columnsToAdd = [
+            {
+                name: 'allow_insecure',
+                definition: {
+                    type: Sequelize.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
+                    comment: 'Allow insecure TLS connections to this server'
+                }
+            },
+            {
+                name: 'created_by',
+                definition: {
+                    type: Sequelize.INTEGER,
+                    allowNull: true,
+                    comment: 'User ID who created this server entry'
+                }
+            }
+        ];
+
+        let allSuccessful = true;
+        
+        for (const column of columnsToAdd) {
+            const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
+            if (!success) {
+                allSuccessful = false;
+            }
+        }
+
+        // Set default values for existing records
+        if (allSuccessful) {
+            try {
+                console.log('  + Setting default values for existing servers...');
+                await this.sequelize.query(
+                    "UPDATE servers SET allow_insecure = false WHERE allow_insecure IS NULL"
+                );
+                console.log('  ✅ Updated existing servers with default allow_insecure value');
+            } catch (error) {
+                console.warn('  ⚠️ Failed to update existing servers:', error.message);
+            }
+        }
+
+        if (allSuccessful) {
+            console.log('✅ Servers table migration completed successfully');
+        } else {
+            console.warn('⚠️ Servers table migration completed with some errors');
+        }
+
+        return allSuccessful;
+    }
+
+    /**
      * Run all pending migrations
      * @description Executes all necessary database migrations for Passport.js authentication
      * @returns {Promise<boolean>} True if all migrations successful
@@ -475,6 +535,9 @@ class DatabaseMigrations {
             
             // Migrate organizations table (add organization_code)
             await this.migrateOrganizationsTable();
+            
+            // Migrate servers table (add allow_insecure, created_by)
+            await this.migrateServersTable();
             
             // Create federated_credentials table
             await this.createCredentialsTable();

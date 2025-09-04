@@ -1,6 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  // Mask API key for security (show first 6 and last 4 characters)
+  const maskApiKey = (apiKey) => {
+    if (!apiKey || apiKey.length < 10) return 'Not Set';
+    const start = apiKey.substring(0, 6);
+    const end = apiKey.substring(apiKey.length - 4);
+    return `${start}...${end}`;
+  };
+
+  // Copy API key to clipboard
+  const copyApiKey = async (apiKey, serverId) => {
+    if (!apiKey) return;
+    
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setCopiedKey(serverId);
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy API key:', error);
+    }
+  };
   if (servers.length === 0) {
     return (
       <div className='has-text-centered p-6'>
@@ -25,6 +47,7 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
             <th>Protocol</th>
             <th>Port</th>
             <th>Entity Name</th>
+            <th>API Key</th>
             <th>Last Used</th>
             <th>Actions</th>
           </tr>
@@ -44,6 +67,29 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
               <td>{server.protocol}</td>
               <td>{server.port}</td>
               <td>{server.entityName}</td>
+              <td>
+                <div className='field has-addons'>
+                  <div className='control'>
+                    <span className='tag is-light'>
+                      {maskApiKey(server.api_key)}
+                    </span>
+                  </div>
+                  {server.api_key && (
+                    <div className='control'>
+                      <button
+                        className={`button is-small ${copiedKey === server.id ? 'is-success' : 'is-light'}`}
+                        onClick={() => copyApiKey(server.api_key, server.id)}
+                        title={copiedKey === server.id ? 'Copied!' : 'Copy API Key'}
+                        disabled={loading}
+                      >
+                        <span className='icon is-small'>
+                          <i className={`fas ${copiedKey === server.id ? 'fa-check' : 'fa-copy'}`}></i>
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </td>
               <td>
                 {server.lastUsed
                   ? new Date(server.lastUsed).toLocaleDateString()
