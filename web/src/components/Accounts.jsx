@@ -26,6 +26,11 @@ const Accounts = () => {
   const [deleteModalOrg, setDeleteModalOrg] = useState(null);
   const [deleteOrgConfirmText, setDeleteOrgConfirmText] = useState('');
   
+  // Organization editing state
+  const [editingOrg, setEditingOrg] = useState(null);
+  const [editOrgName, setEditOrgName] = useState('');
+  const [editOrgDescription, setEditOrgDescription] = useState('');
+  
   // Invitation state
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -378,6 +383,82 @@ const Accounts = () => {
   };
 
   /**
+   * Handle start editing organization
+   * @param {object} org - Organization to edit
+   */
+  const handleEditOrg = (org) => {
+    setEditingOrg(org.id);
+    setEditOrgName(org.name);
+    setEditOrgDescription(org.description || '');
+  };
+
+  /**
+   * Handle cancel editing organization
+   */
+  const handleCancelEditOrg = () => {
+    setEditingOrg(null);
+    setEditOrgName('');
+    setEditOrgDescription('');
+  };
+
+  /**
+   * Handle save organization changes
+   * @param {number} orgId - Organization ID to update
+   */
+  const handleSaveOrgChanges = async (orgId) => {
+    try {
+      setOrgLoading(true);
+      setOrgMsg('');
+
+      const updates = {};
+      if (editOrgName.trim() && editOrgName.trim() !== organizations.find(o => o.id === orgId)?.name) {
+        updates.name = editOrgName.trim();
+      }
+      if (editOrgDescription !== organizations.find(o => o.id === orgId)?.description) {
+        updates.description = editOrgDescription.trim() || null;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        setOrgMsg('No changes to save');
+        handleCancelEditOrg();
+        return;
+      }
+
+      const response = await axios.put(`/api/organizations/${orgId}`, updates);
+      
+      if (response.data.success) {
+        setOrgMsg('Organization updated successfully!');
+        handleCancelEditOrg();
+        await loadOrganizations(); // Reload organizations
+      } else {
+        setOrgMsg(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating organization:', error);
+      setOrgMsg('Error updating organization: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setOrgLoading(false);
+    }
+  };
+
+  /**
+   * Check if current user can edit organization
+   * @param {object} org - Organization to check
+   * @returns {boolean} Whether current user can edit organization
+   */
+  const canEditOrg = (org) => {
+    if (user.role === 'super-admin') {
+      return true; // Super admin can edit any organization
+    }
+    if (user.role === 'admin') {
+      // Regular admin can only edit their own organization
+      const userOrgId = user.organizationId || user.organization_id;
+      return userOrgId && parseInt(userOrgId) === parseInt(org.id);
+    }
+    return false;
+  };
+
+  /**
    * Handle sending user invitation
    */
   const handleSendInvitation = async () => {
@@ -577,11 +658,41 @@ const Accounts = () => {
                         {organizations.map((org) => (
                           <tr key={org.id}>
                             <td>
-                              <strong>{org.name}</strong>
+                              {editingOrg === org.id ? (
+                                <div className="field">
+                                  <div className="control">
+                                    <input 
+                                      className="input is-small"
+                                      type="text"
+                                      value={editOrgName}
+                                      onChange={(e) => setEditOrgName(e.target.value)}
+                                      placeholder="Organization name"
+                                      disabled={orgLoading}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <strong>{org.name}</strong>
+                              )}
                             </td>
                             <td>
-                              {org.description || (
-                                <span className='has-text-grey is-italic'>No description</span>
+                              {editingOrg === org.id ? (
+                                <div className="field">
+                                  <div className="control">
+                                    <textarea 
+                                      className="textarea is-small"
+                                      rows="2"
+                                      value={editOrgDescription}
+                                      onChange={(e) => setEditOrgDescription(e.target.value)}
+                                      placeholder="Organization description (optional)"
+                                      disabled={orgLoading}
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                org.description || (
+                                  <span className='has-text-grey is-italic'>No description</span>
+                                )
                               )}
                             </td>
                             <td>
@@ -603,31 +714,61 @@ const Accounts = () => {
                             </td>
                             <td>
                               <div className='buttons are-small'>
-                                {canModifyOrg(org) ? (
+                                {editingOrg === org.id ? (
                                   <>
-                                    {org.is_active && (
+                                    <button 
+                                      className='button is-small is-success'
+                                      onClick={() => handleSaveOrgChanges(org.id)}
+                                      disabled={!editOrgName.trim() || orgLoading}
+                                    >
+                                      Save
+                                    </button>
+                                    <button 
+                                      className='button is-small'
+                                      onClick={handleCancelEditOrg}
+                                      disabled={orgLoading}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    {canEditOrg(org) && (
+                                      <button 
+                                        className='button is-small is-info'
+                                        onClick={() => handleEditOrg(org)}
+                                        disabled={orgLoading || editingOrg !== null}
+                                        title="Edit organization name and description"
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
+                                    {canModifyOrg(org) && org.is_active && (
                                       <button 
                                         className='button is-small is-warning'
                                         onClick={() => handleDeactivateOrg(org.id)}
-                                        disabled={orgLoading}
+                                        disabled={orgLoading || editingOrg !== null}
                                         title="Deactivate organization"
                                       >
                                         Deactivate
                                       </button>
                                     )}
-                                    <button 
-                                      className='button is-small is-danger is-outlined'
-                                      onClick={() => setDeleteModalOrg(org)}
-                                      disabled={orgLoading}
-                                      title="Permanently delete organization (and all users)"
-                                    >
-                                      Delete
-                                    </button>
+                                    {canModifyOrg(org) && (
+                                      <button 
+                                        className='button is-small is-danger is-outlined'
+                                        onClick={() => setDeleteModalOrg(org)}
+                                        disabled={orgLoading || editingOrg !== null}
+                                        title="Permanently delete organization (and all users)"
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                    {!canEditOrg(org) && !canModifyOrg(org) && (
+                                      <span className='has-text-grey is-size-7'>
+                                        No permission
+                                      </span>
+                                    )}
                                   </>
-                                ) : (
-                                  <span className='has-text-grey is-size-7'>
-                                    {user.organization_id === org.id ? 'Cannot modify own organization' : 'No permission'}
-                                  </span>
                                 )}
                               </div>
                             </td>

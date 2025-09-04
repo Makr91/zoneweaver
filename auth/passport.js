@@ -60,6 +60,17 @@ passport.deserializeUser(async (userId, done) => {
  * Phase 3: LDAP Authentication
  */
 async function setupLdapStrategy() {
+  // Wait for database to be ready before setting up strategies
+  try {
+    // Test database access with new schema
+    const { user: UserModel } = db;
+    await UserModel.findOne({ limit: 1 }); // Test query to ensure schema is ready
+  } catch (error) {
+    console.log('⏳ Database not ready yet, waiting for migrations to complete...');
+    // Wait a bit for migrations to finish
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
   // Only setup LDAP if enabled in configuration
   if (!config.authentication?.ldap_enabled?.value) {
     console.log('🔧 LDAP authentication disabled in configuration');

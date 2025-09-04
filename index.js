@@ -8,7 +8,9 @@ import router from "./routes/index.js";
 import db from "./models/index.js";
 import { specs, swaggerUi } from "./config/swagger.js";
 import { loadConfig } from "./utils/config.js";
-import passport from "./auth/passport.js";
+
+// Initialize passport after database is ready
+let passport;
 
 // Prevent server crashes from unhandled WebSocket errors
 process.on('uncaughtException', (err) => {
@@ -55,14 +57,10 @@ app.use(cors(corsOptions));
 app.options("*splat", cors(corsOptions));
 app.use(express.json());
 
-// Initialize Passport.js
-app.use(passport.initialize());
-
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));
 
-// Database and models are already initialized via models/index.js import
-// Access models via db.server, db.user, etc.
+// Database and models initialization - wait for migrations to complete
 const ServerModel = db.server;
 const UserModel = db.user;
 const OrganizationModel = db.organization;
@@ -70,6 +68,35 @@ const InvitationModel = db.invitation;
 let serverModelReady = true; // Models are ready immediately after import
 
 console.log('✅ Sequelize models loaded and ready');
+
+// Initialize Passport.js AFTER database is ready
+(async () => {
+  try {
+    // Wait a moment for any ongoing migrations to complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Test database access to ensure schema is ready
+    try {
+      await UserModel.findOne({ limit: 1 });
+      console.log('🔒 Database schema ready for authentication');
+    } catch (dbError) {
+      console.log('⏳ Waiting for database migrations to complete...');
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    
+    // Now safe to import and initialize Passport
+    const passportModule = await import('./auth/passport.js');
+    passport = passportModule.default;
+    
+    // Add Passport middleware after it's initialized
+    app.use(passport.initialize());
+    console.log('✅ Passport.js initialized and ready');
+    
+  } catch (error) {
+    console.error('❌ Failed to initialize Passport:', error.message);
+    console.log('🔄 Authentication will fall back to JWT-only mode');
+  }
+})();
 
 // Middleware to track VNC console requests for WebSocket fallback
 app.use('/api/servers/:serverAddress/zones/:zoneName/vnc/console', (req, res, next) => {
