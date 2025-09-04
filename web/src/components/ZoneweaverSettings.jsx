@@ -1068,20 +1068,14 @@ const ZoneweaverSettings = () => {
                 </a>
               </li>
               {/* Dynamic Tabs from Sections */}
-              {Object.entries(sections).map(([sectionName, section]) => {
-                const totalSettings = section.fields.length + Object.values(section.subsections || {}).reduce((sum, subsection) => sum + subsection.fields.length, 0);
-                return (
-                  <li key={sectionName} className={activeTab === sectionName ? 'is-active' : ''}>
-                    <a onClick={() => setActiveTab(sectionName)}>
-                      <span className='icon is-small'><i className={section.icon}></i></span>
-                      <span>{section.title}</span>
-                      <span className='tag is-light is-small ml-2'>
-                        {totalSettings} setting{totalSettings !== 1 ? 's' : ''}
-                      </span>
-                    </a>
-                  </li>
-                );
-              })}
+              {Object.entries(sections).map(([sectionName, section]) => (
+                <li key={sectionName} className={activeTab === sectionName ? 'is-active' : ''}>
+                  <a onClick={() => setActiveTab(sectionName)}>
+                    <span className='icon is-small'><i className={section.icon}></i></span>
+                    <span>{section.title}</span>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -1159,6 +1153,9 @@ const ZoneweaverSettings = () => {
                           <i className={section.icon}></i>
                         </span>
                         {section.title} Settings
+                        <span className='tag is-light is-small ml-2'>
+                          {section.fields.length} setting{section.fields.length !== 1 ? 's' : ''}
+                        </span>
                       </h2>
                       
                       {/* Section description from config */}
