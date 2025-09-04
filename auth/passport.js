@@ -163,8 +163,23 @@ async function handleExternalUser(provider, profile) {
         throw new Error('User account is inactive');
       }
       
-      // Update last login
-      await user.update({ last_login: new Date() });
+      // If user doesn't have an organization, assign one
+      if (!user.organization_id) {
+        console.log(`🔍 Credential user ${email} has no organization, determining organization...`);
+        const organizationId = await determineUserOrganization(email, profile);
+        console.log(`🏢 Assigning credential user to organization ID: ${organizationId}`);
+        
+        await user.update({
+          organization_id: organizationId,
+          last_login: new Date()
+        });
+        
+        console.log(`✅ Updated credential user with organization_id: ${user.organization_id}`);
+      } else {
+        // Update last login
+        await user.update({ last_login: new Date() });
+      }
+      
       return user;
     }
 
