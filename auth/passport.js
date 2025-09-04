@@ -15,7 +15,7 @@ const config = loadConfig();
 // JWT Strategy - matches existing custom middleware behavior exactly
 passport.use('jwt', new JwtStrategy({
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: config.authentication?.jwt_secret?.value || 'fallback-secret',
+  secretOrKey: config.authentication.jwt_secret.value,
   // Note: Not setting issuer/audience initially to maintain compatibility
 }, async (payload, done) => {
   try {

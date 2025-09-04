@@ -413,7 +413,7 @@ class AuthController {
           email: user.email, 
           role: user.role 
         },
-        config.authentication?.jwt_secret?.value || 'fallback-secret',
+        config.authentication.jwt_secret.value,
         { expiresIn: '24h' }
       );
 
@@ -547,7 +547,7 @@ class AuthController {
           email: user.email,
           role: user.role
         },
-        config.authentication?.strategies?.jwt?.secret || 'fallback-secret',
+        config.authentication.jwt_secret.value,
         { expiresIn: '24h' }
       );
 
@@ -966,7 +966,7 @@ class AuthController {
         });
       }
 
-      const decoded = jwt.verify(token, config.authentication?.jwt_secret?.value || 'fallback-secret');
+      const decoded = jwt.verify(token, config.authentication.jwt_secret.value);
       
       // Get fresh user data
       const user = await UserModel.findByPk(decoded.userId);
