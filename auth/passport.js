@@ -231,10 +231,9 @@ async function determineUserOrganization(email, profile) {
   console.log(`🏢 Determining organization for domain: ${domain}`);
 
   // 1. Check pending invitation (highest priority)
-  const invitation = await InvitationModel.findOne({
+  const invitation = await InvitationModel.scope('pending').findOne({
     where: { 
-      email: email,
-      status: 'pending'
+      email: email
     }
   });
   
@@ -242,7 +241,7 @@ async function determineUserOrganization(email, profile) {
     console.log(`📧 Found pending invitation for ${email}, using organization: ${invitation.organization_id}`);
     
     // Mark invitation as used
-    await invitation.update({ status: 'accepted' });
+    await invitation.markAsUsed();
     return invitation.organization_id;
   }
 
