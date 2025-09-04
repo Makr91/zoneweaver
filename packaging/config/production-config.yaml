@@ -181,6 +181,13 @@ server:
     required: false
     depends_on: ssl_enabled
     show_when: [true]
+  ssl_ca_path:
+    type: string
+    value: "/etc/zoneweaver/ssl/ca.pem"
+    description: "Path to SSL Certificate Authority (CA) file for certificate chain validation"
+    required: false
+    depends_on: ssl_enabled
+    show_when: [true]
 
 security:
   cors:

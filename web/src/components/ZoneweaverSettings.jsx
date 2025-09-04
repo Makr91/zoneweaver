@@ -1067,14 +1067,20 @@ const ZoneweaverSettings = () => {
                 </a>
               </li>
               {/* Dynamic Tabs from Sections */}
-              {Object.entries(sections).map(([sectionName, section]) => (
-                <li key={sectionName} className={activeTab === sectionName ? 'is-active' : ''}>
-                  <a onClick={() => setActiveTab(sectionName)}>
-                    <span className='icon is-small'><i className={section.icon}></i></span>
-                    <span>{section.title}</span>
-                  </a>
-                </li>
-              ))}
+              {Object.entries(sections).map(([sectionName, section]) => {
+                const totalSettings = section.fields.length + Object.values(section.subsections || {}).reduce((sum, subsection) => sum + subsection.fields.length, 0);
+                return (
+                  <li key={sectionName} className={activeTab === sectionName ? 'is-active' : ''}>
+                    <a onClick={() => setActiveTab(sectionName)}>
+                      <span className='icon is-small'><i className={section.icon}></i></span>
+                      <span>{section.title}</span>
+                      <span className='tag is-light is-small ml-2'>
+                        {totalSettings} setting{totalSettings !== 1 ? 's' : ''}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -1244,8 +1250,10 @@ const ZoneweaverSettings = () => {
                         /* Special SSL file upload layout for Server section */
                         <div className='columns is-multiline'>
                           {section.fields.map((field) => {
-                            // Check if this is an SSL certificate field
-                            const isSSLField = field.path.includes('ssl_') && field.path.includes('_path');
+                            // Check if this is an SSL certificate field  
+                            const isSSLField = field.path.includes('ssl_') && (field.path.includes('_path') || field.path.includes('_cert') || field.path.includes('_key')) ||
+                                             field.path.includes('ca_cert') || field.path.includes('ca_certificate') ||
+                                             (field.type === 'string' && (field.path.includes('cert') || field.path.includes('key')) && (field.path.includes('path') || field.description?.toLowerCase().includes('certificate') || field.description?.toLowerCase().includes('key')));
                             
                             if (isSSLField) {
                               return (
