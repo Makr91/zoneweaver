@@ -622,6 +622,152 @@ class SettingsController {
 
   /**
    * @swagger
+   * /api/settings/restore/{filename}:
+   *   post:
+   *     summary: Restore configuration from backup (Super-admin only)
+   *     description: Restore Zoneweaver configuration from a specific backup file
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: filename
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Backup filename to restore
+   *         example: "config.yaml.backup.1641234567890"
+   *     responses:
+   *       200:
+   *         description: Configuration restored successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       404:
+   *         description: Backup file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async restoreFromBackup(req, res) {
+    try {
+      const { filename } = req.params;
+      const configDir = path.dirname(SettingsController.configPath);
+      const backupPath = path.join(configDir, filename);
+
+      // Verify backup file exists and is a valid backup
+      if (!filename.startsWith('config.yaml.backup.') || !fs.existsSync(backupPath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Backup file not found'
+        });
+      }
+
+      // Create backup of current config before restore
+      const restoreBackupPath = `${SettingsController.configPath}.backup.${Date.now()}`;
+      fs.copyFileSync(SettingsController.configPath, restoreBackupPath);
+
+      // Restore from backup
+      fs.copyFileSync(backupPath, SettingsController.configPath);
+
+      console.log(`Configuration restored from ${filename} by user ${req.user.username} (${req.user.role})`);
+      console.log(`Current config backed up to: ${path.basename(restoreBackupPath)}`);
+
+      res.json({
+        success: true,
+        message: 'Configuration restored successfully. Settings will take effect after next page reload.',
+        backupPath: path.basename(restoreBackupPath)
+      });
+
+    } catch (error) {
+      console.error('Error restoring backup:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to restore backup: ' + error.message
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/settings/backups/{filename}:
+   *   delete:
+   *     summary: Delete a configuration backup (Super-admin only)
+   *     description: Delete a specific configuration backup file
+   *     tags: [System Settings]
+   *     security:
+   *       - JwtAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: filename
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Backup filename to delete
+   *         example: "config.yaml.backup.1641234567890"
+   *     responses:
+   *       200:
+   *         description: Backup deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       404:
+   *         description: Backup file not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async deleteBackup(req, res) {
+    try {
+      const { filename } = req.params;
+      const configDir = path.dirname(SettingsController.configPath);
+      const backupPath = path.join(configDir, filename);
+
+      // Verify backup file exists and is a valid backup
+      if (!filename.startsWith('config.yaml.backup.') || !fs.existsSync(backupPath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Backup file not found'
+        });
+      }
+
+      // Delete the backup file
+      fs.unlinkSync(backupPath);
+
+      console.log(`Backup ${filename} deleted by user ${req.user.username} (${req.user.role})`);
+
+      res.json({
+        success: true,
+        message: 'Backup deleted successfully'
+      });
+
+    } catch (error) {
+      console.error('Error deleting backup:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete backup: ' + error.message
+      });
+    }
+  }
+
+  /**
+   * @swagger
    * /api/zapi/{protocol}/{hostname}/{port}/settings:
    *   get:
    *     summary: Get Zoneweaver API Server settings (Super-admin only)
