@@ -179,8 +179,8 @@ const Footer = () => {
   const FooterHandle = () => {
     return (
       <div className="level mb-0 is-mobile">
-        {/* Left section - clicks pass through to header below */}
-        <div className="level-item is-justify-content-flex-start">
+        {/* Left section - flex-grow to take up space */}
+        <div className="level-item is-flex-grow-1">
         </div>
         {/* Middle section - draggable grip area */}
         <div className="level-item button is-small is-dark is-justify-content-center react-resizable-handle react-resizable-handle-n">
@@ -188,8 +188,8 @@ const Footer = () => {
             <i className="fas fa-solid fa-grip-lines"></i>
           </span>
         </div>
-        {/* Right section - clicks pass through to header below */}
-        <div className="level-item is-justify-content-flex-end">
+        {/* Right section - flex-grow to take up space */}
+        <div className="level-item is-flex-grow-1">
         </div>
       </div>
     );
