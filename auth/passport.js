@@ -267,6 +267,20 @@ async function handleExternalUser(provider, profile) {
       throw credentialError;
     }
 
+    // Verify what's actually in the database
+    const dbUser = await UserModel.findByPk(user.id, {
+      include: [{
+        model: OrganizationModel,
+        as: 'organization'
+      }]
+    });
+    console.log(`🔍 Database verification - User ID: ${dbUser.id}, Email: ${dbUser.email}, Organization ID: ${dbUser.organization_id}`);
+    if (dbUser.organization) {
+      console.log(`🔍 Database verification - Organization: ${dbUser.organization.name} (ID: ${dbUser.organization.id})`);
+    } else {
+      console.log(`🔍 Database verification - NO ORGANIZATION FOUND IN DATABASE!`);
+    }
+
     console.log(`✅ Created new ${provider} user: ${user.username} (${user.email})`);
     return user;
 
