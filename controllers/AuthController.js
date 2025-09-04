@@ -195,7 +195,7 @@ class AuthController {
             });
           } else {
             // Check if new organization creation is allowed
-            if (!config.authentication?.strategies?.local?.allow_new_organizations) {
+            if (!config.authentication?.local_allow_new_organizations?.value) {
               return res.status(403).json({
                 success: false,
                 message: 'New organization registration is currently disabled. Please contact an administrator or join with an invitation code.'
@@ -413,7 +413,7 @@ class AuthController {
           email: user.email, 
           role: user.role 
         },
-        config.authentication?.strategies?.jwt?.secret || 'fallback-secret',
+        config.authentication?.jwt_secret?.value || 'fallback-secret',
         { expiresIn: '24h' }
       );
 
@@ -504,7 +504,7 @@ class AuthController {
   static async ldapLogin(req, res) {
     try {
       // Check if LDAP is enabled
-      if (!config.authentication?.strategies?.ldap?.enabled) {
+      if (!config.authentication?.ldap_enabled?.value) {
         return res.status(400).json({
           success: false,
           message: 'LDAP authentication is not enabled'
@@ -966,7 +966,7 @@ class AuthController {
         });
       }
 
-      const decoded = jwt.verify(token, config.authentication?.strategies?.jwt?.secret || 'fallback-secret');
+      const decoded = jwt.verify(token, config.authentication?.jwt_secret?.value || 'fallback-secret');
       
       // Get fresh user data
       const user = await UserModel.findByPk(decoded.userId);

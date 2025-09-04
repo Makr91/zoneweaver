@@ -1,153 +1,417 @@
 # Zoneweaver Production Configuration
 # This file is installed to /etc/zoneweaver/config.yaml
+# All settings use metadata format for configuration-driven UI
 
 app:
-  name: Zoneweaver
-  version: 0.5.3
-  frontend_url: https://localhost:3443
+  name:
+    type: string
+    value: Zoneweaver
+    description: "Application display name"
+    required: true
+  version:
+    type: string
+    value: 0.5.3
+    description: "Current application version"
+    required: true
+  frontend_url:
+    type: string
+    value: https://localhost:3443
+    description: "Base URL for the frontend application"
+    required: true
 
 mail:
-  # Configure SMTP settings for email notifications
-  smtp_connect:
-    host: localhost
-    port: 587
-    secure: false
-  smtp_auth:
-    user: ""
-    password: ""
-  smtp_settings:
-    from: Zoneweaver <noreply@localhost>
+  smtp_host:
+    type: string
+    value: localhost
+    description: "SMTP server hostname (e.g., smtp.gmail.com)"
+    required: true
+  smtp_port:
+    type: integer
+    value: 587
+    min: 1
+    max: 65535
+    description: "SMTP server port (587 for TLS, 465 for SSL, 25 for plain)"
+    required: true
+  smtp_secure:
+    type: boolean
+    value: false
+    description: "Use SSL/TLS encryption (true for port 465, false for 587)"
+    required: true
+  smtp_user:
+    type: string
+    value: ""
+    description: "SMTP authentication username (usually your email address)"
+    required: false
+  smtp_password:
+    type: password
+    value: ""
+    description: "SMTP authentication password (use app passwords for Gmail)"
+    required: false
+  smtp_from:
+    type: string
+    value: "Zoneweaver <noreply@localhost>"
+    description: "From address for outgoing emails"
+    required: true
 
 server:
-  hostname: localhost
-  port: 3443
-  ssl:
-    enabled: true
-    generate_ssl: true  # Only applies if existing keys do not exist
-    key: /etc/zoneweaver/ssl/key.pem
-    cert: /etc/zoneweaver/ssl/cert.pem
+  hostname:
+    type: host
+    value: localhost
+    description: "Server hostname or IP address"
+    required: true
+  port:
+    type: integer
+    value: 3443
+    min: 1
+    max: 65535
+    description: "Server port number"
+    required: true
+  ssl_enabled:
+    type: boolean
+    value: true
+    description: "Enable SSL/HTTPS for the server"
+    required: true
+  ssl_generate:
+    type: boolean
+    value: true
+    description: "Auto-generate SSL certificates if they don't exist"
+    required: false
+    depends_on: ssl_enabled
+    show_when: [true]
+  ssl_key_path:
+    type: string
+    value: "/etc/zoneweaver/ssl/key.pem"
+    description: "Path to SSL private key file"
+    required: false
+    depends_on: ssl_enabled
+    show_when: [true]
+  ssl_cert_path:
+    type: string
+    value: "/etc/zoneweaver/ssl/cert.pem"
+    description: "Path to SSL certificate file"
+    required: false
+    depends_on: ssl_enabled
+    show_when: [true]
 
 frontend:
-  port: 3443
-  autoRefreshInterval: 5
-  enableNotifications: true
-  enableDarkMode: true
+  port:
+    type: integer
+    value: 3443
+    min: 1
+    max: 65535
+    description: "Frontend serving port"
+    required: true
+  auto_refresh_interval:
+    type: integer
+    value: 5
+    min: 1
+    max: 300
+    description: "Dashboard auto-refresh interval in seconds"
+    required: true
+  enable_notifications:
+    type: boolean
+    value: true
+    description: "Enable browser notifications for alerts"
+    required: true
+  enable_dark_mode:
+    type: boolean
+    value: true
+    description: "Enable dark mode theme by default"
+    required: true
 
 cors:
   whitelist:
-    - https://localhost:3443
-    - https://localhost
-  options:
-    origin: true
-    preflightContinue: true
-    credentials: true
+    type: array
+    value: 
+      - "https://localhost:3443"
+      - "https://localhost"
+    description: "List of allowed CORS origins (one per line)"
+    required: true
+  allow_origin:
+    type: select
+    value: true
+    options: [true, false, "specific"]
+    description: "CORS origin policy"
+    required: true
+  preflight_continue:
+    type: boolean
+    value: true
+    description: "Pass CORS preflight response to next handler"
+    required: true
+  credentials:
+    type: boolean
+    value: true
+    description: "Allow credentials in CORS requests"
+    required: true
 
-backend_servers: []
+backend_servers:
+  type: array
+  value: []
+  description: "List of backend Zoneweaver API servers"
+  required: false
 
 environment:
-  trust_proxy: 1
+  trust_proxy:
+    type: integer
+    value: 1
+    min: 0
+    max: 10
+    description: "Number of proxy servers to trust (0 = none, 1+ = trust N proxies)"
+    required: true
 
 logging:
-  level: info
-  enabled: true
+  level:
+    type: select
+    value: info
+    options: ["error", "warn", "info", "debug"]
+    description: "Minimum logging level"
+    required: true
+  enabled:
+    type: boolean
+    value: true
+    description: "Enable application logging"
+    required: true
 
 limits:
-  maxServersPerUser: 10
+  max_servers_per_user:
+    type: integer
+    value: 10
+    min: 1
+    max: 1000
+    description: "Maximum number of servers a user can manage"
+    required: true
 
 # Authentication Configuration (Phase 3: LDAP Integration)
-# Uncomment and configure the sections below to enable external authentication
 authentication:
-  # Core authentication settings
-  enabled_strategies: [local, jwt]  # Add ldap, oidc as implemented
-  default_strategy: local
+  enabled_strategies:
+    type: array
+    value: ["local", "jwt"]
+    description: "List of enabled authentication strategies"
+    required: true
+    
+  default_strategy:
+    type: select
+    value: local
+    options: ["local", "jwt", "ldap", "oidc"]
+    description: "Default authentication strategy"
+    required: true
   
-  # Authentication strategy configurations
-  strategies:
-    # JWT settings (consolidated from old security section)
-    jwt:
-      secret: "__JWT_SECRET_FROM_FILE__"
-      expiration: "24h"
-      issuer: "zoneweaver"
-      audience: "zoneweaver-api"
-#       
-    # Local authentication (existing username/password)
-    local:
-      enabled: true
-      require_email_verification: false
-      password_policy:
-        min_length: 8
-        require_uppercase: false
-        require_lowercase: false
-        require_numbers: false
-        require_symbols: false
-      bcrypt_rounds: 10
-      session_timeout: 24
-      allow_new_organizations: true
-        
-    # LDAP Configuration
-    ldap:
-      enabled: false
-      url: "ldap://localhost:389"
-      # url: "ldaps://ldap.company.com:636"  # For secure LDAP
-      bind_dn: "cn=admin,dc=example,dc=com"
-      bind_credentials: "admin_password"
-      search_base: "ou=users,dc=example,dc=com"
-      search_filter: "(uid={{username}})"
-      search_attributes: ["displayName", "mail", "memberOf"]
-      tls_options:
-        reject_unauthorized: false
-        ca: []
-        
-    # OIDC Configuration (Future Phase 4)
-    # oidc:
-    #   enabled: false
-    #   issuer: "https://accounts.google.com"
-    #   client_id: ""
-    #   client_secret: ""
-    #   discovery_url: "https://accounts.google.com/.well-known/openid_configuration"
-    #   scope: "openid profile email"
-    #   response_type: "code"
+  # JWT Strategy Settings
+  jwt_secret:
+    type: password
+    value: "__JWT_SECRET_FROM_FILE__"
+    description: "JWT signing secret (use strong random string)"
+    required: true
+    
+  jwt_expiration:
+    type: string
+    value: "24h"
+    description: "JWT token expiration time (e.g., '24h', '7d', '1h')"
+    required: true
+    
+  jwt_issuer:
+    type: string
+    value: "zoneweaver"
+    description: "JWT token issuer identifier"
+    required: true
+    
+  jwt_audience:
+    type: string
+    value: "zoneweaver-api"
+    description: "JWT token audience identifier"
+    required: true
   
-  # Settings that control external authentication providers (LDAP/OIDC)
-  # These settings do NOT apply to local/JWT authentication
-  external_provider_settings:
-    # Domain-to-Organization Mapping
-    domain_organization_mapping:
-      enabled: false
-      mappings: {}
-      # Example mappings (admin configurable via UI):
-      # A1B2C3:
-      #   - "company1.com"
-      #   - "companyx.com"
-      # A55555:
-      #   - "companyR.net"
-      # FFFFFF:
-      #   - "companyZ.com"
-      #   - "company3.org"
-      
-    # External User Provisioning (how to handle new external users)
-    dynamic_provisioning:
-      enabled: false
-      policy: "invite_only"  # invite_only | auto_provision | manual_approval | disabled
-      default_role: "user"
-      fallback_action: "require_invite"  # require_invite | create_org | deny_access
-      
-      # Cross-domain invitation handling
-      cross_domain_invites:
-        allowed: true
-        priority: "invitation_wins"  # invitation_wins | domain_wins
-        
-      # Auto-organization creation settings
-      auto_org_creation:
-        enabled: false
-        naming_pattern: "{{domain}} Organization"
-        default_description: "Auto-created organization"
-        
-    # Profile synchronization from external providers
-    profile_sync:
-      enabled: true
-      update_on_login: true
-      sync_fields: ["displayName", "email", "groups"]
+  # Local Authentication Settings
+  local_enabled:
+    type: boolean
+    value: true
+    description: "Enable username/password authentication"
+    required: true
+    
+  local_require_email_verification:
+    type: boolean
+    value: false
+    description: "Require email verification for new local accounts"
+    required: true
+    
+  local_password_min_length:
+    type: integer
+    value: 8
+    min: 4
+    max: 128
+    description: "Minimum password length for local accounts"
+    required: true
+    
+  local_password_require_uppercase:
+    type: boolean
+    value: false
+    description: "Require uppercase letters in passwords"
+    required: true
+    
+  local_password_require_lowercase:
+    type: boolean
+    value: false
+    description: "Require lowercase letters in passwords"
+    required: true
+    
+  local_password_require_numbers:
+    type: boolean
+    value: false
+    description: "Require numbers in passwords"
+    required: true
+    
+  local_password_require_symbols:
+    type: boolean
+    value: false
+    description: "Require special symbols in passwords"
+    required: true
+    
+  local_bcrypt_rounds:
+    type: integer
+    value: 10
+    min: 8
+    max: 15
+    description: "Bcrypt hashing rounds (higher = more secure but slower)"
+    required: true
+    
+  local_session_timeout:
+    type: integer
+    value: 24
+    min: 1
+    max: 168
+    description: "Session timeout in hours"
+    required: true
+    
+  local_allow_new_organizations:
+    type: boolean
+    value: true
+    description: "Allow users to create new organizations during registration"
+    required: true
+  
+  # LDAP Configuration
+  ldap_enabled:
+    type: boolean
+    value: false
+    description: "Enable LDAP authentication"
+    required: true
+    
+  ldap_url:
+    type: string
+    value: "ldap://localhost:389"
+    description: "LDAP server URL (ldap:// for plain, ldaps:// for SSL)"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+    
+  ldap_bind_dn:
+    type: string
+    value: "cn=admin,dc=example,dc=com"
+    description: "LDAP bind DN for authentication"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+    
+  ldap_bind_credentials:
+    type: password
+    value: "admin_password"
+    description: "LDAP bind password"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+    
+  ldap_search_base:
+    type: string
+    value: "ou=users,dc=example,dc=com"
+    description: "LDAP search base DN"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+    
+  ldap_search_filter:
+    type: string
+    value: "(uid={{username}})"
+    description: "LDAP search filter ({{username}} will be replaced)"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+    
+  ldap_search_attributes:
+    type: string
+    value: "displayName,mail,memberOf"
+    description: "Comma-separated list of LDAP attributes to retrieve"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+    
+  ldap_tls_reject_unauthorized:
+    type: boolean
+    value: false
+    description: "Reject unauthorized TLS certificates for LDAPS"
+    required: false
+    depends_on: ldap_enabled
+    show_when: [true]
+  
+  # External Provider Settings
+  external_domain_mapping_enabled:
+    type: boolean
+    value: false
+    description: "Enable automatic organization assignment based on email domain"
+    required: true
+    
+  external_provisioning_enabled:
+    type: boolean
+    value: false
+    description: "Enable automatic user provisioning for external authentication"
+    required: true
+    
+  external_provisioning_policy:
+    type: select
+    value: "invite_only"
+    options: ["invite_only", "auto_provision", "manual_approval", "disabled"]
+    description: "Policy for handling new external users"
+    required: false
+    depends_on: external_provisioning_enabled
+    show_when: [true]
+    
+  external_provisioning_default_role:
+    type: select
+    value: "user"
+    options: ["user", "admin", "super-admin"]
+    description: "Default role for auto-provisioned users"
+    required: false
+    depends_on: external_provisioning_enabled
+    show_when: [true]
+    
+  external_provisioning_fallback_action:
+    type: select
+    value: "require_invite"
+    options: ["require_invite", "create_org", "deny_access"]
+    description: "Action when no organization mapping found"
+    required: false
+    depends_on: external_provisioning_enabled
+    show_when: [true]
+    
+  external_profile_sync_enabled:
+    type: boolean
+    value: true
+    description: "Sync user profile from external providers"
+    required: true
+    
+  external_profile_update_on_login:
+    type: boolean
+    value: true
+    description: "Update profile information on each login"
+    required: false
+    depends_on: external_profile_sync_enabled
+    show_when: [true]
+    
+  external_profile_sync_fields:
+    type: string
+    value: "displayName,email,groups"
+    description: "Comma-separated list of profile fields to sync"
+    required: false
+    depends_on: external_profile_sync_enabled
+    show_when: [true]
 
 # Database configuration with UI metadata
 database:
@@ -253,8 +517,11 @@ database:
 #   path: /var/lib/zoneweaver/database/zoneweaver.db
 
 gravatar:
-  # Get your API key from https://gravatar.com/
-  apiKey: ""
+  api_key:
+    type: string
+    value: ""
+    description: "Gravatar API key for enhanced profile images (get from https://gravatar.com/)"
+    required: false
 
 # Rate Limiting Configuration (CodeQL Security Fix)
 rateLimiting:

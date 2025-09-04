@@ -15,7 +15,7 @@ const config = loadConfig();
 // JWT Strategy - matches existing custom middleware behavior exactly
 passport.use('jwt', new JwtStrategy({
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: config.authentication?.strategies?.jwt?.secret || 'fallback-secret',
+  secretOrKey: config.authentication?.jwt_secret?.value || 'fallback-secret',
   // Note: Not setting issuer/audience initially to maintain compatibility
 }, async (payload, done) => {
   try {
@@ -61,7 +61,7 @@ passport.deserializeUser(async (userId, done) => {
  */
 async function setupLdapStrategy() {
   // Only setup LDAP if enabled in configuration
-  if (!config.authentication?.strategies?.ldap?.enabled) {
+  if (!config.authentication?.ldap_enabled?.value) {
     console.log('LDAP authentication disabled in configuration');
     return;
   }
@@ -70,12 +70,12 @@ async function setupLdapStrategy() {
 
   passport.use('ldap', new LdapStrategy({
     server: {
-      url: config.authentication.strategies.ldap.url,
-      bindDN: config.authentication.strategies.ldap.bind_dn,
-      bindCredentials: config.authentication.strategies.ldap.bind_credentials,
-      searchBase: config.authentication.strategies.ldap.search_base,
-      searchFilter: config.authentication.strategies.ldap.search_filter,
-      searchAttributes: config.authentication.strategies.ldap.search_attributes || ['displayName', 'mail', 'memberOf']
+      url: config.authentication.ldap_url.value,
+      bindDN: config.authentication.ldap_bind_dn.value,
+      bindCredentials: config.authentication.ldap_bind_credentials.value,
+      searchBase: config.authentication.ldap_search_base.value,
+      searchFilter: config.authentication.ldap_search_filter.value,
+      searchAttributes: config.authentication.ldap_search_attributes.value.split(',').map(s => s.trim()) || ['displayName', 'mail', 'memberOf']
     }
   }, async (ldapUser, done) => {
     try {
@@ -165,7 +165,7 @@ async function handleExternalUser(provider, profile) {
       username: profile.displayName || profile.cn || email.split('@')[0],
       email: email,
       password_hash: 'external', // External users don't have passwords
-      role: config.authentication?.external_provider_settings?.dynamic_provisioning?.default_role || 'user',
+      role: config.authentication?.external_provisioning_default_role?.value || 'user',
       organization_id: organizationId,
       auth_provider: provider,
       external_id: subject,
@@ -215,8 +215,8 @@ async function determineUserOrganization(email, profile) {
   }
 
   // 2. Check domain mapping
-  if (config.authentication?.external_provider_settings?.domain_organization_mapping?.enabled) {
-    const mappings = config.authentication.external_provider_settings.domain_organization_mapping.mappings || {};
+  if (config.authentication?.external_domain_mapping_enabled?.value) {
+    const mappings = config.authentication.external_domain_mappings?.value || {};
     
     for (const [orgCode, domains] of Object.entries(mappings)) {
       if (Array.isArray(domains) && domains.includes(domain)) {
@@ -232,7 +232,7 @@ async function determineUserOrganization(email, profile) {
   }
 
   // 3. Apply fallback policy
-  const fallbackAction = config.authentication?.external_provider_settings?.dynamic_provisioning?.fallback_action || 'require_invite';
+  const fallbackAction = config.authentication?.external_provisioning_fallback_action?.value || 'require_invite';
   console.log(`📋 Applying fallback policy: ${fallbackAction}`);
   
   switch (fallbackAction) {

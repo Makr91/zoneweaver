@@ -3,11 +3,9 @@ import https from "https";
 import http from "http";
 import fs from "fs";
 import cors from "cors";
-import YAML from "yaml";
 import rateLimit from "express-rate-limit";
 import router from "./routes/index.js";
 import db from "./models/index.js";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import { specs, swaggerUi } from "./config/swagger.js";
 import { loadConfig } from "./utils/config.js";
 import passport from "./auth/passport.js";
@@ -34,7 +32,7 @@ const staticFileLimiter = rateLimit({
 });
 
 const app = express();
-const port = process.env.PORT || config.frontend.port;
+const port = process.env.PORT || config.frontend.port.value;
 
 // Track active VNC sessions for WebSocket fallback
 const activeVncSessions = new Map();
@@ -42,18 +40,18 @@ const activeVncSessions = new Map();
 // CORS configuration from YAML
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || config.cors.whitelist.indexOf(origin) !== -1) {
+    if (!origin || config.cors.whitelist.value.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  origin: config.cors.options.origin,
-  preflightContinue: config.cors.options.preflightContinue,
-  credentials: config.cors.options.credentials,
+  origin: config.cors.options.origin.value,
+  preflightContinue: config.cors.options.preflightContinue.value,
+  credentials: config.cors.options.credentials.value,
 };
 
-app.set("trust proxy", config.environment.trust_proxy);
+app.set("trust proxy", config.environment.trust_proxy.value);
 app.use(cors(corsOptions));
 app.options("*splat", cors(corsOptions));
 app.use(express.json());
@@ -511,12 +509,12 @@ async function handleWebSocketUpgrade(request, socket, head) {
  * Generate SSL certificates if they don't exist and generate_ssl is enabled
  */
 async function generateSSLCertificatesIfNeeded() {
-  if (!config.server.ssl.generate_ssl) {
+  if (!config.server.ssl_generate.value) {
     return false; // SSL generation disabled
   }
 
-  const keyPath = config.server.ssl.key;
-  const certPath = config.server.ssl.cert;
+  const keyPath = config.server.ssl_key_path.value;
+  const certPath = config.server.ssl_cert_path.value;
 
   // Check if certificates already exist
   if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
@@ -560,19 +558,19 @@ async function generateSSLCertificatesIfNeeded() {
 
 // SSL/HTTPS Configuration
 (async () => {
-  if (config.server.ssl.enabled) {
+  if (config.server.ssl_enabled.value) {
     // Try to generate SSL certificates if needed
     await generateSSLCertificatesIfNeeded();
     
     try {
-      const privateKey = fs.readFileSync(config.server.ssl.key, 'utf8');
-      const certificate = fs.readFileSync(config.server.ssl.cert, 'utf8');
+      const privateKey = fs.readFileSync(config.server.ssl_key_path.value, 'utf8');
+      const certificate = fs.readFileSync(config.server.ssl_cert_path.value, 'utf8');
       
       let credentials = { key: privateKey, cert: certificate };
       
       // Add CA certificate if specified
-      if (config.server.ssl.ca) {
-        const ca = fs.readFileSync(config.server.ssl.ca, 'utf8');
+      if (config.server.ssl_ca_path?.value) {
+        const ca = fs.readFileSync(config.server.ssl_ca_path.value, 'utf8');
         credentials.ca = ca;
       }
 

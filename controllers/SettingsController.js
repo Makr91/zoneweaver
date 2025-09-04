@@ -158,38 +158,11 @@ class SettingsController {
     try {
       const config = loadConfig();
       
-      // Extract frontend-relevant settings
-      const settings = {
-        appName: config.app?.name || "Zoneweaver",
-        appVersion: config.app?.version || "2.0.0",
-        maxServersPerUser: config.limits?.maxServersPerUser || 10,
-        autoRefreshInterval: config.frontend?.autoRefreshInterval || 5,
-        enableNotifications: config.frontend?.enableNotifications !== false,
-        enableDarkMode: config.frontend?.enableDarkMode !== false,
-        sessionTimeout: config.authentication?.strategies?.local?.session_timeout || 24,
-        allowNewOrganizations: config.authentication?.strategies?.local?.allow_new_organizations !== false,
-        enableLogging: config.logging?.enabled !== false,
-        debugMode: config.logging?.level === 'debug',
-        serverHostname: config.server?.hostname || 'localhost',
-        serverPort: config.server?.port || 3001,
-        frontendPort: config.frontend?.port || 443,
-        sslEnabled: config.server?.ssl?.enabled || false,
-        corsWhitelist: config.cors?.whitelist || [],
-        backendServers: config.backend_servers || [],
-        databasePath: config.database?.path || './data/zoneweaver.db',
-        gravatarApiKey: config.gravatar?.apiKey || '',
-        // Mail settings
-        mailSmtpHost: config.mail?.smtp_connect?.host || '',
-        mailSmtpPort: config.mail?.smtp_connect?.port || 587,
-        mailSmtpSecure: config.mail?.smtp_connect?.secure || false,
-        mailSmtpUser: config.mail?.smtp_auth?.user || '',
-        mailSmtpPassword: config.mail?.smtp_auth?.password || '',
-        mailFromAddress: config.mail?.smtp_settings?.from || ''
-      };
-
+      // Return the entire configuration structure
+      // Frontend can dynamically generate forms from metadata
       res.json({
         success: true,
-        settings: settings
+        config: config
       });
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -338,46 +311,204 @@ class SettingsController {
 
       // Update config with new settings - preserve existing structure
       config.app = config.app || {};
-      if (newSettings.appName) config.app.name = newSettings.appName;
-      if (newSettings.appVersion) config.app.version = newSettings.appVersion;
+      if (newSettings.appName !== undefined) config.app.name = newSettings.appName;
+      if (newSettings.appVersion !== undefined) config.app.version = newSettings.appVersion;
+      if (newSettings.frontendUrl !== undefined) config.app.frontend_url = newSettings.frontendUrl;
 
+      // Limits
       config.limits = config.limits || {};
-      if (newSettings.maxServersPerUser) config.limits.maxServersPerUser = newSettings.maxServersPerUser;
+      if (newSettings.maxServersPerUser !== undefined) config.limits.maxServersPerUser = newSettings.maxServersPerUser;
 
+      // Frontend settings
       config.frontend = config.frontend || {};
-      if (newSettings.autoRefreshInterval) config.frontend.autoRefreshInterval = newSettings.autoRefreshInterval;
+      if (newSettings.autoRefreshInterval !== undefined) config.frontend.autoRefreshInterval = newSettings.autoRefreshInterval;
       if (newSettings.enableNotifications !== undefined) config.frontend.enableNotifications = newSettings.enableNotifications;
       if (newSettings.enableDarkMode !== undefined) config.frontend.enableDarkMode = newSettings.enableDarkMode;
+      if (newSettings.frontendPort !== undefined) config.frontend.port = newSettings.frontendPort;
 
-      // Don't modify authentication settings that could break authentication
-      config.authentication = config.authentication || {};
-      config.authentication.strategies = config.authentication.strategies || {};
-      config.authentication.strategies.local = config.authentication.strategies.local || {};
-      if (newSettings.sessionTimeout) config.authentication.strategies.local.session_timeout = newSettings.sessionTimeout;
-      if (newSettings.allowNewOrganizations !== undefined) config.authentication.strategies.local.allow_new_organizations = newSettings.allowNewOrganizations;
+      // Environment
+      config.environment = config.environment || {};
+      if (newSettings.trustProxy !== undefined) config.environment.trust_proxy = newSettings.trustProxy;
 
+      // Logging
       config.logging = config.logging || {};
       if (newSettings.enableLogging !== undefined) config.logging.enabled = newSettings.enableLogging;
+      if (newSettings.loggingLevel !== undefined) config.logging.level = newSettings.loggingLevel;
       if (newSettings.debugMode !== undefined) {
         config.logging.level = newSettings.debugMode ? 'debug' : 'info';
       }
 
+      // Server settings
       config.server = config.server || {};
-      if (newSettings.serverHostname) config.server.hostname = newSettings.serverHostname;
-      if (newSettings.serverPort) config.server.port = newSettings.serverPort;
+      config.server.ssl = config.server.ssl || {};
+      if (newSettings.serverHostname !== undefined) config.server.hostname = newSettings.serverHostname;
+      if (newSettings.serverPort !== undefined) config.server.port = newSettings.serverPort;
       if (newSettings.sslEnabled !== undefined) config.server.ssl.enabled = newSettings.sslEnabled;
+      if (newSettings.sslGenerateEnabled !== undefined) config.server.ssl.generate_ssl = newSettings.sslGenerateEnabled;
+      if (newSettings.sslKeyPath !== undefined) config.server.ssl.key = newSettings.sslKeyPath;
+      if (newSettings.sslCertPath !== undefined) config.server.ssl.cert = newSettings.sslCertPath;
 
-      config.frontend = config.frontend || {};
-      if (newSettings.frontendPort) config.frontend.port = newSettings.frontendPort;
-
+      // CORS settings
       config.cors = config.cors || {};
-      if (newSettings.corsWhitelist) config.cors.whitelist = newSettings.corsWhitelist;
+      config.cors.options = config.cors.options || {};
+      if (newSettings.corsWhitelist !== undefined) config.cors.whitelist = newSettings.corsWhitelist;
+      if (newSettings.corsOrigin !== undefined) config.cors.options.origin = newSettings.corsOrigin;
+      if (newSettings.corsPreflightContinue !== undefined) config.cors.options.preflightContinue = newSettings.corsPreflightContinue;
+      if (newSettings.corsCredentials !== undefined) config.cors.options.credentials = newSettings.corsCredentials;
 
+      // Authentication settings (be careful with these)
+      config.authentication = config.authentication || {};
+      config.authentication.strategies = config.authentication.strategies || {};
+      
+      if (newSettings.authEnabledStrategies !== undefined) config.authentication.enabled_strategies = newSettings.authEnabledStrategies;
+      if (newSettings.authDefaultStrategy !== undefined) config.authentication.default_strategy = newSettings.authDefaultStrategy;
+
+      // JWT settings
+      config.authentication.strategies.jwt = config.authentication.strategies.jwt || {};
+      if (newSettings.jwtSecret !== undefined) config.authentication.strategies.jwt.secret = newSettings.jwtSecret;
+      if (newSettings.jwtExpiration !== undefined) config.authentication.strategies.jwt.expiration = newSettings.jwtExpiration;
+      if (newSettings.jwtIssuer !== undefined) config.authentication.strategies.jwt.issuer = newSettings.jwtIssuer;
+      if (newSettings.jwtAudience !== undefined) config.authentication.strategies.jwt.audience = newSettings.jwtAudience;
+
+      // Local auth settings
+      config.authentication.strategies.local = config.authentication.strategies.local || {};
+      config.authentication.strategies.local.password_policy = config.authentication.strategies.local.password_policy || {};
+      if (newSettings.localEnabled !== undefined) config.authentication.strategies.local.enabled = newSettings.localEnabled;
+      if (newSettings.localRequireEmailVerification !== undefined) config.authentication.strategies.local.require_email_verification = newSettings.localRequireEmailVerification;
+      if (newSettings.localPasswordMinLength !== undefined) config.authentication.strategies.local.password_policy.min_length = newSettings.localPasswordMinLength;
+      if (newSettings.localPasswordRequireUppercase !== undefined) config.authentication.strategies.local.password_policy.require_uppercase = newSettings.localPasswordRequireUppercase;
+      if (newSettings.localPasswordRequireLowercase !== undefined) config.authentication.strategies.local.password_policy.require_lowercase = newSettings.localPasswordRequireLowercase;
+      if (newSettings.localPasswordRequireNumbers !== undefined) config.authentication.strategies.local.password_policy.require_numbers = newSettings.localPasswordRequireNumbers;
+      if (newSettings.localPasswordRequireSymbols !== undefined) config.authentication.strategies.local.password_policy.require_symbols = newSettings.localPasswordRequireSymbols;
+      if (newSettings.localBcryptRounds !== undefined) config.authentication.strategies.local.bcrypt_rounds = newSettings.localBcryptRounds;
+      if (newSettings.sessionTimeout !== undefined) config.authentication.strategies.local.session_timeout = newSettings.sessionTimeout;
+      if (newSettings.allowNewOrganizations !== undefined) config.authentication.strategies.local.allow_new_organizations = newSettings.allowNewOrganizations;
+
+      // LDAP settings
+      config.authentication.strategies.ldap = config.authentication.strategies.ldap || {};
+      config.authentication.strategies.ldap.tls_options = config.authentication.strategies.ldap.tls_options || {};
+      if (newSettings.ldapEnabled !== undefined) config.authentication.strategies.ldap.enabled = newSettings.ldapEnabled;
+      if (newSettings.ldapUrl !== undefined) config.authentication.strategies.ldap.url = newSettings.ldapUrl;
+      if (newSettings.ldapBindDn !== undefined) config.authentication.strategies.ldap.bind_dn = newSettings.ldapBindDn;
+      if (newSettings.ldapBindCredentials !== undefined) config.authentication.strategies.ldap.bind_credentials = newSettings.ldapBindCredentials;
+      if (newSettings.ldapSearchBase !== undefined) config.authentication.strategies.ldap.search_base = newSettings.ldapSearchBase;
+      if (newSettings.ldapSearchFilter !== undefined) config.authentication.strategies.ldap.search_filter = newSettings.ldapSearchFilter;
+      if (newSettings.ldapSearchAttributes !== undefined) {
+        config.authentication.strategies.ldap.search_attributes = newSettings.ldapSearchAttributes.split(',').map(s => s.trim());
+      }
+      if (newSettings.ldapTlsRejectUnauthorized !== undefined) config.authentication.strategies.ldap.tls_options.reject_unauthorized = newSettings.ldapTlsRejectUnauthorized;
+
+      // External provider settings
+      config.authentication.external_provider_settings = config.authentication.external_provider_settings || {};
+      config.authentication.external_provider_settings.domain_organization_mapping = config.authentication.external_provider_settings.domain_organization_mapping || {};
+      config.authentication.external_provider_settings.dynamic_provisioning = config.authentication.external_provider_settings.dynamic_provisioning || {};
+      config.authentication.external_provider_settings.profile_sync = config.authentication.external_provider_settings.profile_sync || {};
+      
+      if (newSettings.externalDomainMappingEnabled !== undefined) config.authentication.external_provider_settings.domain_organization_mapping.enabled = newSettings.externalDomainMappingEnabled;
+      if (newSettings.externalDomainMappings !== undefined) config.authentication.external_provider_settings.domain_organization_mapping.mappings = newSettings.externalDomainMappings;
+      if (newSettings.externalProvisioningEnabled !== undefined) config.authentication.external_provider_settings.dynamic_provisioning.enabled = newSettings.externalProvisioningEnabled;
+      if (newSettings.externalProvisioningPolicy !== undefined) config.authentication.external_provider_settings.dynamic_provisioning.policy = newSettings.externalProvisioningPolicy;
+      if (newSettings.externalProvisioningDefaultRole !== undefined) config.authentication.external_provider_settings.dynamic_provisioning.default_role = newSettings.externalProvisioningDefaultRole;
+      if (newSettings.externalProvisioningFallbackAction !== undefined) config.authentication.external_provider_settings.dynamic_provisioning.fallback_action = newSettings.externalProvisioningFallbackAction;
+      if (newSettings.externalProfileSyncEnabled !== undefined) config.authentication.external_provider_settings.profile_sync.enabled = newSettings.externalProfileSyncEnabled;
+      if (newSettings.externalProfileUpdateOnLogin !== undefined) config.authentication.external_provider_settings.profile_sync.update_on_login = newSettings.externalProfileUpdateOnLogin;
+      if (newSettings.externalProfileSyncFields !== undefined) {
+        config.authentication.external_provider_settings.profile_sync.sync_fields = newSettings.externalProfileSyncFields.split(',').map(s => s.trim());
+      }
+
+      // Database settings
       config.database = config.database || {};
-      if (newSettings.databasePath) config.database.path = newSettings.databasePath;
+      config.database.dialect = config.database.dialect || { type: 'select', value: 'sqlite' };
+      config.database.storage = config.database.storage || { type: 'string', value: '/var/lib/zoneweaver/database/zoneweaver.db' };
+      config.database.host = config.database.host || { type: 'host', value: 'localhost' };
+      config.database.port = config.database.port || { type: 'integer', value: 3306 };
+      config.database.user = config.database.user || { type: 'string', value: '' };
+      config.database.password = config.database.password || { type: 'password', value: '' };
+      config.database.database_name = config.database.database_name || { type: 'string', value: 'zoneweaver' };
+      config.database.logging = config.database.logging || { type: 'boolean', value: false };
+      config.database.pool = config.database.pool || {};
+      config.database.pool.max = config.database.pool.max || { type: 'integer', value: 5 };
+      config.database.pool.min = config.database.pool.min || { type: 'integer', value: 0 };
+      config.database.pool.acquire = config.database.pool.acquire || { type: 'integer', value: 30000 };
+      config.database.pool.idle = config.database.pool.idle || { type: 'integer', value: 10000 };
 
+      if (newSettings.databaseDialect !== undefined) config.database.dialect.value = newSettings.databaseDialect;
+      if (newSettings.databaseStorage !== undefined) config.database.storage.value = newSettings.databaseStorage;
+      if (newSettings.databaseHost !== undefined) config.database.host.value = newSettings.databaseHost;
+      if (newSettings.databasePort !== undefined) config.database.port.value = newSettings.databasePort;
+      if (newSettings.databaseUser !== undefined) config.database.user.value = newSettings.databaseUser;
+      if (newSettings.databasePassword !== undefined) config.database.password.value = newSettings.databasePassword;
+      if (newSettings.databaseName !== undefined) config.database.database_name.value = newSettings.databaseName;
+      if (newSettings.databaseLogging !== undefined) config.database.logging.value = newSettings.databaseLogging;
+      if (newSettings.databasePoolMax !== undefined) config.database.pool.max.value = newSettings.databasePoolMax;
+      if (newSettings.databasePoolMin !== undefined) config.database.pool.min.value = newSettings.databasePoolMin;
+      if (newSettings.databasePoolAcquire !== undefined) config.database.pool.acquire.value = newSettings.databasePoolAcquire;
+      if (newSettings.databasePoolIdle !== undefined) config.database.pool.idle.value = newSettings.databasePoolIdle;
+
+      // Legacy database path for compatibility
+      if (newSettings.databasePath !== undefined) config.database.path = newSettings.databasePath;
+
+      // Gravatar
       config.gravatar = config.gravatar || {};
-      if (newSettings.gravatarApiKey) config.gravatar.apiKey = newSettings.gravatarApiKey;
+      config.gravatar.api_key = config.gravatar.api_key || { type: 'string', value: '' };
+      if (newSettings.gravatarApiKey !== undefined) config.gravatar.api_key.value = newSettings.gravatarApiKey;
+
+      // Rate limiting settings
+      config.rateLimiting = config.rateLimiting || {};
+      
+      // Rate limiting - Authentication
+      config.rateLimiting.authentication = config.rateLimiting.authentication || {};
+      config.rateLimiting.authentication.windowMs = config.rateLimiting.authentication.windowMs || { type: 'integer', value: 900000 };
+      config.rateLimiting.authentication.max = config.rateLimiting.authentication.max || { type: 'integer', value: 25 };
+      config.rateLimiting.authentication.message = config.rateLimiting.authentication.message || { type: 'string', value: 'Too many authentication attempts' };
+      if (newSettings.rateLimitAuthWindowMs !== undefined) config.rateLimiting.authentication.windowMs.value = newSettings.rateLimitAuthWindowMs;
+      if (newSettings.rateLimitAuthMax !== undefined) config.rateLimiting.authentication.max.value = newSettings.rateLimitAuthMax;
+      if (newSettings.rateLimitAuthMessage !== undefined) config.rateLimiting.authentication.message.value = newSettings.rateLimitAuthMessage;
+
+      // Rate limiting - Admin
+      config.rateLimiting.admin = config.rateLimiting.admin || {};
+      config.rateLimiting.admin.windowMs = config.rateLimiting.admin.windowMs || { type: 'integer', value: 900000 };
+      config.rateLimiting.admin.max = config.rateLimiting.admin.max || { type: 'integer', value: 500 };
+      config.rateLimiting.admin.message = config.rateLimiting.admin.message || { type: 'string', value: 'Too many admin requests' };
+      if (newSettings.rateLimitAdminWindowMs !== undefined) config.rateLimiting.admin.windowMs.value = newSettings.rateLimitAdminWindowMs;
+      if (newSettings.rateLimitAdminMax !== undefined) config.rateLimiting.admin.max.value = newSettings.rateLimitAdminMax;
+      if (newSettings.rateLimitAdminMessage !== undefined) config.rateLimiting.admin.message.value = newSettings.rateLimitAdminMessage;
+
+      // Rate limiting - API Proxy
+      config.rateLimiting.apiProxy = config.rateLimiting.apiProxy || {};
+      config.rateLimiting.apiProxy.windowMs = config.rateLimiting.apiProxy.windowMs || { type: 'integer', value: 60000 };
+      config.rateLimiting.apiProxy.max = config.rateLimiting.apiProxy.max || { type: 'integer', value: 100 };
+      config.rateLimiting.apiProxy.message = config.rateLimiting.apiProxy.message || { type: 'string', value: 'Too many API proxy requests' };
+      if (newSettings.rateLimitApiProxyWindowMs !== undefined) config.rateLimiting.apiProxy.windowMs.value = newSettings.rateLimitApiProxyWindowMs;
+      if (newSettings.rateLimitApiProxyMax !== undefined) config.rateLimiting.apiProxy.max.value = newSettings.rateLimitApiProxyMax;
+      if (newSettings.rateLimitApiProxyMessage !== undefined) config.rateLimiting.apiProxy.message.value = newSettings.rateLimitApiProxyMessage;
+
+      // Rate limiting - Realtime
+      config.rateLimiting.realtime = config.rateLimiting.realtime || {};
+      config.rateLimiting.realtime.windowMs = config.rateLimiting.realtime.windowMs || { type: 'integer', value: 60000 };
+      config.rateLimiting.realtime.max = config.rateLimiting.realtime.max || { type: 'integer', value: 250 };
+      config.rateLimiting.realtime.message = config.rateLimiting.realtime.message || { type: 'string', value: 'Too many real-time requests' };
+      if (newSettings.rateLimitRealtimeWindowMs !== undefined) config.rateLimiting.realtime.windowMs.value = newSettings.rateLimitRealtimeWindowMs;
+      if (newSettings.rateLimitRealtimeMax !== undefined) config.rateLimiting.realtime.max.value = newSettings.rateLimitRealtimeMax;
+      if (newSettings.rateLimitRealtimeMessage !== undefined) config.rateLimiting.realtime.message.value = newSettings.rateLimitRealtimeMessage;
+
+      // Rate limiting - Standard
+      config.rateLimiting.standard = config.rateLimiting.standard || {};
+      config.rateLimiting.standard.windowMs = config.rateLimiting.standard.windowMs || { type: 'integer', value: 900000 };
+      config.rateLimiting.standard.max = config.rateLimiting.standard.max || { type: 'integer', value: 1000 };
+      config.rateLimiting.standard.message = config.rateLimiting.standard.message || { type: 'string', value: 'Too many requests' };
+      if (newSettings.rateLimitStandardWindowMs !== undefined) config.rateLimiting.standard.windowMs.value = newSettings.rateLimitStandardWindowMs;
+      if (newSettings.rateLimitStandardMax !== undefined) config.rateLimiting.standard.max.value = newSettings.rateLimitStandardMax;
+      if (newSettings.rateLimitStandardMessage !== undefined) config.rateLimiting.standard.message.value = newSettings.rateLimitStandardMessage;
+
+      // Rate limiting - Static Files
+      config.rateLimiting.staticFiles = config.rateLimiting.staticFiles || {};
+      config.rateLimiting.staticFiles.windowMs = config.rateLimiting.staticFiles.windowMs || { type: 'integer', value: 900000 };
+      config.rateLimiting.staticFiles.max = config.rateLimiting.staticFiles.max || { type: 'integer', value: 5000 };
+      config.rateLimiting.staticFiles.message = config.rateLimiting.staticFiles.message || { type: 'string', value: 'Too many static file requests' };
+      if (newSettings.rateLimitStaticFilesWindowMs !== undefined) config.rateLimiting.staticFiles.windowMs.value = newSettings.rateLimitStaticFilesWindowMs;
+      if (newSettings.rateLimitStaticFilesMax !== undefined) config.rateLimiting.staticFiles.max.value = newSettings.rateLimitStaticFilesMax;
+      if (newSettings.rateLimitStaticFilesMessage !== undefined) config.rateLimiting.staticFiles.message.value = newSettings.rateLimitStaticFilesMessage;
 
       // Update mail settings
       if (newSettings.mailSmtpHost !== undefined || newSettings.mailSmtpPort !== undefined || 
@@ -385,16 +516,19 @@ class SettingsController {
           newSettings.mailSmtpPassword !== undefined || newSettings.mailFromAddress !== undefined) {
         
         config.mail = config.mail || {};
-        config.mail.smtp_connect = config.mail.smtp_connect || {};
-        config.mail.smtp_auth = config.mail.smtp_auth || {};
-        config.mail.smtp_settings = config.mail.smtp_settings || {};
+        config.mail.smtp_host = config.mail.smtp_host || { type: 'host', value: '' };
+        config.mail.smtp_port = config.mail.smtp_port || { type: 'integer', value: 587 };
+        config.mail.smtp_secure = config.mail.smtp_secure || { type: 'boolean', value: false };
+        config.mail.smtp_user = config.mail.smtp_user || { type: 'string', value: '' };
+        config.mail.smtp_password = config.mail.smtp_password || { type: 'password', value: '' };
+        config.mail.from_address = config.mail.from_address || { type: 'email', value: '' };
 
-        if (newSettings.mailSmtpHost !== undefined) config.mail.smtp_connect.host = newSettings.mailSmtpHost;
-        if (newSettings.mailSmtpPort !== undefined) config.mail.smtp_connect.port = newSettings.mailSmtpPort;
-        if (newSettings.mailSmtpSecure !== undefined) config.mail.smtp_connect.secure = newSettings.mailSmtpSecure;
-        if (newSettings.mailSmtpUser !== undefined) config.mail.smtp_auth.user = newSettings.mailSmtpUser;
-        if (newSettings.mailSmtpPassword !== undefined) config.mail.smtp_auth.password = newSettings.mailSmtpPassword;
-        if (newSettings.mailFromAddress !== undefined) config.mail.smtp_settings.from = newSettings.mailFromAddress;
+        if (newSettings.mailSmtpHost !== undefined) config.mail.smtp_host.value = newSettings.mailSmtpHost;
+        if (newSettings.mailSmtpPort !== undefined) config.mail.smtp_port.value = newSettings.mailSmtpPort;
+        if (newSettings.mailSmtpSecure !== undefined) config.mail.smtp_secure.value = newSettings.mailSmtpSecure;
+        if (newSettings.mailSmtpUser !== undefined) config.mail.smtp_user.value = newSettings.mailSmtpUser;
+        if (newSettings.mailSmtpPassword !== undefined) config.mail.smtp_password.value = newSettings.mailSmtpPassword;
+        if (newSettings.mailFromAddress !== undefined) config.mail.from_address.value = newSettings.mailFromAddress;
       }
 
       // Preserve backend_servers

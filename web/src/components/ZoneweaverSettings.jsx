@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
@@ -14,28 +14,9 @@ const ZoneweaverSettings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('application');
-  const [settings, setSettings] = useState({
-    appName: "Zoneweaver",
-    appVersion: "2.0.0",
-    frontendUrl: "",
-    maxServersPerUser: 10,
-    autoRefreshInterval: 5, // seconds
-    enableNotifications: true,
-    enableDarkMode: true,
-    sessionTimeout: 24, // hours
-    enableLogging: true,
-    debugMode: false,
-    corsWhitelist: [],
-    gravatarApiKey: "",
-    // Mail settings
-    mailSmtpHost: "",
-    mailSmtpPort: 587,
-    mailSmtpSecure: false,
-    mailSmtpUser: "",
-    mailSmtpPassword: "",
-    mailFromAddress: ""
-  });
+  const [activeTab, setActiveTab] = useState('');
+  const [sections, setSections] = useState({});
+  const [values, setValues] = useState({});
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [requiresRestart, setRequiresRestart] = useState(false);
@@ -77,8 +58,11 @@ const ZoneweaverSettings = () => {
         setShowAddForm(true);
       }
       setSearchParams({}); // Clear URL parameter after processing
+    } else if (!activeTab && Object.keys(sections).length > 0) {
+      // Set first section as default active tab
+      setActiveTab(Object.keys(sections)[0]);
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, sections, activeTab]);
 
   const loadServers = () => {
     const serverList = getServers();
@@ -107,12 +91,9 @@ const ZoneweaverSettings = () => {
   };
 
   const editServer = (hostname) => {
-    // Find the server object by hostname
     const server = servers.find(s => s.hostname === hostname);
     if (server) {
-      // Select the server in context
       selectServer(server);
-      // Navigate to the host management page
       navigate('/ui/host-manage');
     }
   };
@@ -215,13 +196,354 @@ const ZoneweaverSettings = () => {
       const response = await axios.get('/api/settings');
       
       if (response.data.success) {
-        setSettings(response.data.settings);
+        const { extractedValues, organizedSections } = processConfig(response.data.config);
+        setValues(extractedValues);
+        setSections(organizedSections);
       } else {
         setMsg('Failed to load settings: ' + response.data.message);
       }
     } catch (error) {
       console.error('Error loading settings:', error);
       setMsg('Error loading settings: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Process configuration to extract values and organize by sections
+  const processConfig = (config) => {
+    const extractedValues = {};
+    const organizedSections = {};
+
+    const processObject = (obj, path = '', sectionName = 'General') => {
+      for (const [key, value] of Object.entries(obj || {})) {
+        const fullPath = path ? `${path}.${key}` : key;
+        
+        if (value && typeof value === 'object' && value.type && value.hasOwnProperty('value')) {
+          // This is a metadata field
+          extractedValues[fullPath] = value.value;
+          
+          // Determine section from metadata or infer from path
+          const section = value.section || inferSection(fullPath) || sectionName;
+          
+          if (!organizedSections[section]) {
+            organizedSections[section] = {
+              title: section,
+              icon: getSectionIcon(section),
+              fields: []
+            };
+          }
+          
+          organizedSections[section].fields.push({
+            key: fullPath,
+            path: fullPath,
+            type: value.type,
+            label: value.label || generateLabel(key),
+            description: value.description || '',
+            placeholder: value.placeholder || '',
+            required: value.required || false,
+            options: value.options || null,
+            validation: value.validation || {},
+            conditional: value.conditional || null,
+            order: value.order || 0,
+            value: value.value
+          });
+        } else if (value && typeof value === 'object' && !Array.isArray(value) && !value.hasOwnProperty('type')) {
+          // This is a nested object, recurse with section inference
+          const inferredSection = inferSection(fullPath) || sectionName;
+          processObject(value, fullPath, inferredSection);
+        } else if (Array.isArray(value) || typeof value !== 'object') {
+          // This is a direct value (backward compatibility)
+          extractedValues[fullPath] = value;
+        }
+      }
+    };
+
+    processObject(config);
+
+    // Sort fields within each section by order
+    Object.values(organizedSections).forEach(section => {
+      section.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
+    });
+
+    return { extractedValues, organizedSections };
+  };
+
+  // Infer section from field path
+  const inferSection = (path) => {
+    const sectionMap = {
+      'app': 'Application',
+      'server': 'Server',
+      'frontend': 'Frontend',
+      'database': 'Database',
+      'mail': 'Mail',
+      'authentication': 'Authentication',
+      'cors': 'Security',
+      'logging': 'Logging',
+      'limits': 'Performance',
+      'environment': 'Environment',
+      'gravatar': 'Integrations',
+      'rateLimiting': 'Security'
+    };
+    
+    const pathParts = path.split('.');
+    return sectionMap[pathParts[0]];
+  };
+
+  // Generate human-readable label from field name
+  const generateLabel = (fieldName) => {
+    return fieldName
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Get icon for section
+  const getSectionIcon = (section) => {
+    const iconMap = {
+      'Application': 'fas fa-cogs',
+      'Server': 'fas fa-server',
+      'Frontend': 'fas fa-desktop',
+      'Database': 'fas fa-database',
+      'Mail': 'fas fa-envelope',
+      'Authentication': 'fas fa-shield-alt',
+      'Security': 'fas fa-lock',
+      'Logging': 'fas fa-file-alt',
+      'Performance': 'fas fa-tachometer-alt',
+      'Environment': 'fas fa-globe',
+      'Integrations': 'fas fa-puzzle-piece'
+    };
+    return iconMap[section] || 'fas fa-cog';
+  };
+
+  // Handle field value changes
+  const handleFieldChange = (fieldPath, value) => {
+    setValues(prev => ({
+      ...prev,
+      [fieldPath]: value
+    }));
+  };
+
+  // Dynamic field renderer based on metadata type
+  const renderField = (field) => {
+    const currentValue = values[field.path] !== undefined ? values[field.path] : field.value;
+    
+    const fieldProps = {
+      key: field.path,
+      value: currentValue || '',
+      onChange: (e) => {
+        const value = field.type === 'boolean' ? e.target.checked : e.target.value;
+        handleFieldChange(field.path, value);
+      },
+      placeholder: field.placeholder,
+      required: field.required,
+      disabled: loading
+    };
+
+    let inputElement;
+
+    switch (field.type) {
+      case 'boolean':
+        inputElement = (
+          <label className='checkbox'>
+            <input
+              type='checkbox'
+              checked={!!currentValue}
+              onChange={fieldProps.onChange}
+              disabled={fieldProps.disabled}
+            />
+            <span className='ml-2'>{field.label}</span>
+          </label>
+        );
+        break;
+
+      case 'integer':
+        inputElement = (
+          <input
+            className='input'
+            type='number'
+            {...fieldProps}
+            min={field.validation?.min}
+            max={field.validation?.max}
+          />
+        );
+        break;
+
+      case 'password':
+        inputElement = (
+          <input
+            className='input'
+            type='password'
+            {...fieldProps}
+          />
+        );
+        break;
+
+      case 'email':
+        inputElement = (
+          <input
+            className='input'
+            type='email'
+            {...fieldProps}
+          />
+        );
+        break;
+
+      case 'select':
+        inputElement = (
+          <div className='select is-fullwidth'>
+            <select {...fieldProps}>
+              {field.options && field.options.map(option => (
+                <option key={option.value || option} value={option.value || option}>
+                  {option.label || option}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+        break;
+
+      case 'textarea':
+        inputElement = (
+          <textarea
+            className='textarea'
+            {...fieldProps}
+            rows={field.validation?.rows || 3}
+          />
+        );
+        break;
+
+      case 'array':
+        const arrayValue = Array.isArray(currentValue) ? currentValue.join('\n') : (currentValue || '');
+        inputElement = (
+          <textarea
+            className='textarea'
+            value={arrayValue}
+            onChange={(e) => handleFieldChange(field.path, e.target.value.split('\n'))}
+            placeholder={field.placeholder || 'One item per line'}
+            disabled={fieldProps.disabled}
+            rows={field.validation?.rows || 4}
+          />
+        );
+        break;
+
+      default: // 'string', 'host', etc.
+        inputElement = (
+          <input
+            className='input'
+            type='text'
+            {...fieldProps}
+          />
+        );
+    }
+
+    return (
+      <div className='field' key={field.path}>
+        {field.type !== 'boolean' && (
+          <label className='label'>{field.label}</label>
+        )}
+        <div className='control'>
+          {inputElement}
+        </div>
+        {field.description && (
+          <p className='help has-text-grey'>{field.description}</p>
+        )}
+      </div>
+    );
+  };
+
+  // Save all settings
+  const saveSettings = async () => {
+    setLoading(true);
+    setMsg("");
+    setRequiresRestart(false);
+    
+    try {
+      // Convert flat values back to nested structure for backend
+      const nestedSettings = {};
+      
+      Object.entries(values).forEach(([path, value]) => {
+        const keys = path.split('.');
+        let current = nestedSettings;
+        
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (!current[keys[i]]) {
+            current[keys[i]] = {};
+          }
+          current = current[keys[i]];
+        }
+        
+        current[keys[keys.length - 1]] = value;
+      });
+
+      const response = await axios.put('/api/settings', nestedSettings);
+      
+      if (response.data.success) {
+        setMsg(response.data.message);
+        setRequiresRestart(response.data.requiresRestart);
+        // Reload settings to get any server-side changes
+        await loadSettings();
+      } else {
+        setMsg('Failed to save settings: ' + response.data.message);
+      }
+      
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setMsg("Error saving settings: " + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetToDefaults = async () => {
+    if (!window.confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setMsg("");
+      
+      const response = await axios.post('/api/settings/reset');
+      
+      if (response.data.success) {
+        setMsg(response.data.message);
+        await loadSettings();
+      } else {
+        setMsg('Failed to reset settings: ' + response.data.message);
+      }
+      
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      setMsg("Error resetting settings: " + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const restartServer = async () => {
+    if (!window.confirm('Are you sure you want to restart the server? This will briefly interrupt service for all users.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setMsg("Initiating server restart...");
+      
+      const response = await axios.post('/api/settings/restart');
+      
+      if (response.data.success) {
+        setMsg(response.data.message + " The page will reload automatically.");
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } else {
+        setMsg('Failed to restart server: ' + response.data.message);
+      }
+      
+    } catch (error) {
+      console.error('Error restarting server:', error);
+      setMsg("Error restarting server: " + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
@@ -256,93 +578,6 @@ const ZoneweaverSettings = () => {
     );
   }
 
-  const handleSettingChange = (setting, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [setting]: value
-    }));
-  };
-
-  const saveSettings = async () => {
-    setLoading(true);
-    setMsg("");
-    setRequiresRestart(false);
-    
-    try {
-      const response = await axios.put('/api/settings', settings);
-      
-      if (response.data.success) {
-        setMsg(response.data.message);
-        setRequiresRestart(response.data.requiresRestart);
-      } else {
-        setMsg('Failed to save settings: ' + response.data.message);
-      }
-      
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      setMsg("Error saving settings: " + (error.response?.data?.message || error.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetToDefaults = async () => {
-    if (!window.confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      setMsg("");
-      
-      const response = await axios.post('/api/settings/reset');
-      
-      if (response.data.success) {
-        setMsg(response.data.message);
-        // Reload settings from server
-        await loadSettings();
-      } else {
-        setMsg('Failed to reset settings: ' + response.data.message);
-      }
-      
-    } catch (error) {
-      console.error('Error resetting settings:', error);
-      setMsg("Error resetting settings: " + (error.response?.data?.message || error.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const restartServer = async () => {
-    if (!window.confirm('Are you sure you want to restart the server? This will briefly interrupt service for all users.')) {
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      setMsg("Initiating server restart...");
-      
-      const response = await axios.post('/api/settings/restart');
-      
-      if (response.data.success) {
-        setMsg(response.data.message + " The page will reload automatically.");
-        
-        // Wait a moment then reload the page
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
-      } else {
-        setMsg('Failed to restart server: ' + response.data.message);
-      }
-      
-    } catch (error) {
-      console.error('Error restarting server:', error);
-      setMsg("Error restarting server: " + (error.response?.data?.message || error.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className='zw-page-content-scrollable'>
       <Helmet>
@@ -361,39 +596,25 @@ const ZoneweaverSettings = () => {
             </div>
           </div>
 
-          {/* Tab Navigation */}
+          {/* Dynamic Tab Navigation */}
           <div className='tabs is-boxed'>
             <ul>
-              <li className={activeTab === 'application' ? 'is-active' : ''}>
-                <a onClick={() => setActiveTab('application')}>
-                  <span className='icon is-small'><i className='fas fa-cog'></i></span>
-                  <span>Application</span>
-                </a>
-              </li>
+              {/* Server Management Tab - Always First */}
               <li className={activeTab === 'servers' ? 'is-active' : ''}>
                 <a onClick={() => setActiveTab('servers')}>
                   <span className='icon is-small'><i className='fas fa-server'></i></span>
                   <span>Server Management</span>
                 </a>
               </li>
-              <li className={activeTab === 'security' ? 'is-active' : ''}>
-                <a onClick={() => setActiveTab('security')}>
-                  <span className='icon is-small'><i className='fas fa-shield-alt'></i></span>
-                  <span>Security</span>
-                </a>
-              </li>
-              <li className={activeTab === 'mail' ? 'is-active' : ''}>
-                <a onClick={() => setActiveTab('mail')}>
-                  <span className='icon is-small'><i className='fas fa-envelope'></i></span>
-                  <span>Mail</span>
-                </a>
-              </li>
-              <li className={activeTab === 'performance' ? 'is-active' : ''}>
-                <a onClick={() => setActiveTab('performance')}>
-                  <span className='icon is-small'><i className='fas fa-tachometer-alt'></i></span>
-                  <span>Performance</span>
-                </a>
-              </li>
+              {/* Dynamic Tabs from Sections */}
+              {Object.entries(sections).map(([sectionName, section]) => (
+                <li key={sectionName} className={activeTab === sectionName ? 'is-active' : ''}>
+                  <a onClick={() => setActiveTab(sectionName)}>
+                    <span className='icon is-small'><i className={section.icon}></i></span>
+                    <span>{section.title}</span>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -406,168 +627,6 @@ const ZoneweaverSettings = () => {
               } mb-4`}>
                 <p>{msg}</p>
               </div>
-            )}
-
-            {/* Application Tab */}
-            {activeTab === 'application' && (
-              <>
-                {/* Application Settings */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Application Settings</h2>
-                  <div className='columns'>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Application Name</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='text'
-                            value={settings.appName}
-                            onChange={(e) => handleSettingChange('appName', e.target.value)}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>Display name for the application</p>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Application Version</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='text'
-                            value={settings.appVersion}
-                            onChange={(e) => handleSettingChange('appVersion', e.target.value)}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>Current version number</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className='field'>
-                    <label className='label'>Gravatar API Key</label>
-                    <div className='control'>
-                      <input
-                        className='input'
-                        type='text'
-                        value={settings.gravatarApiKey}
-                        onChange={(e) => handleSettingChange('gravatarApiKey', e.target.value)}
-                      />
-                    </div>
-                    <p className='help has-text-grey'>API key for Gravatar integration</p>
-                  </div>
-                </div>
-
-                {/* Feature Toggles */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Feature Settings</h2>
-                  <div className='columns'>
-                    <div className='column'>
-                      <div className='field'>
-                        <div className='control'>
-                          <label className='checkbox'>
-                            <input 
-                              type='checkbox'
-                              checked={settings.enableNotifications}
-                              onChange={(e) => handleSettingChange('enableNotifications', e.target.checked)}
-                            />
-                            <span className='ml-2'>Enable Notifications</span>
-                          </label>
-                        </div>
-                        <p className='help has-text-grey'>Allow browser notifications for alerts</p>
-                      </div>
-
-                      <div className='field'>
-                        <div className='control'>
-                          <label className='checkbox'>
-                            <input 
-                              type='checkbox'
-                              checked={settings.enableDarkMode}
-                              onChange={(e) => handleSettingChange('enableDarkMode', e.target.checked)}
-                            />
-                            <span className='ml-2'>Enable Dark Mode</span>
-                          </label>
-                        </div>
-                        <p className='help has-text-grey'>Default to dark theme for new users</p>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <div className='control'>
-                          <label className='checkbox'>
-                            <input 
-                              type='checkbox'
-                              checked={settings.enableLogging}
-                              onChange={(e) => handleSettingChange('enableLogging', e.target.checked)}
-                            />
-                            <span className='ml-2'>Enable System Logging</span>
-                          </label>
-                        </div>
-                        <p className='help has-text-grey'>Log system events and errors</p>
-                      </div>
-
-                      <div className='field'>
-                        <div className='control'>
-                          <label className='checkbox'>
-                            <input 
-                              type='checkbox'
-                              checked={settings.debugMode}
-                              onChange={(e) => handleSettingChange('debugMode', e.target.checked)}
-                            />
-                            <span className='ml-2'>Debug Mode</span>
-                          </label>
-                        </div>
-                        <p className='help has-text-grey'>Enable detailed debug logging (impacts performance)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Database Settings */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Database Settings</h2>
-                  <div className='field'>
-                    <label className='label'>Database Path</label>
-                    <div className='control'>
-                      <input 
-                        className='input'
-                        type='text'
-                        value={settings.databasePath}
-                        onChange={(e) => handleSettingChange('databasePath', e.target.value)}
-                      />
-                    </div>
-                    <p className='help has-text-grey'>The path to the SQLite database file.</p>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className='field is-grouped is-grouped-centered'>
-                  <div className='control'>
-                    <button 
-                      className={`button is-primary ${loading ? 'is-loading' : ''}`}
-                      onClick={saveSettings}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-save'></i>
-                      </span>
-                      <span>Save Settings</span>
-                    </button>
-                  </div>
-                  <div className='control'>
-                    <button 
-                      className='button is-warning'
-                      onClick={resetToDefaults}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-undo'></i>
-                      </span>
-                      <span>Reset to Defaults</span>
-                    </button>
-                  </div>
-                </div>
-              </>
             )}
 
             {/* Server Management Tab */}
@@ -621,442 +680,60 @@ const ZoneweaverSettings = () => {
               </>
             )}
 
-            {/* Security Tab */}
-            {activeTab === 'security' && (
-              <>
-                {/* Security Settings */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Authentication Settings</h2>
-                  <div className='field'>
-                    <label className='label'>Session Timeout (hours)</label>
-                    <div className='control'>
-                      <input 
-                        className='input'
-                        type='number'
-                        min='1'
-                        max='168'
-                        value={settings.sessionTimeout}
-                        onChange={(e) => handleSettingChange('sessionTimeout', parseInt(e.target.value))}
-                      />
-                    </div>
-                    <p className='help has-text-grey'>How long users stay logged in (1-168 hours)</p>
-                  </div>
-                </div>
-
-                {/* CORS Settings */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>CORS Settings</h2>
-                  <div className='field'>
-                    <label className='label'>Allowed Origins (one per line)</label>
-                    <div className='control'>
-                      <textarea
-                        className='textarea'
-                        value={settings.corsWhitelist.join('\n')}
-                        onChange={(e) => handleSettingChange('corsWhitelist', e.target.value.split('\n'))}
-                      />
-                    </div>
-                    <p className='help has-text-grey'>List of allowed CORS origins for cross-origin requests</p>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className='field is-grouped is-grouped-centered'>
-                  <div className='control'>
-                    <button 
-                      className={`button is-primary ${loading ? 'is-loading' : ''}`}
-                      onClick={saveSettings}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-save'></i>
+            {/* Dynamic Configuration Sections */}
+            {Object.entries(sections).map(([sectionName, section]) => 
+              activeTab === sectionName && (
+                <div key={sectionName}>
+                  <div className='box mb-4'>
+                    <h2 className='title is-5'>
+                      <span className='icon is-small mr-2'>
+                        <i className={section.icon}></i>
                       </span>
-                      <span>Save Settings</span>
-                    </button>
+                      {section.title} Settings
+                    </h2>
+                    
+                    {/* Render fields in columns for better layout */}
+                    <div className='columns is-multiline'>
+                      {section.fields.map((field, index) => (
+                        <div 
+                          key={field.path} 
+                          className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                        >
+                          {renderField(field)}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className='control'>
-                    <button 
-                      className='button is-warning'
-                      onClick={resetToDefaults}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-undo'></i>
-                      </span>
-                      <span>Reset to Defaults</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
 
-            {/* Performance Tab */}
-            {activeTab === 'performance' && (
-              <>
-                {/* Resource Limits */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Resource Limits</h2>
-                  <div className='columns'>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Max Servers Per User</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='number'
-                            min='1'
-                            max='100'
-                            value={settings.maxServersPerUser}
-                            onChange={(e) => handleSettingChange('maxServersPerUser', parseInt(e.target.value))}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>Maximum Zoneweaver API Servers per user</p>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Auto Refresh Interval (seconds)</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='number'
-                            min='1'
-                            max='60'
-                            value={settings.autoRefreshInterval}
-                            onChange={(e) => handleSettingChange('autoRefreshInterval', parseInt(e.target.value))}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>How often dashboard stats refresh (1-60 seconds)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Server Configuration */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Server Configuration</h2>
-                  <div className='columns'>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Server Hostname</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='text'
-                            value={settings.serverHostname}
-                            onChange={(e) => handleSettingChange('serverHostname', e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Server Port</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='number'
-                            value={settings.serverPort}
-                            onChange={(e) => handleSettingChange('serverPort', parseInt(e.target.value))}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>Frontend Port</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='number'
-                            value={settings.frontendPort}
-                            onChange={(e) => handleSettingChange('frontendPort', parseInt(e.target.value))}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>SSL Enabled</label>
-                        <div className='control'>
-                          <label className='checkbox'>
-                            <input 
-                              type='checkbox'
-                              checked={settings.sslEnabled}
-                              onChange={(e) => handleSettingChange('sslEnabled', e.target.checked)}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className='field is-grouped is-grouped-centered'>
-                  <div className='control'>
-                    <button 
-                      className={`button is-primary ${loading ? 'is-loading' : ''}`}
-                      onClick={saveSettings}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-save'></i>
-                      </span>
-                      <span>Save Settings</span>
-                    </button>
-                  </div>
-                  <div className='control'>
-                    <button 
-                      className='button is-warning'
-                      onClick={resetToDefaults}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-undo'></i>
-                      </span>
-                      <span>Reset to Defaults</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Mail Tab */}
-            {activeTab === 'mail' && (
-              <>
-                {/* SMTP Configuration */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>SMTP Configuration</h2>
-                  <div className='columns'>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>SMTP Host</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='text'
-                            placeholder='smtp.gmail.com'
-                            value={settings.mailSmtpHost}
-                            onChange={(e) => handleSettingChange('mailSmtpHost', e.target.value)}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>SMTP server hostname</p>
-                      </div>
-                    </div>
-                    <div className='column is-narrow'>
-                      <div className='field'>
-                        <label className='label'>Port</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='number'
-                            min='1'
-                            max='65535'
-                            value={settings.mailSmtpPort}
-                            onChange={(e) => handleSettingChange('mailSmtpPort', parseInt(e.target.value))}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>SMTP port (587 for TLS, 465 for SSL)</p>
-                      </div>
-                    </div>
-                    <div className='column is-narrow'>
-                      <div className='field'>
-                        <label className='label'>Secure Connection</label>
-                        <div className='control'>
-                          <label className='checkbox'>
-                            <input 
-                              type='checkbox'
-                              checked={settings.mailSmtpSecure}
-                              onChange={(e) => handleSettingChange('mailSmtpSecure', e.target.checked)}
-                            />
-                            <span className='ml-2'>Use SSL/TLS</span>
-                          </label>
-                        </div>
-                        <p className='help has-text-grey'>Enable for port 465</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SMTP Authentication */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>SMTP Authentication</h2>
-                  <div className='columns'>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>SMTP Username</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='email'
-                            placeholder='your-email@gmail.com'
-                            value={settings.mailSmtpUser}
-                            onChange={(e) => handleSettingChange('mailSmtpUser', e.target.value)}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>SMTP authentication username (usually your email)</p>
-                      </div>
-                    </div>
-                    <div className='column'>
-                      <div className='field'>
-                        <label className='label'>SMTP Password</label>
-                        <div className='control'>
-                          <input 
-                            className='input'
-                            type='password'
-                            placeholder='your-app-password'
-                            value={settings.mailSmtpPassword}
-                            onChange={(e) => handleSettingChange('mailSmtpPassword', e.target.value)}
-                          />
-                        </div>
-                        <p className='help has-text-grey'>SMTP authentication password (use app passwords for Gmail)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mail Settings */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Email Settings</h2>
-                  <div className='field'>
-                    <label className='label'>From Address</label>
-                    <div className='control'>
-                      <input 
-                        className='input'
-                        type='email'
-                        placeholder='Zoneweaver <noreply@yourdomain.com>'
-                        value={settings.mailFromAddress}
-                        onChange={(e) => handleSettingChange('mailFromAddress', e.target.value)}
-                      />
-                    </div>
-                    <p className='help has-text-grey'>Email address that appears as sender for invitations and notifications</p>
-                  </div>
-                </div>
-
-                {/* Mail Test Section */}
-                <div className='box mb-4'>
-                  <h2 className='title is-5'>Test Configuration</h2>
-                  <div className='field'>
-                    <label className='label'>Test Email Address</label>
-                    <div className='control has-icons-right'>
-                      <input 
-                        className='input'
-                        type='email'
-                        placeholder='test@example.com'
-                        id='testEmailInput'
-                      />
-                      <span className='icon is-small is-right'>
-                        <i className='fas fa-envelope'></i>
-                      </span>
-                    </div>
-                    <p className='help has-text-grey'>Send a test email to verify SMTP configuration</p>
-                  </div>
-                  <div className='field'>
+                  {/* Action Buttons */}
+                  <div className='field is-grouped is-grouped-centered'>
                     <div className='control'>
                       <button 
-                        className={`button is-info ${loading ? 'is-loading' : ''}`}
-                        onClick={async () => {
-                          const testEmail = document.getElementById('testEmailInput').value;
-                          if (!testEmail) {
-                            setMsg('Please enter a test email address');
-                            return;
-                          }
-                          try {
-                            setLoading(true);
-                            setMsg('Sending test email...');
-                            const response = await axios.post('/api/mail/test', { testEmail });
-                            if (response.data.success) {
-                              setMsg('Test email sent successfully! Check your inbox.');
-                            } else {
-                              setMsg('Failed to send test email: ' + response.data.message);
-                            }
-                          } catch (error) {
-                            setMsg('Error sending test email: ' + (error.response?.data?.message || error.message));
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
+                        className={`button is-primary ${loading ? 'is-loading' : ''}`}
+                        onClick={saveSettings}
                         disabled={loading}
                       >
                         <span className='icon'>
-                          <i className='fas fa-paper-plane'></i>
+                          <i className='fas fa-save'></i>
                         </span>
-                        <span>Send Test Email</span>
+                        <span>Save Settings</span>
+                      </button>
+                    </div>
+                    <div className='control'>
+                      <button 
+                        className='button is-warning'
+                        onClick={resetToDefaults}
+                        disabled={loading}
+                      >
+                        <span className='icon'>
+                          <i className='fas fa-undo'></i>
+                        </span>
+                        <span>Reset to Defaults</span>
                       </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Configuration Help */}
-                <div className='box mb-4'>
-                  <h2 className='title is-6'>Configuration Help</h2>
-                  <div className='content is-size-7'>
-                    <h3 className='title is-6'>Common SMTP Providers:</h3>
-                    <div className='columns'>
-                      <div className='column'>
-                        <p><strong>Gmail:</strong></p>
-                        <ul>
-                          <li>Host: smtp.gmail.com</li>
-                          <li>Port: 587 (TLS) or 465 (SSL)</li>
-                          <li>Secure: false for 587, true for 465</li>
-                          <li>Use App Password (not regular password)</li>
-                        </ul>
-                        <p><strong>Outlook/Hotmail:</strong></p>
-                        <ul>
-                          <li>Host: smtp-mail.outlook.com</li>
-                          <li>Port: 587</li>
-                          <li>Secure: false</li>
-                        </ul>
-                      </div>
-                      <div className='column'>
-                        <p><strong>Yahoo:</strong></p>
-                        <ul>
-                          <li>Host: smtp.mail.yahoo.com</li>
-                          <li>Port: 587 or 465</li>
-                          <li>Secure: false for 587, true for 465</li>
-                        </ul>
-                        <p><strong>Custom SMTP:</strong></p>
-                        <ul>
-                          <li>Contact your hosting provider</li>
-                          <li>Check documentation for settings</li>
-                          <li>Test configuration before saving</li>
-                        </ul>
-                      </div>
-                    </div>
-                    <div className='notification is-info mt-3'>
-                      <p><strong>Note:</strong> Email configuration is required for user invitations and password reset functionality. Save settings first, then use the test button to verify configuration.</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className='field is-grouped is-grouped-centered'>
-                  <div className='control'>
-                    <button 
-                      className={`button is-primary ${loading ? 'is-loading' : ''}`}
-                      onClick={saveSettings}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-save'></i>
-                      </span>
-                      <span>Save Mail Settings</span>
-                    </button>
-                  </div>
-                  <div className='control'>
-                    <button 
-                      className='button is-warning'
-                      onClick={resetToDefaults}
-                      disabled={loading}
-                    >
-                      <span className='icon'>
-                        <i className='fas fa-undo'></i>
-                      </span>
-                      <span>Reset to Defaults</span>
-                    </button>
-                  </div>
-                </div>
-              </>
+              )
             )}
 
             {/* Restart Warning */}

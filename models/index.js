@@ -12,7 +12,22 @@ try {
   process.exit(1);
 }
 
-const dbConfig = config.database;
+const dbConfig = {
+  dialect: config.database.dialect.value,
+  storage: config.database.storage?.value,
+  host: config.database.host?.value,
+  port: config.database.port?.value,
+  user: config.database.user?.value,
+  password: config.database.password?.value,
+  database: config.database.database_name?.value,
+  logging: config.database.logging?.value,
+  pool: {
+    max: config.database.pool?.max?.value,
+    min: config.database.pool?.min?.value,
+    acquire: config.database.pool?.acquire?.value,
+    idle: config.database.pool?.idle?.value
+  }
+};
 
 // Configure Sequelize based on database dialect
 // Handle both flat format and UI metadata format

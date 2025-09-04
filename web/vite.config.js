@@ -53,16 +53,16 @@ export default defineConfig({
   base: '/ui/',
   publicDir: "public",
   server: {
-    port: config.frontend?.port || 3000,
+    port: config.frontend?.port?.value || 3000,
     host: "0.0.0.0",
     https: false, // Disable HTTPS for dev server during build
     hmr: {
-      port: config.frontend?.port || 3000,
-      host: config.server?.hostname || 'localhost',
+      port: config.frontend?.port?.value || 3000,
+      host: config.server?.hostname?.value || 'localhost',
     },
     proxy: {
       "/api": {
-        target: `http://${config.server?.hostname || 'localhost'}:${config.server?.port || 3443}`,
+        target: `http://${config.server?.hostname?.value || 'localhost'}:${config.server?.port?.value || 3443}`,
         changeOrigin: true,
         secure: false,
       },

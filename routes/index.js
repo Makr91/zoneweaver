@@ -2,8 +2,6 @@ import express from "express";
 import path from "path";
 import crypto from "crypto";
 import axios from "axios";
-import fs from "fs";
-import YAML from "yaml";
 import rateLimit from "express-rate-limit";
 import AuthController from "../controllers/AuthController.js";
 import ServerController from "../controllers/ServerController.js";
@@ -164,7 +162,7 @@ router.get( '/api/profile/:identifier', standardLimiter, async ( req, res ) => {
  
     try {
         const config = loadConfig();
-        const apiKey = config.gravatar.apiKey;
+        const apiKey = config.gravatar?.api_key?.value;
 
         const hash = crypto.createHash( 'sha256' ).update( identifier.trim().toLowerCase() ).digest( 'hex' );
  
