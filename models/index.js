@@ -66,7 +66,8 @@ const modelFiles = [
   'user.model.js',
   'organization.model.js', 
   'invitation.model.js',
-  'server.model.js'
+  'server.model.js',
+  'credential.model.js'
 ];
 
 // Initialize models - handle async imports properly

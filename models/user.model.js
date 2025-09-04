@@ -54,6 +54,28 @@ export default (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
       field: 'is_active'
+    },
+    auth_provider: {
+      type: Sequelize.STRING(50),
+      allowNull: true,
+      defaultValue: 'local',
+      field: 'auth_provider',
+      validate: {
+        isIn: [['local', 'ldap', 'oidc', 'oauth2', 'saml', 'github', 'google', 'microsoft']]
+      },
+      comment: 'Authentication provider: local, ldap, oidc, etc.'
+    },
+    external_id: {
+      type: Sequelize.STRING(255),
+      allowNull: true,
+      field: 'external_id',
+      comment: 'External provider user ID'
+    },
+    linked_at: {
+      type: Sequelize.DATE,
+      allowNull: true,
+      field: 'linked_at',
+      comment: 'Timestamp when external account was linked'
     }
   }, {
     // Table options
@@ -80,6 +102,12 @@ export default (sequelize, Sequelize) => {
       },
       {
         fields: ['is_active']
+      },
+      {
+        fields: ['auth_provider']
+      },
+      {
+        fields: ['external_id']
       }
     ],
     
@@ -145,6 +173,13 @@ export default (sequelize, Sequelize) => {
         onDelete: 'SET NULL'
       });
     }
+    
+    // User can have many Credentials (external auth providers)
+    User.hasMany(models.credential, {
+      foreignKey: "user_id",
+      as: "credentials",
+      onDelete: 'CASCADE'
+    });
   };
 
   // Class methods for common queries
@@ -200,6 +235,25 @@ export default (sequelize, Sequelize) => {
       where: { is_active: true }
     });
     return count === 0;
+  };
+
+  // External authentication methods
+  User.findByExternalId = function(provider, externalId) {
+    return this.scope('active').findOne({
+      where: { 
+        auth_provider: provider,
+        external_id: externalId 
+      }
+    });
+  };
+
+  User.findWithCredentials = function(userId) {
+    return this.scope('active').findByPk(userId, {
+      include: [{
+        model: sequelize.models.credential,
+        as: 'credentials'
+      }]
+    });
   };
 
   return User;

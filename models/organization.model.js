@@ -22,6 +22,19 @@ export default (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
       field: 'is_active'
+    },
+    organization_code: {
+      type: Sequelize.STRING(20),
+      allowNull: true,
+      unique: true,
+      field: 'organization_code',
+      validate: {
+        len: [6, 20],
+        isAlphanumeric: {
+          msg: 'Organization code must be alphanumeric'
+        }
+      },
+      comment: 'Organization code for domain mapping (hexcode format)'
     }
   }, {
     // Table options
@@ -38,6 +51,10 @@ export default (sequelize, Sequelize) => {
       },
       {
         fields: ['is_active']
+      },
+      {
+        unique: true,
+        fields: ['organization_code']
       }
     ],
     
@@ -107,6 +124,12 @@ export default (sequelize, Sequelize) => {
         sequelize.fn('LOWER', sequelize.col('name')),
         sequelize.fn('LOWER', name)
       )
+    });
+  };
+
+  Organization.findByOrganizationCode = function(organizationCode) {
+    return this.findOne({
+      where: { organization_code: organizationCode }
     });
   };
 
