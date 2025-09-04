@@ -35,13 +35,18 @@ $beige-lighter: #eff0eb;
   $dropdown-content-z: 4,
   $control-radius: none,
   $card-shadow: none,
-  $body-overflow-y: auto
+  $body-overflow-y: auto,
+  $shadow: 0 0 0 transparent,
+  $button-focus-box-shadow-size: 0 0 0 0,
+  $button-focus-box-shadow-color: transparent,
+  $input-shadow: none,
+  $input-focus-box-shadow-size: 0 0 0 0,
+  $control-focus-box-shadow-size: 0 0 0 0
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
 //  $grey-light: $beige-light,
 //  $link: $pink,
 //  $control-border-width: 2px,
-//  $input-shadow: none,
 );
 
 // Import theme utilities for dark mode implementation
@@ -109,6 +114,21 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Light theme
   --zw-border-light: #dbdbdb;       // Component borders
   --zw-controls-bg: #363636;        // VNC controls background
+  
+  // Override ALL Bulma shadow variables to completely disable shadows
+  --bulma-shadow: none !important;
+  --bulma-button-focus-box-shadow-size: 0 !important;
+  --bulma-button-focus-box-shadow-color: transparent !important;
+  --bulma-focus-shadow-size: 0 !important;
+  --bulma-control-focus-box-shadow-size: 0 !important;
+  --bulma-input-focus-box-shadow-size: 0 !important;
+  --bulma-card-shadow: none !important;
+  --bulma-modal-card-head-shadow: none !important;
+  --bulma-modal-card-foot-shadow: none !important;
+  --bulma-dropdown-content-shadow: none !important;
+  --bulma-navbar-shadow: none !important;
+  --bulma-pagination-shadow: none !important;
+  --bulma-table-head-shadow: none !important;
 }
 
 [data-theme="dark"] {
@@ -475,7 +495,6 @@ $beige-lighter: #eff0eb;
   font-weight: bold !important;
   padding: 2px 4px !important;
   pointer-events: all !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
 // Floating edge label styling (smaller variant)
@@ -487,7 +506,6 @@ $beige-lighter: #eff0eb;
   font-weight: bold !important;
   padding: 1px 3px !important;
   pointer-events: all !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
   min-width: 20px !important;
   text-align: center !important;
 }
@@ -537,7 +555,6 @@ $beige-lighter: #eff0eb;
   overflow: hidden !important;
   background-color: white !important;
   border-radius: 0 !important;
-  box-shadow: 0 8px 16px rgba(10, 10, 10, 0.1) !important;
 }
 
 .zw-modal-container-fullscreen {
@@ -624,7 +641,6 @@ $beige-lighter: #eff0eb;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
 }
 
 // VLAN badge positioning
@@ -1072,4 +1088,37 @@ $beige-lighter: #eff0eb;
 
 .zw-zone-active-bg {
   background-color: var(--zw-zone-active) !important;
+}
+
+// Global shadow removal - catch-all rule to ensure no shadows anywhere
+* {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+// Override any potential Bulma component shadows that might still appear
+.box,
+.modal,
+.modal-card,
+.dropdown,
+.dropdown-content,
+.button,
+.input,
+.textarea,
+.select,
+.navbar,
+.notification,
+.card,
+.pagination,
+.table {
+  box-shadow: none !important;
+}
+
+// Focus states should not have shadows either
+*:focus,
+*:focus-visible,
+*:focus-within {
+  box-shadow: none !important;
+  outline: 1px solid var(--bulma-link) !important;
+  outline-offset: 1px !important;
 }
