@@ -207,7 +207,7 @@ async function handleExternalUser(provider, profile) {
     });
 
     // Create credential record
-    await CredentialModel.linkToUser(user.id, provider, profile);
+    await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
 
     console.log(`✅ Created new ${provider} user: ${user.username} (${user.email})`);
     return user;
