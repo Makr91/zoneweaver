@@ -41,7 +41,7 @@ const HostDevices = () => {
 
     if (!user) {
         return (
-            <div className='hero-body p-0 is-align-items-stretch'>
+            <div className='zw-page-content-scrollable'>
                 <Helmet>
                     <meta charSet='utf-8' />
                     <title>Device Monitoring - Zoneweaver</title>
@@ -67,7 +67,7 @@ const HostDevices = () => {
 
     if (serverList.length === 0) {
         return (
-            <div className='hero-body p-0 is-align-items-stretch'>
+            <div className='zw-page-content-scrollable'>
                 <Helmet>
                     <meta charSet='utf-8' />
                     <title>Device Monitoring - Zoneweaver</title>
@@ -103,7 +103,7 @@ const HostDevices = () => {
     const filteredDevices = getSortedDevices(applyFilters(devices));
 
     return (
-        <div className='hero-body p-0 is-align-items-stretch'>
+        <div className='zw-page-content-scrollable'>
             <Helmet>
                 <meta charSet='utf-8' />
                 <title>Device Monitoring - Zoneweaver</title>

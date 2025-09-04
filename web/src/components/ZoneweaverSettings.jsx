@@ -230,7 +230,7 @@ const ZoneweaverSettings = () => {
   // Check permissions - only super-admin can access
   if (!user || !canManageSettings(user.role)) {
     return (
-      <div className='hero-body p-0 is-align-items-stretch'>
+      <div className='zw-page-content-scrollable'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>System Settings - Zoneweaver</title>
@@ -344,7 +344,7 @@ const ZoneweaverSettings = () => {
   };
 
   return (
-    <div className='hero-body p-0 is-align-items-stretch'>
+    <div className='zw-page-content-scrollable'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>Zoneweaver Settings - Zoneweaver</title>

@@ -76,7 +76,7 @@ const HostNetworking = () => {
 
     if (serverList.length === 0) {
         return (
-            <div className='hero-body p-0 is-align-items-stretch'>
+            <div className='zw-page-content-scrollable'>
                 <Helmet>
                     <meta charSet='utf-8' />
                     <title>Network Monitoring - Zoneweaver</title>
@@ -110,7 +110,7 @@ const HostNetworking = () => {
     }
 
     return (
-        <div className='hero-body p-0 is-align-items-stretch'>
+        <div className='zw-page-content-scrollable'>
             <Helmet>
                 <meta charSet='utf-8' />
                 <title>Network Monitoring - Zoneweaver</title>

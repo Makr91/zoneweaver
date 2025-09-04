@@ -18,7 +18,7 @@ const HostManage = () => {
 
   if (!user || (user.role !== 'admin' && user.role !== 'super-admin')) {
     return (
-      <div className='hero-body p-0 is-align-items-stretch'>
+      <div className='zw-page-content-scrollable'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>Access Denied - Zoneweaver</title>
@@ -35,7 +35,7 @@ const HostManage = () => {
   // Show message if no server is selected
   if (!currentServer) {
     return (
-      <div className='hero-body p-0 is-align-items-stretch'>
+      <div className='zw-page-content-scrollable'>
         <Helmet>
           <meta charSet='utf-8' />
           <title>No Server Selected - Zoneweaver</title>
@@ -67,7 +67,7 @@ const HostManage = () => {
   }
 
   return (
-    <div className='hero-body p-0 is-align-items-stretch'>
+    <div className='zw-page-content-scrollable'>
       <Helmet>
         <meta charSet='utf-8' />
         <title>{`Manage ${currentServer.hostname} - Zoneweaver`}</title>
