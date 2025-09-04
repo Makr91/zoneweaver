@@ -202,7 +202,7 @@ const Footer = () => {
         width={Infinity}
         resizeHandles={footerIsActive ? ["n"] : []}
         axis='y'
-        maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
+        maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.9)]}
         minConstraints={[Infinity, 0]}
         handle={FooterHandle()}
       >

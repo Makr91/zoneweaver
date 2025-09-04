@@ -319,6 +319,11 @@ $beige-lighter: #eff0eb;
   cursor: ns-resize !important;
 }
 
+// Footer dropdown z-index fix
+.hero-foot .dropdown-menu {
+  z-index: 15 !important;
+}
+
 // Fix for custom icon fonts
 .icon-zoneweaver-logo {
   font-family: 'fontello' !important;
