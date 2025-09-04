@@ -153,7 +153,18 @@ async function handleExternalUser(provider, profile) {
     console.log(`🔍 ${provider} user - email: ${email}, subject: ${subject}`);
 
     // 1. Check if credential already exists (existing external user)
+    console.log(`🔍 Looking for existing credential: provider=${provider}, subject=${subject}`);
+    
+    // Debug: Show all credentials for this provider
+    const allCredentials = await CredentialModel.findAll({ 
+      where: { provider: provider },
+      attributes: ['id', 'provider', 'subject', 'user_id', 'external_email']
+    });
+    console.log(`🔍 All ${provider} credentials in DB:`, allCredentials.map(c => `ID:${c.id} subject:${c.subject} email:${c.external_email}`));
+    
     let credential = await CredentialModel.findByProviderAndSubject(provider, subject);
+    console.log(`🔍 Credential search result:`, credential ? `Found credential ID ${credential.id}` : 'No credential found');
+    
     if (credential) {
       console.log(`✅ Found existing ${provider} credential, updating profile...`);
       await credential.updateProfile(profile);
@@ -329,10 +340,11 @@ async function determineUserOrganization(email, profile) {
       
     case 'create_org':
       console.log(`🏗️ Creating new organization for domain: ${domain}`);
+      const orgCode = generateOrgCode();
       const newOrg = await OrganizationModel.create({
-        name: `${domain} Organization`,
+        name: `${orgCode} - ${domain.toUpperCase()}`,
         description: `Auto-created organization for domain ${domain}`,
-        organization_code: generateOrgCode(),
+        organization_code: orgCode,
         is_active: true
       });
       console.log(`✅ Created organization: ${newOrg.name} (${newOrg.id})`);
