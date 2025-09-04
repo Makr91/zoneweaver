@@ -184,7 +184,7 @@ const Footer = () => {
   // Footer handle that positions itself to overlay the header
   const FooterHandle = () => {
     return (
-      <div className="button is-small is-dark react-resizable-handle react-resizable-handle-n" 
+      <div className="is-small is-dark react-resizable-handle react-resizable-handle-n" 
            style={{
              position: 'absolute',
              top: '-30px',

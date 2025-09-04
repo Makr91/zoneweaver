@@ -23,6 +23,11 @@ const SidebarFooter = () => {
     }
   };
 
+  const handleProfileClick = (e) => {
+    e.preventDefault();
+    navigate('profile');
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -79,7 +84,7 @@ const SidebarFooter = () => {
                     </span>
                     <span>Notifications</span>
                   </a>
-                  <a className="dropdown-item is-flex is-justify-content-flex-start" href="/ui/profile">
+                  <a className="dropdown-item is-flex is-justify-content-flex-start" onClick={handleProfileClick}>
                     <span className="icon mr-2">
                       <i className="fas fa-user"></i>
                     </span>
@@ -139,7 +144,7 @@ const SidebarFooter = () => {
                     </span>
                     <span>Notifications</span>
                   </a>
-                  <a className="dropdown-item is-flex is-justify-content-flex-start" href="/ui/profile">
+                  <a className="dropdown-item is-flex is-justify-content-flex-start" onClick={handleProfileClick}>
                     <span className="icon mr-2">
                       <i className="fas fa-user"></i>
                     </span>
