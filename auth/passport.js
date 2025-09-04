@@ -1,7 +1,10 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { config } from '../index.js';
+import { loadConfig } from '../utils/config.js';
 import db from '../models/index.js';
+
+// Load config directly to avoid circular dependency with index.js
+const config = loadConfig();
 
 /**
  * Passport.js configuration for ZoneWeaver
