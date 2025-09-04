@@ -166,8 +166,8 @@ class SettingsController {
         autoRefreshInterval: config.frontend?.autoRefreshInterval || 5,
         enableNotifications: config.frontend?.enableNotifications !== false,
         enableDarkMode: config.frontend?.enableDarkMode !== false,
-        sessionTimeout: config.security?.sessionTimeout || 24,
-        allowNewOrganizations: config.security?.allow_new_organizations !== false,
+        sessionTimeout: config.authentication?.strategies?.local?.session_timeout || 24,
+        allowNewOrganizations: config.authentication?.strategies?.local?.allow_new_organizations !== false,
         enableLogging: config.logging?.enabled !== false,
         debugMode: config.logging?.level === 'debug',
         serverHostname: config.server?.hostname || 'localhost',
@@ -349,10 +349,12 @@ class SettingsController {
       if (newSettings.enableNotifications !== undefined) config.frontend.enableNotifications = newSettings.enableNotifications;
       if (newSettings.enableDarkMode !== undefined) config.frontend.enableDarkMode = newSettings.enableDarkMode;
 
-      // Don't modify security settings that could break authentication
-      config.security = config.security || {};
-      if (newSettings.sessionTimeout) config.security.sessionTimeout = newSettings.sessionTimeout;
-      if (newSettings.allowNewOrganizations !== undefined) config.security.allow_new_organizations = newSettings.allowNewOrganizations;
+      // Don't modify authentication settings that could break authentication
+      config.authentication = config.authentication || {};
+      config.authentication.strategies = config.authentication.strategies || {};
+      config.authentication.strategies.local = config.authentication.strategies.local || {};
+      if (newSettings.sessionTimeout) config.authentication.strategies.local.session_timeout = newSettings.sessionTimeout;
+      if (newSettings.allowNewOrganizations !== undefined) config.authentication.strategies.local.allow_new_organizations = newSettings.allowNewOrganizations;
 
       config.logging = config.logging || {};
       if (newSettings.enableLogging !== undefined) config.logging.enabled = newSettings.enableLogging;
@@ -505,10 +507,13 @@ class SettingsController {
         enableDarkMode: true
       };
 
-      config.security = {
-        ...config.security, // Preserve existing security settings
-        sessionTimeout: 24
-      };
+      // Reset authentication settings to defaults while preserving structure
+      if (config.authentication) {
+        config.authentication.strategies = config.authentication.strategies || {};
+        config.authentication.strategies.local = config.authentication.strategies.local || {};
+        config.authentication.strategies.local.session_timeout = 24;
+        config.authentication.strategies.local.allow_new_organizations = true;
+      }
 
       config.logging = {
         level: "info",

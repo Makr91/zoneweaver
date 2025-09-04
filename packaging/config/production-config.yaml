@@ -54,11 +54,100 @@ logging:
 limits:
   maxServersPerUser: 10
 
-security:
-  jwt_secret: "__JWT_SECRET_FROM_FILE__"
-  bcrypt_rounds: 10
-  sessionTimeout: 24
-  allow_new_organizations: true
+# Authentication Configuration (Phase 3: LDAP Integration)
+# Uncomment and configure the sections below to enable external authentication
+authentication:
+  # Core authentication settings
+  enabled_strategies: [local, jwt]  # Add ldap, oidc as implemented
+  default_strategy: local
+  
+  # Authentication strategy configurations
+  strategies:
+    # JWT settings (consolidated from old security section)
+    jwt:
+      secret: "__JWT_SECRET_FROM_FILE__"
+      expiration: "24h"
+      issuer: "zoneweaver"
+      audience: "zoneweaver-api"
+#       
+    # Local authentication (existing username/password)
+    local:
+      enabled: true
+      require_email_verification: false
+      password_policy:
+        min_length: 8
+        require_uppercase: false
+        require_lowercase: false
+        require_numbers: false
+        require_symbols: false
+      bcrypt_rounds: 10
+      session_timeout: 24
+      allow_new_organizations: true
+        
+    # LDAP Configuration
+    ldap:
+      enabled: false
+      url: "ldap://localhost:389"
+      # url: "ldaps://ldap.company.com:636"  # For secure LDAP
+      bind_dn: "cn=admin,dc=example,dc=com"
+      bind_credentials: "admin_password"
+      search_base: "ou=users,dc=example,dc=com"
+      search_filter: "(uid={{username}})"
+      search_attributes: ["displayName", "mail", "memberOf"]
+      tls_options:
+        reject_unauthorized: false
+        ca: []
+        
+    # OIDC Configuration (Future Phase 4)
+    # oidc:
+    #   enabled: false
+    #   issuer: "https://accounts.google.com"
+    #   client_id: ""
+    #   client_secret: ""
+    #   discovery_url: "https://accounts.google.com/.well-known/openid_configuration"
+    #   scope: "openid profile email"
+    #   response_type: "code"
+  
+  # Settings that control external authentication providers (LDAP/OIDC)
+  # These settings do NOT apply to local/JWT authentication
+  external_provider_settings:
+    # Domain-to-Organization Mapping
+    domain_organization_mapping:
+      enabled: false
+      mappings: {}
+      # Example mappings (admin configurable via UI):
+      # A1B2C3:
+      #   - "company1.com"
+      #   - "companyx.com"
+      # A55555:
+      #   - "companyR.net"
+      # FFFFFF:
+      #   - "companyZ.com"
+      #   - "company3.org"
+      
+    # External User Provisioning (how to handle new external users)
+    dynamic_provisioning:
+      enabled: false
+      policy: "invite_only"  # invite_only | auto_provision | manual_approval | disabled
+      default_role: "user"
+      fallback_action: "require_invite"  # require_invite | create_org | deny_access
+      
+      # Cross-domain invitation handling
+      cross_domain_invites:
+        allowed: true
+        priority: "invitation_wins"  # invitation_wins | domain_wins
+        
+      # Auto-organization creation settings
+      auto_org_creation:
+        enabled: false
+        naming_pattern: "{{domain}} Organization"
+        default_description: "Auto-created organization"
+        
+    # Profile synchronization from external providers
+    profile_sync:
+      enabled: true
+      update_on_login: true
+      sync_fields: ["displayName", "email", "groups"]
 
 # Database configuration with UI metadata
 database:

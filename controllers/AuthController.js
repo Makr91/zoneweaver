@@ -195,7 +195,7 @@ class AuthController {
             });
           } else {
             // Check if new organization creation is allowed
-            if (!config.security.allow_new_organizations) {
+            if (!config.authentication?.strategies?.local?.allow_new_organizations) {
               return res.status(403).json({
                 success: false,
                 message: 'New organization registration is currently disabled. Please contact an administrator or join with an invitation code.'
@@ -413,7 +413,7 @@ class AuthController {
           email: user.email, 
           role: user.role 
         },
-        config.security.jwt_secret || 'fallback-secret',
+        config.authentication?.strategies?.jwt?.secret || 'fallback-secret',
         { expiresIn: '24h' }
       );
 
@@ -442,6 +442,167 @@ class AuthController {
       res.status(500).json({ 
         success: false, 
         message: 'Internal server error during login' 
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/auth/ldap:
+   *   post:
+   *     summary: Authenticate via LDAP
+   *     description: Login using LDAP credentials and receive JWT authentication token
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [username, password]
+   *             properties:
+   *               username:
+   *                 type: string
+   *                 description: LDAP username (uid)
+   *                 example: "jdoe"
+   *               password:
+   *                 type: string
+   *                 description: LDAP password
+   *                 example: "ldapPassword123"
+   *     responses:
+   *       200:
+   *         description: LDAP login successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/LoginResponse'
+   *       400:
+   *         description: Missing credentials or LDAP disabled
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ValidationErrorResponse'
+   *       401:
+   *         description: Invalid LDAP credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied - provisioning policy rejection
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error or LDAP server unavailable
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async ldapLogin(req, res) {
+    try {
+      // Check if LDAP is enabled
+      if (!config.authentication?.strategies?.ldap?.enabled) {
+        return res.status(400).json({
+          success: false,
+          message: 'LDAP authentication is not enabled'
+        });
+      }
+
+      const { username, password } = req.body;
+
+      // Validation
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username and password are required'
+        });
+      }
+
+      // Use passport to authenticate with LDAP
+      const passport = (await import('passport')).default;
+      
+      // Wrap passport.authenticate in Promise for async/await
+      const authenticatePromise = new Promise((resolve, reject) => {
+        passport.authenticate('ldap', { session: false }, (err, user, info) => {
+          if (err) {
+            reject(err);
+          } else if (!user) {
+            reject(new Error(info?.message || 'LDAP authentication failed'));
+          } else {
+            resolve(user);
+          }
+        })({ body: { username, password } }, res, () => {});
+      });
+
+      const user = await authenticatePromise;
+
+      // Generate JWT token
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        },
+        config.authentication?.strategies?.jwt?.secret || 'fallback-secret',
+        { expiresIn: '24h' }
+      );
+
+      // Set session if using express-session
+      if (req.session) {
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        req.session.role = user.role;
+      }
+
+      console.log(`✅ LDAP login successful: ${user.username} (${user.email})`);
+
+      res.json({
+        success: true,
+        message: 'LDAP login successful',
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          organizationId: user.organization_id,
+          authProvider: 'ldap',
+          lastLogin: user.last_login
+        }
+      });
+
+    } catch (error) {
+      console.error('LDAP login error:', error);
+      
+      // Handle specific LDAP errors
+      if (error.message.includes('Access denied') || error.message.includes('Invitation required')) {
+        return res.status(403).json({
+          success: false,
+          message: error.message
+        });
+      }
+      
+      if (error.message.includes('LDAP authentication failed') || error.message.includes('Invalid credentials')) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid LDAP credentials'
+        });
+      }
+
+      if (error.message.includes('LDAP server') || error.message.includes('connection')) {
+        return res.status(500).json({
+          success: false,
+          message: 'LDAP server unavailable'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error during LDAP authentication'
       });
     }
   }
@@ -805,7 +966,7 @@ class AuthController {
         });
       }
 
-      const decoded = jwt.verify(token, config.security.jwt_secret || 'fallback-secret');
+      const decoded = jwt.verify(token, config.authentication?.strategies?.jwt?.secret || 'fallback-secret');
       
       // Get fresh user data
       const user = await UserModel.findByPk(decoded.userId);

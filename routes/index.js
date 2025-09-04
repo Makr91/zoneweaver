@@ -77,6 +77,7 @@ const staticFileLimiter = rateLimit({
 // Authentication endpoints - Protected with strict rate limiting
 router.post("/api/auth/register", authLimiter, AuthController.register);
 router.post("/api/auth/login", authLimiter, AuthController.login);
+router.post("/api/auth/ldap", authLimiter, AuthController.ldapLogin);
 router.post("/api/auth/logout", standardLimiter, AuthController.logout);
 router.get("/api/auth/profile", standardLimiter, authenticate, AuthController.getProfile);
 router.post("/api/auth/change-password", authLimiter, authenticate, AuthController.changePassword);
