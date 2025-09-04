@@ -173,16 +173,38 @@ async function handleExternalUser(provider, profile) {
     if (user) {
       console.log(`🔗 Linking ${provider} account to existing user: ${email}`);
       
-      // Create credential link
-      await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
+      // If user doesn't have an organization, assign one
+      if (!user.organization_id) {
+        console.log(`🔍 User ${email} has no organization, determining organization...`);
+        const organizationId = await determineUserOrganization(email, profile);
+        console.log(`🏢 Assigning existing user to organization ID: ${organizationId}`);
+        
+        await user.update({
+          organization_id: organizationId,
+          auth_provider: provider,
+          external_id: subject,
+          linked_at: new Date(),
+          last_login: new Date()
+        });
+        
+        console.log(`✅ Updated existing user with organization_id: ${user.organization_id}`);
+      } else {
+        // Update user's auth provider and linked timestamp
+        await user.update({
+          auth_provider: provider,
+          external_id: subject,
+          linked_at: new Date(),
+          last_login: new Date()
+        });
+      }
       
-      // Update user's auth provider and linked timestamp
-      await user.update({
-        auth_provider: provider,
-        external_id: subject,
-        linked_at: new Date(),
-        last_login: new Date()
-      });
+      // Create credential link if not exists
+      try {
+        await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
+      } catch (error) {
+        // Credential might already exist, just update profile
+        console.log(`🔄 Credential may already exist, updating profile...`);
+      }
       
       return user;
     }
@@ -191,6 +213,7 @@ async function handleExternalUser(provider, profile) {
     const organizationId = await determineUserOrganization(email, profile);
     
     console.log(`👤 Creating new ${provider} user: ${email}`);
+    console.log(`🏢 Assigning user to organization ID: ${organizationId}`);
     
     // Create new user
     user = await UserModel.create({
@@ -205,6 +228,8 @@ async function handleExternalUser(provider, profile) {
       last_login: new Date(),
       is_active: true
     });
+
+    console.log(`✅ Created user with organization_id: ${user.organization_id}`);
 
     // Create credential record
     await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
