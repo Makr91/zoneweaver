@@ -171,28 +171,29 @@ const Footer = () => {
     );
   };
 
+  // Footer handle that positions itself to overlay the header
+  const FooterHandle = () => {
+    return (
+      <div className="button is-small is-dark react-resizable-handle react-resizable-handle-n" 
+           style={{
+             position: 'absolute',
+             top: '-30px',
+             left: '50%',
+             transform: 'translateX(-50%)',
+             width: '60px',
+             zIndex: 10
+           }}>
+        <span className="icon">
+          <i className="fas fa-solid fa-grip-lines"></i>
+        </span>
+      </div>
+    );
+  };
+
 
   return (
     <div className="hero-foot is-relative">
       <FooterHeader />
-      
-      {footerIsActive && (
-        <div 
-          className="button is-small is-dark react-resizable-handle react-resizable-handle-n" 
-          style={{
-            position: 'absolute',
-            top: '0',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '60px',
-            zIndex: 10
-          }}
-        >
-          <span className="icon">
-            <i className="fas fa-solid fa-grip-lines"></i>
-          </span>
-        </div>
-      )}
       
       <ResizableBox
         onResize={handleResize}
@@ -203,6 +204,7 @@ const Footer = () => {
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
+        handle={FooterHandle()}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
