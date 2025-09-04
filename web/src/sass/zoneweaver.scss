@@ -49,7 +49,7 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass/themes/setup";
 
 // Import Bulma Switch Control using @use
-@use "node_modules/bulma-switch-control/bulma-switch-control.scss";
+@use "bulma-switch-control";
 
 // Implement Bulma's theme system
 // System theme (follows OS preference)
