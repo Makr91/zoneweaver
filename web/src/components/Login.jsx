@@ -131,7 +131,7 @@ const Login = () => {
                   </p>
                 </div>
                 <div className='has-text-centered mt-3'>
-                  <a href='https://github.com/Makr91/Zoneweaver' className='has-text-grey'>
+                  <a href='https://zoneweaver.startcloud.com' className='has-text-grey'>
                     Documentation
                   </a>
                 </div>

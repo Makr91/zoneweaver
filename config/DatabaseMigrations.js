@@ -216,34 +216,72 @@ class DatabaseMigrations {
         console.log('🔧 Migrating organizations table for organization codes...');
         
         const tableName = 'organizations';
-        const columnsToAdd = [
-            {
-                name: 'organization_code',
-                definition: {
-                    type: Sequelize.STRING(20),
-                    allowNull: true,
-                    unique: true,
-                    comment: 'Organization code for domain mapping (hexcode format)'
-                }
-            }
-        ];
-
-        let allSuccessful = true;
         
-        for (const column of columnsToAdd) {
-            const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
-            if (!success) {
-                allSuccessful = false;
+        // SQLite doesn't allow adding UNIQUE columns directly, so add column first
+        const columnDefinition = {
+            type: Sequelize.STRING(20),
+            allowNull: true,
+            comment: 'Organization code for domain mapping (hexcode format)'
+        };
+
+        let success = await this.addColumnIfNotExists(tableName, 'organization_code', columnDefinition);
+        
+        // Then create unique index if column was added successfully
+        if (success) {
+            try {
+                // Check if unique index already exists
+                const indexExists = await this.indexExists(tableName, 'unique_organization_code');
+                if (!indexExists) {
+                    console.log('  + Creating unique index on organization_code...');
+                    await this.queryInterface.addIndex(tableName, ['organization_code'], {
+                        name: 'unique_organization_code',
+                        unique: true
+                    });
+                    console.log('  ✅ Created unique index on organization_code');
+                } else {
+                    console.log('  ✓ Unique index on organization_code already exists');
+                }
+            } catch (indexError) {
+                console.warn('  ⚠️ Failed to create unique index on organization_code:', indexError.message);
             }
         }
 
-        if (allSuccessful) {
+        if (success) {
             console.log('✅ Organizations table migration completed successfully');
         } else {
             console.warn('⚠️ Organizations table migration completed with some errors');
         }
 
-        return allSuccessful;
+        return success;
+    }
+
+    /**
+     * Check if an index exists on a table
+     * @param {string} tableName - Name of the table
+     * @param {string} indexName - Name of the index
+     * @returns {Promise<boolean>} True if index exists
+     */
+    async indexExists(tableName, indexName) {
+        try {
+            if (this.sequelize.getDialect() === 'sqlite') {
+                const [results] = await this.sequelize.query(`
+                    SELECT name FROM sqlite_master 
+                    WHERE type='index' AND name='${indexName}' AND tbl_name='${tableName}'
+                `);
+                return results.length > 0;
+            } else {
+                // MySQL/PostgreSQL
+                const [results] = await this.sequelize.query(`
+                    SELECT INDEX_NAME 
+                    FROM INFORMATION_SCHEMA.STATISTICS 
+                    WHERE TABLE_NAME = '${tableName}' AND INDEX_NAME = '${indexName}'
+                `);
+                return results.length > 0;
+            }
+        } catch (error) {
+            console.warn(`Failed to check if index ${indexName} exists on table ${tableName}:`, error.message);
+            return false;
+        }
     }
 
     /**
