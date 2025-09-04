@@ -129,7 +129,6 @@ const Footer = () => {
         </div>
         <div className='level-item is-justify-content-space-between'>
           <div className='icon zw-footer-grip-visual'>
-            <i className={`fas fa-solid fa-grip-lines ${footerIsActive ? 'has-text-grey' : 'has-text-grey-light'}`}></i>
           </div>
         </div>
         <div className='level-item is-justify-content-flex-end'>
@@ -172,22 +171,22 @@ const Footer = () => {
           </div>
         </div>
         
-        {/* Floating resize handle overlay - only shows when footer is active */}
+        {/* 3-section overlay mirroring header layout */}
         {footerIsActive && (
-          <div 
-            className="zw-footer-resize-overlay react-resizable-handle react-resizable-handle-n"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '60px',
-              height: '30px',
-              zIndex: 10,
-              cursor: 'ns-resize',
-              pointerEvents: 'auto'
-            }}
-          />
+          <div className="level zw-footer-overlay-sections">
+            {/* Left section - low z-index, clicks pass through */}
+            <div className="level-item is-justify-content-flex-start zw-footer-overlay-passthrough">
+            </div>
+            {/* Middle section - high z-index, draggable grip */}
+            <div className="level-item is-justify-content-space-between zw-footer-overlay-handle react-resizable-handle react-resizable-handle-n">
+              <div className='icon'>
+                <i className="fas fa-solid fa-grip-lines has-text-grey"></i>
+              </div>
+            </div>
+            {/* Right section - low z-index, clicks pass through */}
+            <div className="level-item is-justify-content-flex-end zw-footer-overlay-passthrough">
+            </div>
+          </div>
         )}
       </nav>
     );
@@ -203,11 +202,10 @@ const Footer = () => {
         className={!footerIsActive ? "is-footer-minimized" : ""}
         height={effectiveHeight}
         width={Infinity}
-        resizeHandles={footerIsActive ? ["n"] : []}
+        resizeHandles={[]}
         axis='y'
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.7)]}
         minConstraints={[Infinity, 30]}
-        handle={footerIsActive ? <div className="react-resizable-handle react-resizable-handle-n" style={{ position: 'absolute', top: 0, width: '100%', height: '30px', background: 'transparent' }} /> : undefined}
       >
         <div className='log-console has-text-white is-fullheight is-flex is-flex-direction-column'>
           {footerActiveView === 'shell' ? <HostShell /> : <Tasks />}
