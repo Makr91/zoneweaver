@@ -1085,35 +1085,3 @@ $beige-lighter: #eff0eb;
   background-color: var(--zw-zone-active) !important;
 }
 
-// Global shadow removal - catch-all rule to ensure no shadows anywhere
-* {
-  box-shadow: none !important;
-  text-shadow: none !important;
-}
-
-// Override any potential Bulma component shadows that might still appear
-.box,
-.modal,
-.modal-card,
-.dropdown,
-.dropdown-content,
-.button,
-.input,
-.textarea,
-.select,
-.navbar,
-.notification,
-.card,
-.pagination,
-.table {
-  box-shadow: none !important;
-}
-
-// Focus states should not have shadows either
-*:focus,
-*:focus-visible,
-*:focus-within {
-  box-shadow: none !important;
-  outline: 1px solid var(--bulma-link) !important;
-  outline-offset: 1px !important;
-}
