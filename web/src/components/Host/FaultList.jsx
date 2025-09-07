@@ -26,14 +26,8 @@ const FaultList = ({ server }) => {
     loadFaults();
   }, [server, filters.all, filters.limit]);
 
-  // Handle force refresh separately to avoid dependency loop
-  useEffect(() => {
-    if (filters.force_refresh) {
-      loadFaults();
-    }
-  }, [filters.force_refresh]);
 
-  const loadFaults = async () => {
+  const loadFaults = async (forceRefresh = false) => {
     if (!server || !makeZoneweaverAPIRequest) return;
     
     try {
@@ -44,7 +38,7 @@ const FaultList = ({ server }) => {
         all: filters.all,
         summary: filters.summary,
         limit: filters.limit,
-        force_refresh: filters.force_refresh
+        force_refresh: forceRefresh
       };
       
       const result = await makeZoneweaverAPIRequest(
@@ -71,11 +65,6 @@ const FaultList = ({ server }) => {
       setSummary(null);
     } finally {
       setLoading(false);
-      
-      // Reset force_refresh flag after request completes
-      if (filters.force_refresh) {
-        setFilters(prev => ({ ...prev, force_refresh: false }));
-      }
     }
   };
 
@@ -271,7 +260,7 @@ const FaultList = ({ server }) => {
               <div className='control'>
                 <button 
                   className='button is-info'
-                  onClick={() => handleFilterChange('force_refresh', true)}
+                  onClick={() => loadFaults(true)}
                   disabled={loading}
                 >
                   <span className='icon'>
