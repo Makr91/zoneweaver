@@ -77,11 +77,11 @@ const BandwidthCharts = ({
                             <div className='column is-4'>
                                 <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost is-chart-expand-button'
+                                        className='button is-small is-light is-chart-expand-button'
                                         onClick={() => expandChart('summary-rx', 'summary-rx')}
                                         title="Expand chart to full size"
                                     >
-                                        <span className='icon has-text-white'>
+                                        <span className='icon'>
                                             <i className='fas fa-expand'></i>
                                         </span>
                                     </button>
@@ -198,11 +198,11 @@ const BandwidthCharts = ({
                             <div className='column is-4'>
                                 <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost is-chart-expand-button'
+                                        className='button is-small is-light is-chart-expand-button'
                                         onClick={() => expandChart('summary-tx', 'summary-tx')}
                                         title="Expand chart to full size"
                                     >
-                                        <span className='icon has-text-white'>
+                                        <span className='icon'>
                                             <i className='fas fa-expand'></i>
                                         </span>
                                     </button>
@@ -319,11 +319,11 @@ const BandwidthCharts = ({
                             <div className='column is-4'>
                                 <div className='is-chart-container is-relative'>
                                     <button
-                                        className='button is-small is-ghost is-chart-expand-button'
+                                        className='button is-small is-light is-chart-expand-button'
                                         onClick={() => expandChart('summary-total', 'summary-total')}
                                         title="Expand chart to full size"
                                     >
-                                        <span className='icon has-text-white'>
+                                        <span className='icon'>
                                             <i className='fas fa-expand'></i>
                                         </span>
                                     </button>
@@ -561,11 +561,11 @@ const BandwidthCharts = ({
                                         <div key={`chart-${interfaceName}`} className='column is-6'>
                                             <div className='is-chart-container is-relative'>
                                                 <button
-                                                    className='button is-small is-ghost is-chart-expand-button'
+                                                    className='button is-small is-light is-chart-expand-button'
                                                     onClick={() => expandChart(interfaceName, 'individual')}
                                                     title="Expand chart to full size"
                                                 >
-                                                    <span className='icon has-text-white'>
+                                                    <span className='icon'>
                                                         <i className='fas fa-expand'></i>
                                                     </span>
                                                 </button>
