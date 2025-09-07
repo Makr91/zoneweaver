@@ -113,7 +113,7 @@ const Dashboard = () => {
       totalMemory: 0,
       usedMemory: 0,
       healthyServers: 0,
-      serversWithIssues: 0,
+      totalIssues: 0,
       serversRequiringReboot: 0,
       recentActivity: [],
     };
@@ -136,7 +136,7 @@ const Dashboard = () => {
           summary.usedMemory += result.data.totalmem - result.data.freemem;
         }
 
-        // Health assessment (including reboot requirements)
+        // Health assessment (count individual issues)
         const hasHighLoad = result.data.loadavg && result.data.loadavg[0] > 2;
         const hasLowFreeMemory =
           result.data.totalmem &&
@@ -144,18 +144,22 @@ const Dashboard = () => {
           result.data.freemem / result.data.totalmem < 0.1;
         const requiresReboot = result.healthData?.reboot_required;
 
+        let issueCount = 0;
+        if (hasHighLoad) issueCount++;
+        if (hasLowFreeMemory) issueCount++;
         if (requiresReboot) {
+          issueCount++;
           summary.serversRequiringReboot++;
         }
 
-        if (hasHighLoad || hasLowFreeMemory || requiresReboot) {
-          summary.serversWithIssues++;
+        if (issueCount > 0) {
+          summary.totalIssues += issueCount;
         } else {
           summary.healthyServers++;
         }
       } else {
         summary.offlineServers++;
-        summary.serversWithIssues++;
+        summary.totalIssues++; // Count offline as 1 issue
       }
     });
 
@@ -426,14 +430,14 @@ const Dashboard = () => {
 
                 <div className="column is-3">
                   <div
-                    className={`box has-text-centered ${summary.serversWithIssues > 0 ? "is-clickable" : ""}`}
+                    className={`box has-text-centered ${summary.totalIssues > 0 ? "is-clickable" : ""}`}
                     onClick={() => {
-                      if (summary.serversWithIssues > 0) {
+                      if (summary.totalIssues > 0) {
                         setShowHealthModal(true);
                       }
                     }}
                     title={
-                      summary.serversWithIssues > 0
+                      summary.totalIssues > 0
                         ? "Click to view details"
                         : ""
                     }
@@ -457,7 +461,7 @@ const Dashboard = () => {
                         <div>
                           <div className="heading has-text-warning">Issues</div>
                           <div className="title is-6">
-                            {summary.serversWithIssues}
+                            {summary.totalIssues}
                           </div>
                         </div>
                       </div>

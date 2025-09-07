@@ -7,7 +7,7 @@ const ArcConfiguration = ({ server }) => {
   const [formData, setFormData] = useState({
     arc_max_gb: '',
     arc_min_gb: '',
-    apply_method: 'both'
+    apply_method: 'persistent'
   });
   const [validation, setValidation] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ const ArcConfiguration = ({ server }) => {
           setFormData({
             arc_max_gb: maxBytes ? bytesToGb(maxBytes) : '',
             arc_min_gb: minBytes ? bytesToGb(minBytes) : '',
-            apply_method: 'both'
+            apply_method: 'persistent'
           });
         }
       }
@@ -207,7 +207,7 @@ const ArcConfiguration = ({ server }) => {
         setFormData({
           arc_max_gb: '',
           arc_min_gb: '',
-          apply_method: 'both'
+          apply_method: 'persistent'
         });
         setValidation(null);
         await loadArcConfig();
@@ -314,55 +314,204 @@ const ArcConfiguration = ({ server }) => {
         </div>
       )}
 
-      {/* Configuration Form */}
-      <div className='box'>
-        <h4 className='title is-6 mb-3'>
-          <span className='icon-text'>
-            <span className='icon'><i className='fas fa-cog'></i></span>
-            <span>ARC Configuration</span>
-          </span>
-        </h4>
+        {/* Oracle Solaris Runtime Warning */}
+        <div className='notification is-warning mb-4'>
+          <h5 className='title is-6 mb-2'>
+            <span className='icon-text'>
+              <span className='icon'><i className='fas fa-exclamation-triangle'></i></span>
+              <span>Oracle Solaris Limitation</span>
+            </span>
+          </h5>
+          <p className='content is-small mb-0'>
+            <strong>Runtime ARC changes are not supported on Oracle Solaris.</strong> 
+            ARC configuration changes can only be applied persistently and require a system reboot to take effect. 
+            The "Runtime Only" and "Both" options are provided for compatibility but will not modify live ARC settings.
+          </p>
+        </div>
+
+        {/* Configuration Form */}
+        <div className='box'>
+          <h4 className='title is-6 mb-3'>
+            <span className='icon-text'>
+              <span className='icon'><i className='fas fa-cog'></i></span>
+              <span>ARC Configuration</span>
+            </span>
+          </h4>
 
         <div className='columns'>
-          <div className='column is-4'>
-            <div className='field'>
-              <label className='label'>Maximum ARC Size (GB)</label>
-              <div className='control'>
+          <div className='column is-6'>
+            <div className='field mb-4'>
+              <label className='label'>
+                Maximum ARC Size: {formData.arc_max_gb ? `${parseFloat(formData.arc_max_gb).toFixed(2)} GB` : 'Auto'}
+              </label>
+              <div className='control mt-4 mb-4'>
                 <input 
-                  className='input'
-                  type='number'
-                  step='0.01'
-                  min='0'
-                  placeholder='e.g., 153.00'
-                  value={formData.arc_max_gb}
+                  className='zw-range-slider-primary'
+                  type='range'
+                  min={currentConfig?.system_constraints ? 
+                    Math.max(
+                      parseFloat(formData.arc_min_gb) || 0,
+                      bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                    ).toFixed(2) : '1'}
+                  max={currentConfig?.system_constraints ? 
+                    bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100'}
+                  step='0.25'
+                  value={formData.arc_max_gb || (currentConfig?.system_constraints ? 
+                    bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '50')}
                   onChange={(e) => handleFormChange('arc_max_gb', e.target.value)}
                   disabled={loading}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    background: formData.arc_max_gb ? 
+                      `linear-gradient(to right, #007bff 0%, #007bff ${
+                        ((parseFloat(formData.arc_max_gb) - (currentConfig?.system_constraints ? 
+                          Math.max(
+                            parseFloat(formData.arc_min_gb) || 0,
+                            bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                          ) : 1)) / 
+                          ((currentConfig?.system_constraints ? 
+                            bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100) - 
+                            (currentConfig?.system_constraints ? 
+                              Math.max(
+                                parseFloat(formData.arc_min_gb) || 0,
+                                bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                              ) : 1))) * 100
+                      }%, #ccc ${
+                        ((parseFloat(formData.arc_max_gb) - (currentConfig?.system_constraints ? 
+                          Math.max(
+                            parseFloat(formData.arc_min_gb) || 0,
+                            bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                          ) : 1)) / 
+                          ((currentConfig?.system_constraints ? 
+                            bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100) - 
+                            (currentConfig?.system_constraints ? 
+                              Math.max(
+                                parseFloat(formData.arc_min_gb) || 0,
+                                bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                              ) : 1))) * 100
+                      }%, #ccc 100%)`
+                      : 'linear-gradient(to right, #ccc 0%, #ccc 100%)'
+                  }}
                 />
               </div>
-              <p className='help'>Maximum memory for ARC cache. Leave empty for auto-calculation.</p>
+              <div className='help is-size-7'>
+                Range: {currentConfig?.system_constraints ? 
+                  Math.max(
+                    parseFloat(formData.arc_min_gb) || 0,
+                    bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                  ).toFixed(2) : '1'} GB to {currentConfig?.system_constraints ? 
+                  bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100'} GB
+                <br />Leave unset for auto-calculation based on system memory.
+              </div>
+              <div className='field mt-3'>
+                <div className='control'>
+                  <button 
+                    className='button is-small is-light'
+                    onClick={() => handleFormChange('arc_max_gb', '')}
+                    disabled={loading}
+                    title='Reset to auto-calculation'
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-undo'></i>
+                    </span>
+                    <span>Auto</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className='column is-4'>
-            <div className='field'>
-              <label className='label'>Minimum ARC Size (GB)</label>
-              <div className='control'>
+          <div className='column is-6'>
+            <div className='field mb-4'>
+              <label className='label'>
+                Minimum ARC Size: {formData.arc_min_gb ? `${parseFloat(formData.arc_min_gb).toFixed(2)} GB` : 'Auto'}
+              </label>
+              <div className='control mt-4 mb-4'>
                 <input 
-                  className='input'
-                  type='number'
-                  step='0.01'
-                  min='0'
-                  placeholder='e.g., 4.00'
-                  value={formData.arc_min_gb}
+                  className='zw-range-slider-info'
+                  type='range'
+                  min={currentConfig?.system_constraints ? 
+                    bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '0.5'}
+                  max={formData.arc_max_gb ? 
+                    Math.min(
+                      parseFloat(formData.arc_max_gb),
+                      currentConfig?.system_constraints ? 
+                        bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
+                    ).toFixed(2) : 
+                    (currentConfig?.system_constraints ? 
+                      bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100')}
+                  step='0.25'
+                  value={formData.arc_min_gb || (currentConfig?.system_constraints ? 
+                    bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '1')}
                   onChange={(e) => handleFormChange('arc_min_gb', e.target.value)}
                   disabled={loading}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    background: formData.arc_min_gb ? 
+                      `linear-gradient(to right, #17a2b8 0%, #17a2b8 ${
+                        ((parseFloat(formData.arc_min_gb) - (currentConfig?.system_constraints ? 
+                          bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes) : 0.5)) / 
+                          ((formData.arc_max_gb ? 
+                            Math.min(
+                              parseFloat(formData.arc_max_gb),
+                              currentConfig?.system_constraints ? 
+                                bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
+                            ) : 
+                            (currentConfig?.system_constraints ? 
+                              bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100)) - 
+                            (currentConfig?.system_constraints ? 
+                              bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes) : 0.5))) * 100
+                      }%, #ccc ${
+                        ((parseFloat(formData.arc_min_gb) - (currentConfig?.system_constraints ? 
+                          bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes) : 0.5)) / 
+                          ((formData.arc_max_gb ? 
+                            Math.min(
+                              parseFloat(formData.arc_max_gb),
+                              currentConfig?.system_constraints ? 
+                                bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
+                            ) : 
+                            (currentConfig?.system_constraints ? 
+                              bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100)) - 
+                            (currentConfig?.system_constraints ? 
+                              bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes) : 0.5))) * 100
+                      }%, #ccc 100%)`
+                      : 'linear-gradient(to right, #ccc 0%, #ccc 100%)'
+                  }}
                 />
               </div>
-              <p className='help'>Minimum memory for ARC cache. Leave empty for auto-calculation.</p>
+              <div className='help is-size-7'>
+                Range: {currentConfig?.system_constraints ? 
+                  bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '0.5'} GB to {formData.arc_max_gb ? 
+                  Math.min(
+                    parseFloat(formData.arc_max_gb),
+                    currentConfig?.system_constraints ? 
+                      bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
+                  ).toFixed(2) : 
+                  (currentConfig?.system_constraints ? 
+                    bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100')} GB
+                <br />Leave unset for auto-calculation based on system memory.
+              </div>
+              <div className='field mt-3'>
+                <div className='control'>
+                  <button 
+                    className='button is-small is-light'
+                    onClick={() => handleFormChange('arc_min_gb', '')}
+                    disabled={loading}
+                    title='Reset to auto-calculation'
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-undo'></i>
+                    </span>
+                    <span>Auto</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className='column is-4'>
+        <div className='columns'>
+          <div className='column is-6'>
             <div className='field'>
               <label className='label'>Apply Method</label>
               <div className='control'>
@@ -380,6 +529,19 @@ const ArcConfiguration = ({ server }) => {
               </div>
               <p className='help'>Choose how to apply the changes.</p>
             </div>
+          </div>
+          <div className='column is-6'>
+            {/* Constraint Summary */}
+            {currentConfig?.system_constraints && (
+              <div className='notification is-light is-small'>
+                <h6 className='title is-6 mb-2'>Quick Reference</h6>
+                <div className='content is-small'>
+                  <p><strong>Physical Memory:</strong> {formatBytes(currentConfig.system_constraints.physical_memory_bytes)}</p>
+                  <p><strong>Safe Max ARC:</strong> {formatBytes(currentConfig.system_constraints.max_safe_arc_bytes)} (85%)</p>
+                  <p><strong>Min Recommended:</strong> {formatBytes(currentConfig.system_constraints.min_recommended_arc_bytes)} (1%)</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -485,12 +647,15 @@ const ArcConfiguration = ({ server }) => {
         <div className='content is-small'>
           <div className='columns'>
             <div className='column'>
-              <p><strong>Apply Methods:</strong></p>
+              <p><strong>Apply Methods (Oracle Solaris):</strong></p>
               <ul>
-                <li><strong>Runtime Only:</strong> Changes take effect immediately but are lost on reboot</li>
-                <li><strong>Persistent Only:</strong> Changes are saved to config file, requiring reboot to take effect</li>
-                <li><strong>Both:</strong> Apply immediately and save to config file (recommended)</li>
+                <li><strong>Runtime Only:</strong> <em>Not supported</em> - Provided for compatibility only</li>
+                <li><strong>Persistent Only:</strong> Saves changes to config file, requires reboot (recommended)</li>
+                <li><strong>Both:</strong> <em>Functions as Persistent Only</em> - Runtime changes ignored</li>
               </ul>
+              <p className='has-text-weight-semibold has-text-warning-dark'>
+                ⚠️ All ARC changes require system reboot on Oracle Solaris
+              </p>
             </div>
             <div className='column'>
               <p><strong>Best Practices:</strong></p>
@@ -499,6 +664,7 @@ const ArcConfiguration = ({ server }) => {
                 <li>Maximum ARC should not exceed 85% of total system memory</li>
                 <li>Minimum ARC should be at least 1% of total system memory</li>
                 <li>Always validate configuration before applying changes</li>
+                <li>Plan maintenance window for reboot after ARC changes</li>
               </ul>
             </div>
           </div>
