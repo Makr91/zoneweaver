@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { FormModal } from '../common';
 
 const SystemUpdatesSection = ({ server, onError }) => {
   const [loading, setLoading] = useState(false);
@@ -421,57 +422,33 @@ const SystemUpdatesSection = ({ server, onError }) => {
 
       {/* Install Confirmation Modal */}
       {showInstallModal && (
-        <div className='modal is-active'>
-          <div className='modal-background' onClick={() => setShowInstallModal(false)}></div>
-          <div className='modal-card'>
-            <header className='modal-card-head'>
-              <p className='modal-card-title'>
-                <span className='icon'>
-                  <i className='fas fa-download'></i>
-                </span>
-                Confirm System Update
-              </p>
-              <button
-                className='delete'
-                aria-label='close'
-                onClick={() => setShowInstallModal(false)}
-                disabled={installing}
-              ></button>
-            </header>
-            <section className='modal-card-body'>
-              <div className='content'>
-                <p>
-                  <strong>You are about to install {updateData?.total_updates || 0} system updates.</strong>
-                </p>
-                <p>This operation will:</p>
-                <ul>
-                  <li>Create a new boot environment for safety</li>
-                  <li>Install all available updates</li>
-                  <li>Potentially require a system reboot</li>
-                  <li>Take several minutes to complete</li>
-                </ul>
-                <div className='notification is-warning'>
-                  <p>
-                    <strong>Warning:</strong> This is a system-level operation that may affect system stability.
-                    Ensure you have adequate disk space and a stable connection.
-                  </p>
-                </div>
-              </div>
-            </section>
-            <footer className='modal-card-foot'>
-              <button
-                className={`button is-warning ${installing ? 'is-loading' : ''}`}
-                onClick={installUpdates}
-                disabled={installing}
-              >
-                <span className='icon'>
-                  <i className='fas fa-download'></i>
-                </span>
-                <span>Install Updates</span>
-              </button>
-            </footer>
+        <FormModal
+          isOpen={showInstallModal}
+          onClose={() => setShowInstallModal(false)}
+          onSubmit={installUpdates}
+          title="Confirm System Update"
+          icon="fas fa-download"
+          submitText={installing ? 'Installing...' : 'Install Updates'}
+          submitVariant="is-warning"
+          loading={installing}
+        >
+          <p>
+            <strong>You are about to install {updateData?.total_updates || 0} system updates.</strong>
+          </p>
+          <p>This operation will:</p>
+          <ul>
+            <li>Create a new boot environment for safety</li>
+            <li>Install all available updates</li>
+            <li>Potentially require a system reboot</li>
+            <li>Take several minutes to complete</li>
+          </ul>
+          <div className='notification is-warning'>
+            <p>
+              <strong>Warning:</strong> This is a system-level operation that may affect system stability.
+              Ensure you have adequate disk space and a stable connection.
+            </p>
           </div>
-        </div>
+        </FormModal>
       )}
     </div>
   );

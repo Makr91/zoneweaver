@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { FormModal } from '../common';
 
 const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, onClose, onSuccess, onError }) => {
   const [formData, setFormData] = useState({
@@ -211,9 +212,7 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
     return result;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
@@ -248,21 +247,26 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
   };
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-medium'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-plus-circle'></i>
+    <FormModal
+      isOpen={true}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title="Create Aggregate"
+      icon="fas fa-plus-circle"
+      submitText="Create Aggregate"
+      submitVariant="is-primary"
+      loading={creating}
+      additionalActions={currentStep && (
+        <div className='level-item'>
+          <p className='has-text-info'>
+            <span className='icon mr-1'>
+              <i className='fas fa-spinner fa-spin'></i>
             </span>
-            Create Aggregate
+            {currentStep}
           </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <section className='modal-card-body'>
-          <form onSubmit={handleSubmit}>
+        </div>
+      )}
+    >
             <div className='field'>
               <label className='label'>Aggregate Name *</label>
               <div className='control'>
@@ -448,32 +452,7 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
                 </label>
               </div>
             </div>
-          </form>
-        </section>
-        
-        <footer className='modal-card-foot'>
-          {currentStep && (
-            <div className='level-item'>
-              <p className='has-text-info'>
-                <span className='icon mr-1'>
-                  <i className='fas fa-spinner fa-spin'></i>
-                </span>
-                {currentStep}
-              </p>
-            </div>
-          )}
-          
-          <button
-            type='submit'
-            className={`button is-primary ${creating ? 'is-loading' : ''}`}
-            onClick={handleSubmit}
-            disabled={creating}
-          >
-            Create Aggregate
-          </button>
-        </footer>
-      </div>
-    </div>
+    </FormModal>
   );
 };
 

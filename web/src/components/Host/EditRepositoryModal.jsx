@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { FormModal } from '../common';
 
 const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
@@ -69,9 +70,7 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     try {
       setLoading(true);
       onError('');
@@ -146,21 +145,17 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
   };
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-large'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-edit'></i>
-            </span>
-            Edit Repository
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <form onSubmit={handleSubmit}>
-          <section className='modal-card-body'>
+    <FormModal
+      isOpen={true}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title="Edit Repository"
+      icon="fas fa-edit"
+      submitText="Update Repository"
+      submitIcon="fas fa-save"
+      submitVariant="is-success"
+      loading={loading}
+    >
             {/* Current Repository Info */}
             <div className='box mb-4'>
               <h3 className='title is-6'>Current Repository Information</h3>
@@ -496,23 +491,7 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
                 </div>
               </div>
             </div>
-          </section>
-          
-          <footer className='modal-card-foot'>
-            <button 
-              type='submit'
-              className={`button is-success ${loading ? 'is-loading' : ''}`}
-              disabled={loading}
-            >
-              <span className='icon'>
-                <i className='fas fa-save'></i>
-              </span>
-              <span>Update Repository</span>
-            </button>
-          </footer>
-        </form>
-      </div>
-    </div>
+    </FormModal>
   );
 };
 

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { FormModal } from '../common';
 
 const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
@@ -52,9 +53,7 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.origin.trim()) {
       onError('Publisher name and origin URL are required');
       return;
@@ -116,21 +115,17 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
   };
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-large'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-plus-circle'></i>
-            </span>
-            Add Repository
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <form onSubmit={handleSubmit}>
-          <section className='modal-card-body'>
+    <FormModal
+      isOpen={true}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title="Add Repository"
+      icon="fas fa-plus-circle"
+      submitText="Add Repository"
+      submitIcon="fas fa-plus"
+      submitVariant="is-success"
+      loading={loading}
+    >
             {/* Basic Information */}
             <div className='box mb-4'>
               <h3 className='title is-6'>Basic Information</h3>
@@ -333,23 +328,7 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
                 </div>
               </div>
             </div>
-          </section>
-          
-          <footer className='modal-card-foot'>
-            <button 
-              type='submit'
-              className={`button is-success ${loading ? 'is-loading' : ''}`}
-              disabled={loading}
-            >
-              <span className='icon'>
-                <i className='fas fa-plus'></i>
-              </span>
-              <span>Add Repository</span>
-            </button>
-          </footer>
-        </form>
-      </div>
-    </div>
+    </FormModal>
   );
 };
 

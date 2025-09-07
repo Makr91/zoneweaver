@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
 import { canManageSettings } from "../utils/permissions";
 import ApiKeysTab from "./ApiKeysTab";
+import { ContentModal } from './common';
 
 const ZoneweaverAPISettings = () => {
   const { user } = useAuth();
@@ -468,63 +469,61 @@ const ZoneweaverAPISettings = () => {
             )}
 
             {/* Backup Modal */}
-            <div className={`modal ${showBackupModal ? 'is-active' : ''}`}>
-              <div className="modal-background" onClick={() => setShowBackupModal(false)}></div>
-              <div className="modal-card">
-                <header className="modal-card-head">
-                  <p className="modal-card-title">Configuration Backups</p>
-                  <button className="delete" aria-label="close" onClick={() => setShowBackupModal(false)}></button>
-                </header>
-                <section className="modal-card-body">
-                  {backups.length === 0 ? (
-                    <p className="has-text-grey">No backups available</p>
-                  ) : (
-                    <table className="table is-fullwidth is-striped">
-                      <thead>
-                        <tr>
-                          <th>Filename</th>
-                          <th>Created</th>
-                          <th className="has-text-right">Actions</th>
+            {showBackupModal && (
+              <ContentModal
+                isOpen={showBackupModal}
+                onClose={() => setShowBackupModal(false)}
+                title="Configuration Backups"
+                icon="fas fa-history"
+              >
+                {backups.length === 0 ? (
+                  <p className="has-text-grey">No backups available</p>
+                ) : (
+                  <table className="table is-fullwidth is-striped">
+                    <thead>
+                      <tr>
+                        <th>Filename</th>
+                        <th>Created</th>
+                        <th className="has-text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {backups.map(backup => (
+                        <tr key={backup.filename}>
+                          <td>{backup.filename}</td>
+                          <td>{new Date(backup.createdAt).toLocaleString()}</td>
+                          <td className="has-text-right">
+                            <div className="field is-grouped is-grouped-right">
+                              <p className="control is-expanded">
+                                <button 
+                                  className="button is-small is-warning is-fullwidth" 
+                                  onClick={() => {
+                                    restoreBackup(backup.filename);
+                                    setShowBackupModal(false);
+                                  }}
+                                  disabled={loading}
+                                >
+                                  Restore
+                                </button>
+                              </p>
+                              <p className="control is-expanded">
+                                <button 
+                                  className="button is-small is-danger is-fullwidth" 
+                                  onClick={() => deleteBackup(backup.filename)}
+                                  disabled={loading}
+                                >
+                                  Delete
+                                </button>
+                              </p>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {backups.map(backup => (
-                          <tr key={backup.filename}>
-                            <td>{backup.filename}</td>
-                            <td>{new Date(backup.createdAt).toLocaleString()}</td>
-                            <td className="has-text-right">
-                              <div className="field is-grouped is-grouped-right">
-                                <p className="control is-expanded">
-                                  <button 
-                                    className="button is-small is-warning is-fullwidth" 
-                                    onClick={() => {
-                                      restoreBackup(backup.filename);
-                                      setShowBackupModal(false);
-                                    }}
-                                    disabled={loading}
-                                  >
-                                    Restore
-                                  </button>
-                                </p>
-                                <p className="control is-expanded">
-                                  <button 
-                                    className="button is-small is-danger is-fullwidth" 
-                                    onClick={() => deleteBackup(backup.filename)}
-                                    disabled={loading}
-                                  >
-                                    Delete
-                                  </button>
-                                </p>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </section>
-              </div>
-            </div>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </ContentModal>
+            )}
           </div>
         </div>
       </div>

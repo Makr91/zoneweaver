@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Helmet } from '@dr.pogodin/react-helmet';
 import axios from 'axios';
+import { FormModal } from './common';
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -424,76 +425,60 @@ const Profile = () => {
 
       {/* Delete Account Modal */}
       {showDeleteModal && (
-        <div className={`modal ${showDeleteModal ? 'is-active' : ''}`}>
-          <div className="modal-background" onClick={closeDeleteModal}></div>
-          <div className="modal-card">
-            <header className="modal-card-head">
-              <p className="modal-card-title has-text-danger">
-                ⚠️ Delete Account
-              </p>
-              <button 
-                className="delete" 
-                aria-label="close"
-                onClick={closeDeleteModal}
-              ></button>
-            </header>
-            <section className="modal-card-body">
-              <div className="content">
-                <div className="notification is-danger">
-                  <p><strong>WARNING: This action cannot be undone!</strong></p>
-                  <p>You are about to permanently delete your account:</p>
-                </div>
-                
-                <div className="box has-background-grey-lighter">
-                  <p><strong>Username:</strong> {user?.username}</p>
-                  <p><strong>Email:</strong> {user?.email}</p>
-                  <p><strong>Role:</strong> {user?.role}</p>
-                </div>
-
-                <div className="field">
-                  <label className="label">Current Password</label>
-                  <div className="control">
-                    <input 
-                      className="input" 
-                      type="password"
-                      value={deleteData.password}
-                      onChange={(e) => setDeleteData({...deleteData, password: e.target.value})}
-                      placeholder="Enter your current password"
-                    />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label">
-                    Type "DELETE" to confirm account deletion:
-                  </label>
-                  <div className="control">
-                    <input 
-                      className="input" 
-                      type="text"
-                      value={deleteData.confirmText}
-                      onChange={(e) => setDeleteData({...deleteData, confirmText: e.target.value})}
-                      placeholder="Type DELETE to confirm"
-                      autoComplete="off"
-                    />
-                  </div>
-                  <p className="help">
-                    This will permanently remove your account and all associated data.
-                  </p>
-                </div>
-              </div>
-            </section>
-            <footer className="modal-card-foot">
-              <button 
-                className="button is-danger"
-                onClick={handleDeleteAccount}
-                disabled={deleteData.confirmText !== 'DELETE' || !deleteData.password || loading}
-              >
-                {loading ? 'Deleting...' : 'Delete Account Permanently'}
-              </button>
-            </footer>
+        <FormModal
+          isOpen={showDeleteModal}
+          onClose={closeDeleteModal}
+          onSubmit={handleDeleteAccount}
+          title="⚠️ Delete Account"
+          icon="fas fa-exclamation-triangle"
+          submitText={loading ? 'Deleting...' : 'Delete Account Permanently'}
+          submitVariant="is-danger"
+          loading={loading}
+          submitDisabled={deleteData.confirmText !== 'DELETE' || !deleteData.password}
+        >
+          <div className="notification is-danger">
+            <p><strong>WARNING: This action cannot be undone!</strong></p>
+            <p>You are about to permanently delete your account:</p>
           </div>
-        </div>
+          
+          <div className="box has-background-grey-lighter">
+            <p><strong>Username:</strong> {user?.username}</p>
+            <p><strong>Email:</strong> {user?.email}</p>
+            <p><strong>Role:</strong> {user?.role}</p>
+          </div>
+
+          <div className="field">
+            <label className="label">Current Password</label>
+            <div className="control">
+              <input 
+                className="input" 
+                type="password"
+                value={deleteData.password}
+                onChange={(e) => setDeleteData({...deleteData, password: e.target.value})}
+                placeholder="Enter your current password"
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="label">
+              Type "DELETE" to confirm account deletion:
+            </label>
+            <div className="control">
+              <input 
+                className="input" 
+                type="text"
+                value={deleteData.confirmText}
+                onChange={(e) => setDeleteData({...deleteData, confirmText: e.target.value})}
+                placeholder="Type DELETE to confirm"
+                autoComplete="off"
+              />
+            </div>
+            <p className="help">
+              This will permanently remove your account and all associated data.
+            </p>
+          </div>
+        </FormModal>
       )}
     </div>
   );

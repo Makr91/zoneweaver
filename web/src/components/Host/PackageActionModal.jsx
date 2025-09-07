@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { FormModal } from '../common';
 
 const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
   const [options, setOptions] = useState({
@@ -8,7 +9,7 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const handleConfirm = async () => {
+  const handleSubmit = async () => {
     setLoading(true);
     try {
       const result = await onConfirm(pkg.name, action, options);
@@ -61,20 +62,16 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
   const actionDetails = getActionDetails();
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className={`fas ${actionDetails.icon}`}></i>
-            </span>
-            {actionDetails.title}
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <section className='modal-card-body'>
+    <FormModal
+      isOpen={true}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title={actionDetails.title}
+      icon={`fas ${actionDetails.icon}`}
+      submitText={loading ? 'Processing...' : actionDetails.title}
+      submitVariant={actionDetails.buttonClass.includes('danger') ? 'is-danger' : actionDetails.buttonClass.includes('success') ? 'is-success' : 'is-info'}
+      loading={loading}
+    >
           {/* Package Information */}
           <div className='box mb-4'>
             <h3 className='title is-6'>Package Information</h3>
@@ -161,22 +158,7 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
               </p>
             </div>
           </div>
-        </section>
-        
-        <footer className='modal-card-foot'>
-          <button 
-            className={`button ${actionDetails.buttonClass} ${loading ? 'is-loading' : ''}`}
-            onClick={handleConfirm}
-            disabled={loading}
-          >
-            <span className='icon'>
-              <i className={`fas ${actionDetails.icon}`}></i>
-            </span>
-            <span>{loading ? 'Processing...' : actionDetails.title}</span>
-          </button>
-        </footer>
-      </div>
-    </div>
+    </FormModal>
   );
 };
 

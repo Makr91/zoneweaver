@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -12,6 +12,7 @@ import {
   canControlHosts,
   canPowerOffHosts
 } from "../utils/permissions";
+import { FormModal } from './common';
 
 const Navbar = () => {
   const [isModal, setModalState] = useState(true);
@@ -341,33 +342,36 @@ const Navbar = () => {
     }
   };
 
-  const Modal = () => {
-    return (
-      <div className={isModal ? "modal" : "modal is-active"}>
-        <div onClick={handleModalClick} className='modal-background' />
-        <div className='modal-card '>
-          <header className='modal-card-head'>
-            <p className='modal-card-title'>
-              Confirm {currentMode} {currentAction}:
-            </p>
-            <button onClick={handleModalClick} className='delete' aria-label='close' />
-          </header>
-          <section className={currentZone ? "modal-card-body" : "is-hidden "}>
-            <p className={currentZone ? "modal-card-subtitle" : "is-hidden"}>{currentZone}</p>
-          </section>
+  const getActionVariant = (action) => {
+    switch (action) {
+      case 'start':
+        return 'is-success';
+      case 'restart':
+        return 'is-warning';
+      case 'shutdown':
+      case 'kill':
+      case 'destroy':
+        return 'is-danger';
+      default:
+        return 'is-primary';
+    }
+  };
 
-          <footer className='modal-card-foot'>
-            <button 
-              className='button is-success'
-              onClick={() => handleZoneAction(currentAction)}
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : currentAction}
-            </button>
-          </footer>
-        </div>
-      </div>
-    );
+  const getActionIcon = (action) => {
+    switch (action) {
+      case 'start':
+        return 'fas fa-play';
+      case 'restart':
+        return 'fas fa-redo';
+      case 'shutdown':
+        return 'fas fa-stop';
+      case 'kill':
+        return 'fas fa-skull';
+      case 'destroy':
+        return 'fas fa-trash';
+      default:
+        return 'fas fa-cogs';
+    }
   };
 
   const ZoneControlDropdown = () => {
@@ -650,7 +654,25 @@ const Navbar = () => {
   return (
     <div className='hero-head'>
       <nav className='level' role='navigation' aria-label='main navigation'>
-        <Modal />
+        {!isModal && (
+          <FormModal
+            isOpen={!isModal}
+            onClose={handleModalClick}
+            onSubmit={() => handleZoneAction(currentAction)}
+            title={`Confirm ${currentMode} ${currentAction}`}
+            icon={getActionIcon(currentAction)}
+            submitText={loading ? 'Processing...' : currentAction}
+            submitVariant={getActionVariant(currentAction)}
+            loading={loading}
+          >
+            {currentZone && (
+              <div className="notification is-info">
+                <p><strong>Target:</strong> {currentZone}</p>
+                <p>This action will be performed on the selected zone.</p>
+              </div>
+            )}
+          </FormModal>
+        )}
         <div className='level-left'>
           {currentServer ? (
             <div className='dropdown is-hoverable'>

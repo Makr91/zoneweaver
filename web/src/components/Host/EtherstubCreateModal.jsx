@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { FormModal } from '../common';
 
 const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, onError }) => {
   const [formData, setFormData] = useState({
@@ -71,9 +72,7 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
     return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
@@ -110,21 +109,16 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
   };
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-small'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-plus-circle'></i>
-            </span>
-            Create Etherstub
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <section className='modal-card-body'>
-          <form onSubmit={handleSubmit}>
+    <FormModal
+      isOpen={true}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title="Create Etherstub"
+      icon="fas fa-plus-circle"
+      submitText="Create Etherstub"
+      submitVariant="is-primary"
+      loading={creating}
+    >
             <div className='field'>
               <label className='label'>Etherstub Name *</label>
               <div className='control'>
@@ -160,21 +154,7 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
               <p><strong>About Etherstubs:</strong></p>
               <p>Etherstubs provide a virtual Layer 2 switch that allows VNICs to communicate with each other without requiring a physical network interface. They are useful for creating isolated virtual networks within a system.</p>
             </div>
-          </form>
-        </section>
-        
-        <footer className='modal-card-foot'>
-          <button
-            type='submit'
-            className={`button is-primary ${creating ? 'is-loading' : ''}`}
-            onClick={handleSubmit}
-            disabled={creating}
-          >
-            Create Etherstub
-          </button>
-        </footer>
-      </div>
-    </div>
+    </FormModal>
   );
 };
 

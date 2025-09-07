@@ -1,4 +1,4 @@
-import React from 'react';
+import { ContentModal } from '../common';
 
 const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
   const formatValue = (value) => {
@@ -63,21 +63,12 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
   const memberLinks = formatLinks(aggregate.links || aggregate.over);
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-large'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-network-wired'></i>
-            </span>
-            Aggregate Details
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <section className='modal-card-body'>
-          <div className='content'>
+    <ContentModal
+      isOpen={true}
+      onClose={onClose}
+      title="Aggregate Details"
+      icon="fas fa-network-wired"
+    >
             <h5 className='title is-6'>Basic Information</h5>
             <div className='table-container'>
               <table className='table is-fullwidth is-striped'>
@@ -263,11 +254,7 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
                 </tbody>
               </table>
             </div>
-          </div>
-        </section>
-        
-      </div>
-    </div>
+    </ContentModal>
   );
 };
 

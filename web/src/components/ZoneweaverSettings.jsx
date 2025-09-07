@@ -9,6 +9,7 @@ import ServerTable from "./Host/ServerTable";
 import ServerForm from "./Host/ServerForm";
 import ServerHelpPanel from "./Host/ServerHelpPanel";
 import ServerStatusCard from "./Host/ServerStatusCard";
+import { ContentModal, FormModal } from './common';
 
 const ZoneweaverSettings = () => {
   const { user } = useAuth();
@@ -2088,81 +2089,76 @@ const ZoneweaverSettings = () => {
           </div>
 
           {/* Backup Modal */}
-          <div className={`modal ${showBackupModal ? 'is-active' : ''}`}>
-            <div className="modal-background" onClick={() => setShowBackupModal(false)}></div>
-            <div className="modal-card">
-              <header className="modal-card-head">
-                <p className="modal-card-title">Configuration Backups</p>
-                <button className="delete" onClick={() => setShowBackupModal(false)}></button>
-              </header>
-              <section className="modal-card-body">
-                {backups.length === 0 ? (
-                  <p className="has-text-grey">No backups available</p>
-                ) : (
-                  <table className="table is-fullwidth is-striped">
-                    <thead>
-                      <tr>
-                        <th>Filename</th>
-                        <th>Created</th>
-                        <th className="has-text-right">Actions</th>
+          {showBackupModal && (
+            <ContentModal
+              isOpen={showBackupModal}
+              onClose={() => setShowBackupModal(false)}
+              title="Configuration Backups"
+              icon="fas fa-history"
+            >
+              {backups.length === 0 ? (
+                <p className="has-text-grey">No backups available</p>
+              ) : (
+                <table className="table is-fullwidth is-striped">
+                  <thead>
+                    <tr>
+                      <th>Filename</th>
+                      <th>Created</th>
+                      <th className="has-text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {backups.map(backup => (
+                      <tr key={backup.filename}>
+                        <td>
+                          <code className="is-size-7">{backup.filename}</code>
+                        </td>
+                        <td>{new Date(backup.created).toLocaleString()}</td>
+                        <td className="has-text-right">
+                          <div className="field is-grouped is-grouped-right">
+                            <p className="control is-expanded">
+                              <button 
+                                className="button is-small is-warning is-fullwidth" 
+                                onClick={() => {
+                                  restoreFromBackup(backup.filename);
+                                  setShowBackupModal(false);
+                                }}
+                                disabled={loading}
+                              >
+                                Restore
+                              </button>
+                            </p>
+                            <p className="control is-expanded">
+                              <button 
+                                className="button is-small is-danger is-fullwidth" 
+                                onClick={() => deleteBackup(backup.filename)}
+                                disabled={loading}
+                              >
+                                Delete
+                              </button>
+                            </p>
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {backups.map(backup => (
-                        <tr key={backup.filename}>
-                          <td>
-                            <code className="is-size-7">{backup.filename}</code>
-                          </td>
-                          <td>{new Date(backup.created).toLocaleString()}</td>
-                          <td className="has-text-right">
-                            <div className="field is-grouped is-grouped-right">
-                              <p className="control is-expanded">
-                                <button 
-                                  className="button is-small is-warning is-fullwidth" 
-                                  onClick={() => {
-                                    restoreFromBackup(backup.filename);
-                                    setShowBackupModal(false);
-                                  }}
-                                  disabled={loading}
-                                >
-                                  Restore
-                                </button>
-                              </p>
-                              <p className="control is-expanded">
-                                <button 
-                                  className="button is-small is-danger is-fullwidth" 
-                                  onClick={() => deleteBackup(backup.filename)}
-                                  disabled={loading}
-                                >
-                                  Delete
-                                </button>
-                              </p>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </section>
-            </div>
-          </div>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </ContentModal>
+          )}
 
           {/* Add OIDC Provider Modal */}
-          <div className={`modal ${showOidcProviderModal ? 'is-active' : ''}`}>
-            <div className="modal-background" onClick={() => setShowOidcProviderModal(false)}></div>
-            <div className="modal-card is-large">
-              <header className="modal-card-head">
-                <p className="modal-card-title">
-                  <span className="icon is-small mr-2">
-                    <i className="fab fa-openid"></i>
-                  </span>
-                  Add OIDC Provider
-                </p>
-                <button className="delete" onClick={() => setShowOidcProviderModal(false)}></button>
-              </header>
-              <form onSubmit={addOidcProvider}>
-                <section className="modal-card-body">
+          {showOidcProviderModal && (
+            <FormModal
+              isOpen={showOidcProviderModal}
+              onClose={() => setShowOidcProviderModal(false)}
+              onSubmit={addOidcProvider}
+              title="Add OIDC Provider"
+              icon="fab fa-openid"
+              submitText={oidcProviderLoading ? 'Adding...' : 'Add Provider'}
+              submitVariant="is-primary"
+              loading={oidcProviderLoading}
+            >
                   <div className="content">
                     <p className="has-text-grey mb-4">
                       Configure a new OpenID Connect authentication provider. You'll need to register your application 
@@ -2405,22 +2401,8 @@ const ZoneweaverSettings = () => {
                       </p>
                     </div>
                   </div>
-                </section>
-                <footer className="modal-card-foot">
-                  <button 
-                    type="submit" 
-                    className={`button is-primary ${oidcProviderLoading ? 'is-loading' : ''}`}
-                    disabled={oidcProviderLoading}
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-plus"></i>
-                    </span>
-                    <span>Add Provider</span>
-                  </button>
-                </footer>
-              </form>
-            </div>
-          </div>
+            </FormModal>
+          )}
         </div>
       </div>
     </div>

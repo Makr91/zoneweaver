@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useNavigate } from "react-router-dom";
 import { useServers } from "../contexts/ServerContext";
+import { ContentModal } from './common';
 
 /**
  * Multi-Host Application Overview Dashboard
@@ -727,76 +728,65 @@ const Dashboard = () => {
             </div>
 
             {/* Health Status Modal */}
-            <div className={`modal ${showHealthModal ? "is-active" : ""}`}>
-              <div
-                className="modal-background"
-                onClick={() => setShowHealthModal(false)}
-              ></div>
-              <div className="modal-card">
-                <header className="modal-card-head">
-                  <p className="modal-card-title">
-                    Infrastructure Health Issues
-                  </p>
-                  <button
-                    className="delete"
-                    aria-label="close"
-                    onClick={() => setShowHealthModal(false)}
-                  ></button>
-                </header>
-                <section className="modal-card-body">
-                  {infrastructureData.servers &&
-                    infrastructureData.servers
-                      .filter((s) => getServerHealthStatus(s) !== "healthy")
-                      .map((serverResult, index) => {
-                        const status = getServerHealthStatus(serverResult);
-                        const statusColor =
-                          status === "offline" ? "is-danger" : "is-warning";
-                        const issues = [];
+            {showHealthModal && (
+              <ContentModal
+                isOpen={showHealthModal}
+                onClose={() => setShowHealthModal(false)}
+                title="Infrastructure Health Issues"
+                icon="fas fa-exclamation-triangle"
+              >
+                {infrastructureData.servers &&
+                  infrastructureData.servers
+                    .filter((s) => getServerHealthStatus(s) !== "healthy")
+                    .map((serverResult, index) => {
+                      const status = getServerHealthStatus(serverResult);
+                      const statusColor =
+                        status === "offline" ? "is-danger" : "is-warning";
+                      const issues = [];
 
-                        if (status === "offline") {
-                          issues.push(
-                            serverResult.error || "Connection failed"
-                          );
-                        } else if (status === "warning" && serverResult.data) {
-                          if (serverResult.data.loadavg?.[0] > 2) {
-                            issues.push(
-                              `High CPU load: ${serverResult.data.loadavg[0].toFixed(2)}`
-                            );
-                          }
-                          if (
-                            serverResult.data.totalmem &&
-                            serverResult.data.freemem &&
-                            serverResult.data.freemem /
-                              serverResult.data.totalmem <
-                              0.1
-                          ) {
-                            const memUsed = Math.round(
-                              ((serverResult.data.totalmem -
-                                serverResult.data.freemem) /
-                                serverResult.data.totalmem) *
-                                100
-                            );
-                            issues.push(`Low memory: ${memUsed}% used`);
-                          }
-                        }
-
-                        return (
-                          <div
-                            key={index}
-                            className={`notification ${statusColor} mb-3`}
-                          >
-                            <strong>{serverResult.server.hostname}</strong>
-                            <ul className="mt-2">
-                              {issues.map((issue, idx) => (
-                                <li key={idx}>{issue}</li>
-                              ))}
-                            </ul>
-                          </div>
+                      if (status === "offline") {
+                        issues.push(
+                          serverResult.error || "Connection failed"
                         );
-                      })}
-                </section>
-              </div>
-            </div>
+                      } else if (status === "warning" && serverResult.data) {
+                        if (serverResult.data.loadavg?.[0] > 2) {
+                          issues.push(
+                            `High CPU load: ${serverResult.data.loadavg[0].toFixed(2)}`
+                          );
+                        }
+                        if (
+                          serverResult.data.totalmem &&
+                          serverResult.data.freemem &&
+                          serverResult.data.freemem /
+                            serverResult.data.totalmem <
+                            0.1
+                        ) {
+                          const memUsed = Math.round(
+                            ((serverResult.data.totalmem -
+                              serverResult.data.freemem) /
+                              serverResult.data.totalmem) *
+                              100
+                          );
+                          issues.push(`Low memory: ${memUsed}% used`);
+                        }
+                      }
+
+                      return (
+                        <div
+                          key={index}
+                          className={`notification ${statusColor} mb-3`}
+                        >
+                          <strong>{serverResult.server.hostname}</strong>
+                          <ul className="mt-2">
+                            {issues.map((issue, idx) => (
+                              <li key={idx}>{issue}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
+              </ContentModal>
+            )}
           </div>
         </div>
       </div>

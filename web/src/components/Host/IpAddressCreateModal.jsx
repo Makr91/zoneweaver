@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { FormModal } from '../common';
 
 const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [formData, setFormData] = useState({
@@ -154,9 +155,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
@@ -203,21 +202,16 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
   };
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-large'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-plus-circle'></i>
-            </span>
-            Create IP Address
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <section className='modal-card-body'>
-          <form onSubmit={handleSubmit}>
+    <FormModal
+      isOpen={true}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title="Create IP Address"
+      icon="fas fa-plus-circle"
+      submitText="Create Address"
+      submitVariant="is-primary"
+      loading={creating}
+    >
             <div className='field'>
               <label className='label'>Interface *</label>
               <div className='control'>
@@ -386,21 +380,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
                 </label>
               </div>
             </div>
-          </form>
-        </section>
-        
-        <footer className='modal-card-foot'>
-          <button
-            type='submit'
-            className={`button is-primary ${creating ? 'is-loading' : ''}`}
-            onClick={handleSubmit}
-            disabled={creating}
-          >
-            Create Address
-          </button>
-        </footer>
-      </div>
-    </div>
+    </FormModal>
   );
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import { ContentModal } from '../common';
 
 const ServicePropertiesModal = ({ service, onClose }) => {
   const formatProperties = (properties) => {
@@ -33,20 +33,12 @@ const ServicePropertiesModal = ({ service, onClose }) => {
   };
 
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={onClose}></div>
-      <div className='modal-card modal-card-xl'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon mr-2'>
-              <i className='fas fa-cog'></i>
-            </span>
-            Service Properties
-          </p>
-          <button className='delete' aria-label='close' onClick={onClose}></button>
-        </header>
-        
-        <section className='modal-card-body'>
+    <ContentModal
+      isOpen={true}
+      onClose={onClose}
+      title="Service Properties"
+      icon="fas fa-cog"
+    >
           {/* Service Basic Info */}
           <div className='box mb-4'>
             <h3 className='title is-6'>Service Information</h3>
@@ -116,10 +108,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
               <p>No configuration properties available for this service.</p>
             </div>
           )}
-        </section>
-        
-      </div>
-    </div>
+    </ContentModal>
   );
 };
 
