@@ -140,7 +140,7 @@ async function setupOidcProviders() {
   }
 
   // Get OIDC providers from nested configuration structure
-  const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+  const oidcProvidersConfig = config.authentication?.oidc_providers?.value || {};
   
   if (!oidcProvidersConfig || Object.keys(oidcProvidersConfig).length === 0) {
     console.log('🔧 No OIDC providers configured');
