@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useServers } from '../contexts/ServerContext';
+import { ContentModal } from './common';
 
 const ApiKeysTab = () => {
     const { getApiKeys, generateApiKey, deleteApiKey, bootstrapApiKey } = useServers();
@@ -84,20 +85,44 @@ const ApiKeysTab = () => {
         <div>
             {error && <div className="notification is-danger">{error}</div>}
             {message && <div className="notification is-success">{message}</div>}
-            {generatedKey && (
-                <div className="modal is-active">
-                    <div className="modal-background" onClick={() => setGeneratedKey(null)}></div>
-                    <div className="modal-card">
-                        <header className="modal-card-head">
-                            <p className="modal-card-title">API Key</p>
-                            <button className="delete" aria-label="close" onClick={() => setGeneratedKey(null)}></button>
-                        </header>
-                        <section className="modal-card-body">
-                            <pre>{generatedKey}</pre>
-                        </section>
+            <ContentModal
+                isOpen={!!generatedKey}
+                onClose={() => setGeneratedKey(null)}
+                title="API Key Generated"
+                icon="fas fa-key"
+            >
+                <div className="notification is-warning">
+                    <p><strong>Important:</strong> Please copy this API key now. You will not be able to see it again after closing this dialog.</p>
+                </div>
+                <div className="field">
+                    <label className="label">Your API Key:</label>
+                    <div className="control">
+                        <textarea 
+                            className="textarea is-family-monospace" 
+                            value={generatedKey || ''} 
+                            readOnly 
+                            rows="3"
+                            onClick={(e) => e.target.select()}
+                        ></textarea>
                     </div>
                 </div>
-            )}
+                <div className="field">
+                    <div className="control">
+                        <button 
+                            className="button is-primary"
+                            onClick={() => {
+                                navigator.clipboard.writeText(generatedKey);
+                                setMessage('API key copied to clipboard!');
+                            }}
+                        >
+                            <span className="icon">
+                                <i className="fas fa-copy"></i>
+                            </span>
+                            <span>Copy to Clipboard</span>
+                        </button>
+                    </div>
+                </div>
+            </ContentModal>
 
             <div className="box">
                 <h4 className="title is-4">Generate New API Key</h4>

@@ -1,6 +1,6 @@
-import React from 'react';
 import Highcharts from '../../Highcharts';
 import { HighchartsReact } from 'highcharts-react-official';
+import { ContentModal } from '../common';
 
 const ExpandedChartModal = ({ 
   expandedChart, 
@@ -23,36 +23,34 @@ const ExpandedChartModal = ({
 }) => {
   if (!expandedChart) return null;
 
+  // Get modal title based on chart type
+  const getModalTitle = () => {
+    const baseTitle = expandedChartType === 'storage-io' ? 'Storage I/O Performance' :
+                     expandedChartType === 'arc' ? 'ZFS ARC Performance' :
+                     expandedChartType === 'network' ? 'Network Performance' : 
+                     expandedChartType === 'cpu' ? 'CPU Performance' :
+                     expandedChartType === 'memory' ? 'Memory Performance' :
+                     'Performance';
+    return `${baseTitle} - ${currentServer?.hostname}`;
+  };
+
+  // Get modal icon based on chart type  
+  const getModalIcon = () => {
+    return expandedChartType === 'storage-io' ? 'fa-hdd' :
+           expandedChartType === 'arc' ? 'fa-memory' :
+           expandedChartType === 'network' ? 'fa-network-wired' :
+           expandedChartType === 'cpu' ? 'fa-microchip' :
+           expandedChartType === 'memory' ? 'fa-memory' :
+           'fa-chart-area';
+  };
+
   return (
-    <div className='modal is-active'>
-      <div className='modal-background' onClick={closeExpandedChart}></div>
-      <div className='modal-content'>
-        <div className='box'>
-          <div className='level'>
-            <div className='level-left'>
-              <div className='level-item'>
-                <p className='title is-4'>
-                  <span className='icon-text'>
-                    <span className='icon'>
-                      <i className={`fas ${
-                        expandedChartType === 'storage-io' ? 'fa-hdd' :
-                        expandedChartType === 'arc' ? 'fa-memory' :
-                        expandedChartType === 'network' ? 'fa-network-wired' : 'fa-chart-area'
-                      }`}></i>
-                    </span>
-                    <span>
-                      {expandedChartType === 'storage-io' ? 'Storage I/O Performance' :
-                       expandedChartType === 'arc' ? 'ZFS ARC Performance' :
-                       expandedChartType === 'network' ? 'Network Performance' : 
-                       expandedChartType === 'cpu' ? 'CPU Performance' :
-                       expandedChartType === 'memory' ? 'Memory Performance' :
-                       'Performance'} - {currentServer?.hostname}
-                    </span>
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
+    <ContentModal
+      isOpen={!!expandedChart}
+      onClose={closeExpandedChart}
+      title={getModalTitle()}
+      icon={`fas ${getModalIcon()}`}
+    >
           {/* Series Visibility Controls */}
           {(expandedChartType === 'storage-io' || expandedChartType === 'network' || expandedChartType === 'cpu' || expandedChartType === 'memory') && (
             <div className='mb-4'>
@@ -288,14 +286,7 @@ const ExpandedChartModal = ({
               />
             )}
           </div>
-        </div>
-      </div>
-      <button
-        className='modal-close is-large'
-        aria-label='close'
-        onClick={closeExpandedChart}
-      ></button>
-    </div>
+    </ContentModal>
   );
 };
 
