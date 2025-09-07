@@ -268,8 +268,35 @@ const SyslogConfiguration = ({ server }) => {
     }
   };
 
-  // Enhanced rule processing for display
+  // Enhanced rule processing for display - handles m4 macros
   const processRuleDisplay = (rule) => {
+    const fullLine = rule.full_line || '';
+    
+    // Handle m4 macro constructs
+    if (fullLine.trim() === ')' || fullLine.trim().startsWith(')')) {
+      return {
+        isValid: true,
+        selector: '(m4 macro close)',
+        actionType: 'm4_block_end',
+        target: 'End ifdef block',
+        isComplex: true,
+        hasConditionals: true,
+        isM4Construct: true
+      };
+    }
+
+    if (fullLine.includes('ifdef(') && fullLine.includes(', ,')) {
+      return {
+        isValid: true,
+        selector: '(m4 macro start)',
+        actionType: 'm4_block_start',
+        target: 'Begin conditional block',
+        isComplex: true,
+        hasConditionals: true,
+        isM4Construct: true
+      };
+    }
+
     // Handle empty or malformed rules
     if (!rule.selector && !rule.action) {
       return {
@@ -282,9 +309,9 @@ const SyslogConfiguration = ({ server }) => {
       };
     }
 
-    // Check for conditional statements
-    const hasConditionals = rule.full_line?.includes('ifdef(') || 
-                           rule.full_line?.includes('`') || 
+    // Check for m4 conditional statements
+    const hasConditionals = fullLine.includes('ifdef(') || 
+                           fullLine.includes('`') || 
                            rule.action?.includes('ifdef(');
 
     // Check for multi-selectors
@@ -294,17 +321,40 @@ const SyslogConfiguration = ({ server }) => {
     let actionType = rule.parsed?.action_type || 'unknown';
     let target = rule.parsed?.action_target || rule.action || '';
 
+    // Special handling for m4 ifdef constructs
+    if (fullLine.includes('ifdef(') && target.includes(',')) {
+      // This is an ifdef with conditional logic: ifdef('CONDITION', true_action, false_action)
+      const ifdefMatch = target.match(/ifdef\(`([^']+)', ([^,]+), ([^)]+)\)/);
+      if (ifdefMatch) {
+        const [, condition, trueAction, falseAction] = ifdefMatch;
+        return {
+          isValid: true,
+          selector: rule.selector || '',
+          actionType: 'conditional_choice',
+          target: `IF ${condition}: ${trueAction.trim()} ELSE: ${falseAction.trim()}`,
+          isComplex: true,
+          hasConditionals: true,
+          isM4Construct: true,
+          originalRule: rule
+        };
+      }
+    }
+
     // Improved action type detection for complex rules
     if (actionType === 'unknown' || actionType === 'specific_users') {
-      if (target.includes('/')) {
+      if (target.includes('ifdef(')) {
+        actionType = 'conditional';
+      } else if (target.includes('/')) {
         actionType = 'file';
       } else if (target.includes('@')) {
         actionType = 'remote_host';
         target = target.replace('@', '');
       } else if (target === '*') {
         actionType = 'all_users';
-      } else if (target.includes('`') || target.includes('ifdef')) {
-        actionType = 'conditional';
+      } else if (target.includes('`') && target.includes(',')) {
+        actionType = 'multiple_users';
+        // Clean up backticks for display
+        target = target.replace(/`/g, '').replace(/'/g, '');
       } else if (target.includes(',')) {
         actionType = 'multiple_users';
       } else {
@@ -340,6 +390,12 @@ const SyslogConfiguration = ({ server }) => {
         return { class: `is-primary ${baseClass}`, icon: 'fa-users', text: 'Multi-User' };
       case 'conditional':
         return { class: 'is-warning', icon: 'fa-code', text: 'Conditional' };
+      case 'conditional_choice':
+        return { class: 'is-warning', icon: 'fa-code-branch', text: 'If/Else' };
+      case 'm4_block_start':
+        return { class: 'is-info', icon: 'fa-play', text: 'Block Start' };
+      case 'm4_block_end':
+        return { class: 'is-info', icon: 'fa-stop', text: 'Block End' };
       case 'malformed':
         return { class: 'is-grey', icon: 'fa-question', text: 'Malformed' };
       default:

@@ -173,15 +173,18 @@ const FaultList = ({ server }) => {
                   <label className='label is-small'>Severity Levels</label>
                   <div className='control'>
                     <div className='tags'>
-                      {summary.severityLevels.map((level, index) => (
-                        <span key={index} className={`tag ${
-                          level === 'Critical' ? 'is-danger' :
-                          level === 'Major' ? 'is-warning' :
-                          level === 'Minor' ? 'is-info' : 'is-light'
-                        }`}>
-                          {level}
-                        </span>
-                      ))}
+                      {[...new Set(summary.severityLevels.map(level => level.toLowerCase()))].map((level, index) => {
+                        const displayLevel = level.charAt(0).toUpperCase() + level.slice(1);
+                        return (
+                          <span key={index} className={`tag ${
+                            level === 'critical' ? 'is-danger' :
+                            level === 'major' ? 'is-warning' :
+                            level === 'minor' ? 'is-info' : 'is-light'
+                          }`}>
+                            {displayLevel}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

@@ -4,11 +4,16 @@ const FaultDetailsModal = ({ fault, onClose }) => {
   const formatDetails = (details) => {
     if (!details) return [];
     
+    // Exclude basic information that's already shown in Basic Information section
+    const excludeFields = ['time', 'uuid', 'msgId', 'msgid', 'severity', 'format'];
+    
     // Convert details object to array of key-value pairs for display
-    return Object.entries(details).map(([key, value]) => ({
-      label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-      value: typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)
-    }));
+    return Object.entries(details)
+      .filter(([key]) => !excludeFields.includes(key.toLowerCase()))
+      .map(([key, value]) => ({
+        label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        value: typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)
+      }));
   };
 
   const getSeverityColor = (severity) => {
