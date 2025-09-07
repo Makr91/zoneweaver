@@ -30,6 +30,10 @@ const FaultDetailsModal = ({ fault, onClose }) => {
   };
 
   const detailsArray = formatDetails(fault.details);
+  
+  // Debug logging to see what we're getting
+  console.log('Fault Details Modal - fault object:', fault);
+  console.log('Fault Details Modal - fault.details:', fault.details);
 
   return (
     <ContentModal

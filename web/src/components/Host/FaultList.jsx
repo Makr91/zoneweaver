@@ -127,7 +127,8 @@ const FaultList = ({ server }) => {
       );
       
       if (result.success) {
-        setSelectedFault({ ...fault, details: result.data?.fault });
+        // The API returns the complete fault object with details
+        setSelectedFault(result.data?.fault || fault);
         setShowDetailsModal(true);
       } else {
         setError(result.message || 'Failed to load fault details');
