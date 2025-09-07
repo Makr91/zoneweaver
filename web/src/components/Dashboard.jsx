@@ -20,6 +20,7 @@ const Dashboard = () => {
 
   const {
     makeZoneweaverAPIRequest,
+    getMonitoringHealth,
     servers,
     loading: serversLoading,
     selectServer,
@@ -49,11 +50,10 @@ const Dashboard = () => {
               server.protocol,
               "stats"
             ),
-            makeZoneweaverAPIRequest(
+            getMonitoringHealth(
               server.hostname,
               server.port,
-              server.protocol,
-              "monitoring/health"
+              server.protocol
             )
           ]);
 
@@ -114,6 +114,7 @@ const Dashboard = () => {
       usedMemory: 0,
       healthyServers: 0,
       serversWithIssues: 0,
+      serversRequiringReboot: 0,
       recentActivity: [],
     };
 
@@ -135,14 +136,19 @@ const Dashboard = () => {
           summary.usedMemory += result.data.totalmem - result.data.freemem;
         }
 
-        // Health assessment (simplified)
+        // Health assessment (including reboot requirements)
         const hasHighLoad = result.data.loadavg && result.data.loadavg[0] > 2;
         const hasLowFreeMemory =
           result.data.totalmem &&
           result.data.freemem &&
           result.data.freemem / result.data.totalmem < 0.1;
+        const requiresReboot = result.healthData?.reboot_required;
 
-        if (hasHighLoad || hasLowFreeMemory) {
+        if (requiresReboot) {
+          summary.serversRequiringReboot++;
+        }
+
+        if (hasHighLoad || hasLowFreeMemory || requiresReboot) {
           summary.serversWithIssues++;
         } else {
           summary.healthyServers++;
@@ -753,12 +759,13 @@ const Dashboard = () => {
               >
                 {infrastructureData.servers &&
                   infrastructureData.servers
-                    .filter((s) => getServerHealthStatus(s) !== "healthy")
+                    .filter((s) => getServerHealthStatus(s) !== "healthy" || s.healthData?.reboot_required)
                     .map((serverResult, index) => {
                       const status = getServerHealthStatus(serverResult);
                       const statusColor =
                         status === "offline" ? "is-danger" : "is-warning";
                       const issues = [];
+                      const rebootInfo = serverResult.healthData?.reboot_info;
 
                       if (status === "offline") {
                         issues.push(
@@ -787,12 +794,38 @@ const Dashboard = () => {
                         }
                       }
 
+                      // Add reboot requirement if present
+                      if (serverResult.healthData?.reboot_required) {
+                        const reasons = rebootInfo?.reasons?.join(', ') || 'Configuration changes';
+                        const ageMinutes = rebootInfo?.age_minutes || 0;
+                        const timeAgo = ageMinutes > 60 
+                          ? `${Math.floor(ageMinutes / 60)}h ${ageMinutes % 60}m ago`
+                          : `${ageMinutes}m ago`;
+                        issues.push(
+                          `Reboot required (${reasons}) - Changed ${timeAgo}`
+                        );
+                      }
+
                       return (
                         <div
                           key={index}
-                          className={`notification ${statusColor} mb-3`}
+                          className={`notification ${serverResult.healthData?.reboot_required ? 'is-warning' : statusColor} mb-3`}
                         >
-                          <strong>{serverResult.server.hostname}</strong>
+                          <div className="level is-mobile">
+                            <div className="level-left">
+                              <strong>{serverResult.server.hostname}</strong>
+                            </div>
+                            <div className="level-right">
+                              {serverResult.healthData?.reboot_required && (
+                                <span className="tag is-warning">
+                                  <span className="icon is-small">
+                                    <i className="fas fa-redo"></i>
+                                  </span>
+                                  <span>Reboot Required</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
                           <ul className="mt-2">
                             {issues.map((issue, idx) => (
                               <li key={idx}>{issue}</li>
