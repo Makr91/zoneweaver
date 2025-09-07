@@ -3,6 +3,8 @@ import https from "https";
 import http from "http";
 import fs from "fs";
 import cors from "cors";
+import session from "express-session";
+import SequelizeStore from "connect-session-sequelize";
 import rateLimit from "express-rate-limit";
 import router from "./routes/index.js";
 import db from "./models/index.js";
@@ -69,7 +71,39 @@ let serverModelReady = true; // Models are ready immediately after import
 
 console.log('✅ Sequelize models loaded and ready');
 
-// Initialize Passport.js AFTER database is ready
+// Configure session middleware for OIDC and authentication
+const SessionStore = SequelizeStore(session.Store);
+const sessionStore = new SessionStore({
+  db: db.sequelize,
+  tableName: 'Sessions', // This will be auto-created
+  checkExpirationInterval: 15 * 60 * 1000, // Clean up expired sessions every 15 minutes
+  expiration: 30 * 60 * 1000 // Session expires after 30 minutes (good for OAuth flows)
+});
+
+app.use(session({
+  secret: config.authentication.jwt_secret.value, // Use existing JWT secret
+  store: sessionStore,
+  name: 'zoneweaver.sid', // Session cookie name
+  resave: false,
+  saveUninitialized: false, // Don't save empty sessions
+  cookie: {
+    secure: config.server.ssl_enabled.value, // Use HTTPS cookies if SSL is enabled
+    httpOnly: true, // Prevent XSS
+    maxAge: 30 * 60 * 1000, // 30 minutes (matches OAuth flow needs)
+    sameSite: 'lax' // CSRF protection while allowing OAuth redirects
+  },
+  // Sync session table on startup
+  ...(() => {
+    sessionStore.sync()
+      .then(() => console.log('✅ Session store synchronized'))
+      .catch(err => console.error('❌ Session store sync failed:', err.message));
+    return {};
+  })()
+}));
+
+console.log('✅ Session middleware configured for OIDC support');
+
+// Initialize Passport.js AFTER database and sessions are ready
 (async () => {
   try {
     // Wait a moment for any ongoing migrations to complete
@@ -90,7 +124,8 @@ console.log('✅ Sequelize models loaded and ready');
     
     // Add Passport middleware after it's initialized
     app.use(passport.initialize());
-    console.log('✅ Passport.js initialized and ready');
+    app.use(passport.session()); // Enable session support for OIDC
+    console.log('✅ Passport.js initialized with session support');
     
   } catch (error) {
     console.error('❌ Failed to initialize Passport:', error.message);
