@@ -317,6 +317,9 @@ async function handleExternalUser(provider, profile) {
     if (user) {
       console.log(`🔗 Linking ${provider} account to existing user: ${email}`);
       
+      // Normalize provider name for database (e.g., 'oidc-google' -> 'oidc')
+      const baseProvider = provider.startsWith('oidc-') ? 'oidc' : provider;
+      
       // If user doesn't have an organization, assign one
       if (!user.organization_id) {
         console.log(`🔍 User ${email} has no organization, determining organization...`);
@@ -325,7 +328,7 @@ async function handleExternalUser(provider, profile) {
         
         await user.update({
           organization_id: organizationId,
-          auth_provider: provider,
+          auth_provider: baseProvider,
           external_id: subject,
           linked_at: new Date(),
           last_login: new Date()
@@ -335,7 +338,7 @@ async function handleExternalUser(provider, profile) {
       } else {
         // Update user's auth provider and linked timestamp
         await user.update({
-          auth_provider: provider,
+          auth_provider: baseProvider,
           external_id: subject,
           linked_at: new Date(),
           last_login: new Date()
@@ -359,6 +362,9 @@ async function handleExternalUser(provider, profile) {
     console.log(`👤 Creating new ${provider} user: ${email}`);
     console.log(`🏢 Assigning user to organization ID: ${organizationId}`);
     
+    // Normalize provider name for database (e.g., 'oidc-google' -> 'oidc')
+    const baseProvider = provider.startsWith('oidc-') ? 'oidc' : provider;
+    
     // Create new user
     user = await UserModel.create({
       username: profile.displayName || profile.cn || email.split('@')[0],
@@ -366,7 +372,7 @@ async function handleExternalUser(provider, profile) {
       password_hash: 'external', // External users don't have passwords
       role: config.authentication?.external_provisioning_default_role?.value || 'user',
       organization_id: organizationId,
-      auth_provider: provider,
+      auth_provider: baseProvider,
       external_id: subject,
       linked_at: new Date(),
       last_login: new Date(),
