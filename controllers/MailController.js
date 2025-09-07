@@ -49,21 +49,29 @@ class MailController {
       throw new Error('Mail configuration not available');
     }
 
-    if (!mailConfig.smtp_connect || !mailConfig.smtp_auth || !mailConfig.smtp_settings) {
-      throw new Error('Incomplete mail configuration. Missing smtp_connect, smtp_auth, or smtp_settings');
+    // Check for UI metadata format configuration
+    if (!mailConfig.smtp_host?.value || !mailConfig.smtp_port?.value || !mailConfig.smtp_from?.value) {
+      throw new Error('Incomplete mail configuration. Missing smtp_host, smtp_port, or smtp_from');
     }
 
-    return nodemailer.createTransport({
-      host: mailConfig.smtp_connect.host,
-      port: mailConfig.smtp_connect.port,
-      secure: mailConfig.smtp_connect.secure || false,
-      auth: {
-        user: mailConfig.smtp_auth.user,
-        pass: mailConfig.smtp_auth.password
-      },
+    // Build transporter configuration from UI metadata format
+    const transporterConfig = {
+      host: mailConfig.smtp_host.value,
+      port: mailConfig.smtp_port.value,
+      secure: mailConfig.smtp_secure?.value || false,
       debug: process.env.NODE_ENV === 'development',
       logger: process.env.NODE_ENV === 'development'
-    });
+    };
+
+    // Add authentication if provided
+    if (mailConfig.smtp_user?.value && mailConfig.smtp_password?.value) {
+      transporterConfig.auth = {
+        user: mailConfig.smtp_user.value,
+        pass: mailConfig.smtp_password.value
+      };
+    }
+
+    return nodemailer.createTransporter(transporterConfig);
   }
 
   /**
@@ -97,7 +105,7 @@ class MailController {
       console.log('Preparing invitation email...');
       
       const mailOptions = {
-        from: mailConfig.smtp_settings.from,
+        from: mailConfig.smtp_from.value,
         to: invitation.email,
         subject: `Zoneweaver Organization Invitation - ${invitation.organization_name}`,
         html: `
@@ -237,7 +245,7 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
       const loginUrl = `${frontendUrl}/login`;
 
       const mailOptions = {
-        from: mailConfig.smtp_settings.from,
+        from: mailConfig.smtp_from.value,
         to: user.email,
         subject: `Welcome to Zoneweaver - ${organizationName}`,
         html: `
@@ -376,15 +384,15 @@ Welcome aboard!
 
       console.log('Sending test email...');
       const info = await transporter.sendMail({
-        from: mailConfig.smtp_settings.from,
+        from: mailConfig.smtp_from.value,
         to: testEmail,
         subject: 'Zoneweaver SMTP Test Email',
         html: `
           <h2>🧪 SMTP Configuration Test</h2>
           <p>This is a test email to verify your Zoneweaver SMTP configuration.</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <p><strong>From:</strong> ${mailConfig.smtp_settings.from}</p>
-          <p><strong>SMTP Host:</strong> ${mailConfig.smtp_connect.host}:${mailConfig.smtp_connect.port}</p>
+          <p><strong>From:</strong> ${mailConfig.smtp_from.value}</p>
+          <p><strong>SMTP Host:</strong> ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}</p>
           <p>✅ If you received this email, your SMTP configuration is working correctly!</p>
         `,
         text: `
@@ -393,8 +401,8 @@ Zoneweaver SMTP Test Email
 This is a test email to verify your Zoneweaver SMTP configuration.
 
 Timestamp: ${new Date().toISOString()}
-From: ${mailConfig.smtp_settings.from}
-SMTP Host: ${mailConfig.smtp_connect.host}:${mailConfig.smtp_connect.port}
+From: ${mailConfig.smtp_from.value}
+SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
 
 ✅ If you received this email, your SMTP configuration is working correctly!
         `
