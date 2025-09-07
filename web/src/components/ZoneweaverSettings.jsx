@@ -303,18 +303,26 @@ const ZoneweaverSettings = () => {
             value: value.value
           };
 
-          if (subsection) {
-            // Organize into subsections
-            if (!organizedSections[section].subsections[subsection]) {
-              organizedSections[section].subsections[subsection] = {
-                title: subsection,
-                fields: []
-              };
-            }
-            organizedSections[section].subsections[subsection].fields.push(fieldData);
+          // Special handling for object-type fields
+          if (value.type === 'object' && value.value && typeof value.value === 'object') {
+            // For object-type fields, don't add them as regular fields
+            // Instead, recurse into their value to process nested fields
+            processObject(value.value, fullPath, section);
           } else {
-            // Add to main section
-            organizedSections[section].fields.push(fieldData);
+            // Regular field processing
+            if (subsection) {
+              // Organize into subsections
+              if (!organizedSections[section].subsections[subsection]) {
+                organizedSections[section].subsections[subsection] = {
+                  title: subsection,
+                  fields: []
+                };
+              }
+              organizedSections[section].subsections[subsection].fields.push(fieldData);
+            } else {
+              // Add to main section
+              organizedSections[section].fields.push(fieldData);
+            }
           }
         } else if (value && typeof value === 'object' && !Array.isArray(value) && !value.hasOwnProperty('type')) {
           // This is a nested object, recurse with section inference
