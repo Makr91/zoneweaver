@@ -473,7 +473,7 @@ const ZoneweaverAPISettings = () => {
               <div className="modal-card">
                 <header className="modal-card-head">
                   <p className="modal-card-title">Configuration Backups</p>
-                  <button className="delete" onClick={() => setShowBackupModal(false)}></button>
+                  <button className="delete" aria-label="close" onClick={() => setShowBackupModal(false)}></button>
                 </header>
                 <section className="modal-card-body">
                   {backups.length === 0 ? (

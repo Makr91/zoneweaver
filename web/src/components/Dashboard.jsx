@@ -795,14 +795,6 @@ const Dashboard = () => {
                         );
                       })}
                 </section>
-                <footer className="modal-card-foot">
-                  <button
-                    className="button"
-                    onClick={() => setShowHealthModal(false)}
-                  >
-                    Close
-                  </button>
-                </footer>
               </div>
             </div>
           </div>
