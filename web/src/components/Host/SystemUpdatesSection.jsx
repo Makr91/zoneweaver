@@ -468,13 +468,6 @@ const SystemUpdatesSection = ({ server, onError }) => {
                 </span>
                 <span>Install Updates</span>
               </button>
-              <button
-                className='button'
-                onClick={() => setShowInstallModal(false)}
-                disabled={installing}
-              >
-                Cancel
-              </button>
             </footer>
           </div>
         </div>

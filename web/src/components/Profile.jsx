@@ -491,13 +491,6 @@ const Profile = () => {
               >
                 {loading ? 'Deleting...' : 'Delete Account Permanently'}
               </button>
-              <button 
-                className="button" 
-                onClick={closeDeleteModal}
-                disabled={loading}
-              >
-                Cancel
-              </button>
             </footer>
           </div>
         </div>

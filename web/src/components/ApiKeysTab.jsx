@@ -95,9 +95,6 @@ const ApiKeysTab = () => {
                         <section className="modal-card-body">
                             <pre>{generatedKey}</pre>
                         </section>
-                        <footer className="modal-card-foot">
-                            <button className="button" onClick={() => setGeneratedKey(null)}>Close</button>
-                        </footer>
                     </div>
                 </div>
             )}

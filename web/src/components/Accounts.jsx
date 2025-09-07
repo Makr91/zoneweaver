@@ -1115,13 +1115,6 @@ const Accounts = () => {
               >
                 {loading ? 'Deleting...' : 'Delete User Permanently'}
               </button>
-              <button 
-                className="button" 
-                onClick={closeDeleteModal}
-                disabled={loading}
-              >
-                Cancel
-              </button>
             </footer>
           </div>
         </div>
@@ -1191,13 +1184,6 @@ const Accounts = () => {
                 disabled={deleteOrgConfirmText !== 'DELETE' || orgLoading}
               >
                 {orgLoading ? 'Deleting...' : 'Delete Organization Permanently'}
-              </button>
-              <button 
-                className="button" 
-                onClick={closeDeleteOrgModal}
-                disabled={orgLoading}
-              >
-                Cancel
               </button>
             </footer>
           </div>
@@ -1314,13 +1300,6 @@ const Accounts = () => {
                   </>
                 )}
               </button>
-              <button 
-                className="button" 
-                onClick={closeInviteModal}
-                disabled={inviteLoading}
-              >
-                Cancel
-              </button>
             </footer>
           </div>
         </div>
@@ -1353,13 +1332,6 @@ const Accounts = () => {
                 disabled={loading}
               >
                 {loading ? `${confirmAction === 'deactivate' ? 'Deactivating...' : 'Reactivating...'}` : `${confirmAction === 'deactivate' ? 'Deactivate' : 'Reactivate'}`}
-              </button>
-              <button 
-                className="button" 
-                onClick={closeConfirmModal}
-                disabled={loading}
-              >
-                Cancel
               </button>
             </footer>
           </div>
@@ -1394,13 +1366,6 @@ const Accounts = () => {
                 disabled={orgLoading}
               >
                 {orgLoading ? 'Deactivating...' : 'Deactivate Organization'}
-              </button>
-              <button 
-                className="button" 
-                onClick={closeConfirmOrgModal}
-                disabled={orgLoading}
-              >
-                Cancel
               </button>
             </footer>
           </div>

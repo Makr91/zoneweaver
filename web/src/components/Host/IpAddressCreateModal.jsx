@@ -398,14 +398,6 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
           >
             Create Address
           </button>
-          <button
-            type='button'
-            className='button'
-            onClick={onClose}
-            disabled={creating}
-          >
-            Cancel
-          </button>
         </footer>
       </div>
     </div>

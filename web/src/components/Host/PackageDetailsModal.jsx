@@ -165,9 +165,6 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
           )}
         </section>
         
-        <footer className='modal-card-foot'>
-          <button className='button' onClick={onClose}>Close</button>
-        </footer>
       </div>
     </div>
   );

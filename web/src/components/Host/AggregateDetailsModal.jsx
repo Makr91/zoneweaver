@@ -266,15 +266,6 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
           </div>
         </section>
         
-        <footer className='modal-card-foot'>
-          <button
-            type='button'
-            className='button is-primary'
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </footer>
       </div>
     </div>
   );

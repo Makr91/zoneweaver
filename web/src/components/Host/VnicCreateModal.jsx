@@ -570,14 +570,6 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
           >
             Create VNIC
           </button>
-          <button
-            type='button'
-            className='button'
-            onClick={onClose}
-            disabled={creating}
-          >
-            Cancel
-          </button>
         </footer>
       </div>
     </div>
