@@ -1,11 +1,38 @@
 import React from 'react';
 import Highcharts from '../Highcharts';
 import { HighchartsReact } from 'highcharts-react-official';
+import { ContentModal } from '../common';
 
 const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, arcChartData }) => {
     if (!chartId) {
         return null;
     }
+
+    // Get the chart title for the modal header
+    const getChartTitle = (chartId, type) => {
+        if (type === 'individual') {
+            return `${chartId} - Bandwidth Detail`;
+        } else if (type === 'pool') {
+            return `${chartId} - ZFS Pool I/O Performance`;
+        } else if (type.startsWith('summary-')) {
+            const summaryType = type.replace('summary-', '');
+            const titleMap = {
+                'rx': 'RX Bandwidth (Download) - All Interfaces',
+                'tx': 'TX Bandwidth (Upload) - All Interfaces',
+                'read': 'Read Bandwidth - All Storage Devices',
+                'write': 'Write Bandwidth - All Storage Devices',
+                'total': 'Total Bandwidth (Combined) - All Devices'
+            };
+            return titleMap[summaryType];
+        } else if (type === 'arc-memory') {
+            return 'ZFS ARC Memory Allocation';
+        } else if (type === 'arc-efficiency') {
+            return 'ZFS ARC Cache Efficiency';
+        } else if (type === 'arc-compression') {
+            return 'ZFS ARC Compression Effectiveness';
+        }
+        return 'Performance Chart';
+    };
 
     const getExpandedChartOptions = (chartId, type) => {
         if (type === 'individual' && chartData[chartId]) {
@@ -611,22 +638,17 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
     };
 
     return (
-        <div className='modal is-active'>
-            <div className='modal-background' onClick={close}></div>
-            <div className='modal-content'>
-                <div className='box'>
-                    <HighchartsReact
-                        highcharts={Highcharts}
-                        options={getExpandedChartOptions(chartId, type)}
-                    />
-                </div>
-            </div>
-            <button
-                className='modal-close is-large'
-                aria-label='close'
-                onClick={close}
-            ></button>
-        </div>
+        <ContentModal
+            isOpen={!!chartId}
+            onClose={close}
+            title={getChartTitle(chartId, type)}
+            icon="fas fa-chart-line"
+        >
+            <HighchartsReact
+                highcharts={Highcharts}
+                options={getExpandedChartOptions(chartId, type)}
+            />
+        </ContentModal>
     );
 };
 
