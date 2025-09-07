@@ -249,6 +249,12 @@ router.get("/api/servers/:serverAddress/terminal/sessions/:terminalCookie/health
 router.get("/api/servers/:serverAddress/terminal/sessions/:sessionId", realtimeLimiter, authenticate, ServerController.getServerTerminalSession);
 router.delete("/api/servers/:serverAddress/terminal/sessions/:sessionId/stop", realtimeLimiter, authenticate, ServerController.stopServerTerminalSession);
 
+// ZFS ARC Configuration endpoints - Protected with admin rate limiting
+router.get("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/config", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.put("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/config", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/validate", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/reset", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+
 // Settings endpoints - Protected with admin rate limiting
 router.get("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getSettings);
 router.put("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.updateSettings);

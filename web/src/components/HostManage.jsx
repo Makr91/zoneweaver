@@ -7,6 +7,7 @@ import ServiceManagement from "./Host/ServiceManagement";
 import NetworkHostnameManagement from "./Host/NetworkHostnameManagement";
 import PackageManagement from "./Host/PackageManagement";
 import BootEnvironmentManagement from "./Host/BootEnvironmentManagement";
+import StorageManagement from "./Host/StorageManagement";
 import TimeNTPManagement from "./Host/TimeNTPManagement";
 
 const HostManage = () => {
@@ -110,8 +111,8 @@ const HostManage = () => {
                   <span>Boot Environments</span>
                 </a>
               </li>
-              <li className='is-disabled'>
-                <a>
+              <li className={activeTab === 'storage' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('storage')}>
                   <span className='icon is-small'><i className='fas fa-database'></i></span>
                   <span>Storage Management</span>
                 </a>
@@ -189,6 +190,21 @@ const HostManage = () => {
                 </div>
                 
                 <BootEnvironmentManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Storage Management Tab */}
+            {activeTab === 'storage' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Storage Management</h2>
+                  <p className='content'>
+                    Manage ZFS storage configuration on <strong>{currentServer.hostname}</strong>. 
+                    Configure ZFS ARC settings, manage pools, datasets, and storage resources.
+                  </p>
+                </div>
+                
+                <StorageManagement server={currentServer} />
               </div>
             )}
 

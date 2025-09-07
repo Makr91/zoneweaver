@@ -41,26 +41,42 @@ const Dashboard = () => {
 
       const serverPromises = servers.map(async (server) => {
         try {
-          const result = await makeZoneweaverAPIRequest(
-            server.hostname,
-            server.port,
-            server.protocol,
-            "stats"
-          );
+          // Fetch both stats and health data
+          const [statsResult, healthResult] = await Promise.allSettled([
+            makeZoneweaverAPIRequest(
+              server.hostname,
+              server.port,
+              server.protocol,
+              "stats"
+            ),
+            makeZoneweaverAPIRequest(
+              server.hostname,
+              server.port,
+              server.protocol,
+              "monitoring/health"
+            )
+          ]);
+
+          const statsSuccess = statsResult.status === 'fulfilled' && statsResult.value.success;
+          const healthSuccess = healthResult.status === 'fulfilled' && healthResult.value.success;
 
           return {
             server,
-            success: result.success,
-            data: result.success ? result.data : null,
-            error: result.success
+            success: statsSuccess,
+            data: statsSuccess ? statsResult.value.data : null,
+            healthData: healthSuccess ? healthResult.value.data : null,
+            error: statsSuccess
               ? null
-              : result.message || "Failed to fetch data",
+              : (statsResult.status === 'fulfilled' ? 
+                  (statsResult.value.message || "Failed to fetch data") : 
+                  statsResult.reason?.message || "Connection failed"),
           };
         } catch (error) {
           return {
             server,
             success: false,
             data: null,
+            healthData: null,
             error: error.message || "Connection failed",
           };
         }
