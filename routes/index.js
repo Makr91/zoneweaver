@@ -80,7 +80,7 @@ router.post("/api/auth/login", authLimiter, AuthController.login);
 router.post("/api/auth/ldap", authLimiter, AuthController.ldapLogin);
 // Multiple OIDC provider routes
 router.get("/api/auth/oidc/:provider", standardLimiter, AuthController.startOidcLogin);
-router.get("/api/auth/oidc/:provider/callback", standardLimiter, AuthController.handleOidcCallback);
+router.get("/api/auth/oidc/callback", standardLimiter, AuthController.handleOidcCallback);
 router.post("/api/auth/logout", standardLimiter, AuthController.logout);
 router.get("/api/auth/profile", standardLimiter, authenticate, AuthController.getProfile);
 router.post("/api/auth/change-password", authLimiter, authenticate, AuthController.changePassword);

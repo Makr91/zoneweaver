@@ -194,7 +194,7 @@ async function setupOidcProviders() {
         name: strategyName,
         config: oidcConfig,
         scope: scope,
-        callbackURL: `${config.frontend.frontend_url.value}/api/auth/oidc/${providerName}/callback`
+        callbackURL: `${config.frontend.frontend_url.value}/api/auth/oidc/callback`
       }, async (tokens, verified) => {
         try {
           console.log(`🔐 OIDC authentication successful for provider: ${providerName}`);

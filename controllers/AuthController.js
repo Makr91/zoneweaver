@@ -669,6 +669,11 @@ class AuthController {
         });
       }
 
+      // Store provider in session for callback handling
+      if (req.session) {
+        req.session.oidcProvider = provider;
+      }
+
       // Use passport to authenticate with specific OIDC provider
       const passport = (await import('passport')).default;
       const strategyName = `oidc-${provider}`;
@@ -736,7 +741,13 @@ class AuthController {
    */
   static async handleOidcCallback(req, res, next) {
     try {
-      const { provider } = req.params;
+      // Get provider from session (stored when authentication started)
+      const provider = req.session?.oidcProvider;
+      
+      // Clear provider from session
+      if (req.session) {
+        delete req.session.oidcProvider;
+      }
       
       if (!provider) {
         return res.redirect('/ui/login?error=no_provider');
