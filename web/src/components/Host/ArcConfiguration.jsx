@@ -27,12 +27,26 @@ const ArcConfiguration = ({ server }) => {
     }
   }, [server]);
 
-  const loadArcConfig = async () => {
+  // Auto-dismiss notifications after 5 seconds
+  useEffect(() => {
+    if (message && (messageType === 'is-success' || messageType === 'is-warning')) {
+      const timer = setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [message, messageType]);
+
+  const loadArcConfig = async (clearMessage = true) => {
     if (!server) return;
 
     try {
       setLoading(true);
-      setMessage('');
+      if (clearMessage) {
+        setMessage('');
+      }
 
       const response = await axios.get(
         `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/system/zfs/arc/config`
@@ -203,8 +217,8 @@ const ArcConfiguration = ({ server }) => {
           setMessageType('is-warning');
         }
 
-        // Reload current configuration
-        await loadArcConfig();
+        // Reload current configuration without clearing the success message
+        await loadArcConfig(false);
       } else {
         setMessage(`Failed to apply configuration: ${response.data.message}`);
         setMessageType('is-danger');
@@ -343,7 +357,7 @@ const ArcConfiguration = ({ server }) => {
 
           {/* System Constraints */}
           {currentConfig.system_constraints && (
-            <div className='notification is-light mt-3'>
+            <div className='notification is-dark mt-3'>
               <h5 className='title is-6 mb-2'>System Constraints</h5>
               <div className='content is-small'>
                 <p><strong>Max Safe ARC:</strong> {formatBytes(currentConfig.system_constraints.max_safe_arc_bytes)} 
@@ -357,20 +371,6 @@ const ArcConfiguration = ({ server }) => {
         </div>
       )}
 
-        {/* Oracle Solaris Runtime Warning */}
-        <div className='notification is-warning mb-4'>
-          <h5 className='title is-6 mb-2'>
-            <span className='icon-text'>
-              <span className='icon'><i className='fas fa-exclamation-triangle'></i></span>
-              <span>Oracle Solaris Limitation</span>
-            </span>
-          </h5>
-          <p className='content is-small mb-0'>
-            <strong>Runtime ARC changes are not supported on Oracle Solaris.</strong> 
-            ARC configuration changes can only be applied persistently and require a system reboot to take effect. 
-            The "Runtime Only" and "Both" options are provided for compatibility but will not modify live ARC settings.
-          </p>
-        </div>
 
         {/* Configuration Form */}
         <div className='box'>
@@ -759,17 +759,7 @@ const ArcConfiguration = ({ server }) => {
             </div>
           </div>
           <div className='column is-6'>
-            {/* Constraint Summary */}
-            {currentConfig?.system_constraints && (
-              <div className='notification is-light is-small'>
-                <h6 className='title is-6 mb-2'>Quick Reference</h6>
-                <div className='content is-small'>
-                  <p><strong>Physical Memory:</strong> {formatBytes(currentConfig.system_constraints.physical_memory_bytes)}</p>
-                  <p><strong>Safe Max ARC:</strong> {formatBytes(currentConfig.system_constraints.max_safe_arc_bytes)} (85%)</p>
-                  <p><strong>Min Recommended:</strong> {formatBytes(currentConfig.system_constraints.min_recommended_arc_bytes)} (1%)</p>
-                </div>
-              </div>
-            )}
+            {/* Empty column for layout balance */}
           </div>
         </div>
 
@@ -881,9 +871,6 @@ const ArcConfiguration = ({ server }) => {
                 <li><strong>Persistent Only:</strong> Saves changes to config file, requires reboot (recommended)</li>
                 <li><strong>Both:</strong> <em>Functions as Persistent Only</em> - Runtime changes ignored</li>
               </ul>
-              <p className='has-text-weight-semibold has-text-warning-dark'>
-                ⚠️ All ARC changes require system reboot on Oracle Solaris
-              </p>
             </div>
             <div className='column'>
               <p><strong>Best Practices:</strong></p>
