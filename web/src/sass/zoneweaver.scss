@@ -63,8 +63,7 @@ $beige-lighter: #eff0eb;
   $control-focus-shadow-l: 0,
   $navbar-dropdown-boxed-shadow: 0,
   $navbar-bottom-box-shadow-size: 0,
-  $panel-shadow: 0,
-  $shadow: 0
+  $panel-shadow: 0
 );
 
 // Import theme utilities for dark mode implementation
@@ -132,19 +131,7 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Light theme
   --zw-border-light: #dbdbdb;       // Component borders
   --zw-controls-bg: #363636;        // VNC controls background
-  
-  // Override ALL Bulma shadow variables to completely disable shadows
-  --bulma-shadow: none !important;
-  --bulma-focus-shadow-size: 0 !important;
-  --bulma-control-focus-box-shadow-size: 0 !important;
-  --bulma-input-focus-box-shadow-size: 0 !important;
-  --bulma-card-shadow: none !important;
-  --bulma-modal-card-head-shadow: none !important;
-  --bulma-modal-card-foot-shadow: none !important;
-  --bulma-dropdown-content-shadow: none !important;
-  --bulma-navbar-shadow: none !important;
-  --bulma-pagination-shadow: none !important;
-  --bulma-table-head-shadow: none !important;
+
 }
 
 [data-theme="dark"] {
