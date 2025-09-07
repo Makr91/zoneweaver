@@ -93,6 +93,7 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Light theme
   --zw-border-light: #dbdbdb;       // Component borders
   --zw-controls-bg: #363636;        // VNC controls background
+  --bulma-shadow: none;
 }
 
 @mixin zw-dark-theme {
@@ -116,6 +117,7 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
+  --bulma-shadow: none;
 }
 
 @include cv.system-theme($name: "light") {

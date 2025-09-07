@@ -262,6 +262,17 @@ router.delete("/api/settings/backups/:filename", adminLimiter, authenticate, req
 // Mail testing endpoint - Protected with admin rate limiting
 router.post("/api/mail/test", adminLimiter, authenticate, requireSuperAdmin, AuthController.testMail);
 
+// Health check endpoint - Simple health status for restart monitoring
+router.get("/api/health", standardLimiter, (req, res) => {
+  res.json({
+    success: true,
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: process.env.npm_package_version || "unknown"
+  });
+});
+
 // Serve static files from the Vite app build directory - Protected with static file rate limiting (CodeQL flagged)
 router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'web/dist')));
 

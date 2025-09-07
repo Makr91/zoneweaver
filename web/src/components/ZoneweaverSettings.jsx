@@ -841,20 +841,62 @@ const ZoneweaverSettings = () => {
       const response = await axios.post('/api/settings/restart');
       
       if (response.data.success) {
-        setMsg(response.data.message + " The page will reload automatically.");
+        setMsg("Server restart initiated. Monitoring server health...");
+        
+        // Start health checking after a brief delay
         setTimeout(() => {
-          window.location.reload();
+          monitorServerRestart();
         }, 3000);
       } else {
         setMsg('Failed to restart server: ' + response.data.message);
+        setLoading(false);
       }
       
     } catch (error) {
       console.error('Error restarting server:', error);
       setMsg("Error restarting server: " + (error.response?.data?.message || error.message));
-    } finally {
       setLoading(false);
     }
+  };
+
+  const monitorServerRestart = async () => {
+    let attempts = 0;
+    const maxAttempts = 30; // Maximum 1.5 minutes
+    const checkInterval = 3000; // Check every 3 seconds
+    
+    const checkHealth = async () => {
+      attempts++;
+      
+      try {
+        setMsg(`Checking server health... (${attempts}/${maxAttempts})`);
+        
+        const response = await axios.get('/api/health', {
+          timeout: 5000 // 5 second timeout
+        });
+        
+        if (response.data.success && response.data.status === 'healthy') {
+          setMsg('Server restart completed successfully! Reloading page...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+          return;
+        }
+      } catch (error) {
+        // Server not ready yet, which is expected during restart
+        console.log(`Health check attempt ${attempts} failed:`, error.message);
+      }
+      
+      if (attempts >= maxAttempts) {
+        setMsg('Server restart timeout. Please refresh the page manually.');
+        setLoading(false);
+        return;
+      }
+      
+      // Continue checking
+      setTimeout(checkHealth, checkInterval);
+    };
+    
+    checkHealth();
   };
 
   // Backup management functions
@@ -1348,6 +1390,58 @@ const ZoneweaverSettings = () => {
             {Object.entries(sections).map(([sectionName, section]) => 
               activeTab === sectionName && (
                 <div key={sectionName}>
+                  {/* Special Authentication Section - Always Show OIDC Management */}
+                  {sectionName === 'Authentication' && (
+                    <div className='box mt-4 has-background-light'>
+                      <div className='level is-mobile mb-3'>
+                        <div className='level-left'>
+                          <h3 className='title is-6'>
+                            <span className='icon is-small mr-2'>
+                              <i className='fab fa-openid'></i>
+                            </span>
+                            OIDC Providers
+                          </h3>
+                        </div>
+                        <div className='level-right'>
+                          <button 
+                            className='button is-primary is-small'
+                            onClick={() => {
+                              resetOidcProviderForm();
+                              setShowOidcProviderModal(true);
+                            }}
+                            disabled={loading}
+                          >
+                            <span className='icon is-small'>
+                              <i className='fas fa-plus'></i>
+                            </span>
+                            <span>Add OIDC Provider</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <p className='has-text-grey is-size-7 mb-3'>
+                        Manage OpenID Connect authentication providers for single sign-on integration.
+                      </p>
+
+                      {/* Show existing providers */}
+                      {Object.entries(section.subsections || {}).filter(([name]) => name.toLowerCase().includes('oidc')).length > 0 ? (
+                        <div className='notification is-info is-light'>
+                          <p className='is-size-7'>
+                            <strong>{Object.entries(section.subsections || {}).filter(([name]) => name.toLowerCase().includes('oidc')).length}</strong> OIDC provider(s) configured. 
+                            You can expand each provider section below to modify settings.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className='notification is-warning is-light'>
+                          <p className='is-size-7'>
+                            No OIDC providers configured yet. Click "Add OIDC Provider" to set up authentication 
+                            with providers like Google, Microsoft, GitHub, etc.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Main Section Fields */}
                   {section.fields.length > 0 && (
                     <div className='box mb-4'>

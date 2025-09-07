@@ -505,14 +505,14 @@ class SettingsController {
       
       res.json({
         success: true,
-        message: 'Server restart initiated. Please wait for the application to reload.'
+        message: 'Server restart initiated. Please monitor the page for automatic reload.'
       });
 
-      // Delay the restart to allow response to be sent
+      // Increased delay to ensure response is fully sent
       setTimeout(() => {
         console.log('Restarting server...');
         process.exit(0); // Let process manager restart the app
-      }, 1000);
+      }, 2500);
 
     } catch (error) {
       console.error('Error restarting server:', error);
