@@ -71,11 +71,24 @@ const ArcConfiguration = ({ server }) => {
 
   // Helper functions
   const bytesToGb = (bytes) => {
-    return (bytes / Math.pow(1024, 3)).toFixed(2);
+    if (!bytes || isNaN(bytes)) return 0;
+    return (bytes / Math.pow(1024, 3));
   };
 
-  const gbToBytes = (gb) => {
-    return Math.round(parseFloat(gb) * Math.pow(1024, 3));
+  const safeBytesToGb = (bytes) => {
+    const result = bytesToGb(bytes);
+    return isNaN(result) ? 0 : result;
+  };
+
+  const safeParseFloat = (value) => {
+    if (!value || value === '') return null;
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? null : parsed;
+  };
+
+  const formatGbValue = (value) => {
+    const parsed = safeParseFloat(value);
+    return parsed !== null ? parsed.toFixed(2) : null;
   };
 
   const formatBytes = (bytes) => {
@@ -380,7 +393,7 @@ const ArcConfiguration = ({ server }) => {
           <div className='column is-6'>
             <div className='field mb-4'>
               <label className='label'>
-                Maximum ARC Size: {formData.arc_max_gb ? `${parseFloat(formData.arc_max_gb).toFixed(2)} GB` : 'Auto'}
+                Maximum ARC Size: {formatGbValue(formData.arc_max_gb) ? `${formatGbValue(formData.arc_max_gb)} GB` : 'Auto'}
               </label>
               <div className='control mt-4 mb-4'>
                 <input 
@@ -388,14 +401,14 @@ const ArcConfiguration = ({ server }) => {
                   type='range'
                   min={currentConfig?.system_constraints ? 
                     Math.max(
-                      parseFloat(formData.arc_min_gb) || 0,
-                      bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                      safeParseFloat(formData.arc_min_gb) || 0,
+                      safeBytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
                     ).toFixed(2) : '1'}
                   max={currentConfig?.system_constraints ? 
-                    bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100'}
+                    safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100'}
                   step='0.25'
                   value={formData.arc_max_gb || (currentConfig?.system_constraints ? 
-                    bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '50')}
+                    safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '50')}
                   onChange={(e) => handleFormChange('arc_max_gb', e.target.value)}
                   disabled={loading}
                   onClick={(e) => e.stopPropagation()}
@@ -435,10 +448,10 @@ const ArcConfiguration = ({ server }) => {
               <div className='help is-size-7'>
                 Range: {currentConfig?.system_constraints ? 
                   Math.max(
-                    parseFloat(formData.arc_min_gb) || 0,
-                    bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
+                    safeParseFloat(formData.arc_min_gb) || 0,
+                    safeBytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes)
                   ).toFixed(2) : '1'} GB to {currentConfig?.system_constraints ? 
-                  bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100'} GB
+                  safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100'} GB
                 <br />Leave unset for auto-calculation based on system memory.
               </div>
               <div className='field mt-3'>
@@ -462,25 +475,25 @@ const ArcConfiguration = ({ server }) => {
           <div className='column is-6'>
             <div className='field mb-4'>
               <label className='label'>
-                Minimum ARC Size: {formData.arc_min_gb ? `${parseFloat(formData.arc_min_gb).toFixed(2)} GB` : 'Auto'}
+                Minimum ARC Size: {formatGbValue(formData.arc_min_gb) ? `${formatGbValue(formData.arc_min_gb)} GB` : 'Auto'}
               </label>
               <div className='control mt-4 mb-4'>
                 <input 
                   className='zw-range-slider-info'
                   type='range'
                   min={currentConfig?.system_constraints ? 
-                    bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '0.5'}
+                    safeBytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '0.5'}
                   max={formData.arc_max_gb ? 
                     Math.min(
                       parseFloat(formData.arc_max_gb),
                       currentConfig?.system_constraints ? 
-                        bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
+                        safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
                     ).toFixed(2) : 
                     (currentConfig?.system_constraints ? 
-                      bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100')}
+                      safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100')}
                   step='0.25'
                   value={formData.arc_min_gb || (currentConfig?.system_constraints ? 
-                    bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '1')}
+                    safeBytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '1')}
                   onChange={(e) => handleFormChange('arc_min_gb', e.target.value)}
                   disabled={loading}
                   onClick={(e) => e.stopPropagation()}
@@ -519,14 +532,14 @@ const ArcConfiguration = ({ server }) => {
               </div>
               <div className='help is-size-7'>
                 Range: {currentConfig?.system_constraints ? 
-                  bytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '0.5'} GB to {formData.arc_max_gb ? 
+                  safeBytesToGb(currentConfig.system_constraints.min_recommended_arc_bytes).toFixed(2) : '0.5'} GB to {formData.arc_max_gb ? 
                   Math.min(
                     parseFloat(formData.arc_max_gb),
                     currentConfig?.system_constraints ? 
-                      bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
+                      safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes) : 100
                   ).toFixed(2) : 
                   (currentConfig?.system_constraints ? 
-                    bytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100')} GB
+                    safeBytesToGb(currentConfig.system_constraints.max_safe_arc_bytes).toFixed(2) : '100')} GB
                 <br />Leave unset for auto-calculation based on system memory.
               </div>
               <div className='field mt-3'>
