@@ -609,6 +609,146 @@ class AuthController {
 
   /**
    * @swagger
+   * /api/auth/oidc:
+   *   get:
+   *     summary: Initiate OIDC authentication
+   *     description: Redirect user to OIDC provider for authentication
+   *     tags: [Authentication]
+   *     responses:
+   *       302:
+   *         description: Redirect to OIDC provider
+   *       400:
+   *         description: OIDC not enabled
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async startOidcLogin(req, res, next) {
+    try {
+      // Check if OIDC is enabled
+      if (!config.authentication?.oidc_enabled?.value) {
+        return res.status(400).json({
+          success: false,
+          message: 'OIDC authentication is not enabled'
+        });
+      }
+
+      // Use passport to authenticate with OIDC
+      const passport = (await import('passport')).default;
+      
+      console.log('🔐 Starting OIDC authentication flow...');
+      
+      passport.authenticate('oidc')(req, res, next);
+      
+    } catch (error) {
+      console.error('OIDC start login error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error during OIDC authentication setup'
+      });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/auth/oidc/callback:
+   *   get:
+   *     summary: Handle OIDC callback
+   *     description: Process the callback from OIDC provider and generate JWT token
+   *     tags: [Authentication]
+   *     parameters:
+   *       - in: query
+   *         name: code
+   *         schema:
+   *           type: string
+   *         description: Authorization code from OIDC provider
+   *       - in: query
+   *         name: state
+   *         schema:
+   *           type: string
+   *         description: State parameter for CSRF protection
+   *     responses:
+   *       302:
+   *         description: Redirect to frontend with token or error
+   *       400:
+   *         description: OIDC not enabled or authentication failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied - provisioning policy rejection
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async handleOidcCallback(req, res) {
+    try {
+      // Check if OIDC is enabled
+      if (!config.authentication?.oidc_enabled?.value) {
+        return res.redirect('/ui/login?error=oidc_not_enabled');
+      }
+
+      const user = req.user;
+      
+      if (!user) {
+        console.error('❌ OIDC callback: No user object found');
+        return res.redirect('/ui/login?error=oidc_failed');
+      }
+
+      // Generate JWT token for OIDC user
+      const token = jwt.sign(
+        { 
+          userId: user.id, 
+          username: user.username,
+          email: user.email,
+          role: user.role
+        },
+        config.authentication.jwt_secret.value,
+        { expiresIn: config.authentication.jwt_expiration?.value || '24h' }
+      );
+      
+      // Set session if using express-session
+      if (req.session) {
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        req.session.role = user.role;
+      }
+
+      console.log(`✅ OIDC login successful: ${user.username} (${user.email})`);
+
+      // Redirect to frontend with token (frontend will handle storage)
+      const frontendUrl = config.frontend.frontend_url.value || 'https://localhost:3443';
+      res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
+      
+    } catch (error) {
+      console.error('OIDC callback error:', error);
+      
+      // Handle specific OIDC errors
+      if (error.message && (error.message.includes('Access denied') || error.message.includes('Invitation required'))) {
+        return res.redirect('/ui/login?error=access_denied');
+      }
+      
+      res.redirect('/ui/login?error=token_generation_failed');
+    }
+  }
+
+  /**
+   * @swagger
    * /api/auth/logout:
    *   post:
    *     summary: Logout user
@@ -1753,8 +1893,14 @@ class AuthController {
         });
       }
 
-      // Future auth methods can be added here
-      // OIDC, OAuth, SAML, etc.
+      // OIDC authentication
+      if (config.authentication?.oidc_enabled?.value === true) {
+        methods.push({
+          id: 'oidc',
+          name: 'OpenID Connect',
+          enabled: true
+        });
+      }
 
       res.json({
         success: true,

@@ -447,7 +447,6 @@ limits:
       required: true
       order: 3
 
-# Authentication Configuration (Phase 3: LDAP Integration)
 authentication:
   enabled_strategies:
     type: array
@@ -461,7 +460,7 @@ authentication:
   default_strategy:
     type: select
     value: local
-    options: ["local", "jwt", "ldap", "oidc"]
+    options: ["local", "jwt"]
     description: "Default authentication strategy"
     section: "Authentication"
     subsection: "General"
@@ -688,6 +687,83 @@ authentication:
     depends_on: ldap_enabled
     show_when: [true]
     order: 8
+  
+  # OIDC Configuration
+  oidc_enabled:
+    type: boolean
+    value: false
+    description: "Enable OpenID Connect (OIDC) authentication"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: true
+    order: 1
+    
+  oidc_issuer:
+    type: string
+    value: "https://accounts.google.com"
+    description: "OIDC Provider issuer URL (e.g., https://accounts.google.com, https://login.microsoftonline.com/tenant-id/v2.0)"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: false
+    depends_on: oidc_enabled
+    show_when: [true]
+    order: 2
+    
+  oidc_client_id:
+    type: string
+    value: ""
+    description: "OIDC Client ID from your provider (OAuth 2.0 application identifier)"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: false
+    depends_on: oidc_enabled
+    show_when: [true]
+    order: 3
+    
+  oidc_client_secret:
+    type: password
+    value: ""
+    description: "OIDC Client Secret from your provider (keep secure)"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: false
+    depends_on: oidc_enabled
+    show_when: [true]
+    order: 4
+    
+  oidc_scope:
+    type: string
+    value: "openid profile email"
+    description: "OIDC scopes to request (space-separated). 'openid' is required, 'profile email' recommended"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: false
+    depends_on: oidc_enabled
+    show_when: [true]
+    order: 5
+    
+  oidc_response_type:
+    type: select
+    value: "code"
+    options: ["code", "id_token", "code id_token"]
+    description: "OAuth 2.0 response type - 'code' is recommended for server-side apps"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: false
+    depends_on: oidc_enabled
+    show_when: [true]
+    order: 6
+    
+  oidc_prompt:
+    type: string
+    value: ""
+    description: "Optional prompt parameter (e.g., 'consent', 'login', 'select_account')"
+    section: "Authentication"
+    subsection: "OIDC Configuration"
+    required: false
+    depends_on: oidc_enabled
+    show_when: [true]
+    order: 7
   
   # External Provider Settings
   external_domain_mapping_enabled:

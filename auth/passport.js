@@ -1,6 +1,8 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as LdapStrategy } from 'passport-ldapauth';
+import * as client from 'openid-client';
+import { Strategy as OidcStrategy } from 'openid-client/passport';
 import { loadConfig } from '../utils/config.js';
 import db from '../models/index.js';
 
@@ -9,7 +11,6 @@ const config = loadConfig();
 
 /**
  * Passport.js configuration for ZoneWeaver
- * Phase 1: JWT Strategy (replacement for custom JWT middleware)
  */
 
 // JWT Strategy - matches existing custom middleware behavior exactly
@@ -57,7 +58,6 @@ passport.deserializeUser(async (userId, done) => {
 
 /**
  * LDAP Strategy - External authentication via LDAP
- * Phase 3: LDAP Authentication
  */
 async function setupLdapStrategy() {
   // Wait for database to be ready before setting up strategies
@@ -122,6 +122,79 @@ async function setupLdapStrategy() {
   }));
 
   console.log('✅ LDAP authentication strategy configured successfully');
+}
+
+/**
+ * OIDC Strategy - External authentication via OpenID Connect
+ */
+async function setupOidcStrategy() {
+  // Wait for database to be ready before setting up strategies
+  try {
+    // Test database access with new schema
+    const { user: UserModel } = db;
+    await UserModel.findOne({ limit: 1 }); // Test query to ensure schema is ready
+  } catch (error) {
+    console.log('⏳ Database not ready yet, waiting for migrations to complete...');
+    // Wait a bit for migrations to finish
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  // Only setup OIDC if enabled in configuration
+  if (!config.authentication?.oidc_enabled?.value) {
+    console.log('🔧 OIDC authentication disabled in configuration');
+    return;
+  }
+
+  console.log('🔧 Setting up OIDC authentication strategy...');
+  console.log('📋 OIDC Configuration:');
+  console.log('  Issuer:', config.authentication.oidc_issuer.value);
+  console.log('  Client ID:', config.authentication.oidc_client_id.value);
+  console.log('  Scope:', config.authentication.oidc_scope.value);
+  console.log('  Response Type:', config.authentication.oidc_response_type?.value || 'code');
+
+  try {
+    // Use discovery for automatic configuration (best practice)
+    const oidcConfig = await client.discovery(
+      new URL(config.authentication.oidc_issuer.value),
+      config.authentication.oidc_client_id.value,
+      config.authentication.oidc_client_secret.value
+    );
+
+    passport.use('oidc', new OidcStrategy({
+      name: 'oidc',
+      config: oidcConfig,
+      scope: config.authentication.oidc_scope.value,
+      callbackURL: `${config.frontend.frontend_url.value}/api/auth/oidc/callback`
+    }, async (tokens, verified) => {
+      try {
+        console.log('🔐 OIDC authentication successful');
+        
+        // Extract user info from tokens
+        const userinfo = tokens.claims();
+        console.log('📄 OIDC User Claims:');
+        console.log('  Subject:', userinfo.sub);
+        console.log('  Email:', userinfo.email);
+        console.log('  Name:', userinfo.name || userinfo.given_name + ' ' + userinfo.family_name);
+        console.log('  Profile Keys:', Object.keys(userinfo));
+        
+        // Handle external user authentication and provisioning
+        const result = await handleExternalUser('oidc', userinfo);
+        console.log('✅ OIDC user processing complete:', result.username);
+        
+        return verified(null, result);
+        
+      } catch (error) {
+        console.error('❌ OIDC Strategy error during user processing:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        return verified(error, false);
+      }
+    }));
+
+    console.log('✅ OIDC authentication strategy configured successfully');
+  } catch (error) {
+    console.error('❌ Failed to setup OIDC strategy:', error.message);
+    throw error;
+  }
 }
 
 /**
@@ -414,7 +487,8 @@ function generateOrgCode() {
   return Math.random().toString(16).substr(2, 6).toUpperCase();
 }
 
-// Initialize LDAP strategy if enabled
+// Initialize strategies if enabled
 await setupLdapStrategy();
+await setupOidcStrategy();
 
 export default passport;
