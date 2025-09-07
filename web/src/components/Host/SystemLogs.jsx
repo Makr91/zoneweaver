@@ -38,6 +38,13 @@ const SystemLogs = ({ server }) => {
     }
   }, [autoRefresh, selectedLog, filters, isStreaming]);
 
+  // Auto-load content when selectedLog changes
+  useEffect(() => {
+    if (selectedLog) {
+      loadLogContent();
+    }
+  }, [selectedLog]);
+
   // Cleanup WebSocket on unmount or server change
   useEffect(() => {
     return () => {
@@ -125,10 +132,18 @@ const SystemLogs = ({ server }) => {
   };
 
   const handleLogSelect = (log) => {
+    // Stop any active streaming when switching logs
+    if (isStreaming) {
+      stopLogStream();
+    }
+    
+    // Reset state for new log selection
     setSelectedLog(log);
     setLogData(null);
-    // Auto-load content when a log is selected
-    setTimeout(() => loadLogContent(), 100);
+    setStreamLines([]);
+    setError('');
+    
+    // The useEffect for selectedLog will automatically trigger loadLogContent
   };
 
   const handleFilterChange = (field, value) => {
