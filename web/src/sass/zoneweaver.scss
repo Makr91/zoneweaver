@@ -46,17 +46,10 @@ $beige-lighter: #eff0eb;
   $light: hsl(221, 14%, 35%),
   $grey-lighter: hsl(221, 14%, 40%),
   $button-border-width: 0px,
-  $box-shadow: none,
   $dropdown-content-shadow: none,
   $dropdown-content-z: 4,
   $control-radius: none,
-  $card-shadow: none,
   $body-overflow-y: auto,
-  $button-focus-box-shadow-size: 0,
-  $input-focus-shadow-size: 0,
-  $navbar-box-shadow-size: 0,
-  $navbar-bottom-box-shadow-size: 0,
-  $panel-shadow: 0
 );
 
 // Import theme utilities for dark mode implementation
@@ -69,18 +62,6 @@ $beige-lighter: #eff0eb;
 
 // Create shadow-disabling mixins following official Bulma pattern
 @mixin zw-light-theme {
-  // All shadow overrides for light theme
-  --bulma-button-outer-shadow-a: 0;
-  --bulma-button-outer-shadow-h: 0;
-  --bulma-button-outer-shadow-s: 0%;
-  --bulma-button-outer-shadow-l: 0%;
-  --bulma-shadow: none;
-  --bulma-card-header-shadow: none;
-  --bulma-input-shadow: none;
-  --bulma-navbar-dropdown-boxed-shadow: none;
-  --bulma-pagination-shadow-inset: none;
-
-  // Your custom theme colors - Light theme
   --zw-text-placeholder: #6c757d; // Medium gray for placeholders
   --zw-loading-spinner: #6c757d;  // Medium gray for loading spinners
   
@@ -108,18 +89,6 @@ $beige-lighter: #eff0eb;
 }
 
 @mixin zw-dark-theme {
-  // All shadow overrides for dark theme
-  --bulma-button-outer-shadow-a: 0;
-  --bulma-button-outer-shadow-h: 0;
-  --bulma-button-outer-shadow-s: 0%;
-  --bulma-button-outer-shadow-l: 0%;
-  --bulma-shadow: none;
-  --bulma-card-header-shadow: none;
-  --bulma-input-shadow: none;
-  --bulma-navbar-dropdown-boxed-shadow: none;
-  --bulma-pagination-shadow-inset: none;
-
-  // Your custom theme colors - Dark theme
   --zw-text-placeholder: #ecf0f1; // Light gray for dark backgrounds
   --zw-loading-spinner: #95a5a6;  // Muted gray for dark theme spinners
   
