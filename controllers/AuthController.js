@@ -621,7 +621,7 @@ class AuthController {
    *         schema:
    *           type: string
    *         description: OIDC provider name
-   *         example: "google"
+   *         example: "CUSTOM"
    *     responses:
    *       302:
    *         description: Redirect to OIDC provider
@@ -706,7 +706,7 @@ class AuthController {
    *         schema:
    *           type: string
    *         description: OIDC provider name
-   *         example: "google"
+   *         example: "CUSTOM"
    *       - in: query
    *         name: code
    *         schema:

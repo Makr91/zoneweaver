@@ -86,7 +86,7 @@ const Login = () => {
 
   /**
    * Handle OIDC login redirect for specific provider
-   * @param {string} provider - Provider name (e.g., 'google', 'microsoft')
+   * @param {string} provider
    */
   const handleOidcLogin = (provider) => {
     // Store intended URL for after login

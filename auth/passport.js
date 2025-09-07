@@ -317,7 +317,6 @@ async function handleExternalUser(provider, profile) {
     if (user) {
       console.log(`🔗 Linking ${provider} account to existing user: ${email}`);
       
-      // Normalize provider name for database (e.g., 'oidc-google' -> 'oidc')
       const baseProvider = provider.startsWith('oidc-') ? 'oidc' : provider;
       
       // If user doesn't have an organization, assign one
@@ -362,7 +361,6 @@ async function handleExternalUser(provider, profile) {
     console.log(`👤 Creating new ${provider} user: ${email}`);
     console.log(`🏢 Assigning user to organization ID: ${organizationId}`);
     
-    // Normalize provider name for database (e.g., 'oidc-google' -> 'oidc')
     const baseProvider = provider.startsWith('oidc-') ? 'oidc' : provider;
     
     // Create new user
