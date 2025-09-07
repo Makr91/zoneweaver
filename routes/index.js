@@ -12,6 +12,8 @@ import { loadConfig } from "../utils/config.js";
 
 const router = express.Router();
 
+// Only Routes should be defined here!
+
 // 🛡️ Rate Limiting Configuration (CodeQL Security Fix)
 // Configurable tiered approach based on endpoint sensitivity and resource usage
 
@@ -87,6 +89,8 @@ router.get("/api/auth/setup-status", standardLimiter, AuthController.checkSetupS
 router.get("/api/auth/methods", standardLimiter, AuthController.getAuthMethods);
 router.post("/api/auth/ldap/test", adminLimiter, authenticate, requireSuperAdmin, AuthController.testLdap);
 
+
+// This needs to be moved out of this file!
 /**
  * @swagger
  * /api/profile/{identifier}:
