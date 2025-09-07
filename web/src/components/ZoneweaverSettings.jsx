@@ -41,6 +41,20 @@ const ZoneweaverSettings = () => {
     testPassword: ''
   });
 
+  // OIDC Provider management state
+  const [showOidcProviderModal, setShowOidcProviderModal] = useState(false);
+  const [oidcProviderForm, setOidcProviderForm] = useState({
+    name: '',
+    displayName: '',
+    issuer: '',
+    clientId: '',
+    clientSecret: '',
+    scope: 'openid profile email',
+    responseType: 'code',
+    enabled: true
+  });
+  const [oidcProviderLoading, setOidcProviderLoading] = useState(false);
+
   // Server management state
   const [servers, setServers] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -1060,6 +1074,98 @@ const ZoneweaverSettings = () => {
     }
   };
 
+  // OIDC Provider management functions
+  const resetOidcProviderForm = () => {
+    setOidcProviderForm({
+      name: '',
+      displayName: '',
+      issuer: '',
+      clientId: '',
+      clientSecret: '',
+      scope: 'openid profile email',
+      responseType: 'code',
+      enabled: true
+    });
+  };
+
+  const handleOidcProviderFormChange = (field, value) => {
+    setOidcProviderForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const addOidcProvider = async (e) => {
+    e.preventDefault();
+    const { name, displayName, issuer, clientId, clientSecret, scope, responseType, enabled } = oidcProviderForm;
+
+    // Validation
+    if (!name || !displayName || !issuer || !clientId || !clientSecret) {
+      setMsg('Provider name, display name, issuer, client ID, and client secret are required');
+      return;
+    }
+
+    // Validate provider name format (alphanumeric and underscores only)
+    if (!/^[a-z0-9_]+$/i.test(name)) {
+      setMsg('Provider name must contain only letters, numbers, and underscores');
+      return;
+    }
+
+    // Check if provider already exists
+    const existingProviderPath = `authentication.oidc_providers.${name}`;
+    if (values[`${existingProviderPath}.enabled`] !== undefined) {
+      setMsg(`OIDC provider '${name}' already exists`);
+      return;
+    }
+
+    try {
+      setOidcProviderLoading(true);
+      setMsg('Adding OIDC provider...');
+
+      // Add provider to values
+      const providerSettings = {
+        [`${existingProviderPath}.enabled`]: enabled,
+        [`${existingProviderPath}.display_name`]: displayName,
+        [`${existingProviderPath}.issuer`]: issuer,
+        [`${existingProviderPath}.client_id`]: clientId,
+        [`${existingProviderPath}.client_secret`]: clientSecret,
+        [`${existingProviderPath}.scope`]: scope,
+        [`${existingProviderPath}.response_type`]: responseType
+      };
+
+      // Update values state
+      setValues(prev => ({
+        ...prev,
+        ...providerSettings
+      }));
+
+      // Save the settings
+      const response = await axios.put('/api/settings', {
+        ...values,
+        ...providerSettings
+      });
+
+      if (response.data.success) {
+        setMsg(`OIDC provider '${displayName}' added successfully! Refreshing settings...`);
+        setRequiresRestart(response.data.requiresRestart);
+        
+        // Reload settings to get updated configuration
+        await loadSettings();
+        
+        // Close modal and reset form
+        setShowOidcProviderModal(false);
+        resetOidcProviderForm();
+      } else {
+        setMsg('Failed to add OIDC provider: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error adding OIDC provider:', error);
+      setMsg('Error adding OIDC provider: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setOidcProviderLoading(false);
+    }
+  };
+
   // Check permissions - only super-admin can access
   if (!user || !canManageSettings(user.role)) {
     return (
@@ -1484,6 +1590,56 @@ const ZoneweaverSettings = () => {
                               )}
                             </div>
                           )}
+
+                          {/* OIDC Provider Management */}
+                          <div className='box mt-4 has-background-light'>
+                            <div className='level is-mobile mb-3'>
+                              <div className='level-left'>
+                                <h3 className='title is-6'>
+                                  <span className='icon is-small mr-2'>
+                                    <i className='fab fa-openid'></i>
+                                  </span>
+                                  OIDC Providers
+                                </h3>
+                              </div>
+                              <div className='level-right'>
+                                <button 
+                                  className='button is-primary is-small'
+                                  onClick={() => {
+                                    resetOidcProviderForm();
+                                    setShowOidcProviderModal(true);
+                                  }}
+                                  disabled={loading}
+                                >
+                                  <span className='icon is-small'>
+                                    <i className='fas fa-plus'></i>
+                                  </span>
+                                  <span>Add OIDC Provider</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            <p className='has-text-grey is-size-7 mb-3'>
+                              Manage OpenID Connect authentication providers for single sign-on integration.
+                            </p>
+
+                            {/* Show existing providers */}
+                            {Object.entries(section.subsections || {}).length > 0 ? (
+                              <div className='notification is-info is-light'>
+                                <p className='is-size-7'>
+                                  <strong>{Object.entries(section.subsections || {}).length}</strong> OIDC provider(s) configured. 
+                                  You can expand each provider section below to modify settings.
+                                </p>
+                              </div>
+                            ) : (
+                              <div className='notification is-warning is-light'>
+                                <p className='is-size-7'>
+                                  No OIDC providers configured yet. Click "Add OIDC Provider" to set up authentication 
+                                  with providers like Google, Microsoft, GitHub, etc.
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </>
                       ) : sectionName === 'Mail' ? (
                         /* Special Mail section with SMTP testing */
@@ -1825,6 +1981,288 @@ const ZoneweaverSettings = () => {
                   </table>
                 )}
               </section>
+            </div>
+          </div>
+
+          {/* Add OIDC Provider Modal */}
+          <div className={`modal ${showOidcProviderModal ? 'is-active' : ''}`}>
+            <div className="modal-background" onClick={() => setShowOidcProviderModal(false)}></div>
+            <div className="modal-card is-large">
+              <header className="modal-card-head">
+                <p className="modal-card-title">
+                  <span className="icon is-small mr-2">
+                    <i className="fab fa-openid"></i>
+                  </span>
+                  Add OIDC Provider
+                </p>
+                <button className="delete" onClick={() => setShowOidcProviderModal(false)}></button>
+              </header>
+              <form onSubmit={addOidcProvider}>
+                <section className="modal-card-body">
+                  <div className="content">
+                    <p className="has-text-grey mb-4">
+                      Configure a new OpenID Connect authentication provider. You'll need to register your application 
+                      with the provider first to get the client ID and client secret.
+                    </p>
+                  </div>
+
+                  <div className="columns is-multiline">
+                    {/* Provider Name */}
+                    <div className="column is-6">
+                      <div className="field">
+                        <label className="label">
+                          Provider Name <span className="has-text-danger">*</span>
+                        </label>
+                        <div className="control has-icons-left">
+                          <input 
+                            className="input"
+                            type="text"
+                            placeholder="e.g., mycompany, enterprise, provider1"
+                            value={oidcProviderForm.name}
+                            onChange={(e) => handleOidcProviderFormChange('name', e.target.value.toLowerCase())}
+                            disabled={oidcProviderLoading}
+                            required
+                          />
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-tag"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          Internal identifier (lowercase, letters, numbers, and underscores only)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Display Name */}
+                    <div className="column is-6">
+                      <div className="field">
+                        <label className="label">
+                          Display Name <span className="has-text-danger">*</span>
+                        </label>
+                        <div className="control has-icons-left">
+                          <input 
+                            className="input"
+                            type="text"
+                            placeholder="e.g., Sign in with Company SSO"
+                            value={oidcProviderForm.displayName}
+                            onChange={(e) => handleOidcProviderFormChange('displayName', e.target.value)}
+                            disabled={oidcProviderLoading}
+                            required
+                          />
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-eye"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          Name shown to users on the login page
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Issuer URL */}
+                    <div className="column is-full">
+                      <div className="field">
+                        <label className="label">
+                          Issuer URL <span className="has-text-danger">*</span>
+                        </label>
+                        <div className="control has-icons-left">
+                          <input 
+                            className="input"
+                            type="url"
+                            placeholder="https://your-provider.com or https://your-domain.auth0.com"
+                            value={oidcProviderForm.issuer}
+                            onChange={(e) => handleOidcProviderFormChange('issuer', e.target.value)}
+                            disabled={oidcProviderLoading}
+                            required
+                          />
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-link"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          The OIDC issuer URL (check your provider's documentation for the correct URL)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Client ID */}
+                    <div className="column is-6">
+                      <div className="field">
+                        <label className="label">
+                          Client ID <span className="has-text-danger">*</span>
+                        </label>
+                        <div className="control has-icons-left">
+                          <input 
+                            className="input"
+                            type="text"
+                            placeholder="Your OAuth client ID"
+                            value={oidcProviderForm.clientId}
+                            onChange={(e) => handleOidcProviderFormChange('clientId', e.target.value)}
+                            disabled={oidcProviderLoading}
+                            required
+                          />
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-key"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          Client ID from your OAuth application registration
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Client Secret */}
+                    <div className="column is-6">
+                      <div className="field">
+                        <label className="label">
+                          Client Secret <span className="has-text-danger">*</span>
+                        </label>
+                        <div className="control has-icons-left">
+                          <input 
+                            className="input"
+                            type="password"
+                            placeholder="Your OAuth client secret"
+                            value={oidcProviderForm.clientSecret}
+                            onChange={(e) => handleOidcProviderFormChange('clientSecret', e.target.value)}
+                            disabled={oidcProviderLoading}
+                            required
+                          />
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-lock"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          Client secret from your OAuth application registration
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Scope */}
+                    <div className="column is-6">
+                      <div className="field">
+                        <label className="label">Scope</label>
+                        <div className="control has-icons-left">
+                          <input 
+                            className="input"
+                            type="text"
+                            value={oidcProviderForm.scope}
+                            onChange={(e) => handleOidcProviderFormChange('scope', e.target.value)}
+                            disabled={oidcProviderLoading}
+                          />
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-list"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          OAuth scopes (space-separated). Default is usually sufficient.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Response Type */}
+                    <div className="column is-6">
+                      <div className="field">
+                        <label className="label">Response Type</label>
+                        <div className="control has-icons-left">
+                          <div className="select is-fullwidth">
+                            <select 
+                              value={oidcProviderForm.responseType}
+                              onChange={(e) => handleOidcProviderFormChange('responseType', e.target.value)}
+                              disabled={oidcProviderLoading}
+                            >
+                              <option value="code">Authorization Code (Recommended)</option>
+                              <option value="id_token">ID Token</option>
+                              <option value="code id_token">Code + ID Token</option>
+                            </select>
+                          </div>
+                          <span className="icon is-small is-left">
+                            <i className="fas fa-cog"></i>
+                          </span>
+                        </div>
+                        <p className="help">
+                          OAuth flow type. Use "code" for most providers.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Enabled Toggle */}
+                    <div className="column is-full">
+                      <div className="field">
+                        <label className="label">Status</label>
+                        <div className="control">
+                          <label className="switch">
+                            <input
+                              type="checkbox"
+                              checked={oidcProviderForm.enabled}
+                              onChange={(e) => handleOidcProviderFormChange('enabled', e.target.checked)}
+                              disabled={oidcProviderLoading}
+                            />
+                            <span className="check"></span>
+                            <span className="control-label">
+                              {oidcProviderForm.enabled ? 
+                                <span className="has-text-success">
+                                  <span className="icon is-small mr-1">
+                                    <i className="fas fa-check-circle"></i>
+                                  </span>
+                                  Provider enabled
+                                </span> : 
+                                <span className="has-text-danger">
+                                  <span className="icon is-small mr-1">
+                                    <i className="fas fa-times-circle"></i>
+                                  </span>
+                                  Provider disabled
+                                </span>
+                              }
+                            </span>
+                          </label>
+                        </div>
+                        <p className="help">
+                          Enable this provider for user authentication
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Configuration Help */}
+                  <div className="notification is-info is-light mt-4">
+                    <h4 className="title is-6">Configuration Instructions</h4>
+                    <div className="content">
+                      <p><strong>Setup Steps:</strong></p>
+                      <ol className="is-size-7">
+                        <li>Register your application with your OIDC provider's developer console</li>
+                        <li>Add <code>https://your-domain.com/api/auth/oidc/callback</code> as an allowed redirect URI</li>
+                        <li>Copy the Client ID and Client Secret from your provider's console</li>
+                        <li>Find your provider's issuer URL in their documentation</li>
+                        <li>Fill out the form above and test the configuration</li>
+                      </ol>
+                      <p className="mt-2 is-size-7">
+                        <strong>Note:</strong> Each OIDC provider has different setup requirements. 
+                        Consult your provider's documentation for specific configuration details.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+                <footer className="modal-card-foot">
+                  <button 
+                    type="submit" 
+                    className={`button is-primary ${oidcProviderLoading ? 'is-loading' : ''}`}
+                    disabled={oidcProviderLoading}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-plus"></i>
+                    </span>
+                    <span>Add Provider</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="button" 
+                    onClick={() => setShowOidcProviderModal(false)}
+                    disabled={oidcProviderLoading}
+                  >
+                    Cancel
+                  </button>
+                </footer>
+              </form>
             </div>
           </div>
         </div>
