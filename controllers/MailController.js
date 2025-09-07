@@ -1,7 +1,4 @@
 import nodemailer from 'nodemailer';
-import fs from 'fs';
-import path from 'path';
-import * as YAML from 'yaml';
 import { loadConfig } from '../utils/config.js';
 
 /**
@@ -71,7 +68,7 @@ class MailController {
       };
     }
 
-    return nodemailer.createTransporter(transporterConfig);
+    return nodemailer.createTransport(transporterConfig);
   }
 
   /**
