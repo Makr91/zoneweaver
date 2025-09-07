@@ -69,11 +69,11 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
-              <i className='fas fa-link'></i>
+              <i className='fas fa-network-wired'></i>
             </span>
-            Link Aggregate Details: {aggregateName}
+            Aggregate Details
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>
@@ -266,15 +266,6 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
           </div>
         </section>
         
-        <footer className='modal-card-foot'>
-          <button
-            type='button'
-            className='button is-primary'
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </footer>
       </div>
     </div>
   );

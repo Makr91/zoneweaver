@@ -116,11 +116,11 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
-              <i className='fas fa-plus'></i>
+              <i className='fas fa-plus-circle'></i>
             </span>
             Create Etherstub
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>
@@ -171,14 +171,6 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
             disabled={creating}
           >
             Create Etherstub
-          </button>
-          <button
-            type='button'
-            className='button'
-            onClick={onClose}
-            disabled={creating}
-          >
-            Cancel
           </button>
         </footer>
       </div>

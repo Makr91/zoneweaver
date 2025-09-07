@@ -5,38 +5,38 @@ Based on search results, here are ALL files containing modal references and our 
 ## **📈 CHART MODALS** (Apply Chart Modal Pattern)
 | File | Status | Notes |
 |------|--------|-------|
-| `web/src/components/Host/ExpandedChartModal.jsx` | ✅ **UPDATE** | Primary chart modal - uses custom CSS classes |
-| `web/src/components/Host/PerformanceCharts/ExpandedChartModal.jsx` | ✅ **UPDATE** | Performance charts modal |
+| `web/src/components/Host/ExpandedChartModal.jsx` | ✅ **COMPLETED** | ✅ Converted to pure Bulma with modal-close is-large |
+| `web/src/components/Host/PerformanceCharts/ExpandedChartModal.jsx` | ✅ **COMPLETED** | ✅ Standardized with Bulma modal-close pattern |
 
 ## **⚙️ CONFIGURATION MODALS** (Apply Configuration Modal Pattern)
 | File | Status | Notes |
 |------|--------|-------|
-| `web/src/components/Host/AddRepositoryModal.jsx` | ✅ **UPDATE** | Has header delete + footer Cancel button |
-| `web/src/components/Host/AggregateCreateModal.jsx` | ✅ **UPDATE** | Has header delete + footer Cancel button |
-| `web/src/components/Host/AggregateDetailsModal.jsx` | ✅ **UPDATE** | Has header delete + footer Close button |
-| `web/src/components/Host/BridgeCreateModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/ConfirmActionModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/CreateBEModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/DeviceDetailsModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/EditRepositoryModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/EtherstubCreateModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/EtherstubDetailsModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/IpAddressCreateModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/NTPConfirmActionModal.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/PackageActionModal.jsx` | ✅ **UPDATE** | Has header delete + footer Cancel button |
-| `web/src/components/Host/PackageDetailsModal.jsx` | ✅ **UPDATE** | Has footer Close button |
-| `web/src/components/Host/ServiceDetailsModal.jsx` | ✅ **UPDATE** | Has footer Close button |
-| `web/src/components/Host/ServicePropertiesModal.jsx` | ✅ **UPDATE** | Has footer Close button |
-| `web/src/components/Host/SystemUpdatesSection.jsx` | ✅ **UPDATE** | Has modal structure |
-| `web/src/components/Host/VnicCreateModal.jsx` | ✅ **UPDATE** | Has header delete + footer Cancel button |
-| `web/src/components/Host/VnicDetailsModal.jsx` | ✅ **UPDATE** | Has header delete + footer Close button |
-| `web/src/components/Accounts.jsx` | ✅ **UPDATE** | Multiple modals with various buttons |
-| `web/src/components/ApiKeysTab.jsx` | ✅ **UPDATE** | Has header delete + footer Close button |
-| `web/src/components/Dashboard.jsx` | ✅ **UPDATE** | Health status modal |
-| `web/src/components/Navbar.jsx` | ✅ **UPDATE** | Confirmation modal |
-| `web/src/components/Profile.jsx` | ✅ **UPDATE** | Delete account modal |
-| `web/src/components/ZoneweaverAPISettings.jsx` | ✅ **UPDATE** | Backup modal |
-| `web/src/components/ZoneweaverSettings.jsx` | ✅ **UPDATE** | Multiple modals (backup, OIDC) |
+| `web/src/components/Host/AddRepositoryModal.jsx` | 🔄 **NEXT** | Has header delete + footer Cancel button |
+| `web/src/components/Host/AggregateCreateModal.jsx` | 🔄 **NEXT** | Has header delete + footer Cancel button |
+| `web/src/components/Host/AggregateDetailsModal.jsx` | 🔄 **NEXT** | Has header delete + footer Close button |
+| `web/src/components/Host/BridgeCreateModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/ConfirmActionModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/CreateBEModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/DeviceDetailsModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/EditRepositoryModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/EtherstubCreateModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/EtherstubDetailsModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/IpAddressCreateModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/NTPConfirmActionModal.jsx` | 🔄 **NEXT** | Has modal structure |
+| `web/src/components/Host/PackageActionModal.jsx` | ✅ **COMPLETED** | ✅ Fixed delete button, removed footer Cancel |
+| `web/src/components/Host/PackageDetailsModal.jsx` | ✅ **COMPLETED** | ✅ Standardized close pattern, removed footer close |
+| `web/src/components/Host/ServiceDetailsModal.jsx` | ✅ **COMPLETED** | ✅ Standardized close pattern, removed footer close |
+| `web/src/components/Host/ServicePropertiesModal.jsx` | ✅ **COMPLETED** | ✅ Fixed delete button, removed footer close |
+| `web/src/components/Host/SystemUpdatesSection.jsx` | ✅ **COMPLETED** | ✅ Fixed delete button, removed footer Cancel |
+| `web/src/components/Host/VnicCreateModal.jsx` | ✅ **COMPLETED** | ✅ Fixed header delete button, removed footer Cancel |
+| `web/src/components/Host/VnicDetailsModal.jsx` | ✅ **COMPLETED** | ✅ Standardized header delete button, removed footer close |
+| `web/src/components/Accounts.jsx` | 🔄 **NEXT** | Multiple modals with various buttons |
+| `web/src/components/ApiKeysTab.jsx` | ✅ **COMPLETED** | ✅ Removed footer close button |
+| `web/src/components/Dashboard.jsx` | 🔄 **NEXT** | Health status modal |
+| `web/src/components/Navbar.jsx` | 🔄 **NEXT** | Confirmation modal |
+| `web/src/components/Profile.jsx` | 🔄 **NEXT** | Delete account modal |
+| `web/src/components/ZoneweaverAPISettings.jsx` | 🔄 **NEXT** | Backup modal |
+| `web/src/components/ZoneweaverSettings.jsx` | 🔄 **NEXT** | Multiple modals (backup, OIDC) |
 
 ## **🖥️ CONSOLE MODALS** (❌ DO NOT TOUCH - Per User Request)
 | File | Status | Notes |

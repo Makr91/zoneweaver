@@ -154,9 +154,9 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
             <span className='icon mr-2'>
               <i className='fas fa-edit'></i>
             </span>
-            Edit Repository: {repository.name}
+            Edit Repository
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <form onSubmit={handleSubmit}>
@@ -508,14 +508,6 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
                 <i className='fas fa-save'></i>
               </span>
               <span>Update Repository</span>
-            </button>
-            <button 
-              type='button'
-              className='button' 
-              onClick={onClose}
-              disabled={loading}
-            >
-              Cancel
             </button>
           </footer>
         </form>

@@ -28,11 +28,11 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
-              <i className='fas fa-ethernet'></i>
+              <i className='fas fa-network-wired'></i>
             </span>
-            Etherstub Details: {etherstubName}
+            Etherstub Details
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>
@@ -191,15 +191,6 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
           </div>
         </section>
         
-        <footer className='modal-card-foot'>
-          <button
-            type='button'
-            className='button is-primary'
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </footer>
       </div>
     </div>
   );

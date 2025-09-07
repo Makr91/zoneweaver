@@ -89,7 +89,7 @@ const ConfirmActionModal = ({ bootEnvironment, action, onClose, onConfirm }) => 
             </span>
             {actionDetails.title}
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>
@@ -266,13 +266,6 @@ const ConfirmActionModal = ({ bootEnvironment, action, onClose, onConfirm }) => 
               <i className={`fas ${actionDetails.icon}`}></i>
             </span>
             <span>{loading ? 'Processing...' : actionDetails.title}</span>
-          </button>
-          <button 
-            className='button' 
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancel
           </button>
         </footer>
       </div>
