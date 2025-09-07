@@ -64,9 +64,8 @@ $beige-lighter: #eff0eb;
   $navbar-dropdown-boxed-shadow: 0,
   $navbar-bottom-box-shadow-size: 0,
   $panel-shadow: 0,
-  $button-shadow: none,
-  $button-hover-shadow: none,  
-  $button-active-shadow: none,
+  $button-outer-shadow-a: 0,
+  $button-disabled-shadow: none,
 );
 
 // Import theme utilities for dark mode implementation
