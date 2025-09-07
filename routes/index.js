@@ -279,6 +279,7 @@ router.put("/api/zapi/:protocol/:hostname/:port/system/syslog/config", adminLimi
 router.get("/api/zapi/:protocol/:hostname/:port/system/syslog/facilities", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 router.post("/api/zapi/:protocol/:hostname/:port/system/syslog/validate", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 router.post("/api/zapi/:protocol/:hostname/:port/system/syslog/reload", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/syslog/switch", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 
 // Settings endpoints - Protected with admin rate limiting
 router.get("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getSettings);

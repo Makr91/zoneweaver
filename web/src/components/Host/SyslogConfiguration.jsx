@@ -268,6 +268,55 @@ const SyslogConfiguration = ({ server }) => {
     }
   };
 
+  const getServiceType = (config) => {
+    if (config?.service_fmri?.includes('rsyslog')) {
+      return { name: 'rsyslog', display: 'rsyslog (Modern)', icon: 'fa-cogs' };
+    } else if (config?.service_fmri?.includes('system-log')) {
+      return { name: 'syslog', display: 'syslog (Traditional)', icon: 'fa-file-alt' };
+    }
+    return { name: 'unknown', display: 'Unknown', icon: 'fa-question' };
+  };
+
+  const switchService = async (targetService) => {
+    if (!server) return;
+
+    if (!window.confirm(`Are you sure you want to switch to ${targetService}? This will restart the logging service.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage(`Switching to ${targetService}...`);
+      setMessageType('is-info');
+
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        'system/syslog/switch',
+        'POST',
+        { target: targetService }
+      );
+
+      if (result.success) {
+        setMessage(`Successfully switched to ${targetService}! Logging service has been restarted.`);
+        setMessageType('is-success');
+        
+        // Reload configuration to show new service
+        await loadSyslogConfig(false);
+      } else {
+        setMessage(`Failed to switch service: ${result.message}`);
+        setMessageType('is-danger');
+      }
+    } catch (error) {
+      console.error('Error switching syslog service:', error);
+      setMessage(`Failed to switch service: ${error.response?.data?.message || error.message}`);
+      setMessageType('is-danger');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Enhanced rule processing for display - handles m4 macros
   const processRuleDisplay = (rule) => {
     const fullLine = rule.full_line || '';
@@ -437,10 +486,13 @@ const SyslogConfiguration = ({ server }) => {
           <div className='columns'>
             <div className='column'>
               <div className='field'>
-                <label className='label is-small'>Configuration File</label>
+                <label className='label is-small'>Service Type</label>
                 <p className='control'>
-                  <span className='tag is-info'>
-                    {config.config_file || '/etc/syslog.conf'}
+                  <span className='tag is-primary'>
+                    <span className='icon is-small'>
+                      <i className={`fas ${getServiceType(config).icon}`}></i>
+                    </span>
+                    <span>{getServiceType(config).display}</span>
                   </span>
                 </p>
               </div>
@@ -460,22 +512,63 @@ const SyslogConfiguration = ({ server }) => {
             </div>
             <div className='column'>
               <div className='field'>
-                <label className='label is-small'>Active Rules</label>
+                <label className='label is-small'>Configuration File</label>
                 <p className='control'>
-                  <span className='tag is-primary'>
-                    {config.parsed_rules?.length || 0} rules
+                  <span className='tag is-info is-small'>
+                    {config.config_file || '/etc/syslog.conf'}
                   </span>
                 </p>
               </div>
             </div>
             <div className='column'>
               <div className='field'>
-                <label className='label is-small'>Last Modified</label>
+                <label className='label is-small'>Active Rules</label>
                 <p className='control'>
-                  <span className='tag is-light is-small'>
-                    {new Date(config.timestamp).toLocaleString()}
+                  <span className='tag is-light'>
+                    {config.parsed_rules?.length || 0} rules
                   </span>
                 </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Service Switching Controls */}
+          <div className='level is-mobile mt-4'>
+            <div className='level-left'>
+              <div className='level-item'>
+                <p className='is-size-7 has-text-grey'>
+                  Switch between traditional syslog and modern rsyslog service
+                </p>
+              </div>
+            </div>
+            <div className='level-right'>
+              <div className='level-item'>
+                <div className='field has-addons'>
+                  <div className='control'>
+                    <button 
+                      className={`button is-small ${getServiceType(config).name === 'syslog' ? 'is-primary' : ''}`}
+                      onClick={() => switchService('syslog')}
+                      disabled={loading || getServiceType(config).name === 'syslog'}
+                    >
+                      <span className='icon is-small'>
+                        <i className='fas fa-file-alt'></i>
+                      </span>
+                      <span>Traditional Syslog</span>
+                    </button>
+                  </div>
+                  <div className='control'>
+                    <button 
+                      className={`button is-small ${getServiceType(config).name === 'rsyslog' ? 'is-primary' : ''}`}
+                      onClick={() => switchService('rsyslog')}
+                      disabled={loading || getServiceType(config).name === 'rsyslog'}
+                    >
+                      <span className='icon is-small'>
+                        <i className='fas fa-cogs'></i>
+                      </span>
+                      <span>Modern Rsyslog</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1031,7 +1124,7 @@ kern.err			@loghost
         <h4 className='title is-6 mb-3'>
           <span className='icon-text'>
             <span className='icon'><i className='fas fa-question-circle'></i></span>
-            <span>Syslog Configuration Help</span>
+            <span>{getServiceType(config).display} Configuration Help</span>
           </span>
         </h4>
         
@@ -1044,18 +1137,47 @@ kern.err			@loghost
                 <li><code>mail.* /var/log/maillog</code> - All mail logs to maillog</li>
                 <li><code>kern.err @loghost</code> - Kernel errors to remote host</li>
                 <li><code>*.emerg *</code> - Emergency messages to all users</li>
+                {getServiceType(config).name === 'syslog' && (
+                  <li><code>ifdef(`LOGHOST', action1, action2)</code> - Conditional m4 macro</li>
+                )}
               </ul>
             </div>
             <div className='column'>
-              <p><strong>Syntax Rules:</strong></p>
+              <p><strong>Service Information:</strong></p>
               <ul>
-                <li>Use TAB to separate selector from action</li>
-                <li>Facility: kern, mail, auth, daemon, *, local0-7</li>
-                <li>Level: emerg, alert, crit, err, warning, notice, info, debug</li>
-                <li>Actions: /path/file, @hostname, username, *</li>
+                <li><strong>Service:</strong> {getServiceType(config).display}</li>
+                <li><strong>Config File:</strong> {config?.config_file || 'Unknown'}</li>
+                <li><strong>FMRI:</strong> {config?.service_fmri || 'Unknown'}</li>
+                {getServiceType(config).name === 'rsyslog' && (
+                  <li><strong>Features:</strong> Advanced filtering, modules, templates</li>
+                )}
+                {getServiceType(config).name === 'syslog' && (
+                  <li><strong>Features:</strong> m4 macros, conditional processing</li>
+                )}
               </ul>
             </div>
           </div>
+          
+          {/* Service-specific notes */}
+          {getServiceType(config).name === 'rsyslog' && (
+            <div className='notification is-info is-light mt-3'>
+              <p className='is-size-7'>
+                <strong>rsyslog Notes:</strong> Modern syslog implementation with advanced features like 
+                modules, templates, and enhanced filtering. Supports both traditional syslog syntax and 
+                extended rsyslog directives.
+              </p>
+            </div>
+          )}
+          
+          {getServiceType(config).name === 'syslog' && (
+            <div className='notification is-info is-light mt-3'>
+              <p className='is-size-7'>
+                <strong>Traditional Syslog Notes:</strong> Classic syslog implementation with m4 macro 
+                preprocessing. Supports conditional statements using ifdef() and backtick syntax for 
+                complex rule logic.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
