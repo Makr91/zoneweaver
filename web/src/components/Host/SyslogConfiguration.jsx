@@ -317,11 +317,66 @@ const SyslogConfiguration = ({ server }) => {
     }
   };
 
-  // Enhanced rule processing for display - handles m4 macros
+  // Enhanced rule processing for display - handles both syslog and rsyslog syntax
   const processRuleDisplay = (rule) => {
     const fullLine = rule.full_line || '';
     
-    // Handle m4 macro constructs
+    // Handle rsyslog-specific directives
+    if (fullLine.includes('module(load=')) {
+      const moduleMatch = fullLine.match(/module\(load="([^"]+)"/);
+      const moduleName = moduleMatch ? moduleMatch[1] : 'unknown';
+      return {
+        isValid: true,
+        selector: '(rsyslog module)',
+        actionType: 'rsyslog_module',
+        target: moduleName,
+        isComplex: false,
+        hasConditionals: false,
+        isRsyslogDirective: true
+      };
+    }
+
+    if (fullLine.includes('global(')) {
+      return {
+        isValid: true,
+        selector: '(rsyslog global)',
+        actionType: 'rsyslog_global',
+        target: 'Global configuration',
+        isComplex: false,
+        hasConditionals: false,
+        isRsyslogDirective: true
+      };
+    }
+
+    if (fullLine.includes('include(')) {
+      const includeMatch = fullLine.match(/include\(file="([^"]+)"/);
+      const includePath = includeMatch ? includeMatch[1] : 'unknown';
+      return {
+        isValid: true,
+        selector: '(rsyslog include)',
+        actionType: 'rsyslog_include',
+        target: includePath,
+        isComplex: false,
+        hasConditionals: false,
+        isRsyslogDirective: true
+      };
+    }
+
+    if (fullLine.includes('input(type=')) {
+      const inputMatch = fullLine.match(/input\(type="([^"]+)"/);
+      const inputType = inputMatch ? inputMatch[1] : 'unknown';
+      return {
+        isValid: true,
+        selector: '(rsyslog input)',
+        actionType: 'rsyslog_input',
+        target: inputType,
+        isComplex: false,
+        hasConditionals: false,
+        isRsyslogDirective: true
+      };
+    }
+
+    // Handle traditional syslog m4 macro constructs
     if (fullLine.trim() === ')' || fullLine.trim().startsWith(')')) {
       return {
         isValid: true,
@@ -358,7 +413,7 @@ const SyslogConfiguration = ({ server }) => {
       };
     }
 
-    // Check for m4 conditional statements
+    // Check for m4 conditional statements (traditional syslog)
     const hasConditionals = fullLine.includes('ifdef(') || 
                            fullLine.includes('`') || 
                            rule.action?.includes('ifdef(');
@@ -370,9 +425,37 @@ const SyslogConfiguration = ({ server }) => {
     let actionType = rule.parsed?.action_type || 'unknown';
     let target = rule.parsed?.action_target || rule.action || '';
 
-    // Special handling for m4 ifdef constructs
+    // Handle rsyslog output module syntax
+    if (target.startsWith(':omusrmsg:')) {
+      const username = target.replace(':omusrmsg:', '');
+      return {
+        isValid: true,
+        selector: rule.selector || '',
+        actionType: username === '*' ? 'all_users' : 'user',
+        target: username,
+        isComplex: isMultiSelector,
+        hasConditionals: false,
+        isRsyslogDirective: true,
+        originalRule: rule
+      };
+    }
+
+    // Handle rsyslog async file syntax (dash prefix)
+    if (target.startsWith('-/')) {
+      return {
+        isValid: true,
+        selector: rule.selector || '',
+        actionType: 'file_async',
+        target: target.substring(1), // Remove dash for display
+        isComplex: isMultiSelector,
+        hasConditionals: false,
+        isRsyslogDirective: true,
+        originalRule: rule
+      };
+    }
+
+    // Special handling for m4 ifdef constructs (traditional syslog)
     if (fullLine.includes('ifdef(') && target.includes(',')) {
-      // This is an ifdef with conditional logic: ifdef('CONDITION', true_action, false_action)
       const ifdefMatch = target.match(/ifdef\(`([^']+)', ([^,]+), ([^)]+)\)/);
       if (ifdefMatch) {
         const [, condition, trueAction, falseAction] = ifdefMatch;
@@ -402,7 +485,6 @@ const SyslogConfiguration = ({ server }) => {
         actionType = 'all_users';
       } else if (target.includes('`') && target.includes(',')) {
         actionType = 'multiple_users';
-        // Clean up backticks for display
         target = target.replace(/`/g, '').replace(/'/g, '');
       } else if (target.includes(',')) {
         actionType = 'multiple_users';
@@ -429,6 +511,8 @@ const SyslogConfiguration = ({ server }) => {
     switch (actionType) {
       case 'file':
         return { class: `is-info ${baseClass}`, icon: 'fa-file', text: 'File' };
+      case 'file_async':
+        return { class: `is-info`, icon: 'fa-file', text: 'Async File' };
       case 'remote_host':
         return { class: `is-warning ${baseClass}`, icon: 'fa-server', text: 'Remote' };
       case 'all_users':
@@ -445,6 +529,14 @@ const SyslogConfiguration = ({ server }) => {
         return { class: 'is-info', icon: 'fa-play', text: 'Block Start' };
       case 'm4_block_end':
         return { class: 'is-info', icon: 'fa-stop', text: 'Block End' };
+      case 'rsyslog_module':
+        return { class: 'is-success', icon: 'fa-puzzle-piece', text: 'Module' };
+      case 'rsyslog_global':
+        return { class: 'is-success', icon: 'fa-cogs', text: 'Global' };
+      case 'rsyslog_include':
+        return { class: 'is-success', icon: 'fa-folder-open', text: 'Include' };
+      case 'rsyslog_input':
+        return { class: 'is-success', icon: 'fa-sign-in-alt', text: 'Input' };
       case 'malformed':
         return { class: 'is-grey', icon: 'fa-question', text: 'Malformed' };
       default:
