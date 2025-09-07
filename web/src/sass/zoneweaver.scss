@@ -51,21 +51,14 @@ $beige-lighter: #eff0eb;
   $dropdown-content-z: 4,
   $control-radius: none,
   $card-shadow: none,
-  $card-header-shadow: none,
   $body-overflow-y: auto,
-  $input-shadow: none,
   $button-focus-box-shadow-size: 0,
-  $button-focus-box-shadow-color: transparent,
   $input-focus-shadow-size: 0,
-  $box-link-hover-shadow: 0,
-  $box-link-active-shadow: 0,
   $navbar-box-shadow-size: 0,
-  $control-focus-shadow-l: 0,
-  $navbar-dropdown-boxed-shadow: 0,
   $navbar-bottom-box-shadow-size: 0,
   $panel-shadow: 0,
-  $button-outer-shadow-a: 0,
-  $button-disabled-shadow: none,
+  $card-header-shadow: none,
+  $input-shadow: none
 );
 
 // Import theme utilities for dark mode implementation
@@ -133,7 +126,8 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Light theme
   --zw-border-light: #dbdbdb;       // Component borders
   --zw-controls-bg: #363636;        // VNC controls background
-
+  --bulma-button-outer-shadow-a: 0;
+  --bulma-shadow: none;
 }
 
 [data-theme="dark"] {
@@ -158,6 +152,8 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
+  --bulma-button-outer-shadow-a: 0;
+  --bulma-shadow: none;
 }
 
 // Need a size smaller than 7
