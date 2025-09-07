@@ -255,6 +255,24 @@ router.put("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/config", adminLim
 router.post("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/validate", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 router.post("/api/zapi/:protocol/:hostname/:port/system/zfs/arc/reset", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 
+// Fault Management endpoints - Protected with admin rate limiting
+router.get("/api/zapi/:protocol/:hostname/:port/system/fault-management/faults", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.get("/api/zapi/:protocol/:hostname/:port/system/fault-management/faults/:uuid", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.get("/api/zapi/:protocol/:hostname/:port/system/fault-management/config", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/fault-management/actions/acquit", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/fault-management/actions/repaired", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/fault-management/actions/replaced", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+
+// System Logs endpoints - Protected with admin rate limiting
+router.get("/api/zapi/:protocol/:hostname/:port/system/logs/list", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.get("/api/zapi/:protocol/:hostname/:port/system/logs/:logname", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.get("/api/zapi/:protocol/:hostname/:port/system/logs/fault-manager/:type", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+
+// Log Streaming endpoints - Protected with admin rate limiting
+router.post("/api/zapi/:protocol/:hostname/:port/system/logs/:logname/stream/start", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.delete("/api/zapi/:protocol/:hostname/:port/system/logs/stream/:sessionId/stop", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.get("/api/zapi/:protocol/:hostname/:port/system/logs/stream/sessions", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+
 // Settings endpoints - Protected with admin rate limiting
 router.get("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getSettings);
 router.put("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.updateSettings);

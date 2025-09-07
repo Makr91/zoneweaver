@@ -143,6 +143,8 @@ const Dashboard = () => {
           result.data.freemem &&
           result.data.freemem / result.data.totalmem < 0.1;
         const requiresReboot = result.healthData?.reboot_required;
+        const hasFaults = result.healthData?.faultStatus?.hasFaults;
+        const faultCount = result.healthData?.faultStatus?.faultCount || 0;
 
         let issueCount = 0;
         if (hasHighLoad) issueCount++;
@@ -150,6 +152,9 @@ const Dashboard = () => {
         if (requiresReboot) {
           issueCount++;
           summary.serversRequiringReboot++;
+        }
+        if (hasFaults) {
+          issueCount += faultCount; // Add individual faults as separate issues
         }
 
         if (issueCount > 0) {
@@ -807,6 +812,15 @@ const Dashboard = () => {
                           : `${ageMinutes}m ago`;
                         issues.push(
                           `Reboot required (${reasons}) - Changed ${timeAgo}`
+                        );
+                      }
+
+                      // Add fault information if present
+                      if (serverResult.healthData?.faultStatus?.hasFaults) {
+                        const faultStatus = serverResult.healthData.faultStatus;
+                        const faultSummary = faultStatus.severityLevels?.join(', ') || 'Unknown';
+                        issues.push(
+                          `${faultStatus.faultCount} system fault${faultStatus.faultCount === 1 ? '' : 's'} (${faultSummary})`
                         );
                       }
 

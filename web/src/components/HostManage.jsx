@@ -9,6 +9,7 @@ import PackageManagement from "./Host/PackageManagement";
 import BootEnvironmentManagement from "./Host/BootEnvironmentManagement";
 import StorageManagement from "./Host/StorageManagement";
 import TimeNTPManagement from "./Host/TimeNTPManagement";
+import FaultManagement from "./Host/FaultManagement";
 
 const HostManage = () => {
   const [activeTab, setActiveTab] = useState('services');
@@ -123,8 +124,8 @@ const HostManage = () => {
                   <span>Time & NTP</span>
                 </a>
               </li>
-              <li className='is-disabled'>
-                <a>
+              <li className={activeTab === 'fault-management' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('fault-management')}>
                   <span className='icon is-small'><i className='fas fa-exclamation-triangle'></i></span>
                   <span>Fault Management</span>
                 </a>
@@ -220,6 +221,21 @@ const HostManage = () => {
                 </div>
                 
                 <TimeNTPManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Fault Management Tab */}
+            {activeTab === 'fault-management' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Fault Management</h2>
+                  <p className='content'>
+                    Monitor and manage system faults on <strong>{currentServer.hostname}</strong>. 
+                    View active faults, review system logs, manage fault resolution, and monitor system health.
+                  </p>
+                </div>
+                
+                <FaultManagement server={currentServer} />
               </div>
             )}
           </div>
