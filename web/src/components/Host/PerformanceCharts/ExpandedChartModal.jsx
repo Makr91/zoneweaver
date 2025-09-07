@@ -1,6 +1,6 @@
 import Highcharts from '../../Highcharts';
 import { HighchartsReact } from 'highcharts-react-official';
-import { ContentModal } from '../common';
+import { ContentModal } from '../../common';
 
 const ExpandedChartModal = ({ 
   expandedChart, 
