@@ -349,30 +349,16 @@ async function determineUserOrganization(email, profile) {
           console.log(`🗺️ Found domain mapping: ${domain} -> ${orgCode}`);
           mappedOrgCode = orgCode; // Store the found mapping
           
-          let org = await OrganizationModel.findByOrganizationCode(orgCode);
+          // Construct organization name from code and domain
+          const orgName = `${orgCode} - ${domain.toUpperCase()}`;
+          console.log(`🔍 Looking for organization by name: ${orgName}`);
+          
+          let org = await OrganizationModel.findByName(orgName);
           if (org) {
-            console.log(`✅ Using mapped organization: ${org.name} (${org.id})`);
+            console.log(`✅ Using existing mapped organization: ${org.name} (${org.id})`);
             return org.id;
           } else {
-            console.log(`❌ Organization with code ${orgCode} not found in database`);
-            
-            // Check if there's an existing organization for this domain that just doesn't have a code yet
-            const existingOrg = await OrganizationModel.findOne({
-              where: {
-                [db.Sequelize.Op.or]: [
-                  { name: { [db.Sequelize.Op.like]: `%${domain}%` } },
-                  { name: { [db.Sequelize.Op.like]: `%${domain.toUpperCase()}%` } }
-                ]
-              }
-            });
-            
-            if (existingOrg && !existingOrg.organization_code) {
-              console.log(`🔄 Found existing organization without code: ${existingOrg.name}, assigning code ${orgCode}`);
-              await existingOrg.update({ organization_code: orgCode });
-              console.log(`✅ Assigned code ${orgCode} to existing organization: ${existingOrg.name} (${existingOrg.id})`);
-              return existingOrg.id;
-            }
-            
+            console.log(`❌ Organization "${orgName}" not found, will create new one`);
             // No existing org found, but we have a domain mapping - break to use create_org with mapped code
             break;
           }
@@ -396,18 +382,20 @@ async function determineUserOrganization(email, profile) {
       console.log(`🏗️ Creating new organization for domain: ${domain}`);
       // Use mapped organization code if found, otherwise generate random code
       const orgCode = mappedOrgCode || generateOrgCode();
+      const orgName = `${orgCode} - ${domain.toUpperCase()}`;
+      
       if (mappedOrgCode) {
         console.log(`🗺️ Using configured organization code: ${orgCode}`);
       } else {
         console.log(`🎲 Using generated organization code: ${orgCode}`);
       }
+      
       const newOrg = await OrganizationModel.create({
-        name: `${orgCode} - ${domain.toUpperCase()}`,
+        name: orgName,
         description: `Auto-created organization for domain ${domain}`,
-        organization_code: orgCode,
         is_active: true
       });
-      console.log(`✅ Created organization: ${orgCode} - ${domain.toUpperCase()} (${newOrg.id})`);
+      console.log(`✅ Created organization: ${orgName} (${newOrg.id})`);
       return newOrg.id;
       
     case 'deny_access':

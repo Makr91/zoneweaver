@@ -142,33 +142,6 @@ const Login = () => {
                     <p>{msg}</p>
                   </div>
                 )}
-                {/* Authentication Method Selector - Show only if multiple methods available */}
-                {!methodsLoading && authMethods.length > 1 && (
-                  <div className='field mt-5'>
-                    <label className='label'>Authentication Method</label>
-                    <div className='control'>
-                      <div className='select is-fullwidth'>
-                        <select
-                          value={authMethod}
-                          onChange={(e) => handleAuthMethodChange(e.target.value)}
-                          disabled={loading}
-                        >
-                          {authMethods.map((method) => (
-                            <option key={method.id} value={method.id}>
-                              {method.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <p className='help is-size-7 has-text-grey'>
-                      {authMethod === 'ldap' ? 
-                        'Use your directory credentials' : 
-                        'Use your local account credentials'
-                      }
-                    </p>
-                  </div>
-                )}
                 <div className='field mt-5'>
                   <label className='label'>
                     {authMethod === 'ldap' ? 'Username' : 'Email or Username'}
@@ -201,6 +174,33 @@ const Login = () => {
                     />
                   </div>
                 </div>
+                {/* Authentication Method Selector - Show only if multiple methods available */}
+                {!methodsLoading && authMethods.length > 1 && (
+                  <div className='field mt-5'>
+                    <label className='label'>Authentication Method</label>
+                    <div className='control'>
+                      <div className='select is-fullwidth'>
+                        <select
+                          value={authMethod}
+                          onChange={(e) => handleAuthMethodChange(e.target.value)}
+                          disabled={loading}
+                        >
+                          {authMethods.map((method) => (
+                            <option key={method.id} value={method.id}>
+                              {method.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <p className='help is-size-7 has-text-grey'>
+                      {authMethod === 'ldap' ? 
+                        'Use your directory credentials' : 
+                        'Use your local account credentials'
+                      }
+                    </p>
+                  </div>
+                )}
                 <div className='field mt-5'>
                   <button 
                     type='submit'
