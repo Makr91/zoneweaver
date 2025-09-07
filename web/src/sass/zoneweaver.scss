@@ -168,6 +168,10 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
+  --button-outer-shadow-h: 0;
+  --button-outer-shadow-s: 0%;
+  --button-outer-shadow-l: 0%;
+  --button-outer-shadow-a: 0;
 }
 
 // Need a size smaller than 7
