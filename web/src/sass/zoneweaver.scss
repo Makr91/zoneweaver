@@ -46,10 +46,17 @@ $beige-lighter: #eff0eb;
   $light: hsl(221, 14%, 35%),
   $grey-lighter: hsl(221, 14%, 40%),
   $button-border-width: 0px,
+  $box-shadow: none,
   $dropdown-content-shadow: none,
   $dropdown-content-z: 4,
   $control-radius: none,
+  $card-shadow: none,
   $body-overflow-y: auto,
+  $button-focus-box-shadow-size: 0,
+  $input-focus-shadow-size: 0,
+  $navbar-box-shadow-size: 0,
+  $navbar-bottom-box-shadow-size: 0,
+  $panel-shadow: 0
 );
 
 // Import theme utilities for dark mode implementation
