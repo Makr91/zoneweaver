@@ -41,7 +41,7 @@ let sequelizeConfig = {
 
 if (dialect === 'sqlite') {
   // SQLite configuration - use storage from config or fallback
-  sequelizeConfig.storage = dbConfig.storage?.value || dbConfig.path || './data/zoneweaver.db';
+  sequelizeConfig.storage = dbConfig.storage?.value || dbConfig.path ;
   
   // Ensure the directory exists for SQLite database file
   const storageDir = path.dirname(sequelizeConfig.storage);
