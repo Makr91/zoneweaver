@@ -162,26 +162,6 @@ $beige-lighter: #eff0eb;
   @include zw-dark-theme;
 }
 
-// Final shadow override with maximum specificity - must come after all theme setup
-:root {
-  --bulma-button-outer-shadow-a: 0 !important;
-  --bulma-button-outer-shadow-h: 0 !important;
-  --bulma-button-outer-shadow-s: 0% !important;
-  --bulma-button-outer-shadow-l: 0% !important;
-  --bulma-shadow: none !important;
-}
-
-[data-theme="light"],
-[data-theme="dark"],
-.theme-light,
-.theme-dark {
-  --bulma-button-outer-shadow-a: 0 !important;
-  --bulma-button-outer-shadow-h: 0 !important;
-  --bulma-button-outer-shadow-s: 0% !important;
-  --bulma-button-outer-shadow-l: 0% !important;
-  --bulma-shadow: none !important;
-}
-
 .dropdown-content {
   border-width: var(--bulma-control-border-width);
 }
