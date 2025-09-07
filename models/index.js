@@ -40,8 +40,8 @@ let sequelizeConfig = {
 };
 
 if (dialect === 'sqlite') {
-  // SQLite configuration - use storage from config or fallback
-  sequelizeConfig.storage = dbConfig.storage?.value || dbConfig.path ;
+  // SQLite configuration - use storage from config
+  sequelizeConfig.storage = dbConfig.storage?.value || config.database?.value || dbConfig.path;
   
   // Ensure the directory exists for SQLite database file
   const storageDir = path.dirname(sequelizeConfig.storage);
@@ -49,6 +49,8 @@ if (dialect === 'sqlite') {
     fs.mkdirSync(storageDir, { recursive: true, mode: 0o755 });
     console.log(`Created SQLite database directory: ${storageDir}`);
   }
+  
+  console.log(`📁 Using SQLite database: ${sequelizeConfig.storage}`);
 } else {
   // MySQL/PostgreSQL/MariaDB configuration
   sequelizeConfig.host = dbConfig.host?.value || dbConfig.host || 'localhost';
