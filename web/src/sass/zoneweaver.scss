@@ -186,6 +186,10 @@ $beige-lighter: #eff0eb;
   border-width: var(--bulma-control-border-width);
 }
 
+.button {
+  box-shadow: none;
+}
+
 .dropdown.is-center .dropdown-menu {
   left: 0;
   right: 0;
