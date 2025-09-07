@@ -159,8 +159,7 @@ const ExpandedChartModal = ({
           )}
 
           {/* Expanded Chart */}
-          <div className="zw-expanded-chart-container">
-            {expandedChartType === 'storage-io' && (
+          {expandedChartType === 'storage-io' && (
               <HighchartsReact 
                 highcharts={Highcharts} 
                 options={{
@@ -285,7 +284,6 @@ const ExpandedChartModal = ({
                 }}
               />
             )}
-          </div>
     </ContentModal>
   );
 };

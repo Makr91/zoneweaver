@@ -475,14 +475,6 @@ $beige-lighter: #eff0eb;
   padding: 5px !important;
 }
 
-// Complex chart container styling
-.zw-expanded-chart-container {
-  border-radius: 8px !important;
-  background-color: var(--zw-chart-background) !important;
-  padding: 10px !important;
-  border: 1px solid var(--zw-chart-border) !important;
-  height: calc(90vh - 180px) !important;
-}
 
 // Network topology edge label styling
 .zw-edge-label {

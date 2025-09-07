@@ -41,7 +41,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
                     type: 'spline',
                     animation: Highcharts.svg,
                     marginRight: 10,
-                    height: 750,
+                    height: 'calc(90vh - 200px)',
                     backgroundColor: '#1e2a3a',
                     style: {
                         fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
@@ -150,7 +150,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
                     type: 'spline',
                     animation: Highcharts.svg,
                     marginRight: 10,
-                    height: 750,
+                    height: 'calc(90vh - 200px)',
                     backgroundColor: '#1e2a3a',
                     style: {
                         fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
@@ -270,7 +270,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
                         easing: 'easeOutQuart'
                     },
                     marginRight: 10,
-                    height: 750,
+                    height: 'calc(90vh - 200px)',
                     backgroundColor: '#1e2a3a',
                     style: {
                         fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
@@ -364,7 +364,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
             return {
                 chart: {
                     type: 'spline',
-                    height: 750,
+                    height: 'calc(90vh - 200px)',
                     backgroundColor: '#1e2a3a',
                     animation: {
                         duration: 1000,
@@ -463,7 +463,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
             return {
                 chart: {
                     type: 'spline',
-                    height: 750,
+                    height: 'calc(90vh - 200px)',
                     backgroundColor: '#1e2a3a',
                     animation: {
                         duration: 1000,
@@ -556,7 +556,7 @@ const ExpandedChartModal = ({ chartId, type, close, chartData, poolChartData, ar
             return {
                 chart: {
                     type: 'spline',
-                    height: 750,
+                    height: 'calc(90vh - 200px)',
                     backgroundColor: '#1e2a3a',
                     animation: {
                         duration: 1000,
