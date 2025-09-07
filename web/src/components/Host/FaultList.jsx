@@ -24,7 +24,14 @@ const FaultList = ({ server }) => {
   // Load faults on component mount and when filters change
   useEffect(() => {
     loadFaults();
-  }, [server, filters.all, filters.limit, filters.force_refresh]);
+  }, [server, filters.all, filters.limit]);
+
+  // Handle force refresh separately to avoid dependency loop
+  useEffect(() => {
+    if (filters.force_refresh) {
+      loadFaults();
+    }
+  }, [filters.force_refresh]);
 
   const loadFaults = async () => {
     if (!server || !makeZoneweaverAPIRequest) return;
@@ -64,6 +71,11 @@ const FaultList = ({ server }) => {
       setSummary(null);
     } finally {
       setLoading(false);
+      
+      // Reset force_refresh flag after request completes
+      if (filters.force_refresh) {
+        setFilters(prev => ({ ...prev, force_refresh: false }));
+      }
     }
   };
 
