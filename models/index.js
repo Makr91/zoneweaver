@@ -41,7 +41,7 @@ let sequelizeConfig = {
 
 if (dialect === 'sqlite') {
   // SQLite configuration - use storage from config
-  sequelizeConfig.storage = dbConfig.storage?.value || config.database?.value || dbConfig.path;
+  sequelizeConfig.storage = dbConfig.storage ;
   
   // Ensure the directory exists for SQLite database file
   const storageDir = path.dirname(sequelizeConfig.storage);
