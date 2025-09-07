@@ -649,21 +649,11 @@ class AuthController {
         });
       }
 
-      // Parse OIDC providers from configuration
-      let oidcProviders = [];
-      try {
-        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
-        oidcProviders = JSON.parse(oidcProvidersConfig);
-      } catch (error) {
-        console.error('Failed to parse OIDC providers configuration:', error.message);
-        return res.status(500).json({
-          success: false,
-          message: 'OIDC configuration error'
-        });
-      }
-
+      // Get OIDC providers from nested configuration structure
+      const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+      
       // Find the specific provider
-      const providerConfig = oidcProviders.find(p => p.name === provider);
+      const providerConfig = oidcProvidersConfig[provider];
       
       if (!providerConfig) {
         return res.status(400).json({
@@ -672,7 +662,7 @@ class AuthController {
         });
       }
       
-      if (!providerConfig.enabled) {
+      if (!providerConfig.enabled?.value) {
         return res.status(400).json({
           success: false,
           message: `OIDC provider '${provider}' is not enabled`
@@ -752,24 +742,17 @@ class AuthController {
         return res.redirect('/ui/login?error=no_provider');
       }
 
-      // Parse OIDC providers from configuration
-      let oidcProviders = [];
-      try {
-        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
-        oidcProviders = JSON.parse(oidcProvidersConfig);
-      } catch (error) {
-        console.error('Failed to parse OIDC providers configuration:', error.message);
-        return res.redirect('/ui/login?error=oidc_config_error');
-      }
-
+      // Get OIDC providers from nested configuration structure
+      const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+      
       // Find the specific provider
-      const providerConfig = oidcProviders.find(p => p.name === provider);
+      const providerConfig = oidcProvidersConfig[provider];
       
       if (!providerConfig) {
         return res.redirect(`/ui/login?error=provider_not_found&provider=${provider}`);
       }
       
-      if (!providerConfig.enabled) {
+      if (!providerConfig.enabled?.value) {
         return res.redirect(`/ui/login?error=provider_disabled&provider=${provider}`);
       }
 
@@ -1987,22 +1970,19 @@ class AuthController {
 
       // OIDC providers
       try {
-        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
-        const oidcProviders = JSON.parse(oidcProvidersConfig);
+        const oidcProvidersConfig = config.authentication?.oidc_providers || {};
         
-        if (Array.isArray(oidcProviders)) {
-          oidcProviders.forEach(provider => {
-            if (provider.enabled && provider.name && provider.display_name) {
-              methods.push({
-                id: `oidc-${provider.name}`,
-                name: provider.display_name,
-                enabled: true
-              });
-            }
-          });
-        }
+        Object.entries(oidcProvidersConfig).forEach(([providerName, providerConfig]) => {
+          if (providerConfig.enabled?.value && providerConfig.display_name?.value) {
+            methods.push({
+              id: `oidc-${providerName}`,
+              name: providerConfig.display_name.value,
+              enabled: true
+            });
+          }
+        });
       } catch (error) {
-        console.error('Error parsing OIDC providers for auth methods:', error.message);
+        console.error('Error processing OIDC providers for auth methods:', error.message);
       }
 
       res.json({

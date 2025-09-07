@@ -139,89 +139,91 @@ async function setupOidcProviders() {
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  // Parse OIDC providers from configuration
-  let oidcProviders = [];
-  try {
-    const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
-    oidcProviders = JSON.parse(oidcProvidersConfig);
-  } catch (error) {
-    console.error('❌ Failed to parse OIDC providers configuration:', error.message);
-    console.log('📋 OIDC providers configuration value:', config.authentication?.oidc_providers?.value);
-    return;
-  }
-
-  if (!Array.isArray(oidcProviders) || oidcProviders.length === 0) {
+  // Get OIDC providers from nested configuration structure
+  const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+  
+  if (!oidcProvidersConfig || Object.keys(oidcProvidersConfig).length === 0) {
     console.log('🔧 No OIDC providers configured');
     return;
   }
 
   console.log('🔧 Setting up OIDC authentication providers...');
-  console.log('📋 Found', oidcProviders.length, 'OIDC provider(s) in configuration');
+  console.log('📋 Found', Object.keys(oidcProvidersConfig).length, 'OIDC provider(s) in configuration');
 
-  for (const provider of oidcProviders) {
-    // Skip disabled providers
-    if (!provider.enabled) {
-      console.log(`⏭️ Skipping disabled OIDC provider: ${provider.name}`);
-      continue;
-    }
-
-    // Validate required fields
-    if (!provider.name || !provider.issuer || !provider.client_id || !provider.client_secret) {
-      console.error(`❌ Invalid OIDC provider configuration for ${provider.name || 'unnamed'}: missing required fields`);
-      continue;
-    }
-
+  for (const [providerName, providerConfig] of Object.entries(oidcProvidersConfig)) {
     try {
-      console.log(`🔧 Setting up OIDC provider: ${provider.name}`);
-      console.log(`📋 ${provider.name} Configuration:`);
-      console.log(`  Display Name: ${provider.display_name}`);
-      console.log(`  Issuer: ${provider.issuer}`);
-      console.log(`  Client ID: ${provider.client_id}`);
-      console.log(`  Scope: ${provider.scope}`);
-      console.log(`  Response Type: ${provider.response_type || 'code'}`);
+      // Extract values from metadata structure
+      const enabled = providerConfig.enabled?.value;
+      const displayName = providerConfig.display_name?.value;
+      const issuer = providerConfig.issuer?.value;
+      const clientId = providerConfig.client_id?.value;
+      const clientSecret = providerConfig.client_secret?.value;
+      const scope = providerConfig.scope?.value || 'openid profile email';
+      const responseType = providerConfig.response_type?.value || 'code';
+      const prompt = providerConfig.prompt?.value || '';
+
+      // Skip disabled providers
+      if (!enabled) {
+        console.log(`⏭️ Skipping disabled OIDC provider: ${providerName}`);
+        continue;
+      }
+
+      // Validate required fields
+      if (!issuer || !clientId || !clientSecret) {
+        console.error(`❌ Invalid OIDC provider configuration for ${providerName}: missing required fields (issuer, client_id, client_secret)`);
+        continue;
+      }
+
+      console.log(`🔧 Setting up OIDC provider: ${providerName}`);
+      console.log(`📋 ${providerName} Configuration:`);
+      console.log(`  Display Name: ${displayName}`);
+      console.log(`  Issuer: ${issuer}`);
+      console.log(`  Client ID: ${clientId}`);
+      console.log(`  Scope: ${scope}`);
+      console.log(`  Response Type: ${responseType}`);
 
       // Use discovery for automatic configuration (best practice)
       const oidcConfig = await client.discovery(
-        new URL(provider.issuer),
-        provider.client_id,
-        provider.client_secret
+        new URL(issuer),
+        clientId,
+        clientSecret
       );
 
-      const strategyName = `oidc-${provider.name}`;
+      const strategyName = `oidc-${providerName}`;
       passport.use(strategyName, new OidcStrategy({
         name: strategyName,
         config: oidcConfig,
-        scope: provider.scope || 'openid profile email',
-        callbackURL: `${config.frontend.frontend_url.value}/api/auth/oidc/${provider.name}/callback`
+        scope: scope,
+        callbackURL: `${config.frontend.frontend_url.value}/api/auth/oidc/${providerName}/callback`
       }, async (tokens, verified) => {
         try {
-          console.log(`🔐 OIDC authentication successful for provider: ${provider.name}`);
+          console.log(`🔐 OIDC authentication successful for provider: ${providerName}`);
           
           // Extract user info from tokens
           const userinfo = tokens.claims();
-          console.log(`📄 ${provider.name} User Claims:`);
+          console.log(`📄 ${providerName} User Claims:`);
           console.log('  Subject:', userinfo.sub);
           console.log('  Email:', userinfo.email);
           console.log('  Name:', userinfo.name || userinfo.given_name + ' ' + userinfo.family_name);
           console.log('  Profile Keys:', Object.keys(userinfo));
           
           // Handle external user authentication and provisioning with provider info
-          const result = await handleExternalUser(`oidc-${provider.name}`, userinfo);
-          console.log(`✅ OIDC user processing complete for ${provider.name}:`, result.username);
+          const result = await handleExternalUser(`oidc-${providerName}`, userinfo);
+          console.log(`✅ OIDC user processing complete for ${providerName}:`, result.username);
           
           return verified(null, result);
           
         } catch (error) {
-          console.error(`❌ OIDC Strategy error for ${provider.name} during user processing:`, error.message);
+          console.error(`❌ OIDC Strategy error for ${providerName} during user processing:`, error.message);
           console.error('❌ Error stack:', error.stack);
           return verified(error, false);
         }
       }));
 
-      console.log(`✅ OIDC provider "${provider.name}" configured successfully as strategy "${strategyName}"`);
+      console.log(`✅ OIDC provider "${providerName}" configured successfully as strategy "${strategyName}"`);
       
     } catch (error) {
-      console.error(`❌ Failed to setup OIDC provider "${provider.name}":`, error.message);
+      console.error(`❌ Failed to setup OIDC provider "${providerName}":`, error.message);
       continue; // Continue with other providers even if one fails
     }
   }

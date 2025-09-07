@@ -688,28 +688,8 @@ authentication:
     show_when: [true]
     order: 8
   
-  # OIDC Multiple Providers Configuration
-  oidc_providers:
-    type: textarea
-    value: |
-      [
-        {
-          "name": "google",
-          "display_name": "Sign in with Google",
-          "enabled": false,
-          "issuer": "https://accounts.google.com",
-          "client_id": "",
-          "client_secret": "",
-          "scope": "openid profile email",
-          "response_type": "code",
-          "prompt": ""
-        }
-      ]
-    description: "JSON array of OIDC providers. Add any OpenID Connect compatible provider (Google, Microsoft, Okta, Auth0, Keycloak, etc.). Each provider must have: name (unique identifier), display_name (shown on login button), enabled (true/false), issuer (provider URL), client_id, client_secret, scope (space-separated), response_type ('code' recommended), prompt (optional parameter)."
-    section: "Authentication" 
-    subsection: "OIDC Providers"
-    required: false
-    order: 1
+  # OIDC Providers - Dynamic Configuration
+  oidc_providers: {}
   
   # External Provider Settings
   external_domain_mapping_enabled:
