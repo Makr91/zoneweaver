@@ -17,7 +17,13 @@ const SyslogConfiguration = ({ server }) => {
     facility: '*',
     level: 'info',
     action_type: 'file',
-    action_target: '/var/log/custom.log'
+    action_target: '/var/log/custom.log',
+    // Remote host specific options
+    remote_protocol: 'udp', // udp or tcp
+    remote_port: '',
+    // User specific options
+    multiple_users: false,
+    user_list: ''
   });
   
   const { makeZoneweaverAPIRequest } = useServers();
@@ -262,6 +268,85 @@ const SyslogConfiguration = ({ server }) => {
     }
   };
 
+  // Enhanced rule processing for display
+  const processRuleDisplay = (rule) => {
+    // Handle empty or malformed rules
+    if (!rule.selector && !rule.action) {
+      return {
+        isValid: false,
+        selector: '(empty)',
+        actionType: 'malformed',
+        target: '(incomplete)',
+        isComplex: false,
+        hasConditionals: false
+      };
+    }
+
+    // Check for conditional statements
+    const hasConditionals = rule.full_line?.includes('ifdef(') || 
+                           rule.full_line?.includes('`') || 
+                           rule.action?.includes('ifdef(');
+
+    // Check for multi-selectors
+    const isMultiSelector = rule.selector?.includes(';') || rule.selector?.includes(',');
+
+    // Better action type detection
+    let actionType = rule.parsed?.action_type || 'unknown';
+    let target = rule.parsed?.action_target || rule.action || '';
+
+    // Improved action type detection for complex rules
+    if (actionType === 'unknown' || actionType === 'specific_users') {
+      if (target.includes('/')) {
+        actionType = 'file';
+      } else if (target.includes('@')) {
+        actionType = 'remote_host';
+        target = target.replace('@', '');
+      } else if (target === '*') {
+        actionType = 'all_users';
+      } else if (target.includes('`') || target.includes('ifdef')) {
+        actionType = 'conditional';
+      } else if (target.includes(',')) {
+        actionType = 'multiple_users';
+      } else {
+        actionType = 'user';
+      }
+    }
+
+    return {
+      isValid: true,
+      selector: rule.selector || '',
+      actionType,
+      target,
+      isComplex: isMultiSelector || hasConditionals,
+      hasConditionals,
+      isMultiSelector,
+      originalRule: rule
+    };
+  };
+
+  const getActionTypeDisplay = (actionType, isComplex) => {
+    const baseClass = isComplex ? 'is-warning' : '';
+    
+    switch (actionType) {
+      case 'file':
+        return { class: `is-info ${baseClass}`, icon: 'fa-file', text: 'File' };
+      case 'remote_host':
+        return { class: `is-warning ${baseClass}`, icon: 'fa-server', text: 'Remote' };
+      case 'all_users':
+        return { class: `is-danger ${baseClass}`, icon: 'fa-users', text: 'All Users' };
+      case 'user':
+        return { class: `is-primary ${baseClass}`, icon: 'fa-user', text: 'User' };
+      case 'multiple_users':
+        return { class: `is-primary ${baseClass}`, icon: 'fa-users', text: 'Multi-User' };
+      case 'conditional':
+        return { class: 'is-warning', icon: 'fa-code', text: 'Conditional' };
+      case 'malformed':
+        return { class: 'is-grey', icon: 'fa-question', text: 'Malformed' };
+      default:
+        return { class: 'is-light', icon: 'fa-question', text: actionType || 'Unknown' };
+    }
+  };
+
   if (loading && !config) {
     return (
       <div className='box'>
@@ -388,37 +473,81 @@ const SyslogConfiguration = ({ server }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {config.parsed_rules.map((rule, index) => (
-                    <tr key={index}>
-                      <td>
-                        <span className='tag is-light is-small'>
-                          {rule.line_number}
-                        </span>
-                      </td>
-                      <td>
-                        <span className='is-family-monospace has-text-weight-semibold'>
-                          {rule.selector}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`tag is-small ${
-                          rule.parsed?.action_type === 'file' ? 'is-info' :
-                          rule.parsed?.action_type === 'remote_host' ? 'is-warning' :
-                          rule.parsed?.action_type === 'all_users' ? 'is-danger' : 'is-light'
-                        }`}>
-                          {rule.parsed?.action_type || 'unknown'}
-                        </span>
-                      </td>
-                      <td>
-                        <span className='is-family-monospace is-size-7'>
-                          {rule.parsed?.action_target || rule.action}
-                        </span>
-                      </td>
-                      <td>
-                        <code className='is-size-7'>{rule.full_line}</code>
-                      </td>
-                    </tr>
-                  ))}
+                  {config.parsed_rules.map((rule, index) => {
+                    const processed = processRuleDisplay(rule);
+                    const actionDisplay = getActionTypeDisplay(processed.actionType, processed.isComplex);
+                    
+                    return (
+                      <tr key={index} className={!processed.isValid ? 'has-background-light' : ''}>
+                        <td>
+                          <span className='tag is-light is-small'>
+                            {rule.line_number || '?'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className='is-flex is-align-items-center'>
+                            <span className={`is-family-monospace has-text-weight-semibold ${
+                              processed.isMultiSelector ? 'has-text-info' : ''
+                            }`}>
+                              {processed.selector || '(empty)'}
+                            </span>
+                            {processed.isMultiSelector && (
+                              <span className='tag is-info is-small ml-2'>
+                                <span className='icon is-small'>
+                                  <i className='fas fa-sitemap'></i>
+                                </span>
+                                <span>Multi</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`tag is-small ${actionDisplay.class}`}>
+                            <span className='icon is-small'>
+                              <i className={`fas ${actionDisplay.icon}`}></i>
+                            </span>
+                            <span>{actionDisplay.text}</span>
+                          </span>
+                          {processed.hasConditionals && (
+                            <span className='tag is-warning is-small ml-1'>
+                              <span className='icon is-small'>
+                                <i className='fas fa-code'></i>
+                              </span>
+                              <span>Conditional</span>
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`is-family-monospace is-size-7 ${
+                            processed.hasConditionals ? 'has-text-warning' : ''
+                          }`}>
+                            {processed.target.length > 50 ? 
+                              processed.target.substring(0, 50) + '...' : 
+                              processed.target}
+                          </span>
+                          {processed.target.length > 50 && (
+                            <span className='is-size-7 has-text-grey ml-1' title={processed.target}>
+                              (truncated)
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <code className={`is-size-7 ${
+                            processed.hasConditionals ? 'has-text-warning' : ''
+                          }`}>
+                            {rule.full_line?.length > 80 ? 
+                              rule.full_line.substring(0, 80) + '...' : 
+                              (rule.full_line || '(incomplete rule)')}
+                          </code>
+                          {rule.full_line?.length > 80 && (
+                            <span className='is-size-7 has-text-grey ml-1' title={rule.full_line}>
+                              (truncated)
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -579,7 +708,9 @@ kern.err			@loghost
                         <option key="kern" value="kern">kern - Kernel messages</option>,
                         <option key="mail" value="mail">mail - Mail system</option>,
                         <option key="auth" value="auth">auth - Authentication</option>,
-                        <option key="daemon" value="daemon">daemon - System daemons</option>
+                        <option key="daemon" value="daemon">daemon - System daemons</option>,
+                        <option key="local0" value="local0">local0 - Local use 0</option>,
+                        <option key="local1" value="local1">local1 - Local use 1</option>
                       ]}
                     </select>
                   </div>
@@ -616,45 +747,198 @@ kern.err			@loghost
               </div>
             </div>
 
-            <div className='column is-3'>
+            <div className='column is-6'>
               <div className='field'>
                 <label className='label'>Action Type</label>
                 <div className='control'>
                   <div className='select is-fullwidth'>
                     <select 
                       value={ruleBuilder.action_type}
-                      onChange={(e) => handleRuleBuilderChange('action_type', e.target.value)}
+                      onChange={(e) => {
+                        handleRuleBuilderChange('action_type', e.target.value);
+                        // Reset target when action type changes
+                        const defaultTargets = {
+                          file: '/var/log/custom.log',
+                          remote_host: 'loghost',
+                          all_users: '*',
+                          user: 'root'
+                        };
+                        handleRuleBuilderChange('action_target', defaultTargets[e.target.value] || '');
+                      }}
                     >
                       <option value="file">Log to File</option>
-                      <option value="remote_host">Remote Host</option>
-                      <option value="all_users">All Users (*)</option>
-                      <option value="user">Specific User</option>
+                      <option value="remote_host">Send to Remote Host</option>
+                      <option value="all_users">Broadcast to All Users (*)</option>
+                      <option value="user">Send to Specific User(s)</option>
                     </select>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className='column is-3'>
-              <div className='field'>
-                <label className='label'>Target</label>
-                <div className='control'>
-                  <input 
-                    className='input'
-                    type='text'
-                    value={ruleBuilder.action_target}
-                    onChange={(e) => handleRuleBuilderChange('action_target', e.target.value)}
-                    placeholder={
-                      ruleBuilder.action_type === 'file' ? '/var/log/custom.log' :
-                      ruleBuilder.action_type === 'remote_host' ? 'loghost' :
-                      ruleBuilder.action_type === 'user' ? 'username' :
-                      '*'
-                    }
-                  />
-                </div>
+                <p className='help is-size-7'>
+                  {ruleBuilder.action_type === 'file' && 'Log messages to a local file'}
+                  {ruleBuilder.action_type === 'remote_host' && 'Forward messages to a remote syslog server'}
+                  {ruleBuilder.action_type === 'all_users' && 'Send messages to all logged-in users (emergency only)'}
+                  {ruleBuilder.action_type === 'user' && 'Send messages to specific user(s)'}
+                </p>
               </div>
             </div>
           </div>
+
+          {/* Conditional Configuration Fields Based on Action Type */}
+          {ruleBuilder.action_type === 'file' && (
+            <div className='columns'>
+              <div className='column'>
+                <div className='field'>
+                  <label className='label'>Log File Path</label>
+                  <div className='control has-icons-left'>
+                    <input 
+                      className='input'
+                      type='text'
+                      value={ruleBuilder.action_target}
+                      onChange={(e) => handleRuleBuilderChange('action_target', e.target.value)}
+                      placeholder='/var/log/custom.log'
+                    />
+                    <span className='icon is-small is-left'>
+                      <i className='fas fa-file'></i>
+                    </span>
+                  </div>
+                  <p className='help is-size-7'>
+                    Full path to the log file. Directory must exist or be writable by syslog daemon.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {ruleBuilder.action_type === 'remote_host' && (
+            <div className='columns'>
+              <div className='column is-4'>
+                <div className='field'>
+                  <label className='label'>Remote Hostname</label>
+                  <div className='control has-icons-left'>
+                    <input 
+                      className='input'
+                      type='text'
+                      value={ruleBuilder.action_target}
+                      onChange={(e) => handleRuleBuilderChange('action_target', e.target.value)}
+                      placeholder='loghost.company.com'
+                    />
+                    <span className='icon is-small is-left'>
+                      <i className='fas fa-server'></i>
+                    </span>
+                  </div>
+                  <p className='help is-size-7'>
+                    Hostname or IP address of remote syslog server.
+                  </p>
+                </div>
+              </div>
+              <div className='column is-4'>
+                <div className='field'>
+                  <label className='label'>Protocol</label>
+                  <div className='control'>
+                    <div className='select is-fullwidth'>
+                      <select 
+                        value={ruleBuilder.remote_protocol}
+                        onChange={(e) => handleRuleBuilderChange('remote_protocol', e.target.value)}
+                      >
+                        <option value="udp">UDP (Standard)</option>
+                        <option value="tcp">TCP (Reliable)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p className='help is-size-7'>
+                    UDP is standard syslog protocol. TCP provides reliable delivery.
+                  </p>
+                </div>
+              </div>
+              <div className='column is-4'>
+                <div className='field'>
+                  <label className='label'>Port (Optional)</label>
+                  <div className='control has-icons-left'>
+                    <input 
+                      className='input'
+                      type='number'
+                      min='1'
+                      max='65535'
+                      value={ruleBuilder.remote_port}
+                      onChange={(e) => handleRuleBuilderChange('remote_port', e.target.value)}
+                      placeholder='514 (default)'
+                    />
+                    <span className='icon is-small is-left'>
+                      <i className='fas fa-hashtag'></i>
+                    </span>
+                  </div>
+                  <p className='help is-size-7'>
+                    Leave empty for default port 514. Use custom port if required.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {ruleBuilder.action_type === 'user' && (
+            <div className='columns'>
+              <div className='column is-8'>
+                <div className='field'>
+                  <label className='label'>Username(s)</label>
+                  <div className='control has-icons-left'>
+                    <input 
+                      className='input'
+                      type='text'
+                      value={ruleBuilder.action_target}
+                      onChange={(e) => handleRuleBuilderChange('action_target', e.target.value)}
+                      placeholder='root,operator'
+                    />
+                    <span className='icon is-small is-left'>
+                      <i className='fas fa-user'></i>
+                    </span>
+                  </div>
+                  <p className='help is-size-7'>
+                    Single user (e.g., "root") or multiple users separated by commas (e.g., "root,operator").
+                  </p>
+                </div>
+              </div>
+              <div className='column is-4'>
+                <div className='field'>
+                  <label className='label'>Multiple Users</label>
+                  <div className='control'>
+                    <label className='switch is-medium'>
+                      <input 
+                        type='checkbox'
+                        checked={ruleBuilder.multiple_users}
+                        onChange={(e) => handleRuleBuilderChange('multiple_users', e.target.checked)}
+                      />
+                      <span className='check'></span>
+                      <span className='control-label'>Multiple</span>
+                    </label>
+                  </div>
+                  <p className='help is-size-7'>
+                    Enable to send to multiple users (comma-separated).
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {ruleBuilder.action_type === 'all_users' && (
+            <div className='notification is-warning is-light'>
+              <div className='level is-mobile'>
+                <div className='level-left'>
+                  <div>
+                    <p className='has-text-weight-semibold'>Emergency Broadcast Mode</p>
+                    <p className='is-size-7'>
+                      This will send messages to all logged-in users' terminals. 
+                      Use only for emergency situations as it interrupts all users.
+                    </p>
+                  </div>
+                </div>
+                <div className='level-right'>
+                  <span className='icon has-text-warning'>
+                    <i className='fas fa-exclamation-triangle fa-2x'></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className='field'>
             <div className='control'>
