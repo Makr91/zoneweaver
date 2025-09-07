@@ -127,7 +127,7 @@ $beige-lighter: #eff0eb;
   --zw-border-light: #dbdbdb;       // Component borders
   --zw-controls-bg: #363636;        // VNC controls background
   --bulma-button-outer-shadow-a: 0;
-  --bulma-shadow: none;
+  --bulma-shadow: none !important;
 }
 
 [data-theme="dark"] {
