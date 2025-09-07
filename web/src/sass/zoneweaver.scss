@@ -56,52 +56,31 @@ $beige-lighter: #eff0eb;
   $input-focus-shadow-size: 0,
   $navbar-box-shadow-size: 0,
   $navbar-bottom-box-shadow-size: 0,
-  $panel-shadow: 0,
-  $card-header-shadow: none,
-  $input-shadow: none
+  $panel-shadow: 0
 );
 
 // Import theme utilities for dark mode implementation
 @use "bulma/sass/utilities/css-variables" as cv;
 @use "bulma/sass/themes/light";
 @use "bulma/sass/themes/dark";
-@use "bulma/sass/themes/setup";
 
 // Import Bulma Switch Control using @use
 @use "bulma-switch-control";
 
-// Implement Bulma's theme system
-// System theme (follows OS preference)
-@include cv.system-theme($name: "dark") {
-  @include dark.dark-theme;
-}
+// Create shadow-disabling mixins following official Bulma pattern
+@mixin zw-light-theme {
+  // All shadow overrides for light theme
+  --bulma-button-outer-shadow-a: 0;
+  --bulma-button-outer-shadow-h: 0;
+  --bulma-button-outer-shadow-s: 0%;
+  --bulma-button-outer-shadow-l: 0%;
+  --bulma-shadow: none;
+  --bulma-card-header-shadow: none;
+  --bulma-input-shadow: none;
+  --bulma-navbar-dropdown-boxed-shadow: none;
+  --bulma-pagination-shadow-inset: none;
 
-@include cv.system-theme($name: "light") {
-  @include light.light-theme;
-}
-
-@include cv.bulma-theme($name: "dark") {
-  @include dark.dark-theme;
-  @include setup.setup-theme;
-}
-
-@include cv.bulma-theme($name: "light") {
-  @include light.light-theme;
-  @include setup.setup-theme;
-}
-
-.dropdown-content {
-  border-width: var(--bulma-control-border-width);
-}
-
-.dropdown.is-center .dropdown-menu {
-  left: 0;
-  right: 0;
-}
-
-// Custom color variables for enhanced theming support
-:root {
-  // Text colors - Light theme defaults
+  // Your custom theme colors - Light theme
   --zw-text-placeholder: #6c757d; // Medium gray for placeholders
   --zw-loading-spinner: #6c757d;  // Medium gray for loading spinners
   
@@ -126,12 +105,21 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Light theme
   --zw-border-light: #dbdbdb;       // Component borders
   --zw-controls-bg: #363636;        // VNC controls background
-  --bulma-button-outer-shadow-a: 0;
-  --bulma-shadow: none !important;
 }
 
-[data-theme="dark"] {
-  // Text colors for dark theme
+@mixin zw-dark-theme {
+  // All shadow overrides for dark theme
+  --bulma-button-outer-shadow-a: 0;
+  --bulma-button-outer-shadow-h: 0;
+  --bulma-button-outer-shadow-s: 0%;
+  --bulma-button-outer-shadow-l: 0%;
+  --bulma-shadow: none;
+  --bulma-card-header-shadow: none;
+  --bulma-input-shadow: none;
+  --bulma-navbar-dropdown-boxed-shadow: none;
+  --bulma-pagination-shadow-inset: none;
+
+  // Your custom theme colors - Dark theme
   --zw-text-placeholder: #ecf0f1; // Light gray for dark backgrounds
   --zw-loading-spinner: #95a5a6;  // Muted gray for dark theme spinners
   
@@ -139,7 +127,7 @@ $beige-lighter: #eff0eb;
   --zw-chart-background: #1e2a3a; // Dark blue-gray background
   --zw-chart-border: #37474f;     // Darker border for contrast
   
-  // Network topology node colors - Dark theme (same colors work well in dark mode)
+  // Network topology node colors - Dark theme
   --zw-zone-active: #f14668;        // Zone running state
   --zw-zone-inactive: #6b7280;      // Zone stopped state  
   --zw-nic-active: #48c78e;         // NIC up state
@@ -152,8 +140,36 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
-  --bulma-button-outer-shadow-a: 0;
-  --bulma-shadow: none;
+}
+
+// Implement Bulma's theme system - simplified like official Bulma site
+@include cv.system-theme($name: "light") {
+  @include light.light-theme;
+  @include zw-light-theme;
+}
+
+@include cv.system-theme($name: "dark") {
+  @include dark.dark-theme;
+  @include zw-dark-theme;
+}
+
+@include cv.bulma-theme($name: "light") {
+  @include light.light-theme;
+  @include zw-light-theme;
+}
+
+@include cv.bulma-theme($name: "dark") {
+  @include dark.dark-theme;
+  @include zw-dark-theme;
+}
+
+.dropdown-content {
+  border-width: var(--bulma-control-border-width);
+}
+
+.dropdown.is-center .dropdown-menu {
+  left: 0;
+  right: 0;
 }
 
 // Need a size smaller than 7
