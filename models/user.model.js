@@ -61,7 +61,7 @@ export default (sequelize, Sequelize) => {
       defaultValue: 'local',
       field: 'auth_provider',
       validate: {
-        isIn: [['local', 'ldap', 'oidc', 'oauth2', 'saml', 'github', 'google', 'microsoft']]
+        isIn: [['local', 'ldap', 'oidc', 'oauth2', 'saml']]
       },
       comment: 'Authentication provider: local, ldap, oidc, etc.'
     },

@@ -305,11 +305,21 @@ const ZoneweaverSettings = () => {
 
           // Special handling for object-type fields
           if (value.type === 'object' && value.value && typeof value.value === 'object') {
-            // For object-type fields, don't add them as regular fields
-            // Instead, recurse into their value to process nested fields
+            // Create the parent subsection but don't add the object as a field
+            if (subsection) {
+              if (!organizedSections[section].subsections[subsection]) {
+                organizedSections[section].subsections[subsection] = {
+                  title: subsection,
+                  fields: []
+                };
+              }
+              // Don't add the object field itself, just ensure the subsection exists
+            }
+            
+            // Recurse into their value to process nested fields
             processObject(value.value, fullPath, section);
           } else {
-            // Regular field processing
+            // Regular field processing for non-object fields
             if (subsection) {
               // Organize into subsections
               if (!organizedSections[section].subsections[subsection]) {
@@ -486,7 +496,13 @@ const ZoneweaverSettings = () => {
   };
 
   // Check if subsection should be shown based on conditional logic of its fields
-  const shouldShowSubsection = (subsection) => {
+  const shouldShowSubsection = (subsection, subsectionName) => {
+    // Special case: Always show "OIDC Providers" subsection even if it has no fields
+    // (it contains management UI, not just form fields)
+    if (subsectionName === 'OIDC Providers') {
+      return true;
+    }
+    
     // If any field in the subsection should be shown, show the subsection
     return subsection.fields.some(field => shouldShowField(field));
   };
@@ -1869,7 +1885,7 @@ const ZoneweaverSettings = () => {
                   {/* Subsections with Collapsible Cards */}
                   {Object.entries(section.subsections || {}).map(([subsectionName, subsection]) => {
                     // Skip subsection if none of its fields should be shown
-                    if (!shouldShowSubsection(subsection)) {
+                    if (!shouldShowSubsection(subsection, subsectionName)) {
                       return null;
                     }
                     

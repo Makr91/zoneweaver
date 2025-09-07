@@ -30,7 +30,7 @@ export default function(sequelize) {
       comment: 'Authentication provider: ldap, oidc, oauth2, etc.',
       validate: {
         isIn: {
-          args: [['ldap', 'oidc', 'oauth2', 'saml', 'github', 'google', 'microsoft']],
+          args: [['ldap', 'oidc', 'oauth2', 'saml']],
           msg: 'Provider must be a valid authentication provider type'
         }
       }
