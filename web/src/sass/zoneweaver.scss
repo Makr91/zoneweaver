@@ -52,10 +52,6 @@ $beige-lighter: #eff0eb;
   $control-radius: none,
   $card-shadow: none,
   $body-overflow-y: auto,
-  $button-outer-shadow-h: 0,
-  $button-outer-shadow-s: 0%,
-  $button-outer-shadow-l: 0%,
-  $button-outer-shadow-a: 0,
   $input-shadow: none
 //  $family-primary: '"Nunito", sans-serif',
 //  $grey-dark: $brown,
@@ -144,6 +140,10 @@ $beige-lighter: #eff0eb;
   --bulma-navbar-shadow: none !important;
   --bulma-pagination-shadow: none !important;
   --bulma-table-head-shadow: none !important;
+  --button-outer-shadow-h: 0;
+  --button-outer-shadow-s: 0%;
+  --button-outer-shadow-l: 0%;
+  --button-outer-shadow-a: 0;
 }
 
 [data-theme="dark"] {
