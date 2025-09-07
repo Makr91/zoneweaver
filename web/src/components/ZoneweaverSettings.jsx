@@ -1390,57 +1390,6 @@ const ZoneweaverSettings = () => {
             {Object.entries(sections).map(([sectionName, section]) => 
               activeTab === sectionName && (
                 <div key={sectionName}>
-                  {/* Special Authentication Section - Always Show OIDC Management */}
-                  {sectionName === 'Authentication' && (
-                    <div className='box mt-4 has-background-light'>
-                      <div className='level is-mobile mb-3'>
-                        <div className='level-left'>
-                          <h3 className='title is-6'>
-                            <span className='icon is-small mr-2'>
-                              <i className='fab fa-openid'></i>
-                            </span>
-                            OIDC Providers
-                          </h3>
-                        </div>
-                        <div className='level-right'>
-                          <button 
-                            className='button is-primary is-small'
-                            onClick={() => {
-                              resetOidcProviderForm();
-                              setShowOidcProviderModal(true);
-                            }}
-                            disabled={loading}
-                          >
-                            <span className='icon is-small'>
-                              <i className='fas fa-plus'></i>
-                            </span>
-                            <span>Add OIDC Provider</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <p className='has-text-grey is-size-7 mb-3'>
-                        Manage OpenID Connect authentication providers for single sign-on integration.
-                      </p>
-
-                      {/* Show existing providers */}
-                      {Object.entries(section.subsections || {}).filter(([name]) => name.toLowerCase().includes('oidc')).length > 0 ? (
-                        <div className='notification is-info is-light'>
-                          <p className='is-size-7'>
-                            <strong>{Object.entries(section.subsections || {}).filter(([name]) => name.toLowerCase().includes('oidc')).length}</strong> OIDC provider(s) configured. 
-                            You can expand each provider section below to modify settings.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className='notification is-warning is-light'>
-                          <p className='is-size-7'>
-                            No OIDC providers configured yet. Click "Add OIDC Provider" to set up authentication 
-                            with providers like Google, Microsoft, GitHub, etc.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   {/* Main Section Fields */}
                   {section.fields.length > 0 && (
@@ -1917,6 +1866,103 @@ const ZoneweaverSettings = () => {
                     }
                     
                     const isCollapsed = isSubsectionCollapsed(sectionName, subsectionName);
+                    
+                    // Special handling for OIDC Providers subsection
+                    if (subsectionName === 'OIDC Providers') {
+                      return (
+                        <div key={subsectionName} className='box mb-4'>
+                          <div 
+                            className='is-clickable pb-2'
+                            onClick={() => toggleSubsection(sectionName, subsectionName)}
+                          >
+                            <h3 className='title is-6 mb-2'>
+                              <span className='icon is-small mr-2'>
+                                <i className={`fas ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'}`}></i>
+                              </span>
+                              <span className='icon is-small mr-2'>
+                                <i className='fab fa-openid'></i>
+                              </span>
+                              {subsection.title}
+                              <span className='tag is-light is-small ml-2'>
+                                {Object.entries(section.subsections || {}).filter(([name]) => 
+                                  name.toLowerCase().includes('oidc') && name !== 'OIDC Providers'
+                                ).length} provider{Object.entries(section.subsections || {}).filter(([name]) => 
+                                  name.toLowerCase().includes('oidc') && name !== 'OIDC Providers'
+                                ).length !== 1 ? 's' : ''}
+                              </span>
+                            </h3>
+                          </div>
+
+                          {/* Collapsible Content */}
+                          {!isCollapsed && (
+                            <div className='mt-3'>
+                              {/* OIDC Provider Management */}
+                              <div className='level is-mobile mb-4'>
+                                <div className='level-left'>
+                                  <div className='content'>
+                                    <p className='has-text-grey is-size-7 mb-0'>
+                                      Manage OpenID Connect authentication providers for single sign-on integration.
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className='level-right'>
+                                  <button 
+                                    className='button is-primary is-small'
+                                    onClick={() => {
+                                      resetOidcProviderForm();
+                                      setShowOidcProviderModal(true);
+                                    }}
+                                    disabled={loading}
+                                  >
+                                    <span className='icon is-small'>
+                                      <i className='fas fa-plus'></i>
+                                    </span>
+                                    <span>Add OIDC Provider</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Show existing providers status */}
+                              {Object.entries(section.subsections || {}).filter(([name]) => 
+                                name.toLowerCase().includes('oidc') && name !== 'OIDC Providers'
+                              ).length > 0 ? (
+                                <div className='notification is-info is-light mb-4'>
+                                  <p className='is-size-7'>
+                                    <strong>{Object.entries(section.subsections || {}).filter(([name]) => 
+                                      name.toLowerCase().includes('oidc') && name !== 'OIDC Providers'
+                                    ).length}</strong> OIDC provider(s) configured. 
+                                    Individual providers are shown as expandable sections below.
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className='notification is-warning is-light mb-4'>
+                                  <p className='is-size-7'>
+                                    No OIDC providers configured yet. Click "Add OIDC Provider" to set up authentication 
+                                    with providers like Google, Microsoft, GitHub, etc.
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Render any fields if they exist */}
+                              {subsection.fields.length > 0 && (
+                                <div className='columns is-multiline'>
+                                  {subsection.fields.map((field) => (
+                                    <div 
+                                      key={field.path} 
+                                      className={field.type === 'textarea' || field.type === 'array' ? 'column is-full' : 'column is-half'}
+                                    >
+                                      {renderField(field)}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    
+                    // Regular subsection rendering
                     return (
                       <div key={subsectionName} className='box mb-4'>
                         <div 

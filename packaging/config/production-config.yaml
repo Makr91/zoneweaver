@@ -689,7 +689,85 @@ authentication:
     order: 8
   
   # OIDC Providers - Dynamic Configuration
-  oidc_providers: {}
+
+  oidc_providers:
+    type: object
+    description: "Configure OpenID Connect authentication providers"
+    section: "Authentication"
+    subsection: "OIDC Providers"  # ← This creates the subsection
+    required: false
+    order: 50  # ← Position after other subsections
+    value:
+#    google:
+#      enabled:
+#        type: boolean
+#        value: true
+#        description: "Enable Google OIDC authentication"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: true
+#        order: 1
+#      display_name:
+#        type: string
+#        value: "Sign in with Google"
+#        description: "Display name shown on login button"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: true
+#        order: 2
+#      issuer:
+#        type: string
+#        value: "https://accounts.google.com"
+#        description: "Google OIDC issuer URL"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: true
+#        order: 3
+#      client_id:
+#        type: string
+#        value: "dfsdafdsfsadfdsafsdafdsafdsafasdfdsafm"
+#        description: "Google OAuth Client ID"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: true
+#        order: 4
+#      client_secret:
+#        type: password
+#        value: "GOdfsafddsafsdafsfasfasdfsafsag4"
+#        description: "Google OAuth Client Secret (keep secure)"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: true
+#        order: 5
+#      scope:
+#        type: string
+#        value: "openid profile email"
+#        description: "OAuth scopes to request (space-separated)"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: false
+#        order: 6
+#      response_type:
+#        type: select
+#        value: "code"
+#        options:
+#          - "code"
+#          - "id_token"
+#          - "code id_token"
+#        description: "OAuth 2.0 response type - 'code' is recommended for server-side apps"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: false
+#        order: 7
+#      prompt:
+#        type: string
+#        value: ""
+#        description: "Optional prompt parameter (e.g., 'consent', 'login', 'select_account')"
+#        section: "Authentication"
+#        subsection: "Google OIDC"
+#        required: false
+#        order: 8
+
   
   # External Provider Settings
   external_domain_mapping_enabled:

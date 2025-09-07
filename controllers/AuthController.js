@@ -650,7 +650,7 @@ class AuthController {
       }
 
       // Get OIDC providers from nested configuration structure
-      const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+      const oidcProvidersConfig = config.authentication?.oidc_providers?.value || {};
       
       // Find the specific provider
       const providerConfig = oidcProvidersConfig[provider];
@@ -754,7 +754,7 @@ class AuthController {
       }
 
       // Get OIDC providers from nested configuration structure
-      const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+      const oidcProvidersConfig = config.authentication?.oidc_providers?.value || {};
       
       // Find the specific provider
       const providerConfig = oidcProvidersConfig[provider];
@@ -1981,7 +1981,7 @@ class AuthController {
 
       // OIDC providers
       try {
-        const oidcProvidersConfig = config.authentication?.oidc_providers || {};
+        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || {};
         
         Object.entries(oidcProvidersConfig).forEach(([providerName, providerConfig]) => {
           if (providerConfig.enabled?.value && providerConfig.display_name?.value) {
