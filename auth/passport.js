@@ -310,6 +310,7 @@ async function handleExternalUser(provider, profile) {
 async function determineUserOrganization(email, profile) {
   const { organization: OrganizationModel, invitation: InvitationModel } = db;
   const domain = email.split('@')[1];
+  let mappedOrgCode = null; // Track if we found a domain mapping
   
   console.log(`🏢 Determining organization for domain: ${domain}`);
 
@@ -346,6 +347,7 @@ async function determineUserOrganization(email, profile) {
         console.log(`🔍 Checking org code ${orgCode} with domains:`, domains);
         if (Array.isArray(domains) && domains.includes(domain)) {
           console.log(`🗺️ Found domain mapping: ${domain} -> ${orgCode}`);
+          mappedOrgCode = orgCode; // Store the found mapping
           
           let org = await OrganizationModel.findByOrganizationCode(orgCode);
           if (org) {
@@ -370,6 +372,9 @@ async function determineUserOrganization(email, profile) {
               console.log(`✅ Assigned code ${orgCode} to existing organization: ${existingOrg.name} (${existingOrg.id})`);
               return existingOrg.id;
             }
+            
+            // No existing org found, but we have a domain mapping - break to use create_org with mapped code
+            break;
           }
         }
       }
@@ -389,14 +394,20 @@ async function determineUserOrganization(email, profile) {
       
     case 'create_org':
       console.log(`🏗️ Creating new organization for domain: ${domain}`);
-      const orgCode = generateOrgCode();
+      // Use mapped organization code if found, otherwise generate random code
+      const orgCode = mappedOrgCode || generateOrgCode();
+      if (mappedOrgCode) {
+        console.log(`🗺️ Using configured organization code: ${orgCode}`);
+      } else {
+        console.log(`🎲 Using generated organization code: ${orgCode}`);
+      }
       const newOrg = await OrganizationModel.create({
         name: `${orgCode} - ${domain.toUpperCase()}`,
         description: `Auto-created organization for domain ${domain}`,
         organization_code: orgCode,
         is_active: true
       });
-      console.log(`✅ Created organization: ${newOrg.name} (${newOrg.id})`);
+      console.log(`✅ Created organization: ${orgCode} - ${domain.toUpperCase()} (${newOrg.id})`);
       return newOrg.id;
       
     case 'deny_access':

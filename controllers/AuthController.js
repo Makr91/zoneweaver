@@ -1687,7 +1687,7 @@ class AuthController {
    *                       name:
    *                         type: string
    *                         description: Human-readable method name
-   *                         example: "LDAP Directory"
+   *                         example: "LDAP - somedomain.com"
    *                       enabled:
    *                         type: boolean
    *                         description: Whether method is enabled
@@ -1697,7 +1697,7 @@ class AuthController {
    *                       name: "Local Account"
    *                       enabled: true
    *                     - id: "ldap"
-   *                       name: "LDAP Directory"
+   *                       name: "LDAP - somedomain.com"
    *                       enabled: true
    *       500:
    *         description: Internal server error
@@ -1721,9 +1721,34 @@ class AuthController {
 
       // LDAP authentication
       if (config.authentication?.ldap_enabled?.value === true) {
+        // Extract domain from LDAP URL for display
+        let ldapDisplayName = 'LDAP Directory';
+        try {
+          const ldapUrl = config.authentication.ldap_url?.value;
+          if (ldapUrl) {
+            // Extract hostname from LDAP URL
+            const urlMatch = ldapUrl.match(/^ldaps?:\/\/([^:\/]+)/i);
+            if (urlMatch) {
+              const hostname = urlMatch[1];
+              // Extract domain (remove subdomain if present)
+              const domainParts = hostname.split('.');
+              if (domainParts.length >= 2) {
+                // Get last two parts for domain
+                const domain = domainParts.slice(-2).join('.');
+                ldapDisplayName = `LDAP - ${domain}`;
+              } else {
+                ldapDisplayName = `LDAP - ${hostname}`;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing LDAP URL for display name:', error);
+          // Fall back to generic name
+        }
+        
         methods.push({
           id: 'ldap',
-          name: 'LDAP Directory',
+          name: ldapDisplayName,
           enabled: true
         });
       }

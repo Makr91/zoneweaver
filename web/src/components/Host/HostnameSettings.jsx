@@ -203,7 +203,7 @@ const HostnameSettings = ({ server, onError }) => {
             </div>
             {newHostname && !isHostnameValid(newHostname) && (
               <p className='help is-danger'>
-                Invalid hostname. Must be a valid hostname or FQDN (e.g., "server1" or "hv-04.home.m4kr.net")
+                Invalid hostname. Must be a valid hostname or FQDN
               </p>
             )}
           </div>
