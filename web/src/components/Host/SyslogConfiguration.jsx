@@ -224,12 +224,24 @@ const SyslogConfiguration = ({ server }) => {
   };
 
   const addRule = () => {
-    const rule = `${ruleBuilder.facility}.${ruleBuilder.level}\t\t\t${
-      ruleBuilder.action_type === 'file' ? ruleBuilder.action_target :
-      ruleBuilder.action_type === 'remote_host' ? '@' + ruleBuilder.action_target :
-      ruleBuilder.action_type === 'all_users' ? '*' :
-      ruleBuilder.action_target
-    }`;
+    const serviceType = getServiceType(config);
+    
+    let action;
+    if (ruleBuilder.action_type === 'file') {
+      action = ruleBuilder.action_target;
+    } else if (ruleBuilder.action_type === 'remote_host') {
+      action = '@' + ruleBuilder.action_target;
+    } else if (ruleBuilder.action_type === 'all_users') {
+      // Use rsyslog syntax if rsyslog is active
+      action = serviceType.name === 'rsyslog' ? ':omusrmsg:*' : '*';
+    } else if (ruleBuilder.action_type === 'user') {
+      // Use rsyslog syntax if rsyslog is active
+      action = serviceType.name === 'rsyslog' ? `:omusrmsg:${ruleBuilder.action_target}` : ruleBuilder.action_target;
+    } else {
+      action = ruleBuilder.action_target;
+    }
+    
+    const rule = `${ruleBuilder.facility}.${ruleBuilder.level}\t\t\t${action}`;
     
     setConfigContent(prev => prev + '\n' + rule);
     
@@ -1198,14 +1210,23 @@ kern.err			@loghost
 
           {/* Preview of generated rule */}
           <div className='notification is-light mt-4'>
-            <h5 className='title is-6 mb-2'>Rule Preview</h5>
+            <h5 className='title is-6 mb-2'>Rule Preview ({getServiceType(config).display} Format)</h5>
             <code className='is-size-7'>
-              {ruleBuilder.facility}.{ruleBuilder.level}\t\t\t{
-                ruleBuilder.action_type === 'file' ? ruleBuilder.action_target :
-                ruleBuilder.action_type === 'remote_host' ? '@' + ruleBuilder.action_target :
-                ruleBuilder.action_type === 'all_users' ? '*' :
-                ruleBuilder.action_target
-              }
+              {ruleBuilder.facility}.{ruleBuilder.level}\t\t\t{(() => {
+                const serviceType = getServiceType(config);
+                
+                if (ruleBuilder.action_type === 'file') {
+                  return ruleBuilder.action_target;
+                } else if (ruleBuilder.action_type === 'remote_host') {
+                  return '@' + ruleBuilder.action_target;
+                } else if (ruleBuilder.action_type === 'all_users') {
+                  return serviceType.name === 'rsyslog' ? ':omusrmsg:*' : '*';
+                } else if (ruleBuilder.action_type === 'user') {
+                  return serviceType.name === 'rsyslog' ? `:omusrmsg:${ruleBuilder.action_target}` : ruleBuilder.action_target;
+                } else {
+                  return ruleBuilder.action_target;
+                }
+              })()}
             </code>
           </div>
         </div>
