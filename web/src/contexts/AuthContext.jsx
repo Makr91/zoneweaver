@@ -195,6 +195,37 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Set authentication data from external provider (OIDC, etc.)
+   * @param {string} authToken - JWT token from external auth
+   */
+  const setAuthData = async (authToken) => {
+    try {
+      // Store token with consistent key name
+      localStorage.setItem('authToken', authToken);
+      setToken(authToken);
+      
+      // Set default authorization header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      
+      // Verify token and get user data
+      const response = await axios.get('/api/auth/verify');
+      
+      if (response.data.success && response.data.user) {
+        const user = await fetchGravatarData(response.data.user);
+        setUser(user);
+        setIsAuthenticated(true);
+        console.log('✅ External authentication processed successfully');
+      } else {
+        throw new Error('Invalid token received from external provider');
+      }
+    } catch (error) {
+      console.error('Failed to process external authentication:', error);
+      clearAuth();
+      throw error;
+    }
+  };
+
+  /**
    * Change user password
    * @param {string} currentPassword - Current password
    * @param {string} newPassword - New password
@@ -256,7 +287,8 @@ export const AuthProvider = ({ children }) => {
     changePassword,
     getProfile,
     getAuthMethods,
-    clearAuth
+    clearAuth,
+    setAuthData
   };
 
   const fetchGravatarData = async (user) => {

@@ -51,10 +51,7 @@ const AuthCallback = () => {
     
     if (token) {
       try {
-        // Store token in localStorage
-        localStorage.setItem('zoneweaver_token', token);
-        
-        // Update auth context
+        // Update auth context (this will also store the token with correct key)
         setAuthData(token);
         
         console.log('✅ Authentication successful, token stored');

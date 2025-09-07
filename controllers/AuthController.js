@@ -732,7 +732,12 @@ class AuthController {
       console.log(`✅ OIDC login successful: ${user.username} (${user.email})`);
 
       // Redirect to frontend with token (frontend will handle storage)
-      const frontendUrl = config.frontend.frontend_url.value || 'https://localhost:3443';
+      // Use the request's protocol and host to build the correct redirect URL
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const frontendUrl = `${protocol}://${host}`;
+      
+      console.log(`🔄 OIDC redirect URL: ${frontendUrl}/ui/auth/callback?token=...`);
       res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
       
     } catch (error) {
