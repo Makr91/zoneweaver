@@ -43,21 +43,28 @@ $beige-lighter: #eff0eb;
 @use "bulma/sass" with (
   $primary: $orange,
   $warning: $yellow,
-  $light: hsl(221, 14%, 35%), // Darker light for better dark mode compatibility
-  $grey-lighter: hsl(221, 14%, 40%), // Override grey-lighter for light variants
+  $light: hsl(221, 14%, 35%),
+  $grey-lighter: hsl(221, 14%, 40%),
   $button-border-width: 0px,
   $box-shadow: none,
   $dropdown-content-shadow: none,
   $dropdown-content-z: 4,
   $control-radius: none,
   $card-shadow: none,
+  $card-header-shadow: none,
   $body-overflow-y: auto,
-  $input-shadow: none
-//  $family-primary: '"Nunito", sans-serif',
-//  $grey-dark: $brown,
-//  $grey-light: $beige-light,
-//  $link: $pink,
-//  $control-border-width: 2px,
+  $input-shadow: none,
+  $button-focus-box-shadow-size: 0,
+  $button-focus-box-shadow-color: transparent,
+  $input-focus-shadow-size: 0,
+  $box-link-hover-shadow: 0,
+  $box-link-active-shadow: 0,
+  $navbar-box-shadow-size: 0,
+  $control-focus-shadow-l: 0,
+  $navbar-dropdown-boxed-shadow: 0,
+  $navbar-bottom-box-shadow-size: 0,
+  $panel-shadow: 0,
+  $shadow: 0
 );
 
 // Import theme utilities for dark mode implementation
@@ -128,8 +135,6 @@ $beige-lighter: #eff0eb;
   
   // Override ALL Bulma shadow variables to completely disable shadows
   --bulma-shadow: none !important;
-  --bulma-button-focus-box-shadow-size: 0 !important;
-  --bulma-button-focus-box-shadow-color: transparent !important;
   --bulma-focus-shadow-size: 0 !important;
   --bulma-control-focus-box-shadow-size: 0 !important;
   --bulma-input-focus-box-shadow-size: 0 !important;
@@ -140,10 +145,6 @@ $beige-lighter: #eff0eb;
   --bulma-navbar-shadow: none !important;
   --bulma-pagination-shadow: none !important;
   --bulma-table-head-shadow: none !important;
-  --button-outer-shadow-h: 0;
-  --button-outer-shadow-s: 0%;
-  --button-outer-shadow-l: 0%;
-  --button-outer-shadow-a: 0;
 }
 
 [data-theme="dark"] {
@@ -168,10 +169,6 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568;       // Darker borders for dark theme
   --zw-controls-bg: #2d3748;        // Darker VNC controls background
-  --button-outer-shadow-h: 0;
-  --button-outer-shadow-s: 0%;
-  --button-outer-shadow-l: 0%;
-  --button-outer-shadow-a: 0;
 }
 
 // Need a size smaller than 7
