@@ -85,11 +85,33 @@ const Login = () => {
   };
 
   /**
-   * Handle login form submission
+   * Handle OIDC login redirect
+   */
+  const handleOidcLogin = () => {
+    // Store intended URL for after login
+    if (window.location.pathname !== '/ui/login') {
+      localStorage.setItem('zoneweaver_intended_url', window.location.pathname);
+    }
+    
+    setLoading(true);
+    setMsg("");
+    
+    // Direct redirect to OIDC initiation endpoint
+    window.location.href = '/api/auth/oidc';
+  };
+
+  /**
+   * Handle login form submission (for local/LDAP authentication)
    * @param {Event} e - Form submit event
    */
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Handle OIDC differently - redirect immediately
+    if (authMethod === 'oidc') {
+      handleOidcLogin();
+      return;
+    }
     
     if (!identifier || !password) {
       setMsg("Please enter both username/email and password");
@@ -142,38 +164,59 @@ const Login = () => {
                     <p>{msg}</p>
                   </div>
                 )}
-                <div className='field mt-5'>
-                  <label className='label'>
-                    {authMethod === 'ldap' ? 'Username' : 'Email or Username'}
-                  </label>
-                  <div className='controls'>
-                    <input 
-                      type='text' 
-                      className='input' 
-                      name='identifier' 
-                      autoComplete='username' 
-                      placeholder={authMethod === 'ldap' ? 'Username' : 'Username or Email'} 
-                      value={identifier} 
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      disabled={loading || methodsLoading}
-                    />
+                
+                {/* Show username/password fields only for local/LDAP authentication */}
+                {authMethod !== 'oidc' && (
+                  <>
+                    <div className='field mt-5'>
+                      <label className='label'>
+                        {authMethod === 'ldap' ? 'Username' : 'Email or Username'}
+                      </label>
+                      <div className='controls'>
+                        <input 
+                          type='text' 
+                          className='input' 
+                          name='identifier' 
+                          autoComplete='username' 
+                          placeholder={authMethod === 'ldap' ? 'Username' : 'Username or Email'} 
+                          value={identifier} 
+                          onChange={(e) => setIdentifier(e.target.value)}
+                          disabled={loading || methodsLoading}
+                        />
+                      </div>
+                    </div>
+                    <div className='field mt-5'>
+                      <label className='label'>Password</label>
+                      <div className='controls'>
+                        <input
+                          type='password'
+                          name='password'
+                          autoComplete='current-password'
+                          className='input'
+                          placeholder='******'
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+                
+                {/* Show OIDC information when OIDC is selected */}
+                {authMethod === 'oidc' && (
+                  <div className='field mt-5'>
+                    <div className='notification is-info is-light'>
+                      <p className='has-text-centered'>
+                        <span className='icon'>
+                          <i className='fas fa-external-link-alt'></i>
+                        </span>
+                        <br />
+                        You will be redirected to your identity provider to sign in.
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className='field mt-5'>
-                  <label className='label'>Password</label>
-                  <div className='controls'>
-                    <input
-                      type='password'
-                      name='password'
-                      autoComplete='current-password'
-                      className='input'
-                      placeholder='******'
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
+                )}
                 {/* Authentication Method Selector - Show only if multiple methods available */}
                 {!methodsLoading && authMethods.length > 1 && (
                   <div className='field mt-5'>
@@ -196,6 +239,8 @@ const Login = () => {
                     <p className='help is-size-7 has-text-grey'>
                       {authMethod === 'ldap' ? 
                         'Use your directory credentials' : 
+                        authMethod === 'oidc' ?
+                        'Sign in through your identity provider' :
                         'Use your local account credentials'
                       }
                     </p>
@@ -207,7 +252,7 @@ const Login = () => {
                     className={`button is-primary is-fullwidth ${loading ? 'is-loading' : ''}`}
                     disabled={loading}
                   >
-                    Login
+                    {authMethod === 'oidc' ? 'Continue with OpenID Connect' : 'Login'}
                   </button>
                 </div>
                 <div className='has-text-centered mt-3'>

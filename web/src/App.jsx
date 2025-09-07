@@ -5,6 +5,7 @@ import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import Landing from "./components/Landing";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import AuthCallback from "./components/AuthCallback";
 import Layout from "./components/Layout";
 import ServerSetup from "./components/ServerSetup";
 
@@ -32,6 +33,7 @@ function App() {
                     <Route exact path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/setup" element={<ServerSetup />} />
+                    <Route path="/ui/auth/callback" element={<AuthCallback />} />
                     <Route
                       path="/ui/settings"
                       element={<Navigate to="/ui/settings/zoneweaver" />}
