@@ -1,4 +1,4 @@
-import React from 'react';
+import { ContentModal } from '../common';
 
 const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
     if (!selectedDevice) {
@@ -6,23 +6,12 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
     }
 
     return (
-        <div className='modal is-active'>
-            <div className='modal-background' onClick={() => setSelectedDevice(null)}></div>
-            <div className='modal-card'>
-                <header className='modal-card-head'>
-                    <p className='modal-card-title'>
-                        <span className='icon-text'>
-                            <span className='icon'><i className='fas fa-microchip'></i></span>
-                            <span>Device Details</span>
-                        </span>
-                    </p>
-                    <button
-                        className='delete'
-                        aria-label='close'
-                        onClick={() => setSelectedDevice(null)}
-                    ></button>
-                </header>
-                <section className='modal-card-body'>
+        <ContentModal
+            isOpen={!!selectedDevice}
+            onClose={() => setSelectedDevice(null)}
+            title="Device Details"
+            icon="fas fa-microchip"
+        >
                     <div className='columns'>
                         <div className='column is-6'>
                             <div className='table-container'>
@@ -139,9 +128,7 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
                             </div>
                         </div>
                     )}
-                </section>
-            </div>
-        </div>
+        </ContentModal>
     );
 };
 
