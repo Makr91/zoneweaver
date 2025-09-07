@@ -100,33 +100,10 @@ const FaultList = ({ server }) => {
     }
   };
 
-  const handleViewDetails = async (fault) => {
-    if (!server || !makeZoneweaverAPIRequest) return;
-    
-    try {
-      setLoading(true);
-      setError('');
-      
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        `system/fault-management/faults/${fault.uuid}`,
-        'GET'
-      );
-      
-      if (result.success) {
-        // The API returns the complete fault object with details
-        setSelectedFault(result.data?.fault || fault);
-        setShowDetailsModal(true);
-      } else {
-        setError(result.message || 'Failed to load fault details');
-      }
-    } catch (err) {
-      setError('Error loading fault details: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleViewDetails = (fault) => {
+    // Details are already included in the fault list response, no need for API call
+    setSelectedFault(fault);
+    setShowDetailsModal(true);
   };
 
   const handleFilterChange = (field, value) => {

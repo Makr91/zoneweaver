@@ -14,6 +14,13 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
     }
   };
 
+  const extractFmriFromAffects = (affects) => {
+    // affects = "zfs://pool=Array-0 faulted but still in service"
+    // Extract just the FMRI part before the status
+    if (!affects) return null;
+    return affects.split(/\s+/)[0]; // Returns "zfs://pool=Array-0"
+  };
+
   const getSeverityIcon = (severity) => {
     switch (severity.toLowerCase()) {
       case 'critical':
@@ -140,10 +147,13 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
                           onClick={() => {
                             if (action.requiresConfirm) {
                               if (window.confirm(`Are you sure you want to ${action.label.toLowerCase()} this fault?`)) {
-                                handleAction(fault, action.key, fault.affects || fault.problemIn);
+                                // Extract real FMRI from affects field
+                                const fmri = extractFmriFromAffects(fault.details?.affects);
+                                handleAction(fault, action.key, fmri);
                               }
                             } else {
-                              handleAction(fault, action.key, fault.affects || fault.problemIn);
+                              const fmri = extractFmriFromAffects(fault.details?.affects);
+                              handleAction(fault, action.key, fmri);
                             }
                           }}
                           disabled={loading || isLoading}
