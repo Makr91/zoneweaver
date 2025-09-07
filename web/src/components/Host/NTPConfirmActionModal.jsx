@@ -242,6 +242,13 @@ const NTPConfirmActionModal = ({ service, action, onClose, onConfirm }) => {
             </span>
             <span>{loading ? 'Processing...' : actionDetails.title}</span>
           </button>
+          <button 
+            className='button' 
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancel
+          </button>
         </footer>
       </div>
     </div>

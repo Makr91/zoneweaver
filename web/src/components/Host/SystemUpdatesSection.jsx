@@ -433,6 +433,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
               </p>
               <button
                 className='delete'
+                aria-label='close'
                 onClick={() => setShowInstallModal(false)}
                 disabled={installing}
               ></button>

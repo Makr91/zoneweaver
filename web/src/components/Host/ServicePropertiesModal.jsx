@@ -39,11 +39,11 @@ const ServicePropertiesModal = ({ service, onClose }) => {
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
-              <i className='fas fa-list'></i>
+              <i className='fas fa-cog'></i>
             </span>
             Service Properties
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>

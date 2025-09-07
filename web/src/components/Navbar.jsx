@@ -364,6 +364,9 @@ const Navbar = () => {
             >
               {loading ? 'Processing...' : currentAction}
             </button>
+            <button onClick={handleModalClick} className='button is-danger'>
+              Cancel
+            </button>
           </footer>
         </div>
       </div>

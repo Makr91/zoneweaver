@@ -160,7 +160,7 @@ const ZloginModal = ({
               <span className='icon'>
                 <i className='fas fa-times'></i>
               </span>
-              <span>Close</span>
+              <span>Exit</span>
             </button>
           </div>
         </header>

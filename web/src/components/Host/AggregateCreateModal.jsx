@@ -471,6 +471,14 @@ const AggregateCreateModal = ({ server, existingAggregates, cdpServiceRunning, o
           >
             Create Aggregate
           </button>
+          <button
+            type='button'
+            className='button'
+            onClick={onClose}
+            disabled={creating}
+          >
+            Cancel
+          </button>
         </footer>
       </div>
     </div>

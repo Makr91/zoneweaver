@@ -509,6 +509,14 @@ const EditRepositoryModal = ({ server, repository, onClose, onSuccess, onError }
               </span>
               <span>Update Repository</span>
             </button>
+            <button 
+              type='button'
+              className='button' 
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </button>
           </footer>
         </form>
       </div>

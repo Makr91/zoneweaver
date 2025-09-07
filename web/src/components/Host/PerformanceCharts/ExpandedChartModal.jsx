@@ -24,32 +24,35 @@ const ExpandedChartModal = ({
   if (!expandedChart) return null;
 
   return (
-    <div className='modal is-active has-z-index-modal'>
+    <div className='modal is-active'>
       <div className='modal-background' onClick={closeExpandedChart}></div>
-      <div className='modal-card has-z-index-modal-high'>
-        <header className='modal-card-head'>
-          <p className='modal-card-title'>
-            <span className='icon-text'>
-              <span className='icon'>
-                <i className={`fas ${
-                  expandedChartType === 'storage-io' ? 'fa-hdd' :
-                  expandedChartType === 'arc' ? 'fa-memory' :
-                  expandedChartType === 'network' ? 'fa-network-wired' : 'fa-chart-area'
-                }`}></i>
-              </span>
-              <span>
-                {expandedChartType === 'storage-io' ? 'Storage I/O Performance' :
-                 expandedChartType === 'arc' ? 'ZFS ARC Performance' :
-                 expandedChartType === 'network' ? 'Network Performance' : 
-                 expandedChartType === 'cpu' ? 'CPU Performance' :
-                 expandedChartType === 'memory' ? 'Memory Performance' :
-                 'Performance'} - {currentServer?.hostname}
-              </span>
-            </span>
-          </p>
-          <button className='delete' aria-label='close' onClick={closeExpandedChart}></button>
-        </header>
-        <section className='modal-card-body p-2'>
+      <div className='modal-content'>
+        <div className='box'>
+          <div className='level'>
+            <div className='level-left'>
+              <div className='level-item'>
+                <p className='title is-4'>
+                  <span className='icon-text'>
+                    <span className='icon'>
+                      <i className={`fas ${
+                        expandedChartType === 'storage-io' ? 'fa-hdd' :
+                        expandedChartType === 'arc' ? 'fa-memory' :
+                        expandedChartType === 'network' ? 'fa-network-wired' : 'fa-chart-area'
+                      }`}></i>
+                    </span>
+                    <span>
+                      {expandedChartType === 'storage-io' ? 'Storage I/O Performance' :
+                       expandedChartType === 'arc' ? 'ZFS ARC Performance' :
+                       expandedChartType === 'network' ? 'Network Performance' : 
+                       expandedChartType === 'cpu' ? 'CPU Performance' :
+                       expandedChartType === 'memory' ? 'Memory Performance' :
+                       'Performance'} - {currentServer?.hostname}
+                    </span>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
           {/* Series Visibility Controls */}
           {(expandedChartType === 'storage-io' || expandedChartType === 'network' || expandedChartType === 'cpu' || expandedChartType === 'memory') && (
             <div className='mb-4'>
@@ -285,8 +288,13 @@ const ExpandedChartModal = ({
               />
             )}
           </div>
-        </section>
+        </div>
       </div>
+      <button
+        className='modal-close is-large'
+        aria-label='close'
+        onClick={closeExpandedChart}
+      ></button>
     </div>
   );
 };

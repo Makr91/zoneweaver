@@ -39,7 +39,7 @@ const VnicDetailsModal = ({ vnic, onClose }) => {
             </span>
             VNIC Details
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>

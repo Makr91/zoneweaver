@@ -140,6 +140,14 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
                         </div>
                     )}
                 </section>
+                <footer className='modal-card-foot'>
+                    <button
+                        className='button is-primary'
+                        onClick={() => setSelectedDevice(null)}
+                    >
+                        Close
+                    </button>
+                </footer>
             </div>
         </div>
     );

@@ -401,11 +401,11 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
-              <i className='fas fa-plus'></i>
+              <i className='fas fa-plus-circle'></i>
             </span>
             Create VNIC
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>

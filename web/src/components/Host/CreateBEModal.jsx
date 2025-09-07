@@ -320,6 +320,14 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
               </span>
               <span>Create Boot Environment</span>
             </button>
+            <button 
+              type='button'
+              className='button' 
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </button>
           </footer>
         </form>
       </div>

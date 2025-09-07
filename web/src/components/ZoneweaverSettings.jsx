@@ -2417,6 +2417,14 @@ const ZoneweaverSettings = () => {
                     </span>
                     <span>Add Provider</span>
                   </button>
+                  <button 
+                    type="button" 
+                    className="button" 
+                    onClick={() => setShowOidcProviderModal(false)}
+                    disabled={oidcProviderLoading}
+                  >
+                    Cancel
+                  </button>
                 </footer>
               </form>
             </div>

@@ -172,6 +172,14 @@ const EtherstubCreateModal = ({ server, existingEtherstubs, onClose, onSuccess, 
           >
             Create Etherstub
           </button>
+          <button
+            type='button'
+            className='button'
+            onClick={onClose}
+            disabled={creating}
+          >
+            Cancel
+          </button>
         </footer>
       </div>
     </div>

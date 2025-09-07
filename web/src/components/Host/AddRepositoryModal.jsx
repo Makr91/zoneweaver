@@ -346,6 +346,14 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
               </span>
               <span>Add Repository</span>
             </button>
+            <button 
+              type='button'
+              className='button' 
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </button>
           </footer>
         </form>
       </div>

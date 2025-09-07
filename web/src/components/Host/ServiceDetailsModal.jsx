@@ -20,11 +20,11 @@ const ServiceDetailsModal = ({ service, onClose }) => {
         <header className='modal-card-head'>
           <p className='modal-card-title'>
             <span className='icon mr-2'>
-              <i className='fas fa-info-circle'></i>
+              <i className='fas fa-cogs'></i>
             </span>
             Service Details
           </p>
-          <button className='delete' onClick={onClose}></button>
+          <button className='delete' aria-label='close' onClick={onClose}></button>
         </header>
         
         <section className='modal-card-body'>
