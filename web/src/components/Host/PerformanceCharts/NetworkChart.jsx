@@ -51,144 +51,144 @@ const NetworkChart = ({ networkChartData, networkSeriesVisibility, setNetworkSer
                   <span>Total</span>
                 </button>
               </div>
+              <div className='control'>
+                <button 
+                  className='button is-small is-light'
+                  onClick={() => expandChart('network', 'network')}
+                  title="Expand chart to full size"
+                >
+                  <span className='icon'>
+                    <i className='fas fa-expand'></i>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
         <div className='card-content p-2'>
           {networkChartData && Object.keys(networkChartData).length > 0 ? (
             <div>
-            <div className='is-chart-container is-relative'>
-                <button 
-                  className='button is-small is-ghost is-chart-expand-button'
-                  onClick={() => expandChart('network', 'network')}
-                  title="Expand chart to full size"
-                >
-                  <span className='icon has-text-white'>
-                    <i className='fas fa-expand'></i>
-                  </span>
-                </button>
-                <HighchartsReact 
-                  highcharts={Highcharts} 
-                  options={{
-                    chart: {
-                      type: 'spline',
-                      animation: Highcharts.svg,
-                      marginRight: 10,
-                      height: 200,
-                      backgroundColor: '#1e2a3a',
-                      style: {
-                        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
-                      }
-                    },
-                    time: {
-                      useUTC: false
-                    },
-                    title: {
-                      text: 'Network Bandwidth',
-                      style: {
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        color: '#ffffff'
-                      }
-                    },
-                    xAxis: {
-                      type: 'datetime',
-                      tickPixelInterval: 150,
-                      labels: {
-                        style: {
-                          fontSize: '9px',
-                          color: '#b0bec5'
-                        }
-                      },
-                      lineColor: '#37474f',
-                      tickColor: '#37474f',
-                      gridLineColor: '#37474f'
-                    },
-                    yAxis: {
-                      title: {
-                        text: 'Mbps',
-                        style: {
-                          fontSize: '10px',
-                          color: '#b0bec5'
-                        }
-                      },
-                      min: 0,
-                      labels: {
-                        style: {
-                          fontSize: '9px',
-                          color: '#b0bec5'
-                        }
-                      },
-                      lineColor: '#37474f',
-                      tickColor: '#37474f',
-                      gridLineColor: '#37474f'
-                    },
-                    legend: {
-                      enabled: true,
-                      itemStyle: {
-                        fontSize: '8px',
-                        color: '#ffffff'
-                      },
-                      maxHeight: 40
-                    },
-                    plotOptions: {
-                      spline: {
-                        marker: {
-                          enabled: false
-                        },
-                        lineWidth: 2
-                      }
-                    },
-                    series: Object.entries(networkChartData)
-                      .filter(([, data]) => data.totalData && data.totalData.length > 0)
-                      .flatMap(([interfaceName, data], interfaceIndex) => {
-                        const baseHue = (interfaceIndex * 360 / Object.keys(networkChartData).length);
-                        return [
-                          // RX series for this interface
-                          {
-                            name: `${interfaceName} RX`,
-                            data: data.rxData || [],
-                            color: `hsl(${baseHue}, 70%, 75%)`,
-                            visible: networkSeriesVisibility.read,
-                            dashStyle: 'Solid',
-                            lineWidth: 2
-                          },
-                          // TX series for this interface
-                          {
-                            name: `${interfaceName} TX`,
-                            data: data.txData || [],
-                            color: `hsl(${baseHue}, 70%, 50%)`,
-                            visible: networkSeriesVisibility.write,
-                            dashStyle: 'Dash',
-                            lineWidth: 2
-                          },
-                          // Total series for this interface
-                          {
-                            name: `${interfaceName} Total`,
-                            data: data.totalData || [],
-                            color: `hsl(${baseHue}, 70%, 35%)`,
-                            visible: networkSeriesVisibility.total,
-                            dashStyle: 'Solid',
-                            lineWidth: 3
-                          }
-                        ];
-                      }),
-                    credits: {
-                      enabled: false
-                    },
-                    tooltip: {
-                      shared: true,
-                      valueSuffix: ' Mbps',
-                      backgroundColor: '#263238',
-                      borderColor: '#37474f',
-                      style: {
-                        color: '#ffffff',
-                        fontSize: '10px'
-                      }
+              <HighchartsReact 
+                highcharts={Highcharts} 
+                options={{
+                  chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg,
+                    marginRight: 10,
+                    height: 200,
+                    backgroundColor: '#1e2a3a',
+                    style: {
+                      fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
                     }
-                  }}
-                />
-              </div>
+                  },
+                  time: {
+                    useUTC: false
+                  },
+                  title: {
+                    text: 'Network Bandwidth',
+                    style: {
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: '#ffffff'
+                    }
+                  },
+                  xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150,
+                    labels: {
+                      style: {
+                        fontSize: '9px',
+                        color: '#b0bec5'
+                      }
+                    },
+                    lineColor: '#37474f',
+                    tickColor: '#37474f',
+                    gridLineColor: '#37474f'
+                  },
+                  yAxis: {
+                    title: {
+                      text: 'Mbps',
+                      style: {
+                        fontSize: '10px',
+                        color: '#b0bec5'
+                      }
+                    },
+                    min: 0,
+                    labels: {
+                      style: {
+                        fontSize: '9px',
+                        color: '#b0bec5'
+                      }
+                    },
+                    lineColor: '#37474f',
+                    tickColor: '#37474f',
+                    gridLineColor: '#37474f'
+                  },
+                  legend: {
+                    enabled: true,
+                    itemStyle: {
+                      fontSize: '8px',
+                      color: '#ffffff'
+                    },
+                    maxHeight: 40
+                  },
+                  plotOptions: {
+                    spline: {
+                      marker: {
+                        enabled: false
+                      },
+                      lineWidth: 2
+                    }
+                  },
+                  series: Object.entries(networkChartData)
+                    .filter(([, data]) => data.totalData && data.totalData.length > 0)
+                    .flatMap(([interfaceName, data], interfaceIndex) => {
+                      const baseHue = (interfaceIndex * 360 / Object.keys(networkChartData).length);
+                      return [
+                        // RX series for this interface
+                        {
+                          name: `${interfaceName} RX`,
+                          data: data.rxData || [],
+                          color: `hsl(${baseHue}, 70%, 75%)`,
+                          visible: networkSeriesVisibility.read,
+                          dashStyle: 'Solid',
+                          lineWidth: 2
+                        },
+                        // TX series for this interface
+                        {
+                          name: `${interfaceName} TX`,
+                          data: data.txData || [],
+                          color: `hsl(${baseHue}, 70%, 50%)`,
+                          visible: networkSeriesVisibility.write,
+                          dashStyle: 'Dash',
+                          lineWidth: 2
+                        },
+                        // Total series for this interface
+                        {
+                          name: `${interfaceName} Total`,
+                          data: data.totalData || [],
+                          color: `hsl(${baseHue}, 70%, 35%)`,
+                          visible: networkSeriesVisibility.total,
+                          dashStyle: 'Solid',
+                          lineWidth: 3
+                        }
+                      ];
+                    }),
+                  credits: {
+                    enabled: false
+                  },
+                  tooltip: {
+                    shared: true,
+                    valueSuffix: ' Mbps',
+                    backgroundColor: '#263238',
+                    borderColor: '#37474f',
+                    style: {
+                      color: '#ffffff',
+                      fontSize: '10px'
+                    }
+                  }
+                }}
+              />
             </div>
           ) : (
             <div className='has-text-centered p-4'>

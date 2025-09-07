@@ -51,144 +51,144 @@ const StorageIOChart = ({ chartData, storageSeriesVisibility, setStorageSeriesVi
                   <span>Total</span>
                 </button>
               </div>
+              <div className='control'>
+                <button 
+                  className='button is-small is-light'
+                  onClick={() => expandChart('storage', 'storage-io')}
+                  title="Expand chart to full size"
+                >
+                  <span className='icon'>
+                    <i className='fas fa-expand'></i>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
         <div className='card-content p-2'>
           {chartData && Object.keys(chartData).length > 0 ? (
             <div>
-            <div className='is-chart-container is-relative'>
-                <button 
-                  className='button is-small is-ghost is-chart-expand-button'
-                  onClick={() => expandChart('storage', 'storage')}
-                  title="Expand chart to full size"
-                >
-                  <span className='icon has-text-white'>
-                    <i className='fas fa-expand'></i>
-                  </span>
-                </button>
-                <HighchartsReact 
-                  highcharts={Highcharts} 
-                  options={{
-                    chart: {
-                      type: 'spline',
-                      animation: Highcharts.svg,
-                      marginRight: 10,
-                      height: 200,
-                      backgroundColor: '#1e2a3a',
-                      style: {
-                        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
-                      }
-                    },
-                    time: {
-                      useUTC: false
-                    },
-                    title: {
-                      text: 'ZFS Pool I/O',
-                      style: {
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        color: '#ffffff'
-                      }
-                    },
-                    xAxis: {
-                      type: 'datetime',
-                      tickPixelInterval: 150,
-                      labels: {
-                        style: {
-                          fontSize: '9px',
-                          color: '#b0bec5'
-                        }
-                      },
-                      lineColor: '#37474f',
-                      tickColor: '#37474f',
-                      gridLineColor: '#37474f'
-                    },
-                    yAxis: {
-                      title: {
-                        text: 'MB/s',
-                        style: {
-                          fontSize: '10px',
-                          color: '#b0bec5'
-                        }
-                      },
-                      min: 0,
-                      labels: {
-                        style: {
-                          fontSize: '9px',
-                          color: '#b0bec5'
-                        }
-                      },
-                      lineColor: '#37474f',
-                      tickColor: '#37474f',
-                      gridLineColor: '#37474f'
-                    },
-                    legend: {
-                      enabled: true,
-                      itemStyle: {
-                        fontSize: '8px',
-                        color: '#ffffff'
-                      },
-                      maxHeight: 40
-                    },
-                    plotOptions: {
-                      spline: {
-                        marker: {
-                          enabled: false
-                        },
-                        lineWidth: 2
-                      }
-                    },
-                    series: Object.entries(chartData)
-                      .filter(([, data]) => data.totalData && data.totalData.length > 0)
-                      .flatMap(([poolName, data], poolIndex) => {
-                        const baseHue = (poolIndex * 360 / Object.keys(chartData).length);
-                        return [
-                          // Read series for this pool
-                          {
-                            name: `${poolName} Read`,
-                            data: data.readData || [],
-                            color: `hsl(${baseHue}, 70%, 75%)`,
-                            visible: storageSeriesVisibility.read,
-                            dashStyle: 'Solid',
-                            lineWidth: 2
-                          },
-                          // Write series for this pool
-                          {
-                            name: `${poolName} Write`,
-                            data: data.writeData || [],
-                            color: `hsl(${baseHue}, 70%, 50%)`,
-                            visible: storageSeriesVisibility.write,
-                            dashStyle: 'Dash',
-                            lineWidth: 2
-                          },
-                          // Total series for this pool
-                          {
-                            name: `${poolName} Total`,
-                            data: data.totalData || [],
-                            color: `hsl(${baseHue}, 70%, 35%)`,
-                            visible: storageSeriesVisibility.total,
-                            dashStyle: 'Solid',
-                            lineWidth: 3
-                          }
-                        ];
-                      }),
-                    credits: {
-                      enabled: false
-                    },
-                    tooltip: {
-                      shared: true,
-                      valueSuffix: ' MB/s',
-                      backgroundColor: '#263238',
-                      borderColor: '#37474f',
-                      style: {
-                        color: '#ffffff',
-                        fontSize: '10px'
-                      }
+              <HighchartsReact 
+                highcharts={Highcharts} 
+                options={{
+                  chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg,
+                    marginRight: 10,
+                    height: 200,
+                    backgroundColor: '#1e2a3a',
+                    style: {
+                      fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
                     }
-                  }}
-                />
-              </div>
+                  },
+                  time: {
+                    useUTC: false
+                  },
+                  title: {
+                    text: 'ZFS Pool I/O',
+                    style: {
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: '#ffffff'
+                    }
+                  },
+                  xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150,
+                    labels: {
+                      style: {
+                        fontSize: '9px',
+                        color: '#b0bec5'
+                      }
+                    },
+                    lineColor: '#37474f',
+                    tickColor: '#37474f',
+                    gridLineColor: '#37474f'
+                  },
+                  yAxis: {
+                    title: {
+                      text: 'MB/s',
+                      style: {
+                        fontSize: '10px',
+                        color: '#b0bec5'
+                      }
+                    },
+                    min: 0,
+                    labels: {
+                      style: {
+                        fontSize: '9px',
+                        color: '#b0bec5'
+                      }
+                    },
+                    lineColor: '#37474f',
+                    tickColor: '#37474f',
+                    gridLineColor: '#37474f'
+                  },
+                  legend: {
+                    enabled: true,
+                    itemStyle: {
+                      fontSize: '8px',
+                      color: '#ffffff'
+                    },
+                    maxHeight: 40
+                  },
+                  plotOptions: {
+                    spline: {
+                      marker: {
+                        enabled: false
+                      },
+                      lineWidth: 2
+                    }
+                  },
+                  series: Object.entries(chartData)
+                    .filter(([, data]) => data.totalData && data.totalData.length > 0)
+                    .flatMap(([poolName, data], poolIndex) => {
+                      const baseHue = (poolIndex * 360 / Object.keys(chartData).length);
+                      return [
+                        // Read series for this pool
+                        {
+                          name: `${poolName} Read`,
+                          data: data.readData || [],
+                          color: `hsl(${baseHue}, 70%, 75%)`,
+                          visible: storageSeriesVisibility.read,
+                          dashStyle: 'Solid',
+                          lineWidth: 2
+                        },
+                        // Write series for this pool
+                        {
+                          name: `${poolName} Write`,
+                          data: data.writeData || [],
+                          color: `hsl(${baseHue}, 70%, 50%)`,
+                          visible: storageSeriesVisibility.write,
+                          dashStyle: 'Dash',
+                          lineWidth: 2
+                        },
+                        // Total series for this pool
+                        {
+                          name: `${poolName} Total`,
+                          data: data.totalData || [],
+                          color: `hsl(${baseHue}, 70%, 35%)`,
+                          visible: storageSeriesVisibility.total,
+                          dashStyle: 'Solid',
+                          lineWidth: 3
+                        }
+                      ];
+                    }),
+                  credits: {
+                    enabled: false
+                  },
+                  tooltip: {
+                    shared: true,
+                    valueSuffix: ' MB/s',
+                    backgroundColor: '#263238',
+                    borderColor: '#37474f',
+                    style: {
+                      color: '#ffffff',
+                      fontSize: '10px'
+                    }
+                  }
+                }}
+              />
             </div>
           ) : (
             <div className='has-text-centered p-4'>

@@ -42,19 +42,23 @@ const CpuChart = ({ cpuChartData, cpuSeriesVisibility, setCpuSeriesVisibility, e
                   Load
                 </button>
               </div>
+              <div className='control'>
+                <button 
+                  className='button is-small is-light'
+                  onClick={() => expandChart('cpu', 'cpu')}
+                  title="Expand chart to full size"
+                >
+                  <span className='icon'>
+                    <i className='fas fa-expand'></i>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
         <div className='card-content p-2'>
           {cpuChartData.overall.length > 0 ? (
-            <div className='is-relative'>
-              <button
-                className='button is-small is-ghost is-chart-expand-button'
-                onClick={() => expandChart('cpu', 'cpu')}
-                title="Expand chart to full size"
-              >
-                <span className='icon has-text-white'><i className='fas fa-expand'></i></span>
-              </button>
+            <div>
               <HighchartsReact
                 highcharts={Highcharts}
                 options={{

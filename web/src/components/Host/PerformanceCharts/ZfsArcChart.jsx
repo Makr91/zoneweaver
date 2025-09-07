@@ -13,19 +13,25 @@ const ZfsArcChart = ({ arcChartData, expandChart }) => {
               <span>ZFS ARC</span>
             </span>
           </p>
+          <div className='card-header-icon'>
+            <div className='field is-grouped'>
+              <div className='control'>
+                <button 
+                  className='button is-small is-light'
+                  onClick={() => expandChart('arc', 'arc')}
+                  title="Expand chart to full size"
+                >
+                  <span className='icon'>
+                    <i className='fas fa-expand'></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
         </header>
         <div className='card-content p-2'>
           {arcChartData && (arcChartData.sizeData.length > 0 || arcChartData.targetData.length > 0 || arcChartData.hitRateData.length > 0) ? (
-            <div className='is-chart-container is-relative'>
-              <button 
-                className='button is-small is-ghost is-chart-expand-button'
-                onClick={() => expandChart('arc', 'arc')}
-                title="Expand chart to full size"
-              >
-                <span className='icon has-text-white'>
-                  <i className='fas fa-expand'></i>
-                </span>
-              </button>
+            <div>
               <HighchartsReact 
                 highcharts={Highcharts} 
                 options={{
