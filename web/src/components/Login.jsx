@@ -85,9 +85,10 @@ const Login = () => {
   };
 
   /**
-   * Handle OIDC login redirect
+   * Handle OIDC login redirect for specific provider
+   * @param {string} provider - Provider name (e.g., 'google', 'microsoft')
    */
-  const handleOidcLogin = () => {
+  const handleOidcLogin = (provider) => {
     // Store intended URL for after login
     if (window.location.pathname !== '/ui/login') {
       localStorage.setItem('zoneweaver_intended_url', window.location.pathname);
@@ -96,8 +97,8 @@ const Login = () => {
     setLoading(true);
     setMsg("");
     
-    // Direct redirect to OIDC initiation endpoint
-    window.location.href = '/api/auth/oidc';
+    // Direct redirect to provider-specific OIDC initiation endpoint
+    window.location.href = `/api/auth/oidc/${provider}`;
   };
 
   /**
@@ -107,9 +108,10 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    // Handle OIDC differently - redirect immediately
-    if (authMethod === 'oidc') {
-      handleOidcLogin();
+    // Handle OIDC providers differently - redirect immediately
+    if (authMethod.startsWith('oidc-')) {
+      const provider = authMethod.replace('oidc-', '');
+      handleOidcLogin(provider);
       return;
     }
     
@@ -166,7 +168,7 @@ const Login = () => {
                 )}
                 
                 {/* Show username/password fields only for local/LDAP authentication */}
-                {authMethod !== 'oidc' && (
+                {!authMethod.startsWith('oidc-') && (
                   <>
                     <div className='field mt-5'>
                       <label className='label'>
@@ -203,8 +205,8 @@ const Login = () => {
                   </>
                 )}
                 
-                {/* Show OIDC information when OIDC is selected */}
-                {authMethod === 'oidc' && (
+                {/* Show OIDC information when an OIDC provider is selected */}
+                {authMethod.startsWith('oidc-') && (
                   <div className='field mt-5'>
                     <div className='notification is-info is-light'>
                       <p className='has-text-centered'>
@@ -239,7 +241,7 @@ const Login = () => {
                     <p className='help is-size-7 has-text-grey'>
                       {authMethod === 'ldap' ? 
                         'Use your directory credentials' : 
-                        authMethod === 'oidc' ?
+                        authMethod.startsWith('oidc-') ?
                         'Sign in through your identity provider' :
                         'Use your local account credentials'
                       }
@@ -252,7 +254,10 @@ const Login = () => {
                     className={`button is-primary is-fullwidth ${loading ? 'is-loading' : ''}`}
                     disabled={loading}
                   >
-                    {authMethod === 'oidc' ? 'Continue with OpenID Connect' : 'Login'}
+                    {authMethod.startsWith('oidc-') ? 
+                      (authMethods.find(m => m.id === authMethod)?.name || 'Continue with OpenID Connect') : 
+                      'Login'
+                    }
                   </button>
                 </div>
                 <div className='has-text-centered mt-3'>

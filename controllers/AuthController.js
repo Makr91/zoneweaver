@@ -609,16 +609,24 @@ class AuthController {
 
   /**
    * @swagger
-   * /api/auth/oidc:
+   * /api/auth/oidc/{provider}:
    *   get:
-   *     summary: Initiate OIDC authentication
-   *     description: Redirect user to OIDC provider for authentication
+   *     summary: Initiate OIDC authentication for specific provider
+   *     description: Redirect user to specific OIDC provider for authentication
    *     tags: [Authentication]
+   *     parameters:
+   *       - in: path
+   *         name: provider
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: OIDC provider name
+   *         example: "google"
    *     responses:
    *       302:
    *         description: Redirect to OIDC provider
    *       400:
-   *         description: OIDC not enabled
+   *         description: OIDC provider not enabled or not found
    *         content:
    *           application/json:
    *             schema:
@@ -632,20 +640,53 @@ class AuthController {
    */
   static async startOidcLogin(req, res, next) {
     try {
-      // Check if OIDC is enabled
-      if (!config.authentication?.oidc_enabled?.value) {
+      const { provider } = req.params;
+      
+      if (!provider) {
         return res.status(400).json({
           success: false,
-          message: 'OIDC authentication is not enabled'
+          message: 'OIDC provider name is required'
         });
       }
 
-      // Use passport to authenticate with OIDC
+      // Parse OIDC providers from configuration
+      let oidcProviders = [];
+      try {
+        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
+        oidcProviders = JSON.parse(oidcProvidersConfig);
+      } catch (error) {
+        console.error('Failed to parse OIDC providers configuration:', error.message);
+        return res.status(500).json({
+          success: false,
+          message: 'OIDC configuration error'
+        });
+      }
+
+      // Find the specific provider
+      const providerConfig = oidcProviders.find(p => p.name === provider);
+      
+      if (!providerConfig) {
+        return res.status(400).json({
+          success: false,
+          message: `OIDC provider '${provider}' not found`
+        });
+      }
+      
+      if (!providerConfig.enabled) {
+        return res.status(400).json({
+          success: false,
+          message: `OIDC provider '${provider}' is not enabled`
+        });
+      }
+
+      // Use passport to authenticate with specific OIDC provider
       const passport = (await import('passport')).default;
+      const strategyName = `oidc-${provider}`;
       
-      console.log('🔐 Starting OIDC authentication flow...');
+      console.log(`🔐 Starting OIDC authentication flow for provider: ${provider}`);
+      console.log(`🔧 Using strategy: ${strategyName}`);
       
-      passport.authenticate('oidc')(req, res, next);
+      passport.authenticate(strategyName)(req, res, next);
       
     } catch (error) {
       console.error('OIDC start login error:', error);
@@ -658,12 +699,19 @@ class AuthController {
 
   /**
    * @swagger
-   * /api/auth/oidc/callback:
+   * /api/auth/oidc/{provider}/callback:
    *   get:
-   *     summary: Handle OIDC callback
-   *     description: Process the callback from OIDC provider and generate JWT token
+   *     summary: Handle OIDC callback for specific provider
+   *     description: Process the callback from specific OIDC provider and generate JWT token
    *     tags: [Authentication]
    *     parameters:
+   *       - in: path
+   *         name: provider
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: OIDC provider name
+   *         example: "google"
    *       - in: query
    *         name: code
    *         schema:
@@ -678,7 +726,7 @@ class AuthController {
    *       302:
    *         description: Redirect to frontend with token or error
    *       400:
-   *         description: OIDC not enabled or authentication failed
+   *         description: OIDC provider not enabled or authentication failed
    *         content:
    *           application/json:
    *             schema:
@@ -696,49 +744,88 @@ class AuthController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async handleOidcCallback(req, res) {
+  static async handleOidcCallback(req, res, next) {
     try {
-      // Check if OIDC is enabled
-      if (!config.authentication?.oidc_enabled?.value) {
-        return res.redirect('/ui/login?error=oidc_not_enabled');
+      const { provider } = req.params;
+      
+      if (!provider) {
+        return res.redirect('/ui/login?error=no_provider');
       }
 
-      const user = req.user;
-      
-      if (!user) {
-        console.error('❌ OIDC callback: No user object found');
-        return res.redirect('/ui/login?error=oidc_failed');
+      // Parse OIDC providers from configuration
+      let oidcProviders = [];
+      try {
+        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
+        oidcProviders = JSON.parse(oidcProvidersConfig);
+      } catch (error) {
+        console.error('Failed to parse OIDC providers configuration:', error.message);
+        return res.redirect('/ui/login?error=oidc_config_error');
       }
 
-      // Generate JWT token for OIDC user
-      const token = jwt.sign(
-        { 
-          userId: user.id, 
-          username: user.username,
-          email: user.email,
-          role: user.role
-        },
-        config.authentication.jwt_secret.value,
-        { expiresIn: config.authentication.jwt_expiration?.value || '24h' }
-      );
+      // Find the specific provider
+      const providerConfig = oidcProviders.find(p => p.name === provider);
       
-      // Set session if using express-session
-      if (req.session) {
-        req.session.userId = user.id;
-        req.session.username = user.username;
-        req.session.role = user.role;
+      if (!providerConfig) {
+        return res.redirect(`/ui/login?error=provider_not_found&provider=${provider}`);
+      }
+      
+      if (!providerConfig.enabled) {
+        return res.redirect(`/ui/login?error=provider_disabled&provider=${provider}`);
       }
 
-      console.log(`✅ OIDC login successful: ${user.username} (${user.email})`);
-
-      // Redirect to frontend with token (frontend will handle storage)
-      // Use the request's protocol and host to build the correct redirect URL
-      const protocol = req.protocol;
-      const host = req.get('host');
-      const frontendUrl = `${protocol}://${host}`;
+      // Use passport to authenticate with specific OIDC provider
+      const passport = (await import('passport')).default;
+      const strategyName = `oidc-${provider}`;
       
-      console.log(`🔄 OIDC redirect URL: ${frontendUrl}/ui/auth/callback?token=...`);
-      res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
+      console.log(`🔐 Processing OIDC callback for provider: ${provider}`);
+      console.log(`🔧 Using strategy: ${strategyName}`);
+      
+      passport.authenticate(strategyName, { 
+        session: false, 
+        failureRedirect: `/ui/login?error=oidc_failed&provider=${provider}` 
+      })(req, res, (err) => {
+        if (err) {
+          console.error(`❌ OIDC callback error for ${provider}:`, err);
+          return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
+        }
+
+        const user = req.user;
+        
+        if (!user) {
+          console.error(`❌ OIDC callback: No user object found for ${provider}`);
+          return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
+        }
+
+        // Generate JWT token for OIDC user
+        const token = jwt.sign(
+          { 
+            userId: user.id, 
+            username: user.username,
+            email: user.email,
+            role: user.role
+          },
+          config.authentication.jwt_secret.value,
+          { expiresIn: config.authentication.jwt_expiration?.value || '24h' }
+        );
+        
+        // Set session if using express-session
+        if (req.session) {
+          req.session.userId = user.id;
+          req.session.username = user.username;
+          req.session.role = user.role;
+        }
+
+        console.log(`✅ OIDC login successful for ${provider}: ${user.username} (${user.email})`);
+
+        // Redirect to frontend with token (frontend will handle storage)
+        // Use the request's protocol and host to build the correct redirect URL
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const frontendUrl = `${protocol}://${host}`;
+        
+        console.log(`🔄 OIDC redirect URL: ${frontendUrl}/ui/auth/callback?token=...`);
+        res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
+      });
       
     } catch (error) {
       console.error('OIDC callback error:', error);
@@ -1898,13 +1985,24 @@ class AuthController {
         });
       }
 
-      // OIDC authentication
-      if (config.authentication?.oidc_enabled?.value === true) {
-        methods.push({
-          id: 'oidc',
-          name: 'OpenID Connect',
-          enabled: true
-        });
+      // OIDC providers
+      try {
+        const oidcProvidersConfig = config.authentication?.oidc_providers?.value || '[]';
+        const oidcProviders = JSON.parse(oidcProvidersConfig);
+        
+        if (Array.isArray(oidcProviders)) {
+          oidcProviders.forEach(provider => {
+            if (provider.enabled && provider.name && provider.display_name) {
+              methods.push({
+                id: `oidc-${provider.name}`,
+                name: provider.display_name,
+                enabled: true
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing OIDC providers for auth methods:', error.message);
       }
 
       res.json({
