@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const ArcConfiguration = ({ server }) => {
-  // State management
   const [currentConfig, setCurrentConfig] = useState(null);
   const [formData, setFormData] = useState({
     arc_max_gb: '',
     arc_min_gb: '',
+    arc_max_percent: '',
+    user_reserve_hint_pct: '',
+    arc_meta_limit_gb: '',
+    arc_meta_min_gb: '',
+    vdev_max_pending: '',
+    prefetch_disable: false,
     apply_method: 'persistent'
   });
   const [validation, setValidation] = useState(null);
@@ -38,12 +43,19 @@ const ArcConfiguration = ({ server }) => {
         
         // Pre-populate form with current values if they exist
         if (response.data.available_tunables) {
-          const maxBytes = response.data.available_tunables.zfs_arc_max?.effective_value;
-          const minBytes = response.data.available_tunables.zfs_arc_min?.effective_value;
+          const tunables = response.data.available_tunables;
           
           setFormData({
-            arc_max_gb: maxBytes ? bytesToGb(maxBytes) : '',
-            arc_min_gb: minBytes ? bytesToGb(minBytes) : '',
+            // Memory Parameters
+            arc_max_gb: tunables.zfs_arc_max?.effective_value ? bytesToGb(tunables.zfs_arc_max.effective_value) : '',
+            arc_min_gb: tunables.zfs_arc_min?.effective_value ? bytesToGb(tunables.zfs_arc_min.effective_value) : '',
+            arc_max_percent: tunables.zfs_arc_max_percent?.effective_value || '',
+            user_reserve_hint_pct: tunables.user_reserve_hint_pct?.effective_value || '',
+            arc_meta_limit_gb: tunables.zfs_arc_meta_limit?.effective_value ? bytesToGb(tunables.zfs_arc_meta_limit.effective_value) : '',
+            arc_meta_min_gb: tunables.zfs_arc_meta_min?.effective_value ? bytesToGb(tunables.zfs_arc_meta_min.effective_value) : '',
+            // Performance Parameters
+            vdev_max_pending: tunables.zfs_vdev_max_pending?.effective_value || '',
+            prefetch_disable: tunables.zfs_prefetch_disable?.effective_value === 1,
             apply_method: 'persistent'
           });
         }
@@ -133,23 +145,35 @@ const ArcConfiguration = ({ server }) => {
 
   // Apply configuration
   const applyConfiguration = async () => {
-    if (!server || !formData.arc_max_gb && !formData.arc_min_gb) {
-      setMessage('Please enter ARC max or min values to apply.');
+    const hasAnySettings = formData.arc_max_gb || formData.arc_min_gb || formData.arc_max_percent || 
+                          formData.user_reserve_hint_pct || formData.vdev_max_pending || formData.prefetch_disable;
+    
+    if (!server || !hasAnySettings) {
+      setMessage('Please configure at least one ZFS parameter to apply changes.');
       setMessageType('is-warning');
       return;
     }
 
     try {
       setLoading(true);
-      setMessage('Applying ARC configuration...');
+      setMessage('Applying ZFS configuration...');
       setMessageType('is-info');
 
       const payload = {
         apply_method: formData.apply_method
       };
 
+      // Memory Parameters
       if (formData.arc_max_gb) payload.arc_max_gb = parseFloat(formData.arc_max_gb);
       if (formData.arc_min_gb) payload.arc_min_gb = parseFloat(formData.arc_min_gb);
+      if (formData.arc_max_percent) payload.arc_max_percent = parseInt(formData.arc_max_percent);
+      if (formData.user_reserve_hint_pct) payload.user_reserve_hint_pct = parseInt(formData.user_reserve_hint_pct);
+      if (formData.arc_meta_limit_gb) payload.arc_meta_limit_gb = parseFloat(formData.arc_meta_limit_gb);
+      if (formData.arc_meta_min_gb) payload.arc_meta_min_gb = parseFloat(formData.arc_meta_min_gb);
+      
+      // Performance Parameters
+      if (formData.vdev_max_pending) payload.vdev_max_pending = parseInt(formData.vdev_max_pending);
+      payload.prefetch_disable = formData.prefetch_disable;
 
       const response = await axios.put(
         `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/system/zfs/arc/config`,
@@ -157,7 +181,7 @@ const ArcConfiguration = ({ server }) => {
       );
 
       if (response.data.success) {
-        setMessage(`ARC configuration updated successfully! ${response.data.message}`);
+        setMessage(`ZFS configuration updated successfully! ${response.data.message}`);
         setMessageType('is-success');
         
         // Show reboot warning if needed
@@ -173,7 +197,7 @@ const ArcConfiguration = ({ server }) => {
         setMessageType('is-danger');
       }
     } catch (error) {
-      console.error('Error applying ARC configuration:', error);
+      console.error('Error applying ZFS configuration:', error);
       setMessage(`Failed to apply configuration: ${error.response?.data?.message || error.message}`);
       setMessageType('is-danger');
     } finally {
@@ -207,6 +231,12 @@ const ArcConfiguration = ({ server }) => {
         setFormData({
           arc_max_gb: '',
           arc_min_gb: '',
+          arc_max_percent: '',
+          user_reserve_hint_pct: '',
+          arc_meta_limit_gb: '',
+          arc_meta_min_gb: '',
+          vdev_max_pending: '',
+          prefetch_disable: false,
           apply_method: 'persistent'
         });
         setValidation(null);
@@ -331,12 +361,20 @@ const ArcConfiguration = ({ server }) => {
 
         {/* Configuration Form */}
         <div className='box'>
-          <h4 className='title is-6 mb-3'>
+          <h4 className='title is-6 mb-4'>
             <span className='icon-text'>
               <span className='icon'><i className='fas fa-cog'></i></span>
-              <span>ARC Configuration</span>
+              <span>ZFS Configuration</span>
             </span>
           </h4>
+
+          {/* Memory Parameters Section */}
+          <h5 className='title is-6 mb-3 has-text-primary'>
+            <span className='icon-text'>
+              <span className='icon'><i className='fas fa-memory'></i></span>
+              <span>Memory Parameters</span>
+            </span>
+          </h5>
 
         <div className='columns'>
           <div className='column is-6'>
@@ -505,6 +543,183 @@ const ArcConfiguration = ({ server }) => {
                     <span>Auto</span>
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ARC Max Percent and User Reserve Hint */}
+        <div className='columns'>
+          <div className='column is-6'>
+            <div className='field mb-4'>
+              <label className='label'>
+                ARC Max Percent: {formData.arc_max_percent ? `${formData.arc_max_percent}%` : 'Auto'} 
+                <span className='tag is-success is-small ml-2'>Dynamic</span>
+              </label>
+              <div className='control mt-4 mb-4'>
+                <input 
+                  className='zw-range-slider-primary'
+                  type='range'
+                  min='1'
+                  max='100'
+                  step='1'
+                  value={formData.arc_max_percent || '90'}
+                  onChange={(e) => handleFormChange('arc_max_percent', e.target.value)}
+                  disabled={loading}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    background: formData.arc_max_percent ? 
+                      `linear-gradient(to right, #007bff 0%, #007bff ${formData.arc_max_percent}%, #ccc ${formData.arc_max_percent}%, #ccc 100%)`
+                      : 'linear-gradient(to right, #ccc 0%, #ccc 100%)'
+                  }}
+                />
+              </div>
+              <div className='help is-size-7'>
+                Alternative to ARC max GB - sets ARC as percentage of physical memory (1-100%).
+                <br />Takes effect immediately without reboot.
+              </div>
+              <div className='field mt-3'>
+                <div className='control'>
+                  <button 
+                    className='button is-small is-light'
+                    onClick={() => handleFormChange('arc_max_percent', '')}
+                    disabled={loading}
+                    title='Reset to auto-calculation'
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-undo'></i>
+                    </span>
+                    <span>Auto</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className='column is-6'>
+            <div className='field mb-4'>
+              <label className='label'>
+                User Reserve Hint: {formData.user_reserve_hint_pct ? `${formData.user_reserve_hint_pct}%` : 'None'} 
+                <span className='tag is-success is-small ml-2'>Dynamic</span>
+              </label>
+              <div className='control mt-4 mb-4'>
+                <input 
+                  className='zw-range-slider-info'
+                  type='range'
+                  min='0'
+                  max='99'
+                  step='1'
+                  value={formData.user_reserve_hint_pct || '0'}
+                  onChange={(e) => handleFormChange('user_reserve_hint_pct', e.target.value)}
+                  disabled={loading}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    background: formData.user_reserve_hint_pct ? 
+                      `linear-gradient(to right, #17a2b8 0%, #17a2b8 ${formData.user_reserve_hint_pct}%, #ccc ${formData.user_reserve_hint_pct}%, #ccc 100%)`
+                      : 'linear-gradient(to right, #ccc 0%, #ccc 100%)'
+                  }}
+                />
+              </div>
+              <div className='help is-size-7'>
+                Memory reserved for applications (0-99%). Alternative to setting ARC max.
+                <br />Recommended for database servers. Takes effect immediately.
+              </div>
+              <div className='field mt-3'>
+                <div className='control'>
+                  <button 
+                    className='button is-small is-light'
+                    onClick={() => handleFormChange('user_reserve_hint_pct', '')}
+                    disabled={loading}
+                    title='Reset to no reservation'
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-undo'></i>
+                    </span>
+                    <span>None</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Parameters Section */}
+        <hr />
+        <h5 className='title is-6 mb-3 has-text-info'>
+          <span className='icon-text'>
+            <span className='icon'><i className='fas fa-tachometer-alt'></i></span>
+            <span>Performance Parameters</span>
+          </span>
+        </h5>
+
+        <div className='columns'>
+          <div className='column is-6'>
+            <div className='field mb-4'>
+              <label className='label'>
+                VDev Max Pending: {formData.vdev_max_pending ? formData.vdev_max_pending : 'Auto'} 
+                <span className='tag is-success is-small ml-2'>Dynamic</span>
+              </label>
+              <div className='control mt-4 mb-4'>
+                <input 
+                  className='zw-range-slider-primary'
+                  type='range'
+                  min='1'
+                  max='100'
+                  step='1'
+                  value={formData.vdev_max_pending || '10'}
+                  onChange={(e) => handleFormChange('vdev_max_pending', e.target.value)}
+                  disabled={loading}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    background: formData.vdev_max_pending ? 
+                      `linear-gradient(to right, #007bff 0%, #007bff ${formData.vdev_max_pending}%, #ccc ${formData.vdev_max_pending}%, #ccc 100%)`
+                      : 'linear-gradient(to right, #ccc 0%, #ccc 100%)'
+                  }}
+                />
+              </div>
+              <div className='help is-size-7'>
+                Max concurrent I/Os per device (1-100). Higher values for storage arrays.
+                <br />Typical: 10 (default), 35-50 (high-performance storage).
+              </div>
+              <div className='field mt-3'>
+                <div className='control'>
+                  <button 
+                    className='button is-small is-light'
+                    onClick={() => handleFormChange('vdev_max_pending', '')}
+                    disabled={loading}
+                    title='Reset to default (10)'
+                  >
+                    <span className='icon is-small'>
+                      <i className='fas fa-undo'></i>
+                    </span>
+                    <span>Default</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className='column is-6'>
+            <div className='field'>
+              <label className='label'>
+                ZFS Prefetching 
+                <span className='tag is-success is-small ml-2'>Dynamic</span>
+              </label>
+              <div className='control'>
+                <label className='checkbox'>
+                  <input 
+                    type='checkbox'
+                    checked={!formData.prefetch_disable}
+                    onChange={(e) => handleFormChange('prefetch_disable', !e.target.checked)}
+                    disabled={loading}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className='ml-2'>Enable ZFS file-level prefetching</span>
+                </label>
+              </div>
+              <div className='help is-size-7 mt-2'>
+                Prefetching improves sequential read performance by predicting future reads.
+                <br />Keep enabled for most workloads. Disable only for specific use cases.
               </div>
             </div>
           </div>
