@@ -237,13 +237,14 @@ const FaultList = ({ server }) => {
             <div className='field'>
               <label className='label'>Include Resolved</label>
               <div className='control'>
-                <label className='switch'>
+                <label className='switch is-medium'>
                   <input 
                     type='checkbox'
                     checked={filters.all}
                     onChange={(e) => handleFilterChange('all', e.target.checked)}
                   />
-                  <span className='slider round'></span>
+                  <span className='check'></span>
+                  <span className='control-label'>Show All</span>
                 </label>
               </div>
             </div>

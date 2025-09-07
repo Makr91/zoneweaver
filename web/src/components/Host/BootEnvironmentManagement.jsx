@@ -249,13 +249,14 @@ const BootEnvironmentManagement = ({ server }) => {
             <div className='field'>
               <label className='label'>Show Detailed</label>
               <div className='control'>
-                <label className='switch'>
+                <label className='switch is-medium'>
                   <input 
                     type='checkbox'
                     checked={filters.showDetailed}
                     onChange={(e) => handleFilterChange('showDetailed', e.target.checked)}
                   />
-                  <span className='slider round'></span>
+                  <span className='check'></span>
+                  <span className='control-label'>Details</span>
                 </label>
               </div>
             </div>
@@ -264,13 +265,14 @@ const BootEnvironmentManagement = ({ server }) => {
             <div className='field'>
               <label className='label'>Show Snapshots</label>
               <div className='control'>
-                <label className='switch'>
+                <label className='switch is-medium'>
                   <input 
                     type='checkbox'
                     checked={filters.showSnapshots}
                     onChange={(e) => handleFilterChange('showSnapshots', e.target.checked)}
                   />
-                  <span className='slider round'></span>
+                  <span className='check'></span>
+                  <span className='control-label'>Snapshots</span>
                 </label>
               </div>
             </div>

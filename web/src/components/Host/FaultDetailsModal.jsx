@@ -75,6 +75,18 @@ const FaultDetailsModal = ({ fault, onClose }) => {
           <div className='table-container'>
             <table className='table is-fullwidth'>
               <tbody>
+                {fault.details.host && (
+                  <tr>
+                    <td><strong>Host</strong></td>
+                    <td className='is-family-monospace'>{fault.details.host}</td>
+                  </tr>
+                )}
+                {fault.details.platform && (
+                  <tr>
+                    <td><strong>Platform</strong></td>
+                    <td className='is-family-monospace'>{fault.details.platform}</td>
+                  </tr>
+                )}
                 {fault.details.faultClass && (
                   <tr>
                     <td><strong>Fault Class</strong></td>
@@ -97,6 +109,12 @@ const FaultDetailsModal = ({ fault, onClose }) => {
                   <tr>
                     <td><strong>Description</strong></td>
                     <td>{fault.details.description}</td>
+                  </tr>
+                )}
+                {fault.details.response && (
+                  <tr>
+                    <td><strong>Response</strong></td>
+                    <td className='is-size-7 has-text-grey'>{fault.details.response}</td>
                   </tr>
                 )}
                 {fault.details.impact && (
@@ -123,6 +141,18 @@ const FaultDetailsModal = ({ fault, onClose }) => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Raw Output Display */}
+      {fault.raw_output && (
+        <div className='box mb-4'>
+          <h3 className='title is-6'>Detailed Output</h3>
+          <div className='content'>
+            <pre className='box has-background-black has-text-light p-4 is-size-7' style={{ maxHeight: '400px', overflow: 'auto' }}>
+              {fault.raw_output}
+            </pre>
           </div>
         </div>
       )}

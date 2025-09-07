@@ -311,14 +311,15 @@ const PackageSection = ({ server, onError }) => {
             <div className='field'>
               <label className='label'>Show All</label>
               <div className='control'>
-                <label className='switch'>
+                <label className='switch is-medium'>
                   <input 
                     type='checkbox'
                     checked={filters.showAll}
                     onChange={(e) => handleFilterChange('showAll', e.target.checked)}
                     disabled={isSearchMode}
                   />
-                  <span className='slider round'></span>
+                  <span className='check'></span>
+                  <span className='control-label'>All Packages</span>
                 </label>
               </div>
             </div>

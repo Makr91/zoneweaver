@@ -264,13 +264,14 @@ const ServiceManagement = ({ server }) => {
             <div className='field'>
               <label className='label'>Show Disabled</label>
               <div className='control'>
-                <label className='switch'>
+                <label className='switch is-medium'>
                   <input 
                     type='checkbox'
                     checked={filters.showDisabled}
                     onChange={(e) => handleFilterChange('showDisabled', e.target.checked)}
                   />
-                  <span className='slider round'></span>
+                  <span className='check'></span>
+                  <span className='control-label'>Include All</span>
                 </label>
               </div>
             </div>

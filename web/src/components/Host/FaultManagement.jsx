@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FaultList from './FaultList';
 import SystemLogs from './SystemLogs';
 import FaultManagerConfig from './FaultManagerConfig';
+import SyslogConfiguration from './SyslogConfiguration';
 
 const FaultManagement = ({ server }) => {
   const [activeTab, setActiveTab] = useState('faults');
@@ -35,6 +36,12 @@ const FaultManagement = ({ server }) => {
             <a onClick={() => setActiveTab('config')}>
               <span className='icon is-small'><i className='fas fa-cog'></i></span>
               <span>Configuration</span>
+            </a>
+          </li>
+          <li className={activeTab === 'syslog-config' ? 'is-active' : ''}>
+            <a onClick={() => setActiveTab('syslog-config')}>
+              <span className='icon is-small'><i className='fas fa-edit'></i></span>
+              <span>Syslog Config</span>
             </a>
           </li>
         </ul>
@@ -96,6 +103,25 @@ const FaultManagement = ({ server }) => {
             </div>
             
             <FaultManagerConfig server={server} />
+          </div>
+        )}
+
+        {activeTab === 'syslog-config' && (
+          <div>
+            <div className='mb-4'>
+              <h3 className='title is-6'>
+                <span className='icon-text'>
+                  <span className='icon'><i className='fas fa-edit'></i></span>
+                  <span>Syslog Configuration</span>
+                </span>
+              </h3>
+              <p className='content'>
+                Configure system logging on <strong>{server.hostname}</strong>. 
+                Manage syslog rules, facilities, and log destinations with validation and backup support.
+              </p>
+            </div>
+            
+            <SyslogConfiguration server={server} />
           </div>
         )}
       </div>

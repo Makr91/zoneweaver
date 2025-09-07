@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import SyslogConfiguration from './SyslogConfiguration';
 
 const SystemLogs = ({ server }) => {
   const [logFiles, setLogFiles] = useState([]);

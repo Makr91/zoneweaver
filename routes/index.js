@@ -273,6 +273,13 @@ router.post("/api/zapi/:protocol/:hostname/:port/system/logs/:logname/stream/sta
 router.delete("/api/zapi/:protocol/:hostname/:port/system/logs/stream/:sessionId/stop", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 router.get("/api/zapi/:protocol/:hostname/:port/system/logs/stream/sessions", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
 
+// Syslog Configuration endpoints - Protected with admin rate limiting
+router.get("/api/zapi/:protocol/:hostname/:port/system/syslog/config", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.put("/api/zapi/:protocol/:hostname/:port/system/syslog/config", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.get("/api/zapi/:protocol/:hostname/:port/system/syslog/facilities", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/syslog/validate", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+router.post("/api/zapi/:protocol/:hostname/:port/system/syslog/reload", adminLimiter, authenticate, requireAdmin, ServerController.proxyToZoneweaverAPI);
+
 // Settings endpoints - Protected with admin rate limiting
 router.get("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.getSettings);
 router.put("/api/settings", adminLimiter, authenticate, requireSuperAdmin, SettingsController.updateSettings);

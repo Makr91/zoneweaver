@@ -211,13 +211,14 @@ const RepositorySection = ({ server, onError }) => {
             <div className='field'>
               <label className='label'>Enabled Only</label>
               <div className='control'>
-                <label className='switch'>
+                <label className='switch is-medium'>
                   <input 
                     type='checkbox'
                     checked={filters.enabledOnly}
                     onChange={(e) => handleFilterChange('enabledOnly', e.target.checked)}
                   />
-                  <span className='slider round'></span>
+                  <span className='check'></span>
+                  <span className='control-label'>Enabled</span>
                 </label>
               </div>
             </div>
