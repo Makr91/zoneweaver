@@ -10,6 +10,7 @@ import BootEnvironmentManagement from "./Host/BootEnvironmentManagement";
 import StorageManagement from "./Host/StorageManagement";
 import TimeNTPManagement from "./Host/TimeNTPManagement";
 import FaultManagement from "./Host/FaultManagement";
+import ProcessManagement from "./Host/ProcessManagement";
 
 const HostManage = () => {
   const [activeTab, setActiveTab] = useState('services');
@@ -124,6 +125,12 @@ const HostManage = () => {
                   <span>Time & NTP</span>
                 </a>
               </li>
+              <li className={activeTab === 'processes' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('processes')}>
+                  <span className='icon is-small'><i className='fas fa-tasks'></i></span>
+                  <span>Processes</span>
+                </a>
+              </li>
               <li className={activeTab === 'fault-management' ? 'is-active' : ''}>
                 <a onClick={() => setActiveTab('fault-management')}>
                   <span className='icon is-small'><i className='fas fa-exclamation-triangle'></i></span>
@@ -221,6 +228,21 @@ const HostManage = () => {
                 </div>
                 
                 <TimeNTPManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* Process Management Tab */}
+            {activeTab === 'processes' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>Process Management</h2>
+                  <p className='content'>
+                    Monitor and manage system processes on <strong>{currentServer.hostname}</strong>. 
+                    View running processes, send signals, terminate processes, and analyze process details including open files and resource usage.
+                  </p>
+                </div>
+                
+                <ProcessManagement server={currentServer} />
               </div>
             )}
 
