@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { useDebounce } from '../../utils/debounce';
 import ProcessTable from './ProcessTable';
 import ProcessDetailsModal from './ProcessDetailsModal';
 import ProcessActionModals from './ProcessActionModals';
@@ -26,11 +27,14 @@ const ProcessManagement = ({ server }) => {
   
   const { makeZoneweaverAPIRequest } = useServers();
 
+  // Debounce the pattern filter to avoid excessive API calls
+  const debouncedPattern = useDebounce(filters.pattern, 500);
+
   // Load processes on component mount and when filters change
   useEffect(() => {
     loadProcesses();
     loadZones();
-  }, [server, filters.pattern, filters.zone, filters.user, filters.detailed]);
+  }, [server, debouncedPattern, filters.zone, filters.user, filters.detailed]);
 
   const loadZones = async () => {
     if (!server || !makeZoneweaverAPIRequest) return;
@@ -62,7 +66,7 @@ const ProcessManagement = ({ server }) => {
       setError('');
       
       const params = {};
-      if (filters.pattern) params.command = filters.pattern;
+      if (debouncedPattern) params.command = debouncedPattern;
       if (filters.zone) params.zone = filters.zone;
       if (filters.user) params.user = filters.user;
       if (filters.detailed) params.detailed = true;

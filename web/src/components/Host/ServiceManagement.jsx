@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useServers } from '../../contexts/ServerContext';
+import { useDebounce } from '../../utils/debounce';
 import ServiceTable from './ServiceTable';
 import ServiceDetailsModal from './ServiceDetailsModal';
 import ServicePropertiesModal from './ServicePropertiesModal';
@@ -23,11 +24,14 @@ const ServiceManagement = ({ server }) => {
   
   const { makeZoneweaverAPIRequest } = useServers();
 
+  // Debounce the pattern filter to avoid excessive API calls
+  const debouncedPattern = useDebounce(filters.pattern, 500);
+
   // Load services on component mount and when filters change
   useEffect(() => {
     loadServices();
     loadZones();
-  }, [server, filters.pattern, filters.zone, filters.showDisabled]); // Only reload for backend filters
+  }, [server, debouncedPattern, filters.zone, filters.showDisabled]); // Use debounced pattern
 
   const loadZones = async () => {
     if (!server || !makeZoneweaverAPIRequest) return;
@@ -60,7 +64,7 @@ const ServiceManagement = ({ server }) => {
       setError('');
       
       const params = {};
-      if (filters.pattern) params.pattern = filters.pattern;
+      if (debouncedPattern) params.pattern = debouncedPattern;
       if (filters.zone) params.zone = filters.zone;
       if (filters.showDisabled) params.all = true;
       
