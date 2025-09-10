@@ -192,46 +192,121 @@ export const useCuboneExtensions = (files, permissions, customActionHandlers) =>
         console.log('🔧 TOOLBAR: Found selected checkboxes:', selectedCheckboxes.length);
         
         // Only show toolbar items when files are selected
-        if (selectedCheckboxes.length > 0 && permissions.archive) {
+        if (selectedCheckboxes.length > 0) {
           const selectedFiles = Array.from(selectedCheckboxes).map(checkbox => {
             const name = checkbox.getAttribute('name');
             return files.find(f => f.name === name);
           }).filter(Boolean);
 
-          console.log('🔧 TOOLBAR: Creating archive button for', selectedFiles.length, 'files');
+          console.log('🔧 TOOLBAR: Creating buttons for', selectedFiles.length, 'selected files');
 
-          // Create archive button for toolbar
-          const archiveButton = document.createElement('button');
-          archiveButton.className = 'item-action zw-toolbar-item';
-          archiveButton.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 0.4rem 0.8rem;
-            background: var(--bulma-info);
-            color: var(--bulma-info-invert);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.875rem;
-          `;
-          
-          archiveButton.innerHTML = `
-            <span style="font-size: 16px;">🗜️</span>
-            <span>Archive (${selectedFiles.length})</span>
-          `;
-          
-          archiveButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🖱️ TOOLBAR: Archive button clicked');
-            customActionHandlers.handleCreateArchive(selectedFiles);
-          });
+          // Check file types for context-aware buttons
+          const hasTextFiles = selectedFiles.some(f => isTextFile(f));
+          const hasArchiveFiles = selectedFiles.some(f => isArchiveFile(f));
+          const isSingleSelection = selectedFiles.length === 1;
 
-          toolbar.appendChild(archiveButton);
-          console.log('✅ TOOLBAR: Archive button added');
+          // Edit button for text files
+          if (hasTextFiles && isSingleSelection && permissions.edit) {
+            const editButton = document.createElement('button');
+            editButton.className = 'item-action zw-toolbar-item';
+            editButton.style.cssText = `
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              padding: 0.4rem 0.8rem;
+              background: var(--bulma-primary);
+              color: var(--bulma-primary-invert);
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.875rem;
+              margin-right: 5px;
+            `;
+            
+            editButton.innerHTML = `
+              <span style="font-size: 16px;">📝</span>
+              <span>Edit</span>
+            `;
+            
+            editButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🖱️ TOOLBAR: Edit button clicked');
+              customActionHandlers.handleEditFile(selectedFiles[0]);
+            });
+
+            toolbar.appendChild(editButton);
+            console.log('✅ TOOLBAR: Edit button added');
+          }
+
+          // Extract button for archive files
+          if (hasArchiveFiles && isSingleSelection && permissions.archive) {
+            const extractButton = document.createElement('button');
+            extractButton.className = 'item-action zw-toolbar-item';
+            extractButton.style.cssText = `
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              padding: 0.4rem 0.8rem;
+              background: var(--bulma-success);
+              color: var(--bulma-success-invert);
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.875rem;
+              margin-right: 5px;
+            `;
+            
+            extractButton.innerHTML = `
+              <span style="font-size: 16px;">📦</span>
+              <span>Extract</span>
+            `;
+            
+            extractButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🖱️ TOOLBAR: Extract button clicked');
+              customActionHandlers.handleExtractArchive(selectedFiles[0]);
+            });
+
+            toolbar.appendChild(extractButton);
+            console.log('✅ TOOLBAR: Extract button added');
+          }
+
+          // Archive button for multiple files or general archiving
+          if (permissions.archive) {
+            const archiveButton = document.createElement('button');
+            archiveButton.className = 'item-action zw-toolbar-item';
+            archiveButton.style.cssText = `
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              padding: 0.4rem 0.8rem;
+              background: var(--bulma-info);
+              color: var(--bulma-info-invert);
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.875rem;
+            `;
+            
+            archiveButton.innerHTML = `
+              <span style="font-size: 16px;">🗜️</span>
+              <span>Archive (${selectedFiles.length})</span>
+            `;
+            
+            archiveButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🖱️ TOOLBAR: Archive button clicked');
+              customActionHandlers.handleCreateArchive(selectedFiles);
+            });
+
+            toolbar.appendChild(archiveButton);
+            console.log('✅ TOOLBAR: Archive button added');
+          }
         } else {
-          console.log('⚠️ TOOLBAR: No files selected or no archive permission');
+          console.log('⚠️ TOOLBAR: No files selected');
         }
       }, 50);
     };
