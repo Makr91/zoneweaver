@@ -30,33 +30,39 @@ const generateIdFromPath = (path) => {
  */
 const getParentId = (path) => {
   const parentPath = getParentPath(path);
-  return parentPath ? generateIdFromPath(parentPath) : null;
+  return parentPath && parentPath !== '/' ? generateIdFromPath(parentPath) : null;
 };
 
 /**
  * Transform zoneweaver API file object to cubone format
  * @param {Object} zwItem - Zoneweaver API file item
+ * @param {string} currentPath - Current directory being browsed
  * @returns {Object} Cubone compatible file object
  */
-export const transformZoneweaverToFile = (zwItem) => ({
-  name: zwItem.name,
-  path: zwItem.path,
-  isDirectory: zwItem.isDirectory,
-  updatedAt: zwItem.mtime || zwItem.atime || new Date().toISOString(),
-  size: zwItem.size || 0,
-  // Synthetic ID and parent ID for cubone compatibility
-  _id: generateIdFromPath(zwItem.path),
-  _parentId: getParentId(zwItem.path),
-  // Additional metadata for internal use
-  _zwMetadata: {
-    permissions: zwItem.permissions,
-    uid: zwItem.uid,
-    gid: zwItem.gid,
-    mimeType: zwItem.mimeType,
-    isBinary: zwItem.isBinary,
-    syntax: zwItem.syntax
-  }
-});
+export const transformZoneweaverToFile = (zwItem, currentPath = '/') => {
+  // Ensure proper path format for cubone navigation
+  // Cubone expects: currentPath + "/" + file.name === file.path
+  const normalizedCurrentPath = currentPath === '/' ? '' : currentPath;
+  const expectedPath = normalizedCurrentPath + '/' + zwItem.name;
+  
+  return {
+    name: zwItem.name,
+    path: expectedPath, // Use expected path format for cubone
+    isDirectory: zwItem.isDirectory,
+    updatedAt: zwItem.mtime || zwItem.atime || new Date().toISOString(),
+    size: zwItem.size || 0,
+    // Additional metadata for internal use
+    _zwMetadata: {
+      originalPath: zwItem.path, // Keep original path for API calls
+      permissions: zwItem.permissions,
+      uid: zwItem.uid,
+      gid: zwItem.gid,
+      mimeType: zwItem.mimeType,
+      isBinary: zwItem.isBinary,
+      syntax: zwItem.syntax
+    }
+  };
+};
 
 /**
  * Transform array of zoneweaver files to cubone hierarchy format
@@ -70,12 +76,13 @@ export const transformFilesToHierarchy = (zwFiles) => {
 };
 
 /**
- * Extract path from cubone file object
+ * Extract path from cubone file object for API calls
  * @param {Object} file - Cubone file object
- * @returns {string} File path
+ * @returns {string} File path (uses original zoneweaver path if available)
  */
 export const getPathFromFile = (file) => {
-  return file.path || '/';
+  // Use original zoneweaver path for API calls if available
+  return file._zwMetadata?.originalPath || file.path || '/';
 };
 
 /**

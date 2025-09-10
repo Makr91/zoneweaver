@@ -62,7 +62,7 @@ export class ZoneweaverFileManagerAPI {
       const result = await this.makeRequest('filesystem', 'GET', null, params);
       
       if (result.success && result.data && result.data.items) {
-        return transformFilesToHierarchy(result.data.items);
+        return result.data.items.map(item => transformZoneweaverToFile(item, path));
       } else {
         console.error('Failed to load files:', result.message);
         return [];
@@ -77,11 +77,13 @@ export class ZoneweaverFileManagerAPI {
    * Create a new folder
    * @param {string} name - Folder name
    * @param {Object} parentFolder - Parent folder object (cubone format)
+   * @param {string} currentPath - Current directory path from file manager
    * @returns {Promise<Object>} API response
    */
-  async createFolder(name, parentFolder = null) {
+  async createFolder(name, parentFolder = null, currentPath = '/') {
     try {
-      const parentPath = parentFolder ? getPathFromFile(parentFolder) : '/';
+      // Use current path if no parent folder specified, otherwise use parent folder's path
+      const parentPath = parentFolder ? getPathFromFile(parentFolder) : currentPath;
       
       const data = {
         path: parentPath,
@@ -89,12 +91,14 @@ export class ZoneweaverFileManagerAPI {
         mode: '755'
       };
 
+      console.log('Creating folder:', { name, parentPath, data });
+
       const result = await this.makeRequest('filesystem/folder', 'POST', data);
       
       if (result.success && result.data && result.data.item) {
         return {
           success: true,
-          file: transformZoneweaverToFile(result.data.item)
+          file: transformZoneweaverToFile(result.data.item, parentPath)
         };
       }
       

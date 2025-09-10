@@ -1,0 +1,317 @@
+/* Custom styling for Cubone File Manager to integrate with Zoneweaver theming */
+
+.host-file-manager {
+  /* Ensure the file manager inherits the theme */
+  
+  .file-explorer {
+    /* Override cubone's default background and colors to match zoneweaver theme */
+    background-color: var(--bulma-scheme-main) !important;
+    color: var(--bulma-text) !important;
+    
+    /* Toolbar theming */
+    .toolbar {
+      background-color: var(--bulma-scheme-main-bis) !important;
+      border-bottom: 1px solid var(--bulma-border) !important;
+      
+      .item-action {
+        background-color: transparent !important;
+        color: var(--bulma-text) !important;
+        border: 1px solid var(--bulma-border) !important;
+        
+        &:hover {
+          background-color: var(--bulma-scheme-main-ter) !important;
+          color: var(--bulma-text-strong) !important;
+        }
+      }
+    }
+    
+    /* Navigation pane theming */
+    .navigation-pane {
+      background-color: var(--bulma-scheme-main-bis) !important;
+      border-right: 1px solid var(--bulma-border) !important;
+      
+      .sb-folders-list {
+        background-color: transparent !important;
+        color: var(--bulma-text) !important;
+      }
+      
+      /* Folder tree items */
+      .folder-item {
+        color: var(--bulma-text) !important;
+        
+        &:hover {
+          background-color: var(--bulma-scheme-main-ter) !important;
+        }
+        
+        &.active {
+          background-color: var(--bulma-primary-light) !important;
+          color: var(--bulma-primary-dark) !important;
+        }
+      }
+    }
+    
+    /* File list area theming */
+    .folders-preview {
+      background-color: var(--bulma-scheme-main) !important;
+      
+      /* Breadcrumb theming */
+      .breadcrumb {
+        background-color: var(--bulma-scheme-main-bis) !important;
+        border-bottom: 1px solid var(--bulma-border) !important;
+        
+        .breadcrumb-item {
+          color: var(--bulma-text) !important;
+          
+          &:hover {
+            color: var(--bulma-link) !important;
+          }
+          
+          &.active {
+            color: var(--bulma-text-strong) !important;
+          }
+        }
+      }
+      
+      /* Files container */
+      .files {
+        background-color: var(--bulma-scheme-main) !important;
+        
+        /* File items in grid view */
+        &.grid .file-item {
+          background-color: var(--bulma-scheme-main-bis) !important;
+          border: 1px solid var(--bulma-border) !important;
+          color: var(--bulma-text) !important;
+          
+          &:hover {
+            background-color: var(--bulma-scheme-main-ter) !important;
+            border-color: var(--bulma-link) !important;
+          }
+          
+          &.selected {
+            background-color: var(--bulma-primary-light) !important;
+            border-color: var(--bulma-primary) !important;
+            color: var(--bulma-primary-dark) !important;
+          }
+          
+          .file-name {
+            color: var(--bulma-text) !important;
+          }
+          
+          .file-size {
+            color: var(--bulma-text-weak) !important;
+          }
+        }
+        
+        /* File items in list view */
+        &.list {
+          /* List header */
+          .files-header {
+            background-color: var(--bulma-scheme-main-bis) !important;
+            border-bottom: 1px solid var(--bulma-border) !important;
+            color: var(--bulma-text-strong) !important;
+            
+            .header-cell {
+              border-right: 1px solid var(--bulma-border) !important;
+              
+              &:hover {
+                background-color: var(--bulma-scheme-main-ter) !important;
+              }
+            }
+          }
+          
+          /* List rows */
+          .file-item {
+            background-color: transparent !important;
+            border-bottom: 1px solid var(--bulma-border-weak) !important;
+            color: var(--bulma-text) !important;
+            
+            &:hover {
+              background-color: var(--bulma-scheme-main-bis) !important;
+            }
+            
+            &.selected {
+              background-color: var(--bulma-primary-light) !important;
+              color: var(--bulma-primary-dark) !important;
+            }
+            
+            .file-cell {
+              border-right: 1px solid var(--bulma-border-weak) !important;
+            }
+          }
+        }
+      }
+    }
+    
+    /* Context menu theming */
+    .context-menu {
+      background-color: var(--bulma-scheme-main) !important;
+      border: 1px solid var(--bulma-border) !important;
+      box-shadow: var(--bulma-shadow) !important;
+      
+      .context-menu-item {
+        color: var(--bulma-text) !important;
+        
+        &:hover {
+          background-color: var(--bulma-scheme-main-bis) !important;
+          color: var(--bulma-text-strong) !important;
+        }
+        
+        &.disabled {
+          color: var(--bulma-text-weak) !important;
+        }
+      }
+      
+      .context-menu-separator {
+        border-top: 1px solid var(--bulma-border) !important;
+      }
+    }
+    
+    /* Modal theming (for cubone's internal modals) */
+    .modal {
+      .modal-background {
+        background-color: rgba(0, 0, 0, 0.4) !important;
+      }
+      
+      .modal-card {
+        background-color: var(--bulma-scheme-main) !important;
+        
+        .modal-card-head {
+          background-color: var(--bulma-scheme-main-bis) !important;
+          border-bottom: 1px solid var(--bulma-border) !important;
+          
+          .modal-card-title {
+            color: var(--bulma-text-strong) !important;
+          }
+          
+          .delete {
+            background-color: var(--bulma-scheme-main-ter) !important;
+            
+            &:hover {
+              background-color: var(--bulma-danger) !important;
+            }
+          }
+        }
+        
+        .modal-card-body {
+          background-color: var(--bulma-scheme-main) !important;
+          color: var(--bulma-text) !important;
+        }
+        
+        .modal-card-foot {
+          background-color: var(--bulma-scheme-main-bis) !important;
+          border-top: 1px solid var(--bulma-border) !important;
+          
+          .button {
+            background-color: var(--bulma-scheme-main-ter) !important;
+            color: var(--bulma-text) !important;
+            border: 1px solid var(--bulma-border) !important;
+            
+            &.is-primary {
+              background-color: var(--bulma-primary) !important;
+              color: var(--bulma-primary-invert) !important;
+            }
+            
+            &:hover {
+              background-color: var(--bulma-scheme-main-bis) !important;
+            }
+          }
+        }
+      }
+    }
+    
+    /* Loading spinner theming */
+    .loader {
+      .spinner {
+        border-color: var(--zw-loading-spinner, var(--bulma-text-weak)) !important;
+        border-left-color: var(--bulma-primary) !important;
+      }
+    }
+    
+    /* Empty states */
+    .empty-folder,
+    .empty-nav-pane {
+      color: var(--bulma-text-weak) !important;
+      background-color: var(--bulma-scheme-main-bis) !important;
+      border: 1px dashed var(--bulma-border) !important;
+    }
+    
+    /* Scrollbars for dark theme */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--bulma-border) var(--bulma-scheme-main-bis);
+    }
+    
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    *::-webkit-scrollbar-track {
+      background: var(--bulma-scheme-main-bis);
+    }
+    
+    *::-webkit-scrollbar-thumb {
+      background-color: var(--bulma-border);
+      border-radius: 4px;
+      
+      &:hover {
+        background-color: var(--bulma-border-hover, var(--bulma-text-weak));
+      }
+    }
+    
+    /* Input fields theming */
+    input, textarea, select {
+      background-color: var(--bulma-input-background-color, var(--bulma-scheme-main)) !important;
+      color: var(--bulma-input-color, var(--bulma-text)) !important;
+      border-color: var(--bulma-input-border-color, var(--bulma-border)) !important;
+      
+      &:focus {
+        border-color: var(--bulma-input-focus-border-color, var(--bulma-primary)) !important;
+        box-shadow: 0 0 0 0.125em var(--bulma-input-focus-shadow-color, rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.25)) !important;
+      }
+      
+      &::placeholder {
+        color: var(--zw-text-placeholder, var(--bulma-text-weak)) !important;
+      }
+    }
+  }
+}
+
+/* Dark theme specific overrides */
+[data-theme="dark"] .host-file-manager {
+  .file-explorer {
+    /* Ensure better contrast in dark mode */
+    .files.grid .file-item {
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+      
+      &.selected {
+        box-shadow: 0 2px 12px rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.4) !important;
+      }
+    }
+    
+    .context-menu {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    }
+  }
+}
+
+/* Light theme specific overrides */
+[data-theme="light"] .host-file-manager {
+  .file-explorer {
+    .files.grid .file-item {
+      &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      }
+      
+      &.selected {
+        box-shadow: 0 2px 12px rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.2) !important;
+      }
+    }
+    
+    .context-menu {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+}

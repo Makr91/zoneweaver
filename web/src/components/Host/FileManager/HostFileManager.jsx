@@ -9,6 +9,7 @@ import { canManageHosts, canViewHosts } from '../../../utils/permissions';
 import { ZoneweaverFileManagerAPI } from './FileManagerAPI';
 import { transformZoneweaverToFile, isTextFile } from './FileManagerTransforms';
 import TextFileEditor from './TextFileEditor';
+import './HostFileManager.scss';
 
 /**
  * Host File Manager Component
@@ -42,7 +43,9 @@ const HostFileManager = ({ server }) => {
     setError('');
     
     try {
+      console.log('Loading files for path:', path);
       const fileList = await api.loadFiles(path);
+      console.log('Loaded files:', fileList);
       setFiles(fileList);
     } catch (error) {
       console.error('Error loading files:', error);
@@ -96,11 +99,13 @@ const HostFileManager = ({ server }) => {
     setError('');
     
     try {
-      const result = await api.createFolder(name, parentFolder);
+      const result = await api.createFolder(name, parentFolder, currentPath);
       
       if (result.success) {
-        // Add new folder to current files list
+        // Add new folder to current files list and refresh to update navigation
         setFiles(prevFiles => [...prevFiles, result.file]);
+        // Refresh files to ensure navigation pane updates
+        setTimeout(() => loadFiles(), 500);
       } else {
         setError(result.message || 'Failed to create folder');
       }
@@ -114,8 +119,12 @@ const HostFileManager = ({ server }) => {
 
   // File upload handlers
   const handleFileUploading = (file, parentFolder) => {
-    const uploadPath = parentFolder?.path || currentPath;
+    // Use original path if available, otherwise use current path
+    const uploadPath = parentFolder?._zwMetadata?.originalPath || parentFolder?.path || currentPath;
     
+    console.log('File uploading:', { file: file.name, uploadPath, parentFolder });
+    
+    // Return form data that will be appended to the multipart upload
     return {
       uploadPath: uploadPath,
       overwrite: false,
@@ -210,15 +219,49 @@ const HostFileManager = ({ server }) => {
     }
   };
 
-  // Download handler
+  // Download handler with authentication
   const handleDownload = async (filesToDownload) => {
     try {
-      const downloadUrls = api.getDownloadUrls(filesToDownload);
-      
-      // Open download URLs in new tabs/windows
-      downloadUrls.forEach(url => {
-        window.open(url, '_blank');
-      });
+      const server = serverContext.currentServer;
+      if (!server) {
+        setError('No server selected');
+        return;
+      }
+
+      // Download files using authenticated requests
+      for (const file of filesToDownload) {
+        if (!file.isDirectory) {
+          const path = encodeURIComponent(file.path);
+          const downloadUrl = `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/download?path=${path}`;
+          
+          try {
+            // Use authenticated fetch to get the file
+            const response = await fetch(downloadUrl, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+            });
+            
+            if (response.ok) {
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = file.name;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            } else {
+              console.error(`Failed to download ${file.name}:`, response.statusText);
+              setError(`Failed to download ${file.name}: ${response.statusText}`);
+            }
+          } catch (fetchError) {
+            console.error(`Error downloading ${file.name}:`, fetchError);
+            setError(`Error downloading ${file.name}: ${fetchError.message}`);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error downloading files:', error);
       setError('Failed to download files: ' + error.message);
@@ -354,8 +397,8 @@ const HostFileManager = ({ server }) => {
         primaryColor={themeConfig.primaryColor}
         fontFamily={themeConfig.fontFamily}
         permissions={permissions}
-        collapsibleNav={true}
-        defaultNavExpanded={true}
+        collapsibleNav={false}
+        defaultNavExpanded={false}
         language="en"
       />
 
