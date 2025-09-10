@@ -11,6 +11,7 @@ import { transformZoneweaverToFile, isTextFile, isArchiveFile } from './FileMana
 import TextFileEditor from './TextFileEditor';
 import ArchiveModals from './ArchiveModals';
 import FilePropertiesModal from './FilePropertiesModal';
+import { useCuboneExtensions } from './CuboneExtensions';
 import './HostFileManager.scss';
 
 /**
@@ -491,6 +492,25 @@ const EnhancedFileManager = ({ server }) => {
     console.log('Properties updated successfully:', result);
     await loadFiles();
   };
+
+  // Custom action handlers for cubone extensions
+  const customActionHandlers = useMemo(() => ({
+    handleEditFile,
+    handleCreateArchive,
+    handleExtractArchive,
+    handleShowProperties
+  }), [handleEditFile, handleCreateArchive, handleExtractArchive, handleShowProperties]);
+
+  // Extended permissions for custom actions
+  const extendedPermissions = useMemo(() => ({
+    ...permissions,
+    edit: canManageHosts(user?.role),
+    archive: canManageHosts(user?.role),
+    properties: canManageHosts(user?.role)
+  }), [permissions, user?.role]);
+
+  // Use cubone extensions to add context menu and toolbar functionality
+  useCuboneExtensions(files, extendedPermissions, customActionHandlers);
 
   // Don't render if no server is selected
   if (!server) {
