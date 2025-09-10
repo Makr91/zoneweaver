@@ -176,22 +176,56 @@ const ExtendedFileManager = ({ server }) => {
   const handleFileUploading = (file, parentFolder) => {
     const uploadPath = parentFolder?.path || currentPath || '/';
     
-    return {
+    const formData = {
       uploadPath: uploadPath,
       overwrite: false,
       mode: '644',
       uid: 1000,
       gid: 1000
     };
+    
+    console.log('🔄 UPLOAD: Starting file upload', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      uploadPath: uploadPath,
+      formData: formData,
+      parentFolder: parentFolder?.name || 'None',
+      currentPath: currentPath,
+      server: `${server.hostname}:${server.port}`,
+      timestamp: new Date().toISOString()
+    });
+    
+    return formData;
   };
 
   const handleFileUploaded = (response) => {
+    console.log('✅ UPLOAD: Upload completed, processing response', {
+      response: response,
+      timestamp: new Date().toISOString()
+    });
+    
     try {
       const uploadedFile = JSON.parse(response);
       const transformedFile = transformZoneweaverToFile(uploadedFile);
+      
+      console.log('✅ UPLOAD: File processed successfully', {
+        fileName: uploadedFile.name || 'Unknown',
+        filePath: uploadedFile.path || 'Unknown',
+        fileSize: uploadedFile.size || 'Unknown',
+        transformedFile: transformedFile
+      });
+      
       setFiles(prevFiles => [...prevFiles, transformedFile]);
     } catch (error) {
-      console.error('Error processing uploaded file:', error);
+      console.error('❌ UPLOAD: Error processing uploaded file response', {
+        error: error.message,
+        response: response,
+        stack: error.stack
+      });
+      
+      // Refresh files as fallback
+      console.log('🔄 UPLOAD: Refreshing files due to processing error');
       loadFiles();
     }
   };
@@ -265,24 +299,65 @@ const ExtendedFileManager = ({ server }) => {
     try {
       const server = serverContext.currentServer;
       if (!server) {
+        console.error('❌ DOWNLOAD: No server selected');
         setError('No server selected');
         return;
       }
+
+      console.log('🔽 DOWNLOAD: Starting download operation', {
+        fileCount: filesToDownload.length,
+        files: filesToDownload.map(f => ({ name: f.name, path: f.path, size: f.size })),
+        server: `${server.hostname}:${server.port}`,
+        timestamp: new Date().toISOString()
+      });
 
       for (const file of filesToDownload) {
         if (!file.isDirectory) {
           const path = encodeURIComponent(file.path);
           const downloadUrl = `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/download?path=${path}`;
           
+          console.log(`🔽 DOWNLOAD: Processing file ${file.name}`, {
+            originalPath: file.path,
+            encodedPath: path,
+            downloadUrl: downloadUrl,
+            fileSize: file.size,
+            mimeType: file._zwMetadata?.mimeType || 'Unknown'
+          });
+          
           try {
+            const startTime = performance.now();
+            
+            console.log(`🔽 DOWNLOAD: Making fetch request for ${file.name}`, {
+              url: downloadUrl,
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('authToken') ? 'present' : 'missing'}`
+              }
+            });
+            
             const response = await fetch(downloadUrl, {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
               }
             });
             
+            const endTime = performance.now();
+            
+            console.log(`🔽 DOWNLOAD: Response received for ${file.name}`, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: Object.fromEntries(response.headers.entries()),
+              duration: `${(endTime - startTime).toFixed(2)}ms`
+            });
+            
             if (response.ok) {
+              console.log(`✅ DOWNLOAD: Successfully downloaded ${file.name}`);
+              
               const blob = await response.blob();
+              console.log(`🔽 DOWNLOAD: Blob created for ${file.name}`, {
+                blobSize: blob.size,
+                blobType: blob.type
+              });
+              
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
@@ -291,18 +366,36 @@ const ExtendedFileManager = ({ server }) => {
               a.click();
               document.body.removeChild(a);
               window.URL.revokeObjectURL(url);
+              
+              console.log(`✅ DOWNLOAD: File ${file.name} download triggered successfully`);
             } else {
-              console.error(`Failed to download ${file.name}:`, response.statusText);
+              console.error(`❌ DOWNLOAD: Failed to download ${file.name}`, {
+                status: response.status,
+                statusText: response.statusText,
+                url: downloadUrl
+              });
               setError(`Failed to download ${file.name}: ${response.statusText}`);
             }
           } catch (fetchError) {
-            console.error(`Error downloading ${file.name}:`, fetchError);
+            console.error(`❌ DOWNLOAD: Network error downloading ${file.name}`, {
+              error: fetchError.message,
+              stack: fetchError.stack,
+              url: downloadUrl
+            });
             setError(`Error downloading ${file.name}: ${fetchError.message}`);
           }
+        } else {
+          console.log(`⚠️ DOWNLOAD: Skipping directory ${file.name}`);
         }
       }
+      
+      console.log('✅ DOWNLOAD: Download operation completed');
     } catch (error) {
-      console.error('Error downloading files:', error);
+      console.error('❌ DOWNLOAD: General download error', {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
       setError('Failed to download files: ' + error.message);
     }
   };
