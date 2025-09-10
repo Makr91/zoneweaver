@@ -114,7 +114,6 @@ const createCategoryLogger = (category, filename) => {
       format: logFormat,
       maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
       maxFiles: getValue(loggingConfig.file_rotation?.max_files) || 5,
-      auditFile: path.join(effectiveLogDir, `${filename}-audit.json`),
       zippedArchive: true,
       createSymlink: true,
       symlinkName: `${filename}-current.log`,
@@ -130,7 +129,6 @@ const createCategoryLogger = (category, filename) => {
       format: logFormat,
       maxSize: '50m',
       maxFiles: 7, // Keep error logs for a week
-      auditFile: path.join(effectiveLogDir, 'error-audit.json'),
       zippedArchive: true,
       createSymlink: true,
       symlinkName: 'error-current.log',
