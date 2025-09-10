@@ -758,7 +758,75 @@ class ServerController {
         }
       }
 
-      // Prepare request data - don't send empty objects
+      // Special handling for multipart uploads (raw stream forwarding)
+      const isMultipart = req.headers['content-type']?.includes('multipart/form-data');
+      
+      if (isMultipart && isFileUpload) {
+        console.log('📤 UPLOAD: Forwarding multipart stream directly to backend');
+        
+        // Import axios for raw stream handling
+        const axios = (await import('axios')).default;
+        const startTime = Date.now();
+        
+        try {
+          const targetUrl = `${protocol}://${hostname}:${port}/${path}`;
+          
+          // Get server for API key
+          const server = await ServerController.getCachedServer(hostname, parseInt(port), protocol);
+          if (!server) {
+            throw new Error('Server not found for upload');
+          }
+          
+          console.log('📤 UPLOAD: Streaming to backend', {
+            targetUrl: targetUrl,
+            contentLength: req.headers['content-length'],
+            contentType: req.headers['content-type']
+          });
+          
+          const response = await axios({
+            method: 'POST',
+            url: targetUrl,
+            data: req, // Forward the raw request stream
+            headers: {
+              'Content-Type': req.headers['content-type'],
+              'Content-Length': req.headers['content-length'],
+              'Authorization': `Bearer ${server.api_key}`
+            },
+            timeout: 300000, // 5 minutes for large uploads
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity
+          });
+          
+          const duration = Date.now() - startTime;
+          
+          console.log('✅ UPLOAD: Multipart upload successful', {
+            status: response.status,
+            duration: `${duration}ms`,
+            responseSize: JSON.stringify(response.data).length
+          });
+          
+          return res.status(response.status).json(response.data);
+          
+        } catch (uploadError) {
+          const duration = Date.now() - startTime;
+          
+          console.error('❌ UPLOAD: Multipart upload failed', {
+            error: uploadError.message,
+            code: uploadError.code,
+            status: uploadError.response?.status,
+            duration: `${duration}ms`,
+            isTimeout: uploadError.code === 'ECONNABORTED'
+          });
+          
+          const status = uploadError.response?.status || 500;
+          return res.status(status).json({
+            success: false,
+            message: uploadError.response?.data?.message || uploadError.message
+          });
+        }
+      }
+
+      // Normal request processing for non-multipart requests
       let requestData = undefined;
       if (req.method !== 'GET') {
         // Only send data if there's actual content

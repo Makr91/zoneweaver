@@ -258,8 +258,10 @@ const ExtendedFileManager = ({ server }) => {
       const result = await api.deleteFiles(filesToDelete);
       
       if (result.success) {
-        const deletedIds = filesToDelete.map(f => f._id);
-        setFiles(prevFiles => prevFiles.filter(f => !deletedIds.includes(f._id)));
+        console.log('✅ DELETE: Files deleted successfully, refreshing file list');
+        // Refresh the entire file list instead of manual filtering
+        // This ensures proper navigation panel updates and consistency
+        await loadFiles();
       } else {
         setError(result.message || 'Failed to delete files');
       }
