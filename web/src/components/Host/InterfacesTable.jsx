@@ -39,7 +39,6 @@ const InterfacesTable = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('interfaces')}
                       title={sectionsCollapsed.interfaces ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i

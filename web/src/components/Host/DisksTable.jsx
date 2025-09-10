@@ -33,11 +33,10 @@ const DisksTable = ({
         </h4>
       </div>
       <div className="level-right">
-        <button
+          <button
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('disks')}
                       title={sectionsCollapsed.disks ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i

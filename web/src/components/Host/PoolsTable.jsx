@@ -37,7 +37,6 @@ const PoolsTable = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('pools')}
                       title={sectionsCollapsed.pools ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i

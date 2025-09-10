@@ -18,7 +18,6 @@ const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('ipAddresses')}
                       title={sectionsCollapsed.ipAddresses ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i

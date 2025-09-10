@@ -41,7 +41,6 @@ const BandwidthTable = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('bandwidth')}
                       title={sectionsCollapsed.bandwidth ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i

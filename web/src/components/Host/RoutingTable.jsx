@@ -18,7 +18,6 @@ const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('routingTable')}
                       title={sectionsCollapsed.routingTable ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i
