@@ -59,7 +59,6 @@ const DeviceInventoryTable = ({
                               className='button is-small is-ghost'
                               onClick={() => toggleSection('inventory')}
                               title={sectionsCollapsed.inventory ? 'Expand section' : 'Collapse section'}
-              }
             >
               <span className="icon">
                 <i
