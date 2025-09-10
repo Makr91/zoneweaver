@@ -158,7 +158,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
     >
       {/* File info */}
       <div className="field">
-        <div className="notification is-light">
+        <div className="notification is-dark">
           <div className="columns">
             <div className="column">
               <strong>Name:</strong> {file.name}<br />
@@ -427,7 +427,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
       {/* Current vs new comparison */}
       <div className="field">
-        <div className="notification is-info is-light">
+        <div className="notification is-info">
           <div className="columns">
             <div className="column">
               <strong>Current:</strong><br />
@@ -447,7 +447,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
       {/* Permission explanation */}
       <div className="field">
-        <div className="notification is-light is-small">
+        <div className="notification is-dark is-small">
           <div className="content is-small">
             <strong>Permission Guide:</strong><br />
             <strong>Read (r)</strong> - View file contents or list directory<br />

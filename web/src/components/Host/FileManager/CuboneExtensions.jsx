@@ -273,6 +273,40 @@ export const useCuboneExtensions = (files, permissions, customActionHandlers) =>
             console.log('✅ TOOLBAR: Extract button added');
           }
 
+          // Properties button for all files and folders
+          if (permissions.properties) {
+            const propertiesButton = document.createElement('button');
+            propertiesButton.className = 'item-action zw-toolbar-item';
+            propertiesButton.style.cssText = `
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              padding: 0.4rem 0.8rem;
+              background: var(--bulma-link);
+              color: var(--bulma-link-invert);
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.875rem;
+              margin-right: 5px;
+            `;
+            
+            propertiesButton.innerHTML = `
+              <span style="font-size: 16px;">⚙️</span>
+              <span>Properties</span>
+            `;
+            
+            propertiesButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🖱️ TOOLBAR: Properties button clicked');
+              customActionHandlers.handleShowProperties(selectedFiles[0]);
+            });
+
+            toolbar.appendChild(propertiesButton);
+            console.log('✅ TOOLBAR: Properties button added');
+          }
+
           // Archive button for multiple files or general archiving
           if (permissions.archive) {
             const archiveButton = document.createElement('button');

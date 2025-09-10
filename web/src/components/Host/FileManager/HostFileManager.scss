@@ -12,7 +12,7 @@
     .toolbar {
       background-color: var(--bulma-scheme-main-bis) !important;
       border-bottom: 1px solid var(--bulma-border) !important;
-      
+      padding: none !important;
       .item-action {
         background-color: transparent !important;
         color: var(--bulma-text) !important;
@@ -29,7 +29,7 @@
     .navigation-pane {
       background-color: var(--bulma-scheme-main-bis) !important;
       border-right: 1px solid var(--bulma-border) !important;
-      
+      padding-top: 0px;
       .sb-folders-list {
         background-color: transparent !important;
         color: var(--bulma-text) !important;
@@ -58,6 +58,13 @@
       .breadcrumb {
         background-color: var(--bulma-scheme-main-bis) !important;
         border-bottom: 1px solid var(--bulma-border) !important;
+        height: 40px !important;
+        min-height: 22px !important;
+        max-height: 40px !important;
+        display: flex !important;
+        gap: 0.5rem !important;
+        padding: 6px 0 6px 15px !important;
+        overflow-x: hidden !important;
         
         .breadcrumb-item {
           color: var(--bulma-text) !important;
