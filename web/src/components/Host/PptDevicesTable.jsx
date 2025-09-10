@@ -30,7 +30,6 @@ const PptDevicesTable = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('pptDevices')}
                       title={sectionsCollapsed.pptDevices ? 'Expand section' : 'Collapse section'}
-            }
           >
             <span className="icon">
               <i
