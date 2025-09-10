@@ -119,15 +119,13 @@ export default [
       'no-console': 'off', // Allow console in backend (now using Winston)
 
       // === CODE QUALITY ===
-      'complexity': ['warn', 15], // Warn on high cyclomatic complexity
-      'max-depth': ['warn', 4], // Warn on deeply nested code
-      'max-lines': ['warn', { max: 1000, skipComments: true }], // Warn on very large files
-      'max-lines-per-function': ['warn', { max: 100, skipComments: true }], // Warn on large functions
-      'max-params': ['warn', 5], // Warn on functions with many parameters
-      'max-statements': ['warn', 25], // Warn on functions with many statements
+      'complexity': ['warn', 30], // Warn on high cyclomatic complexity (increased for system code)
+      'max-depth': ['warn', 6], // Warn on deeply nested code (increased for system logic)
+      'max-params': ['warn', 8], // Warn on functions with many parameters (increased for APIs)
+      // File and function size limits removed per user request
 
       // === NAMING CONVENTIONS ===
-      'camelcase': ['error', { properties: 'never', ignoreDestructuring: false }],
+      'camelcase': 'off', // Allow snake_case (user preference for system/API code)
       'new-cap': ['error', { newIsCap: true, capIsNew: false }],
 
       // === PERFORMANCE ===

@@ -1,6 +1,7 @@
-import { HighchartsReact } from 'highcharts-react-official';
-import React from 'react';
-import Highcharts from '../Highcharts';
+import { HighchartsReact } from "highcharts-react-official";
+import React from "react";
+
+import Highcharts from "../Highcharts";
 
 const BandwidthCharts = ({
   chartData,
@@ -27,7 +28,7 @@ const BandwidthCharts = ({
           <h4 className="title is-5 mb-0">
             <span className="icon-text">
               <span className="icon">
-                <i className="fas fa-chart-area"></i>
+                <i className="fas fa-chart-area" />
               </span>
               <span>Real-Time Bandwidth Charts</span>
             </span>
@@ -52,15 +53,18 @@ const BandwidthCharts = ({
             </div>
             <div className="control">
               <button
-                              className='button is-small is-ghost'
-                              onClick={() => toggleSection('charts')}
-                              title={sectionsCollapsed.charts ? 'Expand section' : 'Collapse section'}
+                className="button is-small is-ghost"
+                onClick={() => toggleSection("charts")}
+                title={
+                  sectionsCollapsed.charts
+                    ? "Expand section"
+                    : "Collapse section"
                 }
               >
                 <span className="icon">
                   <i
                     className={`fas ${sectionsCollapsed.charts ? "fa-chevron-down" : "fa-chevron-up"}`}
-                  ></i>
+                  />
                 </span>
               </button>
             </div>
@@ -74,7 +78,7 @@ const BandwidthCharts = ({
             <h5 className="title is-6 mb-3">
               <span className="icon-text">
                 <span className="icon">
-                  <i className="fas fa-layer-group"></i>
+                  <i className="fas fa-layer-group" />
                 </span>
                 <span>All Interfaces Summary</span>
               </span>
@@ -84,17 +88,17 @@ const BandwidthCharts = ({
               <div className="column is-4">
                 <div className="is-chart-container is-relative">
                   <button
-                                      className='button is-small is-light is-chart-expand-button'
-                                      onClick={() => expandChart('summary-rx', 'summary-rx')}
+                    className="button is-small is-light is-chart-expand-button"
+                    onClick={() => expandChart("summary-rx", "summary-rx")}
                     title="Expand chart to full size"
                   >
                     <span className="icon">
-                      <i className="fas fa-expand"></i>
+                      <i className="fas fa-expand" />
                     </span>
                   </button>
                   <HighchartsReact
                     highcharts={Highcharts}
-                                      ref={ref => {
+                    ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-rx"] = ref;
                       }
@@ -206,17 +210,17 @@ const BandwidthCharts = ({
               <div className="column is-4">
                 <div className="is-chart-container is-relative">
                   <button
-                                      className='button is-small is-light is-chart-expand-button'
-                                      onClick={() => expandChart('summary-tx', 'summary-tx')}
+                    className="button is-small is-light is-chart-expand-button"
+                    onClick={() => expandChart("summary-tx", "summary-tx")}
                     title="Expand chart to full size"
                   >
                     <span className="icon">
-                      <i className="fas fa-expand"></i>
+                      <i className="fas fa-expand" />
                     </span>
                   </button>
                   <HighchartsReact
                     highcharts={Highcharts}
-                                      ref={ref => {
+                    ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-tx"] = ref;
                       }
@@ -328,17 +332,19 @@ const BandwidthCharts = ({
               <div className="column is-4">
                 <div className="is-chart-container is-relative">
                   <button
-                                      className='button is-small is-light is-chart-expand-button'
-                                      onClick={() => expandChart('summary-total', 'summary-total')}
-                                      title="Expand chart to full size"
+                    className="button is-small is-light is-chart-expand-button"
+                    onClick={() =>
+                      expandChart("summary-total", "summary-total")
+                    }
+                    title="Expand chart to full size"
                   >
                     <span className="icon">
-                      <i className="fas fa-expand"></i>
+                      <i className="fas fa-expand" />
                     </span>
                   </button>
                   <HighchartsReact
                     highcharts={Highcharts}
-                                      ref={ref => {
+                    ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-total"] = ref;
                       }
@@ -453,7 +459,7 @@ const BandwidthCharts = ({
             <h5 className="title is-6 mb-3">
               <span className="icon-text">
                 <span className="icon">
-                  <i className="fas fa-chart-line"></i>
+                  <i className="fas fa-chart-line" />
                 </span>
                 <span>Individual Interface Charts</span>
               </span>
@@ -574,19 +580,21 @@ const BandwidthCharts = ({
                     <div key={`chart-${interfaceName}`} className="column is-6">
                       <div className="is-chart-container is-relative">
                         <button
-                                                  className='button is-small is-light is-chart-expand-button'
-                                                  onClick={() => expandChart(interfaceName, 'individual')}
-                                                  title="Expand chart to full size"
+                          className="button is-small is-light is-chart-expand-button"
+                          onClick={() =>
+                            expandChart(interfaceName, "individual")
+                          }
+                          title="Expand chart to full size"
                         >
                           <span className="icon">
-                            <i className="fas fa-expand"></i>
+                            <i className="fas fa-expand" />
                           </span>
                         </button>
                         <HighchartsReact
                           key={`chart-${interfaceName}`}
                           highcharts={Highcharts}
                           options={chartOptions}
-                                                  ref={ref => {
+                          ref={(ref) => {
                             if (ref) {
                               chartRefs.current[interfaceName] = ref;
                             }

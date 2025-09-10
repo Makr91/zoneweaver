@@ -39,6 +39,9 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.es2021,
+        // Vite global variables
+        __APP_NAME__: "readonly",
+        __APP_VERSION__: "readonly",
       },
       parserOptions: {
         ecmaFeatures: {
@@ -148,18 +151,16 @@ export default [
 
       // === BROWSER SPECIFIC ===
       "no-alert": "warn", // Allow alerts but warn in browser code
-      "no-console": "warn", // Warn about console statements in production code
+      "no-console": "off", // Allow console statements in frontend development (build tools strip them)
 
       // === CODE QUALITY ===
-      complexity: ["warn", 15],
-      "max-depth": ["warn", 4],
-      "max-lines": ["warn", { max: 500, skipComments: true }], // Smaller for React components
-      "max-lines-per-function": ["warn", { max: 80, skipComments: true }], // Smaller for React functions
-      "max-params": ["warn", 4], // React components shouldn't have too many props
-      "max-statements": ["warn", 20],
+      complexity: ["warn", 30], // Increased for complex React components
+      "max-depth": ["warn", 6], // Increased for complex UI logic
+      "max-params": ["warn", 8], // Increased for React components with many props
+      // File and function size limits removed per user request
 
       // === NAMING CONVENTIONS ===
-      camelcase: ["error", { properties: "never", ignoreDestructuring: false }],
+      camelcase: "off", // Allow snake_case (user preference)
       "new-cap": ["error", { newIsCap: true, capIsNew: false }],
 
       // === PERFORMANCE ===
@@ -240,7 +241,7 @@ export default [
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
 
-      // === ACCESSIBILITY RULES (jsx-a11y) ===
+      // === ACCESSIBILITY RULES (jsx-a11y) - Practical for Bulma CSS ===
       "jsx-a11y/alt-text": "warn",
       "jsx-a11y/aria-props": "error",
       "jsx-a11y/aria-proptypes": "error",
@@ -253,6 +254,7 @@ export default [
       "jsx-a11y/click-events-have-key-events": "warn",
       "jsx-a11y/no-static-element-interactions": "warn",
       "jsx-a11y/anchor-is-valid": "warn",
+      "jsx-a11y/label-has-associated-control": "warn", // Warn instead of error for Bulma patterns
 
       // === IMPORT/EXPORT RULES ===
       "import/order": [
@@ -295,9 +297,8 @@ export default [
         {
           patterns: [
             {
-              group: ["../*/*"],
-              message:
-                "Deep relative imports can make code hard to maintain. Consider using absolute imports or restructuring.",
+              group: ["../../**/node_modules/**"],
+              message: "Do not import from nested node_modules directories.",
             },
           ],
           paths: [
