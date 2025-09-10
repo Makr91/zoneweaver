@@ -83,7 +83,6 @@ const DeviceFilters = ({
                               className='button is-small is-ghost'
                               onClick={() => toggleSection('filters')}
                               title={sectionsCollapsed.filters ? 'Expand section' : 'Collapse section'}
-              }
             >
               <span className="icon">
                 <i
@@ -107,8 +106,6 @@ const DeviceFilters = ({
                                   placeholder='Device name, vendor, PCI address...'
                 value={filters.searchText}
                                   onChange={(e) => setFilters(prev => ({ ...prev, searchText: e.target.value }))}
-                  }))
-                }
               />
               <span className="icon is-small is-left">
                 <i className="fas fa-search"></i>
@@ -124,8 +121,6 @@ const DeviceFilters = ({
                 <select
                   value={filters.category}
                                       onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                    }))
-                  }
                 >
                   <option value="">All Categories</option>
                   {Object.keys(deviceCategories).map((category) => (
@@ -147,8 +142,6 @@ const DeviceFilters = ({
                 <select
                   value={filters.pptStatus}
                                       onChange={(e) => setFilters(prev => ({ ...prev, pptStatus: e.target.value }))}
-                    }))
-                  }
                 >
                   <option value="">All PPT Status</option>
                   <option value="enabled">PPT Capable</option>
@@ -168,8 +161,6 @@ const DeviceFilters = ({
                 <select
                   value={filters.driverStatus}
                                       onChange={(e) => setFilters(prev => ({ ...prev, driverStatus: e.target.value }))}
-                    }))
-                  }
                 >
                   <option value="">All Driver Status</option>
                   <option value="attached">Driver Attached</option>
