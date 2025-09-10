@@ -466,6 +466,82 @@
         }
       }
     }
+    /* Cubone upload/delete/action modal theming */
+    .fm-upload-file {
+      background-color: var(--bulma-scheme-main) !important;
+      color: var(--bulma-text) !important;
+      
+      .draggable-file-input {
+        background-color: var(--bulma-scheme-main-bis) !important;
+        color: var(--bulma-text) !important;
+        border-color: var(--bulma-border) !important;
+        
+        &:hover {
+          border-color: var(--bulma-primary) !important;
+        }
+        
+        &.dragging {
+          border-color: var(--bulma-primary) !important;
+        }
+      }
+      
+      .files-progress {
+        background-color: transparent !important;
+        
+        h2 {
+          color: var(--bulma-text-strong) !important;
+        }
+        
+        ul {
+          background-color: var(--bulma-scheme-main-bis) !important;
+          
+          li {
+            border-bottom-color: var(--bulma-border) !important;
+            color: var(--bulma-text) !important;
+            
+            .file-name {
+              color: var(--bulma-text) !important;
+            }
+            
+            .file-size {
+              color: var(--bulma-text-weak) !important;
+            }
+          }
+        }
+      }
+    }
+    
+    /* Cubone button theming */
+    .fm-button-secondary {
+      background-color: var(--bulma-scheme-main-ter) !important;
+      color: var(--bulma-text) !important;
+      border: 1px solid var(--bulma-border) !important;
+      
+      &:hover {
+        background-color: var(--bulma-scheme-main-bis) !important;
+      }
+    }
+    
+    .fm-button-primary {
+      background-color: var(--bulma-primary) !important;
+      color: var(--bulma-primary-invert) !important;
+    }
+    
+    .fm-button-danger {
+      background-color: var(--bulma-danger) !important;
+      color: var(--bulma-danger-invert) !important;
+    }
+    
+    /* Cubone delete confirmation modal */
+    .file-delete-confirm {
+      background-color: var(--bulma-scheme-main) !important;
+      color: var(--bulma-text) !important;
+      
+      .file-delete-confirm-text {
+        border-bottom-color: var(--bulma-border) !important;
+        color: var(--bulma-text) !important;
+      }
+    }
   }
 }
 
@@ -483,8 +559,13 @@
       }
     }
     
-    .context-menu {
+    .context-menu, .fm-context-menu {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* Enhanced upload modal dark theme */
+    .fm-upload-file .draggable-file-input {
+      background-color: var(--bulma-scheme-main-ter) !important;
     }
   }
 }
@@ -502,7 +583,7 @@
       }
     }
     
-    .context-menu {
+    .context-menu, .fm-context-menu {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
   }

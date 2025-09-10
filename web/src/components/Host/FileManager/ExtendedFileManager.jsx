@@ -207,16 +207,17 @@ const ExtendedFileManager = ({ server }) => {
     
     try {
       const uploadedFile = JSON.parse(response);
-      const transformedFile = transformZoneweaverToFile(uploadedFile);
       
-      console.log('✅ UPLOAD: File processed successfully', {
+      console.log('✅ UPLOAD: File uploaded successfully', {
         fileName: uploadedFile.name || 'Unknown',
         filePath: uploadedFile.path || 'Unknown',
-        fileSize: uploadedFile.size || 'Unknown',
-        transformedFile: transformedFile
+        fileSize: uploadedFile.size || 'Unknown'
       });
       
-      setFiles(prevFiles => [...prevFiles, transformedFile]);
+      // Refresh the entire file list instead of manual state updates
+      // This ensures proper navigation panel updates and consistency with backend
+      console.log('🔄 UPLOAD: Refreshing file list to show uploaded file');
+      loadFiles();
     } catch (error) {
       console.error('❌ UPLOAD: Error processing uploaded file response', {
         error: error.message,
