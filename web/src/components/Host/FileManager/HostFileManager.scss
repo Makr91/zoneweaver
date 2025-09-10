@@ -142,27 +142,58 @@
       }
     }
     
-    /* Context menu theming */
-    .context-menu {
+    /* Context menu theming - Enhanced for cubone */
+    .fm-context-menu {
       background-color: var(--bulma-scheme-main) !important;
       border: 1px solid var(--bulma-border) !important;
       box-shadow: var(--bulma-shadow) !important;
       
-      .context-menu-item {
-        color: var(--bulma-text) !important;
+      .file-context-menu-list {
+        background-color: transparent !important;
         
-        &:hover {
-          background-color: var(--bulma-scheme-main-bis) !important;
-          color: var(--bulma-text-strong) !important;
+        ul {
+          background-color: transparent !important;
+          margin: 0 !important;
+          padding: 4px 0 !important;
+          
+          li {
+            color: var(--bulma-text) !important;
+            background-color: transparent !important;
+            
+            &:hover {
+              background-color: var(--bulma-scheme-main-bis) !important;
+              color: var(--bulma-text-strong) !important;
+            }
+            
+            &.disable-paste {
+              color: var(--bulma-text-weak) !important;
+              opacity: 0.5 !important;
+            }
+          }
         }
         
-        &.disabled {
-          color: var(--bulma-text-weak) !important;
+        .divider {
+          border-top: 1px solid var(--bulma-border) !important;
+          background-color: transparent !important;
+        }
+        
+        .list-expand-icon {
+          color: var(--bulma-text) !important;
         }
       }
       
-      .context-menu-separator {
-        border-top: 1px solid var(--bulma-border) !important;
+      /* Sub-menu theming */
+      .sub-menu {
+        background-color: var(--bulma-scheme-main) !important;
+        border: 1px solid var(--bulma-border) !important;
+        
+        li:hover {
+          background-color: var(--bulma-scheme-main-bis) !important;
+        }
+        
+        .item-selected {
+          color: var(--bulma-text) !important;
+        }
       }
     }
     

@@ -118,7 +118,7 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
     >
       <div className="field">
         {/* File info */}
-        <div className="notification is-light mb-4">
+        <div className="notification mb-4">
           <div className="columns is-mobile">
             <div className="column">
               <strong>File:</strong> {file?.path || 'Unknown'}
@@ -181,7 +181,7 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
 
       {/* Keyboard shortcuts help */}
       <div className="field">
-        <div className="notification is-info is-light">
+        <div className="notification is-info">
           <div className="content is-small">
             <strong>Keyboard Shortcuts:</strong><br />
             <div className="columns is-mobile">
@@ -205,7 +205,7 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
       {/* File type detection info */}
       {file?._zwMetadata && (
         <div className="field">
-          <div className="notification is-light is-small">
+          <div className="notification is-small">
             <div className="columns is-mobile is-vcentered">
               <div className="column">
                 <strong>Detected Type:</strong> {file._zwMetadata.mimeType || 'text/plain'}

@@ -169,12 +169,19 @@ export const useCuboneExtensions = (files, permissions, customActionHandlers) =>
       setTimeout(() => {
         console.log('🔧 TOOLBAR: Checking for toolbar...');
         
-        // Find toolbar and add custom archive button
-        const toolbar = document.querySelector('.toolbar .fm-toolbar > div:first-child');
+        // Find toolbar - handle both normal and file-selected states
+        let toolbar = document.querySelector('.toolbar .fm-toolbar > div:first-child');
         if (!toolbar) {
-          console.log('❌ TOOLBAR: Toolbar not found');
+          // Try file-selected toolbar structure
+          toolbar = document.querySelector('.toolbar.file-selected .file-action-container > div:first-child');
+        }
+        
+        if (!toolbar) {
+          console.log('❌ TOOLBAR: Toolbar not found (tried both selectors)');
           return;
         }
+        
+        console.log('✅ TOOLBAR: Found toolbar');
 
         // Remove existing custom toolbar items first
         const existingItems = toolbar.querySelectorAll('.zw-toolbar-item');

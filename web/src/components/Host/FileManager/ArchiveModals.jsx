@@ -78,7 +78,7 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
     >
       {/* Selected files info */}
       <div className="field">
-        <div className="notification is-info is-light">
+        <div className="notification is-info">
           <strong>Creating archive from {selectedFiles.length} item(s):</strong>
           <ul className="mt-2">
             {selectedFiles.slice(0, 5).map((file, index) => (
@@ -208,7 +208,7 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
     >
       {/* Archive info */}
       <div className="field">
-        <div className="notification is-light">
+        <div className="notification">
           <div className="columns is-mobile is-vcentered">
             <div className="column">
               <strong>Archive:</strong> {archiveFile.name}
