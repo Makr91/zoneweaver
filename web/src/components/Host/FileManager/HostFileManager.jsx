@@ -22,6 +22,7 @@ const HostFileManager = ({ server }) => {
   const [error, setError] = useState('');
   const [textEditorFile, setTextEditorFile] = useState(null);
   const [showTextEditor, setShowTextEditor] = useState(false);
+  const [directoryCache, setDirectoryCache] = useState(new Map()); // Cache for directory contents
 
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -44,9 +45,68 @@ const HostFileManager = ({ server }) => {
     
     try {
       console.log('Loading files for path:', path);
-      const fileList = await api.loadFiles(path);
-      console.log('Loaded files:', fileList);
-      setFiles(fileList);
+      
+      // Load current directory files
+      const currentFiles = await api.loadFiles(path);
+      
+      // Always maintain root directories for navigation
+      let cachedDirectories = directoryCache.get('/') || [];
+      
+      // Load root directories if not cached
+      if (cachedDirectories.length === 0) {
+        try {
+          const rootFiles = await api.loadFiles('/');
+          cachedDirectories = rootFiles.filter(file => file.isDirectory);
+          setDirectoryCache(prev => new Map(prev).set('/', cachedDirectories));
+        } catch (err) {
+          console.log('Could not load root directories for navigation');
+        }
+      }
+      
+      // Build comprehensive file list for cubone navigation
+      const combinedFiles = [...currentFiles];
+      
+      // Add cached root directories if we're not at root
+      if (path !== '/') {
+        cachedDirectories.forEach(dir => {
+          if (!combinedFiles.some(f => f.path === dir.path)) {
+            combinedFiles.push(dir);
+          }
+        });
+      }
+      
+      // If we're in a subdirectory, ensure parent directories are included
+      if (path !== '/') {
+        const pathParts = path.split('/').filter(Boolean);
+        let currentSearchPath = '';
+        
+        for (let i = 0; i < pathParts.length - 1; i++) {
+          currentSearchPath += '/' + pathParts[i];
+          
+          // Check cache first
+          let parentDirs = directoryCache.get(currentSearchPath);
+          if (!parentDirs) {
+            try {
+              const parentFiles = await api.loadFiles(currentSearchPath);
+              parentDirs = parentFiles.filter(file => file.isDirectory);
+              setDirectoryCache(prev => new Map(prev).set(currentSearchPath, parentDirs));
+            } catch (err) {
+              console.log('Could not load parent directory:', currentSearchPath);
+              continue;
+            }
+          }
+          
+          // Add parent directories to combined files
+          parentDirs.forEach(dir => {
+            if (!combinedFiles.some(f => f.path === dir.path)) {
+              combinedFiles.push(dir);
+            }
+          });
+        }
+      }
+      
+      console.log('Combined files for cubone:', combinedFiles.length, 'files');
+      setFiles(combinedFiles);
     } catch (error) {
       console.error('Error loading files:', error);
       setError('Failed to load files: ' + error.message);
@@ -54,7 +114,7 @@ const HostFileManager = ({ server }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [server, currentPath, api]);
+  }, [server, currentPath, api, directoryCache]);
 
   // Load files when component mounts or dependencies change
   useEffect(() => {
@@ -159,10 +219,9 @@ const HostFileManager = ({ server }) => {
       const result = await api.renameFile(file, newName);
       
       if (result.success) {
-        // Update file in current list
-        setFiles(prevFiles => 
-          prevFiles.map(f => f._id === file._id ? result.file : f)
-        );
+        // Instead of trying to update the specific file, just refresh the file list
+        // This ensures we get the correct data from the server
+        await loadFiles();
       } else {
         setError(result.message || 'Failed to rename file');
       }

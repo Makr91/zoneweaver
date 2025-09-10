@@ -167,37 +167,88 @@
     }
     
     /* Modal theming (for cubone's internal modals) */
-    .modal {
+    .modal,
+    [class*="modal"] {
       .modal-background {
-        background-color: rgba(0, 0, 0, 0.4) !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
       }
       
-      .modal-card {
+      .modal-card,
+      .modal-content,
+      [class*="modal-card"],
+      [class*="modal-content"] {
         background-color: var(--bulma-scheme-main) !important;
+        color: var(--bulma-text) !important;
+        border: 1px solid var(--bulma-border) !important;
         
-        .modal-card-head {
+        .modal-card-head,
+        .modal-header,
+        [class*="modal-head"],
+        [class*="modal-header"] {
           background-color: var(--bulma-scheme-main-bis) !important;
           border-bottom: 1px solid var(--bulma-border) !important;
+          color: var(--bulma-text) !important;
           
-          .modal-card-title {
+          .modal-card-title,
+          .modal-title,
+          h1, h2, h3, h4, h5, h6 {
             color: var(--bulma-text-strong) !important;
           }
           
-          .delete {
+          .delete,
+          .close,
+          button[aria-label="close"] {
             background-color: var(--bulma-scheme-main-ter) !important;
+            border: 1px solid var(--bulma-border) !important;
             
             &:hover {
               background-color: var(--bulma-danger) !important;
+              border-color: var(--bulma-danger) !important;
             }
           }
         }
         
-        .modal-card-body {
+        .modal-card-body,
+        .modal-body,
+        [class*="modal-body"] {
           background-color: var(--bulma-scheme-main) !important;
           color: var(--bulma-text) !important;
+          
+          /* Form elements inside modals */
+          input, textarea, select {
+            background-color: var(--bulma-scheme-main-bis) !important;
+            color: var(--bulma-text) !important;
+            border: 1px solid var(--bulma-border) !important;
+            
+            &:focus {
+              border-color: var(--bulma-primary) !important;
+              box-shadow: 0 0 0 0.125em rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.25) !important;
+            }
+          }
+          
+          /* Labels and text */
+          label, .label {
+            color: var(--bulma-text-strong) !important;
+          }
+          
+          /* Progress bars */
+          .progress {
+            background-color: var(--bulma-scheme-main-ter) !important;
+            
+            &::-webkit-progress-bar {
+              background-color: var(--bulma-scheme-main-ter) !important;
+            }
+            
+            &::-webkit-progress-value {
+              background-color: var(--bulma-primary) !important;
+            }
+          }
         }
         
-        .modal-card-foot {
+        .modal-card-foot,
+        .modal-footer,
+        [class*="modal-foot"],
+        [class*="modal-footer"] {
           background-color: var(--bulma-scheme-main-bis) !important;
           border-top: 1px solid var(--bulma-border) !important;
           
@@ -206,13 +257,33 @@
             color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
             
-            &.is-primary {
+            &.is-primary,
+            &.primary {
               background-color: var(--bulma-primary) !important;
               color: var(--bulma-primary-invert) !important;
+              border-color: var(--bulma-primary) !important;
+            }
+            
+            &.is-danger,
+            &.danger {
+              background-color: var(--bulma-danger) !important;
+              color: var(--bulma-danger-invert) !important;
+              border-color: var(--bulma-danger) !important;
             }
             
             &:hover {
               background-color: var(--bulma-scheme-main-bis) !important;
+              border-color: var(--bulma-link) !important;
+            }
+            
+            &.is-primary:hover,
+            &.primary:hover {
+              background-color: var(--bulma-primary-dark) !important;
+            }
+            
+            &.is-danger:hover,
+            &.danger:hover {
+              background-color: var(--bulma-danger-dark) !important;
             }
           }
         }
