@@ -12,7 +12,6 @@ const CACHE_TTL = 30000; // 30 seconds
  * This replaces the per-user API key system with application-level server management
  */
 class ServerController {
-  
   /**
    * Get server with caching to improve performance
    * @param {string} hostname - Server hostname
@@ -23,20 +22,20 @@ class ServerController {
   static async getCachedServer(hostname, port, protocol) {
     const cacheKey = `${hostname}:${port}:${protocol}`;
     const cached = serverCache.get(cacheKey);
-    
-    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return cached.server;
     }
-    
+
     // Fetch from database
     const server = await ServerModel.getServer(hostname, port, protocol);
-    
+
     // Cache the result
     serverCache.set(cacheKey, {
       server,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    
+
     return server;
   }
   /**
@@ -128,9 +127,9 @@ class ServerController {
 
       // Validation
       if (!hostname || !port || !protocol || !entityName) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Hostname, port, protocol, and entity name are required' 
+        return res.status(400).json({
+          success: false,
+          message: 'Hostname, port, protocol, and entity name are required',
         });
       }
 
@@ -141,7 +140,7 @@ class ServerController {
         protocol,
         entityName,
         description,
-        apiKey
+        apiKey,
       });
 
       res.json({
@@ -153,14 +152,14 @@ class ServerController {
           port: server.port,
           protocol: server.protocol,
           entityName: server.entity_name,
-          description: server.description
-        }
+          description: server.description,
+        },
       });
     } catch (error) {
       console.error('Add server error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: error.message || 'Failed to add server' 
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to add server',
       });
     }
   }
@@ -208,13 +207,13 @@ class ServerController {
 
       res.json({
         success: true,
-        servers: servers
+        servers,
       });
     } catch (error) {
       console.error('Get servers error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to retrieve servers' 
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve servers',
       });
     }
   }
@@ -294,9 +293,9 @@ class ServerController {
 
       // Validation
       if (!hostname || !port || !protocol) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Hostname, port, and protocol are required' 
+        return res.status(400).json({
+          success: false,
+          message: 'Hostname, port, and protocol are required',
         });
       }
 
@@ -307,13 +306,13 @@ class ServerController {
         success: testResult.success,
         message: testResult.success ? 'Connection successful' : 'Connection failed',
         error: testResult.error || null,
-        serverInfo: testResult.success ? testResult.data : null
+        serverInfo: testResult.success ? testResult.data : null,
       });
     } catch (error) {
       console.error('Test server error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to test server connection' 
+      res.status(500).json({
+        success: false,
+        message: 'Failed to test server connection',
       });
     }
   }
@@ -384,30 +383,30 @@ class ServerController {
       const { serverId } = req.params;
 
       if (!serverId) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Server ID is required' 
+        return res.status(400).json({
+          success: false,
+          message: 'Server ID is required',
         });
       }
 
       const success = await ServerModel.removeServer(parseInt(serverId));
 
       if (!success) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Server not found or already removed' 
+        return res.status(404).json({
+          success: false,
+          message: 'Server not found or already removed',
         });
       }
 
       res.json({
         success: true,
-        message: 'Server removed successfully'
+        message: 'Server removed successfully',
       });
     } catch (error) {
       console.error('Remove server error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to remove server' 
+      res.status(500).json({
+        success: false,
+        message: 'Failed to remove server',
       });
     }
   }
@@ -705,29 +704,29 @@ class ServerController {
   static async proxyToZoneweaverAPI(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
-      const path = Array.isArray(req.params.splat) 
-        ? req.params.splat.join('/') 
-        : (req.params.splat || ''); // Express 5.x compatibility fix
-      
+      const path = Array.isArray(req.params.splat)
+        ? req.params.splat.join('/')
+        : req.params.splat || ''; // Express 5.x compatibility fix
+
       // Enhanced debug logging for file operations
       const isFileUpload = path === 'filesystem/upload' && req.method === 'POST';
       const isFileDownload = path === 'filesystem/download' && req.method === 'GET';
       const isFileOperation = path.startsWith('filesystem');
-      
+
       if (isFileOperation) {
         console.log('📁 FILE OP: Proxying file operation through zoneweaver proxy', {
           operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
           method: req.method,
-          path: path,
+          path,
           server: `${protocol}://${hostname}:${port}`,
           query: req.query,
           contentType: req.headers['content-type'] || 'none',
           contentLength: req.headers['content-length'] || 'unknown',
           userAgent: req.headers['user-agent'] || 'unknown',
           hasAuth: !!req.headers.authorization,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
-        
+
         if (isFileUpload) {
           console.log('⬆️ UPLOAD: Processing file upload through proxy', {
             contentType: req.headers['content-type'],
@@ -735,16 +734,16 @@ class ServerController {
             boundary: req.headers['content-type']?.includes('boundary') ? 'present' : 'missing',
             query: req.query,
             bodyKeys: req.body ? Object.keys(req.body) : 'no body',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
-        
+
         if (isFileDownload) {
           console.log('⬇️ DOWNLOAD: Processing file download through proxy', {
             filePath: req.query.path || 'unknown',
             query: req.query,
             accept: req.headers.accept || 'none',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       }
@@ -760,37 +759,34 @@ class ServerController {
 
       // Special handling for multipart uploads (raw stream forwarding)
       const isMultipart = req.headers['content-type']?.includes('multipart/form-data');
-      
+
       if (isMultipart && isFileUpload) {
         console.log('📤 UPLOAD: Forwarding multipart stream directly to backend');
-        
-        // Import axios for raw stream handling
-        const axios = (await import('axios')).default;
+
         const startTime = Date.now();
-        
+
         try {
           const targetUrl = `${protocol}://${hostname}:${port}/${path}`;
-          
+
           // Get server for API key
           const server = await ServerController.getCachedServer(hostname, parseInt(port), protocol);
           if (!server) {
             throw new Error('Server not found for upload');
           }
-          
+
           console.log('📤 UPLOAD: Streaming to backend', {
-            targetUrl: targetUrl,
+            targetUrl,
             contentLength: req.headers['content-length'],
-            contentType: req.headers['content-type']
+            contentType: req.headers['content-type'],
           });
-          
+
           // Use proper stream forwarding instead of sending Express request object
           const https = (await import('https')).default;
-          const { URL } = (await import('url'));
-          
+          const { URL } = await import('url');
+
           const response = await new Promise((resolve, reject) => {
-            
             const targetURL = new URL(targetUrl);
-            
+
             const options = {
               hostname: targetURL.hostname,
               port: targetURL.port,
@@ -799,91 +795,90 @@ class ServerController {
               headers: {
                 'Content-Type': req.headers['content-type'],
                 'Content-Length': req.headers['content-length'],
-                'Authorization': `Bearer ${server.api_key}`,
-                'Accept': '*/*',
-                'User-Agent': 'Zoneweaver-Proxy/1.0'
+                Authorization: `Bearer ${server.api_key}`,
+                Accept: '*/*',
+                'User-Agent': 'Zoneweaver-Proxy/1.0',
               },
-              timeout: 300000
+              timeout: 300000,
             };
-            
+
             console.log('📤 UPLOAD: Creating HTTP request with proper headers', {
               hostname: options.hostname,
               port: options.port,
               path: options.path,
               headers: Object.keys(options.headers),
-              hasAuth: !!options.headers.Authorization
+              hasAuth: !!options.headers.Authorization,
             });
-            
-            const proxyReq = https.request(options, (proxyRes) => {
+
+            const proxyReq = https.request(options, proxyRes => {
               console.log('📤 UPLOAD: Backend response received', {
                 status: proxyRes.statusCode,
-                headers: Object.keys(proxyRes.headers)
+                headers: Object.keys(proxyRes.headers),
               });
-              
+
               let responseData = '';
-              proxyRes.on('data', (chunk) => {
+              proxyRes.on('data', chunk => {
                 responseData += chunk;
               });
-              
+
               proxyRes.on('end', () => {
                 try {
                   const parsedData = JSON.parse(responseData);
                   resolve({
                     status: proxyRes.statusCode,
-                    data: parsedData
+                    data: parsedData,
                   });
-                } catch (parseError) {
+                } catch {
                   resolve({
                     status: proxyRes.statusCode,
-                    data: responseData
+                    data: responseData,
                   });
                 }
               });
             });
-            
-            proxyReq.on('error', (error) => {
+
+            proxyReq.on('error', error => {
               console.error('📤 UPLOAD: HTTP request error', {
                 error: error.message,
-                code: error.code
+                code: error.code,
               });
               reject(error);
             });
-            
+
             proxyReq.on('timeout', () => {
               console.error('📤 UPLOAD: Request timeout');
               proxyReq.destroy();
               reject(new Error('Upload timeout'));
             });
-            
+
             // Pipe the original request body to the proxy request
             req.pipe(proxyReq);
           });
-          
+
           const duration = Date.now() - startTime;
-          
+
           console.log('✅ UPLOAD: Multipart upload successful', {
             status: response.status,
             duration: `${duration}ms`,
-            responseSize: JSON.stringify(response.data).length
+            responseSize: JSON.stringify(response.data).length,
           });
-          
+
           return res.status(response.status).json(response.data);
-          
         } catch (uploadError) {
           const duration = Date.now() - startTime;
-          
+
           console.error('❌ UPLOAD: Multipart upload failed', {
             error: uploadError.message,
             code: uploadError.code,
             status: uploadError.response?.status,
             duration: `${duration}ms`,
-            isTimeout: uploadError.code === 'ECONNABORTED'
+            isTimeout: uploadError.code === 'ECONNABORTED',
           });
-          
+
           const status = uploadError.response?.status || 500;
           return res.status(status).json({
             success: false,
-            message: uploadError.response?.data?.message || uploadError.message
+            message: uploadError.response?.data?.message || uploadError.message,
           });
         }
       }
@@ -900,18 +895,12 @@ class ServerController {
       const startTime = Date.now();
 
       // Make request through ServerModel
-      const result = await ServerModel.makeRequest(
-        hostname, 
-        parseInt(port), 
-        protocol, 
-        path, 
-        {
-          method: req.method,
-          data: requestData,
-          params: req.query,
-          headers: cleanHeaders
-        }
-      );
+      const result = await ServerModel.makeRequest(hostname, parseInt(port), protocol, path, {
+        method: req.method,
+        data: requestData,
+        params: req.query,
+        headers: cleanHeaders,
+      });
 
       const duration = Date.now() - startTime;
 
@@ -924,34 +913,34 @@ class ServerController {
           duration: `${duration}ms`,
           responseSize: result.data ? JSON.stringify(result.data).length : 0,
           error: result.error || null,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
-        
+
         if (isFileUpload && result.success) {
           console.log('✅ UPLOAD: File uploaded successfully through proxy', {
             fileName: result.data?.file?.name || 'unknown',
             filePath: result.data?.file?.path || 'unknown',
             fileSize: result.data?.file?.size || 'unknown',
-            duration: `${duration}ms`
+            duration: `${duration}ms`,
           });
         }
-        
+
         if (isFileDownload && result.success) {
           console.log('✅ DOWNLOAD: File download prepared through proxy', {
             filePath: req.query.path,
             duration: `${duration}ms`,
-            hasData: !!result.data
+            hasData: !!result.data,
           });
         }
-        
+
         if (!result.success) {
           console.error('❌ FILE OP: File operation failed through proxy', {
             operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
             error: result.error,
             status: result.status,
             duration: `${duration}ms`,
-            requestData: requestData,
-            query: req.query
+            requestData,
+            query: req.query,
           });
         }
       }
@@ -960,9 +949,9 @@ class ServerController {
         res.status(result.status || 200).json(result.data);
       } else {
         const status = result.status || 500;
-        res.status(status).json({ 
-          success: false, 
-          message: result.error || 'Proxy request failed' 
+        res.status(status).json({
+          success: false,
+          message: result.error || 'Proxy request failed',
         });
       }
     } catch (error) {
@@ -973,12 +962,12 @@ class ServerController {
         path: req.params.splat,
         hostname: req.params.hostname,
         port: req.params.port,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       res.status(500).json({
         success: false,
-        message: 'Proxy request failed'
+        message: 'Proxy request failed',
       });
     }
   }
@@ -1039,14 +1028,14 @@ class ServerController {
     if (!vncPath || typeof vncPath !== 'string') {
       return false;
     }
-    
+
     // Remove path traversal attempts and normalize
     const cleanPath = vncPath
-      .replace(/\.\./g, '')        // Remove .. sequences
-      .replace(/\/+/g, '/')        // Normalize multiple slashes
-      .replace(/^\/+|\/+$/g, '')   // Remove leading/trailing slashes
+      .replace(/\.\./g, '') // Remove .. sequences
+      .replace(/\/+/g, '/') // Normalize multiple slashes
+      .replace(/^\/+|\/+$/g, '') // Remove leading/trailing slashes
       .trim();
-    
+
     // Only allow websockify endpoint (used by react-vnc)
     return cleanPath === 'websockify';
   }
@@ -1061,18 +1050,20 @@ class ServerController {
     try {
       const servers = await ServerModel.getAllServers();
       const allowlist = {};
-      
+
       servers.forEach(server => {
         const key = `${server.hostname}:${server.port}`;
         allowlist[key] = {
           protocol: server.protocol,
           hostname: server.hostname,
           port: server.port,
-          api_key: server.api_key
+          api_key: server.api_key,
         };
       });
-      
-      console.log(`🛡️ SECURITY: Built server allowlist with ${Object.keys(allowlist).length} entries`);
+
+      console.log(
+        `🛡️ SECURITY: Built server allowlist with ${Object.keys(allowlist).length} entries`
+      );
       return allowlist;
     } catch (error) {
       console.error(`🚨 SECURITY: Failed to build server allowlist:`, error.message);
@@ -1091,19 +1082,20 @@ class ServerController {
     try {
       // Step 1: Build server-controlled allowlist
       const allowedServers = await ServerController.buildServerAllowlist();
-      
+
       // Step 2: User input selects from allowlist (like CodeQL's "EU" → "europe" example)
       const allowedServer = allowedServers[serverAddress];
-      
+
       if (!allowedServer) {
         console.error(`🚨 SECURITY: Server not in allowlist: "${serverAddress}"`);
         return null;
       }
-      
+
       // Step 3: Return server-controlled values only (like CodeQL's subdomain example)
-      console.log(`✅ SECURITY: Server selected from allowlist: ${allowedServer.hostname}:${allowedServer.port}`);
+      console.log(
+        `✅ SECURITY: Server selected from allowlist: ${allowedServer.hostname}:${allowedServer.port}`
+      );
       return allowedServer;
-      
     } catch (error) {
       console.error(`🚨 SECURITY: Server validation error:`, error.message);
       return null;
@@ -1113,41 +1105,45 @@ class ServerController {
   static async proxyVncGeneral(req, res) {
     try {
       const { serverAddress, zoneName } = req.params;
-      const userVncPath = Array.isArray(req.params.splat) 
-        ? req.params.splat.join('/') 
-        : (req.params.splat || ''); // Express 5.x compatibility fix
-      
+      const userVncPath = Array.isArray(req.params.splat)
+        ? req.params.splat.join('/')
+        : req.params.splat || ''; // Express 5.x compatibility fix
+
       // 🛡️ SECURITY FIX: Validate VNC path to prevent SSRF attacks
       if (!ServerController.isValidVncPath(userVncPath)) {
         console.error(`🚨 SECURITY: Invalid VNC path blocked: "${userVncPath}"`);
         return res.status(400).json({
           success: false,
           message: 'Invalid VNC path. Only websockify endpoint is allowed.',
-          blocked_path: userVncPath
+          blocked_path: userVncPath,
         });
       }
-      
+
       // Use server-controlled constant to break CodeQL data flow tracing
       const allowedVncPath = 'websockify';
-      
+
       // Use same validation pattern as other methods in this file
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
-      
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
+
       if (!server) {
         console.error(`🚨 SECURITY: Server not found - ${serverAddress}`);
         return res.status(403).json({
           success: false,
           message: 'Server not found. Only configured servers are permitted.',
-          rejected_address: serverAddress
+          rejected_address: serverAddress,
         });
       }
-      
+
       console.log(`✅ SECURITY: Server validated: ${server.hostname}:${server.port}`);
 
       // Import axios
       const axios = (await import('axios')).default;
-      
+
       // Check if this is a WebSocket upgrade request
       if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
         console.log(`🔌 WebSocket upgrade request for VNC websockify`);
@@ -1157,27 +1153,29 @@ class ServerController {
 
       // Handle regular HTTP requests to websockify endpoint
       const queryString = req.url.split('?')[1];
-      
+
       // Build URL using validated server properties and server-controlled path constant
       let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/${allowedVncPath}`;
-      
+
       if (queryString) {
         zapiUrl += `?${queryString}`;
       }
-      
+
       console.log(`🔗 VNC: Proxying websockify to ${zapiUrl}`);
 
       try {
         // Make authenticated request to Zoneweaver API
         const requestHeaders = {
-          'Authorization': `Bearer ${server.api_key}`,
-          'User-Agent': 'Zoneweaver-Proxy/1.0'
+          Authorization: `Bearer ${server.api_key}`,
+          'User-Agent': 'Zoneweaver-Proxy/1.0',
         };
 
         // Forward relevant headers from original request
         if (req.headers.accept) requestHeaders.Accept = req.headers.accept;
-        if (req.headers['accept-encoding']) requestHeaders['Accept-Encoding'] = req.headers['accept-encoding'];
-        if (req.headers['accept-language']) requestHeaders['Accept-Language'] = req.headers['accept-language'];
+        if (req.headers['accept-encoding'])
+          requestHeaders['Accept-Encoding'] = req.headers['accept-encoding'];
+        if (req.headers['accept-language'])
+          requestHeaders['Accept-Language'] = req.headers['accept-language'];
 
         const response = await axios({
           method: req.method,
@@ -1186,22 +1184,32 @@ class ServerController {
           data: req.method !== 'GET' && req.method !== 'DELETE' ? req.body : undefined,
           responseType: 'stream',
           timeout: 30000,
-          maxRedirects: 0  // 🛡️ SECURITY FIX: Disable redirects to prevent SSRF bypass
+          maxRedirects: 0, // 🛡️ SECURITY FIX: Disable redirects to prevent SSRF bypass
         });
 
         // Set security headers
         res.set({
           'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-          'Pragma': 'no-cache',
-          'Expires': '0',
+          Pragma: 'no-cache',
+          Expires: '0',
           'X-Proxied-By': 'Zoneweaver-VNC',
-          'X-Frame-Options': 'SAMEORIGIN'
+          'X-Frame-Options': 'SAMEORIGIN',
         });
 
         // Forward response headers except caching ones
         Object.keys(response.headers).forEach(key => {
           const lowerKey = key.toLowerCase();
-          if (!['transfer-encoding', 'connection', 'cache-control', 'pragma', 'expires', 'etag', 'last-modified'].includes(lowerKey)) {
+          if (
+            ![
+              'transfer-encoding',
+              'connection',
+              'cache-control',
+              'pragma',
+              'expires',
+              'etag',
+              'last-modified',
+            ].includes(lowerKey)
+          ) {
             res.set(key, response.headers[key]);
           }
         });
@@ -1209,35 +1217,32 @@ class ServerController {
         // Pipe response directly
         res.status(response.status);
         response.data.pipe(res);
-
       } catch (proxyError) {
         console.error(`🔗 VNC proxy failed for websockify:`, proxyError.message);
-        
+
         if (proxyError.response) {
           const statusCode = proxyError.response.status;
           res.status(statusCode).json({
             success: false,
             message: `VNC proxy error: ${statusCode}`,
-            error: 'VNC session may not be active'
+            error: 'VNC session may not be active',
           });
         } else {
           res.status(500).json({
             success: false,
-            message: `VNC proxy connection error: ${proxyError.message}`
+            message: `VNC proxy connection error: ${proxyError.message}`,
           });
         }
       }
-
     } catch (error) {
       console.error('🔗 VNC proxy error:', error.message);
       res.status(500).json({
         success: false,
         message: 'VNC proxy request failed',
-        error: error.message
+        error: error.message,
       });
     }
   }
-
 
   /**
    * @swagger
@@ -1309,10 +1314,14 @@ class ServerController {
       if (servers.length === 0) {
         return res.status(400).json({
           success: false,
-          message: "No servers configured."
+          message: 'No servers configured.',
         });
       }
-      const server = await ServerModel.getServer(servers[0].hostname, servers[0].port, servers[0].protocol);
+      const server = await ServerModel.getServer(
+        servers[0].hostname,
+        servers[0].port,
+        servers[0].protocol
+      );
 
       const result = await ServerModel.makeRequest(
         server.hostname,
@@ -1327,14 +1336,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to start terminal session'
+          message: result.error || 'Failed to start terminal session',
         });
       }
     } catch (error) {
       console.error('Start terminal session error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to start terminal session'
+        message: 'Failed to start terminal session',
       });
     }
   }
@@ -1434,18 +1443,22 @@ class ServerController {
         serverAddress,
         terminal_cookie,
         zone_name,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       if (!terminal_cookie) {
         return res.status(400).json({
           success: false,
-          error: 'terminal_cookie is required'
+          error: 'terminal_cookie is required',
         });
       }
 
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         console.error('❌ TERMINAL START: Server not found', { serverAddress, hostname, port });
@@ -1456,13 +1469,13 @@ class ServerController {
         hostname: server.hostname,
         port: server.port,
         protocol: server.protocol,
-        hasApiKey: !!server.api_key
+        hasApiKey: !!server.api_key,
       });
 
       console.log('🎬 TERMINAL START: Creating/reusing session', {
         endpoint: 'terminal/start',
         method: 'POST',
-        terminal_cookie
+        terminal_cookie,
       });
 
       const result = await ServerModel.makeRequest(
@@ -1470,18 +1483,18 @@ class ServerController {
         server.port,
         server.protocol,
         'terminal/start',
-        { 
+        {
           method: 'POST',
           data: {
             terminal_cookie,
-            zone_name
-          }
+            zone_name,
+          },
         }
       );
 
       // Extract session data from nested response structure (matches frontend parsing pattern)
       const sessionData = result.data?.data || result.data;
-      
+
       console.log('📋 TERMINAL START: Session result', {
         success: result.success,
         status: result.status,
@@ -1489,7 +1502,7 @@ class ServerController {
         sessionId: sessionData?.id,
         reused: sessionData?.reused,
         websocket_url: sessionData?.websocket_url,
-        error: result.error
+        error: result.error,
       });
 
       if (result.success) {
@@ -1497,7 +1510,7 @@ class ServerController {
           sessionId: sessionData.id,
           reused: sessionData.reused ? '⚡ REUSED' : '🆕 NEW',
           status: sessionData.status,
-          websocket_url: sessionData.websocket_url
+          websocket_url: sessionData.websocket_url,
         });
 
         res.json({ success: true, data: sessionData });
@@ -1505,24 +1518,24 @@ class ServerController {
         console.error('❌ TERMINAL START: Session creation failed', {
           status: result.status,
           error: result.error,
-          message: result.message
+          message: result.message,
         });
 
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to start terminal session'
+          message: result.error || 'Failed to start terminal session',
         });
       }
     } catch (error) {
       console.error('💥 TERMINAL START: Exception occurred', {
         error: error.message,
         stack: error.stack,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       res.status(500).json({
         success: false,
-        message: 'Failed to start terminal session'
+        message: 'Failed to start terminal session',
       });
     }
   }
@@ -1582,7 +1595,11 @@ class ServerController {
     try {
       const { serverAddress } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1601,14 +1618,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to get terminal sessions'
+          message: result.error || 'Failed to get terminal sessions',
         });
       }
     } catch (error) {
       console.error('Get terminal sessions error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to get terminal sessions'
+        message: 'Failed to get terminal sessions',
       });
     }
   }
@@ -1661,7 +1678,11 @@ class ServerController {
     try {
       const { serverAddress, terminalCookie } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1680,14 +1701,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to check terminal session health'
+          message: result.error || 'Failed to check terminal session health',
         });
       }
     } catch (error) {
       console.error('Check terminal health error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to check terminal session health'
+        message: 'Failed to check terminal session health',
       });
     }
   }
@@ -1752,7 +1773,11 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1771,14 +1796,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to get terminal session'
+          message: result.error || 'Failed to get terminal session',
         });
       }
     } catch (error) {
       console.error('Get terminal session error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to get terminal session'
+        message: 'Failed to get terminal session',
       });
     }
   }
@@ -1826,7 +1851,11 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1845,14 +1874,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to stop terminal session'
+          message: result.error || 'Failed to stop terminal session',
         });
       }
     } catch (error) {
       console.error('Stop terminal session error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to stop terminal session'
+        message: 'Failed to stop terminal session',
       });
     }
   }
@@ -1944,11 +1973,15 @@ class ServerController {
       console.log('🚀 ZLOGIN START: Received request', {
         serverAddress,
         zoneName,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         console.error('❌ ZLOGIN START: Server not found', { serverAddress, hostname, port });
@@ -1959,7 +1992,7 @@ class ServerController {
         hostname: server.hostname,
         port: server.port,
         protocol: server.protocol,
-        hasApiKey: !!server.api_key
+        hasApiKey: !!server.api_key,
       });
 
       // First, get all zlogin sessions and stop any that are for the same zone
@@ -1976,7 +2009,7 @@ class ServerController {
         success: sessionsResult.success,
         status: sessionsResult.status,
         sessionCount: sessionsResult.success ? sessionsResult.data?.length : 'unknown',
-        data: sessionsResult.data
+        data: sessionsResult.data,
       });
 
       if (sessionsResult.success) {
@@ -1986,7 +2019,7 @@ class ServerController {
           console.log('🧹 ZLOGIN START: Found existing session, stopping it', {
             sessionId: existingSession.id,
             zoneName: existingSession.zone_name,
-            status: existingSession.status
+            status: existingSession.status,
           });
 
           const stopResult = await ServerModel.makeRequest(
@@ -2000,7 +2033,7 @@ class ServerController {
           console.log('🛑 ZLOGIN START: Stop existing session result', {
             success: stopResult.success,
             status: stopResult.status,
-            message: stopResult.message || stopResult.error
+            message: stopResult.message || stopResult.error,
           });
         } else {
           console.log('✅ ZLOGIN START: No existing session found for zone');
@@ -2009,7 +2042,7 @@ class ServerController {
 
       console.log('🎬 ZLOGIN START: Creating new session', {
         endpoint: `zones/${zoneName}/zlogin/start`,
-        method: 'POST'
+        method: 'POST',
       });
 
       const result = await ServerModel.makeRequest(
@@ -2026,46 +2059,46 @@ class ServerController {
         hasData: !!result.data,
         sessionId: result.data?.id,
         error: result.error,
-        data: result.data
+        data: result.data,
       });
 
       if (result.success) {
         console.log('🎉 ZLOGIN START: Session created successfully', {
           sessionId: result.data.id,
           zoneName: result.data.zone_name || zoneName,
-          status: result.data.status
+          status: result.data.status,
         });
 
         // Add websocket_url field that frontend expects for WebSocket connection
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           session: {
             ...result.data,
-            websocket_url: `/zlogin/${result.data.id}`
-          }
+            websocket_url: `/zlogin/${result.data.id}`,
+          },
         });
       } else {
         console.error('❌ ZLOGIN START: Session creation failed', {
           status: result.status,
           error: result.error,
-          message: result.message
+          message: result.message,
         });
 
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to start zlogin session'
+          message: result.error || 'Failed to start zlogin session',
         });
       }
     } catch (error) {
       console.error('💥 ZLOGIN START: Exception occurred', {
         error: error.message,
         stack: error.stack,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       res.status(500).json({
         success: false,
-        message: 'Failed to start zlogin session'
+        message: 'Failed to start zlogin session',
       });
     }
   }
@@ -2148,7 +2181,11 @@ class ServerController {
     try {
       const { serverAddress } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -2167,14 +2204,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to get zlogin sessions'
+          message: result.error || 'Failed to get zlogin sessions',
         });
       }
     } catch (error) {
       console.error('Get zlogin sessions error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to get zlogin sessions'
+        message: 'Failed to get zlogin sessions',
       });
     }
   }
@@ -2277,7 +2314,11 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -2296,14 +2337,14 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to get zlogin session'
+          message: result.error || 'Failed to get zlogin session',
         });
       }
     } catch (error) {
       console.error('Get zlogin session error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to get zlogin session'
+        message: 'Failed to get zlogin session',
       });
     }
   }
@@ -2376,7 +2417,11 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), 'https');
+      const server = await ServerController.getCachedServer(
+        hostname,
+        parseInt(port || 5001),
+        'https'
+      );
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -2395,17 +2440,17 @@ class ServerController {
       } else {
         res.status(result.status || 500).json({
           success: false,
-          message: result.error || 'Failed to stop zlogin session'
+          message: result.error || 'Failed to stop zlogin session',
         });
       }
     } catch (error) {
       console.error('Stop zlogin session error:', error.message);
       res.status(500).json({
         success: false,
-        message: 'Failed to stop zlogin session'
+        message: 'Failed to stop zlogin session',
       });
     }
   }
-};
+}
 
 export default ServerController;

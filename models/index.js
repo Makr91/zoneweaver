@@ -25,8 +25,8 @@ const dbConfig = {
     max: config.database.pool?.max?.value,
     min: config.database.pool?.min?.value,
     acquire: config.database.pool?.acquire?.value,
-    idle: config.database.pool?.idle?.value
-  }
+    idle: config.database.pool?.idle?.value,
+  },
 };
 
 // Configure Sequelize based on database dialect
@@ -34,28 +34,29 @@ const dbConfig = {
 const dialect = dbConfig.dialect?.value || dbConfig.dialect || 'sqlite';
 const logging = dbConfig.logging?.value || dbConfig.logging || false;
 
-let sequelizeConfig = {
-  logging: logging,
-  dialect: dialect,
+const sequelizeConfig = {
+  logging,
+  dialect,
 };
 
 if (dialect === 'sqlite') {
   // SQLite configuration - use storage from config
-  sequelizeConfig.storage = dbConfig.storage ;
-  
+  sequelizeConfig.storage = dbConfig.storage;
+
   // Ensure the directory exists for SQLite database file
   const storageDir = path.dirname(sequelizeConfig.storage);
   if (!fs.existsSync(storageDir)) {
     fs.mkdirSync(storageDir, { recursive: true, mode: 0o755 });
     console.log(`Created SQLite database directory: ${storageDir}`);
   }
-  
+
   console.log(`📁 Using SQLite database: ${sequelizeConfig.storage}`);
 } else {
   // MySQL/PostgreSQL/MariaDB configuration
   sequelizeConfig.host = dbConfig.host?.value || dbConfig.host || 'localhost';
-  sequelizeConfig.port = dbConfig.port?.value || dbConfig.port || (dialect === 'postgresql' ? 5432 : 3306);
-  
+  sequelizeConfig.port =
+    dbConfig.port?.value || dbConfig.port || (dialect === 'postgresql' ? 5432 : 3306);
+
   // Connection pooling
   const poolConfig = dbConfig.pool;
   if (poolConfig) {
@@ -63,14 +64,18 @@ if (dialect === 'sqlite') {
       max: poolConfig.max?.value || poolConfig.max || 5,
       min: poolConfig.min?.value || poolConfig.min || 0,
       acquire: poolConfig.acquire?.value || poolConfig.acquire || 30000,
-      idle: poolConfig.idle?.value || poolConfig.idle || 10000
+      idle: poolConfig.idle?.value || poolConfig.idle || 10000,
     };
   }
 }
 
-const databaseName = dialect === 'sqlite' ? null : (dbConfig.database_name?.value || dbConfig.database_name || 'zoneweaver');
-const username = dialect === 'sqlite' ? null : (dbConfig.user?.value || dbConfig.user || 'zoneweaver');
-const password = dialect === 'sqlite' ? null : (dbConfig.password?.value || dbConfig.password || '');
+const databaseName =
+  dialect === 'sqlite'
+    ? null
+    : dbConfig.database_name?.value || dbConfig.database_name || 'zoneweaver';
+const username =
+  dialect === 'sqlite' ? null : dbConfig.user?.value || dbConfig.user || 'zoneweaver';
+const password = dialect === 'sqlite' ? null : dbConfig.password?.value || dbConfig.password || '';
 
 const sequelize = new Sequelize(databaseName, username, password, sequelizeConfig);
 
@@ -82,14 +87,14 @@ db.sequelize = sequelize;
 // Import models - using dynamic imports for ES modules
 const modelFiles = [
   'user.model.js',
-  'organization.model.js', 
+  'organization.model.js',
   'invitation.model.js',
   'server.model.js',
-  'credential.model.js'
+  'credential.model.js',
 ];
 
 // Initialize models - handle async imports properly
-const modelPromises = modelFiles.map(async (file) => {
+const modelPromises = modelFiles.map(async file => {
   try {
     const { default: modelDefiner } = await import(`./${file}`);
     const modelName = file.replace('.model.js', '');
@@ -122,11 +127,10 @@ Object.keys(db).forEach(modelName => {
 try {
   await sequelize.authenticate();
   console.log(`✅ Database connection established successfully (${sequelizeConfig.dialect})`);
-  
+
   // Initialize automatic migration system
   const migrationHelper = createMigrationHelper(sequelize);
   await migrationHelper.setupDatabase();
-  
 } catch (error) {
   console.error('❌ Unable to connect to database:', error.message);
   throw error;

@@ -47,7 +47,9 @@
     "preview": "vite preview",
     "client": "vite dev --host 0.0.0.0",
     "build-sass": "vite build --mode development",
-    "build-less": "less-watch-compiler --config less-watcher.config.json"
+    "build-less": "less-watch-compiler --config less-watcher.config.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "eslintConfig": {
     "extends": [

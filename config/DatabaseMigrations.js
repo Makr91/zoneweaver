@@ -10,588 +10,592 @@ import { Sequelize } from 'sequelize';
  * @description Provides utilities for safely migrating database schemas
  */
 class DatabaseMigrations {
+  constructor(sequelize) {
+    this.sequelize = sequelize;
+    this.queryInterface = sequelize.getQueryInterface();
+  }
 
-    constructor(sequelize) {
-        this.sequelize = sequelize;
-        this.queryInterface = sequelize.getQueryInterface();
-    }
-
-    /**
-     * Check if a column exists in a table
-     * @param {string} tableName - Name of the table
-     * @param {string} columnName - Name of the column
-     * @returns {Promise<boolean>} True if column exists
-     */
-    async columnExists(tableName, columnName) {
-        try {
-            if (this.sequelize.getDialect() === 'sqlite') {
-                const [results] = await this.sequelize.query(`PRAGMA table_info(${tableName})`);
-                return results.some(col => col.name === columnName);
-            } else {
-                // MySQL/PostgreSQL
-                const [results] = await this.sequelize.query(`
+  /**
+   * Check if a column exists in a table
+   * @param {string} tableName - Name of the table
+   * @param {string} columnName - Name of the column
+   * @returns {Promise<boolean>} True if column exists
+   */
+  async columnExists(tableName, columnName) {
+    try {
+      if (this.sequelize.getDialect() === 'sqlite') {
+        const [results] = await this.sequelize.query(`PRAGMA table_info(${tableName})`);
+        return results.some(col => col.name === columnName);
+      } else {
+        // MySQL/PostgreSQL
+        const [results] = await this.sequelize.query(`
                     SELECT COLUMN_NAME 
                     FROM INFORMATION_SCHEMA.COLUMNS 
                     WHERE TABLE_NAME = '${tableName}' AND COLUMN_NAME = '${columnName}'
                 `);
-                return results.length > 0;
-            }
-        } catch (error) {
-            console.warn(`Failed to check column ${columnName} in table ${tableName}:`, error.message);
-            return false;
-        }
+        return results.length > 0;
+      }
+    } catch (error) {
+      console.warn(`Failed to check column ${columnName} in table ${tableName}:`, error.message);
+      return false;
     }
+  }
 
-    /**
-     * Check if a table exists
-     * @param {string} tableName - Name of the table
-     * @returns {Promise<boolean>} True if table exists
-     */
-    async tableExists(tableName) {
-        try {
-            if (this.sequelize.getDialect() === 'sqlite') {
-                const [results] = await this.sequelize.query(`
+  /**
+   * Check if a table exists
+   * @param {string} tableName - Name of the table
+   * @returns {Promise<boolean>} True if table exists
+   */
+  async tableExists(tableName) {
+    try {
+      if (this.sequelize.getDialect() === 'sqlite') {
+        const [results] = await this.sequelize.query(`
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name='${tableName}'
                 `);
-                return results.length > 0;
-            } else {
-                // MySQL/PostgreSQL
-                const [results] = await this.sequelize.query(`
+        return results.length > 0;
+      } else {
+        // MySQL/PostgreSQL
+        const [results] = await this.sequelize.query(`
                     SELECT TABLE_NAME 
                     FROM INFORMATION_SCHEMA.TABLES 
                     WHERE TABLE_NAME = '${tableName}'
                 `);
-                return results.length > 0;
-            }
-        } catch (error) {
-            console.warn(`Failed to check if table ${tableName} exists:`, error.message);
-            return false;
+        return results.length > 0;
+      }
+    } catch (error) {
+      console.warn(`Failed to check if table ${tableName} exists:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Add a column to a table if it doesn't exist
+   * @param {string} tableName - Name of the table
+   * @param {string} columnName - Name of the column
+   * @param {Object} columnDefinition - Sequelize column definition
+   * @returns {Promise<boolean>} True if column was added or already exists
+   */
+  async addColumnIfNotExists(tableName, columnName, columnDefinition) {
+    try {
+      const exists = await this.columnExists(tableName, columnName);
+      if (exists) {
+        console.log(`  ✓ Column ${tableName}.${columnName} already exists`);
+        return true;
+      }
+
+      console.log(`  + Adding column ${tableName}.${columnName}...`);
+      await this.queryInterface.addColumn(tableName, columnName, columnDefinition);
+      console.log(`  ✅ Added column ${tableName}.${columnName}`);
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to add column ${tableName}.${columnName}:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Create a table if it doesn't exist
+   * @param {string} tableName - Name of the table
+   * @param {Object} tableDefinition - Sequelize table definition
+   * @param {Object} options - Table options (indexes, etc.)
+   * @returns {Promise<boolean>} True if table was created or already exists
+   */
+  async createTableIfNotExists(tableName, tableDefinition, options = {}) {
+    try {
+      const exists = await this.tableExists(tableName);
+      if (exists) {
+        console.log(`  ✓ Table ${tableName} already exists`);
+        return true;
+      }
+
+      console.log(`  + Creating table ${tableName}...`);
+      await this.queryInterface.createTable(tableName, tableDefinition, options);
+
+      // Create indexes if specified
+      if (options.indexes) {
+        for (const index of options.indexes) {
+          try {
+            await this.queryInterface.addIndex(tableName, index.fields, {
+              name: index.name,
+              unique: index.unique || false,
+              type: index.type,
+            });
+            console.log(`  ✅ Created index ${index.name} on ${tableName}`);
+          } catch (indexError) {
+            console.warn(`  ⚠️ Failed to create index ${index.name}:`, indexError.message);
+          }
         }
+      }
+
+      console.log(`  ✅ Created table ${tableName}`);
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to create table ${tableName}:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Migrate users table to add authentication fields
+   * @description Adds auth_provider, external_id, linked_at fields for external authentication
+   * @returns {Promise<boolean>} True if migration successful
+   */
+  async migrateUsersTable() {
+    console.log('🔧 Migrating users table for authentication fields...');
+
+    const tableName = 'users';
+    const columnsToAdd = [
+      {
+        name: 'auth_provider',
+        definition: {
+          type: Sequelize.STRING(50),
+          allowNull: true,
+          defaultValue: 'local',
+          comment: 'Authentication provider: local, ldap, oidc, etc.',
+        },
+      },
+      {
+        name: 'external_id',
+        definition: {
+          type: Sequelize.STRING(255),
+          allowNull: true,
+          comment: 'External provider user ID',
+        },
+      },
+      {
+        name: 'linked_at',
+        definition: {
+          type: Sequelize.DATE,
+          allowNull: true,
+          comment: 'Timestamp when external account was linked',
+        },
+      },
+    ];
+
+    let allSuccessful = true;
+
+    for (const column of columnsToAdd) {
+      const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
+      if (!success) {
+        allSuccessful = false;
+      }
     }
 
-    /**
-     * Add a column to a table if it doesn't exist
-     * @param {string} tableName - Name of the table
-     * @param {string} columnName - Name of the column
-     * @param {Object} columnDefinition - Sequelize column definition
-     * @returns {Promise<boolean>} True if column was added or already exists
-     */
-    async addColumnIfNotExists(tableName, columnName, columnDefinition) {
-        try {
-            const exists = await this.columnExists(tableName, columnName);
-            if (exists) {
-                console.log(`  ✓ Column ${tableName}.${columnName} already exists`);
-                return true;
-            }
-
-            console.log(`  + Adding column ${tableName}.${columnName}...`);
-            await this.queryInterface.addColumn(tableName, columnName, columnDefinition);
-            console.log(`  ✅ Added column ${tableName}.${columnName}`);
-            return true;
-
-        } catch (error) {
-            console.error(`❌ Failed to add column ${tableName}.${columnName}:`, error.message);
-            return false;
-        }
+    // Set auth_provider to 'local' for existing users
+    if (allSuccessful) {
+      try {
+        console.log('  + Setting auth_provider to "local" for existing users...');
+        await this.sequelize.query(
+          "UPDATE users SET auth_provider = 'local' WHERE auth_provider IS NULL"
+        );
+        console.log('  ✅ Updated existing users to use local auth_provider');
+      } catch (error) {
+        console.warn('  ⚠️ Failed to update existing users:', error.message);
+      }
     }
 
-    /**
-     * Create a table if it doesn't exist
-     * @param {string} tableName - Name of the table
-     * @param {Object} tableDefinition - Sequelize table definition
-     * @param {Object} options - Table options (indexes, etc.)
-     * @returns {Promise<boolean>} True if table was created or already exists
-     */
-    async createTableIfNotExists(tableName, tableDefinition, options = {}) {
-        try {
-            const exists = await this.tableExists(tableName);
-            if (exists) {
-                console.log(`  ✓ Table ${tableName} already exists`);
-                return true;
-            }
-
-            console.log(`  + Creating table ${tableName}...`);
-            await this.queryInterface.createTable(tableName, tableDefinition, options);
-            
-            // Create indexes if specified
-            if (options.indexes) {
-                for (const index of options.indexes) {
-                    try {
-                        await this.queryInterface.addIndex(tableName, index.fields, {
-                            name: index.name,
-                            unique: index.unique || false,
-                            type: index.type
-                        });
-                        console.log(`  ✅ Created index ${index.name} on ${tableName}`);
-                    } catch (indexError) {
-                        console.warn(`  ⚠️ Failed to create index ${index.name}:`, indexError.message);
-                    }
-                }
-            }
-
-            console.log(`  ✅ Created table ${tableName}`);
-            return true;
-
-        } catch (error) {
-            console.error(`❌ Failed to create table ${tableName}:`, error.message);
-            return false;
-        }
+    if (allSuccessful) {
+      console.log('✅ Users table migration completed successfully');
+    } else {
+      console.warn('⚠️ Users table migration completed with some errors');
     }
 
-    /**
-     * Migrate users table to add authentication fields
-     * @description Adds auth_provider, external_id, linked_at fields for external authentication
-     * @returns {Promise<boolean>} True if migration successful
-     */
-    async migrateUsersTable() {
-        console.log('🔧 Migrating users table for authentication fields...');
-        
-        const tableName = 'users';
-        const columnsToAdd = [
-            {
-                name: 'auth_provider',
-                definition: {
-                    type: Sequelize.STRING(50),
-                    allowNull: true,
-                    defaultValue: 'local',
-                    comment: 'Authentication provider: local, ldap, oidc, etc.'
-                }
-            },
-            {
-                name: 'external_id',
-                definition: {
-                    type: Sequelize.STRING(255),
-                    allowNull: true,
-                    comment: 'External provider user ID'
-                }
-            },
-            {
-                name: 'linked_at',
-                definition: {
-                    type: Sequelize.DATE,
-                    allowNull: true,
-                    comment: 'Timestamp when external account was linked'
-                }
-            }
-        ];
+    return allSuccessful;
+  }
 
-        let allSuccessful = true;
-        
-        for (const column of columnsToAdd) {
-            const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
-            if (!success) {
-                allSuccessful = false;
-            }
-        }
+  /**
+   * Migrate organizations table to add organization_code field
+   * @description Adds organization_code field for domain mapping
+   * @returns {Promise<boolean>} True if migration successful
+   */
+  async migrateOrganizationsTable() {
+    console.log('🔧 Migrating organizations table for organization codes...');
 
-        // Set auth_provider to 'local' for existing users
-        if (allSuccessful) {
-            try {
-                console.log('  + Setting auth_provider to "local" for existing users...');
-                await this.sequelize.query(
-                    "UPDATE users SET auth_provider = 'local' WHERE auth_provider IS NULL"
-                );
-                console.log('  ✅ Updated existing users to use local auth_provider');
-            } catch (error) {
-                console.warn('  ⚠️ Failed to update existing users:', error.message);
-            }
-        }
+    const tableName = 'organizations';
 
-        if (allSuccessful) {
-            console.log('✅ Users table migration completed successfully');
+    // SQLite doesn't allow adding UNIQUE columns directly, so add column first
+    const columnDefinition = {
+      type: Sequelize.STRING(20),
+      allowNull: true,
+      comment: 'Organization code for domain mapping (hexcode format)',
+    };
+
+    const success = await this.addColumnIfNotExists(
+      tableName,
+      'organization_code',
+      columnDefinition
+    );
+
+    // Then create unique index if column was added successfully
+    if (success) {
+      try {
+        // Check if unique index already exists
+        const indexExists = await this.indexExists(tableName, 'unique_organization_code');
+        if (!indexExists) {
+          console.log('  + Creating unique index on organization_code...');
+          await this.queryInterface.addIndex(tableName, ['organization_code'], {
+            name: 'unique_organization_code',
+            unique: true,
+          });
+          console.log('  ✅ Created unique index on organization_code');
         } else {
-            console.warn('⚠️ Users table migration completed with some errors');
+          console.log('  ✓ Unique index on organization_code already exists');
         }
-
-        return allSuccessful;
+      } catch (indexError) {
+        console.warn(
+          '  ⚠️ Failed to create unique index on organization_code:',
+          indexError.message
+        );
+      }
     }
 
-    /**
-     * Migrate organizations table to add organization_code field
-     * @description Adds organization_code field for domain mapping
-     * @returns {Promise<boolean>} True if migration successful
-     */
-    async migrateOrganizationsTable() {
-        console.log('🔧 Migrating organizations table for organization codes...');
-        
-        const tableName = 'organizations';
-        
-        // SQLite doesn't allow adding UNIQUE columns directly, so add column first
-        const columnDefinition = {
-            type: Sequelize.STRING(20),
-            allowNull: true,
-            comment: 'Organization code for domain mapping (hexcode format)'
-        };
-
-        let success = await this.addColumnIfNotExists(tableName, 'organization_code', columnDefinition);
-        
-        // Then create unique index if column was added successfully
-        if (success) {
-            try {
-                // Check if unique index already exists
-                const indexExists = await this.indexExists(tableName, 'unique_organization_code');
-                if (!indexExists) {
-                    console.log('  + Creating unique index on organization_code...');
-                    await this.queryInterface.addIndex(tableName, ['organization_code'], {
-                        name: 'unique_organization_code',
-                        unique: true
-                    });
-                    console.log('  ✅ Created unique index on organization_code');
-                } else {
-                    console.log('  ✓ Unique index on organization_code already exists');
-                }
-            } catch (indexError) {
-                console.warn('  ⚠️ Failed to create unique index on organization_code:', indexError.message);
-            }
-        }
-
-        if (success) {
-            console.log('✅ Organizations table migration completed successfully');
-        } else {
-            console.warn('⚠️ Organizations table migration completed with some errors');
-        }
-
-        return success;
+    if (success) {
+      console.log('✅ Organizations table migration completed successfully');
+    } else {
+      console.warn('⚠️ Organizations table migration completed with some errors');
     }
 
-    /**
-     * Check if an index exists on a table
-     * @param {string} tableName - Name of the table
-     * @param {string} indexName - Name of the index
-     * @returns {Promise<boolean>} True if index exists
-     */
-    async indexExists(tableName, indexName) {
-        try {
-            if (this.sequelize.getDialect() === 'sqlite') {
-                const [results] = await this.sequelize.query(`
+    return success;
+  }
+
+  /**
+   * Check if an index exists on a table
+   * @param {string} tableName - Name of the table
+   * @param {string} indexName - Name of the index
+   * @returns {Promise<boolean>} True if index exists
+   */
+  async indexExists(tableName, indexName) {
+    try {
+      if (this.sequelize.getDialect() === 'sqlite') {
+        const [results] = await this.sequelize.query(`
                     SELECT name FROM sqlite_master 
                     WHERE type='index' AND name='${indexName}' AND tbl_name='${tableName}'
                 `);
-                return results.length > 0;
-            } else {
-                // MySQL/PostgreSQL
-                const [results] = await this.sequelize.query(`
+        return results.length > 0;
+      } else {
+        // MySQL/PostgreSQL
+        const [results] = await this.sequelize.query(`
                     SELECT INDEX_NAME 
                     FROM INFORMATION_SCHEMA.STATISTICS 
                     WHERE TABLE_NAME = '${tableName}' AND INDEX_NAME = '${indexName}'
                 `);
-                return results.length > 0;
-            }
-        } catch (error) {
-            console.warn(`Failed to check if index ${indexName} exists on table ${tableName}:`, error.message);
-            return false;
-        }
+        return results.length > 0;
+      }
+    } catch (error) {
+      console.warn(
+        `Failed to check if index ${indexName} exists on table ${tableName}:`,
+        error.message
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Create federated_credentials table
+   * @description Creates table for storing external authentication provider credentials
+   * @returns {Promise<boolean>} True if creation successful
+   */
+  async createCredentialsTable() {
+    console.log('🔧 Creating federated_credentials table...');
+
+    const tableName = 'federated_credentials';
+    const tableDefinition = {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        comment: 'Unique credential identifier',
+      },
+      user_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        comment: 'Reference to users table',
+      },
+      provider: {
+        type: Sequelize.STRING(50),
+        allowNull: false,
+        comment: 'Authentication provider: ldap, oidc, oauth2, etc.',
+      },
+      subject: {
+        type: Sequelize.STRING(255),
+        allowNull: false,
+        comment: 'Provider-specific user identifier (sub claim)',
+      },
+      external_id: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+        comment: 'Additional provider user ID if different from subject',
+      },
+      external_email: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+        comment: 'Email from external provider',
+      },
+      linked_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
+        comment: 'When this credential was linked to the user',
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
+      },
+    };
+
+    const options = {
+      indexes: [
+        {
+          unique: true,
+          fields: ['provider', 'subject'],
+          name: 'unique_provider_subject',
+        },
+        {
+          fields: ['user_id'],
+          name: 'idx_federated_credentials_user_id',
+        },
+        {
+          fields: ['provider'],
+          name: 'idx_federated_credentials_provider',
+        },
+        {
+          fields: ['external_email'],
+          name: 'idx_federated_credentials_external_email',
+        },
+      ],
+    };
+
+    const success = await this.createTableIfNotExists(tableName, tableDefinition, options);
+
+    if (success) {
+      console.log('✅ Federated credentials table created successfully');
+    } else {
+      console.warn('⚠️ Federated credentials table creation failed');
     }
 
-    /**
-     * Create federated_credentials table
-     * @description Creates table for storing external authentication provider credentials
-     * @returns {Promise<boolean>} True if creation successful
-     */
-    async createCredentialsTable() {
-        console.log('🔧 Creating federated_credentials table...');
-        
-        const tableName = 'federated_credentials';
-        const tableDefinition = {
-            id: {
-                type: Sequelize.INTEGER,
-                primaryKey: true,
-                autoIncrement: true,
-                comment: 'Unique credential identifier'
-            },
-            user_id: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                references: {
-                    model: 'users',
-                    key: 'id'
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
-                comment: 'Reference to users table'
-            },
-            provider: {
-                type: Sequelize.STRING(50),
-                allowNull: false,
-                comment: 'Authentication provider: ldap, oidc, oauth2, etc.'
-            },
-            subject: {
-                type: Sequelize.STRING(255),
-                allowNull: false,
-                comment: 'Provider-specific user identifier (sub claim)'
-            },
-            external_id: {
-                type: Sequelize.STRING(255),
-                allowNull: true,
-                comment: 'Additional provider user ID if different from subject'
-            },
-            external_email: {
-                type: Sequelize.STRING(255),
-                allowNull: true,
-                comment: 'Email from external provider'
-            },
-            linked_at: {
-                type: Sequelize.DATE,
-                allowNull: false,
-                defaultValue: Sequelize.NOW,
-                comment: 'When this credential was linked to the user'
-            },
-            created_at: {
-                type: Sequelize.DATE,
-                allowNull: false,
-                defaultValue: Sequelize.NOW
-            },
-            updated_at: {
-                type: Sequelize.DATE,
-                allowNull: false,
-                defaultValue: Sequelize.NOW
-            }
-        };
+    return success;
+  }
 
-        const options = {
-            indexes: [
-                {
-                    unique: true,
-                    fields: ['provider', 'subject'],
-                    name: 'unique_provider_subject'
-                },
-                {
-                    fields: ['user_id'],
-                    name: 'idx_federated_credentials_user_id'
-                },
-                {
-                    fields: ['provider'],
-                    name: 'idx_federated_credentials_provider'
-                },
-                {
-                    fields: ['external_email'],
-                    name: 'idx_federated_credentials_external_email'
-                }
-            ]
-        };
+  /**
+   * Add missing timestamp columns to existing tables
+   * @description Adds created_at and updated_at columns to tables that are missing them
+   * @returns {Promise<boolean>} True if migration successful
+   */
+  async addTimestampColumns() {
+    console.log('🔧 Adding missing timestamp columns to existing tables...');
 
-        const success = await this.createTableIfNotExists(tableName, tableDefinition, options);
+    const tablesToUpdate = ['users', 'organizations', 'invitations', 'servers'];
+    let allSuccessful = true;
 
-        if (success) {
-            console.log('✅ Federated credentials table created successfully');
-        } else {
-            console.warn('⚠️ Federated credentials table creation failed');
-        }
+    for (const tableName of tablesToUpdate) {
+      const tableExists = await this.tableExists(tableName);
+      if (!tableExists) {
+        console.log(`  ⚠️ Table ${tableName} does not exist, skipping...`);
+        continue;
+      }
 
-        return success;
-    }
+      console.log(`  + Checking ${tableName} table for timestamp columns...`);
 
-    /**
-     * Add missing timestamp columns to existing tables
-     * @description Adds created_at and updated_at columns to tables that are missing them
-     * @returns {Promise<boolean>} True if migration successful
-     */
-    async addTimestampColumns() {
-        console.log('🔧 Adding missing timestamp columns to existing tables...');
-        
-        const tablesToUpdate = ['users', 'organizations', 'invitations', 'servers'];
-        let allSuccessful = true;
-        
-        for (const tableName of tablesToUpdate) {
-            const tableExists = await this.tableExists(tableName);
-            if (!tableExists) {
-                console.log(`  ⚠️ Table ${tableName} does not exist, skipping...`);
-                continue;
-            }
-            
-            console.log(`  + Checking ${tableName} table for timestamp columns...`);
-            
-            // Add created_at column
-            const createdAtSuccess = await this.addColumnIfNotExists(tableName, 'created_at', {
-                type: Sequelize.DATE,
-                allowNull: true,
-                defaultValue: Sequelize.NOW,
-                comment: 'Record creation timestamp'
-            });
-            
-            // Add updated_at column  
-            const updatedAtSuccess = await this.addColumnIfNotExists(tableName, 'updated_at', {
-                type: Sequelize.DATE,
-                allowNull: true,
-                defaultValue: Sequelize.NOW,
-                comment: 'Record last update timestamp'
-            });
-            
-            if (!createdAtSuccess || !updatedAtSuccess) {
-                allSuccessful = false;
-            }
-            
-            // Set default values for existing records
-            if (createdAtSuccess || updatedAtSuccess) {
-                try {
-                    console.log(`  + Setting default timestamps for existing ${tableName} records...`);
-                    const now = new Date().toISOString();
-                    
-                    if (createdAtSuccess) {
-                        await this.sequelize.query(
-                            `UPDATE ${tableName} SET created_at = ? WHERE created_at IS NULL`,
-                            { replacements: [now] }
-                        );
-                    }
-                    
-                    if (updatedAtSuccess) {
-                        await this.sequelize.query(
-                            `UPDATE ${tableName} SET updated_at = ? WHERE updated_at IS NULL`,
-                            { replacements: [now] }
-                        );
-                    }
-                    
-                    console.log(`  ✅ Updated timestamp defaults for ${tableName}`);
-                } catch (error) {
-                    console.warn(`  ⚠️ Failed to set default timestamps for ${tableName}:`, error.message);
-                }
-            }
-        }
-        
-        if (allSuccessful) {
-            console.log('✅ Timestamp columns migration completed successfully');
-        } else {
-            console.warn('⚠️ Timestamp columns migration completed with some errors');
-        }
-        
-        return allSuccessful;
-    }
+      // Add created_at column
+      const createdAtSuccess = await this.addColumnIfNotExists(tableName, 'created_at', {
+        type: Sequelize.DATE,
+        allowNull: true,
+        defaultValue: Sequelize.NOW,
+        comment: 'Record creation timestamp',
+      });
 
-    /**
-     * Migrate servers table to add missing columns
-     * @description Adds allow_insecure, created_by and other missing fields for servers table
-     * @returns {Promise<boolean>} True if migration successful
-     */
-    async migrateServersTable() {
-        console.log('🔧 Migrating servers table for missing columns...');
-        
-        const tableName = 'servers';
-        const columnsToAdd = [
-            {
-                name: 'allow_insecure',
-                definition: {
-                    type: Sequelize.BOOLEAN,
-                    allowNull: false,
-                    defaultValue: false,
-                    comment: 'Allow insecure TLS connections to this server'
-                }
-            },
-            {
-                name: 'created_by',
-                definition: {
-                    type: Sequelize.INTEGER,
-                    allowNull: true,
-                    comment: 'User ID who created this server entry'
-                }
-            }
-        ];
+      // Add updated_at column
+      const updatedAtSuccess = await this.addColumnIfNotExists(tableName, 'updated_at', {
+        type: Sequelize.DATE,
+        allowNull: true,
+        defaultValue: Sequelize.NOW,
+        comment: 'Record last update timestamp',
+      });
 
-        let allSuccessful = true;
-        
-        for (const column of columnsToAdd) {
-            const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
-            if (!success) {
-                allSuccessful = false;
-            }
-        }
+      if (!createdAtSuccess || !updatedAtSuccess) {
+        allSuccessful = false;
+      }
 
-        // Set default values for existing records
-        if (allSuccessful) {
-            try {
-                console.log('  + Setting default values for existing servers...');
-                await this.sequelize.query(
-                    "UPDATE servers SET allow_insecure = false WHERE allow_insecure IS NULL"
-                );
-                console.log('  ✅ Updated existing servers with default allow_insecure value');
-            } catch (error) {
-                console.warn('  ⚠️ Failed to update existing servers:', error.message);
-            }
-        }
-
-        if (allSuccessful) {
-            console.log('✅ Servers table migration completed successfully');
-        } else {
-            console.warn('⚠️ Servers table migration completed with some errors');
-        }
-
-        return allSuccessful;
-    }
-
-    /**
-     * Run all pending migrations
-     * @description Executes all necessary database migrations for Passport.js authentication
-     * @returns {Promise<boolean>} True if all migrations successful
-     */
-    async runMigrations() {
-        console.log('🔄 Running Passport.js database migrations...');
-        
+      // Set default values for existing records
+      if (createdAtSuccess || updatedAtSuccess) {
         try {
-            // Add missing timestamp columns first (fixes JWT authentication)
-            await this.addTimestampColumns();
-            
-            // Migrate users table (add auth fields)
-            await this.migrateUsersTable();
-            
-            // Migrate organizations table (add organization_code)
-            await this.migrateOrganizationsTable();
-            
-            // Migrate servers table (add allow_insecure, created_by)
-            await this.migrateServersTable();
-            
-            // Create federated_credentials table
-            await this.createCredentialsTable();
-            
-            console.log('✅ All Passport.js database migrations completed successfully');
-            return true;
-            
+          console.log(`  + Setting default timestamps for existing ${tableName} records...`);
+          const now = new Date().toISOString();
+
+          if (createdAtSuccess) {
+            await this.sequelize.query(
+              `UPDATE ${tableName} SET created_at = ? WHERE created_at IS NULL`,
+              { replacements: [now] }
+            );
+          }
+
+          if (updatedAtSuccess) {
+            await this.sequelize.query(
+              `UPDATE ${tableName} SET updated_at = ? WHERE updated_at IS NULL`,
+              { replacements: [now] }
+            );
+          }
+
+          console.log(`  ✅ Updated timestamp defaults for ${tableName}`);
         } catch (error) {
-            console.error('❌ Database migration failed:', error.message);
-            return false;
+          console.warn(`  ⚠️ Failed to set default timestamps for ${tableName}:`, error.message);
         }
+      }
     }
 
-    /**
-     * Initialize database tables if they don't exist
-     * @description Creates tables using Sequelize sync for new installations
-     * @returns {Promise<boolean>} True if initialization successful
-     */
-    async initializeTables() {
-        try {
-            // Sync all models to create tables if they don't exist
-            await this.sequelize.sync({ alter: false }); // Don't alter existing tables, just create missing ones
-            console.log('✅ Database tables initialized');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Database table initialization failed:', error.message);
-            return false;
-        }
+    if (allSuccessful) {
+      console.log('✅ Timestamp columns migration completed successfully');
+    } else {
+      console.warn('⚠️ Timestamp columns migration completed with some errors');
     }
 
-    /**
-     * Full database setup: initialize tables and run migrations
-     * @description Complete database setup process for new and existing installations
-     * @returns {Promise<boolean>} True if setup successful
-     */
-    async setupDatabase() {
-        try {
-            console.log('🔧 Setting up database schema...');
-            
-            // First, initialize any missing tables
-            await this.initializeTables();
-            
-            // Then run migrations to update existing tables
-            await this.runMigrations();
-            
-            console.log('✅ Database setup completed successfully');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Database setup failed:', error.message);
-            return false;
-        }
+    return allSuccessful;
+  }
+
+  /**
+   * Migrate servers table to add missing columns
+   * @description Adds allow_insecure, created_by and other missing fields for servers table
+   * @returns {Promise<boolean>} True if migration successful
+   */
+  async migrateServersTable() {
+    console.log('🔧 Migrating servers table for missing columns...');
+
+    const tableName = 'servers';
+    const columnsToAdd = [
+      {
+        name: 'allow_insecure',
+        definition: {
+          type: Sequelize.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+          comment: 'Allow insecure TLS connections to this server',
+        },
+      },
+      {
+        name: 'created_by',
+        definition: {
+          type: Sequelize.INTEGER,
+          allowNull: true,
+          comment: 'User ID who created this server entry',
+        },
+      },
+    ];
+
+    let allSuccessful = true;
+
+    for (const column of columnsToAdd) {
+      const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
+      if (!success) {
+        allSuccessful = false;
+      }
     }
+
+    // Set default values for existing records
+    if (allSuccessful) {
+      try {
+        console.log('  + Setting default values for existing servers...');
+        await this.sequelize.query(
+          'UPDATE servers SET allow_insecure = false WHERE allow_insecure IS NULL'
+        );
+        console.log('  ✅ Updated existing servers with default allow_insecure value');
+      } catch (error) {
+        console.warn('  ⚠️ Failed to update existing servers:', error.message);
+      }
+    }
+
+    if (allSuccessful) {
+      console.log('✅ Servers table migration completed successfully');
+    } else {
+      console.warn('⚠️ Servers table migration completed with some errors');
+    }
+
+    return allSuccessful;
+  }
+
+  /**
+   * Run all pending migrations
+   * @description Executes all necessary database migrations for Passport.js authentication
+   * @returns {Promise<boolean>} True if all migrations successful
+   */
+  async runMigrations() {
+    console.log('🔄 Running Passport.js database migrations...');
+
+    try {
+      // Add missing timestamp columns first (fixes JWT authentication)
+      await this.addTimestampColumns();
+
+      // Migrate users table (add auth fields)
+      await this.migrateUsersTable();
+
+      // Migrate organizations table (add organization_code)
+      await this.migrateOrganizationsTable();
+
+      // Migrate servers table (add allow_insecure, created_by)
+      await this.migrateServersTable();
+
+      // Create federated_credentials table
+      await this.createCredentialsTable();
+
+      console.log('✅ All Passport.js database migrations completed successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Database migration failed:', error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Initialize database tables if they don't exist
+   * @description Creates tables using Sequelize sync for new installations
+   * @returns {Promise<boolean>} True if initialization successful
+   */
+  async initializeTables() {
+    try {
+      // Sync all models to create tables if they don't exist
+      await this.sequelize.sync({ alter: false }); // Don't alter existing tables, just create missing ones
+      console.log('✅ Database tables initialized');
+      return true;
+    } catch (error) {
+      console.error('❌ Database table initialization failed:', error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Full database setup: initialize tables and run migrations
+   * @description Complete database setup process for new and existing installations
+   * @returns {Promise<boolean>} True if setup successful
+   */
+  async setupDatabase() {
+    try {
+      console.log('🔧 Setting up database schema...');
+
+      // First, initialize any missing tables
+      await this.initializeTables();
+
+      // Then run migrations to update existing tables
+      await this.runMigrations();
+
+      console.log('✅ Database setup completed successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Database setup failed:', error.message);
+      return false;
+    }
+  }
 }
 
 /**
@@ -600,7 +604,7 @@ class DatabaseMigrations {
  * @returns {DatabaseMigrations} Migration helper instance
  */
 export function createMigrationHelper(sequelize) {
-    return new DatabaseMigrations(sequelize);
+  return new DatabaseMigrations(sequelize);
 }
 
 export default DatabaseMigrations;

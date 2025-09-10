@@ -7,7 +7,8 @@ const options = {
     info: {
       title: 'Zoneweaver API',
       version: '0.7.7', // x-release-please-version
-      description: 'API for Zoneweaver - Web management interface for Bhyve virtual machines via Zoneweaver API',
+      description:
+        'API for Zoneweaver - Web management interface for Bhyve virtual machines via Zoneweaver API',
       license: {
         name: 'GPL-3.0',
         url: 'https://www.gnu.org/licenses/gpl-3.0.html',
@@ -25,14 +26,14 @@ const options = {
           protocol: {
             enum: ['http', 'https'],
             default: 'https',
-            description: 'The protocol used to access the server'
+            description: 'The protocol used to access the server',
           },
           host: {
             default: 'localhost:3000',
-            description: 'The hostname and port of the server'
-          }
-        }
-      }
+            description: 'The hostname and port of the server',
+          },
+        },
+      },
     ],
     components: {
       securitySchemes: {
@@ -40,7 +41,8 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT token authentication. First login at [/api/auth/login](./api/auth/login) to get your JWT token, then use format: Bearer <jwt_token>',
+          description:
+            'JWT token authentication. First login at [/api/auth/login](./api/auth/login) to get your JWT token, then use format: Bearer <jwt_token>',
         },
       },
       schemas: {

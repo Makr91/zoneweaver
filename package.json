@@ -11,7 +11,12 @@
     "build": "cd web && npm run build",
     "start": "npm run build && node index.js",
     "dev": "npm run build && nodemon index.js",
-    "local-api": "nodemon index.js"
+    "local-api": "nodemon index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:backend": "eslint . --ignore-pattern 'web/**'",
+    "lint:frontend": "cd web && npm run lint",
+    "lint:all": "npm run lint:backend && npm run lint:frontend"
   },
   "keywords": [
     "bhyve",
@@ -53,7 +58,13 @@
     "rollup": "@rollup/wasm-node"
   },
   "devDependencies": {
+    "@eslint/js": "^9.35.0",
     "@rollup/wasm-node": "^4.46.3",
-    "concurrently": "^9.2.0"
+    "concurrently": "^9.2.0",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2"
   }
 }

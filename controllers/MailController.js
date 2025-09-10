@@ -14,10 +14,10 @@ class MailController {
   static init() {
     try {
       const fullConfig = loadConfig();
-      
+
       this.config = fullConfig.mail;
       this.appConfig = fullConfig.app;
-      
+
       if (!this.config) {
         console.warn('Mail configuration not found in config.yaml');
       }
@@ -41,13 +41,17 @@ class MailController {
    */
   static createTransporter() {
     const mailConfig = this.getConfig();
-    
+
     if (!mailConfig) {
       throw new Error('Mail configuration not available');
     }
 
     // Check for UI metadata format configuration
-    if (!mailConfig.smtp_host?.value || !mailConfig.smtp_port?.value || !mailConfig.smtp_from?.value) {
+    if (
+      !mailConfig.smtp_host?.value ||
+      !mailConfig.smtp_port?.value ||
+      !mailConfig.smtp_from?.value
+    ) {
       throw new Error('Incomplete mail configuration. Missing smtp_host, smtp_port, or smtp_from');
     }
 
@@ -57,14 +61,14 @@ class MailController {
       port: mailConfig.smtp_port.value,
       secure: mailConfig.smtp_secure?.value || false,
       debug: process.env.NODE_ENV === 'development',
-      logger: process.env.NODE_ENV === 'development'
+      logger: process.env.NODE_ENV === 'development',
     };
 
     // Add authentication if provided
     if (mailConfig.smtp_user?.value && mailConfig.smtp_password?.value) {
       transporterConfig.auth = {
         user: mailConfig.smtp_user.value,
-        pass: mailConfig.smtp_password.value
+        pass: mailConfig.smtp_password.value,
       };
     }
 
@@ -84,23 +88,23 @@ class MailController {
   static async sendInvitationEmail(invitation) {
     try {
       console.log('Attempting to send invitation email...');
-      
+
       const mailConfig = this.getConfig();
       if (!mailConfig) {
         throw new Error('Mail configuration not available');
       }
 
       const transporter = this.createTransporter();
-      
+
       // Get frontend URL
       const frontendUrl = this.appConfig?.frontend_url || 'https://localhost:3001';
-      
+
       // Create invitation link
       const invitationLink = `${frontendUrl}/register?invite=${invitation.invite_code}`;
       const expirationDate = new Date(invitation.expires_at).toLocaleString();
 
       console.log('Preparing invitation email...');
-      
+
       const mailOptions = {
         from: mailConfig.smtp_from.value,
         to: invitation.email,
@@ -192,7 +196,7 @@ What happens next?
 Security Note: This invitation is unique to your email address and will expire on ${expirationDate}. If you didn't expect this invitation, you can safely ignore this email.
 
 If you have any questions, please contact ${invitation.invited_by_username} or your system administrator.
-        `
+        `,
       };
 
       console.log('Sending invitation email...');
@@ -206,16 +210,16 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
       return {
         success: true,
         messageId: info.messageId,
-        message: 'Invitation email sent successfully'
+        message: 'Invitation email sent successfully',
       };
     } catch (error) {
       console.error('Error sending invitation email:', error);
       console.error('Error stack:', error.stack);
-      
+
       return {
         success: false,
         error: error.message,
-        message: 'Failed to send invitation email'
+        message: 'Failed to send invitation email',
       };
     }
   }
@@ -229,14 +233,14 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
   static async sendWelcomeEmail(user, organizationName) {
     try {
       console.log('Attempting to send welcome email...');
-      
+
       const mailConfig = this.getConfig();
       if (!mailConfig) {
         throw new Error('Mail configuration not available');
       }
 
       const transporter = this.createTransporter();
-      
+
       // Get frontend URL
       const frontendUrl = this.appConfig?.frontend_url || 'https://localhost:3001';
       const loginUrl = `${frontendUrl}/login`;
@@ -324,7 +328,7 @@ Login to Zoneweaver: ${loginUrl}
 If you have any questions or need assistance, please contact your organization administrator or check our documentation.
 
 Welcome aboard!
-        `
+        `,
       };
 
       console.log('Sending welcome email...');
@@ -335,15 +339,15 @@ Welcome aboard!
       return {
         success: true,
         messageId: info.messageId,
-        message: 'Welcome email sent successfully'
+        message: 'Welcome email sent successfully',
       };
     } catch (error) {
       console.error('Error sending welcome email:', error);
-      
+
       return {
         success: false,
         error: error.message,
-        message: 'Failed to send welcome email'
+        message: 'Failed to send welcome email',
       };
     }
   }
@@ -356,12 +360,12 @@ Welcome aboard!
   static async testSmtpConnection(req, res) {
     try {
       console.log('Testing SMTP connection...');
-      
+
       const mailConfig = this.getConfig();
       if (!mailConfig) {
         return res.status(500).json({
           success: false,
-          message: 'Mail configuration not available'
+          message: 'Mail configuration not available',
         });
       }
 
@@ -369,7 +373,7 @@ Welcome aboard!
       if (!testEmail) {
         return res.status(400).json({
           success: false,
-          message: 'Test email address is required'
+          message: 'Test email address is required',
         });
       }
 
@@ -402,7 +406,7 @@ From: ${mailConfig.smtp_from.value}
 SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
 
 ✅ If you received this email, your SMTP configuration is working correctly!
-        `
+        `,
       });
 
       console.log('Test email sent successfully:', info.messageId);
@@ -411,17 +415,17 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
         success: true,
         message: 'Test email sent successfully',
         messageId: info.messageId,
-        previewUrl: nodemailer.getTestMessageUrl(info) || null
+        previewUrl: nodemailer.getTestMessageUrl(info) || null,
       });
     } catch (error) {
       console.error('SMTP test failed:', error);
       console.error('Error stack:', error.stack);
-      
+
       res.status(500).json({
         success: false,
         message: 'SMTP test failed',
         error: error.message,
-        details: error.response || null
+        details: error.response || null,
       });
     }
   }

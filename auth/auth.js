@@ -10,16 +10,16 @@ export const authenticateToken = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       console.error('Token authentication error:', err);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Authentication error' 
+      return res.status(500).json({
+        success: false,
+        message: 'Authentication error',
       });
     }
 
     if (!user) {
       // Map Passport.js info to existing error messages for consistency
       let message = 'Invalid token';
-      
+
       if (info && info.message) {
         if (info.message.includes('user not found')) {
           message = 'Invalid token - user not found';
@@ -31,10 +31,10 @@ export const authenticateToken = (req, res, next) => {
           message = 'Access token required';
         }
       }
-      
-      return res.status(401).json({ 
-        success: false, 
-        message 
+
+      return res.status(401).json({
+        success: false,
+        message,
       });
     }
 
@@ -44,44 +44,40 @@ export const authenticateToken = (req, res, next) => {
   })(req, res, next);
 };
 
-
 /**
  * JWT-based authentication middleware (CSRF-safe)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-export const authenticate = async (req, res, next) => {
+export const authenticate = (req, res, next) =>
   // Use JWT authentication only (sessions removed for CSRF security)
-  return authenticateToken(req, res, next);
-};
+  authenticateToken(req, res, next);
 
 /**
  * Role-based authorization middleware
  * @param {string|Array} allowedRoles - Single role or array of allowed roles
  * @returns {Function} Express middleware function
  */
-export const authorize = (allowedRoles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Authentication required' 
-      });
-    }
+export const authorize = allowedRoles => (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required',
+    });
+  }
 
-    const userRole = req.user.role;
-    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+  const userRole = req.user.role;
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
-    if (!roles.includes(userRole)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Insufficient permissions' 
-      });
-    }
+  if (!roles.includes(userRole)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Insufficient permissions',
+    });
+  }
 
-    next();
-  };
+  next();
 };
 
 /**
@@ -92,16 +88,16 @@ export const authorize = (allowedRoles) => {
  */
 export const requireAdmin = (req, res, next) => {
   if (!req.user) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Authentication required' 
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required',
     });
   }
 
   if (req.user.role !== 'admin' && req.user.role !== 'super-admin') {
-    return res.status(403).json({ 
-      success: false, 
-      message: 'Admin privileges required' 
+    return res.status(403).json({
+      success: false,
+      message: 'Admin privileges required',
     });
   }
 
@@ -116,16 +112,16 @@ export const requireAdmin = (req, res, next) => {
  */
 export const requireSuperAdmin = (req, res, next) => {
   if (!req.user) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Authentication required' 
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required',
     });
   }
 
   if (req.user.role !== 'super-admin') {
-    return res.status(403).json({ 
-      success: false, 
-      message: 'Super admin privileges required' 
+    return res.status(403).json({
+      success: false,
+      message: 'Super admin privileges required',
     });
   }
 
@@ -145,7 +141,7 @@ export const optionalAuth = (req, res, next) => {
     return next(); // No auth header, continue without user
   }
 
-  passport.authenticate('jwt', { session: false }, (err, user, info) => {
+  passport.authenticate('jwt', { session: false }, (err, user, _info) => {
     // Always continue to next middleware, regardless of auth result
     if (user) {
       req.user = user; // Set user if authentication succeeded

@@ -1,4 +1,3 @@
-
 import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
@@ -20,8 +19,8 @@ class SettingsController {
 
   static async getZoneweaverAPIServerInfo() {
     // Get first server from database instead of config
-    const server = await ServerModel.findOne({ 
-      order: [['created_at', 'ASC']] 
+    const server = await ServerModel.findOne({
+      order: [['created_at', 'ASC']],
     });
     if (!server) {
       throw new Error('No Zoneweaver API servers found in database');
@@ -29,7 +28,7 @@ class SettingsController {
     return {
       hostname: server.hostname,
       port: server.port,
-      protocol: server.protocol
+      protocol: server.protocol,
     };
   }
 
@@ -157,21 +156,21 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async getSettings(req, res) {
+  static getSettings(req, res) {
     try {
       const config = loadConfig();
-      
+
       // Return the entire configuration structure
       // Frontend can dynamically generate forms from metadata
       res.json({
         success: true,
-        config: config
+        config,
       });
     } catch (error) {
       console.error('Error loading settings:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to load settings: ' + error.message
+        message: `Failed to load settings: ${error.message}`,
       });
     }
   }
@@ -304,24 +303,24 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async updateSettings(req, res) {
+  static updateSettings(req, res) {
     try {
       const newValues = req.body; // Flat key-value pairs from frontend
-      
+
       // Create backup of current config
       const backupPath = `${SettingsController.configPath}.backup.${Date.now()}`;
       fs.copyFileSync(SettingsController.configPath, backupPath);
 
       // Load current config with metadata structure
       const currentConfig = loadConfig();
-      
+
       // Update values while preserving metadata structure
       const updatedConfig = SettingsController.updateConfigValues(currentConfig, newValues);
 
       // Write updated config with preserved metadata
       const updatedYaml = YAML.stringify(updatedConfig, {
         indent: 2,
-        lineWidth: 120
+        lineWidth: 120,
       });
 
       fs.writeFileSync(SettingsController.configPath, updatedYaml, 'utf8');
@@ -332,16 +331,16 @@ class SettingsController {
 
       res.json({
         success: true,
-        message: 'Settings updated successfully. Some changes may require a server restart to take effect.',
+        message:
+          'Settings updated successfully. Some changes may require a server restart to take effect.',
         requiresRestart: SettingsController.requiresRestart(newValues),
-        backupPath: backupPath
+        backupPath,
       });
-
     } catch (error) {
       console.error('Error updating settings:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to update settings: ' + error.message
+        message: `Failed to update settings: ${error.message}`,
       });
     }
   }
@@ -392,7 +391,7 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async resetSettings(req, res) {
+  static resetSettings(req, res) {
     try {
       // Create backup first
       const backupPath = `${SettingsController.configPath}.backup.${Date.now()}`;
@@ -400,22 +399,22 @@ class SettingsController {
 
       // Load current config to preserve server-specific settings
       const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
-      let config = YAML.parse(configFile);
+      const config = YAML.parse(configFile);
 
       // Reset to defaults while preserving critical server settings
       config.app = {
-        name: "Zoneweaver",
-        version: "2.0.0"
+        name: 'Zoneweaver',
+        version: '2.0.0',
       };
 
       config.limits = {
-        maxServersPerUser: 10
+        maxServersPerUser: 10,
       };
 
       config.frontend = {
         autoRefreshInterval: 5,
         enableNotifications: true,
-        enableDarkMode: true
+        enableDarkMode: true,
       };
 
       // Reset authentication settings to defaults while preserving structure
@@ -427,14 +426,14 @@ class SettingsController {
       }
 
       config.logging = {
-        level: "info",
-        enabled: true
+        level: 'info',
+        enabled: true,
       };
 
       // Write reset config
       const resetYaml = YAML.stringify(config, {
         indent: 2,
-        lineWidth: 120
+        lineWidth: 120,
       });
 
       fs.writeFileSync(SettingsController.configPath, resetYaml, 'utf8');
@@ -445,14 +444,13 @@ class SettingsController {
       res.json({
         success: true,
         message: 'Settings reset to defaults successfully.',
-        backupPath: backupPath
+        backupPath,
       });
-
     } catch (error) {
       console.error('Error resetting settings:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to reset settings: ' + error.message
+        message: `Failed to reset settings: ${error.message}`,
       });
     }
   }
@@ -499,13 +497,13 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async restartServer(req, res) {
+  static restartServer(req, res) {
     try {
       console.log(`Server restart requested by user ${req.user.username} (${req.user.role})`);
-      
+
       res.json({
         success: true,
-        message: 'Server restart initiated. Please monitor the page for automatic reload.'
+        message: 'Server restart initiated. Please monitor the page for automatic reload.',
       });
 
       // Increased delay to ensure response is fully sent
@@ -513,12 +511,11 @@ class SettingsController {
         console.log('Restarting server...');
         process.exit(0); // Let process manager restart the app
       }, 2500);
-
     } catch (error) {
       console.error('Error restarting server:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to restart server: ' + error.message
+        message: `Failed to restart server: ${error.message}`,
       });
     }
   }
@@ -529,21 +526,21 @@ class SettingsController {
   static get sslUpload() {
     const storage = multer.memoryStorage(); // Store in memory temporarily
     return multer({
-      storage: storage,
+      storage,
       limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit for SSL files
+        fileSize: 5 * 1024 * 1024, // 5MB limit for SSL files
       },
       fileFilter: (req, file, cb) => {
         // Validate SSL file types
         const allowedExtensions = ['.pem', '.crt', '.key', '.cer', '.ca'];
         const fileExtension = path.extname(file.originalname).toLowerCase();
-        
+
         if (allowedExtensions.includes(fileExtension)) {
           cb(null, true);
         } else {
           cb(new Error(`Invalid file type. Allowed: ${allowedExtensions.join(', ')}`), false);
         }
-      }
+      },
     }).single('sslFile');
   }
 
@@ -620,25 +617,25 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async uploadSSLFile(req, res) {
+  static uploadSSLFile(req, res) {
     try {
       // Use multer middleware to handle file upload
-      SettingsController.sslUpload(req, res, async (err) => {
+      SettingsController.sslUpload(req, res, err => {
         if (err instanceof multer.MulterError) {
           if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(413).json({
               success: false,
-              message: 'File too large. Maximum size is 5MB.'
+              message: 'File too large. Maximum size is 5MB.',
             });
           }
           return res.status(400).json({
             success: false,
-            message: `Upload error: ${err.message}`
+            message: `Upload error: ${err.message}`,
           });
         } else if (err) {
           return res.status(400).json({
             success: false,
-            message: err.message
+            message: err.message,
           });
         }
 
@@ -646,7 +643,7 @@ class SettingsController {
         if (!req.file) {
           return res.status(400).json({
             success: false,
-            message: 'No file uploaded'
+            message: 'No file uploaded',
           });
         }
 
@@ -654,17 +651,17 @@ class SettingsController {
         if (!fieldPath) {
           return res.status(400).json({
             success: false,
-            message: 'fieldPath is required'
+            message: 'fieldPath is required',
           });
         }
 
         try {
           // Load current config to get SSL directory
           const config = loadConfig();
-          
+
           // Determine SSL directory - use configured path or default
           let sslDir = '/etc/zoneweaver/ssl';
-          
+
           // Try to infer SSL directory from existing config paths
           if (config.server?.ssl_cert_path?.value) {
             sslDir = path.dirname(config.server.ssl_cert_path.value);
@@ -697,12 +694,13 @@ class SettingsController {
 
           // Validate SSL file content (basic check for PEM/certificate format)
           const fileContent = req.file.buffer.toString();
-          const isPEMFormat = fileContent.includes('-----BEGIN') && fileContent.includes('-----END');
-          
+          const isPEMFormat =
+            fileContent.includes('-----BEGIN') && fileContent.includes('-----END');
+
           if (!isPEMFormat) {
             return res.status(400).json({
               success: false,
-              message: 'Invalid SSL file format. File must be in PEM format.'
+              message: 'Invalid SSL file format. File must be in PEM format.',
             });
           }
 
@@ -714,23 +712,21 @@ class SettingsController {
           res.json({
             success: true,
             message: `SSL certificate uploaded successfully: ${filename}`,
-            filePath: filePath
+            filePath,
           });
-
         } catch (uploadError) {
           console.error('SSL file upload error:', uploadError);
           res.status(500).json({
             success: false,
-            message: `Failed to save SSL file: ${uploadError.message}`
+            message: `Failed to save SSL file: ${uploadError.message}`,
           });
         }
       });
-
     } catch (error) {
       console.error('SSL upload handler error:', error);
       res.status(500).json({
         success: false,
-        message: 'SSL file upload failed: ' + error.message
+        message: `SSL file upload failed: ${error.message}`,
       });
     }
   }
@@ -744,12 +740,12 @@ class SettingsController {
   static updateConfigValues(currentConfig, newValues) {
     // Create a deep copy to avoid modifying original
     const updatedConfig = JSON.parse(JSON.stringify(currentConfig));
-    
+
     // Helper function to set nested value by path
     const setNestedValue = (obj, path, value) => {
       const keys = path.split('.');
       let current = obj;
-      
+
       // Navigate to the parent object
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
@@ -758,18 +754,22 @@ class SettingsController {
         }
         current = current[key];
       }
-      
+
       const finalKey = keys[keys.length - 1];
-      
+
       // If the target is a metadata object with a 'value' property, update it
-      if (current[finalKey] && typeof current[finalKey] === 'object' && current[finalKey].hasOwnProperty('value')) {
+      if (
+        current[finalKey] &&
+        typeof current[finalKey] === 'object' &&
+        Object.prototype.hasOwnProperty.call(current[finalKey], 'value')
+      ) {
         current[finalKey].value = value;
       } else {
         // Otherwise, set the value directly
         current[finalKey] = value;
       }
     };
-    
+
     // Update each value in the config structure
     for (const [path, value] of Object.entries(newValues)) {
       try {
@@ -778,7 +778,7 @@ class SettingsController {
         console.warn(`Failed to update config path ${path}:`, error.message);
       }
     }
-    
+
     return updatedConfig;
   }
 
@@ -787,12 +787,7 @@ class SettingsController {
    */
   static requiresRestart(newSettings) {
     // Settings that require restart
-    const restartRequired = [
-      'serverPort',
-      'sslEnabled',
-      'corsWhitelist',
-      'sessionTimeout'
-    ];
+    const restartRequired = ['serverPort', 'sslEnabled', 'corsWhitelist', 'sessionTimeout'];
 
     return Object.keys(newSettings).some(key => restartRequired.includes(key));
   }
@@ -854,11 +849,11 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async getBackups(req, res) {
+  static getBackups(req, res) {
     try {
       const configDir = path.dirname(SettingsController.configPath);
       const files = fs.readdirSync(configDir);
-      
+
       const backups = files
         .filter(file => file.startsWith('config.yaml.backup.'))
         .map(file => {
@@ -867,21 +862,20 @@ class SettingsController {
           return {
             filename: file,
             created: new Date(parseInt(timestamp)),
-            size: stats.size
+            size: stats.size,
           };
         })
         .sort((a, b) => b.created - a.created);
 
       res.json({
         success: true,
-        backups: backups
+        backups,
       });
-
     } catch (error) {
       console.error('Error listing backups:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to list backups: ' + error.message
+        message: `Failed to list backups: ${error.message}`,
       });
     }
   }
@@ -923,7 +917,7 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async restoreFromBackup(req, res) {
+  static restoreFromBackup(req, res) {
     try {
       const { filename } = req.params;
       const configDir = path.dirname(SettingsController.configPath);
@@ -933,7 +927,7 @@ class SettingsController {
       if (!filename.startsWith('config.yaml.backup.') || !fs.existsSync(backupPath)) {
         return res.status(404).json({
           success: false,
-          message: 'Backup file not found'
+          message: 'Backup file not found',
         });
       }
 
@@ -944,20 +938,22 @@ class SettingsController {
       // Restore from backup
       fs.copyFileSync(backupPath, SettingsController.configPath);
 
-      console.log(`Configuration restored from ${filename} by user ${req.user.username} (${req.user.role})`);
+      console.log(
+        `Configuration restored from ${filename} by user ${req.user.username} (${req.user.role})`
+      );
       console.log(`Current config backed up to: ${path.basename(restoreBackupPath)}`);
 
       res.json({
         success: true,
-        message: 'Configuration restored successfully. Settings will take effect after next page reload.',
-        backupPath: path.basename(restoreBackupPath)
+        message:
+          'Configuration restored successfully. Settings will take effect after next page reload.',
+        backupPath: path.basename(restoreBackupPath),
       });
-
     } catch (error) {
       console.error('Error restoring backup:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to restore backup: ' + error.message
+        message: `Failed to restore backup: ${error.message}`,
       });
     }
   }
@@ -999,7 +995,7 @@ class SettingsController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static async deleteBackup(req, res) {
+  static deleteBackup(req, res) {
     try {
       const { filename } = req.params;
       const configDir = path.dirname(SettingsController.configPath);
@@ -1009,7 +1005,7 @@ class SettingsController {
       if (!filename.startsWith('config.yaml.backup.') || !fs.existsSync(backupPath)) {
         return res.status(404).json({
           success: false,
-          message: 'Backup file not found'
+          message: 'Backup file not found',
         });
       }
 
@@ -1020,14 +1016,13 @@ class SettingsController {
 
       res.json({
         success: true,
-        message: 'Backup deleted successfully'
+        message: 'Backup deleted successfully',
       });
-
     } catch (error) {
       console.error('Error deleting backup:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to delete backup: ' + error.message
+        message: `Failed to delete backup: ${error.message}`,
       });
     }
   }
@@ -1127,20 +1122,16 @@ class SettingsController {
   static async getZoneweaverAPISettings(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
-      const result = await ServerModel.makeRequest(
-        hostname,
-        port,
-        protocol,
-        'settings',
-        { method: 'GET' }
-      );
+      const result = await ServerModel.makeRequest(hostname, port, protocol, 'settings', {
+        method: 'GET',
+      });
 
       if (result.success) {
         res.json({ success: true, settings: result.data });
       } else {
-        res.status(result.status || 500).json({ 
-          success: false, 
-          message: result.error || 'Failed to get settings' 
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to get settings',
         });
       }
     } catch (error) {
@@ -1245,35 +1236,23 @@ class SettingsController {
     try {
       const { hostname, port, protocol } = req.params;
       const { allow_insecure, ...settings } = req.body;
-      
-      const result = await ServerModel.makeRequest(
-        hostname,
-        port,
-        protocol,
-        'settings',
-        { 
-          method: 'PUT',
-          data: settings
-        }
-      );
+
+      const result = await ServerModel.makeRequest(hostname, port, protocol, 'settings', {
+        method: 'PUT',
+        data: settings,
+      });
 
       if (result.success) {
-        // Update the allow_insecure setting in the config.yaml file
-        const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
-        let config = YAML.parse(configFile);
         // Update allow_insecure setting in database instead since servers are now stored there
         if (allow_insecure !== undefined) {
-          await ServerModel.update(
-            { allow_insecure: allow_insecure },
-            { where: { hostname, port, protocol } }
-          );
+          await ServerModel.update({ allow_insecure }, { where: { hostname, port, protocol } });
         }
 
         res.json({ success: true, message: 'Settings updated successfully' });
       } else {
-        res.status(result.status || 500).json({ 
-          success: false, 
-          message: result.error || 'Failed to update settings' 
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to update settings',
         });
       }
     } catch (error) {
@@ -1370,20 +1349,16 @@ class SettingsController {
   static async getZoneweaverAPIBackups(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
-      const result = await ServerModel.makeRequest(
-        hostname,
-        port,
-        protocol,
-        'settings/backups',
-        { method: 'GET' }
-      );
+      const result = await ServerModel.makeRequest(hostname, port, protocol, 'settings/backups', {
+        method: 'GET',
+      });
 
       if (result.success) {
         res.json({ success: true, backups: result.data });
       } else {
-        res.status(result.status || 500).json({ 
-          success: false, 
-          message: result.error || 'Failed to get backups' 
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to get backups',
         });
       }
     } catch (error) {
@@ -1479,24 +1454,24 @@ class SettingsController {
   static async restoreZoneweaverAPIBackup(req, res) {
     try {
       const { hostname, port, protocol, filename } = req.params;
-      
+
       const result = await ServerModel.makeRequest(
         hostname,
         port,
         protocol,
         `settings/restore/${filename}`,
-        { 
+        {
           method: 'POST',
-          data: {}
+          data: {},
         }
       );
 
       if (result.success) {
         res.json({ success: true, message: 'Backup restored successfully' });
       } else {
-        res.status(result.status || 500).json({ 
-          success: false, 
-          message: result.error || 'Failed to restore backup' 
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to restore backup',
         });
       }
     } catch (error) {
@@ -1574,24 +1549,18 @@ class SettingsController {
   static async restartZoneweaverAPIServer(req, res) {
     try {
       const { hostname, port, protocol } = req.params;
-      
-      const result = await ServerModel.makeRequest(
-        hostname,
-        port,
-        protocol,
-        'server/restart',
-        { 
-          method: 'POST',
-          data: {}
-        }
-      );
+
+      const result = await ServerModel.makeRequest(hostname, port, protocol, 'server/restart', {
+        method: 'POST',
+        data: {},
+      });
 
       if (result.success) {
         res.json({ success: true, message: 'Server restart initiated' });
       } else {
-        res.status(result.status || 500).json({ 
-          success: false, 
-          message: result.error || 'Failed to restart server' 
+        res.status(result.status || 500).json({
+          success: false,
+          message: result.error || 'Failed to restart server',
         });
       }
     } catch (error) {

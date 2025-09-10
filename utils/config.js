@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import * as YAML from 'yaml';
 
 /**
@@ -11,7 +10,7 @@ function getConfigPath() {
   if (process.env.CONFIG_PATH) {
     return process.env.CONFIG_PATH;
   }
-  
+
   // Fallback to local config for development
   return './config.yaml';
 }
