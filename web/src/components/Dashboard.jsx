@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { useServers } from "../contexts/ServerContext";
-import { ContentModal } from './common';
+
+import { ContentModal } from "./common";
 
 /**
  * Multi-Host Application Overview Dashboard
@@ -50,15 +52,13 @@ const Dashboard = () => {
               server.protocol,
               "stats"
             ),
-            getMonitoringHealth(
-              server.hostname,
-              server.port,
-              server.protocol
-            )
+            getMonitoringHealth(server.hostname, server.port, server.protocol),
           ]);
 
-          const statsSuccess = statsResult.status === 'fulfilled' && statsResult.value.success;
-          const healthSuccess = healthResult.status === 'fulfilled' && healthResult.value.success;
+          const statsSuccess =
+            statsResult.status === "fulfilled" && statsResult.value.success;
+          const healthSuccess =
+            healthResult.status === "fulfilled" && healthResult.value.success;
 
           return {
             server,
@@ -67,9 +67,9 @@ const Dashboard = () => {
             healthData: healthSuccess ? healthResult.value.data : null,
             error: statsSuccess
               ? null
-              : (statsResult.status === 'fulfilled' ? 
-                  (statsResult.value.message || "Failed to fetch data") : 
-                  statsResult.reason?.message || "Connection failed"),
+              : statsResult.status === "fulfilled"
+                ? statsResult.value.message || "Failed to fetch data"
+                : statsResult.reason?.message || "Connection failed",
           };
         } catch (error) {
           return {
@@ -147,8 +147,12 @@ const Dashboard = () => {
         const faultCount = result.healthData?.faultStatus?.faultCount || 0;
 
         let issueCount = 0;
-        if (hasHighLoad) issueCount++;
-        if (hasLowFreeMemory) issueCount++;
+        if (hasHighLoad) {
+          issueCount++;
+        }
+        if (hasLowFreeMemory) {
+          issueCount++;
+        }
         if (requiresReboot) {
           issueCount++;
           summary.serversRequiringReboot++;
@@ -174,23 +178,31 @@ const Dashboard = () => {
   // Helper functions
   const bytesToSize = (bytes) => {
     const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    if (bytes === 0) return "0 Byte";
+    if (bytes === 0) {
+      return "0 Byte";
+    }
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-    return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
+    return `${Math.round(bytes / 1024 ** i, 2)} ${sizes[i]}`;
   };
 
   const getServerHealthStatus = (serverResult) => {
-    if (!serverResult.success) return "offline";
+    if (!serverResult.success) {
+      return "offline";
+    }
 
-    const data = serverResult.data;
-    if (!data) return "offline";
+    const { data } = serverResult;
+    if (!data) {
+      return "offline";
+    }
 
     // Check for performance issues
     const hasHighLoad = data.loadavg && data.loadavg[0] > 2;
     const hasLowFreeMemory =
       data.totalmem && data.freemem && data.freemem / data.totalmem < 0.1;
 
-    if (hasHighLoad || hasLowFreeMemory) return "warning";
+    if (hasHighLoad || hasLowFreeMemory) {
+      return "warning";
+    }
     return "healthy";
   };
 
@@ -244,7 +256,7 @@ const Dashboard = () => {
           <div className="box p-0 is-radiusless">
             <div className="p-4 has-background-grey">
               <div className="box has-text-centered p-6">
-                <div className="button is-loading is-large is-ghost"></div>
+                <div className="button is-loading is-large is-ghost" />
                 <p className="mt-2">Loading infrastructure overview...</p>
               </div>
             </div>
@@ -277,7 +289,7 @@ const Dashboard = () => {
                   className="button is-primary"
                 >
                   <span className="icon">
-                    <i className="fas fa-plus"></i>
+                    <i className="fas fa-plus" />
                   </span>
                   <span>Add Zoneweaver API Server</span>
                 </button>
@@ -332,7 +344,7 @@ const Dashboard = () => {
                       disabled={loading}
                     >
                       <span className="icon">
-                        <i className="fas fa-sync-alt"></i>
+                        <i className="fas fa-sync-alt" />
                       </span>
                       <span>Refresh</span>
                     </button>
@@ -427,7 +439,7 @@ const Dashboard = () => {
                           className="progress is-small is-link mt-2"
                           value={summary.usedMemory}
                           max={summary.totalMemory}
-                        ></progress>
+                        />
                       )}
                     </div>
                   </div>
@@ -442,9 +454,7 @@ const Dashboard = () => {
                       }
                     }}
                     title={
-                      summary.totalIssues > 0
-                        ? "Click to view details"
-                        : ""
+                      summary.totalIssues > 0 ? "Click to view details" : ""
                     }
                   >
                     <div className="heading">Health Status</div>
@@ -483,7 +493,7 @@ const Dashboard = () => {
                   <h2 className="title is-4 mb-4">
                     <span className="icon-text">
                       <span className="icon">
-                        <i className="fas fa-bolt"></i>
+                        <i className="fas fa-bolt" />
                       </span>
                       <span>Quick Actions</span>
                     </span>
@@ -496,7 +506,7 @@ const Dashboard = () => {
                         onClick={navigateToZoneRegister}
                       >
                         <span className="icon">
-                          <i className="fas fa-plus"></i>
+                          <i className="fas fa-plus" />
                         </span>
                         <span>Create New Zone</span>
                       </button>
@@ -507,7 +517,7 @@ const Dashboard = () => {
                         onClick={navigateToZones}
                       >
                         <span className="icon">
-                          <i className="fas fa-list"></i>
+                          <i className="fas fa-list" />
                         </span>
                         <span>Manage Zones</span>
                       </button>
@@ -518,7 +528,7 @@ const Dashboard = () => {
                         onClick={navigateToServerRegister}
                       >
                         <span className="icon">
-                          <i className="fas fa-server"></i>
+                          <i className="fas fa-server" />
                         </span>
                         <span>Add New Host</span>
                       </button>
@@ -529,7 +539,7 @@ const Dashboard = () => {
                         className="button is-fullwidth is-link is-medium"
                       >
                         <span className="icon">
-                          <i className="fas fa-cog"></i>
+                          <i className="fas fa-cog" />
                         </span>
                         <span>Settings</span>
                       </button>
@@ -543,7 +553,7 @@ const Dashboard = () => {
                   <h2 className="title is-4 mb-4">
                     <span className="icon-text">
                       <span className="icon">
-                        <i className="fas fa-chart-pie"></i>
+                        <i className="fas fa-chart-pie" />
                       </span>
                       <span>Zone Distribution</span>
                     </span>
@@ -589,7 +599,7 @@ const Dashboard = () => {
                                   className="progress is-small is-primary"
                                   value={zoneCount}
                                   max={summary.totalZones || 1}
-                                ></progress>
+                                />
                                 <p className="is-size-7 has-text-grey">
                                   {runningCount} running,{" "}
                                   {zoneCount - runningCount} stopped
@@ -633,7 +643,9 @@ const Dashboard = () => {
                   statusTooltip = error || "Connection failed";
                 } else if (status === "warning") {
                   const issues = [];
-                  if (data?.loadavg?.[0] > 2) issues.push("High CPU load");
+                  if (data?.loadavg?.[0] > 2) {
+                    issues.push("High CPU load");
+                  }
                   if (
                     data?.totalmem &&
                     data?.freemem &&
@@ -653,7 +665,7 @@ const Dashboard = () => {
                             className={`icon ${statusColor}`}
                             title={statusTooltip}
                           >
-                            <i className="fas fa-circle is-size-7"></i>
+                            <i className="fas fa-circle is-size-7" />
                           </span>
                           <span>{server.hostname}</span>
                         </span>
@@ -702,7 +714,7 @@ const Dashboard = () => {
                             onClick={() => navigateToServer(server)}
                           >
                             <span className="icon">
-                              <i className="fas fa-arrow-right"></i>
+                              <i className="fas fa-arrow-right" />
                             </span>
                             <span>View Details</span>
                           </button>
@@ -743,10 +755,10 @@ const Dashboard = () => {
                           <button
                             className="button is-fullwidth is-primary"
                             onClick={() => navigateToServer(server)}
-                            disabled={true}
+                            disabled
                           >
                             <span className="icon">
-                              <i className="fas fa-arrow-right"></i>
+                              <i className="fas fa-arrow-right" />
                             </span>
                             <span>View Details</span>
                           </button>
@@ -768,7 +780,11 @@ const Dashboard = () => {
               >
                 {infrastructureData.servers &&
                   infrastructureData.servers
-                    .filter((s) => getServerHealthStatus(s) !== "healthy" || s.healthData?.reboot_required)
+                    .filter(
+                      (s) =>
+                        getServerHealthStatus(s) !== "healthy" ||
+                        s.healthData?.reboot_required
+                    )
                     .map((serverResult, index) => {
                       const status = getServerHealthStatus(serverResult);
                       const statusColor =
@@ -777,9 +793,7 @@ const Dashboard = () => {
                       const rebootInfo = serverResult.healthData?.reboot_info;
 
                       if (status === "offline") {
-                        issues.push(
-                          serverResult.error || "Connection failed"
-                        );
+                        issues.push(serverResult.error || "Connection failed");
                       } else if (status === "warning" && serverResult.data) {
                         if (serverResult.data.loadavg?.[0] > 2) {
                           issues.push(
@@ -805,11 +819,14 @@ const Dashboard = () => {
 
                       // Add reboot requirement if present
                       if (serverResult.healthData?.reboot_required) {
-                        const reasons = rebootInfo?.reasons?.join(', ') || 'Configuration changes';
+                        const reasons =
+                          rebootInfo?.reasons?.join(", ") ||
+                          "Configuration changes";
                         const ageMinutes = rebootInfo?.age_minutes || 0;
-                        const timeAgo = ageMinutes > 60 
-                          ? `${Math.floor(ageMinutes / 60)}h ${ageMinutes % 60}m ago`
-                          : `${ageMinutes}m ago`;
+                        const timeAgo =
+                          ageMinutes > 60
+                            ? `${Math.floor(ageMinutes / 60)}h ${ageMinutes % 60}m ago`
+                            : `${ageMinutes}m ago`;
                         issues.push(
                           `Reboot required (${reasons}) - Changed ${timeAgo}`
                         );
@@ -817,17 +834,18 @@ const Dashboard = () => {
 
                       // Add fault information if present
                       if (serverResult.healthData?.faultStatus?.hasFaults) {
-                        const faultStatus = serverResult.healthData.faultStatus;
-                        const faultSummary = faultStatus.severityLevels?.join(', ') || 'Unknown';
+                        const { faultStatus } = serverResult.healthData;
+                        const faultSummary =
+                          faultStatus.severityLevels?.join(", ") || "Unknown";
                         issues.push(
-                          `${faultStatus.faultCount} system fault${faultStatus.faultCount === 1 ? '' : 's'} (${faultSummary})`
+                          `${faultStatus.faultCount} system fault${faultStatus.faultCount === 1 ? "" : "s"} (${faultSummary})`
                         );
                       }
 
                       return (
                         <div
                           key={index}
-                          className={`notification ${serverResult.healthData?.reboot_required ? 'is-warning' : statusColor} mb-3`}
+                          className={`notification ${serverResult.healthData?.reboot_required ? "is-warning" : statusColor} mb-3`}
                         >
                           <div className="level is-mobile">
                             <div className="level-left">
@@ -837,7 +855,7 @@ const Dashboard = () => {
                               {serverResult.healthData?.reboot_required && (
                                 <span className="tag is-warning">
                                   <span className="icon is-small">
-                                    <i className="fas fa-redo"></i>
+                                    <i className="fas fa-redo" />
                                   </span>
                                   <span>Reboot Required</span>
                                 </span>

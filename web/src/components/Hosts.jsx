@@ -1,29 +1,32 @@
-import React, { useState, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import React, { useState, useRef } from "react";
+
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
-import { useHostData } from "./Host/useHostData";
+
 import HostHeader from "./Host/HostHeader";
-import SystemInfo from "./Host/SystemInfo";
-import ZoneManager from "./Host/ZoneManager";
 import NetworkStorageSummary from "./Host/NetworkStorageSummary";
+import CpuChart from "./Host/PerformanceCharts/CpuChart";
+import ExpandedChartModal from "./Host/PerformanceCharts/ExpandedChartModal";
+import MemoryChart from "./Host/PerformanceCharts/MemoryChart";
+import NetworkChart from "./Host/PerformanceCharts/NetworkChart";
 import StorageIOChart from "./Host/PerformanceCharts/StorageIOChart";
 import ZfsArcChart from "./Host/PerformanceCharts/ZfsArcChart";
-import NetworkChart from "./Host/PerformanceCharts/NetworkChart";
-import CpuChart from "./Host/PerformanceCharts/CpuChart";
-import MemoryChart from "./Host/PerformanceCharts/MemoryChart";
-import ExpandedChartModal from "./Host/PerformanceCharts/ExpandedChartModal";
 import ProvisioningStatus from "./Host/ProvisioningStatus.jsx";
+import SystemInfo from "./Host/SystemInfo";
+import { useHostData } from "./Host/useHostData";
+import ZoneManager from "./Host/ZoneManager";
 
 /**
  * Host Overview Dashboard Component
- * 
+ *
  * Displays comprehensive overview for the currently selected host from navbar context.
  * No server selection sidebar - uses global currentServer from ServerContext.
  */
 const Hosts = () => {
   const { user } = useAuth();
-  const { currentServer, servers, startZone, stopZone, restartZone } = useServers();
+  const { currentServer, servers, startZone, stopZone, restartZone } =
+    useServers();
 
   const {
     serverStats,
@@ -53,20 +56,20 @@ const Hosts = () => {
 
   const [expandedChart, setExpandedChart] = useState(null);
   const [expandedChartType, setExpandedChartType] = useState(null);
-  
+
   // Series visibility controls for each chart
   const [storageSeriesVisibility, setStorageSeriesVisibility] = useState({
     read: true,
     write: true,
-    total: true
+    total: true,
   });
-  
+
   const [networkSeriesVisibility, setNetworkSeriesVisibility] = useState({
     read: true, // Corresponds to RX
     write: true, // Corresponds to TX
-    total: true
+    total: true,
   });
-  
+
   const [cpuSeriesVisibility, setCpuSeriesVisibility] = useState({
     overall: true,
     cores: true, // A master toggle for all cores
@@ -78,7 +81,7 @@ const Hosts = () => {
     free: true,
     cached: true,
   });
-  
+
   // Expand chart function (like HostNetworking.jsx)
   const expandChart = (chartId, chartType) => {
     setExpandedChart(chartId);
@@ -93,26 +96,49 @@ const Hosts = () => {
 
   // Zone management functions
   const handleZoneAction = async (action, zoneName = null) => {
-    if (!currentServer) return;
+    if (!currentServer) {
+      return;
+    }
 
     try {
       let result;
-      const zones = zoneName ? [zoneName] : 
-                   action === 'startAll' ? serverStats.allzones?.filter(zone => !serverStats.runningzones?.includes(zone)) :
-                   action === 'stopAll' ? serverStats.runningzones : [];
+      const zones = zoneName
+        ? [zoneName]
+        : action === "startAll"
+          ? serverStats.allzones?.filter(
+              (zone) => !serverStats.runningzones?.includes(zone)
+            )
+          : action === "stopAll"
+            ? serverStats.runningzones
+            : [];
 
       for (const zone of zones || []) {
         switch (action) {
-          case 'start':
-          case 'startAll':
-            result = await startZone(currentServer.hostname, currentServer.port, currentServer.protocol, zone);
+          case "start":
+          case "startAll":
+            result = await startZone(
+              currentServer.hostname,
+              currentServer.port,
+              currentServer.protocol,
+              zone
+            );
             break;
-          case 'stop':
-          case 'stopAll':
-            result = await stopZone(currentServer.hostname, currentServer.port, currentServer.protocol, zone);
+          case "stop":
+          case "stopAll":
+            result = await stopZone(
+              currentServer.hostname,
+              currentServer.port,
+              currentServer.protocol,
+              zone
+            );
             break;
-          case 'restart':
-            result = await restartZone(currentServer.hostname, currentServer.port, currentServer.protocol, zone);
+          case "restart":
+            result = await restartZone(
+              currentServer.hostname,
+              currentServer.port,
+              currentServer.protocol,
+              zone
+            );
             break;
         }
       }
@@ -127,27 +153,33 @@ const Hosts = () => {
   // No servers available
   if (!servers || servers.length === 0) {
     return (
-      <div className='zw-page-content-scrollable'>
+      <div className="zw-page-content-scrollable">
         <Helmet>
-          <meta charSet='utf-8' />
+          <meta charSet="utf-8" />
           <title>Host Overview - Zoneweaver</title>
-          <link rel='canonical' href={window.location.origin} />
+          <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className='container is-fluid p-0'>
-          <div className='box p-0 is-radiusless'>
-            <div className='titlebar box active level is-mobile mb-0 p-3'>
-              <div className='level-left'>
+        <div className="container is-fluid p-0">
+          <div className="box p-0 is-radiusless">
+            <div className="titlebar box active level is-mobile mb-0 p-3">
+              <div className="level-left">
                 <strong>Host Overview</strong>
               </div>
             </div>
-            <div className='p-4'>
-              <div className='notification is-info'>
-                <h2 className='title is-4'>No Zoneweaver API Servers</h2>
-                <p>You haven't added any Zoneweaver API Servers yet. Add a server to start managing hosts and zones.</p>
-                <div className='mt-4'>
-                  <a href='/ui/settings/zoneweaver?tab=servers' className='button is-primary'>
-                    <span className='icon'>
-                      <i className='fas fa-plus'></i>
+            <div className="p-4">
+              <div className="notification is-info">
+                <h2 className="title is-4">No Zoneweaver API Servers</h2>
+                <p>
+                  You haven't added any Zoneweaver API Servers yet. Add a server
+                  to start managing hosts and zones.
+                </p>
+                <div className="mt-4">
+                  <a
+                    href="/ui/settings/zoneweaver?tab=servers"
+                    className="button is-primary"
+                  >
+                    <span className="icon">
+                      <i className="fas fa-plus" />
                     </span>
                     <span>Add Zoneweaver API Server</span>
                   </a>
@@ -163,23 +195,26 @@ const Hosts = () => {
   // No current server selected
   if (!currentServer) {
     return (
-      <div className='zw-page-content-scrollable'>
+      <div className="zw-page-content-scrollable">
         <Helmet>
-          <meta charSet='utf-8' />
+          <meta charSet="utf-8" />
           <title>Host Overview - Zoneweaver</title>
-          <link rel='canonical' href={window.location.origin} />
+          <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className='container is-fluid p-0'>
-          <div className='box p-0 is-radiusless'>
-            <div className='titlebar box active level is-mobile mb-0 p-3'>
-              <div className='level-left'>
+        <div className="container is-fluid p-0">
+          <div className="box p-0 is-radiusless">
+            <div className="titlebar box active level is-mobile mb-0 p-3">
+              <div className="level-left">
                 <strong>Host Overview</strong>
               </div>
             </div>
-            <div className='p-4'>
-              <div className='notification is-warning'>
-                <h2 className='title is-4'>No Host Selected</h2>
-                <p>Please select a host from the dropdown in the navigation bar to view its overview.</p>
+            <div className="p-4">
+              <div className="notification is-warning">
+                <h2 className="title is-4">No Host Selected</h2>
+                <p>
+                  Please select a host from the dropdown in the navigation bar
+                  to view its overview.
+                </p>
               </div>
             </div>
           </div>
@@ -189,14 +224,14 @@ const Hosts = () => {
   }
 
   return (
-    <div className='zw-page-content-scrollable'>
+    <div className="zw-page-content-scrollable">
       <Helmet>
-        <meta charSet='utf-8' />
+        <meta charSet="utf-8" />
         <title>Host Overview - Zoneweaver</title>
-        <link rel='canonical' href={window.location.origin} />
+        <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className='container is-fluid p-0'>
-        <div className='box p-0 is-radiusless'>
+      <div className="container is-fluid p-0">
+        <div className="box p-0 is-radiusless">
           <HostHeader
             currentServer={currentServer}
             loading={loading}
@@ -211,9 +246,9 @@ const Hosts = () => {
             setAutoRefresh={setAutoRefresh}
           />
 
-          <div className='p-4'>
+          <div className="p-4">
             {error && (
-              <div className='notification is-danger'>
+              <div className="notification is-danger">
                 <p>{error}</p>
               </div>
             )}
@@ -242,15 +277,17 @@ const Hosts = () => {
             />
 
             {/* Performance Monitoring Charts Section */}
-            <div className='box mb-5'>
-              <h3 className='title is-5 mb-4'>
-                <span className='icon-text'>
-                  <span className='icon'><i className='fas fa-chart-area'></i></span>
+            <div className="box mb-5">
+              <h3 className="title is-5 mb-4">
+                <span className="icon-text">
+                  <span className="icon">
+                    <i className="fas fa-chart-area" />
+                  </span>
                   <span>Performance Monitoring</span>
                 </span>
               </h3>
-              
-              <div className='columns is-multiline'>
+
+              <div className="columns is-multiline">
                 <StorageIOChart
                   chartData={chartData}
                   storageSeriesVisibility={storageSeriesVisibility}

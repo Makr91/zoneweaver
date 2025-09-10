@@ -1,25 +1,20 @@
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position } from "@xyflow/react";
+import React from "react";
 
 const EtherstubNode = ({ data }) => {
-  const { 
-    label, 
-    connectedVnics, 
-    class: deviceClass, 
-    flags 
-  } = data;
+  const { label, connectedVnics, class: deviceClass, flags } = data;
 
   const tooltipContent = `
 ${label} (Etherstub - Virtual Switch)
 Type: Virtual Layer 2 Switch
 Connected VNICs: ${connectedVnics?.length || 0}
-${connectedVnics?.length ? `VNICs: ${connectedVnics.join(', ')}` : 'No connected VNICs'}
-Class: ${deviceClass || 'etherstub'}
-${flags && flags !== '--' ? `Flags: ${flags}` : ''}
+${connectedVnics?.length ? `VNICs: ${connectedVnics.join(", ")}` : "No connected VNICs"}
+Class: ${deviceClass || "etherstub"}
+${flags && flags !== "--" ? `Flags: ${flags}` : ""}
   `.trim();
 
   return (
-    <div 
+    <div
       className="react-flow__node-default zw-node-base zw-etherstub-bg"
       title={tooltipContent}
     >
@@ -29,7 +24,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         position={Position.Left}
         className="zw-node-handle zw-etherstub-bg"
       />
-      
+
       <Handle
         type="source"
         position={Position.Right}
@@ -38,11 +33,9 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
 
       {/* Icon */}
       <i className="fas fa-sitemap zw-node-icon" />
-      
+
       {/* Label below */}
-      <div className="zw-node-label">
-        {label}
-      </div>
+      <div className="zw-node-label">{label}</div>
     </div>
   );
 };

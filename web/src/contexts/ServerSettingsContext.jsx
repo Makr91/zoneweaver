@@ -9,7 +9,18 @@ const ServerSettingsProvider = ({ children }) => {
   const [hosts, setHosts] = useState(null);
 
   return (
-    <ServerSettings.Provider value={{ currentServer, backendURL, currentHost, hosts, setCurrentServer, setBackendURL, setCurrentHost, setHosts }}>
+    <ServerSettings.Provider
+      value={{
+        currentServer,
+        backendURL,
+        currentHost,
+        hosts,
+        setCurrentServer,
+        setBackendURL,
+        setCurrentHost,
+        setHosts,
+      }}
+    >
       {children}
     </ServerSettings.Provider>
   );

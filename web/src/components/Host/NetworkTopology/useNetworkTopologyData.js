@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useServers } from '../../../contexts/ServerContext';
+import { useState, useEffect } from "react";
+
+import { useServers } from "../../../contexts/ServerContext";
 
 export const useNetworkTopologyData = (selectedServer) => {
   const [topologyData, setTopologyData] = useState({
@@ -7,10 +8,10 @@ export const useNetworkTopologyData = (selectedServer) => {
     etherstubs: [],
     vnics: [],
     zones: [],
-    bridges: []
+    bridges: [],
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const { makeZoneweaverAPIRequest } = useServers();
 
@@ -21,13 +22,18 @@ export const useNetworkTopologyData = (selectedServer) => {
   }, [selectedServer]);
 
   const loadTopologyData = async () => {
-    if (!selectedServer || loading) return;
+    if (!selectedServer || loading) {
+      return;
+    }
 
     try {
       setLoading(true);
-      setError('');
+      setError("");
 
-      console.log('🔍 TOPOLOGY: Loading topology data for', selectedServer.hostname);
+      console.log(
+        "🔍 TOPOLOGY: Loading topology data for",
+        selectedServer.hostname
+      );
 
       // Load all topology components in parallel
       const [
@@ -35,13 +41,38 @@ export const useNetworkTopologyData = (selectedServer) => {
         etherstubsResult,
         vnicsResult,
         zonesResult,
-        bridgesResult
+        bridgesResult,
       ] = await Promise.allSettled([
-        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/aggregates'),
-        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/etherstubs'),
-        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/vnics'),
-        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'zones'),
-        makeZoneweaverAPIRequest(selectedServer.hostname, selectedServer.port, selectedServer.protocol, 'network/bridges')
+        makeZoneweaverAPIRequest(
+          selectedServer.hostname,
+          selectedServer.port,
+          selectedServer.protocol,
+          "network/aggregates"
+        ),
+        makeZoneweaverAPIRequest(
+          selectedServer.hostname,
+          selectedServer.port,
+          selectedServer.protocol,
+          "network/etherstubs"
+        ),
+        makeZoneweaverAPIRequest(
+          selectedServer.hostname,
+          selectedServer.port,
+          selectedServer.protocol,
+          "network/vnics"
+        ),
+        makeZoneweaverAPIRequest(
+          selectedServer.hostname,
+          selectedServer.port,
+          selectedServer.protocol,
+          "zones"
+        ),
+        makeZoneweaverAPIRequest(
+          selectedServer.hostname,
+          selectedServer.port,
+          selectedServer.protocol,
+          "network/bridges"
+        ),
       ]);
 
       const newTopologyData = {
@@ -49,60 +80,88 @@ export const useNetworkTopologyData = (selectedServer) => {
         etherstubs: [],
         vnics: [],
         zones: [],
-        bridges: []
+        bridges: [],
       };
 
       // Process aggregates
-      if (aggregatesResult.status === 'fulfilled' && aggregatesResult.value.success) {
+      if (
+        aggregatesResult.status === "fulfilled" &&
+        aggregatesResult.value.success
+      ) {
         const aggregates = aggregatesResult.value.data?.aggregates || [];
-        newTopologyData.aggregates = aggregates.filter(aggr => 
-          aggr.link && aggr.link !== 'LINK'
+        newTopologyData.aggregates = aggregates.filter(
+          (aggr) => aggr.link && aggr.link !== "LINK"
         );
-        console.log('🔍 TOPOLOGY: Loaded', newTopologyData.aggregates.length, 'aggregates');
+        console.log(
+          "🔍 TOPOLOGY: Loaded",
+          newTopologyData.aggregates.length,
+          "aggregates"
+        );
       }
 
       // Process etherstubs
-      if (etherstubsResult.status === 'fulfilled' && etherstubsResult.value.success) {
+      if (
+        etherstubsResult.status === "fulfilled" &&
+        etherstubsResult.value.success
+      ) {
         const etherstubs = etherstubsResult.value.data?.etherstubs || [];
-        newTopologyData.etherstubs = etherstubs.filter(stub => 
-          stub.link && stub.link !== 'LINK'
+        newTopologyData.etherstubs = etherstubs.filter(
+          (stub) => stub.link && stub.link !== "LINK"
         );
-        console.log('🔍 TOPOLOGY: Loaded', newTopologyData.etherstubs.length, 'etherstubs');
+        console.log(
+          "🔍 TOPOLOGY: Loaded",
+          newTopologyData.etherstubs.length,
+          "etherstubs"
+        );
       }
 
       // Process VNICs
-      if (vnicsResult.status === 'fulfilled' && vnicsResult.value.success) {
+      if (vnicsResult.status === "fulfilled" && vnicsResult.value.success) {
         const vnics = vnicsResult.value.data?.vnics || [];
-        newTopologyData.vnics = vnics.filter(vnic => 
-          vnic.link && vnic.link !== 'LINK'
+        newTopologyData.vnics = vnics.filter(
+          (vnic) => vnic.link && vnic.link !== "LINK"
         );
-        console.log('🔍 TOPOLOGY: Loaded', newTopologyData.vnics.length, 'vnics');
+        console.log(
+          "🔍 TOPOLOGY: Loaded",
+          newTopologyData.vnics.length,
+          "vnics"
+        );
       }
 
       // Process zones
-      if (zonesResult.status === 'fulfilled' && zonesResult.value.success) {
+      if (zonesResult.status === "fulfilled" && zonesResult.value.success) {
         const zones = zonesResult.value.data?.zones || [];
-        newTopologyData.zones = zones.filter(zone => 
-          zone.name || zone.zonename
+        newTopologyData.zones = zones.filter(
+          (zone) => zone.name || zone.zonename
         );
-        console.log('🔍 TOPOLOGY: Loaded', newTopologyData.zones.length, 'zones');
+        console.log(
+          "🔍 TOPOLOGY: Loaded",
+          newTopologyData.zones.length,
+          "zones"
+        );
       }
 
-      // Process bridges  
-      if (bridgesResult.status === 'fulfilled' && bridgesResult.value.success) {
+      // Process bridges
+      if (bridgesResult.status === "fulfilled" && bridgesResult.value.success) {
         const bridges = bridgesResult.value.data?.bridges || [];
-        newTopologyData.bridges = bridges.filter(bridge => 
-          bridge.link && bridge.link !== 'LINK'
+        newTopologyData.bridges = bridges.filter(
+          (bridge) => bridge.link && bridge.link !== "LINK"
         );
-        console.log('🔍 TOPOLOGY: Loaded', newTopologyData.bridges.length, 'bridges');
+        console.log(
+          "🔍 TOPOLOGY: Loaded",
+          newTopologyData.bridges.length,
+          "bridges"
+        );
       }
 
       setTopologyData(newTopologyData);
-      console.log('🔍 TOPOLOGY: Complete topology data loaded:', newTopologyData);
-
+      console.log(
+        "🔍 TOPOLOGY: Complete topology data loaded:",
+        newTopologyData
+      );
     } catch (err) {
-      console.error('💥 TOPOLOGY: Error loading topology data:', err);
-      setError('Error loading network topology data: ' + err.message);
+      console.error("💥 TOPOLOGY: Error loading topology data:", err);
+      setError(`Error loading network topology data: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -112,6 +171,6 @@ export const useNetworkTopologyData = (selectedServer) => {
     ...topologyData,
     loading,
     error,
-    reload: loadTopologyData
+    reload: loadTopologyData,
   };
 };

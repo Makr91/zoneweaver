@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Helmet } from "@dr.pogodin/react-helmet";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "../contexts/AuthContext";
 
 /**
@@ -59,7 +60,7 @@ const Landing = () => {
         <div className="hero-body">
           <div className="container has-text-centered">
             <div className="is-size-3">
-              <i className="fas fa-spinner fa-spin"></i>
+              <i className="fas fa-spinner fa-spin" />
             </div>
             <p className="mt-3">Checking system status...</p>
           </div>

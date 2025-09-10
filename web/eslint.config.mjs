@@ -1,9 +1,11 @@
 import js from "@eslint/js";
-import globals from "globals";
+import prettierConfig from "eslint-config-prettier";
+import pluginImport from "eslint-plugin-import";
+import pluginJsxA11y from "eslint-plugin-jsx-a11y";
+import prettierPlugin from "eslint-plugin-prettier";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
-import prettierPlugin from "eslint-plugin-prettier";
-import prettierConfig from "eslint-config-prettier";
+import globals from "globals";
 
 export default [
   // Ignore patterns
@@ -20,13 +22,15 @@ export default [
       "*.log",
     ],
   },
-  
+
   // JavaScript and JSX files configuration - Comprehensive React Frontend Rules
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     plugins: {
       react: pluginReact,
       "react-hooks": pluginReactHooks,
+      "jsx-a11y": pluginJsxA11y,
+      import: pluginImport,
       prettier: prettierPlugin,
     },
     languageOptions: {
@@ -46,33 +50,45 @@ export default [
       react: {
         version: "detect",
       },
+      "import/resolver": {
+        node: {
+          extensions: [".js", ".jsx"],
+          moduleDirectory: ["node_modules", "src/"],
+        },
+      },
     },
     rules: {
       // Base JavaScript rules (comprehensive)
       ...js.configs.recommended.rules,
-      
+
       // React rules (comprehensive)
       ...pluginReact.configs.recommended.rules,
       ...pluginReactHooks.configs.recommended.rules,
-      
+      ...pluginJsxA11y.configs.recommended.rules,
+      ...pluginImport.configs.recommended.rules,
+
       // Prettier rules
       ...prettierConfig.rules,
       "prettier/prettier": "error",
-      
+
       // === VARIABLES & DECLARATIONS ===
       "prefer-const": "error",
       "no-var": "error",
       "no-undef": "error",
       "no-unused-vars": [
-        "error", 
+        "warn", // Warn for declared but unused variables
         {
           args: "after-used",
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
           ignoreRestSiblings: true,
-        }
+          caughtErrors: "none", // Don't warn about unused catch parameters
+        },
       ],
-      "no-use-before-define": ["error", { functions: false, classes: true, variables: true }],
+      "no-use-before-define": [
+        "error",
+        { functions: false, classes: true, variables: true },
+      ],
       "no-shadow": "error",
       "no-shadow-restricted-names": "error",
       "no-redeclare": "error",
@@ -100,7 +116,7 @@ export default [
       "no-useless-concat": "error",
 
       // === COMPARISON & CONDITIONALS ===
-      "eqeqeq": ["error", "always"],
+      eqeqeq: ["error", "always"],
       "no-nested-ternary": "warn",
       "no-unneeded-ternary": "error",
       "no-else-return": "error",
@@ -135,7 +151,7 @@ export default [
       "no-console": "warn", // Warn about console statements in production code
 
       // === CODE QUALITY ===
-      "complexity": ["warn", 15],
+      complexity: ["warn", 15],
       "max-depth": ["warn", 4],
       "max-lines": ["warn", { max: 500, skipComments: true }], // Smaller for React components
       "max-lines-per-function": ["warn", { max: 80, skipComments: true }], // Smaller for React functions
@@ -143,7 +159,7 @@ export default [
       "max-statements": ["warn", 20],
 
       // === NAMING CONVENTIONS ===
-      "camelcase": ["error", { properties: "never", ignoreDestructuring: false }],
+      camelcase: ["error", { properties: "never", ignoreDestructuring: false }],
       "new-cap": ["error", { newIsCap: true, capIsNew: false }],
 
       // === PERFORMANCE ===
@@ -159,7 +175,7 @@ export default [
       "prefer-object-has-own": "error",
 
       // === STYLE (handled by Prettier, but keep logical ones) ===
-      "curly": ["error", "all"],
+      curly: ["error", "all"],
       "dot-notation": "error",
       "no-multi-assign": "error",
       "one-var": ["error", "never"],
@@ -188,21 +204,27 @@ export default [
       "react/jsx-equals-spacing": ["error", "never"],
       "react/jsx-first-prop-new-line": ["error", "multiline-multiprop"],
       "react/jsx-indent-props": ["error", 2],
-      "react/jsx-max-props-per-line": ["error", { maximum: 1, when: "multiline" }],
+      "react/jsx-max-props-per-line": [
+        "error",
+        { maximum: 1, when: "multiline" },
+      ],
       "react/jsx-no-duplicate-props": "error",
       "react/jsx-no-undef": "error",
       "react/jsx-pascal-case": "error",
       "react/jsx-uses-react": "off", // Not needed in React 17+
       "react/jsx-uses-vars": "error",
-      "react/jsx-wrap-multilines": ["error", {
-        declaration: "parens-new-line",
-        assignment: "parens-new-line",
-        return: "parens-new-line",
-        arrow: "parens-new-line",
-        condition: "parens-new-line",
-        logical: "parens-new-line",
-        prop: "parens-new-line",
-      }],
+      "react/jsx-wrap-multilines": [
+        "error",
+        {
+          declaration: "parens-new-line",
+          assignment: "parens-new-line",
+          return: "parens-new-line",
+          arrow: "parens-new-line",
+          condition: "parens-new-line",
+          logical: "parens-new-line",
+          prop: "parens-new-line",
+        },
+      ],
       "react/no-array-index-key": "warn",
       "react/no-danger": "warn",
       "react/no-did-mount-set-state": "error",
@@ -218,21 +240,78 @@ export default [
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
 
-      // === ACCESSIBILITY (Basic) ===
-      "jsx-a11y/alt-text": "off", // Would need jsx-a11y plugin
-      
-      // === IMPORT/EXPORT STYLE ===
+      // === ACCESSIBILITY RULES (jsx-a11y) ===
+      "jsx-a11y/alt-text": "warn",
+      "jsx-a11y/aria-props": "error",
+      "jsx-a11y/aria-proptypes": "error",
+      "jsx-a11y/aria-unsupported-elements": "error",
+      "jsx-a11y/role-has-required-aria-props": "error",
+      "jsx-a11y/role-supports-aria-props": "error",
+      "jsx-a11y/img-redundant-alt": "warn",
+      "jsx-a11y/no-access-key": "warn",
+      "jsx-a11y/no-onchange": "off", // Can be overly restrictive
+      "jsx-a11y/click-events-have-key-events": "warn",
+      "jsx-a11y/no-static-element-interactions": "warn",
+      "jsx-a11y/anchor-is-valid": "warn",
+
+      // === IMPORT/EXPORT RULES ===
+      "import/order": [
+        "error",
+        {
+          groups: [
+            "builtin", // Node.js built-in modules
+            "external", // npm packages
+            "internal", // internal modules
+            "parent", // parent modules
+            "sibling", // sibling modules
+            "index", // index modules
+          ],
+          "newlines-between": "always",
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true,
+          },
+        },
+      ],
+      "import/first": "error",
+      "import/no-amd": "error",
+      "import/no-webpack-loader-syntax": "error",
+      "import/no-unresolved": ["error", { commonjs: true }],
+      "import/named": "error",
+      "import/default": "error",
+      "import/namespace": "error",
+      "import/no-absolute-path": "error",
+      "import/no-dynamic-require": "warn",
+      "import/no-self-import": "error",
+      "import/no-cycle": ["error", { maxDepth: 10 }],
+      "import/no-useless-path-segments": "error",
+      "import/no-relative-parent-imports": "off", // Allow relative imports
+      "import/newline-after-import": "error",
+      "import/no-duplicates": "error",
+
+      // === RESTRICTED IMPORTS ===
       "no-restricted-imports": [
         "error",
         {
           patterns: [
-            "../**", // Discourage relative imports beyond parent
+            {
+              group: ["../*/*"],
+              message:
+                "Deep relative imports can make code hard to maintain. Consider using absolute imports or restructuring.",
+            },
+          ],
+          paths: [
+            {
+              name: "lodash",
+              message:
+                "Please use lodash-es or import individual functions instead.",
+            },
           ],
         },
       ],
     },
   },
-  
+
   // Configuration files (JSON, etc.) - Minimal rules
   {
     files: ["**/*.{json,jsonc,json5}"],
@@ -241,10 +320,15 @@ export default [
       "no-undef": "off",
     },
   },
-  
+
   // Test files configuration
   {
-    files: ["**/*.test.{js,jsx}", "**/*.spec.{js,jsx}", "**/test/**/*.{js,jsx}", "**/tests/**/*.{js,jsx}"],
+    files: [
+      "**/*.test.{js,jsx}",
+      "**/*.spec.{js,jsx}",
+      "**/test/**/*.{js,jsx}",
+      "**/tests/**/*.{js,jsx}",
+    ],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -265,7 +349,7 @@ export default [
       "no-unused-expressions": "off",
       "max-lines": "off",
       "max-lines-per-function": "off",
-      "complexity": "off",
+      complexity: "off",
       "prefer-arrow-callback": "off",
       "func-style": "off",
       "react/display-name": "off",

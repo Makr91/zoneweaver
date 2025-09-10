@@ -1,58 +1,85 @@
-import { Position } from '@xyflow/react';
+import { Position } from "@xyflow/react";
 
 // Calculate intersection point on rectangle perimeter
 function getIntersectionPoint(centerX, centerY, width, height, angle) {
   const halfWidth = width / 2;
   const halfHeight = height / 2;
-  
+
   // Calculate intersection with rectangle perimeter
   const dx = Math.cos(angle);
   const dy = Math.sin(angle);
-  
+
   // Check intersection with each edge
-  let intersectionX, intersectionY;
-  
+  let intersectionX;
+  let intersectionY;
+
   if (Math.abs(dx) > Math.abs(dy)) {
     // Intersects with left or right edge
     intersectionX = dx > 0 ? centerX + halfWidth : centerX - halfWidth;
-    intersectionY = centerY + (intersectionX - centerX) * dy / dx;
-    
+    intersectionY = centerY + ((intersectionX - centerX) * dy) / dx;
+
     // Clamp to rectangle bounds
-    intersectionY = Math.max(centerY - halfHeight, Math.min(centerY + halfHeight, intersectionY));
+    intersectionY = Math.max(
+      centerY - halfHeight,
+      Math.min(centerY + halfHeight, intersectionY)
+    );
   } else {
     // Intersects with top or bottom edge
     intersectionY = dy > 0 ? centerY + halfHeight : centerY - halfHeight;
-    intersectionX = centerX + (intersectionY - centerY) * dx / dy;
-    
+    intersectionX = centerX + ((intersectionY - centerY) * dx) / dy;
+
     // Clamp to rectangle bounds
-    intersectionX = Math.max(centerX - halfWidth, Math.min(centerX + halfWidth, intersectionX));
+    intersectionX = Math.max(
+      centerX - halfWidth,
+      Math.min(centerX + halfWidth, intersectionX)
+    );
   }
-  
+
   return { x: intersectionX, y: intersectionY };
 }
 
 // Determine React Flow position based on intersection point
-function getPositionFromIntersection(centerX, centerY, width, height, intersectionX, intersectionY) {
+function getPositionFromIntersection(
+  centerX,
+  centerY,
+  width,
+  height,
+  intersectionX,
+  intersectionY
+) {
   const halfWidth = width / 2;
   const halfHeight = height / 2;
-  
+
   const distToTop = Math.abs(intersectionY - (centerY - halfHeight));
   const distToBottom = Math.abs(intersectionY - (centerY + halfHeight));
   const distToLeft = Math.abs(intersectionX - (centerX - halfWidth));
   const distToRight = Math.abs(intersectionX - (centerX + halfWidth));
-  
+
   const minDist = Math.min(distToTop, distToBottom, distToLeft, distToRight);
-  
-  if (minDist === distToTop) return Position.Top;
-  if (minDist === distToBottom) return Position.Bottom;
-  if (minDist === distToLeft) return Position.Left;
+
+  if (minDist === distToTop) {
+    return Position.Top;
+  }
+  if (minDist === distToBottom) {
+    return Position.Bottom;
+  }
+  if (minDist === distToLeft) {
+    return Position.Left;
+  }
   return Position.Right;
 }
 
 // Calculate clean floating edge connection points
-export const getEdgeParams = (sourceNode, targetNode, flowDirection = 'rx') => {
+export const getEdgeParams = (sourceNode, targetNode, flowDirection = "rx") => {
   if (!sourceNode || !targetNode) {
-    return { sx: 0, sy: 0, tx: 0, ty: 0, sourcePos: Position.Bottom, targetPos: Position.Top };
+    return {
+      sx: 0,
+      sy: 0,
+      tx: 0,
+      ty: 0,
+      sourcePos: Position.Bottom,
+      targetPos: Position.Top,
+    };
   }
 
   const sourcePosition = sourceNode.internals.positionAbsolute;
@@ -72,34 +99,44 @@ export const getEdgeParams = (sourceNode, targetNode, flowDirection = 'rx') => {
   const angle = Math.atan2(dy, dx);
 
   // Add angular offset for flow direction to prevent overlap - significantly increased for VNIC-to-zone visibility
-  const flowOffset = flowDirection === 'rx' ? -0.4 : 0.4;
+  const flowOffset = flowDirection === "rx" ? -0.4 : 0.4;
   const sourceAngle = angle + flowOffset;
   const targetAngle = angle + Math.PI + flowOffset; // Opposite direction
 
   // Calculate intersection points on node perimeters
   const sourceIntersection = getIntersectionPoint(
-    sourceCenterX, sourceCenterY, 
-    sourceBounds.width, sourceBounds.height, 
+    sourceCenterX,
+    sourceCenterY,
+    sourceBounds.width,
+    sourceBounds.height,
     sourceAngle
   );
-  
+
   const targetIntersection = getIntersectionPoint(
-    targetCenterX, targetCenterY, 
-    targetBounds.width, targetBounds.height, 
+    targetCenterX,
+    targetCenterY,
+    targetBounds.width,
+    targetBounds.height,
     targetAngle
   );
 
   // Get React Flow positions
   const sourcePos = getPositionFromIntersection(
-    sourceCenterX, sourceCenterY,
-    sourceBounds.width, sourceBounds.height,
-    sourceIntersection.x, sourceIntersection.y
+    sourceCenterX,
+    sourceCenterY,
+    sourceBounds.width,
+    sourceBounds.height,
+    sourceIntersection.x,
+    sourceIntersection.y
   );
-  
+
   const targetPos = getPositionFromIntersection(
-    targetCenterX, targetCenterY,
-    targetBounds.width, targetBounds.height,
-    targetIntersection.x, targetIntersection.y
+    targetCenterX,
+    targetCenterY,
+    targetBounds.width,
+    targetBounds.height,
+    targetIntersection.x,
+    targetIntersection.y
   );
 
   return {

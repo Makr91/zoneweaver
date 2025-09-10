@@ -1,8 +1,10 @@
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "./Logo";
+
 import { useAuth } from "../contexts/AuthContext";
-import { Helmet } from "@dr.pogodin/react-helmet";
+
+import Logo from "./Logo";
 
 /**
  * Login component for Zoneweaver authentication
@@ -42,34 +44,36 @@ const Login = () => {
     try {
       setMethodsLoading(true);
       const result = await getAuthMethods();
-      
+
       if (result.success && result.methods.length > 0) {
         setAuthMethods(result.methods);
-        
+
         // Set default method from localStorage or first available method
-        const savedMethod = localStorage.getItem('zoneweaver_auth_method');
-        const validSavedMethod = result.methods.find(m => m.id === savedMethod && m.enabled);
-        
+        const savedMethod = localStorage.getItem("zoneweaver_auth_method");
+        const validSavedMethod = result.methods.find(
+          (m) => m.id === savedMethod && m.enabled
+        );
+
         if (validSavedMethod) {
           setAuthMethod(savedMethod);
         } else {
           // Use first enabled method
-          const firstMethod = result.methods.find(m => m.enabled);
+          const firstMethod = result.methods.find((m) => m.enabled);
           if (firstMethod) {
             setAuthMethod(firstMethod.id);
           }
         }
       } else {
         // Fallback to local authentication only
-        console.warn('Failed to load auth methods, using local fallback');
-        setAuthMethods([{ id: 'local', name: 'Local Account', enabled: true }]);
-        setAuthMethod('local');
+        console.warn("Failed to load auth methods, using local fallback");
+        setAuthMethods([{ id: "local", name: "Local Account", enabled: true }]);
+        setAuthMethod("local");
       }
     } catch (error) {
-      console.error('Error loading auth methods:', error);
+      console.error("Error loading auth methods:", error);
       // Fallback to local authentication
-      setAuthMethods([{ id: 'local', name: 'Local Account', enabled: true }]);
-      setAuthMethod('local');
+      setAuthMethods([{ id: "local", name: "Local Account", enabled: true }]);
+      setAuthMethod("local");
     } finally {
       setMethodsLoading(false);
     }
@@ -80,7 +84,7 @@ const Login = () => {
    */
   const handleAuthMethodChange = (newMethod) => {
     setAuthMethod(newMethod);
-    localStorage.setItem('zoneweaver_auth_method', newMethod);
+    localStorage.setItem("zoneweaver_auth_method", newMethod);
     setMsg(""); // Clear any previous error messages
   };
 
@@ -90,13 +94,13 @@ const Login = () => {
    */
   const handleOidcLogin = (provider) => {
     // Store intended URL for after login
-    if (window.location.pathname !== '/ui/login') {
-      localStorage.setItem('zoneweaver_intended_url', window.location.pathname);
+    if (window.location.pathname !== "/ui/login") {
+      localStorage.setItem("zoneweaver_intended_url", window.location.pathname);
     }
-    
+
     setLoading(true);
     setMsg("");
-    
+
     // Direct redirect to provider-specific OIDC initiation endpoint
     window.location.href = `/api/auth/oidc/${provider}`;
   };
@@ -107,14 +111,14 @@ const Login = () => {
    */
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     // Handle OIDC providers differently - redirect immediately
-    if (authMethod.startsWith('oidc-')) {
-      const provider = authMethod.replace('oidc-', '');
+    if (authMethod.startsWith("oidc-")) {
+      const provider = authMethod.replace("oidc-", "");
       handleOidcLogin(provider);
       return;
     }
-    
+
     if (!identifier || !password) {
       setMsg("Please enter both username/email and password");
       return;
@@ -123,14 +127,14 @@ const Login = () => {
     try {
       setLoading(true);
       setMsg("");
-      
+
       const result = await login(identifier, password, authMethod);
-      
+
       if (result.success) {
         // Check for stored intended URL and redirect there
-        const intendedUrl = localStorage.getItem('zoneweaver_intended_url');
+        const intendedUrl = localStorage.getItem("zoneweaver_intended_url");
         if (intendedUrl) {
-          localStorage.removeItem('zoneweaver_intended_url');
+          localStorage.removeItem("zoneweaver_intended_url");
           navigate(intendedUrl);
         } else {
           navigate("/ui");
@@ -146,56 +150,66 @@ const Login = () => {
     }
   };
   return (
-    <section className='hero is-fullheight is-fullwidth'>
+    <section className="hero is-fullheight is-fullwidth">
       <Helmet>
-        <meta charSet='utf-8' />
+        <meta charSet="utf-8" />
         <title>Login - Zoneweaver</title>
-        <link rel='canonical' href={window.location.origin} />
+        <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className='hero-body'>
-        <div className='container'>
-          <div className='columns is-centered'>
-            <div className='column is-4-desktop'>
-              <form onSubmit={handleLogin} className='box has-text-centered'>
-                <p className='is-size-1'>Zoneweaver {__APP_VERSION__ || '1.0.0'}</p>
-                <figure className='image container my-1 py-1 is-256x256'>
+      <div className="hero-body">
+        <div className="container">
+          <div className="columns is-centered">
+            <div className="column is-4-desktop">
+              <form onSubmit={handleLogin} className="box has-text-centered">
+                <p className="is-size-1">
+                  Zoneweaver {__APP_VERSION__ || "1.0.0"}
+                </p>
+                <figure className="image container my-1 py-1 is-256x256">
                   <Logo />
                 </figure>
                 {msg && (
-                  <div className={`notification ${msg.includes('error') || msg.includes('failed') ? 'is-danger' : 'is-info'}`}>
+                  <div
+                    className={`notification ${msg.includes("error") || msg.includes("failed") ? "is-danger" : "is-info"}`}
+                  >
                     <p>{msg}</p>
                   </div>
                 )}
-                
+
                 {/* Show username/password fields only for local/LDAP authentication */}
-                {!authMethod.startsWith('oidc-') && (
+                {!authMethod.startsWith("oidc-") && (
                   <>
-                    <div className='field mt-5'>
-                      <label className='label'>
-                        {authMethod === 'ldap' ? 'Username' : 'Email or Username'}
+                    <div className="field mt-5">
+                      <label className="label">
+                        {authMethod === "ldap"
+                          ? "Username"
+                          : "Email or Username"}
                       </label>
-                      <div className='controls'>
-                        <input 
-                          type='text' 
-                          className='input' 
-                          name='identifier' 
-                          autoComplete='username' 
-                          placeholder={authMethod === 'ldap' ? 'Username' : 'Username or Email'} 
-                          value={identifier} 
+                      <div className="controls">
+                        <input
+                          type="text"
+                          className="input"
+                          name="identifier"
+                          autoComplete="username"
+                          placeholder={
+                            authMethod === "ldap"
+                              ? "Username"
+                              : "Username or Email"
+                          }
+                          value={identifier}
                           onChange={(e) => setIdentifier(e.target.value)}
                           disabled={loading || methodsLoading}
                         />
                       </div>
                     </div>
-                    <div className='field mt-5'>
-                      <label className='label'>Password</label>
-                      <div className='controls'>
+                    <div className="field mt-5">
+                      <label className="label">Password</label>
+                      <div className="controls">
                         <input
-                          type='password'
-                          name='password'
-                          autoComplete='current-password'
-                          className='input'
-                          placeholder='******'
+                          type="password"
+                          name="password"
+                          autoComplete="current-password"
+                          className="input"
+                          placeholder="******"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           disabled={loading}
@@ -204,30 +218,33 @@ const Login = () => {
                     </div>
                   </>
                 )}
-                
+
                 {/* Show OIDC information when an OIDC provider is selected */}
-                {authMethod.startsWith('oidc-') && (
-                  <div className='field mt-5'>
-                    <div className='notification is-info is-light'>
-                      <p className='has-text-centered'>
-                        <span className='icon'>
-                          <i className='fas fa-external-link-alt'></i>
+                {authMethod.startsWith("oidc-") && (
+                  <div className="field mt-5">
+                    <div className="notification is-info is-light">
+                      <p className="has-text-centered">
+                        <span className="icon">
+                          <i className="fas fa-external-link-alt" />
                         </span>
                         <br />
-                        You will be redirected to your identity provider to sign in.
+                        You will be redirected to your identity provider to sign
+                        in.
                       </p>
                     </div>
                   </div>
                 )}
                 {/* Authentication Method Selector - Show only if multiple methods available */}
                 {!methodsLoading && authMethods.length > 1 && (
-                  <div className='field mt-5'>
-                    <label className='label'>Authentication Method</label>
-                    <div className='control'>
-                      <div className='select is-fullwidth'>
+                  <div className="field mt-5">
+                    <label className="label">Authentication Method</label>
+                    <div className="control">
+                      <div className="select is-fullwidth">
                         <select
                           value={authMethod}
-                          onChange={(e) => handleAuthMethodChange(e.target.value)}
+                          onChange={(e) =>
+                            handleAuthMethodChange(e.target.value)
+                          }
                           disabled={loading}
                         >
                           {authMethods.map((method) => (
@@ -238,38 +255,40 @@ const Login = () => {
                         </select>
                       </div>
                     </div>
-                    <p className='help is-size-7 has-text-grey'>
-                      {authMethod === 'ldap' ? 
-                        'Use your directory credentials' : 
-                        authMethod.startsWith('oidc-') ?
-                        'Sign in through your identity provider' :
-                        'Use your local account credentials'
-                      }
+                    <p className="help is-size-7 has-text-grey">
+                      {authMethod === "ldap"
+                        ? "Use your directory credentials"
+                        : authMethod.startsWith("oidc-")
+                          ? "Sign in through your identity provider"
+                          : "Use your local account credentials"}
                     </p>
                   </div>
                 )}
-                <div className='field mt-5'>
-                  <button 
-                    type='submit'
-                    className={`button is-primary is-fullwidth ${loading ? 'is-loading' : ''}`}
+                <div className="field mt-5">
+                  <button
+                    type="submit"
+                    className={`button is-primary is-fullwidth ${loading ? "is-loading" : ""}`}
                     disabled={loading}
                   >
-                    {authMethod.startsWith('oidc-') ? 
-                      (authMethods.find(m => m.id === authMethod)?.name || 'Continue with OpenID Connect') : 
-                      'Login'
-                    }
+                    {authMethod.startsWith("oidc-")
+                      ? authMethods.find((m) => m.id === authMethod)?.name ||
+                        "Continue with OpenID Connect"
+                      : "Login"}
                   </button>
                 </div>
-                <div className='has-text-centered mt-3'>
+                <div className="has-text-centered mt-3">
                   <p>
-                    Don't have an account?{' '}
-                    <a href='/register' className='has-text-link'>
+                    Don't have an account?{" "}
+                    <a href="/register" className="has-text-link">
                       Register here
                     </a>
                   </p>
                 </div>
-                <div className='has-text-centered mt-3'>
-                  <a href='https://zoneweaver.startcloud.com' className='has-text-grey'>
+                <div className="has-text-centered mt-3">
+                  <a
+                    href="https://zoneweaver.startcloud.com"
+                    className="has-text-grey"
+                  >
                     Documentation
                   </a>
                 </div>

@@ -1,10 +1,18 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
-import { useAuth } from './AuthContext';
+import axios from "axios";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+
+import { useAuth } from "./AuthContext";
 
 /**
  * Server context for managing Zoneweaver API connections
- * 
+ *
  * - Zoneweaver application manages shared server connections
  * - All users see the same servers (application-level, not per-user)
  * - Only admins can add/remove servers
@@ -19,7 +27,7 @@ const ServerContext = createContext();
 export const useServers = () => {
   const context = useContext(ServerContext);
   if (!context) {
-    throw new Error('useServers must be used within a ServerProvider');
+    throw new Error("useServers must be used within a ServerProvider");
   }
   return context;
 };
@@ -36,46 +44,48 @@ export const ServerProvider = ({ children }) => {
   const [currentServer, setCurrentServer] = useState(() => {
     // Restore currentServer from localStorage on initialization
     try {
-      const saved = localStorage.getItem('zoneweaver_currentServer');
+      const saved = localStorage.getItem("zoneweaver_currentServer");
       return saved ? JSON.parse(saved) : null;
     } catch (error) {
-      console.warn('Failed to restore currentServer from localStorage:', error);
+      console.warn("Failed to restore currentServer from localStorage:", error);
       return null;
     }
   });
-  
+
   const [currentZone, setCurrentZone] = useState(() => {
     // Restore currentZone from localStorage on initialization
     try {
-      const saved = localStorage.getItem('zoneweaver_currentZone');
+      const saved = localStorage.getItem("zoneweaver_currentZone");
       return saved ? JSON.parse(saved) : null;
     } catch (error) {
-      console.warn('Failed to restore currentZone from localStorage:', error);
+      console.warn("Failed to restore currentZone from localStorage:", error);
       return null;
     }
   });
-  
+
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const loadingRef = useRef(false);
 
-
   // Persist currentServer to localStorage whenever it changes
   useEffect(() => {
-    console.log('📡 SERVER: currentServer changed', {
-      from: 'previous value',
-      to: currentServer?.hostname || 'null',
-      currentServerId: currentServer?.id || 'null',
-      timestamp: new Date().toISOString()
+    console.log("📡 SERVER: currentServer changed", {
+      from: "previous value",
+      to: currentServer?.hostname || "null",
+      currentServerId: currentServer?.id || "null",
+      timestamp: new Date().toISOString(),
     });
-    
+
     try {
       if (currentServer) {
-        localStorage.setItem('zoneweaver_currentServer', JSON.stringify(currentServer));
+        localStorage.setItem(
+          "zoneweaver_currentServer",
+          JSON.stringify(currentServer)
+        );
       } else {
-        localStorage.removeItem('zoneweaver_currentServer');
+        localStorage.removeItem("zoneweaver_currentServer");
       }
     } catch (error) {
-      console.warn('Failed to save currentServer to localStorage:', error);
+      console.warn("Failed to save currentServer to localStorage:", error);
     }
   }, [currentServer]);
 
@@ -83,15 +93,17 @@ export const ServerProvider = ({ children }) => {
   useEffect(() => {
     try {
       if (currentZone) {
-        localStorage.setItem('zoneweaver_currentZone', JSON.stringify(currentZone));
+        localStorage.setItem(
+          "zoneweaver_currentZone",
+          JSON.stringify(currentZone)
+        );
       } else {
-        localStorage.removeItem('zoneweaver_currentZone');
+        localStorage.removeItem("zoneweaver_currentZone");
       }
     } catch (error) {
-      console.warn('Failed to save currentZone to localStorage:', error);
+      console.warn("Failed to save currentZone to localStorage:", error);
     }
   }, [currentZone]);
-
 
   /**
    * Load servers when user is authenticated
@@ -117,53 +129,61 @@ export const ServerProvider = ({ children }) => {
    * but needs to be matched with the actual server objects from the API
    */
   useEffect(() => {
-    console.log('🔄 SERVER RE-ESTABLISHMENT: Checking...', {
+    console.log("🔄 SERVER RE-ESTABLISHMENT: Checking...", {
       serversLoaded: servers.length,
-      currentServer: currentServer,
-      hasCurrentServer: !!currentServer
+      currentServer,
+      hasCurrentServer: !!currentServer,
     });
-    
+
     if (servers.length > 0 && currentServer && currentServer.hostname) {
       // Find the matching server in the loaded servers array
-      const matchingServer = servers.find(server => 
-        server.hostname === currentServer.hostname && 
-        server.port === currentServer.port &&
-        server.protocol === currentServer.protocol
+      const matchingServer = servers.find(
+        (server) =>
+          server.hostname === currentServer.hostname &&
+          server.port === currentServer.port &&
+          server.protocol === currentServer.protocol
       );
-      
-      console.log('🔍 SERVER RE-ESTABLISHMENT: Looking for match...', {
+
+      console.log("🔍 SERVER RE-ESTABLISHMENT: Looking for match...", {
         lookingFor: {
           hostname: currentServer.hostname,
           port: currentServer.port,
           protocol: currentServer.protocol,
-          id: currentServer.id
+          id: currentServer.id,
         },
         found: matchingServer,
-        needsUpdate: matchingServer && matchingServer.id !== currentServer.id
+        needsUpdate: matchingServer && matchingServer.id !== currentServer.id,
       });
-      
+
       if (matchingServer) {
         // Compare meaningful fields instead of potentially different IDs
-        const hasActualChanges = 
+        const hasActualChanges =
           matchingServer.hostname !== currentServer.hostname ||
           matchingServer.port !== currentServer.port ||
           matchingServer.protocol !== currentServer.protocol ||
           matchingServer.lastUsed !== currentServer.lastUsed;
-          
+
         if (hasActualChanges) {
-          console.log('✅ SERVER RE-ESTABLISHMENT: Re-establishing server connection:', matchingServer.hostname);
+          console.log(
+            "✅ SERVER RE-ESTABLISHMENT: Re-establishing server connection:",
+            matchingServer.hostname
+          );
           setCurrentServer(matchingServer);
         } else {
-          console.log('✅ SERVER RE-ESTABLISHMENT: Server already current, no actual changes');
+          console.log(
+            "✅ SERVER RE-ESTABLISHMENT: Server already current, no actual changes"
+          );
         }
       } else {
         // Server no longer exists, clear selection
-        console.log('❌ SERVER RE-ESTABLISHMENT: Previously selected server no longer exists, clearing selection');
+        console.log(
+          "❌ SERVER RE-ESTABLISHMENT: Previously selected server no longer exists, clearing selection"
+        );
         setCurrentServer(null);
         setCurrentZone(null);
       }
     } else if (servers.length > 0 && !currentServer) {
-      console.log('📝 SERVER RE-ESTABLISHMENT: No currentServer to restore');
+      console.log("📝 SERVER RE-ESTABLISHMENT: No currentServer to restore");
     }
   }, [servers.length]); // Only depend on servers.length to avoid infinite loops
 
@@ -173,23 +193,25 @@ export const ServerProvider = ({ children }) => {
   const loadServers = useCallback(async () => {
     // Prevent concurrent calls
     if (loadingRef.current) {
-      console.log('📡 SERVER: loadServers already in progress, skipping duplicate');
+      console.log(
+        "📡 SERVER: loadServers already in progress, skipping duplicate"
+      );
       return;
     }
-    
+
     try {
       loadingRef.current = true;
       setLoading(true);
-      const response = await axios.get('/api/servers');
+      const response = await axios.get("/api/servers");
 
       if (response.data.success) {
         setServers(response.data.servers);
-        console.log('Servers loaded:', response.data.servers);
+        console.log("Servers loaded:", response.data.servers);
       } else {
-        console.error('Failed to load servers:', response.data.message);
+        console.error("Failed to load servers:", response.data.message);
       }
     } catch (error) {
-      console.error('Error loading servers:', error);
+      console.error("Error loading servers:", error);
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -209,20 +231,19 @@ export const ServerProvider = ({ children }) => {
   const addServer = async (serverData) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/servers', serverData);
+      const response = await axios.post("/api/servers", serverData);
 
       if (response.data.success) {
         // Reload servers to get the new one
         await loadServers();
         return { success: true, message: response.data.message };
-      } else {
-        return { success: false, message: response.data.message };
       }
+      return { success: false, message: response.data.message };
     } catch (error) {
-      console.error('Add server error:', error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Failed to add server' 
+      console.error("Add server error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to add server",
       };
     } finally {
       setLoading(false);
@@ -239,18 +260,18 @@ export const ServerProvider = ({ children }) => {
    */
   const testServer = async (serverData) => {
     try {
-      const response = await axios.post('/api/servers/test', serverData);
+      const response = await axios.post("/api/servers/test", serverData);
 
-      return { 
-        success: response.data.success, 
+      return {
+        success: response.data.success,
         message: response.data.message,
-        serverInfo: response.data.serverInfo 
+        serverInfo: response.data.serverInfo,
       };
     } catch (error) {
-      console.error('Test server error:', error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Connection test failed' 
+      console.error("Test server error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Connection test failed",
       };
     }
   };
@@ -268,21 +289,20 @@ export const ServerProvider = ({ children }) => {
       if (response.data.success) {
         // Reload servers to reflect the change
         await loadServers();
-        
+
         // Clear current server if it was the one removed
         if (currentServer && currentServer.id === serverId) {
           setCurrentServer(null);
         }
-        
+
         return { success: true, message: response.data.message };
-      } else {
-        return { success: false, message: response.data.message };
       }
+      return { success: false, message: response.data.message };
     } catch (error) {
-      console.error('Remove server error:', error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Failed to remove server' 
+      console.error("Remove server error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to remove server",
       };
     } finally {
       setLoading(false);
@@ -294,8 +314,12 @@ export const ServerProvider = ({ children }) => {
    * @returns {Array} Array of server objects
    */
   const getServers = useCallback(() => {
-    console.log('getServers - servers:', servers);
-    return servers.sort((a, b) => new Date(b.lastUsed || b.createdAt) - new Date(a.lastUsed || a.createdAt));
+    console.log("getServers - servers:", servers);
+    return servers.sort(
+      (a, b) =>
+        new Date(b.lastUsed || b.createdAt) -
+        new Date(a.lastUsed || a.createdAt)
+    );
   }, [servers]);
 
   /**
@@ -335,36 +359,44 @@ export const ServerProvider = ({ children }) => {
    * @param {boolean} bypassCache - Force bypass cache for this request
    * @returns {Promise<Object>} Request result
    */
-  const makeZoneweaverAPIRequest = async (hostname, port, protocol, path, method = 'GET', data = null, params = null, bypassCache = false) => {
+  const makeZoneweaverAPIRequest = async (
+    hostname,
+    port,
+    protocol,
+    path,
+    method = "GET",
+    data = null,
+    params = null,
+    bypassCache = false
+  ) => {
     try {
       const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
       const config = {
         url: proxyUrl,
-        method: method,
+        method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           // Add no-cache headers for VNC endpoints or when explicitly requested
-          ...(path.includes('/vnc/') || bypassCache) && {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          }
+          ...((path.includes("/vnc/") || bypassCache) && {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          }),
         },
         // Handle 304 responses appropriately - success for non-VNC, error for VNC (should not happen with no-cache)
-        validateStatus: (status) => {
-          return (status >= 200 && status < 300) || 
-                 (status === 304 && !path.includes('/vnc/') && !bypassCache);
-        }
+        validateStatus: (status) =>
+          (status >= 200 && status < 300) ||
+          (status === 304 && !path.includes("/vnc/") && !bypassCache),
       };
 
       if (data) {
         config.data = data;
       }
-      
+
       if (params) {
         // Use URLSearchParams to ensure correct formatting, especially for keys with special characters
         const searchParams = new URLSearchParams();
         for (const key in params) {
-          if (Object.prototype.hasOwnProperty.call(params, key)) {
+          if (Object.hasOwn(params, key)) {
             searchParams.append(key, params[key]);
           }
         }
@@ -374,24 +406,43 @@ export const ServerProvider = ({ children }) => {
       const response = await axios(config);
       return { success: true, data: response.data };
     } catch (error) {
-      console.error('Zoneweaver API request error:', error);
-      
+      console.error("Zoneweaver API request error:", error);
+
       // Handle 304 responses for VNC endpoints - should not happen with backend no-cache headers
-      if (error.response?.status === 304 && (path.includes('/vnc/') || bypassCache)) {
-        console.warn('VNC endpoint returned 304 despite no-cache headers, forcing cache bypass...');
-        
+      if (
+        error.response?.status === 304 &&
+        (path.includes("/vnc/") || bypassCache)
+      ) {
+        console.warn(
+          "VNC endpoint returned 304 despite no-cache headers, forcing cache bypass..."
+        );
+
         // Add cache-busting parameter and retry once
         if (!bypassCache) {
-          const bustingPath = path.includes('?') ? `${path}&_cb=${Date.now()}` : `${path}?_cb=${Date.now()}`;
-          return await makeZoneweaverAPIRequest(hostname, port, protocol, bustingPath, method, data, params, true);
+          const bustingPath = path.includes("?")
+            ? `${path}&_cb=${Date.now()}`
+            : `${path}?_cb=${Date.now()}`;
+          return await makeZoneweaverAPIRequest(
+            hostname,
+            port,
+            protocol,
+            bustingPath,
+            method,
+            data,
+            params,
+            true
+          );
         }
       }
-      
-      const message = error.response?.data?.msg || error.response?.data?.message || 'Request failed';
-      return { 
-        success: false, 
-        message: message,
-        status: error.response?.status
+
+      const message =
+        error.response?.data?.msg ||
+        error.response?.data?.message ||
+        "Request failed";
+      return {
+        success: false,
+        message,
+        status: error.response?.status,
       };
     }
   };
@@ -399,14 +450,19 @@ export const ServerProvider = ({ children }) => {
   /**
    * Start a zone
    * @param {string} hostname - Server hostname
-   * @param {number} port - Server port  
+   * @param {number} port - Server port
    * @param {string} protocol - Server protocol
    * @param {string} zoneName - Zone name to start
    * @returns {Promise<Object>} Start result
    */
-  const startZone = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/start`, 'POST');
-  };
+  const startZone = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/start`,
+      "POST"
+    );
 
   /**
    * Stop a zone
@@ -417,9 +473,23 @@ export const ServerProvider = ({ children }) => {
    * @param {boolean} force - Force stop the zone
    * @returns {Promise<Object>} Stop result
    */
-  const stopZone = async (hostname, port, protocol, zoneName, force = false) => {
+  const stopZone = async (
+    hostname,
+    port,
+    protocol,
+    zoneName,
+    force = false
+  ) => {
     const params = force ? { force: true } : null;
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/stop`, 'POST', null, params);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/stop`,
+      "POST",
+      null,
+      params
+    );
   };
 
   /**
@@ -430,9 +500,14 @@ export const ServerProvider = ({ children }) => {
    * @param {string} zoneName - Zone name to restart
    * @returns {Promise<Object>} Restart result
    */
-  const restartZone = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/restart`, 'POST');
-  };
+  const restartZone = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/restart`,
+      "POST"
+    );
 
   /**
    * Delete a zone
@@ -443,9 +518,23 @@ export const ServerProvider = ({ children }) => {
    * @param {boolean} force - Force delete the zone
    * @returns {Promise<Object>} Delete result
    */
-  const deleteZone = async (hostname, port, protocol, zoneName, force = false) => {
+  const deleteZone = async (
+    hostname,
+    port,
+    protocol,
+    zoneName,
+    force = false
+  ) => {
     const params = force ? { force: true } : null;
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}`, 'DELETE', null, params);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}`,
+      "DELETE",
+      null,
+      params
+    );
   };
 
   /**
@@ -456,9 +545,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} zoneName - Zone name
    * @returns {Promise<Object>} Zone details
    */
-  const getZoneDetails = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}`);
-  };
+  const getZoneDetails = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}`
+    );
 
   /**
    * Get all zones with optional filtering
@@ -468,9 +561,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options
    * @returns {Promise<Object>} Zones list
    */
-  const getAllZones = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'zones', 'GET', null, filters);
-  };
+  const getAllZones = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "zones",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Get task queue statistics
@@ -479,9 +579,8 @@ export const ServerProvider = ({ children }) => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Task stats
    */
-  const getTaskStats = async (hostname, port, protocol) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'tasks/stats');
-  };
+  const getTaskStats = async (hostname, port, protocol) =>
+    await makeZoneweaverAPIRequest(hostname, port, protocol, "tasks/stats");
 
   /**
    * Get list of tasks with optional filtering
@@ -491,9 +590,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options
    * @returns {Promise<Object>} Tasks list
    */
-  const getTasks = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'tasks', 'GET', null, filters);
-  };
+  const getTasks = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "tasks",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Start VNC console session for a zone
@@ -503,9 +609,14 @@ export const ServerProvider = ({ children }) => {
    * @param {string} zoneName - Zone name
    * @returns {Promise<Object>} VNC start result
    */
-  const startVncSession = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/vnc/start`, 'POST');
-  };
+  const startVncSession = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/vnc/start`,
+      "POST"
+    );
 
   /**
    * Get VNC session information for a zone
@@ -515,9 +626,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} zoneName - Zone name
    * @returns {Promise<Object>} VNC session info
    */
-  const getVncSessionInfo = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/vnc/info`);
-  };
+  const getVncSessionInfo = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/vnc/info`
+    );
 
   /**
    * Stop VNC console session for a zone
@@ -527,9 +642,14 @@ export const ServerProvider = ({ children }) => {
    * @param {string} zoneName - Zone name
    * @returns {Promise<Object>} VNC stop result
    */
-  const stopVncSession = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/vnc/stop`, 'DELETE');
-  };
+  const stopVncSession = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/vnc/stop`,
+      "DELETE"
+    );
 
   /**
    * Get all VNC sessions
@@ -539,9 +659,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (status, zone_name)
    * @returns {Promise<Object>} VNC sessions list
    */
-  const getAllVncSessions = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'vnc/sessions', 'GET', null, filters);
-  };
+  const getAllVncSessions = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "vnc/sessions",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Start zlogin console session for a zone
@@ -554,13 +681,16 @@ export const ServerProvider = ({ children }) => {
   const startZloginSession = async (hostname, port, protocol, zoneName) => {
     // Use specific handler (like HOST terminal) instead of general proxy to get websocket_url
     try {
-      const response = await axios.post(`/api/servers/${hostname}:${port}/zones/${zoneName}/zlogin/start`);
+      const response = await axios.post(
+        `/api/servers/${hostname}:${port}/zones/${zoneName}/zlogin/start`
+      );
       return { success: true, data: response.data };
     } catch (error) {
-      console.error('Start zlogin session error:', error);
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Failed to start zlogin session' 
+      console.error("Start zlogin session error:", error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to start zlogin session",
       };
     }
   };
@@ -573,9 +703,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} sessionId - Zlogin session ID
    * @returns {Promise<Object>} Zlogin session info
    */
-  const getZloginSessionInfo = async (hostname, port, protocol, sessionId) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zlogin/sessions/${sessionId}`);
-  };
+  const getZloginSessionInfo = async (hostname, port, protocol, sessionId) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zlogin/sessions/${sessionId}`
+    );
 
   /**
    * Stop zlogin console session for a zone
@@ -585,9 +719,14 @@ export const ServerProvider = ({ children }) => {
    * @param {string} sessionId - Zlogin session ID
    * @returns {Promise<Object>} Zlogin stop result
    */
-  const stopZloginSession = async (hostname, port, protocol, sessionId) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zlogin/sessions/${sessionId}/stop`, 'DELETE');
-  };
+  const stopZloginSession = async (hostname, port, protocol, sessionId) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zlogin/sessions/${sessionId}/stop`,
+      "DELETE"
+    );
 
   /**
    * Get all zlogin sessions
@@ -597,9 +736,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (status, zone_name)
    * @returns {Promise<Object>} Zlogin sessions list
    */
-  const getAllZloginSessions = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'zlogin/sessions', 'GET', null, filters);
-  };
+  const getAllZloginSessions = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "zlogin/sessions",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Get zone configuration
@@ -609,9 +755,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} zoneName - Zone name
    * @returns {Promise<Object>} Zone configuration
    */
-  const getZoneConfig = async (hostname, port, protocol, zoneName) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `zones/${zoneName}/config`);
-  };
+  const getZoneConfig = async (hostname, port, protocol, zoneName) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `zones/${zoneName}/config`
+    );
 
   // ========================================
   // HOST MONITORING FUNCTIONS
@@ -624,9 +774,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Monitoring service status
    */
-  const getMonitoringStatus = async (hostname, port, protocol) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/status');
-  };
+  const getMonitoringStatus = async (hostname, port, protocol) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/status"
+    );
 
   /**
    * Get monitoring service health check
@@ -635,9 +789,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Monitoring health information
    */
-  const getMonitoringHealth = async (hostname, port, protocol) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/health');
-  };
+  const getMonitoringHealth = async (hostname, port, protocol) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/health"
+    );
 
   /**
    * Trigger immediate data collection
@@ -647,9 +805,20 @@ export const ServerProvider = ({ children }) => {
    * @param {string} type - Collection type (all, network, storage)
    * @returns {Promise<Object>} Collection result
    */
-  const triggerMonitoringCollection = async (hostname, port, protocol, type = 'all') => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/collect', 'POST', { type });
-  };
+  const triggerMonitoringCollection = async (
+    hostname,
+    port,
+    protocol,
+    type = "all"
+  ) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/collect",
+      "POST",
+      { type }
+    );
 
   /**
    * Get host information
@@ -661,7 +830,15 @@ export const ServerProvider = ({ children }) => {
    */
   const getMonitoringHost = async (hostname, port, protocol, host = null) => {
     const params = host ? { host } : null;
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/host', 'GET', null, params);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/host",
+      "GET",
+      null,
+      params
+    );
   };
 
   /**
@@ -671,9 +848,13 @@ export const ServerProvider = ({ children }) => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Monitoring summary
    */
-  const getMonitoringSummary = async (hostname, port, protocol) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/summary');
-  };
+  const getMonitoringSummary = async (hostname, port, protocol) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/summary"
+    );
 
   // ========================================
   // NETWORK MONITORING FUNCTIONS
@@ -687,9 +868,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (limit, offset, host, state)
    * @returns {Promise<Object>} Network interface data
    */
-  const getNetworkInterfaces = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/interfaces', 'GET', null, filters);
-  };
+  const getNetworkInterfaces = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/network/interfaces",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Get network usage accounting data
@@ -699,9 +887,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (limit, since, link)
    * @returns {Promise<Object>} Network usage data
    */
-  const getNetworkUsage = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/usage', 'GET', null, filters);
-  };
+  const getNetworkUsage = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/network/usage",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Get IP address assignments
@@ -711,9 +906,21 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (limit, offset, interface, ip_version, state)
    * @returns {Promise<Object>} IP address data
    */
-  const getNetworkIPAddresses = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/ipaddresses', 'GET', null, filters);
-  };
+  const getNetworkIPAddresses = async (
+    hostname,
+    port,
+    protocol,
+    filters = {}
+  ) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/network/ipaddresses",
+      "GET",
+      null,
+      filters
+    );
 
   /**
    * Get routing table information
@@ -723,9 +930,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (limit, offset, interface, ip_version, is_default, destination)
    * @returns {Promise<Object>} Routing table data
    */
-  const getNetworkRoutes = async (hostname, port, protocol, filters = {}) => {
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/network/routes', 'GET', null, filters);
-  };
+  const getNetworkRoutes = async (hostname, port, protocol, filters = {}) =>
+    await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/network/routes",
+      "GET",
+      null,
+      filters
+    );
 
   // ========================================
   // DEVICE MANAGEMENT FUNCTIONS
@@ -741,7 +955,15 @@ export const ServerProvider = ({ children }) => {
    */
   const getHostDevices = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 DEVICES: Getting host devices from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "host/devices",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -752,9 +974,24 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} filters - Filter options (category, ppt_only)
    * @returns {Promise<Object>} Available devices data
    */
-  const getAvailableDevices = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 DEVICES: Getting available devices from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices/available', 'GET', null, filters);
+  const getAvailableDevices = async (
+    hostname,
+    port,
+    protocol,
+    filters = {}
+  ) => {
+    console.log(
+      `🔍 DEVICES: Getting available devices from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "host/devices/available",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -765,8 +1002,15 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Device categories data
    */
   const getDeviceCategories = async (hostname, port, protocol) => {
-    console.log(`🔍 DEVICES: Getting device categories from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices/categories');
+    console.log(
+      `🔍 DEVICES: Getting device categories from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "host/devices/categories"
+    );
   };
 
   /**
@@ -778,7 +1022,12 @@ export const ServerProvider = ({ children }) => {
    */
   const getPPTStatus = async (hostname, port, protocol) => {
     console.log(`🔍 DEVICES: Getting PPT status from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/ppt-status');
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "host/ppt-status"
+    );
   };
 
   /**
@@ -789,8 +1038,16 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Device discovery result
    */
   const refreshDeviceDiscovery = async (hostname, port, protocol) => {
-    console.log(`🔄 DEVICES: Refreshing device discovery on ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'host/devices/refresh', 'POST');
+    console.log(
+      `🔄 DEVICES: Refreshing device discovery on ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "host/devices/refresh",
+      "POST"
+    );
   };
 
   /**
@@ -802,8 +1059,15 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Device details
    */
   const getDeviceDetails = async (hostname, port, protocol, deviceId) => {
-    console.log(`🔍 DEVICES: Getting device details for ${deviceId} from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, `host/devices/${deviceId}`);
+    console.log(
+      `🔍 DEVICES: Getting device details for ${deviceId} from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      `host/devices/${deviceId}`
+    );
   };
 
   // ========================================
@@ -820,7 +1084,15 @@ export const ServerProvider = ({ children }) => {
    */
   const getStoragePools = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage pools from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/pools', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/storage/pools",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -832,8 +1104,18 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} ZFS dataset data
    */
   const getStorageDatasets = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 STORAGE: Getting storage datasets from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/datasets', 'GET', null, filters);
+    console.log(
+      `🔍 STORAGE: Getting storage datasets from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/storage/datasets",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -846,7 +1128,15 @@ export const ServerProvider = ({ children }) => {
    */
   const getStorageDisks = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 STORAGE: Getting storage disks from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/disks', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/storage/disks",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -858,8 +1148,18 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Pool I/O performance data
    */
   const getStoragePoolIO = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 STORAGE: Getting storage pool I/O from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/pool-io', 'GET', null, filters);
+    console.log(
+      `🔍 STORAGE: Getting storage pool I/O from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/storage/pool-io",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -871,8 +1171,18 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Disk I/O performance data
    */
   const getStorageDiskIO = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 STORAGE: Getting storage disk I/O from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/disk-io', 'GET', null, filters);
+    console.log(
+      `🔍 STORAGE: Getting storage disk I/O from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/storage/disk-io",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -884,8 +1194,18 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} ZFS ARC statistics data
    */
   const getStorageARC = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 STORAGE: Getting storage ARC statistics from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/storage/arc', 'GET', null, filters);
+    console.log(
+      `🔍 STORAGE: Getting storage ARC statistics from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/storage/arc",
+      "GET",
+      null,
+      filters
+    );
   };
 
   // ========================================
@@ -902,7 +1222,15 @@ export const ServerProvider = ({ children }) => {
    */
   const getSystemCPU = async (hostname, port, protocol, filters = {}) => {
     console.log(`🔍 SYSTEM: Getting CPU statistics from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/system/cpu', 'GET', null, filters);
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/system/cpu",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -914,8 +1242,18 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} Per-core CPU data
    */
   const getSystemCPUCores = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 SYSTEM: Getting per-core CPU statistics from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/system/cpu/cores', 'GET', null, filters);
+    console.log(
+      `🔍 SYSTEM: Getting per-core CPU statistics from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/system/cpu/cores",
+      "GET",
+      null,
+      filters
+    );
   };
 
   /**
@@ -927,8 +1265,18 @@ export const ServerProvider = ({ children }) => {
    * @returns {Promise<Object>} System memory data
    */
   const getSystemMemory = async (hostname, port, protocol, filters = {}) => {
-    console.log(`🔍 SYSTEM: Getting memory statistics from ${hostname}:${port}`);
-    return await makeZoneweaverAPIRequest(hostname, port, protocol, 'monitoring/system/memory', 'GET', null, filters);
+    console.log(
+      `🔍 SYSTEM: Getting memory statistics from ${hostname}:${port}`
+    );
+    return await makeZoneweaverAPIRequest(
+      hostname,
+      port,
+      protocol,
+      "monitoring/system/memory",
+      "GET",
+      null,
+      filters
+    );
   };
 
   // ========================================
@@ -936,23 +1284,57 @@ export const ServerProvider = ({ children }) => {
   // ========================================
 
   const getApiKeys = async () => {
-    if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys?include_key=true', 'GET');
+    if (!currentServer) {
+      return { success: false, message: "No server selected" };
+    }
+    return await makeZoneweaverAPIRequest(
+      currentServer.hostname,
+      currentServer.port,
+      currentServer.protocol,
+      "api-keys?include_key=true",
+      "GET"
+    );
   };
 
   const generateApiKey = async (name, description) => {
-    if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys/generate', 'POST', { name, description });
+    if (!currentServer) {
+      return { success: false, message: "No server selected" };
+    }
+    return await makeZoneweaverAPIRequest(
+      currentServer.hostname,
+      currentServer.port,
+      currentServer.protocol,
+      "api-keys/generate",
+      "POST",
+      { name, description }
+    );
   };
 
   const bootstrapApiKey = async () => {
-    if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, 'api-keys/bootstrap', 'POST', { name: 'Initial-Setup', description: 'Initial bootstrap API key' });
+    if (!currentServer) {
+      return { success: false, message: "No server selected" };
+    }
+    return await makeZoneweaverAPIRequest(
+      currentServer.hostname,
+      currentServer.port,
+      currentServer.protocol,
+      "api-keys/bootstrap",
+      "POST",
+      { name: "Initial-Setup", description: "Initial bootstrap API key" }
+    );
   };
 
   const deleteApiKey = async (id) => {
-    if (!currentServer) return { success: false, message: "No server selected" };
-    return await makeZoneweaverAPIRequest(currentServer.hostname, currentServer.port, currentServer.protocol, `api-keys/${id}`, 'DELETE');
+    if (!currentServer) {
+      return { success: false, message: "No server selected" };
+    }
+    return await makeZoneweaverAPIRequest(
+      currentServer.hostname,
+      currentServer.port,
+      currentServer.protocol,
+      `api-keys/${id}`,
+      "DELETE"
+    );
   };
 
   const value = {
@@ -1024,13 +1406,11 @@ export const ServerProvider = ({ children }) => {
     getApiKeys,
     generateApiKey,
     bootstrapApiKey,
-    deleteApiKey
+    deleteApiKey,
   };
 
   return (
-    <ServerContext.Provider value={value}>
-      {children}
-    </ServerContext.Provider>
+    <ServerContext.Provider value={value}>{children}</ServerContext.Provider>
   );
 };
 

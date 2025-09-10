@@ -1,6 +1,7 @@
-import { useContext } from "react";
 import PropTypes from "prop-types";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { UserSettings } from "../contexts/UserSettingsContext";
 
 const DashEntryDropDown = ({ title, icon }) => {
@@ -65,7 +66,7 @@ const DashEntryDropDown = ({ title, icon }) => {
           >
             <span>
               <span className="icon">
-                <i className={icon}></i>
+                <i className={icon} />
               </span>
               <span>{title}</span>
             </span>
@@ -77,7 +78,7 @@ const DashEntryDropDown = ({ title, icon }) => {
               <i
                 className={`fas fa-angle-${isExpanded ? "up" : "down"}`}
                 aria-hidden="false"
-              ></i>
+              />
             </span>
           </a>
         </p>
@@ -87,7 +88,7 @@ const DashEntryDropDown = ({ title, icon }) => {
   return (
     <button className="button" onClick={handleToggle}>
       <span className="icon">
-        <i className={icon}></i>
+        <i className={icon} />
       </span>
     </button>
   );

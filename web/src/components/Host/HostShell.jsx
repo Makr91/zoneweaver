@@ -1,12 +1,13 @@
+import { AttachAddon } from "@xterm/addon-attach";
+import { ClipboardAddon } from "@xterm/addon-clipboard";
+import { FitAddon } from "@xterm/addon-fit";
+import { SearchAddon } from "@xterm/addon-search";
+import { SerializeAddon } from "@xterm/addon-serialize";
+import { WebLinksAddon } from "@xterm/addon-web-links";
+import { WebglAddon } from "@xterm/addon-webgl";
 import { useEffect, useState, useRef } from "react";
 import { useXTerm } from "react-xtermjs";
-import { FitAddon } from "@xterm/addon-fit";
-import { AttachAddon } from "@xterm/addon-attach";
-import { WebLinksAddon } from "@xterm/addon-web-links";
-import { SerializeAddon } from "@xterm/addon-serialize";
-import { ClipboardAddon } from "@xterm/addon-clipboard";
-import { SearchAddon } from "@xterm/addon-search";
-import { WebglAddon } from "@xterm/addon-webgl";
+
 import { useFooter } from "../../contexts/FooterContext";
 
 const HostShell = () => {
@@ -56,7 +57,7 @@ const HostShell = () => {
 
         if (addonsRef.current.webglAddon) {
           try {
-            addonsRef.current.webglAddon.onContextLoss?.(() => 
+            addonsRef.current.webglAddon.onContextLoss?.(() =>
               addonsRef.current.webglAddon.dispose()
             );
             instance.loadAddon(addonsRef.current.webglAddon);
@@ -71,13 +72,12 @@ const HostShell = () => {
   }, [instance]);
 
   useEffect(() => {
-
     if (!instance || !session?.websocket) {
       setIsReady(false);
       return;
     }
 
-    const websocket = session.websocket;
+    const { websocket } = session;
 
     const checkConnection = () => {
       if (websocket.readyState === WebSocket.OPEN) {
@@ -102,12 +102,12 @@ const HostShell = () => {
       setIsReady(false);
     };
 
-    websocket.addEventListener('open', onOpen);
-    websocket.addEventListener('close', onClose);
+    websocket.addEventListener("open", onOpen);
+    websocket.addEventListener("close", onClose);
 
     return () => {
-      websocket.removeEventListener('open', onOpen);
-      websocket.removeEventListener('close', onClose);
+      websocket.removeEventListener("open", onOpen);
+      websocket.removeEventListener("close", onClose);
     };
   }, [instance, session?.websocket]);
 
@@ -129,7 +129,7 @@ const HostShell = () => {
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
           <div className="icon is-large mb-2">
-            <i className="fas fa-terminal fa-2x"></i>
+            <i className="fas fa-terminal fa-2x" />
           </div>
           <p>No session available</p>
           <p className="is-size-7 has-text-grey">
@@ -145,12 +145,10 @@ const HostShell = () => {
       <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
         <div className="has-text-centered">
           <div className="icon is-large mb-2">
-            <i className="fas fa-terminal fa-2x fa-pulse"></i>
+            <i className="fas fa-terminal fa-2x fa-pulse" />
           </div>
           <p>Loading terminal...</p>
-          <p className="is-size-7 has-text-grey">
-            Initializing xterm.js
-          </p>
+          <p className="is-size-7 has-text-grey">Initializing xterm.js</p>
         </div>
       </div>
     );
@@ -158,14 +156,11 @@ const HostShell = () => {
 
   return (
     <div className="is-fullheight is-fullwidth is-flex is-flex-direction-column">
-      <div
-        ref={ref}
-        className="is-fullheight is-fullwidth is-flex-grow-1"
-      />
-      
+      <div ref={ref} className="is-fullheight is-fullwidth is-flex-grow-1" />
+
       {!isReady && (
         <div className="notification is-dark is-small is-pulled-right mt-1 mr-1">
-          <i className="fas fa-plug fa-pulse mr-1"></i>
+          <i className="fas fa-plug fa-pulse mr-1" />
           {session?.websocket?.readyState === WebSocket.CONNECTING
             ? "Connecting..."
             : "Waiting for server"}

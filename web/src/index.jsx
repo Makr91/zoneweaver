@@ -1,9 +1,10 @@
+import axios from "axios";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import reportWebVitals from "./reportWebVitals";
-import axios from "axios";
 import { register } from "register-service-worker";
+
 import App from "./App";
+import reportWebVitals from "./reportWebVitals";
 
 import "./sass/zoneweaver.scss";
 import "@fortawesome/fontawesome-free/css/fontawesome.css";
@@ -13,34 +14,36 @@ import "@fortawesome/fontawesome-free/css/solid.css";
 
 axios.defaults.withCredentials = true;
 
-console.log(`${__APP_NAME__ || 'Zoneweaver'} ${__APP_VERSION__ || '1.0.0'}`);
+console.log(`${__APP_NAME__ || "Zoneweaver"} ${__APP_VERSION__ || "1.0.0"}`);
 
 // Register service worker for PWA functionality
 if (import.meta.env.PROD) {
-  register('/ui/sw.js', {
-    registrationOptions: { scope: '/ui/' },
+  register("/ui/sw.js", {
+    registrationOptions: { scope: "/ui/" },
     ready(registration) {
-      console.log('Service worker is active.');
+      console.log("Service worker is active.");
     },
     registered(registration) {
-      console.log('Service worker has been registered.');
+      console.log("Service worker has been registered.");
     },
     cached(registration) {
-      console.log('Content has been cached for offline use.');
+      console.log("Content has been cached for offline use.");
     },
     updatefound(registration) {
-      console.log('New content is downloading.');
+      console.log("New content is downloading.");
     },
     updated(registration) {
-      console.log('New content is available; please refresh.');
+      console.log("New content is available; please refresh.");
       // You could show a toast notification here asking user to refresh
     },
     offline() {
-      console.log('No internet connection found. App is running in offline mode.');
+      console.log(
+        "No internet connection found. App is running in offline mode."
+      );
     },
     error(error) {
-      console.error('Error during service worker registration:', error);
-    }
+      console.error("Error during service worker registration:", error);
+    },
   });
 }
 

@@ -1,13 +1,12 @@
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
-import Landing from "./components/Landing";
-import Register from "./components/Register";
-import Login from "./components/Login";
 import AuthCallback from "./components/AuthCallback";
+import Landing from "./components/Landing";
 import Layout from "./components/Layout";
+import Login from "./components/Login";
+import Register from "./components/Register";
 import ServerSetup from "./components/ServerSetup";
-
 import { AuthProvider } from "./contexts/AuthContext";
 import { ServerProvider } from "./contexts/ServerContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -32,7 +31,10 @@ function App() {
                     <Route exact path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/setup" element={<ServerSetup />} />
-                    <Route path="/ui/auth/callback" element={<AuthCallback />} />
+                    <Route
+                      path="/ui/auth/callback"
+                      element={<AuthCallback />}
+                    />
                     <Route
                       path="/ui/settings"
                       element={<Navigate to="/ui/settings/zoneweaver" />}

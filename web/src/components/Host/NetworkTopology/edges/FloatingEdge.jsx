@@ -1,8 +1,20 @@
-import React from 'react';
-import { getBezierPath, useInternalNode, EdgeLabelRenderer } from '@xyflow/react';
-import { getEdgeParams } from '../utils/edgeUtils';
+import {
+  getBezierPath,
+  useInternalNode,
+  EdgeLabelRenderer,
+} from "@xyflow/react";
+import React from "react";
 
-const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) => {
+import { getEdgeParams } from "../utils/edgeUtils";
+
+const FloatingEdge = ({
+  id,
+  source,
+  target,
+  markerEnd,
+  style = {},
+  data = {},
+}) => {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
 
@@ -10,20 +22,24 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
     return null;
   }
 
-  const { bandwidth = {}, flowDirection = 'rx', linkSpeed = 1000 } = data;
+  const { bandwidth = {}, flowDirection = "rx", linkSpeed = 1000 } = data;
   const currentMbps = bandwidth?.totalMbps || 0;
 
   // Calculate utilization-based color with temperature gradient
   const getUtilizationColor = () => {
     const utilization = Math.min((currentMbps / linkSpeed) * 100, 100);
-    
+
     // Temperature gradient: Blue (cold) -> Cyan -> Green -> Yellow -> Orange -> Red (hot)
     // Brightened for better visibility on dark backgrounds
-    if (utilization === 0) return '#3b82f6'; // Bright blue for idle
-    
+    if (utilization === 0) {
+      return "#3b82f6";
+    } // Bright blue for idle
+
     // Smooth HSL interpolation for temperature gradient
-    let hue, saturation, lightness;
-    
+    let hue;
+    let saturation;
+    let lightness;
+
     if (utilization <= 10) {
       // Bright blue to blue (240° to 220°)
       hue = 240 - (utilization / 10) * 20;
@@ -60,7 +76,7 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
       saturation = 95 + t * 5;
       lightness = 60 - t * 10;
     }
-    
+
     return `hsl(${Math.round(hue)}, ${Math.round(saturation)}%, ${Math.round(lightness)}%)`;
   };
 
@@ -82,18 +98,32 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
   // Calculate stroke width based on utilization percentage
   const getStrokeWidth = () => {
     const utilization = (currentMbps / linkSpeed) * 100;
-    if (utilization <= 0) return 1;
-    if (utilization <= 10) return 2;
-    if (utilization <= 25) return 3;
-    if (utilization <= 50) return 4;
-    if (utilization <= 75) return 5;
-    if (utilization <= 90) return 6;
+    if (utilization <= 0) {
+      return 1;
+    }
+    if (utilization <= 10) {
+      return 2;
+    }
+    if (utilization <= 25) {
+      return 3;
+    }
+    if (utilization <= 50) {
+      return 4;
+    }
+    if (utilization <= 75) {
+      return 5;
+    }
+    if (utilization <= 90) {
+      return 6;
+    }
     return 8; // Overloaded
   };
 
   // Calculate animation duration based on actual bandwidth (more traffic = faster)
   const getAnimationDuration = () => {
-    if (currentMbps <= 0) return '6s';
+    if (currentMbps <= 0) {
+      return "6s";
+    }
     // Logarithmic scale for smoother transitions
     const speed = Math.max(0.5, 4 - Math.log10(currentMbps + 1) * 1.5);
     return `${speed.toFixed(1)}s`;
@@ -101,26 +131,48 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
 
   // Calculate particle size based on bandwidth
   const getParticleSize = () => {
-    if (currentMbps <= 0) return 2;
-    if (currentMbps <= 1) return 2.5;
-    if (currentMbps <= 10) return 3;
-    if (currentMbps <= 100) return 4;
-    if (currentMbps <= 1000) return 5;
+    if (currentMbps <= 0) {
+      return 2;
+    }
+    if (currentMbps <= 1) {
+      return 2.5;
+    }
+    if (currentMbps <= 10) {
+      return 3;
+    }
+    if (currentMbps <= 100) {
+      return 4;
+    }
+    if (currentMbps <= 1000) {
+      return 5;
+    }
     return 6;
   };
 
   // Calculate number of particles based on traffic intensity
   const getParticleCount = () => {
-    if (currentMbps <= 0) return 1;
-    if (currentMbps <= 1) return 1;
-    if (currentMbps <= 10) return 2;
-    if (currentMbps <= 100) return 3;
-    if (currentMbps <= 1000) return 4;
+    if (currentMbps <= 0) {
+      return 1;
+    }
+    if (currentMbps <= 1) {
+      return 1;
+    }
+    if (currentMbps <= 10) {
+      return 2;
+    }
+    if (currentMbps <= 100) {
+      return 3;
+    }
+    if (currentMbps <= 1000) {
+      return 4;
+    }
     return 5;
   };
 
   const formatBandwidth = (bw) => {
-    if (!bw) return '0';
+    if (!bw) {
+      return "0";
+    }
     if (bw >= 1000) {
       return `${(bw / 1000).toFixed(1)}G`;
     }
@@ -130,8 +182,8 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
   const edgeColor = getUtilizationColor();
   const strokeWidth = getStrokeWidth();
   const animationDuration = getAnimationDuration();
-  const directionSymbol = flowDirection === 'rx' ? '↓' : '↑';
-  const directionColor = flowDirection === 'rx' ? '#48c78e' : '#3273dc';
+  const directionSymbol = flowDirection === "rx" ? "↓" : "↑";
+  const directionColor = flowDirection === "rx" ? "#48c78e" : "#3273dc";
 
   return (
     <>
@@ -143,12 +195,12 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
         markerEnd={markerEnd}
         style={{
           stroke: edgeColor,
-          strokeWidth: strokeWidth,
-          fill: 'none',
+          strokeWidth,
+          fill: "none",
           opacity: currentMbps > 0 ? 0.8 : 0.4,
-          strokeDasharray: currentMbps > 0 ? 'none' : '5,5',
-          transition: 'stroke 1s ease, stroke-width 1s ease, opacity 1s ease',
-          ...style
+          strokeDasharray: currentMbps > 0 ? "none" : "5,5",
+          transition: "stroke 1s ease, stroke-width 1s ease, opacity 1s ease",
+          ...style,
         }}
       />
 
@@ -160,11 +212,11 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
             const particleSize = getParticleSize() - index * 0.5; // Decreasing size
             const delay = (index * 0.4).toFixed(1); // Staggered timing
             const opacity = 0.9 - index * 0.15; // Decreasing opacity
-            
+
             return (
-              <circle 
+              <circle
                 key={`particle-${index}`}
-                r={Math.max(1, particleSize)} 
+                r={Math.max(1, particleSize)}
                 fill={directionColor}
                 opacity={Math.max(0.3, opacity)}
               >
@@ -177,14 +229,10 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
               </circle>
             );
           })}
-          
+
           {/* Additional pulse effect for high traffic */}
           {currentMbps > 100 && (
-            <circle 
-              r={getParticleSize() + 2}
-              fill={edgeColor}
-              opacity="0.3"
-            >
+            <circle r={getParticleSize() + 2} fill={edgeColor} opacity="0.3">
               <animateMotion
                 dur={`${parseFloat(animationDuration) * 0.7}s`}
                 repeatCount="indefinite"
@@ -209,11 +257,12 @@ const FloatingEdge = ({ id, source, target, markerEnd, style = {}, data = {} }) 
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               border: `1px solid ${edgeColor}`,
-              color: directionColor
+              color: directionColor,
             }}
             className="nodrag nopan zw-floating-edge-label"
           >
-            {directionSymbol}{formatBandwidth(currentMbps)}
+            {directionSymbol}
+            {formatBandwidth(currentMbps)}
           </div>
         </EdgeLabelRenderer>
       )}

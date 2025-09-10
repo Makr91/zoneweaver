@@ -1,23 +1,35 @@
-import { useState, useEffect } from 'react';
-import FormModal from '../../common/FormModal';
-import { isArchiveFile, getArchiveFormat, getPathFromFile } from './FileManagerTransforms';
+import { useState, useEffect } from "react";
+
+import FormModal from "../../common/FormModal";
+
+import {
+  isArchiveFile,
+  getArchiveFormat,
+  getPathFromFile,
+} from "./FileManagerTransforms";
 
 /**
  * Archive Creation Modal
  */
-const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, onSuccess }) => {
-  const [archiveName, setArchiveName] = useState('');
-  const [format, setFormat] = useState('tar.gz');
+const CreateArchiveModal = ({
+  isOpen,
+  onClose,
+  selectedFiles,
+  currentPath,
+  api,
+  onSuccess,
+}) => {
+  const [archiveName, setArchiveName] = useState("");
+  const [format, setFormat] = useState("tar.gz");
   const [destination, setDestination] = useState(currentPath);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen && selectedFiles.length > 0) {
       // Generate default archive name based on selection
-      const baseName = selectedFiles.length === 1 
-        ? selectedFiles[0].name 
-        : 'archive';
+      const baseName =
+        selectedFiles.length === 1 ? selectedFiles[0].name : "archive";
       setArchiveName(`${baseName}.${format}`);
     }
   }, [isOpen, selectedFiles, format]);
@@ -28,28 +40,32 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!archiveName.trim()) {
-      setError('Archive name is required');
+      setError("Archive name is required");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const archivePath = `${destination}/${archiveName}`;
-      const result = await api.createArchive(selectedFiles, archivePath, format);
-      
+      const result = await api.createArchive(
+        selectedFiles,
+        archivePath,
+        format
+      );
+
       if (result.success) {
         onSuccess(result);
         onClose();
       } else {
-        setError(result.message || 'Failed to create archive');
+        setError(result.message || "Failed to create archive");
       }
     } catch (error) {
-      console.error('Error creating archive:', error);
-      setError('Failed to create archive: ' + error.message);
+      console.error("Error creating archive:", error);
+      setError(`Failed to create archive: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -58,7 +74,10 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
   const handleFormatChange = (newFormat) => {
     setFormat(newFormat);
     // Update archive name with new extension
-    const nameWithoutExt = archiveName.replace(/\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i, '');
+    const nameWithoutExt = archiveName.replace(
+      /\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i,
+      ""
+    );
     setArchiveName(`${nameWithoutExt}.${newFormat}`);
   };
 
@@ -73,7 +92,7 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
       submitVariant="is-primary"
       submitIcon="fas fa-plus"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       className="is-medium"
     >
       {/* Selected files info */}
@@ -94,7 +113,7 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
       {/* Error display */}
       {error && (
         <div className="notification is-danger">
-          <button className="delete is-small" onClick={() => setError('')}></button>
+          <button className="delete is-small" onClick={() => setError("")} />
           {error}
         </div>
       )}
@@ -112,7 +131,9 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
             required
           />
         </div>
-        <p className="help">The archive will be created in the current directory</p>
+        <p className="help">
+          The archive will be created in the current directory
+        </p>
       </div>
 
       {/* Format selection */}
@@ -120,7 +141,10 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
         <label className="label">Archive Format</label>
         <div className="control">
           <div className="select is-fullwidth">
-            <select value={format} onChange={(e) => handleFormatChange(e.target.value)}>
+            <select
+              value={format}
+              onChange={(e) => handleFormatChange(e.target.value)}
+            >
               <option value="tar.gz">tar.gz (Compressed tar archive)</option>
               <option value="tar.bz2">tar.bz2 (BZip2 compressed tar)</option>
               <option value="tar">tar (Uncompressed tar archive)</option>
@@ -153,10 +177,17 @@ const CreateArchiveModal = ({ isOpen, onClose, selectedFiles, currentPath, api, 
 /**
  * Archive Extraction Modal
  */
-const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, onSuccess }) => {
+const ExtractArchiveModal = ({
+  isOpen,
+  onClose,
+  archiveFile,
+  currentPath,
+  api,
+  onSuccess,
+}) => {
   const [destination, setDestination] = useState(currentPath);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setDestination(currentPath);
@@ -166,31 +197,33 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
     e.preventDefault();
 
     if (!destination.trim()) {
-      setError('Destination path is required');
+      setError("Destination path is required");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const result = await api.extractArchive(archiveFile, destination);
-      
+
       if (result.success) {
         onSuccess(result);
         onClose();
       } else {
-        setError(result.message || 'Failed to extract archive');
+        setError(result.message || "Failed to extract archive");
       }
     } catch (error) {
-      console.error('Error extracting archive:', error);
-      setError('Failed to extract archive: ' + error.message);
+      console.error("Error extracting archive:", error);
+      setError(`Failed to extract archive: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!archiveFile) return null;
+  if (!archiveFile) {
+    return null;
+  }
 
   return (
     <FormModal
@@ -203,7 +236,7 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
       submitVariant="is-success"
       submitIcon="fas fa-expand-arrows-alt"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       className="is-medium"
     >
       {/* Archive info */}
@@ -214,7 +247,10 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
               <strong>Archive:</strong> {archiveFile.name}
             </div>
             <div className="column">
-              <strong>Size:</strong> {archiveFile.size ? `${Math.round(archiveFile.size / 1024)} KB` : 'Unknown'}
+              <strong>Size:</strong>{" "}
+              {archiveFile.size
+                ? `${Math.round(archiveFile.size / 1024)} KB`
+                : "Unknown"}
             </div>
             <div className="column">
               <strong>Format:</strong> {getArchiveFormat(archiveFile.name)}
@@ -226,7 +262,7 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
       {/* Error display */}
       {error && (
         <div className="notification is-danger">
-          <button className="delete is-small" onClick={() => setError('')}></button>
+          <button className="delete is-small" onClick={() => setError("")} />
           {error}
         </div>
       )}
@@ -244,7 +280,9 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
             required
           />
         </div>
-        <p className="help">Directory where the archive contents will be extracted</p>
+        <p className="help">
+          Directory where the archive contents will be extracted
+        </p>
       </div>
 
       {/* Quick destination options */}
@@ -262,11 +300,15 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
             type="button"
             className="button is-small"
             onClick={() => {
-              const archiveNameWithoutExt = archiveFile.name.replace(/\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i, '');
+              const archiveNameWithoutExt = archiveFile.name.replace(
+                /\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i,
+                ""
+              );
               setDestination(`${currentPath}/${archiveNameWithoutExt}`);
             }}
           >
-            New Folder ({archiveFile.name.replace(/\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i, '')})
+            New Folder (
+            {archiveFile.name.replace(/\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i, "")})
           </button>
         </div>
       </div>
@@ -277,42 +319,40 @@ const ExtractArchiveModal = ({ isOpen, onClose, archiveFile, currentPath, api, o
 /**
  * Combined Archive Modals Component
  */
-const ArchiveModals = ({ 
-  showCreateModal, 
-  showExtractModal, 
-  onCloseCreate, 
-  onCloseExtract, 
-  selectedFiles, 
-  archiveFile, 
-  currentPath, 
-  api, 
-  onArchiveSuccess 
-}) => {
-  return (
-    <>
-      {showCreateModal && (
-        <CreateArchiveModal
-          isOpen={showCreateModal}
-          onClose={onCloseCreate}
-          selectedFiles={selectedFiles}
-          currentPath={currentPath}
-          api={api}
-          onSuccess={onArchiveSuccess}
-        />
-      )}
-      
-      {showExtractModal && archiveFile && (
-        <ExtractArchiveModal
-          isOpen={showExtractModal}
-          onClose={onCloseExtract}
-          archiveFile={archiveFile}
-          currentPath={currentPath}
-          api={api}
-          onSuccess={onArchiveSuccess}
-        />
-      )}
-    </>
-  );
-};
+const ArchiveModals = ({
+  showCreateModal,
+  showExtractModal,
+  onCloseCreate,
+  onCloseExtract,
+  selectedFiles,
+  archiveFile,
+  currentPath,
+  api,
+  onArchiveSuccess,
+}) => (
+  <>
+    {showCreateModal && (
+      <CreateArchiveModal
+        isOpen={showCreateModal}
+        onClose={onCloseCreate}
+        selectedFiles={selectedFiles}
+        currentPath={currentPath}
+        api={api}
+        onSuccess={onArchiveSuccess}
+      />
+    )}
+
+    {showExtractModal && archiveFile && (
+      <ExtractArchiveModal
+        isOpen={showExtractModal}
+        onClose={onCloseExtract}
+        archiveFile={archiveFile}
+        currentPath={currentPath}
+        api={api}
+        onSuccess={onArchiveSuccess}
+      />
+    )}
+  </>
+);
 
 export default ArchiveModals;

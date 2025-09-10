@@ -1,6 +1,7 @@
-import React from 'react';
-import VncViewerReact from '../VncViewerReact';
-import VncActionsDropdown from '../VncActionsDropdown';
+import React from "react";
+
+import VncActionsDropdown from "../VncActionsDropdown";
+import VncViewerReact from "../VncViewerReact";
 
 const VncModal = ({
   showVncConsole,
@@ -30,46 +31,54 @@ const VncModal = ({
   handleVncCompressionChange,
   handleVncResizeChange,
   handleVncShowDotChange,
-  handleVncClipboardPaste
+  handleVncClipboardPaste,
 }) => {
   if (!showVncConsole) {
     return null;
   }
 
   return (
-    <div className='modal is-active has-z-index-modal'>
-      <div className='modal-background' onClick={closeVncConsole}></div>
-      <div 
-        className={isVncFullScreen ? 'zw-modal-container-fullscreen' : 'zw-modal-container-normal'}
+    <div className="modal is-active has-z-index-modal">
+      <div className="modal-background" onClick={closeVncConsole} />
+      <div
+        className={
+          isVncFullScreen
+            ? "zw-modal-container-fullscreen"
+            : "zw-modal-container-normal"
+        }
       >
-        <header 
-          className={`modal-card-head ${isVncFullScreen ? 'zw-modal-header-fullscreen' : 'zw-modal-header-normal'}`}
+        <header
+          className={`modal-card-head ${isVncFullScreen ? "zw-modal-header-fullscreen" : "zw-modal-header-normal"}`}
         >
-          <p 
-            className={`modal-card-title ${isVncFullScreen ? 'zw-modal-title-fullscreen' : 'zw-modal-title-normal'}`}
+          <p
+            className={`modal-card-title ${isVncFullScreen ? "zw-modal-title-fullscreen" : "zw-modal-title-normal"}`}
           >
-            <span className='icon-text'>
-              <span className='icon is-small'>
-                <i className='fas fa-terminal'></i>
+            <span className="icon-text">
+              <span className="icon is-small">
+                <i className="fas fa-terminal" />
               </span>
               <span>Console - {selectedZone}</span>
             </span>
           </p>
-          <div className='buttons m-0'>
+          <div className="buttons m-0">
             <VncActionsDropdown
               vncRef={modalVncRef}
               variant="button"
               onToggleReadOnly={() => {
                 // FIXED: Actually toggle modal VNC view-only mode
-                console.log(`🔧 VNC MODAL READ-ONLY: Toggling from ${modalVncViewOnly} to ${!modalVncViewOnly}`);
+                console.log(
+                  `🔧 VNC MODAL READ-ONLY: Toggling from ${modalVncViewOnly} to ${!modalVncViewOnly}`
+                );
                 setModalVncViewOnly(!modalVncViewOnly);
               }}
               onScreenshot={() => {
-                const vncContainer = document.querySelector('.vnc-viewer-react canvas');
+                const vncContainer = document.querySelector(
+                  ".vnc-viewer-react canvas"
+                );
                 if (vncContainer) {
                   vncContainer.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
+                    const a = document.createElement("a");
                     a.href = url;
                     a.download = `vnc-screenshot-${selectedZone}-${Date.now()}.png`;
                     document.body.appendChild(a);
@@ -82,7 +91,11 @@ const VncModal = ({
               onNewTab={() => handleVncConsole(selectedZone, true)}
               onKillSession={() => handleKillVncSession(selectedZone)}
               isReadOnly={modalVncViewOnly}
-              isAdmin={user?.role === 'admin' || user?.role === 'super-admin' || user?.role === 'organization-admin'}
+              isAdmin={
+                user?.role === "admin" ||
+                user?.role === "super-admin" ||
+                user?.role === "organization-admin"
+              }
               quality={vncSettings.quality}
               compression={vncSettings.compression}
               resize={vncSettings.resize}
@@ -94,18 +107,18 @@ const VncModal = ({
               onClipboardPaste={handleVncClipboardPaste}
             />
             {!modalVncViewOnly && (
-              <button 
-                className='button is-small is-info'
+              <button
+                className="button is-small is-info"
                 onClick={handleVncModalPaste}
                 title="Paste from Browser Clipboard"
               >
-                <span className='icon is-small'>
-                  <i className='fas fa-paste'></i>
+                <span className="icon is-small">
+                  <i className="fas fa-paste" />
                 </span>
               </button>
             )}
-            <button 
-              className='button is-small is-warning'
+            <button
+              className="button is-small is-warning"
               onClick={async () => {
                 if (zoneDetails.zlogin_session) {
                   closeVncConsole();
@@ -119,55 +132,70 @@ const VncModal = ({
                 }
               }}
               disabled={loading}
-              title={zoneDetails.zlogin_session ? "Switch to zlogin Console" : "Start zlogin Console"}
+              title={
+                zoneDetails.zlogin_session
+                  ? "Switch to zlogin Console"
+                  : "Start zlogin Console"
+              }
             >
-              <span className='icon is-small'>
-                <i className={`fas ${loading ? 'fa-spinner fa-pulse' : 'fa-terminal'}`}></i>
+              <span className="icon is-small">
+                <i
+                  className={`fas ${loading ? "fa-spinner fa-pulse" : "fa-terminal"}`}
+                />
               </span>
-              <span>{loading ? 'Starting...' : 'zlogin'}</span>
+              <span>{loading ? "Starting..." : "zlogin"}</span>
             </button>
-            <button 
-              className='button is-small is-info'
+            <button
+              className="button is-small is-info"
               onClick={openVncFullScreen}
               title={isVncFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
             >
-              <span className='icon'>
-                <i className={`fas ${isVncFullScreen ? 'fa-compress' : 'fa-expand'}`}></i>
+              <span className="icon">
+                <i
+                  className={`fas ${isVncFullScreen ? "fa-compress" : "fa-expand"}`}
+                />
               </span>
-              <span>{isVncFullScreen ? 'Exit' : 'Full'}</span>
+              <span>{isVncFullScreen ? "Exit" : "Full"}</span>
             </button>
-            <button 
-              className='button is-small'
+            <button
+              className="button is-small"
               onClick={closeVncConsole}
               title="Close Console"
             >
-              <span className='icon'>
-                <i className='fas fa-times'></i>
+              <span className="icon">
+                <i className="fas fa-times" />
               </span>
               <span>Exit</span>
             </button>
           </div>
         </header>
-        <section 
-          className='modal-card-body p-0 zw-modal-body'
-        >
+        <section className="modal-card-body p-0 zw-modal-body">
           {vncLoadError ? (
-            <div className='has-text-centered p-6 zw-error-container'>
-              <div className='icon is-large mb-3'>
-                <i className='fas fa-exclamation-triangle fa-3x has-text-warning'></i>
+            <div className="has-text-centered p-6 zw-error-container">
+              <div className="icon is-large mb-3">
+                <i className="fas fa-exclamation-triangle fa-3x has-text-warning" />
               </div>
-              <h4 className='title is-4'>VNC Console Loading Error</h4>
-              <p className='mb-4'>The VNC console failed to load in embedded mode. This could be due to proxy issues or browser compatibility.</p>
-              <div className='buttons is-centered'>
-                <button className='button is-warning' onClick={openDirectVncFallback}>
-                  <span className='icon'>
-                    <i className='fas fa-external-link-alt'></i>
+              <h4 className="title is-4">VNC Console Loading Error</h4>
+              <p className="mb-4">
+                The VNC console failed to load in embedded mode. This could be
+                due to proxy issues or browser compatibility.
+              </p>
+              <div className="buttons is-centered">
+                <button
+                  className="button is-warning"
+                  onClick={openDirectVncFallback}
+                >
+                  <span className="icon">
+                    <i className="fas fa-external-link-alt" />
                   </span>
                   <span>Open Direct VNC Console</span>
                 </button>
-                <button className='button' onClick={() => setVncLoadError(false)}>
-                  <span className='icon'>
-                    <i className='fas fa-redo'></i>
+                <button
+                  className="button"
+                  onClick={() => setVncLoadError(false)}
+                >
+                  <span className="icon">
+                    <i className="fas fa-redo" />
                   </span>
                   <span>Retry Embedded</span>
                 </button>
@@ -182,26 +210,33 @@ const VncModal = ({
               serverProtocol={currentServer.protocol}
               zoneName={selectedZone}
               viewOnly={modalVncViewOnly}
-              autoConnect={true}
+              autoConnect
               showControls={false}
               quality={vncSettings.quality}
               compression={vncSettings.compression}
               resize={vncSettings.resize}
               showDot={vncSettings.showDot}
-              resizeSession={vncSettings.resize === 'remote'}
-              onConnect={() => console.log('✅ VNC MODAL: Connected to VNC server')}
-              onDisconnect={(reason) => console.log('❌ VNC MODAL: Disconnected:', reason)}
+              resizeSession={vncSettings.resize === "remote"}
+              onConnect={() =>
+                console.log("✅ VNC MODAL: Connected to VNC server")
+              }
+              onDisconnect={(reason) =>
+                console.log("❌ VNC MODAL: Disconnected:", reason)
+              }
               onClipboard={(event) => {
-                console.log('📋 VNC MODAL: Clipboard received from server:', event);
+                console.log(
+                  "📋 VNC MODAL: Clipboard received from server:",
+                  event
+                );
               }}
               className="zw-vnc-container"
             />
           ) : loadingVnc ? (
-            <div className='has-text-centered p-6 zw-loading-container'>
-              <div className='icon is-large'>
-                <i className='fas fa-spinner fa-pulse fa-3x zw-loading-spinner'></i>
+            <div className="has-text-centered p-6 zw-loading-container">
+              <div className="icon is-large">
+                <i className="fas fa-spinner fa-pulse fa-3x zw-loading-spinner" />
               </div>
-              <p className='mt-3'>Starting VNC console...</p>
+              <p className="mt-3">Starting VNC console...</p>
             </div>
           ) : null}
         </section>

@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
-import VncConsoleDisplay from './VncConsoleDisplay';
-import ZloginConsoleDisplay from './ZloginConsoleDisplay';
-import InactiveConsoleDisplay from './InactiveConsoleDisplay';
+import React, { useRef } from "react";
+
+import InactiveConsoleDisplay from "./InactiveConsoleDisplay";
+import VncConsoleDisplay from "./VncConsoleDisplay";
+import ZloginConsoleDisplay from "./ZloginConsoleDisplay";
 
 const ConsoleDisplay = ({
   zoneDetails,
@@ -36,21 +37,21 @@ const ConsoleDisplay = ({
   handleVncResizeChange,
   handleVncShowDotChange,
   handleVncClipboardPaste,
-  setShowZloginConsole
+  setShowZloginConsole,
 }) => {
   const previewVncRef = useRef(null);
 
   const hasVnc = zoneDetails.active_vnc_session;
   const hasZlogin = zoneDetails.zlogin_session && zoneDetails.zlogin_session.id;
-  
+
   console.log(`🔍 CONSOLE DISPLAY: Determining which console to show:`, {
     hasVnc,
     hasZlogin,
     activeConsoleType,
     zloginSessionId: zoneDetails.zlogin_session?.id,
-    vncSessionInfo: hasVnc ? 'present' : 'absent',
+    vncSessionInfo: hasVnc ? "present" : "absent",
     vncSessionInfoExists: !!zoneDetails.vnc_session_info,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 
   // Common props for all console components
@@ -82,12 +83,14 @@ const ConsoleDisplay = ({
     handleVncResizeChange,
     handleVncShowDotChange,
     handleVncClipboardPaste,
-    setShowZloginConsole
+    setShowZloginConsole,
   };
 
   if (hasZlogin && !hasVnc) {
     // Only zlogin active → Show zlogin
-    console.log(`🔍 CONSOLE DISPLAY: Showing zlogin console (only zlogin active)`);
+    console.log(
+      `🔍 CONSOLE DISPLAY: Showing zlogin console (only zlogin active)`
+    );
     return (
       <ZloginConsoleDisplay
         {...commonProps}
@@ -110,39 +113,35 @@ const ConsoleDisplay = ({
     );
   } else if (hasVnc && hasZlogin) {
     // Both active → Show based on activeConsoleType
-    console.log(`🔍 CONSOLE DISPLAY: Both sessions active, showing ${activeConsoleType === 'zlogin' ? 'zlogin' : 'VNC'}`);
-    
-    if (activeConsoleType === 'zlogin') {
+    console.log(
+      `🔍 CONSOLE DISPLAY: Both sessions active, showing ${activeConsoleType === "zlogin" ? "zlogin" : "VNC"}`
+    );
+
+    if (activeConsoleType === "zlogin") {
       // Show zlogin (user switched to it)
       return (
         <ZloginConsoleDisplay
           {...commonProps}
           previewReadOnly={previewReadOnly}
           setPreviewReadOnly={setPreviewReadOnly}
-          hasVnc={true}
-        />
-      );
-    } else {
-      // Show VNC (default when both active)
-      return (
-        <VncConsoleDisplay
-          {...commonProps}
-          previewVncViewOnly={previewVncViewOnly}
-          setPreviewVncViewOnly={setPreviewVncViewOnly}
-          vncRef={previewVncRef}
-          hasZlogin={true}
+          hasVnc
         />
       );
     }
-  } else {
-    // Neither active → Show start buttons
-    console.log(`🔍 CONSOLE DISPLAY: Showing inactive console (no sessions)`);
+    // Show VNC (default when both active)
     return (
-      <InactiveConsoleDisplay
+      <VncConsoleDisplay
         {...commonProps}
+        previewVncViewOnly={previewVncViewOnly}
+        setPreviewVncViewOnly={setPreviewVncViewOnly}
+        vncRef={previewVncRef}
+        hasZlogin
       />
     );
   }
+  // Neither active → Show start buttons
+  console.log(`🔍 CONSOLE DISPLAY: Showing inactive console (no sessions)`);
+  return <InactiveConsoleDisplay {...commonProps} />;
 };
 
 export default React.memo(ConsoleDisplay);

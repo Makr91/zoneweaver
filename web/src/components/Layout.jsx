@@ -1,13 +1,15 @@
 import React, { useEffect, useContext, Suspense } from "react";
-import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import { ResizableBox } from "react-resizable";
-import Navbar from "./Navbar";
-import SideMenu from "./Sidemenu";
-import Footer from "./Footer";
+import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
+
 import { useAuth } from "../contexts/AuthContext";
+import { FooterProvider } from "../contexts/FooterContext";
 import { useServers } from "../contexts/ServerContext";
 import { UserSettings } from "../contexts/UserSettingsContext";
-import { FooterProvider } from "../contexts/FooterContext";
+
+import Footer from "./Footer";
+import Navbar from "./Navbar";
+import SideMenu from "./Sidemenu";
 
 const Dashboard = React.lazy(() => import("./Dashboard"));
 const ZoneweaverSettings = React.lazy(() => import("./ZoneweaverSettings"));
@@ -29,7 +31,7 @@ const LoadingSpinner = () => (
     <div className="hero-body">
       <div className="container has-text-centered">
         <div className="is-size-4">
-          <i className="fas fa-spinner fa-spin"></i>
+          <i className="fas fa-spinner fa-spin" />
         </div>
         <p className="mt-3">Loading...</p>
       </div>
@@ -46,7 +48,9 @@ const LayoutContent = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    if (!isAuthenticated || servers.length === 0) return;
+    if (!isAuthenticated || servers.length === 0) {
+      return;
+    }
 
     const sessionKey = `zw_url_params_processed_${window.location.pathname}${window.location.search}`;
     const alreadyProcessed = sessionStorage.getItem(sessionKey);
@@ -168,7 +172,7 @@ const Layout = () => {
         <div className="hero-body">
           <div className="container has-text-centered">
             <div className="is-size-3">
-              <i className="fas fa-spinner fa-spin"></i>
+              <i className="fas fa-spinner fa-spin" />
             </div>
             <p className="mt-3">Loading...</p>
           </div>

@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Helmet } from '@dr.pogodin/react-helmet';
-import { FormModal } from './common';
-import axios from 'axios';
+import { Helmet } from "@dr.pogodin/react-helmet";
+import axios from "axios";
+import { useState, useEffect, useMemo } from "react";
+
+import { useAuth } from "../contexts/AuthContext";
+
+import { FormModal } from "./common";
 
 /**
  * Accounts component for admin user management
@@ -12,43 +14,43 @@ const Accounts = () => {
   const { user } = useAuth();
   const [allUsers, setAllUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
-  const [newRole, setNewRole] = useState('');
+  const [newRole, setNewRole] = useState("");
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState('');
-  const [viewScope, setViewScope] = useState('organization'); // 'all' for super-admin, 'organization' for admin
+  const [msg, setMsg] = useState("");
+  const [viewScope, setViewScope] = useState("organization"); // 'all' for super-admin, 'organization' for admin
   const [deleteModalUser, setDeleteModalUser] = useState(null);
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
-  
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
   // Tab and organizations state
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState("users");
   const [organizations, setOrganizations] = useState([]);
   const [orgLoading, setOrgLoading] = useState(false);
-  const [orgMsg, setOrgMsg] = useState('');
+  const [orgMsg, setOrgMsg] = useState("");
   const [deleteModalOrg, setDeleteModalOrg] = useState(null);
-  const [deleteOrgConfirmText, setDeleteOrgConfirmText] = useState('');
-  
+  const [deleteOrgConfirmText, setDeleteOrgConfirmText] = useState("");
+
   // Organization editing state
   const [editingOrg, setEditingOrg] = useState(null);
-  const [editOrgName, setEditOrgName] = useState('');
-  const [editOrgDescription, setEditOrgDescription] = useState('');
-  
+  const [editOrgName, setEditOrgName] = useState("");
+  const [editOrgDescription, setEditOrgDescription] = useState("");
+
   // Invitation state
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteOrganizationId, setInviteOrganizationId] = useState('');
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteOrganizationId, setInviteOrganizationId] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteMsg, setInviteMsg] = useState('');
+  const [inviteMsg, setInviteMsg] = useState("");
 
   // Confirmation modals state
   const [confirmModalUser, setConfirmModalUser] = useState(null);
-  const [confirmAction, setConfirmAction] = useState(''); // 'deactivate' or 'reactivate'
+  const [confirmAction, setConfirmAction] = useState(""); // 'deactivate' or 'reactivate'
   const [confirmModalOrg, setConfirmModalOrg] = useState(null);
 
   // Auto-dismiss notifications
   useEffect(() => {
     if (msg) {
       const timer = setTimeout(() => {
-        setMsg('');
+        setMsg("");
       }, 5000); // 5 seconds
       return () => clearTimeout(timer);
     }
@@ -57,7 +59,7 @@ const Accounts = () => {
   useEffect(() => {
     if (orgMsg) {
       const timer = setTimeout(() => {
-        setOrgMsg('');
+        setOrgMsg("");
       }, 5000); // 5 seconds
       return () => clearTimeout(timer);
     }
@@ -66,7 +68,7 @@ const Accounts = () => {
   useEffect(() => {
     if (inviteMsg) {
       const timer = setTimeout(() => {
-        setInviteMsg('');
+        setInviteMsg("");
       }, 5000); // 5 seconds
       return () => clearTimeout(timer);
     }
@@ -76,9 +78,9 @@ const Accounts = () => {
    * Load data on component mount and tab change
    */
   useEffect(() => {
-    if (activeTab === 'users') {
+    if (activeTab === "users") {
       loadAllUsers();
-    } else if (activeTab === 'organizations' && user?.role === 'super-admin') {
+    } else if (activeTab === "organizations" && user?.role === "super-admin") {
       loadOrganizations();
     }
   }, [activeTab]);
@@ -89,15 +91,19 @@ const Accounts = () => {
   const loadOrganizations = async () => {
     try {
       setOrgLoading(true);
-      const response = await axios.get('/api/organizations');
+      const response = await axios.get("/api/organizations");
       if (response.data.success) {
         setOrganizations(response.data.organizations);
       } else {
-        setOrgMsg('Failed to load organizations');
+        setOrgMsg("Failed to load organizations");
       }
     } catch (error) {
-      console.error('Error loading organizations:', error);
-      setOrgMsg('Error loading organizations: ' + (error.response?.data?.message || error.message));
+      console.error("Error loading organizations:", error);
+      setOrgMsg(
+        `Error loading organizations: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     } finally {
       setOrgLoading(false);
     }
@@ -109,16 +115,18 @@ const Accounts = () => {
   const loadAllUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/admin/users');
+      const response = await axios.get("/api/admin/users");
       if (response.data.success) {
         setAllUsers(response.data.users);
-        setViewScope(response.data.viewScope || 'organization');
+        setViewScope(response.data.viewScope || "organization");
       } else {
-        setMsg('Failed to load users');
+        setMsg("Failed to load users");
       }
     } catch (error) {
-      console.error('Error loading users:', error);
-      setMsg('Error loading users: ' + (error.response?.data?.message || error.message));
+      console.error("Error loading users:", error);
+      setMsg(
+        `Error loading users: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -132,24 +140,26 @@ const Accounts = () => {
   const handleRoleChange = async (userId, newRole) => {
     try {
       setLoading(true);
-      setMsg('');
-      
-      const response = await axios.put('/api/admin/users/role', {
+      setMsg("");
+
+      const response = await axios.put("/api/admin/users/role", {
         userId,
-        newRole
+        newRole,
       });
-      
+
       if (response.data.success) {
         setMsg(`User role updated to ${newRole} successfully!`);
         setEditingUser(null);
-        setNewRole('');
+        setNewRole("");
         await loadAllUsers(); // Reload users
       } else {
         setMsg(response.data.message);
       }
     } catch (error) {
-      console.error('Error updating user role:', error);
-      setMsg('Error updating role: ' + (error.response?.data?.message || error.message));
+      console.error("Error updating user role:", error);
+      setMsg(
+        `Error updating role: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -160,10 +170,10 @@ const Accounts = () => {
    * @param {number} userId - User ID to deactivate
    */
   const handleDeactivateUser = (userId) => {
-    console.log('Deactivate button clicked for user:', userId);
-    const user = allUsers.find(u => u.id === userId);
+    console.log("Deactivate button clicked for user:", userId);
+    const user = allUsers.find((u) => u.id === userId);
     setConfirmModalUser(user);
-    setConfirmAction('deactivate');
+    setConfirmAction("deactivate");
   };
 
   /**
@@ -171,44 +181,54 @@ const Accounts = () => {
    * @param {number} userId - User ID to reactivate
    */
   const handleReactivateUser = (userId) => {
-    console.log('Reactivate button clicked for user:', userId);
-    const user = allUsers.find(u => u.id === userId);
+    console.log("Reactivate button clicked for user:", userId);
+    const user = allUsers.find((u) => u.id === userId);
     setConfirmModalUser(user);
-    setConfirmAction('reactivate');
+    setConfirmAction("reactivate");
   };
 
   /**
    * Confirm and execute user action
    */
   const confirmUserAction = async () => {
-    if (!confirmModalUser || !confirmAction) return;
+    if (!confirmModalUser || !confirmAction) {
+      return;
+    }
 
     try {
       setLoading(true);
-      setMsg('');
-      
+      setMsg("");
+
       let response;
-      if (confirmAction === 'deactivate') {
-        console.log('Sending deactivation request...');
-        response = await axios.delete(`/api/admin/users/${confirmModalUser.id}`);
-      } else if (confirmAction === 'reactivate') {
-        console.log('Sending reactivation request...');
-        response = await axios.put(`/api/admin/users/${confirmModalUser.id}/reactivate`);
+      if (confirmAction === "deactivate") {
+        console.log("Sending deactivation request...");
+        response = await axios.delete(
+          `/api/admin/users/${confirmModalUser.id}`
+        );
+      } else if (confirmAction === "reactivate") {
+        console.log("Sending reactivation request...");
+        response = await axios.put(
+          `/api/admin/users/${confirmModalUser.id}/reactivate`
+        );
       }
-      
-      console.log('Action response:', response.data);
-      
+
+      console.log("Action response:", response.data);
+
       if (response.data.success) {
         setMsg(`User ${confirmAction}d successfully!`);
         setConfirmModalUser(null);
-        setConfirmAction('');
+        setConfirmAction("");
         await loadAllUsers(); // Reload users
       } else {
         setMsg(response.data.message);
       }
     } catch (error) {
       console.error(`Error ${confirmAction}ing user:`, error);
-      setMsg(`Error ${confirmAction}ing user: ` + (error.response?.data?.message || error.message));
+      setMsg(
+        `Error ${confirmAction}ing user: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     } finally {
       setLoading(false);
     }
@@ -219,32 +239,38 @@ const Accounts = () => {
    */
   const closeConfirmModal = () => {
     setConfirmModalUser(null);
-    setConfirmAction('');
+    setConfirmAction("");
   };
 
   /**
    * Handle permanent user deletion (super-admin only)
    */
   const handleDeleteUser = async () => {
-    if (!deleteModalUser) return;
+    if (!deleteModalUser) {
+      return;
+    }
 
     try {
       setLoading(true);
-      setMsg('');
-      
-      const response = await axios.delete(`/api/admin/users/${deleteModalUser.id}/delete`);
-      
+      setMsg("");
+
+      const response = await axios.delete(
+        `/api/admin/users/${deleteModalUser.id}/delete`
+      );
+
       if (response.data.success) {
-        setMsg('User permanently deleted successfully!');
+        setMsg("User permanently deleted successfully!");
         setDeleteModalUser(null);
-        setDeleteConfirmText('');
+        setDeleteConfirmText("");
         await loadAllUsers(); // Reload users
       } else {
         setMsg(response.data.message);
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      setMsg('Error deleting user: ' + (error.response?.data?.message || error.message));
+      console.error("Error deleting user:", error);
+      setMsg(
+        `Error deleting user: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -255,7 +281,7 @@ const Accounts = () => {
    * @param {number} orgId - Organization ID to deactivate
    */
   const handleDeactivateOrg = (orgId) => {
-    const org = organizations.find(o => o.id === orgId);
+    const org = organizations.find((o) => o.id === orgId);
     setConfirmModalOrg(org);
   };
 
@@ -265,34 +291,33 @@ const Accounts = () => {
    */
   const orgPermissions = useMemo(() => {
     const permissions = {};
-    
-    organizations.forEach(org => {
+
+    organizations.forEach((org) => {
       // Super admin can modify any organization except their own
-      if (user.role === 'super-admin') {
+      if (user.role === "super-admin") {
         // Use organizationId from user object (fixed backend response)
         const userOrgId = user.organizationId || user.organization_id;
-        
+
         // Convert both to numbers for comparison to avoid type mismatch
         const normalizedUserOrgId = userOrgId ? parseInt(userOrgId) : null;
         const normalizedOrgId = parseInt(org.id);
-        
+
         // If user has an organization, prevent them from modifying it
         if (normalizedUserOrgId && normalizedUserOrgId === normalizedOrgId) {
           permissions[org.id] = false;
         }
-        // Special case: If super admin has no organization (undefined), 
+        // Special case: If super admin has no organization (undefined),
         // prevent them from modifying the "Default Organization" (typically org ID 1)
-        else if (!normalizedUserOrgId && org.name === 'Default Organization') {
+        else if (!normalizedUserOrgId && org.name === "Default Organization") {
           permissions[org.id] = false;
-        }
-        else {
+        } else {
           permissions[org.id] = true;
         }
       } else {
         permissions[org.id] = false;
       }
     });
-    
+
     return permissions;
   }, [organizations, user]);
 
@@ -301,32 +326,38 @@ const Accounts = () => {
    * @param {object} org - Organization to check
    * @returns {boolean} Whether current user can modify organization
    */
-  const canModifyOrg = (org) => {
-    return orgPermissions[org.id] || false;
-  };
+  const canModifyOrg = (org) => orgPermissions[org.id] || false;
 
   /**
    * Confirm and execute organization deactivation
    */
   const confirmOrgAction = async () => {
-    if (!confirmModalOrg) return;
+    if (!confirmModalOrg) {
+      return;
+    }
 
     try {
       setOrgLoading(true);
-      setOrgMsg('');
-      
-      const response = await axios.put(`/api/organizations/${confirmModalOrg.id}/deactivate`);
-      
+      setOrgMsg("");
+
+      const response = await axios.put(
+        `/api/organizations/${confirmModalOrg.id}/deactivate`
+      );
+
       if (response.data.success) {
-        setOrgMsg('Organization deactivated successfully!');
+        setOrgMsg("Organization deactivated successfully!");
         setConfirmModalOrg(null);
         await loadOrganizations(); // Reload organizations
       } else {
         setOrgMsg(response.data.message);
       }
     } catch (error) {
-      console.error('Error deactivating organization:', error);
-      setOrgMsg('Error deactivating organization: ' + (error.response?.data?.message || error.message));
+      console.error("Error deactivating organization:", error);
+      setOrgMsg(
+        `Error deactivating organization: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     } finally {
       setOrgLoading(false);
     }
@@ -343,25 +374,33 @@ const Accounts = () => {
    * Handle permanent organization deletion (super-admin only)
    */
   const handleDeleteOrg = async () => {
-    if (!deleteModalOrg) return;
+    if (!deleteModalOrg) {
+      return;
+    }
 
     try {
       setOrgLoading(true);
-      setOrgMsg('');
-      
-      const response = await axios.delete(`/api/organizations/${deleteModalOrg.id}`);
-      
+      setOrgMsg("");
+
+      const response = await axios.delete(
+        `/api/organizations/${deleteModalOrg.id}`
+      );
+
       if (response.data.success) {
-        setOrgMsg('Organization permanently deleted successfully!');
+        setOrgMsg("Organization permanently deleted successfully!");
         setDeleteModalOrg(null);
-        setDeleteOrgConfirmText('');
+        setDeleteOrgConfirmText("");
         await loadOrganizations(); // Reload organizations
       } else {
         setOrgMsg(response.data.message);
       }
     } catch (error) {
-      console.error('Error deleting organization:', error);
-      setOrgMsg('Error deleting organization: ' + (error.response?.data?.message || error.message));
+      console.error("Error deleting organization:", error);
+      setOrgMsg(
+        `Error deleting organization: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     } finally {
       setOrgLoading(false);
     }
@@ -372,7 +411,7 @@ const Accounts = () => {
    */
   const closeDeleteModal = () => {
     setDeleteModalUser(null);
-    setDeleteConfirmText('');
+    setDeleteConfirmText("");
   };
 
   /**
@@ -380,7 +419,7 @@ const Accounts = () => {
    */
   const closeDeleteOrgModal = () => {
     setDeleteModalOrg(null);
-    setDeleteOrgConfirmText('');
+    setDeleteOrgConfirmText("");
   };
 
   /**
@@ -390,7 +429,7 @@ const Accounts = () => {
   const handleEditOrg = (org) => {
     setEditingOrg(org.id);
     setEditOrgName(org.name);
-    setEditOrgDescription(org.description || '');
+    setEditOrgDescription(org.description || "");
   };
 
   /**
@@ -398,8 +437,8 @@ const Accounts = () => {
    */
   const handleCancelEditOrg = () => {
     setEditingOrg(null);
-    setEditOrgName('');
-    setEditOrgDescription('');
+    setEditOrgName("");
+    setEditOrgDescription("");
   };
 
   /**
@@ -409,34 +448,44 @@ const Accounts = () => {
   const handleSaveOrgChanges = async (orgId) => {
     try {
       setOrgLoading(true);
-      setOrgMsg('');
+      setOrgMsg("");
 
       const updates = {};
-      if (editOrgName.trim() && editOrgName.trim() !== organizations.find(o => o.id === orgId)?.name) {
+      if (
+        editOrgName.trim() &&
+        editOrgName.trim() !== organizations.find((o) => o.id === orgId)?.name
+      ) {
         updates.name = editOrgName.trim();
       }
-      if (editOrgDescription !== organizations.find(o => o.id === orgId)?.description) {
+      if (
+        editOrgDescription !==
+        organizations.find((o) => o.id === orgId)?.description
+      ) {
         updates.description = editOrgDescription.trim() || null;
       }
 
       if (Object.keys(updates).length === 0) {
-        setOrgMsg('No changes to save');
+        setOrgMsg("No changes to save");
         handleCancelEditOrg();
         return;
       }
 
       const response = await axios.put(`/api/organizations/${orgId}`, updates);
-      
+
       if (response.data.success) {
-        setOrgMsg('Organization updated successfully!');
+        setOrgMsg("Organization updated successfully!");
         handleCancelEditOrg();
         await loadOrganizations(); // Reload organizations
       } else {
         setOrgMsg(response.data.message);
       }
     } catch (error) {
-      console.error('Error updating organization:', error);
-      setOrgMsg('Error updating organization: ' + (error.response?.data?.message || error.message));
+      console.error("Error updating organization:", error);
+      setOrgMsg(
+        `Error updating organization: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     } finally {
       setOrgLoading(false);
     }
@@ -448,10 +497,10 @@ const Accounts = () => {
    * @returns {boolean} Whether current user can edit organization
    */
   const canEditOrg = (org) => {
-    if (user.role === 'super-admin') {
+    if (user.role === "super-admin") {
       return true; // Super admin can edit any organization
     }
-    if (user.role === 'admin') {
+    if (user.role === "admin") {
       // Regular admin can only edit their own organization
       const userOrgId = user.organizationId || user.organization_id;
       return userOrgId && parseInt(userOrgId) === parseInt(org.id);
@@ -463,32 +512,40 @@ const Accounts = () => {
    * Handle sending user invitation
    */
   const handleSendInvitation = async () => {
-    if (!inviteEmail) return;
+    if (!inviteEmail) {
+      return;
+    }
 
     try {
       setInviteLoading(true);
-      setInviteMsg('');
-      
+      setInviteMsg("");
+
       const payload = { email: inviteEmail };
-      
+
       // Add organization ID for super-admins if selected
-      if (user?.role === 'super-admin' && inviteOrganizationId) {
+      if (user?.role === "super-admin" && inviteOrganizationId) {
         payload.organizationId = parseInt(inviteOrganizationId);
       }
-      
-      const response = await axios.post('/api/invitations/send', payload);
-      
+
+      const response = await axios.post("/api/invitations/send", payload);
+
       if (response.data.success) {
-        setInviteMsg(`Invitation sent successfully to ${inviteEmail}! The invite will expire in 7 days.`);
-        setInviteEmail('');
-        setInviteOrganizationId('');
+        setInviteMsg(
+          `Invitation sent successfully to ${inviteEmail}! The invite will expire in 7 days.`
+        );
+        setInviteEmail("");
+        setInviteOrganizationId("");
         setShowInviteModal(false);
       } else {
         setInviteMsg(response.data.message);
       }
     } catch (error) {
-      console.error('Error sending invitation:', error);
-      setInviteMsg('Error sending invitation: ' + (error.response?.data?.message || error.message));
+      console.error("Error sending invitation:", error);
+      setInviteMsg(
+        `Error sending invitation: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     } finally {
       setInviteLoading(false);
     }
@@ -499,9 +556,9 @@ const Accounts = () => {
    */
   const closeInviteModal = () => {
     setShowInviteModal(false);
-    setInviteEmail('');
-    setInviteOrganizationId('');
-    setInviteMsg('');
+    setInviteEmail("");
+    setInviteOrganizationId("");
+    setInviteMsg("");
   };
 
   /**
@@ -511,14 +568,14 @@ const Accounts = () => {
    */
   const getRoleBadgeClass = (role) => {
     switch (role) {
-      case 'super-admin':
-        return 'is-danger';
-      case 'admin':
-        return 'is-warning';
-      case 'user':
-        return 'is-success';
+      case "super-admin":
+        return "is-danger";
+      case "admin":
+        return "is-warning";
+      case "user":
+        return "is-success";
       default:
-        return 'is-info';
+        return "is-info";
     }
   };
 
@@ -529,47 +586,59 @@ const Accounts = () => {
    */
   const canModifyUser = (targetUser) => {
     // Can't modify yourself
-    if (targetUser.id === user.id) return false;
-    
+    if (targetUser.id === user.id) {
+      return false;
+    }
+
     // Super-admin can modify anyone except other super-admins
-    if (user.role === 'super-admin') {
-      return targetUser.role !== 'super-admin';
+    if (user.role === "super-admin") {
+      return targetUser.role !== "super-admin";
     }
-    
+
     // Admin can only modify regular users in their organization
-    if (user.role === 'admin') {
-      return targetUser.role === 'user';
+    if (user.role === "admin") {
+      return targetUser.role === "user";
     }
-    
+
     return false;
   };
 
   return (
-    <div className='zw-page-content-scrollable'>
+    <div className="zw-page-content-scrollable">
       <Helmet>
-        <meta charSet='utf-8' />
+        <meta charSet="utf-8" />
         <title>User Management - Zoneweaver</title>
-        <link rel='canonical' href={window.location.origin} />
+        <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className='container is-fluid p-0'>
-        <div className='box p-0 is-radiusless'>
-          <div className='titlebar box active level is-mobile mb-0 p-3'>
-            <div className='level-left'>
+      <div className="container is-fluid p-0">
+        <div className="box p-0 is-radiusless">
+          <div className="titlebar box active level is-mobile mb-0 p-3">
+            <div className="level-left">
               <strong>
-                {user?.role === 'super-admin' ? 'Account Management' : 'User Management'}
+                {user?.role === "super-admin"
+                  ? "Account Management"
+                  : "User Management"}
               </strong>
-              {user?.role === 'super-admin' && (
-                <div className='tabs ml-4'>
+              {user?.role === "super-admin" && (
+                <div className="tabs ml-4">
                   <ul>
-                    <li className={activeTab === 'users' ? 'is-active' : ''}>
-                      <a onClick={() => setActiveTab('users')}>
-                        <span className="icon is-small"><i className="fas fa-users"></i></span>
+                    <li className={activeTab === "users" ? "is-active" : ""}>
+                      <a onClick={() => setActiveTab("users")}>
+                        <span className="icon is-small">
+                          <i className="fas fa-users" />
+                        </span>
                         <span>Users</span>
                       </a>
                     </li>
-                    <li className={activeTab === 'organizations' ? 'is-active' : ''}>
-                      <a onClick={() => setActiveTab('organizations')}>
-                        <span className="icon is-small"><i className="fas fa-building"></i></span>
+                    <li
+                      className={
+                        activeTab === "organizations" ? "is-active" : ""
+                      }
+                    >
+                      <a onClick={() => setActiveTab("organizations")}>
+                        <span className="icon is-small">
+                          <i className="fas fa-building" />
+                        </span>
                         <span>Organizations</span>
                       </a>
                     </li>
@@ -577,72 +646,87 @@ const Accounts = () => {
                 </div>
               )}
             </div>
-            <div className='level-right'>
-              {activeTab === 'users' && (
-                <span className='tag is-info'>
-                  {allUsers.length} {viewScope === 'all' ? 'Total' : 'Organization'} Users
+            <div className="level-right">
+              {activeTab === "users" && (
+                <span className="tag is-info">
+                  {allUsers.length}{" "}
+                  {viewScope === "all" ? "Total" : "Organization"} Users
                 </span>
               )}
-              {activeTab === 'organizations' && user?.role === 'super-admin' && (
-                <span className='tag is-info'>
-                  {organizations.length} Organizations
-                </span>
-              )}
+              {activeTab === "organizations" &&
+                user?.role === "super-admin" && (
+                  <span className="tag is-info">
+                    {organizations.length} Organizations
+                  </span>
+                )}
             </div>
           </div>
 
-          <div className='p-4'>
+          <div className="p-4">
             {msg && (
-              <div className={`notification ${
-                msg.includes('successfully') ? 'is-success' : 
-                msg.includes('Error') || msg.includes('Failed') ? 'is-danger' : 
-                'is-warning'
-              }`}>
+              <div
+                className={`notification ${
+                  msg.includes("successfully")
+                    ? "is-success"
+                    : msg.includes("Error") || msg.includes("Failed")
+                      ? "is-danger"
+                      : "is-warning"
+                }`}
+              >
                 <p>{msg}</p>
               </div>
             )}
 
             {/* Current User Info */}
-            {activeTab === 'users' && (
-              <div className='box mb-4'>
-                <h2 className='title is-5'>Your Account</h2>
-                <div className='content'>
+            {activeTab === "users" && (
+              <div className="box mb-4">
+                <h2 className="title is-5">Your Account</h2>
+                <div className="content">
                   <p>
-                    <strong>Username:</strong> {user?.username} 
-                    <span className={`tag ml-2 ${getRoleBadgeClass(user?.role)}`}>
+                    <strong>Username:</strong> {user?.username}
+                    <span
+                      className={`tag ml-2 ${getRoleBadgeClass(user?.role)}`}
+                    >
                       {user?.role}
                     </span>
                   </p>
-                  <p><strong>Email:</strong> {user?.email}</p>
-                  <p className='is-size-7 has-text-grey'>
-                    You can manage your profile and change your password in the Profile section.
+                  <p>
+                    <strong>Email:</strong> {user?.email}
+                  </p>
+                  <p className="is-size-7 has-text-grey">
+                    You can manage your profile and change your password in the
+                    Profile section.
                   </p>
                 </div>
               </div>
             )}
 
             {/* Organizations Tab Content */}
-            {activeTab === 'organizations' && user?.role === 'super-admin' && (
-              <div className='box mb-4'>
-                <h2 className='title is-5'>Organizations Overview</h2>
+            {activeTab === "organizations" && user?.role === "super-admin" && (
+              <div className="box mb-4">
+                <h2 className="title is-5">Organizations Overview</h2>
                 {orgMsg && (
-                  <div className={`notification ${
-                    orgMsg.includes('successfully') ? 'is-success' : 
-                    orgMsg.includes('Error') || orgMsg.includes('Failed') ? 'is-danger' : 
-                    'is-warning'
-                  } mb-4`}>
+                  <div
+                    className={`notification ${
+                      orgMsg.includes("successfully")
+                        ? "is-success"
+                        : orgMsg.includes("Error") || orgMsg.includes("Failed")
+                          ? "is-danger"
+                          : "is-warning"
+                    } mb-4`}
+                  >
                     <p>{orgMsg}</p>
                   </div>
                 )}
-                
+
                 {orgLoading ? (
-                  <div className='has-text-centered p-4'>
-                    <div className='button is-loading is-large is-ghost'></div>
-                    <p className='mt-2'>Loading organizations...</p>
+                  <div className="has-text-centered p-4">
+                    <div className="button is-loading is-large is-ghost" />
+                    <p className="mt-2">Loading organizations...</p>
                   </div>
                 ) : (
-                  <div className='table-container'>
-                    <table className='table is-fullwidth is-hoverable'>
+                  <div className="table-container">
+                    <table className="table is-fullwidth is-hoverable">
                       <thead>
                         <tr>
                           <th>Organization Name</th>
@@ -662,11 +746,13 @@ const Accounts = () => {
                               {editingOrg === org.id ? (
                                 <div className="field">
                                   <div className="control">
-                                    <input 
+                                    <input
                                       className="input is-small"
                                       type="text"
                                       value={editOrgName}
-                                      onChange={(e) => setEditOrgName(e.target.value)}
+                                      onChange={(e) =>
+                                        setEditOrgName(e.target.value)
+                                      }
                                       placeholder="Organization name"
                                       disabled={orgLoading}
                                     />
@@ -680,11 +766,13 @@ const Accounts = () => {
                               {editingOrg === org.id ? (
                                 <div className="field">
                                   <div className="control">
-                                    <textarea 
+                                    <textarea
                                       className="textarea is-small"
                                       rows="2"
                                       value={editOrgDescription}
-                                      onChange={(e) => setEditOrgDescription(e.target.value)}
+                                      onChange={(e) =>
+                                        setEditOrgDescription(e.target.value)
+                                      }
                                       placeholder="Organization description (optional)"
                                       disabled={orgLoading}
                                     />
@@ -692,40 +780,54 @@ const Accounts = () => {
                                 </div>
                               ) : (
                                 org.description || (
-                                  <span className='has-text-grey is-italic'>No description</span>
+                                  <span className="has-text-grey is-italic">
+                                    No description
+                                  </span>
                                 )
                               )}
                             </td>
                             <td>
-                              <span className='tag is-info'>{org.total_users || 0}</span>
+                              <span className="tag is-info">
+                                {org.total_users || 0}
+                              </span>
                             </td>
                             <td>
-                              <span className='tag is-success'>{org.active_users || 0}</span>
+                              <span className="tag is-success">
+                                {org.active_users || 0}
+                              </span>
                             </td>
                             <td>
-                              <span className='tag is-warning'>{org.admin_users || 0}</span>
+                              <span className="tag is-warning">
+                                {org.admin_users || 0}
+                              </span>
                             </td>
                             <td>
                               {new Date(org.created_at).toLocaleDateString()}
                             </td>
                             <td>
-                              <span className={`tag ${org.is_active ? 'is-success' : 'is-danger'}`}>
-                                {org.is_active ? 'Active' : 'Inactive'}
+                              <span
+                                className={`tag ${org.is_active ? "is-success" : "is-danger"}`}
+                              >
+                                {org.is_active ? "Active" : "Inactive"}
                               </span>
                             </td>
                             <td>
-                              <div className='buttons are-small'>
+                              <div className="buttons are-small">
                                 {editingOrg === org.id ? (
                                   <>
-                                    <button 
-                                      className='button is-small is-success'
-                                      onClick={() => handleSaveOrgChanges(org.id)}
-                                      disabled={!editOrgName.trim() || orgLoading}
+                                    <button
+                                      className="button is-small is-success"
+                                      onClick={() =>
+                                        handleSaveOrgChanges(org.id)
+                                      }
+                                      disabled={
+                                        !editOrgName.trim() || orgLoading
+                                      }
                                     >
                                       Save
                                     </button>
-                                    <button 
-                                      className='button is-small'
+                                    <button
+                                      className="button is-small"
                                       onClick={handleCancelEditOrg}
                                       disabled={orgLoading}
                                     >
@@ -735,37 +837,45 @@ const Accounts = () => {
                                 ) : (
                                   <>
                                     {canEditOrg(org) && (
-                                      <button 
-                                        className='button is-small is-info'
+                                      <button
+                                        className="button is-small is-info"
                                         onClick={() => handleEditOrg(org)}
-                                        disabled={orgLoading || editingOrg !== null}
+                                        disabled={
+                                          orgLoading || editingOrg !== null
+                                        }
                                         title="Edit organization name and description"
                                       >
                                         Edit
                                       </button>
                                     )}
                                     {canModifyOrg(org) && org.is_active && (
-                                      <button 
-                                        className='button is-small is-warning'
-                                        onClick={() => handleDeactivateOrg(org.id)}
-                                        disabled={orgLoading || editingOrg !== null}
+                                      <button
+                                        className="button is-small is-warning"
+                                        onClick={() =>
+                                          handleDeactivateOrg(org.id)
+                                        }
+                                        disabled={
+                                          orgLoading || editingOrg !== null
+                                        }
                                         title="Deactivate organization"
                                       >
                                         Deactivate
                                       </button>
                                     )}
                                     {canModifyOrg(org) && (
-                                      <button 
-                                        className='button is-small is-danger is-outlined'
+                                      <button
+                                        className="button is-small is-danger is-outlined"
                                         onClick={() => setDeleteModalOrg(org)}
-                                        disabled={orgLoading || editingOrg !== null}
+                                        disabled={
+                                          orgLoading || editingOrg !== null
+                                        }
                                         title="Permanently delete organization (and all users)"
                                       >
                                         Delete
                                       </button>
                                     )}
                                     {!canEditOrg(org) && !canModifyOrg(org) && (
-                                      <span className='has-text-grey is-size-7'>
+                                      <span className="has-text-grey is-size-7">
                                         No permission
                                       </span>
                                     )}
@@ -777,7 +887,10 @@ const Accounts = () => {
                         ))}
                         {organizations.length === 0 && (
                           <tr>
-                            <td colSpan="7" className='has-text-centered has-text-grey is-italic p-4'>
+                            <td
+                              colSpan="7"
+                              className="has-text-centered has-text-grey is-italic p-4"
+                            >
                               No organizations found
                             </td>
                           </tr>
@@ -790,75 +903,89 @@ const Accounts = () => {
             )}
 
             {/* Invite User Section */}
-            {activeTab === 'users' && (user?.role === 'admin' || user?.role === 'super-admin') && (
-              <div className='box mb-4'>
-                <div className='level'>
-                  <div className='level-left'>
-                    <div>
-                      <h2 className='title is-6 mb-2'>Invite New User</h2>
-                      <p className='subtitle is-7 has-text-grey'>
-                        Send an email invitation to join {user?.role === 'super-admin' && viewScope === 'all' ? 'the system' : 'your organization'}
-                      </p>
+            {activeTab === "users" &&
+              (user?.role === "admin" || user?.role === "super-admin") && (
+                <div className="box mb-4">
+                  <div className="level">
+                    <div className="level-left">
+                      <div>
+                        <h2 className="title is-6 mb-2">Invite New User</h2>
+                        <p className="subtitle is-7 has-text-grey">
+                          Send an email invitation to join{" "}
+                          {user?.role === "super-admin" && viewScope === "all"
+                            ? "the system"
+                            : "your organization"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="level-right">
+                      <button
+                        className="button is-primary"
+                        onClick={() => {
+                          setShowInviteModal(true);
+                          if (
+                            user?.role === "super-admin" &&
+                            organizations.length === 0
+                          ) {
+                            loadOrganizations();
+                          }
+                        }}
+                        disabled={loading || inviteLoading}
+                      >
+                        <span className="icon is-small">
+                          <i className="fas fa-envelope" />
+                        </span>
+                        <span>Invite User</span>
+                      </button>
                     </div>
                   </div>
-                  <div className='level-right'>
-                    <button 
-                      className='button is-primary'
-                      onClick={() => {
-                        setShowInviteModal(true);
-                        if (user?.role === 'super-admin' && organizations.length === 0) {
-                          loadOrganizations();
-                        }
-                      }}
-                      disabled={loading || inviteLoading}
+
+                  {inviteMsg && (
+                    <div
+                      className={`notification ${
+                        inviteMsg.includes("successfully")
+                          ? "is-success"
+                          : inviteMsg.includes("Error") ||
+                              inviteMsg.includes("Failed")
+                            ? "is-danger"
+                            : "is-warning"
+                      } mt-3`}
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-envelope"></i>
-                      </span>
-                      <span>Invite User</span>
-                    </button>
-                  </div>
+                      <p>{inviteMsg}</p>
+                    </div>
+                  )}
                 </div>
-                
-                {inviteMsg && (
-                  <div className={`notification ${
-                    inviteMsg.includes('successfully') ? 'is-success' : 
-                    inviteMsg.includes('Error') || inviteMsg.includes('Failed') ? 'is-danger' : 
-                    'is-warning'
-                  } mt-3`}>
-                    <p>{inviteMsg}</p>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
 
             {/* Users Table */}
-            {activeTab === 'users' && (
-              <div className='box'>
-                <div className='level mb-3'>
-                  <div className='level-left'>
-                    <h2 className='title is-5'>
-                      {viewScope === 'all' ? 'All Users (System-wide)' : 'Organization Users'}
+            {activeTab === "users" && (
+              <div className="box">
+                <div className="level mb-3">
+                  <div className="level-left">
+                    <h2 className="title is-5">
+                      {viewScope === "all"
+                        ? "All Users (System-wide)"
+                        : "Organization Users"}
                     </h2>
                   </div>
-                  <div className='level-right'>
-                    {viewScope === 'all' && (
-                      <span className='tag is-warning'>Super Admin View</span>
+                  <div className="level-right">
+                    {viewScope === "all" && (
+                      <span className="tag is-warning">Super Admin View</span>
                     )}
-                    {viewScope === 'organization' && (
-                      <span className='tag is-info'>Organization View</span>
+                    {viewScope === "organization" && (
+                      <span className="tag is-info">Organization View</span>
                     )}
                   </div>
                 </div>
-                
+
                 {loading ? (
-                  <div className='has-text-centered p-4'>
-                    <div className='button is-loading is-large is-ghost'></div>
-                    <p className='mt-2'>Loading users...</p>
+                  <div className="has-text-centered p-4">
+                    <div className="button is-loading is-large is-ghost" />
+                    <p className="mt-2">Loading users...</p>
                   </div>
                 ) : (
-                  <div className='table-container'>
-                    <table className='table is-fullwidth is-hoverable'>
+                  <div className="table-container">
+                    <table className="table is-fullwidth is-hoverable">
                       <thead>
                         <tr>
                           <th>Username</th>
@@ -876,10 +1003,14 @@ const Accounts = () => {
                           <tr key={targetUser.id}>
                             <td>
                               <strong>
-                                {targetUser.id === user.id ? user.username : targetUser.username}
+                                {targetUser.id === user.id
+                                  ? user.username
+                                  : targetUser.username}
                               </strong>
                               {targetUser.id === user.id && (
-                                <span className='tag is-small is-info ml-2'>You</span>
+                                <span className="tag is-small is-info ml-2">
+                                  You
+                                </span>
                               )}
                             </td>
                             <td>{targetUser.email}</td>
@@ -887,44 +1018,52 @@ const Accounts = () => {
                               {targetUser.organization_name ? (
                                 targetUser.organization_name
                               ) : (
-                                <span className='has-text-grey is-italic'>
-                                  {targetUser.role === 'super-admin' ? 'System Admin' : 'No Organization'}
+                                <span className="has-text-grey is-italic">
+                                  {targetUser.role === "super-admin"
+                                    ? "System Admin"
+                                    : "No Organization"}
                                 </span>
                               )}
                             </td>
                             <td>
                               {editingUser === targetUser.id ? (
-                                <div className='field has-addons'>
-                                  <div className='control'>
-                                    <div className='select is-small'>
-                                      <select 
-                                        value={newRole} 
-                                        onChange={(e) => setNewRole(e.target.value)}
+                                <div className="field has-addons">
+                                  <div className="control">
+                                    <div className="select is-small">
+                                      <select
+                                        value={newRole}
+                                        onChange={(e) =>
+                                          setNewRole(e.target.value)
+                                        }
                                       >
-                                        <option value=''>Select Role</option>
-                                        <option value='user'>User</option>
-                                        <option value='admin'>Admin</option>
-                                        {user.role === 'super-admin' && (
-                                          <option value='super-admin'>Super Admin</option>
+                                        <option value="">Select Role</option>
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                        {user.role === "super-admin" && (
+                                          <option value="super-admin">
+                                            Super Admin
+                                          </option>
                                         )}
                                       </select>
                                     </div>
                                   </div>
-                                  <div className='control'>
-                                    <button 
-                                      className='button is-small is-success'
-                                      onClick={() => handleRoleChange(targetUser.id, newRole)}
+                                  <div className="control">
+                                    <button
+                                      className="button is-small is-success"
+                                      onClick={() =>
+                                        handleRoleChange(targetUser.id, newRole)
+                                      }
                                       disabled={!newRole || loading}
                                     >
                                       Save
                                     </button>
                                   </div>
-                                  <div className='control'>
-                                    <button 
-                                      className='button is-small'
+                                  <div className="control">
+                                    <button
+                                      className="button is-small"
                                       onClick={() => {
                                         setEditingUser(null);
-                                        setNewRole('');
+                                        setNewRole("");
                                       }}
                                     >
                                       Cancel
@@ -932,32 +1071,39 @@ const Accounts = () => {
                                   </div>
                                 </div>
                               ) : (
-                                <span className={`tag ${getRoleBadgeClass(targetUser.role)}`}>
+                                <span
+                                  className={`tag ${getRoleBadgeClass(targetUser.role)}`}
+                                >
                                   {targetUser.role}
                                 </span>
                               )}
                             </td>
                             <td>
-                              {new Date(targetUser.created_at).toLocaleDateString()}
+                              {new Date(
+                                targetUser.created_at
+                              ).toLocaleDateString()}
                             </td>
                             <td>
-                              {targetUser.last_login 
-                                ? new Date(targetUser.last_login).toLocaleDateString()
-                                : 'Never'
-                              }
+                              {targetUser.last_login
+                                ? new Date(
+                                    targetUser.last_login
+                                  ).toLocaleDateString()
+                                : "Never"}
                             </td>
                             <td>
-                              <span className={`tag ${targetUser.is_active ? 'is-success' : 'is-danger'}`}>
-                                {targetUser.is_active ? 'Active' : 'Inactive'}
+                              <span
+                                className={`tag ${targetUser.is_active ? "is-success" : "is-danger"}`}
+                              >
+                                {targetUser.is_active ? "Active" : "Inactive"}
                               </span>
                             </td>
                             <td>
                               {canModifyUser(targetUser) ? (
-                                <div className='buttons are-small'>
+                                <div className="buttons are-small">
                                   {editingUser !== targetUser.id && (
                                     <>
-                                      <button 
-                                        className='button is-small is-warning'
+                                      <button
+                                        className="button is-small is-warning"
                                         onClick={() => {
                                           setEditingUser(targetUser.id);
                                           setNewRole(targetUser.role);
@@ -967,26 +1113,32 @@ const Accounts = () => {
                                         Edit Role
                                       </button>
                                       {targetUser.is_active ? (
-                                        <button 
-                                          className='button is-small is-danger'
-                                          onClick={() => handleDeactivateUser(targetUser.id)}
+                                        <button
+                                          className="button is-small is-danger"
+                                          onClick={() =>
+                                            handleDeactivateUser(targetUser.id)
+                                          }
                                           disabled={loading}
                                         >
                                           Deactivate
                                         </button>
                                       ) : (
-                                        <button 
-                                          className='button is-small is-success'
-                                          onClick={() => handleReactivateUser(targetUser.id)}
+                                        <button
+                                          className="button is-small is-success"
+                                          onClick={() =>
+                                            handleReactivateUser(targetUser.id)
+                                          }
                                           disabled={loading}
                                         >
                                           Reactivate
                                         </button>
                                       )}
-                                      {user.role === 'super-admin' && (
-                                        <button 
-                                          className='button is-small is-danger is-outlined'
-                                          onClick={() => setDeleteModalUser(targetUser)}
+                                      {user.role === "super-admin" && (
+                                        <button
+                                          className="button is-small is-danger is-outlined"
+                                          onClick={() =>
+                                            setDeleteModalUser(targetUser)
+                                          }
                                           disabled={loading}
                                           title="Permanent deletion (Super Admin only)"
                                         >
@@ -997,8 +1149,10 @@ const Accounts = () => {
                                   )}
                                 </div>
                               ) : (
-                                <span className='has-text-grey is-size-7'>
-                                  {targetUser.id === user.id ? 'Cannot modify self' : 'No permission'}
+                                <span className="has-text-grey is-size-7">
+                                  {targetUser.id === user.id
+                                    ? "Cannot modify self"
+                                    : "No permission"}
                                 </span>
                               )}
                             </td>
@@ -1012,42 +1166,79 @@ const Accounts = () => {
             )}
 
             {/* Help Section */}
-            <div className='box'>
-              <h2 className='title is-6'>User Management Guide</h2>
-              <div className='content is-size-7'>
-                <div className='columns'>
-                  <div className='column'>
-                    <p><strong>Roles:</strong></p>
+            <div className="box">
+              <h2 className="title is-6">User Management Guide</h2>
+              <div className="content is-size-7">
+                <div className="columns">
+                  <div className="column">
+                    <p>
+                      <strong>Roles:</strong>
+                    </p>
                     <ul>
-                      <li><strong>User:</strong> Basic access to zones and hosts</li>
-                      <li><strong>Admin:</strong> Can manage users and organization settings</li>
-                      <li><strong>Super Admin:</strong> Full system access, can manage all users and organizations</li>
+                      <li>
+                        <strong>User:</strong> Basic access to zones and hosts
+                      </li>
+                      <li>
+                        <strong>Admin:</strong> Can manage users and
+                        organization settings
+                      </li>
+                      <li>
+                        <strong>Super Admin:</strong> Full system access, can
+                        manage all users and organizations
+                      </li>
                     </ul>
                   </div>
-                  <div className='column'>
-                    <p><strong>Visibility:</strong></p>
+                  <div className="column">
+                    <p>
+                      <strong>Visibility:</strong>
+                    </p>
                     <ul>
-                      <li><strong>Super Admins:</strong> Can see all users across all organizations</li>
-                      <li><strong>Organization Admins:</strong> Can only see users in their organization</li>
-                      <li><strong>Users:</strong> Cannot access user management</li>
+                      <li>
+                        <strong>Super Admins:</strong> Can see all users across
+                        all organizations
+                      </li>
+                      <li>
+                        <strong>Organization Admins:</strong> Can only see users
+                        in their organization
+                      </li>
+                      <li>
+                        <strong>Users:</strong> Cannot access user management
+                      </li>
                     </ul>
                   </div>
                 </div>
-                <div className='columns'>
-                  <div className='column'>
-                    <p><strong>Permissions:</strong></p>
+                <div className="columns">
+                  <div className="column">
+                    <p>
+                      <strong>Permissions:</strong>
+                    </p>
                     <ul>
-                      <li>Super admins can modify any user except other super admins</li>
-                      <li>Admins can only modify regular users in their organization</li>
-                      <li>No one can modify their own role or deactivate themselves</li>
+                      <li>
+                        Super admins can modify any user except other super
+                        admins
+                      </li>
+                      <li>
+                        Admins can only modify regular users in their
+                        organization
+                      </li>
+                      <li>
+                        No one can modify their own role or deactivate
+                        themselves
+                      </li>
                     </ul>
                   </div>
-                  <div className='column'>
-                    <p><strong>Organizations:</strong></p>
+                  <div className="column">
+                    <p>
+                      <strong>Organizations:</strong>
+                    </p>
                     <ul>
                       <li>Users belong to organizations for access control</li>
-                      <li>Super admins operate at system level (no organization)</li>
-                      <li>Organization admins manage users within their scope</li>
+                      <li>
+                        Super admins operate at system level (no organization)
+                      </li>
+                      <li>
+                        Organization admins manage users within their scope
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -1064,23 +1255,34 @@ const Accounts = () => {
         onSubmit={handleDeleteUser}
         title="⚠️ Permanent User Deletion"
         icon="fas fa-trash"
-        submitText={loading ? 'Deleting...' : 'Delete User Permanently'}
+        submitText={loading ? "Deleting..." : "Delete User Permanently"}
         submitClass="is-danger"
         loading={loading}
-        disabled={deleteConfirmText !== 'DELETE'}
+        disabled={deleteConfirmText !== "DELETE"}
       >
         <div className="notification is-danger">
-          <p><strong>WARNING: This action cannot be undone!</strong></p>
+          <p>
+            <strong>WARNING: This action cannot be undone!</strong>
+          </p>
           <p>You are about to permanently delete the following user:</p>
         </div>
-        
+
         {deleteModalUser && (
           <div className="box">
-            <p><strong>Username:</strong> {deleteModalUser.username}</p>
-            <p><strong>Email:</strong> {deleteModalUser.email}</p>
-            <p><strong>Role:</strong> {deleteModalUser.role}</p>
+            <p>
+              <strong>Username:</strong> {deleteModalUser.username}
+            </p>
+            <p>
+              <strong>Email:</strong> {deleteModalUser.email}
+            </p>
+            <p>
+              <strong>Role:</strong> {deleteModalUser.role}
+            </p>
             {deleteModalUser.organization_name && (
-              <p><strong>Organization:</strong> {deleteModalUser.organization_name}</p>
+              <p>
+                <strong>Organization:</strong>{" "}
+                {deleteModalUser.organization_name}
+              </p>
             )}
           </div>
         )}
@@ -1090,8 +1292,8 @@ const Accounts = () => {
             Type "DELETE" to confirm permanent deletion:
           </label>
           <div className="control">
-            <input 
-              className="input" 
+            <input
+              className="input"
               type="text"
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
@@ -1112,30 +1314,50 @@ const Accounts = () => {
         onSubmit={handleDeleteOrg}
         title="⚠️ Permanent Organization Deletion"
         icon="fas fa-trash"
-        submitText={orgLoading ? 'Deleting...' : 'Delete Organization Permanently'}
+        submitText={
+          orgLoading ? "Deleting..." : "Delete Organization Permanently"
+        }
         submitClass="is-danger"
         loading={orgLoading}
-        disabled={deleteOrgConfirmText !== 'DELETE'}
+        disabled={deleteOrgConfirmText !== "DELETE"}
       >
         <div className="notification is-danger">
-          <p><strong>WARNING: This action cannot be undone!</strong></p>
+          <p>
+            <strong>WARNING: This action cannot be undone!</strong>
+          </p>
           <p>You are about to permanently delete the following organization:</p>
         </div>
-        
+
         {deleteModalOrg && (
           <div className="box">
-            <p><strong>Organization Name:</strong> {deleteModalOrg.name}</p>
-            <p><strong>Description:</strong> {deleteModalOrg.description || 'No description'}</p>
-            <p><strong>Total Users:</strong> {deleteModalOrg.total_users || 0}</p>
-            <p><strong>Active Users:</strong> {deleteModalOrg.active_users || 0}</p>
-            <p><strong>Created:</strong> {new Date(deleteModalOrg.created_at).toLocaleDateString()}</p>
+            <p>
+              <strong>Organization Name:</strong> {deleteModalOrg.name}
+            </p>
+            <p>
+              <strong>Description:</strong>{" "}
+              {deleteModalOrg.description || "No description"}
+            </p>
+            <p>
+              <strong>Total Users:</strong> {deleteModalOrg.total_users || 0}
+            </p>
+            <p>
+              <strong>Active Users:</strong> {deleteModalOrg.active_users || 0}
+            </p>
+            <p>
+              <strong>Created:</strong>{" "}
+              {new Date(deleteModalOrg.created_at).toLocaleDateString()}
+            </p>
           </div>
         )}
 
         {deleteModalOrg && deleteModalOrg.active_users > 0 && (
           <div className="notification is-warning">
-            <p><strong>Note:</strong> This organization has {deleteModalOrg.active_users} active users. 
-            All users in this organization will be permanently deleted along with the organization.</p>
+            <p>
+              <strong>Note:</strong> This organization has{" "}
+              {deleteModalOrg.active_users} active users. All users in this
+              organization will be permanently deleted along with the
+              organization.
+            </p>
           </div>
         )}
 
@@ -1144,8 +1366,8 @@ const Accounts = () => {
             Type "DELETE" to confirm permanent deletion:
           </label>
           <div className="control">
-            <input 
-              className="input" 
+            <input
+              className="input"
               type="text"
               value={deleteOrgConfirmText}
               onChange={(e) => setDeleteOrgConfirmText(e.target.value)}
@@ -1154,7 +1376,8 @@ const Accounts = () => {
             />
           </div>
           <p className="help">
-            This will permanently remove the organization and all associated data.
+            This will permanently remove the organization and all associated
+            data.
           </p>
         </div>
       </FormModal>
@@ -1166,21 +1389,26 @@ const Accounts = () => {
         onSubmit={handleSendInvitation}
         title="Invite New User"
         icon="fas fa-envelope"
-        submitText={inviteLoading ? 'Sending...' : 'Send Invitation'}
+        submitText={inviteLoading ? "Sending..." : "Send Invitation"}
         submitClass="is-primary"
         loading={inviteLoading}
-        disabled={!inviteEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)}
+        disabled={
+          !inviteEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)
+        }
       >
         <p className="mb-4">
-          Send an email invitation to a new user to join {user?.role === 'super-admin' && viewScope === 'all' ? 'the system' : 'your organization'}. 
-          The invitation will be valid for 7 days and can only be used once.
+          Send an email invitation to a new user to join{" "}
+          {user?.role === "super-admin" && viewScope === "all"
+            ? "the system"
+            : "your organization"}
+          . The invitation will be valid for 7 days and can only be used once.
         </p>
-        
+
         <div className="field">
           <label className="label">Email Address</label>
           <div className="control has-icons-left">
-            <input 
-              className="input" 
+            <input
+              className="input"
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
@@ -1189,20 +1417,21 @@ const Accounts = () => {
               disabled={inviteLoading}
             />
             <span className="icon is-small is-left">
-              <i className="fas fa-envelope"></i>
+              <i className="fas fa-envelope" />
             </span>
           </div>
           <p className="help">
-            The user will receive an email with a registration link that expires in 7 days.
+            The user will receive an email with a registration link that expires
+            in 7 days.
           </p>
         </div>
 
-        {user?.role === 'super-admin' && (
+        {user?.role === "super-admin" && (
           <div className="field">
             <label className="label">Organization (Optional)</label>
             <div className="control">
               <div className="select is-fullwidth">
-                <select 
+                <select
                   value={inviteOrganizationId}
                   onChange={(e) => setInviteOrganizationId(e.target.value)}
                   disabled={inviteLoading}
@@ -1217,23 +1446,31 @@ const Accounts = () => {
               </div>
             </div>
             <p className="help">
-              Choose an organization for the user to join, or leave blank for a system-level invitation.
+              Choose an organization for the user to join, or leave blank for a
+              system-level invitation.
             </p>
           </div>
         )}
 
-        {user?.role === 'admin' && (
+        {user?.role === "admin" && (
           <div className="notification is-info">
-            <p><strong>Organization Admin:</strong> This invitation will allow the user to join your organization with a 'user' role by default.</p>
+            <p>
+              <strong>Organization Admin:</strong> This invitation will allow
+              the user to join your organization with a 'user' role by default.
+            </p>
           </div>
         )}
 
         {inviteMsg && (
-          <div className={`notification ${
-            inviteMsg.includes('successfully') ? 'is-success' : 
-            inviteMsg.includes('Error') || inviteMsg.includes('Failed') ? 'is-danger' : 
-            'is-warning'
-          }`}>
+          <div
+            className={`notification ${
+              inviteMsg.includes("successfully")
+                ? "is-success"
+                : inviteMsg.includes("Error") || inviteMsg.includes("Failed")
+                  ? "is-danger"
+                  : "is-warning"
+            }`}
+          >
             <p>{inviteMsg}</p>
           </div>
         )}
@@ -1244,14 +1481,29 @@ const Accounts = () => {
         isOpen={!!confirmModalUser}
         onClose={closeConfirmModal}
         onSubmit={confirmUserAction}
-        title={confirmAction === 'deactivate' ? 'Deactivate User' : 'Reactivate User'}
-        icon={`fas ${confirmAction === 'deactivate' ? 'fa-user-slash' : 'fa-user-check'}`}
-        submitText={loading ? (confirmAction === 'deactivate' ? 'Deactivating...' : 'Reactivating...') : (confirmAction === 'deactivate' ? 'Deactivate' : 'Reactivate')}
-        submitClass={confirmAction === 'deactivate' ? 'is-danger' : 'is-success'}
+        title={
+          confirmAction === "deactivate" ? "Deactivate User" : "Reactivate User"
+        }
+        icon={`fas ${confirmAction === "deactivate" ? "fa-user-slash" : "fa-user-check"}`}
+        submitText={
+          loading
+            ? confirmAction === "deactivate"
+              ? "Deactivating..."
+              : "Reactivating..."
+            : confirmAction === "deactivate"
+              ? "Deactivate"
+              : "Reactivate"
+        }
+        submitClass={
+          confirmAction === "deactivate" ? "is-danger" : "is-success"
+        }
         loading={loading}
       >
         {confirmModalUser && (
-          <p>Are you sure you want to {confirmAction} <strong>{confirmModalUser.username}</strong>?</p>
+          <p>
+            Are you sure you want to {confirmAction}{" "}
+            <strong>{confirmModalUser.username}</strong>?
+          </p>
         )}
       </FormModal>
 
@@ -1262,14 +1514,19 @@ const Accounts = () => {
         onSubmit={confirmOrgAction}
         title="Deactivate Organization"
         icon="fas fa-building"
-        submitText={orgLoading ? 'Deactivating...' : 'Deactivate Organization'}
+        submitText={orgLoading ? "Deactivating..." : "Deactivate Organization"}
         submitClass="is-danger"
         loading={orgLoading}
       >
         {confirmModalOrg && (
           <div>
-            <p>Are you sure you want to deactivate <strong>{confirmModalOrg.name}</strong>?</p>
-            <p className="mt-3 has-text-grey">This will prevent new users from joining this organization.</p>
+            <p>
+              Are you sure you want to deactivate{" "}
+              <strong>{confirmModalOrg.name}</strong>?
+            </p>
+            <p className="mt-3 has-text-grey">
+              This will prevent new users from joining this organization.
+            </p>
           </div>
         )}
       </FormModal>

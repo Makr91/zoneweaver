@@ -1,35 +1,27 @@
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position } from "@xyflow/react";
+import React from "react";
 
 const ZoneNode = ({ data }) => {
-  const { 
-    label, 
-    status, 
-    zonename, 
-    zonepath, 
-    autoboot, 
-    brand, 
-    ipType, 
-    vnics 
-  } = data;
+  const { label, status, zonename, zonepath, autoboot, brand, ipType, vnics } =
+    data;
 
-  const isRunning = status?.toLowerCase() === 'running';
+  const isRunning = status?.toLowerCase() === "running";
 
   const tooltipContent = `
 ${label} (Zone)
-Status: ${status || 'unknown'}
+Status: ${status || "unknown"}
 Zone Name: ${zonename || label}
-Zone Path: ${zonepath || 'N/A'}
-Brand: ${brand || 'N/A'}
-IP Type: ${ipType || 'N/A'}
-Autoboot: ${autoboot || 'N/A'}
+Zone Path: ${zonepath || "N/A"}
+Brand: ${brand || "N/A"}
+IP Type: ${ipType || "N/A"}
+Autoboot: ${autoboot || "N/A"}
 VNICs: ${vnics?.length || 0}
-${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
+${vnics?.length ? `Connected: ${vnics.join(", ")}` : "No VNICs connected"}
   `.trim();
 
   return (
-    <div 
-      className={`react-flow__node-default zw-node-base ${isRunning ? 'zw-zone-running' : 'zw-zone-stopped'}`}
+    <div
+      className={`react-flow__node-default zw-node-base ${isRunning ? "zw-zone-running" : "zw-zone-stopped"}`}
       title={tooltipContent}
     >
       {/* Handles - Both target and source for bidirectional traffic */}
@@ -46,16 +38,14 @@ ${vnics?.length ? `Connected: ${vnics.join(', ')}` : 'No VNICs connected'}
 
       {/* Icon */}
       <i className="fas fa-server zw-node-icon" />
-      
+
       {/* Status indicator */}
-      <div 
-        className={`zw-zone-status-indicator ${isRunning ? 'zw-nic-active-bg' : 'zw-zone-active-bg'}`}
+      <div
+        className={`zw-zone-status-indicator ${isRunning ? "zw-nic-active-bg" : "zw-zone-active-bg"}`}
       />
-      
+
       {/* Label below */}
-      <div className="zw-node-label">
-        {label}
-      </div>
+      <div className="zw-node-label">{label}</div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
+import { useEffect } from "react";
 
 /**
  * FormModal - Reusable modal for forms and interactive content
@@ -11,35 +11,35 @@ const FormModal = ({
   onSubmit,
   title,
   icon = null,
-  className = '',
+  className = "",
   children,
-  submitText = 'Submit',
-  submitVariant = 'is-primary',
+  submitText = "Submit",
+  submitVariant = "is-primary",
   submitIcon = null,
   loading = false,
   disabled = false,
   showCancelButton = false,
-  cancelText = 'Cancel',
+  cancelText = "Cancel",
   additionalActions = null,
-  'aria-label': ariaLabel
+  "aria-label": ariaLabel,
 }) => {
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscKey = (event) => {
-      if (event.key === 'Escape' && isOpen && !loading) {
+      if (event.key === "Escape" && isOpen && !loading) {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscKey);
+      document.addEventListener("keydown", handleEscKey);
       // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscKey);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscKey);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose, loading]);
 
@@ -47,7 +47,6 @@ const FormModal = ({
   if (!isOpen) {
     return null;
   }
-
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -65,22 +64,22 @@ const FormModal = ({
   };
 
   return (
-    <div className='modal is-active'>
+    <div className="modal is-active">
       {/* Background - clicking closes modal (unless loading) */}
-      <div 
-        className='modal-background' 
+      <div
+        className="modal-background"
         onClick={handleBackgroundClick}
         aria-label="Close modal"
       />
-      
+
       {/* Modal content */}
       <div className={`modal-card ${className}`}>
         {/* Header with title and close button */}
-        <header className='modal-card-head'>
-          <p className='modal-card-title' id="modal-title">
+        <header className="modal-card-head">
+          <p className="modal-card-title" id="modal-title">
             {icon && (
-              <span className='icon-text'>
-                <span className='icon'>
+              <span className="icon-text">
+                <span className="icon">
                   <i className={icon} />
                 </span>
                 <span>{title}</span>
@@ -89,58 +88,56 @@ const FormModal = ({
             {!icon && title}
           </p>
           <button
-            className='delete'
-            aria-label='close'
+            className="delete"
+            aria-label="close"
             onClick={onClose}
             disabled={loading}
             type="button"
           />
         </header>
-        
+
         {/* Body with form content */}
         <form onSubmit={handleSubmit}>
-          <section 
-            className='modal-card-body'
+          <section
+            className="modal-card-body"
             role="document"
             aria-labelledby="modal-title"
             aria-label={ariaLabel || title}
           >
             {children}
           </section>
-          
+
           {/* Footer with action buttons */}
-          <footer className='modal-card-foot'>
+          <footer className="modal-card-foot">
             {/* Main submit button */}
             <button
-              type='submit'
-              className={`button ${submitVariant} ${loading ? 'is-loading' : ''}`}
+              type="submit"
+              className={`button ${submitVariant} ${loading ? "is-loading" : ""}`}
               disabled={loading || disabled}
             >
               {submitIcon && !loading && (
-                <span className='icon is-small'>
+                <span className="icon is-small">
                   <i className={submitIcon} />
                 </span>
               )}
               <span>{submitText}</span>
             </button>
-            
+
             {/* Optional cancel button */}
             {showCancelButton && (
               <button
-                type='button'
-                className='button'
+                type="button"
+                className="button"
                 onClick={onClose}
                 disabled={loading}
               >
                 {cancelText}
               </button>
             )}
-            
+
             {/* Additional custom action buttons */}
             {additionalActions && (
-              <div className='buttons'>
-                {additionalActions}
-              </div>
+              <div className="buttons">{additionalActions}</div>
             )}
           </footer>
         </form>
@@ -181,7 +178,7 @@ FormModal.propTypes = {
   /** Additional action buttons to render in footer */
   additionalActions: PropTypes.node,
   /** Accessibility label for screen readers */
-  'aria-label': PropTypes.string
+  "aria-label": PropTypes.string,
 };
 
 export default FormModal;

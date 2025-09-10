@@ -1,20 +1,22 @@
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position } from "@xyflow/react";
+import React from "react";
 
 const AggregateNode = ({ data }) => {
-  const { 
-    label, 
-    members, 
-    policy, 
-    lacpActivity, 
-    lacpTimeout, 
-    flags, 
-    bandwidth, 
-    ipAddresses 
+  const {
+    label,
+    members,
+    policy,
+    lacpActivity,
+    lacpTimeout,
+    flags,
+    bandwidth,
+    ipAddresses,
   } = data;
 
   const formatBandwidth = (bw) => {
-    if (!bw) return '0 Mbps';
+    if (!bw) {
+      return "0 Mbps";
+    }
     if (bw >= 1000) {
       return `${(bw / 1000).toFixed(1)}G`;
     }
@@ -23,17 +25,17 @@ const AggregateNode = ({ data }) => {
 
   const tooltipContent = `
 ${label} (Link Aggregate)
-Members: ${members?.join(', ') || 'None'}
-Policy: ${policy || 'Unknown'}
-LACP Activity: ${lacpActivity || 'N/A'}
-LACP Timeout: ${lacpTimeout || 'N/A'}
-${bandwidth ? `Bandwidth: ${formatBandwidth(bandwidth.totalMbps)} (↓${formatBandwidth(bandwidth.rxMbps)} ↑${formatBandwidth(bandwidth.txMbps)})` : 'No bandwidth data'}
-${ipAddresses?.length ? `IP: ${ipAddresses.map(ip => ip.ip_address).join(', ')}` : 'No IP addresses'}
-${flags && flags !== '--' ? `Flags: ${flags}` : ''}
+Members: ${members?.join(", ") || "None"}
+Policy: ${policy || "Unknown"}
+LACP Activity: ${lacpActivity || "N/A"}
+LACP Timeout: ${lacpTimeout || "N/A"}
+${bandwidth ? `Bandwidth: ${formatBandwidth(bandwidth.totalMbps)} (↓${formatBandwidth(bandwidth.rxMbps)} ↑${formatBandwidth(bandwidth.txMbps)})` : "No bandwidth data"}
+${ipAddresses?.length ? `IP: ${ipAddresses.map((ip) => ip.ip_address).join(", ")}` : "No IP addresses"}
+${flags && flags !== "--" ? `Flags: ${flags}` : ""}
   `.trim();
 
   return (
-    <div 
+    <div
       className="react-flow__node-default zw-node-base zw-aggregate-bg"
       title={tooltipContent}
     >
@@ -43,7 +45,7 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
         position={Position.Left}
         className="zw-node-handle zw-aggregate-bg"
       />
-      
+
       <Handle
         type="source"
         position={Position.Right}
@@ -52,11 +54,9 @@ ${flags && flags !== '--' ? `Flags: ${flags}` : ''}
 
       {/* Icon */}
       <i className="fas fa-link zw-node-icon" />
-      
+
       {/* Label below */}
-      <div className="zw-node-label">
-        {label}
-      </div>
+      <div className="zw-node-label">{label}</div>
     </div>
   );
 };

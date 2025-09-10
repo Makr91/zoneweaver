@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useServers } from '../../contexts/ServerContext';
-import PackageTable from './PackageTable';
-import PackageDetailsModal from './PackageDetailsModal';
-import PackageActionModal from './PackageActionModal';
+import React, { useState, useEffect } from "react";
+
+import { useServers } from "../../contexts/ServerContext";
+
+import PackageActionModal from "./PackageActionModal";
+import PackageDetailsModal from "./PackageDetailsModal";
+import PackageTable from "./PackageTable";
 
 const PackageSection = ({ server, onError }) => {
   const [packages, setPackages] = useState([]);
@@ -10,15 +12,15 @@ const PackageSection = ({ server, onError }) => {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
-  const [actionType, setActionType] = useState('install');
+  const [actionType, setActionType] = useState("install");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [filters, setFilters] = useState({
-    pattern: '',
-    publisher: '',
-    status: '',
+    pattern: "",
+    publisher: "",
+    status: "",
     showAll: false,
-    searchQuery: ''
+    searchQuery: "",
   });
 
   const { makeZoneweaverAPIRequest } = useServers();
@@ -30,49 +32,69 @@ const PackageSection = ({ server, onError }) => {
     } else {
       loadPackages();
     }
-  }, [server, filters.pattern, filters.publisher, filters.status, filters.showAll]);
+  }, [
+    server,
+    filters.pattern,
+    filters.publisher,
+    filters.status,
+    filters.showAll,
+  ]);
 
   const loadPackages = async () => {
-    if (!server || !makeZoneweaverAPIRequest) return;
-    
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
+
     try {
       setLoading(true);
-      onError('');
+      onError("");
       setIsSearchMode(false);
-      
+
       const params = {};
-      if (filters.pattern) params.filter = filters.pattern;
-      if (filters.showAll) params.all = true;
-      
+      if (filters.pattern) {
+        params.filter = filters.pattern;
+      }
+      if (filters.showAll) {
+        params.all = true;
+      }
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        'system/packages',
-        'GET',
+        "system/packages",
+        "GET",
         null,
         params
       );
-      
+
       if (result.success) {
         const packageList = result.data?.packages || [];
         // Filter by publisher and status on client side
-        const filteredPackages = packageList.filter(pkg => {
-          if (filters.publisher && pkg.publisher !== filters.publisher) return false;
+        const filteredPackages = packageList.filter((pkg) => {
+          if (filters.publisher && pkg.publisher !== filters.publisher) {
+            return false;
+          }
           if (filters.status) {
-            if (filters.status === 'installed' && !pkg.installed) return false;
-            if (filters.status === 'frozen' && !pkg.frozen) return false;
-            if (filters.status === 'manual' && !pkg.manually_installed) return false;
+            if (filters.status === "installed" && !pkg.installed) {
+              return false;
+            }
+            if (filters.status === "frozen" && !pkg.frozen) {
+              return false;
+            }
+            if (filters.status === "manual" && !pkg.manually_installed) {
+              return false;
+            }
           }
           return true;
         });
         setPackages(filteredPackages);
       } else {
-        onError(result.message || 'Failed to load packages');
+        onError(result.message || "Failed to load packages");
         setPackages([]);
       }
     } catch (err) {
-      onError('Error loading packages: ' + err.message);
+      onError(`Error loading packages: ${err.message}`);
       setPackages([]);
     } finally {
       setLoading(false);
@@ -80,52 +102,57 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const searchPackages = async () => {
-    if (!server || !makeZoneweaverAPIRequest || !filters.searchQuery.trim()) return;
-    
+    if (!server || !makeZoneweaverAPIRequest || !filters.searchQuery.trim()) {
+      return;
+    }
+
     try {
       setLoading(true);
-      onError('');
+      onError("");
       setIsSearchMode(true);
-      
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        'system/packages/search',
-        'GET',
+        "system/packages/search",
+        "GET",
         null,
-        { 
+        {
           query: filters.searchQuery.trim(),
           local: false,
-          remote: true
+          remote: true,
         }
       );
-      
+
       if (result.success) {
         // Transform search results to package-like format
         const searchData = result.data?.results || [];
-        const packageNames = [...new Set(searchData
-          .filter(item => item.index === 'pkg.fmri')
-          .map(item => item.package.split('@')[0].replace('pkg:/', ''))
-        )];
-        
-        const transformedResults = packageNames.map(name => ({
-          name: name,
-          publisher: 'Available',
-          version: 'Latest',
+        const packageNames = [
+          ...new Set(
+            searchData
+              .filter((item) => item.index === "pkg.fmri")
+              .map((item) => item.package.split("@")[0].replace("pkg:/", ""))
+          ),
+        ];
+
+        const transformedResults = packageNames.map((name) => ({
+          name,
+          publisher: "Available",
+          version: "Latest",
           installed: false,
           frozen: false,
           manually_installed: false,
-          flags: 'a--'
+          flags: "a--",
         }));
-        
+
         setSearchResults(transformedResults);
       } else {
-        onError(result.message || 'Failed to search packages');
+        onError(result.message || "Failed to search packages");
         setSearchResults([]);
       }
     } catch (err) {
-      onError('Error searching packages: ' + err.message);
+      onError(`Error searching packages: ${err.message}`);
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -133,40 +160,44 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const handlePackageAction = async (packageName, action, options = {}) => {
-    if (!server || !makeZoneweaverAPIRequest) return;
-    
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
+
     try {
       setLoading(true);
-      onError('');
-      
-      const endpoint = action === 'install' ? 'system/packages/install' : 'system/packages/uninstall';
+      onError("");
+
+      const endpoint =
+        action === "install"
+          ? "system/packages/install"
+          : "system/packages/uninstall";
       const requestData = {
         packages: [packageName],
         dry_run: options.dryRun || false,
         accept_licenses: options.acceptLicenses || false,
-        be_name: options.beName || '',
-        created_by: 'api'
+        be_name: options.beName || "",
+        created_by: "api",
       };
-      
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
         endpoint,
-        'POST',
+        "POST",
         requestData
       );
-      
+
       if (result.success) {
         // Refresh package list after action
         await loadPackages();
         return { success: true, data: result.data };
-      } else {
-        onError(result.message || `Failed to ${action} package`);
-        return { success: false, message: result.message };
       }
+      onError(result.message || `Failed to ${action} package`);
+      return { success: false, message: result.message };
     } catch (err) {
-      const errorMsg = `Error during package ${action}: ` + err.message;
+      const errorMsg = `Error during package ${action}: ${err.message}`;
       onError(errorMsg);
       return { success: false, message: errorMsg };
     } finally {
@@ -175,33 +206,35 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const handleViewDetails = async (pkg) => {
-    if (!server || !makeZoneweaverAPIRequest) return;
-    
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
+
     try {
       setLoading(true);
-      onError('');
-      
+      onError("");
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        'system/packages/info',
-        'GET',
+        "system/packages/info",
+        "GET",
         null,
-        { 
+        {
           package: pkg.name,
-          remote: !pkg.installed
+          remote: !pkg.installed,
         }
       );
-      
+
       if (result.success) {
         setSelectedPackage({ ...pkg, details: result.data });
         setShowDetailsModal(true);
       } else {
-        onError(result.message || 'Failed to load package details');
+        onError(result.message || "Failed to load package details");
       }
     } catch (err) {
-      onError('Error loading package details: ' + err.message);
+      onError(`Error loading package details: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -214,9 +247,9 @@ const PackageSection = ({ server, onError }) => {
   };
 
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -231,11 +264,11 @@ const PackageSection = ({ server, onError }) => {
 
   const clearFilters = () => {
     setFilters({
-      pattern: '',
-      publisher: '',
-      status: '',
+      pattern: "",
+      publisher: "",
+      status: "",
       showAll: false,
-      searchQuery: ''
+      searchQuery: "",
     });
     setIsSearchMode(false);
   };
@@ -244,82 +277,91 @@ const PackageSection = ({ server, onError }) => {
 
   return (
     <div>
-      <div className='mb-4'>
-        <h2 className='title is-5'>Package Management</h2>
-        <p className='content'>
-          Manage packages on <strong>{server.hostname}</strong>. Search for available packages, install, uninstall, and view package information.
+      <div className="mb-4">
+        <h2 className="title is-5">Package Management</h2>
+        <p className="content">
+          Manage packages on <strong>{server.hostname}</strong>. Search for
+          available packages, install, uninstall, and view package information.
         </p>
       </div>
 
       {/* Package Filters */}
-      <div className='box mb-4'>
-        <div className='columns'>
-          <div className='column'>
-            <div className='field'>
-              <label className='label'>Filter by Package Name</label>
-              <div className='control'>
-                <input 
-                  className='input'
-                  type='text'
-                  placeholder='Enter package name pattern...'
+      <div className="box mb-4">
+        <div className="columns">
+          <div className="column">
+            <div className="field">
+              <label className="label">Filter by Package Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="Enter package name pattern..."
                   value={filters.pattern}
-                  onChange={(e) => handleFilterChange('pattern', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("pattern", e.target.value)
+                  }
                   disabled={isSearchMode}
                 />
               </div>
             </div>
           </div>
-          <div className='column'>
-            <div className='field'>
-              <label className='label'>Filter by Publisher</label>
-              <div className='control'>
-                <div className='select is-fullwidth'>
-                  <select 
+          <div className="column">
+            <div className="field">
+              <label className="label">Filter by Publisher</label>
+              <div className="control">
+                <div className="select is-fullwidth">
+                  <select
                     value={filters.publisher}
-                    onChange={(e) => handleFilterChange('publisher', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("publisher", e.target.value)
+                    }
                     disabled={isSearchMode}
                   >
-                    <option value=''>All Publishers</option>
-                    <option value='omnios'>omnios</option>
-                    <option value='extra.omnios'>extra.omnios</option>
-                    <option value='ooce'>ooce</option>
+                    <option value="">All Publishers</option>
+                    <option value="omnios">omnios</option>
+                    <option value="extra.omnios">extra.omnios</option>
+                    <option value="ooce">ooce</option>
                   </select>
                 </div>
               </div>
             </div>
           </div>
-          <div className='column'>
-            <div className='field'>
-              <label className='label'>Filter by Status</label>
-              <div className='control'>
-                <div className='select is-fullwidth'>
-                  <select 
+          <div className="column">
+            <div className="field">
+              <label className="label">Filter by Status</label>
+              <div className="control">
+                <div className="select is-fullwidth">
+                  <select
                     value={filters.status}
-                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("status", e.target.value)
+                    }
                     disabled={isSearchMode}
                   >
-                    <option value=''>All Status</option>
-                    <option value='installed'>Installed</option>
-                    <option value='frozen'>Frozen</option>
-                    <option value='manual'>Manual</option>
+                    <option value="">All Status</option>
+                    <option value="installed">Installed</option>
+                    <option value="frozen">Frozen</option>
+                    <option value="manual">Manual</option>
                   </select>
                 </div>
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>Show All</label>
-              <div className='control'>
-                <label className='switch is-medium'>
-                  <input 
-                    type='checkbox'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">Show All</label>
+              <div className="control">
+                <label className="switch is-medium">
+                  <input
+                    type="checkbox"
                     checked={filters.showAll}
-                    onChange={(e) => handleFilterChange('showAll', e.target.checked)}
+                    onChange={(e) =>
+                      handleFilterChange("showAll", e.target.checked)
+                    }
                     disabled={isSearchMode}
                   />
-                  <span className='check'></span>
-                  <span className='control-label'>All Packages</span>
+                  <span className="check" />
+                  <span className="control-label">All Packages</span>
                 </label>
               </div>
             </div>
@@ -327,70 +369,72 @@ const PackageSection = ({ server, onError }) => {
         </div>
 
         {/* Search Row */}
-        <div className='columns'>
-          <div className='column'>
-            <div className='field'>
-              <label className='label'>Search Available Packages</label>
-              <div className='control has-icons-right'>
-                <input 
-                  className='input'
-                  type='text'
-                  placeholder='Search for packages...'
+        <div className="columns">
+          <div className="column">
+            <div className="field">
+              <label className="label">Search Available Packages</label>
+              <div className="control has-icons-right">
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="Search for packages..."
                   value={filters.searchQuery}
-                  onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onChange={(e) =>
+                    handleFilterChange("searchQuery", e.target.value)
+                  }
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 />
-                <span className='icon is-small is-right'>
-                  <i className='fas fa-search'></i>
+                <span className="icon is-small is-right">
+                  <i className="fas fa-search" />
                 </span>
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>&nbsp;</label>
-              <div className='control'>
-                <button 
-                  className='button is-info'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">&nbsp;</label>
+              <div className="control">
+                <button
+                  className="button is-info"
                   onClick={handleSearch}
                   disabled={loading}
                 >
-                  <span className='icon'>
-                    <i className='fas fa-search'></i>
+                  <span className="icon">
+                    <i className="fas fa-search" />
                   </span>
                   <span>Search</span>
                 </button>
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>&nbsp;</label>
-              <div className='control'>
-                <button 
-                  className='button is-info'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">&nbsp;</label>
+              <div className="control">
+                <button
+                  className="button is-info"
                   onClick={loadPackages}
                   disabled={loading}
                 >
-                  <span className='icon'>
-                    <i className='fas fa-sync-alt'></i>
+                  <span className="icon">
+                    <i className="fas fa-sync-alt" />
                   </span>
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>&nbsp;</label>
-              <div className='control'>
-                <button 
-                  className='button'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">&nbsp;</label>
+              <div className="control">
+                <button
+                  className="button"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className='icon'>
-                    <i className='fas fa-times'></i>
+                  <span className="icon">
+                    <i className="fas fa-times" />
                   </span>
                   <span>Clear</span>
                 </button>
@@ -401,21 +445,27 @@ const PackageSection = ({ server, onError }) => {
       </div>
 
       {/* Packages Table */}
-      <div className='box'>
-        <div className='level is-mobile mb-4'>
-          <div className='level-left'>
-            <h3 className='title is-6'>
-              {isSearchMode ? `Search Results (${displayPackages.length})` : `Packages (${displayPackages.length})`}
-              {loading && <span className='ml-2'><i className='fas fa-spinner fa-spin'></i></span>}
+      <div className="box">
+        <div className="level is-mobile mb-4">
+          <div className="level-left">
+            <h3 className="title is-6">
+              {isSearchMode
+                ? `Search Results (${displayPackages.length})`
+                : `Packages (${displayPackages.length})`}
+              {loading && (
+                <span className="ml-2">
+                  <i className="fas fa-spinner fa-spin" />
+                </span>
+              )}
             </h3>
           </div>
         </div>
 
-        <PackageTable 
+        <PackageTable
           packages={displayPackages}
           loading={loading}
-          onInstall={(pkg) => handleShowActionModal(pkg, 'install')}
-          onUninstall={(pkg) => handleShowActionModal(pkg, 'uninstall')}
+          onInstall={(pkg) => handleShowActionModal(pkg, "install")}
+          onUninstall={(pkg) => handleShowActionModal(pkg, "uninstall")}
           onViewDetails={handleViewDetails}
           isSearchMode={isSearchMode}
         />
@@ -423,7 +473,7 @@ const PackageSection = ({ server, onError }) => {
 
       {/* Package Details Modal */}
       {showDetailsModal && selectedPackage && (
-        <PackageDetailsModal 
+        <PackageDetailsModal
           package={selectedPackage}
           onClose={() => {
             setShowDetailsModal(false);
@@ -434,7 +484,7 @@ const PackageSection = ({ server, onError }) => {
 
       {/* Package Action Modal */}
       {showActionModal && selectedPackage && (
-        <PackageActionModal 
+        <PackageActionModal
           package={selectedPackage}
           action={actionType}
           onClose={() => {

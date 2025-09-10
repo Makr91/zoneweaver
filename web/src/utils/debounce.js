@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
- * Creates a debounced function that delays invoking func until after wait milliseconds 
+ * Creates a debounced function that delays invoking func until after wait milliseconds
  * have elapsed since the last time the debounced function was invoked.
- * 
+ *
  * @param {Function} func - The function to debounce
  * @param {number} wait - The number of milliseconds to delay
  * @returns {Function} The debounced function
  */
 export const debounce = (func, wait) => {
   let timeout;
-  
+
   return function executedFunction(...args) {
     const later = () => {
       clearTimeout(timeout);
       func(...args);
     };
-    
+
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
@@ -24,7 +24,7 @@ export const debounce = (func, wait) => {
 
 /**
  * React hook for debouncing a value
- * 
+ *
  * @param {any} value - The value to debounce
  * @param {number} delay - The delay in milliseconds
  * @returns {any} The debounced value

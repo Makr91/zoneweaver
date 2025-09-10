@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useServers } from '../../contexts/ServerContext';
-import FaultTable from './FaultTable';
-import FaultDetailsModal from './FaultDetailsModal';
+import React, { useState, useEffect } from "react";
+
+import { useServers } from "../../contexts/ServerContext";
+
+import FaultDetailsModal from "./FaultDetailsModal";
+import FaultTable from "./FaultTable";
 
 const FaultList = ({ server }) => {
   const [faults, setFaults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [summary, setSummary] = useState(null);
   const [filters, setFilters] = useState({
     all: false,
     summary: false,
     limit: 50,
-    force_refresh: false
+    force_refresh: false,
   });
-  
+
   // Modal states
   const [selectedFault, setSelectedFault] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  
+
   const { makeZoneweaverAPIRequest } = useServers();
 
   // Load faults on component mount and when filters change
@@ -26,41 +28,42 @@ const FaultList = ({ server }) => {
     loadFaults();
   }, [server, filters.all, filters.limit]);
 
-
   const loadFaults = async (forceRefresh = false) => {
-    if (!server || !makeZoneweaverAPIRequest) return;
-    
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
+
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       const params = {
         all: filters.all,
         summary: filters.summary,
         limit: filters.limit,
-        force_refresh: forceRefresh
+        force_refresh: forceRefresh,
       };
-      
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        'system/fault-management/faults',
-        'GET',
+        "system/fault-management/faults",
+        "GET",
         null,
         params
       );
-      
+
       if (result.success) {
         setFaults(result.data?.faults || []);
         setSummary(result.data?.summary || null);
       } else {
-        setError(result.message || 'Failed to load faults');
+        setError(result.message || "Failed to load faults");
         setFaults([]);
         setSummary(null);
       }
     } catch (err) {
-      setError('Error loading faults: ' + err.message);
+      setError(`Error loading faults: ${err.message}`);
       setFaults([]);
       setSummary(null);
     } finally {
@@ -69,32 +72,34 @@ const FaultList = ({ server }) => {
   };
 
   const handleFaultAction = async (uuid, action, fmri = null) => {
-    if (!server || !makeZoneweaverAPIRequest) return;
-    
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
+
     try {
       setLoading(true);
-      setError('');
-      
-      const payload = action === 'acquit' ? { target: uuid } : { fmri: fmri };
-      
+      setError("");
+
+      const payload = action === "acquit" ? { target: uuid } : { fmri };
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
         `system/fault-management/actions/${action}`,
-        'POST',
+        "POST",
         payload
       );
-      
+
       if (result.success) {
         // Refresh faults list after action
-        setFilters(prev => ({ ...prev, force_refresh: true }));
+        setFilters((prev) => ({ ...prev, force_refresh: true }));
         await loadFaults();
       } else {
         setError(result.message || `Failed to ${action} fault`);
       }
     } catch (err) {
-      setError(`Error performing ${action}: ` + err.message);
+      setError(`Error performing ${action}: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -107,10 +112,10 @@ const FaultList = ({ server }) => {
   };
 
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [field]: value,
-      force_refresh: field === 'all' || field === 'limit' // Force refresh for these changes
+      force_refresh: field === "all" || field === "limit", // Force refresh for these changes
     }));
   };
 
@@ -119,7 +124,7 @@ const FaultList = ({ server }) => {
       all: false,
       summary: false,
       limit: 50,
-      force_refresh: true
+      force_refresh: true,
     });
   };
 
@@ -127,39 +132,55 @@ const FaultList = ({ server }) => {
     <div>
       {/* Fault Summary */}
       {summary && (
-        <div className='box mb-4'>
-          <h4 className='title is-6 mb-3'>
-            <span className='icon-text'>
-              <span className='icon'><i className='fas fa-chart-pie'></i></span>
+        <div className="box mb-4">
+          <h4 className="title is-6 mb-3">
+            <span className="icon-text">
+              <span className="icon">
+                <i className="fas fa-chart-pie" />
+              </span>
               <span>Fault Summary</span>
             </span>
           </h4>
-          
-          <div className='columns'>
-            <div className='column'>
-              <div className='field'>
-                <label className='label is-small'>Total Faults</label>
-                <p className='control'>
-                  <span className='tag is-info is-medium'>
+
+          <div className="columns">
+            <div className="column">
+              <div className="field">
+                <label className="label is-small">Total Faults</label>
+                <p className="control">
+                  <span className="tag is-info is-medium">
                     {summary.totalFaults}
                   </span>
                 </p>
               </div>
             </div>
             {summary.severityLevels.length > 0 && (
-              <div className='column'>
-                <div className='field'>
-                  <label className='label is-small'>Severity Levels</label>
-                  <div className='control'>
-                    <div className='tags'>
-                      {[...new Set(summary.severityLevels.map(level => level.toLowerCase()))].map((level, index) => {
-                        const displayLevel = level.charAt(0).toUpperCase() + level.slice(1);
+              <div className="column">
+                <div className="field">
+                  <label className="label is-small">Severity Levels</label>
+                  <div className="control">
+                    <div className="tags">
+                      {[
+                        ...new Set(
+                          summary.severityLevels.map((level) =>
+                            level.toLowerCase()
+                          )
+                        ),
+                      ].map((level, index) => {
+                        const displayLevel =
+                          level.charAt(0).toUpperCase() + level.slice(1);
                         return (
-                          <span key={index} className={`tag ${
-                            level === 'critical' ? 'is-danger' :
-                            level === 'major' ? 'is-warning' :
-                            level === 'minor' ? 'is-info' : 'is-light'
-                          }`}>
+                          <span
+                            key={index}
+                            className={`tag ${
+                              level === "critical"
+                                ? "is-danger"
+                                : level === "major"
+                                  ? "is-warning"
+                                  : level === "minor"
+                                    ? "is-info"
+                                    : "is-light"
+                            }`}
+                          >
                             {displayLevel}
                           </span>
                         );
@@ -170,18 +191,18 @@ const FaultList = ({ server }) => {
               </div>
             )}
             {summary.faultClasses.length > 0 && (
-              <div className='column'>
-                <div className='field'>
-                  <label className='label is-small'>Fault Classes</label>
-                  <div className='control'>
-                    <div className='tags'>
+              <div className="column">
+                <div className="field">
+                  <label className="label is-small">Fault Classes</label>
+                  <div className="control">
+                    <div className="tags">
                       {summary.faultClasses.slice(0, 3).map((cls, index) => (
-                        <span key={index} className='tag is-light is-small'>
-                          {cls.split('.').pop()}
+                        <span key={index} className="tag is-light is-small">
+                          {cls.split(".").pop()}
                         </span>
                       ))}
                       {summary.faultClasses.length > 3 && (
-                        <span className='tag is-grey is-small'>
+                        <span className="tag is-grey is-small">
                           +{summary.faultClasses.length - 3} more
                         </span>
                       )}
@@ -195,16 +216,18 @@ const FaultList = ({ server }) => {
       )}
 
       {/* Fault Filters */}
-      <div className='box mb-4'>
-        <div className='columns'>
-          <div className='column is-3'>
-            <div className='field'>
-              <label className='label'>Max Faults</label>
-              <div className='control'>
-                <div className='select is-fullwidth'>
-                  <select 
+      <div className="box mb-4">
+        <div className="columns">
+          <div className="column is-3">
+            <div className="field">
+              <label className="label">Max Faults</label>
+              <div className="control">
+                <div className="select is-fullwidth">
+                  <select
                     value={filters.limit}
-                    onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleFilterChange("limit", parseInt(e.target.value))
+                    }
                   >
                     <option value={25}>25 faults</option>
                     <option value={50}>50 faults</option>
@@ -215,50 +238,52 @@ const FaultList = ({ server }) => {
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>Include Resolved</label>
-              <div className='control'>
-                <label className='switch is-medium'>
-                  <input 
-                    type='checkbox'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">Include Resolved</label>
+              <div className="control">
+                <label className="switch is-medium">
+                  <input
+                    type="checkbox"
                     checked={filters.all}
-                    onChange={(e) => handleFilterChange('all', e.target.checked)}
+                    onChange={(e) =>
+                      handleFilterChange("all", e.target.checked)
+                    }
                   />
-                  <span className='check'></span>
-                  <span className='control-label'>Show All</span>
+                  <span className="check" />
+                  <span className="control-label">Show All</span>
                 </label>
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>&nbsp;</label>
-              <div className='control'>
-                <button 
-                  className='button is-info'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">&nbsp;</label>
+              <div className="control">
+                <button
+                  className="button is-info"
                   onClick={() => loadFaults(true)}
                   disabled={loading}
                 >
-                  <span className='icon'>
-                    <i className='fas fa-sync-alt'></i>
+                  <span className="icon">
+                    <i className="fas fa-sync-alt" />
                   </span>
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
           </div>
-          <div className='column is-narrow'>
-            <div className='field'>
-              <label className='label'>&nbsp;</label>
-              <div className='control'>
-                <button 
-                  className='button'
+          <div className="column is-narrow">
+            <div className="field">
+              <label className="label">&nbsp;</label>
+              <div className="control">
+                <button
+                  className="button"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className='icon'>
-                    <i className='fas fa-times'></i>
+                  <span className="icon">
+                    <i className="fas fa-times" />
                   </span>
                   <span>Clear</span>
                 </button>
@@ -270,24 +295,28 @@ const FaultList = ({ server }) => {
 
       {/* Error Display */}
       {error && (
-        <div className='notification is-danger mb-4'>
-          <button className='delete' onClick={() => setError('')}></button>
+        <div className="notification is-danger mb-4">
+          <button className="delete" onClick={() => setError("")} />
           <p>{error}</p>
         </div>
       )}
 
       {/* Faults Table */}
-      <div className='box'>
-        <div className='level is-mobile mb-4'>
-          <div className='level-left'>
-            <h3 className='title is-6'>
+      <div className="box">
+        <div className="level is-mobile mb-4">
+          <div className="level-left">
+            <h3 className="title is-6">
               System Faults ({faults.length})
-              {loading && <span className='ml-2'><i className='fas fa-spinner fa-spin'></i></span>}
+              {loading && (
+                <span className="ml-2">
+                  <i className="fas fa-spinner fa-spin" />
+                </span>
+              )}
             </h3>
           </div>
         </div>
 
-        <FaultTable 
+        <FaultTable
           faults={faults}
           loading={loading}
           onAction={handleFaultAction}
@@ -297,7 +326,7 @@ const FaultList = ({ server }) => {
 
       {/* Fault Details Modal */}
       {showDetailsModal && selectedFault && (
-        <FaultDetailsModal 
+        <FaultDetailsModal
           fault={selectedFault}
           onClose={() => {
             setShowDetailsModal(false);

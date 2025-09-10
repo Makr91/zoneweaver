@@ -4,7 +4,9 @@
  * @returns {string} The formatted uptime string or 'N/A'.
  */
 export const formatUptime = (uptime) => {
-  if (!uptime) return 'N/A';
+  if (!uptime) {
+    return "N/A";
+  }
   const days = Math.floor(uptime / 86400);
   const hours = Math.floor((uptime % 86400) / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
@@ -18,9 +20,11 @@ export const formatUptime = (uptime) => {
  */
 export const bytesToSize = (bytes) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Byte";
+  if (bytes === 0) {
+    return "0 Byte";
+  }
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-  return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
+  return `${Math.round(bytes / 1024 ** i, 2)} ${sizes[i]}`;
 };
 
 /**
@@ -29,10 +33,16 @@ export const bytesToSize = (bytes) => {
  * @returns {number|string} The number of CPUs or 'N/A'.
  */
 export const getCpuCount = (serverStats) => {
-  if (!serverStats) return 'N/A';
-  if (Array.isArray(serverStats.cpus)) return serverStats.cpus.length;
-  if (typeof serverStats.cpus === 'number') return serverStats.cpus;
-  return 'N/A';
+  if (!serverStats) {
+    return "N/A";
+  }
+  if (Array.isArray(serverStats.cpus)) {
+    return serverStats.cpus.length;
+  }
+  if (typeof serverStats.cpus === "number") {
+    return serverStats.cpus;
+  }
+  return "N/A";
 };
 
 /**
@@ -43,11 +53,11 @@ export const getCpuCount = (serverStats) => {
 export const getCpuModel = (serverStats) => {
   if (Array.isArray(serverStats.cpus) && serverStats.cpus.length > 0) {
     const firstCpu = serverStats.cpus[0];
-    if (typeof firstCpu === 'object' && firstCpu.model) {
+    if (typeof firstCpu === "object" && firstCpu.model) {
       return firstCpu.model;
     }
   }
-  return 'Unknown CPU';
+  return "Unknown CPU";
 };
 
 /**
@@ -57,18 +67,18 @@ export const getCpuModel = (serverStats) => {
  */
 export const getMaxDataPointsForWindow = (window) => {
   const windowConfig = {
-    '1min': { points: 12, since: '1minute', limit: 500 },
-    '5min': { points: 60, since: '5minutes', limit: 2000 },
-    '10min': { points: 120, since: '10minutes', limit: 4000 },
-    '15min': { points: 180, since: '15minutes', limit: 6000 },
-    '30min': { points: 360, since: '30minutes', limit: 12000 },
-    '1hour': { points: 720, since: '1hour', limit: 25000 },
-    '3hour': { points: 2160, since: '3hours', limit: 70000 },
-    '6hour': { points: 4320, since: '6hours', limit: 140000 },
-    '12hour': { points: 8640, since: '12hours', limit: 280000 },
-    '24hour': { points: 17280, since: '24hours', limit: 500000 }
+    "1min": { points: 12, since: "1minute", limit: 500 },
+    "5min": { points: 60, since: "5minutes", limit: 2000 },
+    "10min": { points: 120, since: "10minutes", limit: 4000 },
+    "15min": { points: 180, since: "15minutes", limit: 6000 },
+    "30min": { points: 360, since: "30minutes", limit: 12000 },
+    "1hour": { points: 720, since: "1hour", limit: 25000 },
+    "3hour": { points: 2160, since: "3hours", limit: 70000 },
+    "6hour": { points: 4320, since: "6hours", limit: 140000 },
+    "12hour": { points: 8640, since: "12hours", limit: 280000 },
+    "24hour": { points: 17280, since: "24hours", limit: 500000 },
   };
-  return windowConfig[window] || windowConfig['1hour'];
+  return windowConfig[window] || windowConfig["1hour"];
 };
 
 /**
@@ -83,13 +93,15 @@ export const calculateNetworkBandwidth = (record) => {
       txBytesPerSecond: 0,
       rxMbps: 0,
       txMbps: 0,
-      totalMbps: 0
+      totalMbps: 0,
     };
   }
 
-  const rxBytesPerSecond = (record.rbytes_delta || 0) / record.time_delta_seconds;
-  const txBytesPerSecond = (record.obytes_delta || 0) / record.time_delta_seconds;
-  
+  const rxBytesPerSecond =
+    (record.rbytes_delta || 0) / record.time_delta_seconds;
+  const txBytesPerSecond =
+    (record.obytes_delta || 0) / record.time_delta_seconds;
+
   // Convert to Mbps (bytes/second * 8 bits/byte / 1,000,000)
   const rxMbps = (rxBytesPerSecond * 8) / 1000000;
   const txMbps = (txBytesPerSecond * 8) / 1000000;
@@ -100,7 +112,7 @@ export const calculateNetworkBandwidth = (record) => {
     txBytesPerSecond,
     rxMbps: Math.max(0, rxMbps), // Ensure no negative values
     txMbps: Math.max(0, txMbps),
-    totalMbps: Math.max(0, totalMbps)
+    totalMbps: Math.max(0, totalMbps),
   };
 
   return result;

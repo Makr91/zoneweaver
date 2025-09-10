@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
+import { useEffect } from "react";
 
 /**
  * ContentModal - Reusable modal for displaying read-only content
@@ -10,27 +10,27 @@ const ContentModal = ({
   onClose,
   title,
   icon = null,
-  className = '',
+  className = "",
   children,
-  'aria-label': ariaLabel
+  "aria-label": ariaLabel,
 }) => {
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscKey = (event) => {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscKey);
+      document.addEventListener("keydown", handleEscKey);
       // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscKey);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscKey);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -39,24 +39,23 @@ const ContentModal = ({
     return null;
   }
 
-
   return (
-    <div className='modal is-active'>
+    <div className="modal is-active">
       {/* Background - clicking closes modal */}
-      <div 
-        className='modal-background' 
+      <div
+        className="modal-background"
         onClick={onClose}
         aria-label="Close modal"
       />
-      
+
       {/* Modal content */}
       <div className={`modal-card ${className}`}>
         {/* Header with title and close button */}
-        <header className='modal-card-head'>
-          <p className='modal-card-title' id="modal-title">
+        <header className="modal-card-head">
+          <p className="modal-card-title" id="modal-title">
             {icon && (
-              <span className='icon-text'>
-                <span className='icon'>
+              <span className="icon-text">
+                <span className="icon">
                   <i className={icon} />
                 </span>
                 <span>{title}</span>
@@ -65,16 +64,16 @@ const ContentModal = ({
             {!icon && title}
           </p>
           <button
-            className='delete'
-            aria-label='close'
+            className="delete"
+            aria-label="close"
             onClick={onClose}
             type="button"
           />
         </header>
-        
+
         {/* Body with flexible content */}
-        <section 
-          className='modal-card-body'
+        <section
+          className="modal-card-body"
           role="document"
           aria-labelledby="modal-title"
           aria-label={ariaLabel || title}
@@ -100,7 +99,7 @@ ContentModal.propTypes = {
   /** Modal content */
   children: PropTypes.node.isRequired,
   /** Accessibility label for screen readers */
-  'aria-label': PropTypes.string
+  "aria-label": PropTypes.string,
 };
 
 export default ContentModal;

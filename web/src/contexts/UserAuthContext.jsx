@@ -9,7 +9,24 @@ const UserAuthProvider = ({ children }) => {
   const [userid, setUserID] = useState(null);
   const [group, setGroup] = useState(null);
 
-  return <UserAuth.Provider value={{ token, expire, name, group, userid, setToken, setExpire, setName, setGroup, setUserID }}>{children}</UserAuth.Provider>;
+  return (
+    <UserAuth.Provider
+      value={{
+        token,
+        expire,
+        name,
+        group,
+        userid,
+        setToken,
+        setExpire,
+        setName,
+        setGroup,
+        setUserID,
+      }}
+    >
+      {children}
+    </UserAuth.Provider>
+  );
 };
 
 export { UserAuth, UserAuthProvider };

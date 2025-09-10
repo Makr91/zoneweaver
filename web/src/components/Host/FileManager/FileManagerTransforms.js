@@ -8,10 +8,12 @@
  * @returns {string} Parent path
  */
 const getParentPath = (path) => {
-  if (!path || path === '/') return '';
-  const parts = path.split('/');
+  if (!path || path === "/") {
+    return "";
+  }
+  const parts = path.split("/");
   parts.pop(); // Remove the last part (filename)
-  return parts.join('/') || '/';
+  return parts.join("/") || "/";
 };
 
 /**
@@ -19,9 +21,7 @@ const getParentPath = (path) => {
  * @param {string} path - File path
  * @returns {string} Synthetic ID
  */
-const generateIdFromPath = (path) => {
-  return btoa(path).replace(/[^a-zA-Z0-9]/g, '');
-};
+const generateIdFromPath = (path) => btoa(path).replace(/[^a-zA-Z0-9]/g, "");
 
 /**
  * Get parent ID from path for tree building
@@ -30,7 +30,9 @@ const generateIdFromPath = (path) => {
  */
 const getParentId = (path) => {
   const parentPath = getParentPath(path);
-  return parentPath && parentPath !== '/' ? generateIdFromPath(parentPath) : null;
+  return parentPath && parentPath !== "/"
+    ? generateIdFromPath(parentPath)
+    : null;
 };
 
 /**
@@ -38,24 +40,22 @@ const getParentId = (path) => {
  * @param {Object} zwItem - Zoneweaver API file item
  * @returns {Object} Cubone compatible file object
  */
-export const transformZoneweaverToFile = (zwItem) => {
-  return {
-    name: zwItem.name,
-    path: zwItem.path, // Use zoneweaver API paths exactly as provided
-    isDirectory: zwItem.isDirectory,
-    updatedAt: zwItem.mtime || zwItem.atime || new Date().toISOString(),
-    size: zwItem.size || 0,
-    // Additional metadata for internal use
-    _zwMetadata: {
-      permissions: zwItem.permissions,
-      uid: zwItem.uid,
-      gid: zwItem.gid,
-      mimeType: zwItem.mimeType,
-      isBinary: zwItem.isBinary,
-      syntax: zwItem.syntax
-    }
-  };
-};
+export const transformZoneweaverToFile = (zwItem) => ({
+  name: zwItem.name,
+  path: zwItem.path, // Use zoneweaver API paths exactly as provided
+  isDirectory: zwItem.isDirectory,
+  updatedAt: zwItem.mtime || zwItem.atime || new Date().toISOString(),
+  size: zwItem.size || 0,
+  // Additional metadata for internal use
+  _zwMetadata: {
+    permissions: zwItem.permissions,
+    uid: zwItem.uid,
+    gid: zwItem.gid,
+    mimeType: zwItem.mimeType,
+    isBinary: zwItem.isBinary,
+    syntax: zwItem.syntax,
+  },
+});
 
 /**
  * Transform array of zoneweaver files to cubone hierarchy format
@@ -63,9 +63,11 @@ export const transformZoneweaverToFile = (zwItem) => {
  * @returns {Array} Array of cubone compatible file objects
  */
 export const transformFilesToHierarchy = (zwFiles) => {
-  if (!Array.isArray(zwFiles)) return [];
-  
-  return zwFiles.map(file => transformZoneweaverToFile(file));
+  if (!Array.isArray(zwFiles)) {
+    return [];
+  }
+
+  return zwFiles.map((file) => transformZoneweaverToFile(file));
 };
 
 /**
@@ -73,9 +75,7 @@ export const transformFilesToHierarchy = (zwFiles) => {
  * @param {Object} file - Cubone file object
  * @returns {string} File path
  */
-export const getPathFromFile = (file) => {
-  return file.path || '/';
-};
+export const getPathFromFile = (file) => file.path || "/";
 
 /**
  * Build file tree structure for navigation
@@ -83,28 +83,32 @@ export const getPathFromFile = (file) => {
  * @returns {Array} Tree structure for navigation
  */
 export const buildFileTree = (files) => {
-  const directories = files.filter(file => file.isDirectory);
+  const directories = files.filter((file) => file.isDirectory);
   const tree = [];
-  
+
   // Group directories by parent path
   const grouped = directories.reduce((acc, dir) => {
     const parentPath = getParentPath(dir.path);
-    if (!acc[parentPath]) acc[parentPath] = [];
+    if (!acc[parentPath]) {
+      acc[parentPath] = [];
+    }
     acc[parentPath].push(dir);
     return acc;
   }, {});
-  
+
   // Build tree recursively
-  const buildNode = (path = '') => {
-    if (!grouped[path]) return [];
-    
-    return grouped[path].map(dir => ({
+  const buildNode = (path = "") => {
+    if (!grouped[path]) {
+      return [];
+    }
+
+    return grouped[path].map((dir) => ({
       ...dir,
-      children: buildNode(dir.path)
+      children: buildNode(dir.path),
     }));
   };
-  
-  return buildNode('');
+
+  return buildNode("");
 };
 
 /**
@@ -113,8 +117,8 @@ export const buildFileTree = (files) => {
  * @returns {string} File extension (without dot)
  */
 export const getFileExtension = (filename) => {
-  const parts = filename.split('.');
-  return parts.length > 1 ? parts.pop().toLowerCase() : '';
+  const parts = filename.split(".");
+  return parts.length > 1 ? parts.pop().toLowerCase() : "";
 };
 
 /**
@@ -123,57 +127,59 @@ export const getFileExtension = (filename) => {
  * @returns {boolean} True if likely a text file
  */
 export const isTextFile = (file) => {
-  if (file.isDirectory) return false;
-  
+  if (file.isDirectory) {
+    return false;
+  }
+
   // Primary: Use backend's binary analysis (most reliable)
   if (file._zwMetadata && file._zwMetadata.isBinary === false) {
     return true;
   }
-  
+
   // Secondary: Check MIME type from backend
   if (file._zwMetadata && file._zwMetadata.mimeType) {
-    if (file._zwMetadata.mimeType.startsWith('text/')) {
+    if (file._zwMetadata.mimeType.startsWith("text/")) {
       return true;
     }
     // Additional MIME types that are text-editable
     const textMimeTypes = [
-      'application/json',
-      'application/javascript', 
-      'application/xml',
-      'application/yaml',
-      'application/x-yaml',
-      'application/x-sh',
-      'application/x-shellscript'
+      "application/json",
+      "application/javascript",
+      "application/xml",
+      "application/yaml",
+      "application/x-yaml",
+      "application/x-sh",
+      "application/x-shellscript",
     ];
     if (textMimeTypes.includes(file._zwMetadata.mimeType)) {
       return true;
     }
   }
-  
+
   // Tertiary: Check if backend detected syntax highlighting
   if (file._zwMetadata && file._zwMetadata.syntax) {
     return true;
   }
-  
+
   // Fallback: Check for obvious text extensions (minimal list)
-  const obviousTextExtensions = ['txt', 'md', 'log'];
+  const obviousTextExtensions = ["txt", "md", "log"];
   const extension = getFileExtension(file.name);
   if (obviousTextExtensions.includes(extension)) {
     return true;
   }
-  
+
   // Special case: Shell/config files without extensions but with known patterns
   const textFilePatterns = [
     /^\.(bashrc|zshrc|kshrc|profile|bash_profile|zprofile)$/,
     /^(bashrc|zshrc|kshrc|profile)$/,
     /^\.(vimrc|gitconfig|gitignore)$/,
-    /^(Dockerfile|Makefile|Rakefile)$/i
+    /^(Dockerfile|Makefile|Rakefile)$/i,
   ];
-  
-  if (textFilePatterns.some(pattern => pattern.test(file.name))) {
+
+  if (textFilePatterns.some((pattern) => pattern.test(file.name))) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -183,19 +189,19 @@ export const isTextFile = (file) => {
  * @returns {boolean} True if file is an archive
  */
 export const isArchiveFile = (file) => {
-  if (file.isDirectory) return false;
-  
-  const archiveExtensions = [
-    'zip', 'tar', 'gz', 'bz2', 'xz', 'rar', '7z'
-  ];
-  
+  if (file.isDirectory) {
+    return false;
+  }
+
+  const archiveExtensions = ["zip", "tar", "gz", "bz2", "xz", "rar", "7z"];
+
   const filename = file.name.toLowerCase();
-  
+
   // Check for compound extensions like .tar.gz, .tar.bz2
-  if (filename.includes('.tar.')) {
+  if (filename.includes(".tar.")) {
     return true;
   }
-  
+
   // Check single extensions
   const extension = getFileExtension(file.name);
   return archiveExtensions.includes(extension);
@@ -208,20 +214,20 @@ export const isArchiveFile = (file) => {
  */
 export const getArchiveFormat = (filename) => {
   const lowerName = filename.toLowerCase();
-  
-  if (lowerName.endsWith('.tar.gz') || lowerName.endsWith('.tgz')) {
-    return 'tar.gz';
-  } else if (lowerName.endsWith('.tar.bz2')) {
-    return 'tar.bz2';
-  } else if (lowerName.endsWith('.tar')) {
-    return 'tar';
-  } else if (lowerName.endsWith('.zip')) {
-    return 'zip';
-  } else if (lowerName.endsWith('.gz')) {
-    return 'gz';
+
+  if (lowerName.endsWith(".tar.gz") || lowerName.endsWith(".tgz")) {
+    return "tar.gz";
+  } else if (lowerName.endsWith(".tar.bz2")) {
+    return "tar.bz2";
+  } else if (lowerName.endsWith(".tar")) {
+    return "tar";
+  } else if (lowerName.endsWith(".zip")) {
+    return "zip";
+  } else if (lowerName.endsWith(".gz")) {
+    return "gz";
   }
-  
-  return 'zip'; // Default fallback
+
+  return "zip"; // Default fallback
 };
 
 /**
@@ -230,12 +236,14 @@ export const getArchiveFormat = (filename) => {
  * @returns {string} Formatted size string
  */
 export const formatFileSize = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B';
-  
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  if (!bytes || bytes === 0) {
+    return "0 B";
+  }
+
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+
+  return `${Math.round((bytes / 1024 ** i) * 100) / 100} ${sizes[i]}`;
 };
 
 /**
@@ -243,13 +251,16 @@ export const formatFileSize = (bytes) => {
  * @param {Array} files - Array of files to sort
  * @returns {Array} Sorted array
  */
-export const sortFiles = (files) => {
-  return [...files].sort((a, b) => {
+export const sortFiles = (files) =>
+  [...files].sort((a, b) => {
     // Directories first
-    if (a.isDirectory && !b.isDirectory) return -1;
-    if (!a.isDirectory && b.isDirectory) return 1;
-    
+    if (a.isDirectory && !b.isDirectory) {
+      return -1;
+    }
+    if (!a.isDirectory && b.isDirectory) {
+      return 1;
+    }
+
     // Then alphabetical by name
     return a.name.localeCompare(b.name, undefined, { numeric: true });
   });
-};

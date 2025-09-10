@@ -1,24 +1,25 @@
-import React, { useRef, useEffect, useContext, memo, useState } from 'react';
-import { useFooter } from '../contexts/FooterContext';
-import { UserSettings } from '../contexts/UserSettingsContext';
+import React, { useRef, useEffect, useContext, memo, useState } from "react";
+
+import { useFooter } from "../contexts/FooterContext";
+import { UserSettings } from "../contexts/UserSettingsContext";
 
 const TaskRow = memo(({ task }) => {
   const getStatusClass = (status) => {
     switch (status) {
-      case 'failed':
-        return 'task-failed';
-      case 'running':
-        return 'task-running';
+      case "failed":
+        return "task-failed";
+      case "running":
+        return "task-running";
       default:
-        return '';
+        return "";
     }
   };
 
   const renderStatus = (status) => {
-    if (status === 'running') {
+    if (status === "running") {
       return (
         <span>
-          <i className="fas fa-spinner fa-spin mr-1"></i>
+          <i className="fas fa-spinner fa-spin mr-1" />
           {status}
         </span>
       );
@@ -39,7 +40,8 @@ const TaskRow = memo(({ task }) => {
 
 const Tasks = () => {
   const { tasks, loadingTasks, tasksError } = useFooter();
-  const { tasksScrollPosition, setTasksScrollPosition } = useContext(UserSettings);
+  const { tasksScrollPosition, setTasksScrollPosition } =
+    useContext(UserSettings);
   const tableContainerRef = useRef(null);
   const [previousTasksLength, setPreviousTasksLength] = useState(0);
   const [isScrollRestored, setIsScrollRestored] = useState(false);
@@ -54,11 +56,15 @@ const Tasks = () => {
 
   // Adjust scroll position when new tasks are added to maintain user's view
   useEffect(() => {
-    if (tableContainerRef.current && isScrollRestored && tasks.length > previousTasksLength) {
+    if (
+      tableContainerRef.current &&
+      isScrollRestored &&
+      tasks.length > previousTasksLength
+    ) {
       const newTasksCount = tasks.length - previousTasksLength;
       const rowHeight = 40; // Approximate height of a table row
       const addedHeight = newTasksCount * rowHeight;
-      
+
       // Only adjust if user isn't at the very top
       if (tableContainerRef.current.scrollTop > 0) {
         tableContainerRef.current.scrollTop += addedHeight;
@@ -82,7 +88,11 @@ const Tasks = () => {
   };
 
   return (
-    <div onScroll={handleScroll} ref={tableContainerRef} className='has-height-100 has-overflow-y-auto'>
+    <div
+      onScroll={handleScroll}
+      ref={tableContainerRef}
+      className="has-height-100 has-overflow-y-auto"
+    >
       {loadingTasks && <p>Loading tasks...</p>}
       {tasksError && <p className="has-text-danger">{tasksError}</p>}
       {!loadingTasks && !tasksError && (

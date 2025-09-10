@@ -1,27 +1,27 @@
-import React from 'react';
+import React from "react";
 
 const BandwidthLegend = ({ horizontal = false }) => {
   const bandwidthRanges = [
-    { label: '< 25%', color: '#48c78e', description: 'Light load' },
-    { label: '25-50%', color: '#ffdd57', description: 'Moderate load' },
-    { label: '50-75%', color: '#ff9f43', description: 'Heavy load' },
-    { label: '75-90%', color: '#f14668', description: 'Critical load' },
-    { label: '> 90%', color: '#e74c3c', description: 'Overloaded' }
+    { label: "< 25%", color: "#48c78e", description: "Light load" },
+    { label: "25-50%", color: "#ffdd57", description: "Moderate load" },
+    { label: "50-75%", color: "#ff9f43", description: "Heavy load" },
+    { label: "75-90%", color: "#f14668", description: "Critical load" },
+    { label: "> 90%", color: "#e74c3c", description: "Overloaded" },
   ];
 
   const nodeTypes = [
-    { label: 'Physical NIC', color: '#48c78e', icon: 'fa-ethernet' },
-    { label: 'Aggregate', color: '#3273dc', icon: 'fa-link' },
-    { label: 'Etherstub', color: '#ffdd57', icon: 'fa-sitemap' },
-    { label: 'VNIC', color: '#ff9f43', icon: 'fa-network-wired' },
-    { label: 'Zone', color: '#f14668', icon: 'fa-server' }
+    { label: "Physical NIC", color: "#48c78e", icon: "fa-ethernet" },
+    { label: "Aggregate", color: "#3273dc", icon: "fa-link" },
+    { label: "Etherstub", color: "#ffdd57", icon: "fa-sitemap" },
+    { label: "VNIC", color: "#ff9f43", icon: "fa-network-wired" },
+    { label: "Zone", color: "#f14668", icon: "fa-server" },
   ];
 
   const trafficIndicators = [
-    { label: 'RX Traffic', color: '#48c78e', symbol: '↓' },
-    { label: 'TX Traffic', color: '#3273dc', symbol: '↑' },
-    { label: 'VLAN Tagged', style: 'dashed', description: 'Dashed line' },
-    { label: 'LACP Bond', style: 'thick', description: 'Thick line' }
+    { label: "RX Traffic", color: "#48c78e", symbol: "↓" },
+    { label: "TX Traffic", color: "#3273dc", symbol: "↑" },
+    { label: "VLAN Tagged", style: "dashed", description: "Dashed line" },
+    { label: "LACP Bond", style: "thick", description: "Thick line" },
   ];
 
   if (horizontal) {
@@ -32,7 +32,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
           <h6 className="title is-6 mb-3 has-text-centered">
             <span className="icon-text">
               <span className="icon is-small">
-                <i className="fas fa-info-circle"></i>
+                <i className="fas fa-info-circle" />
               </span>
               <span>Network Legend</span>
             </span>
@@ -41,14 +41,16 @@ const BandwidthLegend = ({ horizontal = false }) => {
           <div className="columns is-multiline is-mobile">
             {/* Bandwidth Saturation */}
             <div className="column is-one-third">
-              <label className="label is-size-7 mb-2">Bandwidth Saturation</label>
+              <label className="label is-size-7 mb-2">
+                Bandwidth Saturation
+              </label>
               <div className="field is-grouped is-grouped-multiline">
                 {bandwidthRanges.map((range, index) => (
                   <div key={index} className="control">
-                    <span 
+                    <span
                       className="tag is-small zw-bandwidth-tag"
-                      style={{ 
-                        backgroundColor: range.color
+                      style={{
+                        backgroundColor: range.color,
                       }}
                       title={range.description}
                     >
@@ -66,8 +68,11 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 {nodeTypes.map((type, index) => (
                   <div key={index} className="control">
                     <span className="tag is-small is-white">
-                      <span className="icon is-small mr-1" style={{ color: type.color }}>
-                        <i className={`fas ${type.icon}`}></i>
+                      <span
+                        className="icon is-small mr-1"
+                        style={{ color: type.color }}
+                      >
+                        <i className={`fas ${type.icon}`} />
                       </span>
                       <span className="is-size-7">{type.label}</span>
                     </span>
@@ -84,22 +89,26 @@ const BandwidthLegend = ({ horizontal = false }) => {
                   <div key={index} className="control">
                     <span className="tag is-small is-white">
                       {indicator.symbol ? (
-                        <span 
+                        <span
                           className="has-text-weight-bold mr-1"
                           style={{ color: indicator.color }}
                         >
                           {indicator.symbol}
                         </span>
                       ) : (
-                        <div 
+                        <div
                           className={`mr-1 zw-traffic-line-16 ${
-                            indicator.style === 'dashed' ? 'zw-traffic-line-dashed' : 'zw-traffic-line-solid'
+                            indicator.style === "dashed"
+                              ? "zw-traffic-line-dashed"
+                              : "zw-traffic-line-solid"
                           } ${
-                            indicator.style === 'thick' ? 'zw-traffic-line-thick-16' : 'zw-traffic-line-normal'
+                            indicator.style === "thick"
+                              ? "zw-traffic-line-thick-16"
+                              : "zw-traffic-line-normal"
                           }`}
                           style={{
-                            backgroundColor: indicator.color || '#6b7280',
-                            borderColor: indicator.color || '#6b7280'
+                            backgroundColor: indicator.color || "#6b7280",
+                            borderColor: indicator.color || "#6b7280",
                           }}
                         />
                       )}
@@ -110,7 +119,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 <div className="control">
                   <span className="tag is-small is-white">
                     <span className="icon is-small mr-1">
-                    <i className="fas fa-circle zw-status-success "></i>
+                      <i className="fas fa-circle zw-status-success " />
                     </span>
                     <span className="is-size-7">Live Traffic</span>
                   </span>
@@ -130,7 +139,7 @@ const BandwidthLegend = ({ horizontal = false }) => {
         <h6 className="title is-6 mb-3">
           <span className="icon-text">
             <span className="icon is-small">
-              <i className="fas fa-info-circle"></i>
+              <i className="fas fa-info-circle" />
             </span>
             <span>Network Legend</span>
           </span>
@@ -144,10 +153,10 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div key={index} className="level is-mobile mb-1">
                 <div className="level-left">
                   <div className="level-item">
-                    <span 
+                    <span
                       className="tag is-small zw-bandwidth-tag-vertical"
-                      style={{ 
-                        backgroundColor: range.color
+                      style={{
+                        backgroundColor: range.color,
                       }}
                     >
                       {range.label}
@@ -174,8 +183,11 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div key={index} className="level is-mobile mb-1">
                 <div className="level-left">
                   <div className="level-item">
-                    <span className="icon is-small mr-2" style={{ color: type.color }}>
-                      <i className={`fas ${type.icon}`}></i>
+                    <span
+                      className="icon is-small mr-2"
+                      style={{ color: type.color }}
+                    >
+                      <i className={`fas ${type.icon}`} />
                     </span>
                     <span className="is-size-7">{type.label}</span>
                   </div>
@@ -194,22 +206,26 @@ const BandwidthLegend = ({ horizontal = false }) => {
                 <div className="level-left">
                   <div className="level-item">
                     {indicator.symbol ? (
-                      <span 
+                      <span
                         className="has-text-weight-bold mr-2"
                         style={{ color: indicator.color }}
                       >
                         {indicator.symbol}
                       </span>
                     ) : (
-                      <div 
+                      <div
                         className={`mr-2 zw-traffic-line-20 ${
-                          indicator.style === 'dashed' ? 'zw-traffic-line-dashed' : 'zw-traffic-line-solid'
+                          indicator.style === "dashed"
+                            ? "zw-traffic-line-dashed"
+                            : "zw-traffic-line-solid"
                         } ${
-                          indicator.style === 'thick' ? 'zw-traffic-line-thick' : 'zw-traffic-line-normal'
+                          indicator.style === "thick"
+                            ? "zw-traffic-line-thick"
+                            : "zw-traffic-line-normal"
                         }`}
                         style={{
-                          backgroundColor: indicator.color || '#6b7280',
-                          borderColor: indicator.color || '#6b7280'
+                          backgroundColor: indicator.color || "#6b7280",
+                          borderColor: indicator.color || "#6b7280",
                         }}
                       />
                     )}
@@ -228,9 +244,11 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div className="level-left">
                 <div className="level-item">
                   <span className="icon is-small">
-                    <i className="fas fa-circle zw-status-success "></i>
+                    <i className="fas fa-circle zw-status-success " />
                   </span>
-                  <span className="ml-2 is-size-7">Animated particles show live traffic</span>
+                  <span className="ml-2 is-size-7">
+                    Animated particles show live traffic
+                  </span>
                 </div>
               </div>
             </div>
@@ -238,9 +256,11 @@ const BandwidthLegend = ({ horizontal = false }) => {
               <div className="level-left">
                 <div className="level-item">
                   <span className="icon is-small">
-                    <i className="fas fa-bolt zw-status-warning "></i>
+                    <i className="fas fa-bolt zw-status-warning " />
                   </span>
-                  <span className="ml-2 is-size-7">Faster animation = higher traffic</span>
+                  <span className="ml-2 is-size-7">
+                    Faster animation = higher traffic
+                  </span>
                 </div>
               </div>
             </div>

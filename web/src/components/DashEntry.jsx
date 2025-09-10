@@ -1,6 +1,7 @@
-import { useContext } from "react";
 import PropTypes from "prop-types";
+import { useContext } from "react";
 import { NavLink } from "react-router-dom";
+
 import { UserSettings } from "../contexts/UserSettingsContext";
 
 const DashEntry = ({ link, title, icon, isSubmenu }) => {
@@ -13,7 +14,7 @@ const DashEntry = ({ link, title, icon, isSubmenu }) => {
         to={link}
       >
         <span className="icon">
-          <i className={icon}></i>
+          <i className={icon} />
         </span>
         <span>{title}</span>
       </NavLink>
@@ -25,7 +26,7 @@ const DashEntry = ({ link, title, icon, isSubmenu }) => {
       to={link}
     >
       <span className="icon">
-        <i className={icon}></i>
+        <i className={icon} />
       </span>
     </NavLink>
   );

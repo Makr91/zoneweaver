@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { useAuth } from "../contexts/AuthContext";
 
 /**
  * Register component for Zoneweaver user registration with organization support
@@ -20,7 +21,7 @@ const Register = () => {
   const [checkingSetup, setCheckingSetup] = useState(true);
   const [inviteCode, setInviteCode] = useState("");
   const [invitation, setInvitation] = useState(null);
-  
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { register, isAuthenticated } = useAuth();
@@ -40,12 +41,12 @@ const Register = () => {
   useEffect(() => {
     const checkSetupStatus = async () => {
       try {
-        const response = await axios.get('/api/auth/setup-status');
+        const response = await axios.get("/api/auth/setup-status");
         if (response.data.success) {
           setNeedsSetup(response.data.needsSetup);
         }
       } catch (error) {
-        console.error('Error checking setup status:', error);
+        console.error("Error checking setup status:", error);
       } finally {
         setCheckingSetup(false);
       }
@@ -54,7 +55,7 @@ const Register = () => {
     checkSetupStatus();
 
     // Check for invitation code in URL
-    const inviteParam = searchParams.get('invite');
+    const inviteParam = searchParams.get("invite");
     if (inviteParam) {
       setInviteCode(inviteParam);
       validateInvitation(inviteParam);
@@ -70,16 +71,17 @@ const Register = () => {
       if (response.data.success && response.data.valid) {
         setInvitation(response.data.invitation);
         setEmail(response.data.invitation.email); // Pre-fill email
-        setMsg(`You've been invited to join ${response.data.invitation.organizationName}!`);
+        setMsg(
+          `You've been invited to join ${response.data.invitation.organizationName}!`
+        );
       } else {
         setMsg(`Invalid invitation: ${response.data.reason}`);
       }
     } catch (error) {
-      console.error('Error validating invitation:', error);
-      setMsg('Error validating invitation code');
+      console.error("Error validating invitation:", error);
+      setMsg("Error validating invitation code");
     }
   };
-
 
   /**
    * Handle registration form submission
@@ -87,7 +89,7 @@ const Register = () => {
    */
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!username || !email || !password || !confirmPassword) {
       setMsg("All fields are required");
@@ -113,12 +115,12 @@ const Register = () => {
     try {
       setLoading(true);
       setMsg("");
-      
+
       const registrationData = {
         username,
         email,
         password,
-        confirmPassword
+        confirmPassword,
       };
 
       // Add organization data if not first user
@@ -129,9 +131,9 @@ const Register = () => {
           registrationData.organizationName = organizationName;
         }
       }
-      
+
       const result = await register(registrationData);
-      
+
       if (result.success) {
         setMsg("Registration successful! Please login with your credentials.");
         setTimeout(() => {
@@ -150,19 +152,19 @@ const Register = () => {
 
   if (checkingSetup) {
     return (
-      <section className='hero is-fullheight is-fullwidth'>
+      <section className="hero is-fullheight is-fullwidth">
         <Helmet>
-          <meta charSet='utf-8' />
+          <meta charSet="utf-8" />
           <title>Register - Zoneweaver</title>
-          <link rel='canonical' href={window.location.origin} />
+          <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className='hero-body'>
-          <div className='container'>
-            <div className='columns is-centered'>
-              <div className='column is-4-desktop'>
-                <div className='box has-text-centered'>
-                  <div className='button is-loading is-large is-ghost'></div>
-                  <p className='mt-2'>Checking system status...</p>
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-centered">
+              <div className="column is-4-desktop">
+                <div className="box has-text-centered">
+                  <div className="button is-loading is-large is-ghost" />
+                  <p className="mt-2">Checking system status...</p>
                 </div>
               </div>
             </div>
@@ -173,62 +175,74 @@ const Register = () => {
   }
 
   return (
-    <section className='hero is-fullheight is-fullwidth'>
+    <section className="hero is-fullheight is-fullwidth">
       <Helmet>
-        <meta charSet='utf-8' />
+        <meta charSet="utf-8" />
         <title>Register - Zoneweaver</title>
-        <link rel='canonical' href={window.location.origin} />
+        <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className='hero-body'>
-        <div className='container'>
-          <div className='columns is-centered'>
-            <div className='column is-4-desktop'>
-              <form onSubmit={handleRegister} className='box'>
-                <h1 className='title has-text-centered'>
-                  {needsSetup ? 'Setup Super Admin Account' : 
-                   invitation ? `Join ${invitation.organizationName}` : 
-                   'Create Account'}
+      <div className="hero-body">
+        <div className="container">
+          <div className="columns is-centered">
+            <div className="column is-4-desktop">
+              <form onSubmit={handleRegister} className="box">
+                <h1 className="title has-text-centered">
+                  {needsSetup
+                    ? "Setup Super Admin Account"
+                    : invitation
+                      ? `Join ${invitation.organizationName}`
+                      : "Create Account"}
                 </h1>
-                
+
                 {/* Invitation Info */}
                 {invitation && (
-                  <div className='notification is-info mb-4'>
+                  <div className="notification is-info mb-4">
                     <p>
-                      <strong>🎉 You're invited!</strong><br />
-                      You've been invited to join <strong>{invitation.organizationName}</strong>
+                      <strong>🎉 You're invited!</strong>
+                      <br />
+                      You've been invited to join{" "}
+                      <strong>{invitation.organizationName}</strong>
                     </p>
                   </div>
                 )}
 
                 {/* Super Admin Notice */}
                 {needsSetup && (
-                  <div className='notification is-warning mb-4'>
+                  <div className="notification is-warning mb-4">
                     <p>
-                      <strong>⚡ System Setup</strong><br />
-                      You're creating the first user account. This will be the super admin account with full system access.
+                      <strong>⚡ System Setup</strong>
+                      <br />
+                      You're creating the first user account. This will be the
+                      super admin account with full system access.
                     </p>
                   </div>
                 )}
 
                 {msg && (
-                  <div className={`notification ${
-                    msg.includes('successful') || msg.includes('invited') ? 'is-success' : 
-                    msg.includes('error') || msg.includes('failed') || msg.includes('Invalid') ? 'is-danger' : 
-                    'is-warning'
-                  }`}>
+                  <div
+                    className={`notification ${
+                      msg.includes("successful") || msg.includes("invited")
+                        ? "is-success"
+                        : msg.includes("error") ||
+                            msg.includes("failed") ||
+                            msg.includes("Invalid")
+                          ? "is-danger"
+                          : "is-warning"
+                    }`}
+                  >
                     <p>{msg}</p>
                   </div>
                 )}
 
-                <div className='field mt-5'>
-                  <label className='label'>Username</label>
-                  <div className='controls'>
-                    <input 
-                      type='text' 
-                      className='input' 
-                      autoComplete='username'
-                      placeholder='Username' 
-                      value={username} 
+                <div className="field mt-5">
+                  <label className="label">Username</label>
+                  <div className="controls">
+                    <input
+                      type="text"
+                      className="input"
+                      autoComplete="username"
+                      placeholder="Username"
+                      value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       disabled={loading}
                       required
@@ -236,54 +250,57 @@ const Register = () => {
                   </div>
                 </div>
 
-                <div className='field mt-5'>
-                  <label className='label'>Email</label>
-                  <div className='controls'>
-                    <input 
-                      type='email' 
-                      className='input' 
-                      autoComplete='email' 
-                      placeholder='Email' 
-                      value={email} 
+                <div className="field mt-5">
+                  <label className="label">Email</label>
+                  <div className="controls">
+                    <input
+                      type="email"
+                      className="input"
+                      autoComplete="email"
+                      placeholder="Email"
+                      value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading || !!invitation}
                       required
                     />
                   </div>
                   {invitation && (
-                    <p className='help'>Email is pre-filled from your invitation</p>
+                    <p className="help">
+                      Email is pre-filled from your invitation
+                    </p>
                   )}
                 </div>
 
                 {/* Organization field - only show if not first user and no invitation */}
                 {!needsSetup && !invitation && (
-                  <div className='field mt-5'>
-                    <label className='label'>Organization Name</label>
-                    <div className='controls'>
-                      <input 
-                        type='text' 
-                        className='input'
-                        placeholder='Enter organization name' 
-                        value={organizationName} 
+                  <div className="field mt-5">
+                    <label className="label">Organization Name</label>
+                    <div className="controls">
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="Enter organization name"
+                        value={organizationName}
                         onChange={(e) => setOrganizationName(e.target.value)}
                         disabled={loading}
                         required
                       />
                     </div>
-                    <p className='help'>
-                      Enter a new organization name to create, or get an invitation to join an existing one.
+                    <p className="help">
+                      Enter a new organization name to create, or get an
+                      invitation to join an existing one.
                     </p>
                   </div>
                 )}
 
-                <div className='field mt-5'>
-                  <label className='label'>Password</label>
-                  <div className='controls'>
+                <div className="field mt-5">
+                  <label className="label">Password</label>
+                  <div className="controls">
                     <input
-                      type='password'
-                      autoComplete='new-password'
-                      className='input'
-                      placeholder='Password (min 8 characters)'
+                      type="password"
+                      autoComplete="new-password"
+                      className="input"
+                      placeholder="Password (min 8 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
@@ -292,14 +309,14 @@ const Register = () => {
                   </div>
                 </div>
 
-                <div className='field mt-5'>
-                  <label className='label'>Confirm Password</label>
-                  <div className='controls'>
+                <div className="field mt-5">
+                  <label className="label">Confirm Password</label>
+                  <div className="controls">
                     <input
-                      type='password'
-                      autoComplete='new-password'
-                      className='input'
-                      placeholder='Confirm Password'
+                      type="password"
+                      autoComplete="new-password"
+                      className="input"
+                      placeholder="Confirm Password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       disabled={loading}
@@ -308,62 +325,89 @@ const Register = () => {
                   </div>
                 </div>
 
-                <div className='field mt-5'>
-                  <button 
-                    type='submit'
-                    className={`button is-success is-fullwidth ${loading ? 'is-loading' : ''}`}
+                <div className="field mt-5">
+                  <button
+                    type="submit"
+                    className={`button is-success is-fullwidth ${loading ? "is-loading" : ""}`}
                     disabled={loading}
                   >
-                    {needsSetup ? 'Create Super Admin Account' : 
-                     invitation ? `Join ${invitation.organizationName}` : 
-                     'Create Account & Organization'}
+                    {needsSetup
+                      ? "Create Super Admin Account"
+                      : invitation
+                        ? `Join ${invitation.organizationName}`
+                        : "Create Account & Organization"}
                   </button>
                 </div>
 
-                <div className='has-text-centered mt-3'>
+                <div className="has-text-centered mt-3">
                   <p>
-                    Already have an account?{' '}
-                    <a href='/login' className='has-text-link'>
+                    Already have an account?{" "}
+                    <a href="/login" className="has-text-link">
                       Login here
                     </a>
                   </p>
                 </div>
 
                 {/* Help section */}
-                <div className='has-text-centered mt-4'>
-                  <details className='details'>
-                    <summary className='has-text-grey is-size-7 is-clickable'>
+                <div className="has-text-centered mt-4">
+                  <details className="details">
+                    <summary className="has-text-grey is-size-7 is-clickable">
                       Need help? Click here
                     </summary>
-                    <div className='content is-size-7 has-text-left mt-2 p-3 '>
+                    <div className="content is-size-7 has-text-left mt-2 p-3 ">
                       {needsSetup ? (
                         <>
-                          <p><strong>Setting up Zoneweaver:</strong></p>
+                          <p>
+                            <strong>Setting up Zoneweaver:</strong>
+                          </p>
                           <ul>
                             <li>This is the initial system setup</li>
-                            <li>Your account will have super admin privileges</li>
+                            <li>
+                              Your account will have super admin privileges
+                            </li>
                             <li>You can manage all organizations and users</li>
-                            <li>Additional users will need to create or join organizations</li>
+                            <li>
+                              Additional users will need to create or join
+                              organizations
+                            </li>
                           </ul>
                         </>
                       ) : invitation ? (
                         <>
-                          <p><strong>Joining an organization:</strong></p>
+                          <p>
+                            <strong>Joining an organization:</strong>
+                          </p>
                           <ul>
-                            <li>You've been invited to join {invitation.organizationName}</li>
+                            <li>
+                              You've been invited to join{" "}
+                              {invitation.organizationName}
+                            </li>
                             <li>Complete the form to accept the invitation</li>
                             <li>You'll become a member of the organization</li>
-                            <li>Contact the person who invited you if you have questions</li>
+                            <li>
+                              Contact the person who invited you if you have
+                              questions
+                            </li>
                           </ul>
                         </>
                       ) : (
                         <>
-                          <p><strong>Creating a new organization:</strong></p>
+                          <p>
+                            <strong>Creating a new organization:</strong>
+                          </p>
                           <ul>
                             <li>Enter a unique organization name</li>
-                            <li>You'll become the admin of this new organization</li>
-                            <li>You can invite other users to join your organization</li>
-                            <li>If the organization already exists, ask for an invitation</li>
+                            <li>
+                              You'll become the admin of this new organization
+                            </li>
+                            <li>
+                              You can invite other users to join your
+                              organization
+                            </li>
+                            <li>
+                              If the organization already exists, ask for an
+                              invitation
+                            </li>
                           </ul>
                         </>
                       )}

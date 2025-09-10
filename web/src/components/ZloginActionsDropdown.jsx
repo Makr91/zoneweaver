@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 
 /**
  * zlogin Console Actions Dropdown
  * Provides actions for zlogin console sessions with consistent styling to VNC dropdown
  */
-const ZloginActionsDropdown = ({ 
-  variant = "dropdown", 
+const ZloginActionsDropdown = ({
+  variant = "dropdown",
   onToggleReadOnly,
   onKillSession,
   onScreenshot,
@@ -13,7 +13,7 @@ const ZloginActionsDropdown = ({
   isAdmin = false,
   style = {},
   disabled = false,
-  className = ''
+  className = "",
 }) => {
   const [isActive, setIsActive] = useState(false);
   const dropdownRef = useRef(null);
@@ -25,8 +25,8 @@ const ZloginActionsDropdown = ({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleAction = (action) => {
@@ -38,36 +38,38 @@ const ZloginActionsDropdown = ({
     <div className="dropdown-content">
       {isAdmin && onToggleReadOnly && (
         <>
-          <a 
-            className="dropdown-item" 
+          <a
+            className="dropdown-item"
             onClick={() => handleAction(onToggleReadOnly)}
-            title={isReadOnly ? "Enable interactive mode" : "Enable read-only mode"}
+            title={
+              isReadOnly ? "Enable interactive mode" : "Enable read-only mode"
+            }
           >
             <span className="icon mr-2">
-              <i className={`fas ${isReadOnly ? 'fa-edit' : 'fa-eye'}`}></i>
+              <i className={`fas ${isReadOnly ? "fa-edit" : "fa-eye"}`} />
             </span>
-            <span>{isReadOnly ? 'Enable Interactive' : 'Set Read-Only'}</span>
+            <span>{isReadOnly ? "Enable Interactive" : "Set Read-Only"}</span>
           </a>
           <hr className="dropdown-divider" />
         </>
       )}
-      
+
       <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
         <span className="icon mr-2">
-          <i className="fas fa-tools"></i>
+          <i className="fas fa-tools" />
         </span>
         <span>Actions</span>
       </div>
       <hr className="dropdown-divider" />
 
       {onScreenshot && (
-        <a 
-          className="dropdown-item" 
+        <a
+          className="dropdown-item"
           onClick={() => handleAction(onScreenshot)}
           title="Capture terminal output as text"
         >
           <span className="icon mr-2">
-            <i className="fas fa-camera"></i>
+            <i className="fas fa-camera" />
           </span>
           <span>Capture Output</span>
         </a>
@@ -76,13 +78,13 @@ const ZloginActionsDropdown = ({
       {onKillSession && (
         <>
           <hr className="dropdown-divider" />
-          <a 
-            className="dropdown-item has-text-danger" 
+          <a
+            className="dropdown-item has-text-danger"
             onClick={() => handleAction(onKillSession)}
             title="Terminate zlogin session"
           >
             <span className="icon mr-2">
-              <i className="fas fa-skull"></i>
+              <i className="fas fa-skull" />
             </span>
             <span>Kill zlogin Session</span>
           </a>
@@ -93,9 +95,13 @@ const ZloginActionsDropdown = ({
 
   if (variant === "button") {
     return (
-      <div className={`dropdown is-right ${isActive ? 'is-active' : ''} ${className}`} style={style} ref={dropdownRef}>
+      <div
+        className={`dropdown is-right ${isActive ? "is-active" : ""} ${className}`}
+        style={style}
+        ref={dropdownRef}
+      >
         <div className="dropdown-trigger">
-          <button 
+          <button
             className="button is-small"
             aria-haspopup="true"
             aria-controls="zlogin-dropdown-menu"
@@ -104,7 +110,7 @@ const ZloginActionsDropdown = ({
             title="zlogin Console Actions"
           >
             <span className="icon">
-              <i className="fas fa-ellipsis-v"></i>
+              <i className="fas fa-ellipsis-v" />
             </span>
           </button>
         </div>
@@ -117,9 +123,13 @@ const ZloginActionsDropdown = ({
 
   // Default dropdown variant (text with arrow)
   return (
-    <div className={`dropdown is-right ${isActive ? 'is-active' : ''} ${className}`} style={style} ref={dropdownRef}>
+    <div
+      className={`dropdown is-right ${isActive ? "is-active" : ""} ${className}`}
+      style={style}
+      ref={dropdownRef}
+    >
       <div className="dropdown-trigger">
-        <span 
+        <span
           className="has-text-link is-clickable is-size-7"
           aria-haspopup="true"
           aria-controls="zlogin-dropdown-menu"
@@ -128,7 +138,7 @@ const ZloginActionsDropdown = ({
         >
           zlogin Actions
           <span className="icon ml-1">
-            <i className="fas fa-angle-down" aria-hidden="true"></i>
+            <i className="fas fa-angle-down" aria-hidden="true" />
           </span>
         </span>
       </div>
