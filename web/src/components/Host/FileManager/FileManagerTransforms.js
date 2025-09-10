@@ -142,6 +142,53 @@ export const isTextFile = (file) => {
 };
 
 /**
+ * Check if file is an archive that can be extracted
+ * @param {Object} file - File object
+ * @returns {boolean} True if file is an archive
+ */
+export const isArchiveFile = (file) => {
+  if (file.isDirectory) return false;
+  
+  const archiveExtensions = [
+    'zip', 'tar', 'gz', 'bz2', 'xz', 'rar', '7z'
+  ];
+  
+  const filename = file.name.toLowerCase();
+  
+  // Check for compound extensions like .tar.gz, .tar.bz2
+  if (filename.includes('.tar.')) {
+    return true;
+  }
+  
+  // Check single extensions
+  const extension = getFileExtension(file.name);
+  return archiveExtensions.includes(extension);
+};
+
+/**
+ * Get archive format from filename for API calls
+ * @param {string} filename - Archive filename
+ * @returns {string} Archive format for zoneweaver-api
+ */
+export const getArchiveFormat = (filename) => {
+  const lowerName = filename.toLowerCase();
+  
+  if (lowerName.endsWith('.tar.gz') || lowerName.endsWith('.tgz')) {
+    return 'tar.gz';
+  } else if (lowerName.endsWith('.tar.bz2')) {
+    return 'tar.bz2';
+  } else if (lowerName.endsWith('.tar')) {
+    return 'tar';
+  } else if (lowerName.endsWith('.zip')) {
+    return 'zip';
+  } else if (lowerName.endsWith('.gz')) {
+    return 'gz';
+  }
+  
+  return 'zip'; // Default fallback
+};
+
+/**
  * Format file size for display
  * @param {number} bytes - File size in bytes
  * @returns {string} Formatted size string

@@ -7,8 +7,9 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { canManageHosts, canViewHosts } from '../../../utils/permissions';
 import { ZoneweaverFileManagerAPI } from './FileManagerAPI';
-import { transformZoneweaverToFile, isTextFile } from './FileManagerTransforms';
+import { transformZoneweaverToFile, isTextFile, isArchiveFile } from './FileManagerTransforms';
 import TextFileEditor from './TextFileEditor';
+import ArchiveModals from './ArchiveModals';
 import './HostFileManager.scss';
 
 /**
@@ -23,6 +24,11 @@ const HostFileManager = ({ server }) => {
   const [textEditorFile, setTextEditorFile] = useState(null);
   const [showTextEditor, setShowTextEditor] = useState(false);
   const [directoryCache, setDirectoryCache] = useState(new Map()); // Cache for directory contents
+  const [showCreateArchiveModal, setShowCreateArchiveModal] = useState(false);
+  const [showExtractArchiveModal, setShowExtractArchiveModal] = useState(false);
+  const [selectedFilesForArchive, setSelectedFilesForArchive] = useState([]);
+  const [archiveFileForExtract, setArchiveFileForExtract] = useState(null);
+  const [currentlySelectedFiles, setCurrentlySelectedFiles] = useState([]);
 
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -365,8 +371,8 @@ const HostFileManager = ({ server }) => {
 
   // Selection handler
   const handleSelect = (selectedFiles) => {
-    // Optional: could be used for showing selection details
     console.log('Selected files:', selectedFiles);
+    setCurrentlySelectedFiles(selectedFiles);
   };
 
   // Error handler
@@ -417,6 +423,40 @@ const HostFileManager = ({ server }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Archive handlers
+  const handleCreateArchive = (selectedFiles) => {
+    setSelectedFilesForArchive(selectedFiles);
+    setShowCreateArchiveModal(true);
+  };
+
+  const handleExtractArchive = (archiveFile) => {
+    setArchiveFileForExtract(archiveFile);
+    setShowExtractArchiveModal(true);
+  };
+
+  const handleArchiveSuccess = async (result) => {
+    console.log('Archive operation successful:', result);
+    
+    if (result.isAsync && result.task_id) {
+      console.log('Archive task started:', result.task_id);
+      // Show success message for async operation
+      setError(''); // Clear any previous errors
+    }
+    
+    // Refresh files to show new archive or extracted files
+    await loadFiles();
+  };
+
+  const handleCloseCreateArchive = () => {
+    setShowCreateArchiveModal(false);
+    setSelectedFilesForArchive([]);
+  };
+
+  const handleCloseExtractArchive = () => {
+    setShowExtractArchiveModal(false);
+    setArchiveFileForExtract(null);
   };
 
   // Don't render if no server is selected
@@ -507,6 +547,25 @@ const HostFileManager = ({ server }) => {
                     </button>
                   </div>
                 </div>
+              ) : isArchiveFile(file) ? (
+                <div className="has-text-centered p-4">
+                  <span className="icon is-large">
+                    <i className="fas fa-file-archive fa-3x"></i>
+                  </span>
+                  <p className="mt-2">Archive File</p>
+                  <div className="buttons is-centered mt-3">
+                    <button 
+                      className="button is-success is-small"
+                      onClick={() => handleExtractArchive(file)}
+                      disabled={!canManageHosts(user?.role)}
+                    >
+                      <span className="icon is-small">
+                        <i className="fas fa-expand-arrows-alt"></i>
+                      </span>
+                      <span>Extract</span>
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="has-text-centered p-4">
                   <span className="icon is-large">
@@ -555,6 +614,38 @@ const HostFileManager = ({ server }) => {
         language="en"
       />
 
+      {/* Archive Action Button - Show only when files are selected */}
+      {canManageHosts(user?.role) && currentlySelectedFiles.length > 0 && (
+        <div className="archive-actions" style={{ 
+          position: 'absolute', 
+          top: '10px', 
+          right: '10px', 
+          zIndex: 1000,
+          background: 'var(--bulma-scheme-main-bis)',
+          padding: '0.5rem',
+          borderRadius: '6px',
+          border: '1px solid var(--bulma-border)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <button
+            className="button is-info is-small"
+            onClick={() => {
+              if (currentlySelectedFiles.length > 0) {
+                handleCreateArchive(currentlySelectedFiles);
+              } else {
+                setError('Please select files or folders to create an archive');
+              }
+            }}
+            title={`Create archive from ${currentlySelectedFiles.length} selected item(s)`}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-file-archive"></i>
+            </span>
+            <span>Create Archive ({currentlySelectedFiles.length})</span>
+          </button>
+        </div>
+      )}
+
       {/* Text File Editor Modal */}
       {showTextEditor && textEditorFile && (
         <TextFileEditor
@@ -564,6 +655,19 @@ const HostFileManager = ({ server }) => {
           onSave={handleSaveTextFile}
         />
       )}
+
+      {/* Archive Modals */}
+      <ArchiveModals
+        showCreateModal={showCreateArchiveModal}
+        showExtractModal={showExtractArchiveModal}
+        onCloseCreate={handleCloseCreateArchive}
+        onCloseExtract={handleCloseExtractArchive}
+        selectedFiles={selectedFilesForArchive}
+        archiveFile={archiveFileForExtract}
+        currentPath={currentPath}
+        api={api}
+        onArchiveSuccess={handleArchiveSuccess}
+      />
     </div>
   );
 };
