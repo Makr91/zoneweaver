@@ -327,10 +327,10 @@ class SettingsController {
       fs.writeFileSync(SettingsController.configPath, updatedYaml, 'utf8');
 
       // Log the change
-      log.settings.info('Settings updated', { 
-        user: req.user.username, 
+      log.settings.info('Settings updated', {
+        user: req.user.username,
         role: req.user.role,
-        backupPath 
+        backupPath,
       });
 
       res.json({
@@ -442,10 +442,10 @@ class SettingsController {
 
       fs.writeFileSync(SettingsController.configPath, resetYaml, 'utf8');
 
-      log.settings.info('Settings reset to defaults', { 
-        user: req.user.username, 
+      log.settings.info('Settings reset to defaults', {
+        user: req.user.username,
         role: req.user.role,
-        backupPath 
+        backupPath,
       });
 
       res.json({
@@ -506,9 +506,9 @@ class SettingsController {
    */
   static restartServer(req, res) {
     try {
-      log.settings.info('Server restart requested', { 
-        user: req.user.username, 
-        role: req.user.role 
+      log.settings.info('Server restart requested', {
+        user: req.user.username,
+        role: req.user.role,
       });
 
       res.json({
@@ -716,10 +716,10 @@ class SettingsController {
 
           // Save file to SSL directory
           fs.writeFileSync(filePath, req.file.buffer, { mode: 0o600 });
-          log.settings.info('SSL file uploaded', { 
-            user: req.user.username, 
-            filename, 
-            filePath 
+          log.settings.info('SSL file uploaded', {
+            user: req.user.username,
+            filename,
+            filePath,
           });
 
           // Return success response
@@ -952,11 +952,11 @@ class SettingsController {
       // Restore from backup
       fs.copyFileSync(backupPath, SettingsController.configPath);
 
-      log.settings.info('Configuration restored from backup', { 
-        filename, 
-        user: req.user.username, 
+      log.settings.info('Configuration restored from backup', {
+        filename,
+        user: req.user.username,
         role: req.user.role,
-        backupCreated: path.basename(restoreBackupPath)
+        backupCreated: path.basename(restoreBackupPath),
       });
 
       res.json({
@@ -1028,10 +1028,10 @@ class SettingsController {
       // Delete the backup file
       fs.unlinkSync(backupPath);
 
-      log.settings.info('Backup deleted', { 
-        filename, 
-        user: req.user.username, 
-        role: req.user.role 
+      log.settings.info('Backup deleted', {
+        filename,
+        user: req.user.username,
+        role: req.user.role,
       });
 
       res.json({

@@ -36,18 +36,20 @@ const dialect = dbConfig.dialect?.value || dbConfig.dialect || 'sqlite';
 const loggingEnabled = dbConfig.logging?.value || dbConfig.logging || false;
 
 // Custom logging function for Sequelize
-const sequelizeLogging = loggingEnabled ? (msg, timing) => {
-  // Parse the query to check if it's a slow query
-  if (timing && timing > 1000) {
-    log.database.warn('Slow database query', { 
-      query: msg, 
-      duration_ms: timing 
-    });
-  } else {
-    // Log regular queries at debug level
-    log.database.debug(msg, { timing });
-  }
-} : false;
+const sequelizeLogging = loggingEnabled
+  ? (msg, timing) => {
+      // Parse the query to check if it's a slow query
+      if (timing && timing > 1000) {
+        log.database.warn('Slow database query', {
+          query: msg,
+          duration_ms: timing,
+        });
+      } else {
+        // Log regular queries at debug level
+        log.database.debug(msg, { timing });
+      }
+    }
+  : false;
 
 const sequelizeConfig = {
   logging: sequelizeLogging,
@@ -116,9 +118,9 @@ const modelPromises = modelFiles.map(async file => {
     const modelName = file.replace('.model.js', '');
     return { modelName, modelDefiner };
   } catch (error) {
-    log.database.warn('Could not load model', { 
-      file, 
-      error: error.message 
+    log.database.warn('Could not load model', {
+      file,
+      error: error.message,
     });
     return null;
   }
@@ -147,10 +149,10 @@ try {
   const connectionTimer = createTimer('database_connection');
   await sequelize.authenticate();
   const connectionTime = connectionTimer.end();
-  
-  log.database.info('Database connection established successfully', { 
+
+  log.database.info('Database connection established successfully', {
     dialect: sequelizeConfig.dialect,
-    duration_ms: connectionTime
+    duration_ms: connectionTime,
   });
 
   // Initialize automatic migration system
@@ -158,14 +160,14 @@ try {
   const migrationHelper = createMigrationHelper(sequelize);
   await migrationHelper.setupDatabase();
   const migrationTime = migrationTimer.end();
-  
+
   log.database.info('Database migrations completed', {
-    duration_ms: migrationTime
+    duration_ms: migrationTime,
   });
 } catch (error) {
-  log.database.error('Unable to connect to database', { 
+  log.database.error('Unable to connect to database', {
     error: error.message,
-    dialect: sequelizeConfig.dialect
+    dialect: sequelizeConfig.dialect,
   });
   throw error;
 }

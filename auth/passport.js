@@ -91,7 +91,7 @@ async function setupLdapStrategy() {
     searchBase: config.authentication.ldap_search_base.value,
     searchFilter: config.authentication.ldap_search_filter.value,
     searchAttributes: config.authentication.ldap_search_attributes.value,
-    tlsRejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value
+    tlsRejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value,
   });
 
   passport.use(
@@ -114,8 +114,8 @@ async function setupLdapStrategy() {
       },
       async (ldapUser, done) => {
         try {
-          log.auth.info('LDAP authentication successful for user', { 
-            user: ldapUser.uid || ldapUser.cn || 'unknown' 
+          log.auth.info('LDAP authentication successful for user', {
+            user: ldapUser.uid || ldapUser.cn || 'unknown',
           });
           log.auth.debug('LDAP User Profile', {
             uid: ldapUser.uid,
@@ -123,7 +123,7 @@ async function setupLdapStrategy() {
             displayName: ldapUser.displayName,
             mail: ldapUser.mail,
             memberOf: ldapUser.memberOf,
-            profileKeys: Object.keys(ldapUser)
+            profileKeys: Object.keys(ldapUser),
           });
 
           // Handle external user authentication and provisioning
@@ -131,9 +131,9 @@ async function setupLdapStrategy() {
           log.auth.info('LDAP user processing complete', { username: result.username });
           return done(null, result);
         } catch (error) {
-          log.auth.error('LDAP Strategy error during user processing', { 
+          log.auth.error('LDAP Strategy error during user processing', {
             error: error.message,
-            stack: error.stack 
+            stack: error.stack,
           });
           return done(error, false);
         }
@@ -167,8 +167,8 @@ async function setupOidcProviders() {
     return;
   }
 
-  log.auth.info('Setting up OIDC authentication providers', { 
-    providerCount: Object.keys(oidcProvidersConfig).length 
+  log.auth.info('Setting up OIDC authentication providers', {
+    providerCount: Object.keys(oidcProvidersConfig).length,
   });
 
   for (const [providerName, providerConfig] of Object.entries(oidcProvidersConfig)) {
@@ -192,20 +192,20 @@ async function setupOidcProviders() {
 
       // Validate required fields
       if (!issuer || !clientId || !clientSecret) {
-        log.auth.error('Invalid OIDC provider configuration: missing required fields', { 
+        log.auth.error('Invalid OIDC provider configuration: missing required fields', {
           providerName,
-          missingFields: ['issuer', 'client_id', 'client_secret']
+          missingFields: ['issuer', 'client_id', 'client_secret'],
         });
         continue;
       }
 
-      log.auth.info('Setting up OIDC provider', { 
+      log.auth.info('Setting up OIDC provider', {
         providerName,
         displayName,
         issuer,
         clientId,
         scope,
-        responseType
+        responseType,
       });
 
       // Use discovery for automatic configuration (best practice)
@@ -232,14 +232,14 @@ async function setupOidcProviders() {
                 subject: userinfo.sub,
                 email: userinfo.email,
                 name: userinfo.name || `${userinfo.given_name} ${userinfo.family_name}`,
-                profileKeys: Object.keys(userinfo)
+                profileKeys: Object.keys(userinfo),
               });
 
               // Handle external user authentication and provisioning with provider info
               const result = await handleExternalUser(`oidc-${providerName}`, userinfo);
-              log.auth.info('OIDC user processing complete', { 
-                providerName, 
-                username: result.username 
+              log.auth.info('OIDC user processing complete', {
+                providerName,
+                username: result.username,
               });
 
               return verified(null, result);
@@ -247,7 +247,7 @@ async function setupOidcProviders() {
               log.auth.error('OIDC Strategy error during user processing', {
                 providerName,
                 error: error.message,
-                stack: error.stack
+                stack: error.stack,
               });
               return verified(error, false);
             }
@@ -255,14 +255,14 @@ async function setupOidcProviders() {
         )
       );
 
-      log.auth.info('OIDC provider configured successfully', { 
-        providerName, 
-        strategyName 
+      log.auth.info('OIDC provider configured successfully', {
+        providerName,
+        strategyName,
       });
     } catch (error) {
-      log.auth.error('Failed to setup OIDC provider', { 
-        providerName, 
-        error: error.message 
+      log.auth.error('Failed to setup OIDC provider', {
+        providerName,
+        error: error.message,
       });
       continue; // Continue with other providers even if one fails
     }
@@ -303,10 +303,10 @@ async function handleExternalUser(provider, profile) {
     }
 
     if (!subject) {
-      log.auth.error('No user identifier found in profile', { 
+      log.auth.error('No user identifier found in profile', {
         provider,
         availableFields: Object.keys(profile),
-        profileDn: profile.dn 
+        profileDn: profile.dn,
       });
       throw new Error(`No user identifier found in ${provider} profile`);
     }
@@ -326,14 +326,14 @@ async function handleExternalUser(provider, profile) {
       credentials: allCredentials.map(c => ({
         id: c.id,
         subject: c.subject,
-        email: c.external_email
-      }))
+        email: c.external_email,
+      })),
     });
 
     const credential = await CredentialModel.findByProviderAndSubject(provider, subject);
     log.auth.debug('Credential search result', {
       found: !!credential,
-      credentialId: credential?.id
+      credentialId: credential?.id,
     });
 
     if (credential) {
@@ -356,8 +356,8 @@ async function handleExternalUser(provider, profile) {
           last_login: new Date(),
         });
 
-        log.auth.info('Updated credential user with organization_id', { 
-          organizationId: user.organization_id 
+        log.auth.info('Updated credential user with organization_id', {
+          organizationId: user.organization_id,
         });
       } else {
         // Update last login
@@ -388,8 +388,8 @@ async function handleExternalUser(provider, profile) {
           last_login: new Date(),
         });
 
-        log.auth.info('Updated existing user with organization_id', { 
-          organizationId: user.organization_id 
+        log.auth.info('Updated existing user with organization_id', {
+          organizationId: user.organization_id,
         });
       } else {
         // Update user's auth provider and linked timestamp
@@ -443,9 +443,9 @@ async function handleExternalUser(provider, profile) {
         ...profile,
         subject,
       });
-      log.auth.info('Created credential successfully', { 
-        credentialId: credential.id, 
-        subject: credential.subject 
+      log.auth.info('Created credential successfully', {
+        credentialId: credential.id,
+        subject: credential.subject,
       });
     } catch (credentialError) {
       log.auth.error('Failed to create credential', { error: credentialError.message });
@@ -464,21 +464,21 @@ async function handleExternalUser(provider, profile) {
     log.auth.debug('Database verification', {
       userId: dbUser.id,
       email: dbUser.email,
-      organizationId: dbUser.organization_id
+      organizationId: dbUser.organization_id,
     });
     if (dbUser.organization) {
       log.auth.debug('Database verification - Organization found', {
         orgName: dbUser.organization.name,
-        orgId: dbUser.organization.id
+        orgId: dbUser.organization.id,
       });
     } else {
       log.auth.warn('Database verification - NO ORGANIZATION FOUND IN DATABASE');
     }
 
-    log.auth.info('Created new external user', { 
-      provider, 
-      username: user.username, 
-      email: user.email 
+    log.auth.info('Created new external user', {
+      provider,
+      username: user.username,
+      email: user.email,
     });
     return user;
   } catch (error) {
@@ -521,9 +521,9 @@ async function determineUserOrganization(email, _profile) {
   });
 
   if (invitation) {
-    log.auth.info('Found pending invitation, using organization', { 
-      email, 
-      organizationId: invitation.organization_id 
+    log.auth.info('Found pending invitation, using organization', {
+      email,
+      organizationId: invitation.organization_id,
     });
 
     // Mark invitation as used
@@ -552,9 +552,9 @@ async function determineUserOrganization(email, _profile) {
 
           const org = await OrganizationModel.findByName(orgName);
           if (org) {
-            log.auth.info('Using existing mapped organization', { 
-              orgName: org.name, 
-              orgId: org.id 
+            log.auth.info('Using existing mapped organization', {
+              orgName: org.name,
+              orgId: org.id,
             });
             return org.id;
           } else {
@@ -565,9 +565,9 @@ async function determineUserOrganization(email, _profile) {
         }
       }
     } catch (error) {
-      log.auth.error('Failed to parse domain mappings JSON', { 
+      log.auth.error('Failed to parse domain mappings JSON', {
         error: error.message,
-        rawValue: config.authentication.external_domain_mappings?.value 
+        rawValue: config.authentication.external_domain_mappings?.value,
       });
     }
   }

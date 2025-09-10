@@ -37,10 +37,10 @@ class DatabaseMigrations {
         return results.length > 0;
       }
     } catch (error) {
-      log.database.warn('Failed to check column in table', { 
-        tableName, 
-        columnName, 
-        error: error.message 
+      log.database.warn('Failed to check column in table', {
+        tableName,
+        columnName,
+        error: error.message,
       });
       return false;
     }
@@ -69,9 +69,9 @@ class DatabaseMigrations {
         return results.length > 0;
       }
     } catch (error) {
-      log.database.warn('Failed to check if table exists', { 
-        tableName, 
-        error: error.message 
+      log.database.warn('Failed to check if table exists', {
+        tableName,
+        error: error.message,
       });
       return false;
     }
@@ -97,10 +97,10 @@ class DatabaseMigrations {
       log.database.info('Added column successfully', { tableName, columnName });
       return true;
     } catch (error) {
-      log.database.error('Failed to add column', { 
-        tableName, 
-        columnName, 
-        error: error.message 
+      log.database.error('Failed to add column', {
+        tableName,
+        columnName,
+        error: error.message,
       });
       return false;
     }
@@ -135,9 +135,9 @@ class DatabaseMigrations {
             });
             log.database.info('Created index', { indexName: index.name, tableName });
           } catch (indexError) {
-            log.database.warn('Failed to create index', { 
-              indexName: index.name, 
-              error: indexError.message 
+            log.database.warn('Failed to create index', {
+              indexName: index.name,
+              error: indexError.message,
             });
           }
         }
@@ -146,9 +146,9 @@ class DatabaseMigrations {
       log.database.info('Created table successfully', { tableName });
       return true;
     } catch (error) {
-      log.database.error('Failed to create table', { 
-        tableName, 
-        error: error.message 
+      log.database.error('Failed to create table', {
+        tableName,
+        error: error.message,
       });
       return false;
     }
@@ -261,8 +261,8 @@ class DatabaseMigrations {
           log.database.debug('Unique index on organization_code already exists');
         }
       } catch (indexError) {
-        log.database.warn('Failed to create unique index on organization_code', { 
-          error: indexError.message 
+        log.database.warn('Failed to create unique index on organization_code', {
+          error: indexError.message,
         });
       }
     }
@@ -300,10 +300,10 @@ class DatabaseMigrations {
         return results.length > 0;
       }
     } catch (error) {
-      log.database.warn('Failed to check if index exists on table', { 
-        indexName, 
-        tableName, 
-        error: error.message 
+      log.database.warn('Failed to check if index exists on table', {
+        indexName,
+        tableName,
+        error: error.message,
       });
       return false;
     }
@@ -469,9 +469,9 @@ class DatabaseMigrations {
 
           log.database.info('Updated timestamp defaults', { tableName });
         } catch (error) {
-          log.database.warn('Failed to set default timestamps', { 
-            tableName, 
-            error: error.message 
+          log.database.warn('Failed to set default timestamps', {
+            tableName,
+            error: error.message,
           });
         }
       }

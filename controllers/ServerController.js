@@ -157,10 +157,10 @@ class ServerController {
         },
       });
     } catch (error) {
-      log.server.error('Add server error', { 
+      log.server.error('Add server error', {
         error: error.message,
         hostname: req.body.hostname,
-        port: req.body.port 
+        port: req.body.port,
       });
       res.status(500).json({
         success: false,
@@ -314,10 +314,10 @@ class ServerController {
         serverInfo: testResult.success ? testResult.data : null,
       });
     } catch (error) {
-      log.server.error('Test server error', { 
+      log.server.error('Test server error', {
         error: error.message,
         hostname: req.body.hostname,
-        port: req.body.port 
+        port: req.body.port,
       });
       res.status(500).json({
         success: false,
@@ -412,9 +412,9 @@ class ServerController {
         message: 'Server removed successfully',
       });
     } catch (error) {
-      log.server.error('Remove server error', { 
+      log.server.error('Remove server error', {
         error: error.message,
-        serverId: req.params.serverId 
+        serverId: req.params.serverId,
       });
       res.status(500).json({
         success: false,
@@ -1068,13 +1068,13 @@ class ServerController {
         };
       });
 
-      log.security.info('Built server allowlist', { 
-        entries: Object.keys(allowlist).length 
+      log.security.info('Built server allowlist', {
+        entries: Object.keys(allowlist).length,
       });
       return allowlist;
     } catch (error) {
-      log.security.error('Failed to build server allowlist', { 
-        error: error.message 
+      log.security.error('Failed to build server allowlist', {
+        error: error.message,
       });
       return {};
     }
@@ -1103,7 +1103,7 @@ class ServerController {
       // Step 3: Return server-controlled values only (like CodeQL's subdomain example)
       log.security.info('Server selected from allowlist', {
         hostname: allowedServer.hostname,
-        port: allowedServer.port
+        port: allowedServer.port,
       });
       return allowedServer;
     } catch (error) {
@@ -1149,9 +1149,9 @@ class ServerController {
         });
       }
 
-      log.security.info('Server validated', { 
-        hostname: server.hostname, 
-        port: server.port 
+      log.security.info('Server validated', {
+        hostname: server.hostname,
+        port: server.port,
       });
 
       // Import axios
@@ -1231,8 +1231,8 @@ class ServerController {
         res.status(response.status);
         response.data.pipe(res);
       } catch (proxyError) {
-        log.vnc.error('VNC proxy failed for websockify', { 
-          error: proxyError.message 
+        log.vnc.error('VNC proxy failed for websockify', {
+          error: proxyError.message,
         });
 
         if (proxyError.response) {
@@ -1355,8 +1355,8 @@ class ServerController {
         });
       }
     } catch (error) {
-      log.terminal.error('Start terminal session error', { 
-        error: error.message 
+      log.terminal.error('Start terminal session error', {
+        error: error.message,
       });
       res.status(500).json({
         success: false,

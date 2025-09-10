@@ -262,15 +262,15 @@ class AuthController {
       try {
         if (organization) {
           await MailController.sendWelcomeEmail(newUser, organization.name);
-          log.mail.info('Welcome email sent successfully', { 
-            email: newUser.email, 
-            organization: organization.name 
+          log.mail.info('Welcome email sent successfully', {
+            email: newUser.email,
+            organization: organization.name,
           });
         }
       } catch (emailError) {
-        log.mail.error('Failed to send welcome email', { 
+        log.mail.error('Failed to send welcome email', {
           error: emailError.message,
-          email: newUser.email 
+          email: newUser.email,
         });
         // Continue with registration even if email fails
       }
@@ -299,10 +299,10 @@ class AuthController {
 
       res.status(201).json(response);
     } catch (error) {
-      log.auth.error('Registration error', { 
+      log.auth.error('Registration error', {
         error: error.message,
         username: req.body.username,
-        email: req.body.email 
+        email: req.body.email,
       });
 
       if (error.message.includes('already exists')) {
@@ -445,9 +445,9 @@ class AuthController {
         },
       });
     } catch (error) {
-      log.auth.error('Login error', { 
+      log.auth.error('Login error', {
         error: error.message,
-        identifier: req.body.identifier 
+        identifier: req.body.identifier,
       });
       res.status(500).json({
         success: false,
@@ -568,10 +568,10 @@ class AuthController {
         req.session.role = user.role;
       }
 
-      log.auth.info('LDAP login successful', { 
-        username: user.username, 
+      log.auth.info('LDAP login successful', {
+        username: user.username,
         email: user.email,
-        authProvider: 'ldap'
+        authProvider: 'ldap',
       });
 
       res.json({
@@ -697,16 +697,16 @@ class AuthController {
       const passport = (await import('passport')).default;
       const strategyName = `oidc-${provider}`;
 
-      log.auth.info('Starting OIDC authentication flow', { 
+      log.auth.info('Starting OIDC authentication flow', {
         provider,
-        strategyName 
+        strategyName,
       });
 
       passport.authenticate(strategyName)(req, res, next);
     } catch (error) {
-      log.auth.error('OIDC start login error', { 
+      log.auth.error('OIDC start login error', {
         error: error.message,
-        provider: req.params.provider 
+        provider: req.params.provider,
       });
       res.status(500).json({
         success: false,
@@ -794,9 +794,9 @@ class AuthController {
       const passport = (await import('passport')).default;
       const strategyName = `oidc-${provider}`;
 
-      log.auth.info('Processing OIDC callback', { 
+      log.auth.info('Processing OIDC callback', {
         provider,
-        strategyName 
+        strategyName,
       });
 
       passport.authenticate(strategyName, {
@@ -804,9 +804,9 @@ class AuthController {
         failureRedirect: `/ui/login?error=oidc_failed&provider=${provider}`,
       })(req, res, err => {
         if (err) {
-          log.auth.error('OIDC callback error', { 
-            provider, 
-            error: err.message 
+          log.auth.error('OIDC callback error', {
+            provider,
+            error: err.message,
           });
           return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
         }
@@ -837,10 +837,10 @@ class AuthController {
           req.session.role = user.role;
         }
 
-        log.auth.info('OIDC login successful', { 
+        log.auth.info('OIDC login successful', {
           provider,
           username: user.username,
-          email: user.email
+          email: user.email,
         });
 
         // Redirect to frontend with token (frontend will handle storage)
@@ -849,8 +849,8 @@ class AuthController {
         const host = req.get('host');
         const frontendUrl = `${protocol}://${host}`;
 
-        log.auth.debug('OIDC redirect URL', { 
-          frontendUrl: `${frontendUrl}/ui/auth/callback` 
+        log.auth.debug('OIDC redirect URL', {
+          frontendUrl: `${frontendUrl}/ui/auth/callback`,
         });
         res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
       });
@@ -1147,9 +1147,10 @@ class AuthController {
         message: 'Password changed successfully',
       });
     } catch (error) {
-      log.auth.error('Change password error', { 
+      const userId = req.user?.userId || req.session?.userId;
+      log.auth.error('Change password error', {
         error: error.message,
-        userId 
+        userId,
       });
 
       if (error.message.includes('Current password is incorrect')) {
@@ -1254,9 +1255,9 @@ class AuthController {
         },
       });
     } catch (error) {
-      log.auth.error('Token verification error', { 
+      log.auth.error('Token verification error', {
         error: error.message,
-        errorName: error.name 
+        errorName: error.name,
       });
 
       if (error.name === 'JsonWebTokenError') {
@@ -1520,10 +1521,10 @@ class AuthController {
         message: 'User role updated successfully',
       });
     } catch (error) {
-      log.auth.error('Update user role error', { 
+      log.auth.error('Update user role error', {
         error: error.message,
         userId: req.body.userId,
-        newRole: req.body.newRole 
+        newRole: req.body.newRole,
       });
       res.status(500).json({
         success: false,
@@ -1642,9 +1643,9 @@ class AuthController {
         message: 'User deactivated successfully',
       });
     } catch (error) {
-      log.auth.error('Deactivate user error', { 
+      log.auth.error('Deactivate user error', {
         error: error.message,
-        userId: req.params.userId 
+        userId: req.params.userId,
       });
       res.status(500).json({
         success: false,
@@ -1746,9 +1747,9 @@ class AuthController {
         message: 'User reactivated successfully',
       });
     } catch (error) {
-      log.auth.error('Reactivate user error', { 
+      log.auth.error('Reactivate user error', {
         error: error.message,
-        userId: req.params.userId 
+        userId: req.params.userId,
       });
       res.status(500).json({
         success: false,
@@ -1877,9 +1878,9 @@ class AuthController {
         message: 'User permanently deleted successfully',
       });
     } catch (error) {
-      log.auth.error('Delete user error', { 
+      log.auth.error('Delete user error', {
         error: error.message,
-        userId: req.params.userId 
+        userId: req.params.userId,
       });
       res.status(500).json({
         success: false,
@@ -2050,7 +2051,9 @@ class AuthController {
           }
         });
       } catch (error) {
-        log.auth.error('Error processing OIDC providers for auth methods', { error: error.message });
+        log.auth.error('Error processing OIDC providers for auth methods', {
+          error: error.message,
+        });
       }
 
       res.json({
@@ -4016,13 +4019,13 @@ class AuthController {
       if (shouldDeleteOrganization) {
         try {
           await OrganizationModel.deleteOrganization(user.organization_id);
-          log.auth.info('Organization deleted as user was the last member', { 
-            organizationId: user.organization_id 
+          log.auth.info('Organization deleted as user was the last member', {
+            organizationId: user.organization_id,
           });
         } catch (orgError) {
-          log.auth.error('Error deleting organization after user deletion', { 
+          log.auth.error('Error deleting organization after user deletion', {
             error: orgError.message,
-            organizationId: user.organization_id 
+            organizationId: user.organization_id,
           });
           // Don't fail the user deletion if org deletion fails
         }
@@ -4032,8 +4035,8 @@ class AuthController {
       if (req.session) {
         req.session.destroy(err => {
           if (err) {
-            log.auth.error('Session destruction error after account deletion', { 
-              error: err.message 
+            log.auth.error('Session destruction error after account deletion', {
+              error: err.message,
             });
           }
         });

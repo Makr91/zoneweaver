@@ -17,9 +17,9 @@ let passport;
 
 // Prevent server crashes from unhandled WebSocket errors
 process.on('uncaughtException', err => {
-  log.app.error('Uncaught Exception', { 
-    error: err.message, 
-    stack: err.stack 
+  log.app.error('Uncaught Exception', {
+    error: err.message,
+    stack: err.stack,
   });
   // Don't exit, just log the error to prevent crashes
 });
@@ -137,7 +137,7 @@ log.app.info('Session middleware configured for OIDC support');
 app.use((req, res, next) => {
   req.requestId = generateRequestId();
   const logger = createRequestLogger(req.requestId, req);
-  
+
   res.on('finish', () => {
     if (res.statusCode >= 400) {
       logger.error(res.statusCode, res.statusMessage);
@@ -145,7 +145,7 @@ app.use((req, res, next) => {
       logger.success(res.statusCode);
     }
   });
-  
+
   next();
 });
 
@@ -154,10 +154,10 @@ app.use('/api/servers/:serverAddress/zones/:zoneName/vnc/console', (req, res, ne
   const { serverAddress, zoneName } = req.params;
   const clientId = req.ip || req.connection.remoteAddress;
 
-  log.websocket.debug('VNC Console: Tracking session', { 
-    zoneName, 
-    serverAddress, 
-    clientId 
+  log.websocket.debug('VNC Console: Tracking session', {
+    zoneName,
+    serverAddress,
+    clientId,
   });
 
   // Store the mapping for WebSocket fallback
@@ -256,9 +256,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
       const sessionId = zloginMatch[1];
 
       if (!serverModelReady || !ServerModel) {
-        log.websocket.error('WebSocket zlogin: ServerModel not initialized', { 
-          sessionId, 
-          timestamp 
+        log.websocket.error('WebSocket zlogin: ServerModel not initialized', {
+          sessionId,
+          timestamp,
         });
         socket.destroy();
         return;
@@ -288,9 +288,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
       }
 
       if (!serverAddress) {
-        log.websocket.error('WebSocket zlogin: Could not determine target server', { 
-          sessionId, 
-          timestamp 
+        log.websocket.error('WebSocket zlogin: Could not determine target server', {
+          sessionId,
+          timestamp,
         });
         socket.destroy();
         return;
@@ -300,11 +300,11 @@ async function handleWebSocketUpgrade(request, socket, head) {
       const server = await ServerModel.getServer(hostname, parseInt(port || 5001), 'https');
 
       if (!server || !server.api_key) {
-        log.websocket.error('WebSocket zlogin: No server or API key', { 
-          sessionId, 
-          hostname, 
-          port, 
-          timestamp 
+        log.websocket.error('WebSocket zlogin: No server or API key', {
+          sessionId,
+          hostname,
+          port,
+          timestamp,
         });
         socket.destroy();
         return;
@@ -323,10 +323,10 @@ async function handleWebSocketUpgrade(request, socket, head) {
 
       // Add immediate error handler to prevent server crashes
       backendWs.on('error', err => {
-        log.websocket.error('WebSocket zlogin: Backend connection failed', { 
-          backendUrl, 
-          error: err.message, 
-          timestamp 
+        log.websocket.error('WebSocket zlogin: Backend connection failed', {
+          backendUrl,
+          error: err.message,
+          timestamp,
         });
         socket.destroy(); // Close the client connection gracefully
       });
@@ -348,7 +348,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
       log.websocket.info('WebSocket upgrade for terminal session', { sessionId });
 
       if (!serverModelReady || !ServerModel) {
-        log.websocket.error('WebSocket upgrade failed: ServerModel not fully initialized', { sessionId });
+        log.websocket.error('WebSocket upgrade failed: ServerModel not fully initialized', {
+          sessionId,
+        });
         socket.destroy();
         return;
       }
@@ -377,7 +379,10 @@ async function handleWebSocketUpgrade(request, socket, head) {
       }
 
       if (!serverAddress) {
-        log.websocket.error('WebSocket upgrade failed: Could not determine target server for terminal session', { sessionId });
+        log.websocket.error(
+          'WebSocket upgrade failed: Could not determine target server for terminal session',
+          { sessionId }
+        );
         socket.destroy();
         return;
       }
@@ -405,9 +410,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
 
       // Add immediate error handler to prevent server crashes
       backendWs.on('error', err => {
-        log.websocket.error('Backend WebSocket connection failed for terminal', { 
-          sessionId, 
-          error: err.message 
+        log.websocket.error('Backend WebSocket connection failed for terminal', {
+          sessionId,
+          error: err.message,
         });
         socket.destroy(); // Close the client connection gracefully
       });
@@ -427,10 +432,13 @@ async function handleWebSocketUpgrade(request, socket, head) {
 
     // Handle fallback for noVNC default /websockify path
     if (url.pathname === '/websockify') {
-      log.websocket.debug('WebSocket fallback: websockify detected, extracting server/zone from referer', {
-        referer: request.headers.referer,
-        origin: request.headers.origin
-      });
+      log.websocket.debug(
+        'WebSocket fallback: websockify detected, extracting server/zone from referer',
+        {
+          referer: request.headers.referer,
+          origin: request.headers.origin,
+        }
+      );
 
       // Since referer might not have API path, try to maintain a mapping of active VNC sessions
       // For now, let's add a simple mapping based on recent VNC console requests
@@ -454,7 +462,10 @@ async function handleWebSocketUpgrade(request, socket, head) {
       }
 
       if (serverAddress && zoneName) {
-        log.websocket.info('WebSocket fallback: extracted zone on server', { zoneName, serverAddress });
+        log.websocket.info('WebSocket fallback: extracted zone on server', {
+          zoneName,
+          serverAddress,
+        });
 
         // Redirect to proper VNC WebSocket handling
         request.url = `/api/servers/${serverAddress}/zones/${zoneName}/vnc/websockify`;
@@ -471,16 +482,21 @@ async function handleWebSocketUpgrade(request, socket, head) {
         if (storedSession) {
           serverAddress = storedSession.serverAddress;
           zoneName = storedSession.zoneName;
-          log.websocket.info('WebSocket fallback: found stored session', { zoneName, serverAddress });
+          log.websocket.info('WebSocket fallback: found stored session', {
+            zoneName,
+            serverAddress,
+          });
 
           // Redirect to proper VNC WebSocket handling
           request.url = `/api/servers/${serverAddress}/zones/${zoneName}/vnc/websockify`;
           url.pathname = request.url;
-          log.websocket.debug('WebSocket fallback: redirected from stored session', { url: request.url });
+          log.websocket.debug('WebSocket fallback: redirected from stored session', {
+            url: request.url,
+          });
         } else {
-          log.websocket.debug('WebSocket fallback: no stored session found', { 
+          log.websocket.debug('WebSocket fallback: no stored session found', {
             clientId,
-            activeSessions: Array.from(activeVncSessions.keys())
+            activeSessions: Array.from(activeVncSessions.keys()),
           });
         }
       }
@@ -491,8 +507,8 @@ async function handleWebSocketUpgrade(request, socket, head) {
     );
 
     if (!finalVncMatch) {
-      log.websocket.debug('WebSocket upgrade rejected: URL does not match VNC pattern', { 
-        pathname: url.pathname 
+      log.websocket.debug('WebSocket upgrade rejected: URL does not match VNC pattern', {
+        pathname: url.pathname,
       });
       socket.destroy();
       return;
@@ -504,9 +520,12 @@ async function handleWebSocketUpgrade(request, socket, head) {
     log.websocket.info('WebSocket upgrade for VNC', { zoneName, hostname, port });
 
     if (!serverModelReady || !ServerModel) {
-      log.websocket.error('WebSocket upgrade failed: ServerModel not fully initialized for VNC session', { 
-        zoneName 
-      });
+      log.websocket.error(
+        'WebSocket upgrade failed: ServerModel not fully initialized for VNC session',
+        {
+          zoneName,
+        }
+      );
       socket.destroy();
       return;
     }
@@ -514,9 +533,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
     const server = await ServerModel.getServer(hostname, parseInt(port || 5001), 'https');
 
     if (!server || !server.api_key) {
-      log.websocket.error('WebSocket upgrade failed: No server or API key for VNC', { 
-        hostname, 
-        port 
+      log.websocket.error('WebSocket upgrade failed: No server or API key for VNC', {
+        hostname,
+        port,
       });
       socket.destroy();
       return;
@@ -554,9 +573,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
 
     // Add immediate error handler to prevent server crashes
     backendWs.on('error', err => {
-      log.websocket.error('Backend WebSocket connection failed for VNC', { 
-        zoneName, 
-        error: err.message 
+      log.websocket.error('Backend WebSocket connection failed for VNC', {
+        zoneName,
+        error: err.message,
       });
       socket.destroy(); // Close the client connection gracefully
     });
@@ -609,9 +628,9 @@ async function handleWebSocketUpgrade(request, socket, head) {
       });
 
       backendWs.on('error', err => {
-        log.websocket.error('Failed to connect to backend VNC WebSocket', { 
-          zoneName, 
-          error: err.message 
+        log.websocket.error('Failed to connect to backend VNC WebSocket', {
+          zoneName,
+          error: err.message,
         });
         clientWs.close();
       });
@@ -663,7 +682,7 @@ async function generateSSLCertificatesIfNeeded() {
 
     log.app.info('SSL certificates generated successfully', {
       keyPath,
-      certPath
+      certPath,
     });
 
     return true; // Certificates generated successfully
@@ -729,9 +748,9 @@ async function generateSSLCertificatesIfNeeded() {
     httpServer.on('upgrade', handleWebSocketUpgrade);
 
     httpServer.listen(port, () => {
-      log.app.info('HTTP Server started', { 
+      log.app.info('HTTP Server started', {
         port,
-        apiDocs: `http://localhost:${port}/api-docs`
+        apiDocs: `http://localhost:${port}/api-docs`,
       });
     });
   }

@@ -88,9 +88,9 @@ class MailController {
    */
   static async sendInvitationEmail(invitation) {
     try {
-      log.mail.info('Attempting to send invitation email', { 
+      log.mail.info('Attempting to send invitation email', {
         recipient: invitation.email,
-        organization: invitation.organization_name 
+        organization: invitation.organization_name,
       });
 
       const mailConfig = this.getConfig();
@@ -217,9 +217,9 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
         message: 'Invitation email sent successfully',
       };
     } catch (error) {
-      log.mail.error('Error sending invitation email', { 
+      log.mail.error('Error sending invitation email', {
         error: error.message,
-        stack: error.stack 
+        stack: error.stack,
       });
 
       return {
@@ -238,10 +238,10 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
    */
   static async sendWelcomeEmail(user, organizationName) {
     try {
-      log.mail.info('Attempting to send welcome email', { 
+      log.mail.info('Attempting to send welcome email', {
         recipient: user.email,
         username: user.username,
-        organization: organizationName 
+        organization: organizationName,
       });
 
       const mailConfig = this.getConfig();
@@ -352,10 +352,10 @@ Welcome aboard!
         message: 'Welcome email sent successfully',
       };
     } catch (error) {
-      log.mail.error('Error sending welcome email', { 
+      log.mail.error('Error sending welcome email', {
         error: error.message,
         username: user.username,
-        email: user.email 
+        email: user.email,
       });
 
       return {
@@ -374,7 +374,7 @@ Welcome aboard!
   static async testSmtpConnection(req, res) {
     try {
       const { testEmail } = req.body;
-      
+
       log.mail.info('Testing SMTP connection', { testEmail });
 
       const mailConfig = this.getConfig();
@@ -432,9 +432,9 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
         previewUrl: nodemailer.getTestMessageUrl(info) || null,
       });
     } catch (error) {
-      log.mail.error('SMTP test failed', { 
+      log.mail.error('SMTP test failed', {
         error: error.message,
-        stack: error.stack 
+        stack: error.stack,
       });
 
       res.status(500).json({
