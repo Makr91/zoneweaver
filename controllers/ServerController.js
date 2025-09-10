@@ -784,9 +784,10 @@ class ServerController {
           });
           
           // Use proper stream forwarding instead of sending Express request object
+          const https = (await import('https')).default;
+          const { URL } = (await import('url'));
+          
           const response = await new Promise((resolve, reject) => {
-            const https = require('https');
-            const { URL } = require('url');
             
             const targetURL = new URL(targetUrl);
             
