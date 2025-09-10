@@ -112,36 +112,44 @@ const CustomActions = ({
     await loadFiles();
   };
 
-  // Global click handler to detect custom actions
+  // Listen for custom events from file preview
   useEffect(() => {
-    const handleGlobalClick = (e) => {
-      // Check if click is on a file item that needs custom action
-      const fileElement = e.target.closest('.file-item-container');
-      if (!fileElement) return;
-
-      const fileName = fileElement.getAttribute('title');
-      const file = files.find(f => f.name === fileName);
-      if (!file) return;
-
-      // Check for specific custom action triggers
-      if (e.target.closest('.edit-file-trigger')) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleEditFile(file);
-      } else if (e.target.closest('.archive-file-trigger')) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleExtractArchive(file);
-      } else if (e.target.closest('.properties-trigger')) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleShowProperties(file);
+    const handleEditFile = (e) => {
+      const file = e.detail;
+      if (isTextFile(file)) {
+        setTextEditorFile(file);
+        setShowTextEditor(true);
+      } else {
+        setError('This file cannot be edited as text');
       }
     };
 
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
-  }, [files]);
+    const handleExtractArchive = (e) => {
+      const file = e.detail;
+      if (isArchiveFile(file)) {
+        setArchiveFileForExtract(file);
+        setShowExtractArchiveModal(true);
+      } else {
+        setError('This file cannot be extracted');
+      }
+    };
+
+    const handleShowProperties = (e) => {
+      const file = e.detail;
+      setPropertiesFile(file);
+      setShowPropertiesModal(true);
+    };
+
+    document.addEventListener('zoneweaver-edit-file', handleEditFile);
+    document.addEventListener('zoneweaver-extract-archive', handleExtractArchive);
+    document.addEventListener('zoneweaver-show-properties', handleShowProperties);
+
+    return () => {
+      document.removeEventListener('zoneweaver-edit-file', handleEditFile);
+      document.removeEventListener('zoneweaver-extract-archive', handleExtractArchive);
+      document.removeEventListener('zoneweaver-show-properties', handleShowProperties);
+    };
+  }, []);
 
   // Inject custom CSS for context menu integration
   useEffect(() => {

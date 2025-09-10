@@ -8,19 +8,31 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { canManageHosts, canViewHosts } from '../../../utils/permissions';
 import { ZoneweaverFileManagerAPI } from './FileManagerAPI';
 import { transformZoneweaverToFile, isTextFile, isArchiveFile } from './FileManagerTransforms';
-import CustomActions from './CustomActions';
+import TextFileEditor from './TextFileEditor';
+import ArchiveModals from './ArchiveModals';
+import FilePropertiesModal from './FilePropertiesModal';
 import './HostFileManager.scss';
 
 /**
- * Extended File Manager Component
- * Properly integrates with cubone's internal systems for context menu and actions
+ * Enhanced File Manager Component
+ * Implements the PR's custom actions functionality locally
  */
-const ExtendedFileManager = ({ server }) => {
+const EnhancedFileManager = ({ server }) => {
   const [files, setFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPath, setCurrentPath] = useState('/');
   const [error, setError] = useState('');
   const [directoryCache, setDirectoryCache] = useState(new Map());
+  
+  // Modal states for custom actions
+  const [showTextEditor, setShowTextEditor] = useState(false);
+  const [textEditorFile, setTextEditorFile] = useState(null);
+  const [showCreateArchiveModal, setShowCreateArchiveModal] = useState(false);
+  const [showExtractArchiveModal, setShowExtractArchiveModal] = useState(false);
+  const [selectedFilesForArchive, setSelectedFilesForArchive] = useState([]);
+  const [archiveFileForExtract, setArchiveFileForExtract] = useState(null);
+  const [showPropertiesModal, setShowPropertiesModal] = useState(false);
+  const [propertiesFile, setPropertiesFile] = useState(null);
 
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -124,10 +136,6 @@ const ExtendedFileManager = ({ server }) => {
     rename: canManageHosts(user?.role),
     download: canViewHosts(user?.role),
     delete: canManageHosts(user?.role),
-    // Custom permissions for extended features
-    edit: canManageHosts(user?.role),
-    archive: canManageHosts(user?.role),
-    properties: canManageHosts(user?.role)
   }), [user?.role]);
 
   // Upload configuration
@@ -150,6 +158,100 @@ const ExtendedFileManager = ({ server }) => {
     
     return { primaryColor, fontFamily };
   }, [theme]);
+
+  // Custom action handlers for the config.actions system
+  const handleEditFile = useCallback((file) => {
+    console.log('Edit file action:', file);
+    if (isTextFile(file)) {
+      setTextEditorFile(file);
+      setShowTextEditor(true);
+    } else {
+      setError('This file cannot be edited as text');
+    }
+  }, []);
+
+  const handleCreateArchive = useCallback((selectedFiles) => {
+    console.log('Create archive action:', selectedFiles);
+    setSelectedFilesForArchive(Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles]);
+    setShowCreateArchiveModal(true);
+  }, []);
+
+  const handleExtractArchive = useCallback((file) => {
+    console.log('Extract archive action:', file);
+    if (isArchiveFile(file)) {
+      setArchiveFileForExtract(file);
+      setShowExtractArchiveModal(true);
+    } else {
+      setError('This file cannot be extracted');
+    }
+  }, []);
+
+  const handleShowProperties = useCallback((file) => {
+    console.log('Show properties action:', file);
+    setPropertiesFile(file);
+    setShowPropertiesModal(true);
+  }, []);
+
+  // Custom actions configuration following the PR pattern
+  const customActions = useMemo(() => [
+    // Default cubone actions that we override
+    {
+      title: "Open",
+      key: "open",
+      onClick: (file) => {
+        if (file.isDirectory) {
+          setCurrentPath(file.path);
+        } else if (isTextFile(file)) {
+          handleEditFile(file);
+        } else {
+          // Download file - will use cubone's default download
+        }
+      },
+      showToolbar: false,
+      showMenu: true,
+      icon: null
+    },
+    {
+      title: "Edit File",
+      key: "edit",
+      onClick: handleEditFile,
+      showToolbar: false,
+      showMenu: true,
+      multiple: false,
+      icon: <i className="fas fa-edit"></i>,
+      hidden: false
+    },
+    {
+      title: "Create Archive",
+      key: "createArchive",
+      onClick: handleCreateArchive,
+      showToolbar: true,
+      showMenu: true,
+      multiple: true,
+      icon: <i className="fas fa-file-archive"></i>,
+      hidden: false
+    },
+    {
+      title: "Extract Archive",
+      key: "extractArchive",
+      onClick: handleExtractArchive,
+      showToolbar: false,
+      showMenu: true,
+      multiple: false,
+      icon: <i className="fas fa-expand-arrows-alt"></i>,
+      hidden: false
+    },
+    {
+      title: "Properties",
+      key: "properties",
+      onClick: handleShowProperties,
+      showToolbar: false,
+      showMenu: true,
+      multiple: false,
+      icon: <i className="fas fa-cog"></i>,
+      hidden: false
+    }
+  ], [handleEditFile, handleCreateArchive, handleExtractArchive, handleShowProperties]);
 
   // Standard cubone handlers
   const handleCreateFolder = async (name, parentFolder) => {
@@ -176,58 +278,25 @@ const ExtendedFileManager = ({ server }) => {
   const handleFileUploading = (file, parentFolder) => {
     const uploadPath = parentFolder?.path || currentPath || '/';
     
-    const formData = {
+    return {
       uploadPath: uploadPath,
       overwrite: false,
       mode: '644',
       uid: 1000,
       gid: 1000
     };
-    
-    console.log('🔄 UPLOAD: Starting file upload', {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      uploadPath: uploadPath,
-      formData: formData,
-      parentFolder: parentFolder?.name || 'None',
-      currentPath: currentPath,
-      server: `${server.hostname}:${server.port}`,
-      timestamp: new Date().toISOString()
-    });
-    
-    return formData;
   };
 
   const handleFileUploaded = (response) => {
-    console.log('✅ UPLOAD: Upload completed, processing response', {
-      response: response,
-      timestamp: new Date().toISOString()
-    });
+    console.log('✅ UPLOAD: Upload completed, refreshing file list');
     
     try {
       const uploadedFile = JSON.parse(response);
-      
-      console.log('✅ UPLOAD: File uploaded successfully', {
-        fileName: uploadedFile.name || 'Unknown',
-        filePath: uploadedFile.path || 'Unknown',
-        fileSize: uploadedFile.size || 'Unknown'
-      });
-      
-      // Refresh the entire file list instead of manual state updates
-      // This ensures proper navigation panel updates and consistency with backend
-      console.log('🔄 UPLOAD: Refreshing file list to show uploaded file');
-      loadFiles();
+      console.log('✅ UPLOAD: File uploaded successfully:', uploadedFile.name);
+      loadFiles(); // Refresh entire file list
     } catch (error) {
-      console.error('❌ UPLOAD: Error processing uploaded file response', {
-        error: error.message,
-        response: response,
-        stack: error.stack
-      });
-      
-      // Refresh files as fallback
-      console.log('🔄 UPLOAD: Refreshing files due to processing error');
-      loadFiles();
+      console.error('❌ UPLOAD: Error processing uploaded file response:', error);
+      loadFiles(); // Refresh as fallback
     }
   };
 
@@ -260,8 +329,6 @@ const ExtendedFileManager = ({ server }) => {
       
       if (result.success) {
         console.log('✅ DELETE: Files deleted successfully, refreshing file list');
-        // Refresh the entire file list instead of manual filtering
-        // This ensures proper navigation panel updates and consistency
         await loadFiles();
       } else {
         setError(result.message || 'Failed to delete files');
@@ -302,65 +369,24 @@ const ExtendedFileManager = ({ server }) => {
     try {
       const server = serverContext.currentServer;
       if (!server) {
-        console.error('❌ DOWNLOAD: No server selected');
         setError('No server selected');
         return;
       }
-
-      console.log('🔽 DOWNLOAD: Starting download operation', {
-        fileCount: filesToDownload.length,
-        files: filesToDownload.map(f => ({ name: f.name, path: f.path, size: f.size })),
-        server: `${server.hostname}:${server.port}`,
-        timestamp: new Date().toISOString()
-      });
 
       for (const file of filesToDownload) {
         if (!file.isDirectory) {
           const path = encodeURIComponent(file.path);
           const downloadUrl = `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/download?path=${path}`;
           
-          console.log(`🔽 DOWNLOAD: Processing file ${file.name}`, {
-            originalPath: file.path,
-            encodedPath: path,
-            downloadUrl: downloadUrl,
-            fileSize: file.size,
-            mimeType: file._zwMetadata?.mimeType || 'Unknown'
-          });
-          
           try {
-            const startTime = performance.now();
-            
-            console.log(`🔽 DOWNLOAD: Making fetch request for ${file.name}`, {
-              url: downloadUrl,
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('authToken') ? 'present' : 'missing'}`
-              }
-            });
-            
             const response = await fetch(downloadUrl, {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`
               }
             });
             
-            const endTime = performance.now();
-            
-            console.log(`🔽 DOWNLOAD: Response received for ${file.name}`, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: Object.fromEntries(response.headers.entries()),
-              duration: `${(endTime - startTime).toFixed(2)}ms`
-            });
-            
             if (response.ok) {
-              console.log(`✅ DOWNLOAD: Successfully downloaded ${file.name}`);
-              
               const blob = await response.blob();
-              console.log(`🔽 DOWNLOAD: Blob created for ${file.name}`, {
-                blobSize: blob.size,
-                blobType: blob.type
-              });
-              
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
@@ -369,48 +395,16 @@ const ExtendedFileManager = ({ server }) => {
               a.click();
               document.body.removeChild(a);
               window.URL.revokeObjectURL(url);
-              
-              console.log(`✅ DOWNLOAD: File ${file.name} download triggered successfully`);
             } else {
-              console.error(`❌ DOWNLOAD: Failed to download ${file.name}`, {
-                status: response.status,
-                statusText: response.statusText,
-                url: downloadUrl
-              });
               setError(`Failed to download ${file.name}: ${response.statusText}`);
             }
           } catch (fetchError) {
-            console.error(`❌ DOWNLOAD: Network error downloading ${file.name}`, {
-              error: fetchError.message,
-              stack: fetchError.stack,
-              url: downloadUrl
-            });
             setError(`Error downloading ${file.name}: ${fetchError.message}`);
           }
-        } else {
-          console.log(`⚠️ DOWNLOAD: Skipping directory ${file.name}`);
         }
       }
-      
-      console.log('✅ DOWNLOAD: Download operation completed');
     } catch (error) {
-      console.error('❌ DOWNLOAD: General download error', {
-        error: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString()
-      });
       setError('Failed to download files: ' + error.message);
-    }
-  };
-
-  const handleFileOpen = (file) => {
-    if (file.isDirectory) {
-      setCurrentPath(file.path);
-    } else if (isTextFile(file)) {
-      // Will trigger custom edit action
-      return { action: 'editFile', file };
-    } else {
-      handleDownload([file]);
     }
   };
 
@@ -445,6 +439,59 @@ const ExtendedFileManager = ({ server }) => {
     console.log('Layout changed to:', layout);
   };
 
+  // Modal close handlers
+  const handleCloseTextEditor = () => {
+    setShowTextEditor(false);
+    setTextEditorFile(null);
+  };
+
+  const handleSaveTextFile = async (content) => {
+    if (!textEditorFile) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await api.updateFileContent(textEditorFile, content);
+      
+      if (result.success) {
+        setShowTextEditor(false);
+        setTextEditorFile(null);
+        await loadFiles();
+      } else {
+        setError(result.message || 'Failed to save file');
+      }
+    } catch (error) {
+      console.error('Error saving file:', error);
+      setError('Failed to save file: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleArchiveSuccess = async (result) => {
+    console.log('Archive operation successful:', result);
+    await loadFiles();
+  };
+
+  const handleCloseCreateArchive = () => {
+    setShowCreateArchiveModal(false);
+    setSelectedFilesForArchive([]);
+  };
+
+  const handleCloseExtractArchive = () => {
+    setShowExtractArchiveModal(false);
+    setArchiveFileForExtract(null);
+  };
+
+  const handleCloseProperties = () => {
+    setShowPropertiesModal(false);
+    setPropertiesFile(null);
+  };
+
+  const handlePropertiesSuccess = async (result) => {
+    console.log('Properties updated successfully:', result);
+    await loadFiles();
+  };
+
   // Don't render if no server is selected
   if (!server) {
     return (
@@ -455,7 +502,7 @@ const ExtendedFileManager = ({ server }) => {
   }
 
   return (
-    <div className="host-file-manager extended">
+    <div className="host-file-manager enhanced">
       {/* Error notification */}
       {error && (
         <div className="notification is-danger mb-4">
@@ -464,11 +511,14 @@ const ExtendedFileManager = ({ server }) => {
         </div>
       )}
 
-      {/* Extended File Manager with Custom Actions */}
+      {/* File Manager with Config Actions */}
       <FileManager
         files={files}
         fileUploadConfig={fileUploadConfig}
         isLoading={isLoading}
+        config={{
+          actions: customActions
+        }}
         onCreateFolder={handleCreateFolder}
         onFileUploading={handleFileUploading}
         onFileUploaded={handleFileUploaded}
@@ -480,148 +530,11 @@ const ExtendedFileManager = ({ server }) => {
         onDelete={handleDelete}
         onLayoutChange={handleLayoutChange}
         onRefresh={handleRefresh}
-        onFileOpen={handleFileOpen}
         onFolderChange={handleFolderChange}
         onSelect={handleSelect}
         onError={handleError}
         layout="grid"
         enableFilePreview={true}
-        filePreviewComponent={(file) => (
-          <div className="zoneweaver-file-preview">
-            <div className="preview-header">
-              <h4 className="title is-6">{file.name}</h4>
-              <div className="preview-info">
-                <span className="tag is-light">
-                  {file.isDirectory ? 'Directory' : 
-                   file.size ? `${Math.round(file.size / 1024)} KB` : 'Unknown size'}
-                </span>
-                {file._zwMetadata?.mimeType && (
-                  <span className="tag is-info is-light">
-                    {file._zwMetadata.mimeType}
-                  </span>
-                )}
-                {file._zwMetadata?.permissions && (
-                  <span className="tag is-dark">
-                    {file._zwMetadata.permissions.octal || 'Unknown'}
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <div className="preview-content">
-              {file.isDirectory ? (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-folder fa-3x"></i>
-                  </span>
-                  <p className="mt-2">Directory</p>
-                  <p className="help">Double-click to open</p>
-                </div>
-              ) : isTextFile(file) ? (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-file-alt fa-3x"></i>
-                  </span>
-                  <p className="mt-2">Text File</p>
-                  <div className="buttons is-centered mt-3">
-                    <button 
-                      className="button is-primary is-small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Trigger edit action from CustomActions
-                        const editEvent = new CustomEvent('zoneweaver-edit-file', { detail: file });
-                        document.dispatchEvent(editEvent);
-                      }}
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-edit"></i>
-                      </span>
-                      <span>Edit File</span>
-                    </button>
-                  </div>
-                </div>
-              ) : isArchiveFile(file) ? (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-file-archive fa-3x"></i>
-                  </span>
-                  <p className="mt-2">Archive File</p>
-                  <div className="buttons is-centered mt-3">
-                    <button 
-                      className="button is-success is-small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Trigger extract action from CustomActions
-                        const extractEvent = new CustomEvent('zoneweaver-extract-archive', { detail: file });
-                        document.dispatchEvent(extractEvent);
-                      }}
-                      disabled={!canManageHosts(user?.role)}
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-expand-arrows-alt"></i>
-                      </span>
-                      <span>Extract</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-file fa-3x"></i>
-                  </span>
-                  <p className="mt-2">File</p>
-                  <p className="help">Double-click to download</p>
-                </div>
-              )}
-            </div>
-            
-            {/* Action buttons for all files */}
-            {canManageHosts(user?.role) && (
-              <div className="preview-actions">
-                <div className="buttons is-centered">
-                  <button 
-                    className="button is-link is-small is-outlined"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Trigger properties action from CustomActions
-                      const propsEvent = new CustomEvent('zoneweaver-show-properties', { detail: file });
-                      document.dispatchEvent(propsEvent);
-                    }}
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-cog"></i>
-                    </span>
-                    <span>Properties</span>
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* File metadata */}
-            <div className="preview-metadata">
-              <div className="field is-grouped is-grouped-multiline">
-                <div className="control">
-                  <div className="tags has-addons">
-                    <span className="tag is-dark">Modified</span>
-                    <span className="tag is-light">
-                      {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : 'Unknown'}
-                    </span>
-                  </div>
-                </div>
-                {file._zwMetadata && (
-                  <div className="control">
-                    <div className="tags has-addons">
-                      <span className="tag is-dark">Owner</span>
-                      <span className="tag is-light">
-                        {file._zwMetadata.uid || 'Unknown'}:{file._zwMetadata.gid || 'Unknown'}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
         maxFileSize={50 * 1024 * 1024 * 1024}
         height="calc(100vh - 200px)"
         width="100%"
@@ -634,19 +547,39 @@ const ExtendedFileManager = ({ server }) => {
         language="en"
       />
 
-      {/* Custom Actions Integration */}
-      <CustomActions
-        api={api}
+      {/* Custom Action Modals */}
+      {showTextEditor && textEditorFile && (
+        <TextFileEditor
+          file={textEditorFile}
+          api={api}
+          onClose={handleCloseTextEditor}
+          onSave={handleSaveTextFile}
+        />
+      )}
+
+      <ArchiveModals
+        showCreateModal={showCreateArchiveModal}
+        showExtractModal={showExtractArchiveModal}
+        onCloseCreate={handleCloseCreateArchive}
+        onCloseExtract={handleCloseExtractArchive}
+        selectedFiles={selectedFilesForArchive}
+        archiveFile={archiveFileForExtract}
         currentPath={currentPath}
-        files={files}
-        loadFiles={loadFiles}
-        isLoading={isLoading}
-        setIsLoading={setIsLoading}
-        setError={setError}
-        permissions={permissions}
+        api={api}
+        onArchiveSuccess={handleArchiveSuccess}
       />
+
+      {showPropertiesModal && propertiesFile && (
+        <FilePropertiesModal
+          isOpen={showPropertiesModal}
+          onClose={handleCloseProperties}
+          file={propertiesFile}
+          api={api}
+          onSuccess={handlePropertiesSuccess}
+        />
+      )}
     </div>
   );
 };
 
-export default ExtendedFileManager;
+export default EnhancedFileManager;

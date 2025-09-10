@@ -11,7 +11,7 @@ import StorageManagement from "./Host/StorageManagement";
 import TimeNTPManagement from "./Host/TimeNTPManagement";
 import FaultManagement from "./Host/FaultManagement";
 import ProcessManagement from "./Host/ProcessManagement";
-import ExtendedFileManager from "./Host/FileManager/ExtendedFileManager";
+import EnhancedFileManager from "./Host/FileManager/EnhancedFileManager";
 
 const HostManage = () => {
   const [activeTab, setActiveTab] = useState('services');
@@ -279,7 +279,7 @@ const HostManage = () => {
                   </p>
                 </div>
                 
-                <ExtendedFileManager server={currentServer} />
+                <EnhancedFileManager server={currentServer} />
               </div>
             )}
           </div>
