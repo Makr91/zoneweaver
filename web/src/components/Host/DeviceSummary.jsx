@@ -29,7 +29,6 @@ const DeviceSummary = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('summary')}
                       title={sectionsCollapsed.summary ? 'Expand section' : 'Collapse section'}
-            }
           >
             <span className="icon">
               <i
