@@ -424,6 +424,78 @@ export class ZoneweaverFileManagerAPI {
       return { success: false, message: error.message };
     }
   }
+
+  /**
+   * Get current API user information
+   * @returns {Promise<Object>} User info response
+   */
+  async getUserInfo() {
+    try {
+      const result = await this.makeRequest('system/user-info', 'GET');
+      return result;
+    } catch (error) {
+      console.error('Error getting user info:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
+   * Get system users for dropdown selection
+   * @returns {Promise<Object>} Users list response
+   */
+  async getSystemUsers() {
+    try {
+      const result = await this.makeRequest('system/users', 'GET');
+      return result;
+    } catch (error) {
+      console.error('Error getting system users:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
+   * Get system groups for dropdown selection
+   * @returns {Promise<Object>} Groups list response
+   */
+  async getSystemGroups() {
+    try {
+      const result = await this.makeRequest('system/groups', 'GET');
+      return result;
+    } catch (error) {
+      console.error('Error getting system groups:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
+   * Update file/directory permissions and ownership
+   * @param {Object} file - File object
+   * @param {Object} permissions - Permission changes
+   * @returns {Promise<Object>} Update response
+   */
+  async updatePermissions(file, permissions) {
+    try {
+      const data = {
+        path: getPathFromFile(file),
+        ...permissions,
+        recursive: permissions.recursive || false
+      };
+
+      const result = await this.makeRequest('filesystem/permissions', 'PATCH', data);
+      
+      if (result.success && result.data && result.data.item) {
+        return {
+          success: true,
+          file: transformZoneweaverToFile(result.data.item)
+        };
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error updating permissions:', error);
+      return { success: false, message: error.message };
+    }
+  }
 }
 
 export default ZoneweaverFileManagerAPI;

@@ -10,6 +10,7 @@ import { ZoneweaverFileManagerAPI } from './FileManagerAPI';
 import { transformZoneweaverToFile, isTextFile, isArchiveFile } from './FileManagerTransforms';
 import TextFileEditor from './TextFileEditor';
 import ArchiveModals from './ArchiveModals';
+import FilePropertiesModal from './FilePropertiesModal';
 import './HostFileManager.scss';
 
 /**
@@ -29,6 +30,8 @@ const HostFileManager = ({ server }) => {
   const [selectedFilesForArchive, setSelectedFilesForArchive] = useState([]);
   const [archiveFileForExtract, setArchiveFileForExtract] = useState(null);
   const [currentlySelectedFiles, setCurrentlySelectedFiles] = useState([]);
+  const [showPropertiesModal, setShowPropertiesModal] = useState(false);
+  const [propertiesFile, setPropertiesFile] = useState(null);
 
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -459,6 +462,23 @@ const HostFileManager = ({ server }) => {
     setArchiveFileForExtract(null);
   };
 
+  // Properties modal handlers
+  const handleShowProperties = (file) => {
+    setPropertiesFile(file);
+    setShowPropertiesModal(true);
+  };
+
+  const handleCloseProperties = () => {
+    setShowPropertiesModal(false);
+    setPropertiesFile(null);
+  };
+
+  const handlePropertiesSuccess = async (result) => {
+    console.log('Properties updated successfully:', result);
+    // Refresh files to show updated permissions
+    await loadFiles();
+  };
+
   // Don't render if no server is selected
   if (!server) {
     return (
@@ -675,7 +695,32 @@ const HostFileManager = ({ server }) => {
                     </div>
                   </div>
                 )}
+                {file._zwMetadata && (
+                  <div className="control">
+                    <div className="tags has-addons">
+                      <span className="tag is-dark">Owner</span>
+                      <span className="tag is-light">
+                        {file._zwMetadata.uid || 'Unknown'}:{file._zwMetadata.gid || 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
+              
+              {/* Properties button */}
+              {canManageHosts(user?.role) && (
+                <div className="has-text-centered mt-3">
+                  <button 
+                    className="button is-link is-small is-outlined"
+                    onClick={() => handleShowProperties(file)}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-cog"></i>
+                    </span>
+                    <span>Properties</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -713,6 +758,17 @@ const HostFileManager = ({ server }) => {
         api={api}
         onArchiveSuccess={handleArchiveSuccess}
       />
+
+      {/* File Properties Modal */}
+      {showPropertiesModal && propertiesFile && (
+        <FilePropertiesModal
+          isOpen={showPropertiesModal}
+          onClose={handleCloseProperties}
+          file={propertiesFile}
+          api={api}
+          onSuccess={handlePropertiesSuccess}
+        />
+      )}
     </div>
   );
 };
