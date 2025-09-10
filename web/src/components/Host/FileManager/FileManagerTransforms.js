@@ -118,27 +118,63 @@ export const getFileExtension = (filename) => {
 };
 
 /**
- * Check if file is likely a text file based on extension and metadata
+ * Check if file is likely a text file based on backend metadata
  * @param {Object} file - File object
  * @returns {boolean} True if likely a text file
  */
 export const isTextFile = (file) => {
   if (file.isDirectory) return false;
   
-  const textExtensions = [
-    'txt', 'md', 'json', 'js', 'jsx', 'ts', 'tsx', 'css', 'scss', 'html', 'htm',
-    'xml', 'yaml', 'yml', 'ini', 'conf', 'cfg', 'log', 'sh', 'bash', 'py', 'php',
-    'rb', 'go', 'rs', 'java', 'c', 'cpp', 'h', 'hpp', 'sql', 'csv'
+  // Primary: Use backend's binary analysis (most reliable)
+  if (file._zwMetadata && file._zwMetadata.isBinary === false) {
+    return true;
+  }
+  
+  // Secondary: Check MIME type from backend
+  if (file._zwMetadata && file._zwMetadata.mimeType) {
+    if (file._zwMetadata.mimeType.startsWith('text/')) {
+      return true;
+    }
+    // Additional MIME types that are text-editable
+    const textMimeTypes = [
+      'application/json',
+      'application/javascript', 
+      'application/xml',
+      'application/yaml',
+      'application/x-yaml',
+      'application/x-sh',
+      'application/x-shellscript'
+    ];
+    if (textMimeTypes.includes(file._zwMetadata.mimeType)) {
+      return true;
+    }
+  }
+  
+  // Tertiary: Check if backend detected syntax highlighting
+  if (file._zwMetadata && file._zwMetadata.syntax) {
+    return true;
+  }
+  
+  // Fallback: Check for obvious text extensions (minimal list)
+  const obviousTextExtensions = ['txt', 'md', 'log'];
+  const extension = getFileExtension(file.name);
+  if (obviousTextExtensions.includes(extension)) {
+    return true;
+  }
+  
+  // Special case: Shell/config files without extensions but with known patterns
+  const textFilePatterns = [
+    /^\.(bashrc|zshrc|kshrc|profile|bash_profile|zprofile)$/,
+    /^(bashrc|zshrc|kshrc|profile)$/,
+    /^\.(vimrc|gitconfig|gitignore)$/,
+    /^(Dockerfile|Makefile|Rakefile)$/i
   ];
   
-  const extension = getFileExtension(file.name);
-  const hasTextExtension = textExtensions.includes(extension);
-  const isNotBinary = file._zwMetadata && !file._zwMetadata.isBinary;
-  const hasTextMime = file._zwMetadata && 
-    file._zwMetadata.mimeType && 
-    file._zwMetadata.mimeType.startsWith('text/');
+  if (textFilePatterns.some(pattern => pattern.test(file.name))) {
+    return true;
+  }
   
-  return hasTextExtension || isNotBinary || hasTextMime;
+  return false;
 };
 
 /**

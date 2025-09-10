@@ -85,10 +85,13 @@ export class ZoneweaverFileManagerAPI {
       // Use current path if no parent folder specified, otherwise use parent folder's path
       const parentPath = parentFolder ? getPathFromFile(parentFolder) : currentPath;
       
+      // Follow official API spec with proper types
       const data = {
         path: parentPath,
         name: name,
-        mode: '755'
+        mode: '755',    // String octal format per API spec
+        uid: 1000,      // Integer per API spec
+        gid: 1000       // Integer per API spec
       };
 
       console.log('Creating folder:', { name, parentPath, data });
@@ -197,7 +200,8 @@ export class ZoneweaverFileManagerAPI {
         results: results,
         message: allSuccess ? 'Files copied successfully' : 'Some files failed to copy',
         isAsync: true,
-        taskIds: results.filter(r => r.success).map(r => r.data?.task_id).filter(Boolean)
+        // API returns 202 with task_id directly in response for async operations
+        taskIds: results.filter(r => r.success).map(r => r.data?.task_id || r.task_id).filter(Boolean)
       };
     } catch (error) {
       console.error('Error copying files:', error);
@@ -232,7 +236,8 @@ export class ZoneweaverFileManagerAPI {
         results: results,
         message: allSuccess ? 'Files moved successfully' : 'Some files failed to move',
         isAsync: true,
-        taskIds: results.filter(r => r.success).map(r => r.data?.task_id).filter(Boolean)
+        // API returns 202 with task_id directly in response for async operations
+        taskIds: results.filter(r => r.success).map(r => r.data?.task_id || r.task_id).filter(Boolean)
       };
     } catch (error) {
       console.error('Error moving files:', error);
@@ -307,10 +312,14 @@ export class ZoneweaverFileManagerAPI {
         return { success: false, message: 'Cannot write to directory' };
       }
 
+      // Follow official API spec with proper types
       const data = {
         path: getPathFromFile(file),
         content: content,
-        backup: false
+        backup: false,  // Boolean per API spec
+        uid: 1000,      // Integer per API spec
+        gid: 1000,      // Integer per API spec
+        mode: '644'     // String octal format per API spec
       };
 
       const result = await this.makeRequest('filesystem/content', 'PUT', data);

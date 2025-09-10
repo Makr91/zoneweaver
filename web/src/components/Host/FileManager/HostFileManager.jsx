@@ -196,13 +196,13 @@ const HostFileManager = ({ server }) => {
     });
     
     // Return form data that will be appended to the multipart upload
-    // CRITICAL: All values must be strings for backend multer processing
+    // Follow official API spec with proper types
     return {
       uploadPath: uploadPath,
-      overwrite: 'false',  // String, not boolean
-      mode: '644',         // String
-      uid: '1000',         // String, not number
-      gid: '1000'          // String, not number
+      overwrite: false,    // Boolean per API spec
+      mode: '644',         // String octal format per API spec
+      uid: 1000,           // Integer per API spec
+      gid: 1000            // Integer per API spec
     };
   };
 
@@ -478,6 +478,83 @@ const HostFileManager = ({ server }) => {
         </div>
       )}
 
+      {/* Custom Action Bar */}
+      {canManageHosts(user?.role) && (
+        <div className="box mb-4">
+          <div className="level is-mobile">
+            <div className="level-left">
+              <div className="level-item">
+                <span className="tag is-info is-light">
+                  <span className="icon is-small">
+                    <i className="fas fa-folder"></i>
+                  </span>
+                  <span>Current: {currentPath}</span>
+                </span>
+              </div>
+            </div>
+            
+            <div className="level-right">
+              <div className="level-item">
+                <div className="buttons">
+                  {/* Create Archive Button */}
+                  <button
+                    className={`button is-info is-small ${currentlySelectedFiles.length === 0 ? 'is-outlined' : ''}`}
+                    onClick={() => {
+                      if (currentlySelectedFiles.length > 0) {
+                        handleCreateArchive(currentlySelectedFiles);
+                      } else {
+                        setError('Please select files or folders to create an archive');
+                      }
+                    }}
+                    disabled={currentlySelectedFiles.length === 0}
+                    title={currentlySelectedFiles.length > 0 
+                      ? `Create archive from ${currentlySelectedFiles.length} selected item(s)` 
+                      : 'Select files or folders to create an archive'}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-file-archive"></i>
+                    </span>
+                    <span>
+                      {currentlySelectedFiles.length > 0 
+                        ? `Archive (${currentlySelectedFiles.length})` 
+                        : 'Archive'}
+                    </span>
+                  </button>
+
+                  {/* Archive Directory Button */}
+                  <button
+                    className="button is-success is-small is-outlined"
+                    onClick={() => {
+                      // Archive entire current directory
+                      const currentDirFiles = files.filter(f => {
+                        const filePath = f.path.startsWith('/') ? f.path.substring(1) : f.path;
+                        const currentPathNormalized = currentPath.startsWith('/') ? currentPath.substring(1) : currentPath;
+                        
+                        // Check if file is in current directory (not subdirectory)
+                        const relativePath = filePath.replace(currentPathNormalized + '/', '');
+                        return !relativePath.includes('/') && filePath.startsWith(currentPathNormalized);
+                      });
+                      
+                      if (currentDirFiles.length > 0) {
+                        handleCreateArchive(currentDirFiles);
+                      } else {
+                        setError('Current directory is empty');
+                      }
+                    }}
+                    title="Create archive of entire current directory"
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-archive"></i>
+                    </span>
+                    <span>Archive Directory</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* File Manager */}
       <FileManager
         files={files}
@@ -613,38 +690,6 @@ const HostFileManager = ({ server }) => {
         defaultNavExpanded={true}
         language="en"
       />
-
-      {/* Archive Action Button - Show only when files are selected */}
-      {canManageHosts(user?.role) && currentlySelectedFiles.length > 0 && (
-        <div className="archive-actions" style={{ 
-          position: 'absolute', 
-          top: '10px', 
-          right: '10px', 
-          zIndex: 1000,
-          background: 'var(--bulma-scheme-main-bis)',
-          padding: '0.5rem',
-          borderRadius: '6px',
-          border: '1px solid var(--bulma-border)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <button
-            className="button is-info is-small"
-            onClick={() => {
-              if (currentlySelectedFiles.length > 0) {
-                handleCreateArchive(currentlySelectedFiles);
-              } else {
-                setError('Please select files or folders to create an archive');
-              }
-            }}
-            title={`Create archive from ${currentlySelectedFiles.length} selected item(s)`}
-          >
-            <span className="icon is-small">
-              <i className="fas fa-file-archive"></i>
-            </span>
-            <span>Create Archive ({currentlySelectedFiles.length})</span>
-          </button>
-        </div>
-      )}
 
       {/* Text File Editor Modal */}
       {showTextEditor && textEditorFile && (
