@@ -345,6 +345,79 @@
         color: var(--zw-text-placeholder, var(--bulma-text-weak)) !important;
       }
     }
+    
+    /* Custom file preview component theming */
+    .file-preview-container {
+      background-color: var(--bulma-scheme-main) !important;
+      color: var(--bulma-text) !important;
+      padding: 1rem !important;
+      
+      .preview-header {
+        border-bottom: 1px solid var(--bulma-border) !important;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+        
+        .title {
+          color: var(--bulma-text-strong) !important;
+          margin-bottom: 0.5rem !important;
+        }
+        
+        .preview-info {
+          display: flex !important;
+          gap: 0.5rem !important;
+          flex-wrap: wrap !important;
+        }
+      }
+      
+      .preview-content {
+        .icon {
+          color: var(--bulma-text-weak) !important;
+        }
+        
+        p {
+          color: var(--bulma-text) !important;
+        }
+        
+        .help {
+          color: var(--bulma-text-weak) !important;
+        }
+        
+        .button {
+          background-color: var(--bulma-primary) !important;
+          color: var(--bulma-primary-invert) !important;
+          border-color: var(--bulma-primary) !important;
+          
+          &:hover {
+            background-color: var(--bulma-primary-dark) !important;
+            border-color: var(--bulma-primary-dark) !important;
+          }
+        }
+      }
+      
+      .preview-metadata {
+        border-top: 1px solid var(--bulma-border) !important;
+        padding-top: 0.75rem !important;
+        margin-top: 0.75rem !important;
+        
+        .tag {
+          &.is-dark {
+            background-color: var(--bulma-text-strong) !important;
+            color: var(--bulma-scheme-main) !important;
+          }
+          
+          &.is-light {
+            background-color: var(--bulma-scheme-main-bis) !important;
+            color: var(--bulma-text) !important;
+            border: 1px solid var(--bulma-border) !important;
+          }
+          
+          &.is-info {
+            background-color: var(--bulma-info) !important;
+            color: var(--bulma-info-invert) !important;
+          }
+        }
+      }
+    }
   }
 }
 

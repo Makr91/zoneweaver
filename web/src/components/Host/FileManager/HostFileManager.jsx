@@ -190,10 +190,13 @@ const HostFileManager = ({ server }) => {
     });
     
     // Return form data that will be appended to the multipart upload
+    // CRITICAL: All values must be strings for backend multer processing
     return {
       uploadPath: uploadPath,
-      overwrite: false,
-      mode: '644'
+      overwrite: 'false',  // String, not boolean
+      mode: '644',         // String
+      uid: '1000',         // String, not number
+      gid: '1000'          // String, not number
     };
   };
 
@@ -457,6 +460,89 @@ const HostFileManager = ({ server }) => {
         onError={handleError}
         layout="grid"
         enableFilePreview={true}
+        filePreviewComponent={(file) => (
+          <div className="file-preview-container">
+            <div className="preview-header">
+              <h4 className="title is-6">{file.name}</h4>
+              <div className="preview-info">
+                <span className="tag is-light">
+                  {file.isDirectory ? 'Directory' : 
+                   file.size ? `${Math.round(file.size / 1024)} KB` : 'Unknown size'}
+                </span>
+                {file._zwMetadata?.mimeType && (
+                  <span className="tag is-info is-light">
+                    {file._zwMetadata.mimeType}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="preview-content">
+              {file.isDirectory ? (
+                <div className="has-text-centered p-4">
+                  <span className="icon is-large">
+                    <i className="fas fa-folder fa-3x"></i>
+                  </span>
+                  <p className="mt-2">Directory</p>
+                  <p className="help">Double-click to open</p>
+                </div>
+              ) : isTextFile(file) ? (
+                <div className="has-text-centered p-4">
+                  <span className="icon is-large">
+                    <i className="fas fa-file-alt fa-3x"></i>
+                  </span>
+                  <p className="mt-2">Text File</p>
+                  <div className="buttons is-centered mt-3">
+                    <button 
+                      className="button is-primary is-small"
+                      onClick={() => {
+                        setTextEditorFile(file);
+                        setShowTextEditor(true);
+                      }}
+                    >
+                      <span className="icon is-small">
+                        <i className="fas fa-edit"></i>
+                      </span>
+                      <span>Edit File</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="has-text-centered p-4">
+                  <span className="icon is-large">
+                    <i className="fas fa-file fa-3x"></i>
+                  </span>
+                  <p className="mt-2">File</p>
+                  <p className="help">Double-click to download</p>
+                </div>
+              )}
+            </div>
+            
+            {/* File metadata */}
+            <div className="preview-metadata">
+              <div className="field is-grouped is-grouped-multiline">
+                <div className="control">
+                  <div className="tags has-addons">
+                    <span className="tag is-dark">Modified</span>
+                    <span className="tag is-light">
+                      {file.updatedAt ? new Date(file.updatedAt).toLocaleDateString() : 'Unknown'}
+                    </span>
+                  </div>
+                </div>
+                {file._zwMetadata?.permissions && (
+                  <div className="control">
+                    <div className="tags has-addons">
+                      <span className="tag is-dark">Permissions</span>
+                      <span className="tag is-light">
+                        {file._zwMetadata.permissions.octal || 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         maxFileSize={50 * 1024 * 1024 * 1024} // 50GB limit
         height="calc(100vh - 200px)"
         width="100%"
