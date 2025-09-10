@@ -313,6 +313,15 @@ export default [
     },
   },
 
+  // Vite configuration files - Special handling
+  {
+    files: ["**/vite.config.js", "**/vite.config.mjs"],
+    rules: {
+      "no-undef": "off", // Allow import assertions and special Vite syntax
+      "import/no-unresolved": "off", // Vite handles special imports
+    },
+  },
+
   // Configuration files (JSON, etc.) - Minimal rules
   {
     files: ["**/*.{json,jsonc,json5}"],

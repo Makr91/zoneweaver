@@ -37,7 +37,6 @@ const DatasetsTable = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('datasets')}
                       title={sectionsCollapsed.datasets ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i
