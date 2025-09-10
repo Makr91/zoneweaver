@@ -5,6 +5,7 @@
   "description": "Zoneweaver Web Interface",
   "proxy": "http://localhost:3001/",
   "dependencies": {
+    "@cubone/react-file-manager": "^1.26.2",
     "@dr.pogodin/react-helmet": "^3.0.2",
     "@fortawesome/fontawesome-free": "^7.0.0",
     "@testing-library/jest-dom": "^6.6.0",

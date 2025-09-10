@@ -11,6 +11,7 @@ import StorageManagement from "./Host/StorageManagement";
 import TimeNTPManagement from "./Host/TimeNTPManagement";
 import FaultManagement from "./Host/FaultManagement";
 import ProcessManagement from "./Host/ProcessManagement";
+import HostFileManager from "./Host/FileManager/HostFileManager";
 
 const HostManage = () => {
   const [activeTab, setActiveTab] = useState('services');
@@ -137,6 +138,12 @@ const HostManage = () => {
                   <span>Fault Management</span>
                 </a>
               </li>
+              <li className={activeTab === 'file-manager' ? 'is-active' : ''}>
+                <a onClick={() => setActiveTab('file-manager')}>
+                  <span className='icon is-small'><i className='fas fa-folder'></i></span>
+                  <span>File Manager</span>
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -258,6 +265,21 @@ const HostManage = () => {
                 </div>
                 
                 <FaultManagement server={currentServer} />
+              </div>
+            )}
+
+            {/* File Manager Tab */}
+            {activeTab === 'file-manager' && (
+              <div>
+                <div className='mb-4'>
+                  <h2 className='title is-5'>File Manager</h2>
+                  <p className='content'>
+                    Browse and manage files on <strong>{currentServer.hostname}</strong>. 
+                    Upload, download, create folders, edit text files, and perform file operations with drag-and-drop, keyboard shortcuts, and advanced features including archive support.
+                  </p>
+                </div>
+                
+                <HostFileManager server={currentServer} />
               </div>
             )}
           </div>
