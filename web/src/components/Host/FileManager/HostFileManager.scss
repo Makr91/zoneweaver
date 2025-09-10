@@ -547,10 +547,24 @@
         
         ul {
           background-color: var(--bulma-scheme-main-bis) !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          padding-bottom: 0 !important;
+          padding-top: 0 !important;
           
           li {
             border-bottom-color: var(--bulma-border) !important;
             color: var(--bulma-text) !important;
+            
+            .file {
+              .file-details {
+                margin-bottom: 0 !important;
+              }
+            }
+            
+            .file-icon {
+              height: auto !important;
+            }
             
             .file-name {
               color: var(--bulma-text) !important;
@@ -562,6 +576,11 @@
           }
         }
       }
+    }
+    
+    /* Upload progress layout fixes */
+    .fm-progress {
+      padding-top: 1vh !important;
     }
     
     /* Cubone button theming */
