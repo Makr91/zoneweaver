@@ -12,7 +12,11 @@
     .toolbar {
       background-color: var(--bulma-scheme-main-bis) !important;
       border-bottom: 1px solid var(--bulma-border) !important;
-      padding: none !important;
+      height: 35px !important;
+      min-height: 35px !important;
+      max-height: 35px !important;
+      padding: 0 !important;
+      
       .item-action {
         background-color: transparent !important;
         color: var(--bulma-text) !important;
