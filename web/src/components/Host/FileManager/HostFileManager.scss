@@ -168,6 +168,7 @@
     
     /* Modal theming (for cubone's internal modals) */
     .modal,
+    .fm-modal,
     [class*="modal"] {
       .modal-background {
         background-color: rgba(0, 0, 0, 0.6) !important;
@@ -175,6 +176,8 @@
       
       .modal-card,
       .modal-content,
+      .dialog,
+      .fm-modal,
       [class*="modal-card"],
       [class*="modal-content"] {
         background-color: var(--bulma-scheme-main) !important;
@@ -183,6 +186,7 @@
         
         .modal-card-head,
         .modal-header,
+        .fm-modal-header,
         [class*="modal-head"],
         [class*="modal-header"] {
           background-color: var(--bulma-scheme-main-bis) !important;
@@ -191,26 +195,31 @@
           
           .modal-card-title,
           .modal-title,
+          .fm-modal-heading,
           h1, h2, h3, h4, h5, h6 {
             color: var(--bulma-text-strong) !important;
           }
           
           .delete,
           .close,
+          .close-icon,
           button[aria-label="close"] {
-            background-color: var(--bulma-scheme-main-ter) !important;
+            background-color: transparent !important;
+            color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
             
             &:hover {
               background-color: var(--bulma-danger) !important;
               border-color: var(--bulma-danger) !important;
+              color: var(--bulma-danger-invert) !important;
             }
           }
         }
         
         .modal-card-body,
         .modal-body,
-        [class*="modal-body"] {
+        [class*="modal-body"],
+        > div:not(.fm-modal-header) {
           background-color: var(--bulma-scheme-main) !important;
           color: var(--bulma-text) !important;
           
@@ -224,10 +233,18 @@
               border-color: var(--bulma-primary) !important;
               box-shadow: 0 0 0 0.125em rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.25) !important;
             }
+            
+            &::placeholder {
+              color: var(--zw-text-placeholder, var(--bulma-text-weak)) !important;
+            }
           }
           
           /* Labels and text */
-          label, .label {
+          label, .label, span, p, div {
+            color: var(--bulma-text) !important;
+          }
+          
+          h1, h2, h3, h4, h5, h6 {
             color: var(--bulma-text-strong) !important;
           }
           
@@ -241,6 +258,37 @@
             
             &::-webkit-progress-value {
               background-color: var(--bulma-primary) !important;
+            }
+          }
+          
+          /* Buttons inside modal body */
+          button, .button {
+            background-color: var(--bulma-scheme-main-ter) !important;
+            color: var(--bulma-text) !important;
+            border: 1px solid var(--bulma-border) !important;
+            
+            &.primary,
+            &[type="primary"] {
+              background-color: var(--bulma-primary) !important;
+              color: var(--bulma-primary-invert) !important;
+              border-color: var(--bulma-primary) !important;
+            }
+            
+            &.secondary,
+            &[type="secondary"] {
+              background-color: var(--bulma-scheme-main-bis) !important;
+              color: var(--bulma-text) !important;
+            }
+            
+            &.danger,
+            &[type="danger"] {
+              background-color: var(--bulma-danger) !important;
+              color: var(--bulma-danger-invert) !important;
+              border-color: var(--bulma-danger) !important;
+            }
+            
+            &:hover {
+              opacity: 0.9 !important;
             }
           }
         }
