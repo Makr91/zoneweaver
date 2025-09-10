@@ -105,7 +105,7 @@ const createCategoryLogger = (category, filename) => {
   const categoryLevel = getValue(categoryConfig) || getValue(loggingConfig.level) || 'info';
   const transports = [];
 
-  // Daily rotate file transport - CLEAN, NO SYMLINKS, NO AUDIT FILES
+  // Daily rotate file transport - CLEAN WITH COMPRESSION, NO AUDIT FILES
   transports.push(
     new DailyRotateFile({
       filename: path.join(effectiveLogDir, `${filename}-%DATE%.log`),
@@ -114,7 +114,8 @@ const createCategoryLogger = (category, filename) => {
       format: logFormat,
       maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
       maxFiles: getValue(loggingConfig.file_rotation?.max_files) || 5,
-      // NO symlinks, NO audit files, NO compression
+      zippedArchive: true, // Compress old files
+      auditFile: null, // Explicitly disable audit JSON files
     })
   );
 
@@ -127,7 +128,8 @@ const createCategoryLogger = (category, filename) => {
       format: logFormat,
       maxSize: '50m',
       maxFiles: 7,
-      // NO symlinks, NO audit files, NO compression
+      zippedArchive: true, // Compress old files
+      auditFile: null, // Explicitly disable audit JSON files
     })
   );
 
