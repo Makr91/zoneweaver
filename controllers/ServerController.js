@@ -783,18 +783,79 @@ class ServerController {
             contentType: req.headers['content-type']
           });
           
-          const response = await axios({
-            method: 'POST',
-            url: targetUrl,
-            data: req, // Forward the raw request stream
-            headers: {
-              'Content-Type': req.headers['content-type'],
-              'Content-Length': req.headers['content-length'],
-              'Authorization': `Bearer ${server.api_key}`
-            },
-            timeout: 300000, // 5 minutes for large uploads
-            maxBodyLength: Infinity,
-            maxContentLength: Infinity
+          // Use proper stream forwarding instead of sending Express request object
+          const response = await new Promise((resolve, reject) => {
+            const https = require('https');
+            const { URL } = require('url');
+            
+            const targetURL = new URL(targetUrl);
+            
+            const options = {
+              hostname: targetURL.hostname,
+              port: targetURL.port,
+              path: targetURL.pathname,
+              method: 'POST',
+              headers: {
+                'Content-Type': req.headers['content-type'],
+                'Content-Length': req.headers['content-length'],
+                'Authorization': `Bearer ${server.api_key}`,
+                'Accept': '*/*',
+                'User-Agent': 'Zoneweaver-Proxy/1.0'
+              },
+              timeout: 300000
+            };
+            
+            console.log('📤 UPLOAD: Creating HTTP request with proper headers', {
+              hostname: options.hostname,
+              port: options.port,
+              path: options.path,
+              headers: Object.keys(options.headers),
+              hasAuth: !!options.headers.Authorization
+            });
+            
+            const proxyReq = https.request(options, (proxyRes) => {
+              console.log('📤 UPLOAD: Backend response received', {
+                status: proxyRes.statusCode,
+                headers: Object.keys(proxyRes.headers)
+              });
+              
+              let responseData = '';
+              proxyRes.on('data', (chunk) => {
+                responseData += chunk;
+              });
+              
+              proxyRes.on('end', () => {
+                try {
+                  const parsedData = JSON.parse(responseData);
+                  resolve({
+                    status: proxyRes.statusCode,
+                    data: parsedData
+                  });
+                } catch (parseError) {
+                  resolve({
+                    status: proxyRes.statusCode,
+                    data: responseData
+                  });
+                }
+              });
+            });
+            
+            proxyReq.on('error', (error) => {
+              console.error('📤 UPLOAD: HTTP request error', {
+                error: error.message,
+                code: error.code
+              });
+              reject(error);
+            });
+            
+            proxyReq.on('timeout', () => {
+              console.error('📤 UPLOAD: Request timeout');
+              proxyReq.destroy();
+              reject(new Error('Upload timeout'));
+            });
+            
+            // Pipe the original request body to the proxy request
+            req.pipe(proxyReq);
           });
           
           const duration = Date.now() - startTime;
