@@ -1,6 +1,6 @@
 /**
  * @fileoverview Centralized Logging System for Zoneweaver
- * @description Winston-based logging with dedicated files for different categories
+ * @description Winston-based logging with clean daily rotation
  * @author Zoneweaver Team
  */
 
@@ -95,7 +95,7 @@ const consoleFormat = winston.format.combine(
 );
 
 /**
- * Create a logger for a specific category with config-driven settings
+ * Create a logger for a specific category with simple file rotation
  * @param {string} category - Log category name
  * @param {string} filename - Log filename (without extension)
  * @returns {winston.Logger} Configured winston logger
@@ -105,7 +105,7 @@ const createCategoryLogger = (category, filename) => {
   const categoryLevel = getValue(categoryConfig) || getValue(loggingConfig.level) || 'info';
   const transports = [];
 
-  // Category-specific daily rotate file transport
+  // Daily rotate file transport - CLEAN, NO SYMLINKS, NO AUDIT FILES
   transports.push(
     new DailyRotateFile({
       filename: path.join(effectiveLogDir, `${filename}-%DATE%.log`),
@@ -114,13 +114,11 @@ const createCategoryLogger = (category, filename) => {
       format: logFormat,
       maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
       maxFiles: getValue(loggingConfig.file_rotation?.max_files) || 5,
-      zippedArchive: true,
-      createSymlink: true,
-      symlinkName: `${filename}-current.log`,
+      // NO symlinks, NO audit files, NO compression
     })
   );
 
-  // All errors go to daily rotated error.log regardless of category
+  // All errors also go to daily rotated error.log
   transports.push(
     new DailyRotateFile({
       filename: path.join(effectiveLogDir, 'error-%DATE%.log'),
@@ -128,10 +126,8 @@ const createCategoryLogger = (category, filename) => {
       level: 'error',
       format: logFormat,
       maxSize: '50m',
-      maxFiles: 7, // Keep error logs for a week
-      zippedArchive: true,
-      createSymlink: true,
-      symlinkName: 'error-current.log',
+      maxFiles: 7,
+      // NO symlinks, NO audit files, NO compression
     })
   );
 
