@@ -32,16 +32,72 @@ export class ZoneweaverFileManagerAPI {
       throw new Error('No server selected');
     }
 
-    const { makeZoneweaverAPIRequest } = this.serverContext;
-    return await makeZoneweaverAPIRequest(
-      server.hostname,
-      server.port, 
-      server.protocol,
-      endpoint,
-      method,
-      data,
-      params
-    );
+    // Debug logging for proxied requests through zoneweaver nodejs server
+    console.log('🌐 PROXY: Making zoneweaver-api request through proxy', {
+      endpoint: endpoint,
+      method: method,
+      server: `${server.protocol}://${server.hostname}:${server.port}`,
+      proxyUrl: `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/${endpoint}`,
+      data: data,
+      params: params,
+      timestamp: new Date().toISOString()
+    });
+
+    const startTime = performance.now();
+    
+    try {
+      const { makeZoneweaverAPIRequest } = this.serverContext;
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port, 
+        server.protocol,
+        endpoint,
+        method,
+        data,
+        params
+      );
+      
+      const endTime = performance.now();
+      
+      console.log('✅ PROXY: Zoneweaver-api request completed', {
+        endpoint: endpoint,
+        method: method,
+        success: result.success,
+        status: result.status,
+        duration: `${(endTime - startTime).toFixed(2)}ms`,
+        responseSize: JSON.stringify(result).length,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!result.success) {
+        console.warn('⚠️ PROXY: Request failed', {
+          endpoint: endpoint,
+          method: method,
+          message: result.message,
+          status: result.status,
+          data: data,
+          params: params
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      const endTime = performance.now();
+      
+      console.error('❌ PROXY: Zoneweaver-api request error', {
+        endpoint: endpoint,
+        method: method,
+        server: `${server.hostname}:${server.port}`,
+        error: error.message,
+        stack: error.stack,
+        duration: `${(endTime - startTime).toFixed(2)}ms`,
+        data: data,
+        params: params,
+        timestamp: new Date().toISOString()
+      });
+      
+      throw error;
+    }
   }
 
   /**
