@@ -35,7 +35,6 @@ const DiskIOTable = ({
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('diskIO')}
                       title={sectionsCollapsed.diskIO ? 'Expand section' : 'Collapse section'}
-          }
         >
           <span className="icon">
             <i
