@@ -187,8 +187,20 @@ export default (sequelize, Sequelize) => {
   Server.prototype.makeRequest = async function(path, options = {}, useVncAuth = false) {
     const timestamp = new Date().toISOString();
     const serverUrl = this.getServerUrl();
+    const startTime = Date.now();
     
     try {
+      console.log('🚀 SERVER MODEL: Starting zoneweaver-api request', {
+        server: `${this.hostname}:${this.port}`,
+        path: path,
+        method: options.method || 'GET',
+        hasData: !!options.data,
+        hasParams: !!options.params,
+        dataSize: options.data ? JSON.stringify(options.data).length : 0,
+        timeout: options.timeout || 60000,
+        timestamp: timestamp
+      });
+
       // Smart FMRI detection and encoding
       let encodedPath;
       
@@ -236,14 +248,30 @@ export default (sequelize, Sequelize) => {
         });
       }
 
-      console.log(`${timestamp} - API Request - ${serverUrl}/${encodedPath}`);
+      const finalUrl = `${serverUrl}/${encodedPath}`;
+      
+      console.log('📡 SERVER MODEL: Request details', {
+        originalPath: path,
+        encodedPath: encodedPath,
+        finalUrl: finalUrl,
+        headers: Object.keys(requestHeaders),
+        hasApiKey: !!this.api_key,
+        allowInsecure: this.allow_insecure,
+        requestData: options.data,
+        queryParams: options.params
+      });
+
+      console.log(`${timestamp} - API Request - ${finalUrl}`);
 
       const agent = new https.Agent({
         rejectUnauthorized: !this.allow_insecure
       });
 
+      console.log('⏱️ SERVER MODEL: Making axios request...');
+      const axiosStartTime = Date.now();
+
       const response = await axios({
-        url: `${serverUrl}/${encodedPath}`,
+        url: finalUrl,
         method: options.method || 'GET',
         headers: requestHeaders,
         data: options.data,
@@ -253,12 +281,40 @@ export default (sequelize, Sequelize) => {
         validateStatus: (status) => status >= 200 && status < 400
       });
 
+      const axiosEndTime = Date.now();
+      const totalDuration = axiosEndTime - startTime;
+      const axiosDuration = axiosEndTime - axiosStartTime;
+
+      console.log('✅ SERVER MODEL: Request successful', {
+        status: response.status,
+        axiosDuration: `${axiosDuration}ms`,
+        totalDuration: `${totalDuration}ms`,
+        responseSize: JSON.stringify(response.data).length,
+        responseHeaders: Object.keys(response.headers),
+        timestamp: new Date().toISOString()
+      });
+
       await this.updateLastUsed();
       return { success: true, data: response.data, status: response.status };
       
     } catch (error) {
+      const totalDuration = Date.now() - startTime;
       const errorMsg = error.response?.data?.message || error.message;
       const status = error.response?.status;
+      
+      console.error('❌ SERVER MODEL: Request failed', {
+        error: error.message,
+        code: error.code,
+        status: status,
+        responseData: error.response?.data,
+        duration: `${totalDuration}ms`,
+        isTimeout: error.code === 'ECONNABORTED' || error.message.includes('timeout'),
+        isNetworkError: error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND',
+        url: `${serverUrl}/${encodedPath}`,
+        method: options.method || 'GET',
+        requestData: options.data,
+        timestamp: new Date().toISOString()
+      });
       
       if (status) {
         console.error(`Zoneweaver API request failed: ${status} - ${errorMsg}`);
