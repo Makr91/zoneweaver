@@ -23,7 +23,6 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('poolIO')}
                       title={sectionsCollapsed.poolIO ? 'Expand section' : 'Collapse section'}
-            }
           >
             <span className="icon">
               <i

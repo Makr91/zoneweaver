@@ -77,7 +77,6 @@ const NetworkingHeader = ({
                           className={`button is-small ${autoRefresh ? 'is-success' : 'is-warning'}`}
                           onClick={() => setAutoRefresh(!autoRefresh)}
                           title={autoRefresh ? 'Auto-refresh enabled' : 'Auto-refresh disabled'}
-            }
           >
             <span className="icon">
               <i className={`fas ${autoRefresh ? "fa-pause" : "fa-play"}`} />
