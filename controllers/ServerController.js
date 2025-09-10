@@ -708,6 +708,47 @@ class ServerController {
       const path = Array.isArray(req.params.splat) 
         ? req.params.splat.join('/') 
         : (req.params.splat || ''); // Express 5.x compatibility fix
+      
+      // Enhanced debug logging for file operations
+      const isFileUpload = path === 'filesystem/upload' && req.method === 'POST';
+      const isFileDownload = path === 'filesystem/download' && req.method === 'GET';
+      const isFileOperation = path.startsWith('filesystem');
+      
+      if (isFileOperation) {
+        console.log('📁 FILE OP: Proxying file operation through zoneweaver proxy', {
+          operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
+          method: req.method,
+          path: path,
+          server: `${protocol}://${hostname}:${port}`,
+          query: req.query,
+          contentType: req.headers['content-type'] || 'none',
+          contentLength: req.headers['content-length'] || 'unknown',
+          userAgent: req.headers['user-agent'] || 'unknown',
+          hasAuth: !!req.headers.authorization,
+          timestamp: new Date().toISOString()
+        });
+        
+        if (isFileUpload) {
+          console.log('⬆️ UPLOAD: Processing file upload through proxy', {
+            contentType: req.headers['content-type'],
+            contentLength: req.headers['content-length'],
+            boundary: req.headers['content-type']?.includes('boundary') ? 'present' : 'missing',
+            query: req.query,
+            bodyKeys: req.body ? Object.keys(req.body) : 'no body',
+            timestamp: new Date().toISOString()
+          });
+        }
+        
+        if (isFileDownload) {
+          console.log('⬇️ DOWNLOAD: Processing file download through proxy', {
+            filePath: req.query.path || 'unknown',
+            query: req.query,
+            accept: req.headers.accept || 'none',
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+
       // Create clean headers for Zoneweaver API request - explicitly exclude problematic headers
       const cleanHeaders = {};
       for (const [key, value] of Object.entries(req.headers)) {
@@ -726,6 +767,8 @@ class ServerController {
         }
       }
 
+      const startTime = Date.now();
+
       // Make request through ServerModel
       const result = await ServerModel.makeRequest(
         hostname, 
@@ -740,6 +783,49 @@ class ServerController {
         }
       );
 
+      const duration = Date.now() - startTime;
+
+      // Enhanced logging for file operations
+      if (isFileOperation) {
+        console.log('📁 FILE OP: Proxy request completed', {
+          operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
+          success: result.success,
+          status: result.status,
+          duration: `${duration}ms`,
+          responseSize: result.data ? JSON.stringify(result.data).length : 0,
+          error: result.error || null,
+          timestamp: new Date().toISOString()
+        });
+        
+        if (isFileUpload && result.success) {
+          console.log('✅ UPLOAD: File uploaded successfully through proxy', {
+            fileName: result.data?.file?.name || 'unknown',
+            filePath: result.data?.file?.path || 'unknown',
+            fileSize: result.data?.file?.size || 'unknown',
+            duration: `${duration}ms`
+          });
+        }
+        
+        if (isFileDownload && result.success) {
+          console.log('✅ DOWNLOAD: File download prepared through proxy', {
+            filePath: req.query.path,
+            duration: `${duration}ms`,
+            hasData: !!result.data
+          });
+        }
+        
+        if (!result.success) {
+          console.error('❌ FILE OP: File operation failed through proxy', {
+            operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
+            error: result.error,
+            status: result.status,
+            duration: `${duration}ms`,
+            requestData: requestData,
+            query: req.query
+          });
+        }
+      }
+
       if (result.success) {
         res.status(result.status || 200).json(result.data);
       } else {
@@ -750,7 +836,16 @@ class ServerController {
         });
       }
     } catch (error) {
-      console.error('Zoneweaver API proxy error:', error.message);
+      console.error('❌ PROXY: Zoneweaver API proxy error', {
+        error: error.message,
+        stack: error.stack,
+        method: req.method,
+        path: req.params.splat,
+        hostname: req.params.hostname,
+        port: req.params.port,
+        timestamp: new Date().toISOString()
+      });
+      
       res.status(500).json({
         success: false,
         message: 'Proxy request failed'
