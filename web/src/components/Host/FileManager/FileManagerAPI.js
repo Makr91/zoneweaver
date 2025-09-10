@@ -62,7 +62,7 @@ export class ZoneweaverFileManagerAPI {
       const result = await this.makeRequest('filesystem', 'GET', null, params);
       
       if (result.success && result.data && result.data.items) {
-        return result.data.items.map(item => transformZoneweaverToFile(item, path));
+        return transformFilesToHierarchy(result.data.items);
       } else {
         console.error('Failed to load files:', result.message);
         return [];
@@ -98,7 +98,7 @@ export class ZoneweaverFileManagerAPI {
       if (result.success && result.data && result.data.item) {
         return {
           success: true,
-          file: transformZoneweaverToFile(result.data.item, parentPath)
+          file: transformZoneweaverToFile(result.data.item)
         };
       }
       

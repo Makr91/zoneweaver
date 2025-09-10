@@ -119,10 +119,15 @@ const HostFileManager = ({ server }) => {
 
   // File upload handlers
   const handleFileUploading = (file, parentFolder) => {
-    // Use original path if available, otherwise use current path
-    const uploadPath = parentFolder?._zwMetadata?.originalPath || parentFolder?.path || currentPath;
+    // Use current path or parent folder path, ensure it's never empty
+    const uploadPath = parentFolder?.path || currentPath || '/';
     
-    console.log('File uploading:', { file: file.name, uploadPath, parentFolder });
+    console.log('File uploading:', { 
+      fileName: file.name, 
+      uploadPath, 
+      parentFolder: parentFolder?.name, 
+      currentPath 
+    });
     
     // Return form data that will be appended to the multipart upload
     return {
@@ -285,7 +290,10 @@ const HostFileManager = ({ server }) => {
 
   // Folder change handler
   const handleFolderChange = (path) => {
-    setCurrentPath(path);
+    // Ensure path is never empty, default to root
+    const safePath = path || '/';
+    console.log('Folder change:', path, '->', safePath);
+    setCurrentPath(safePath);
   };
 
   // Refresh handler
@@ -397,8 +405,8 @@ const HostFileManager = ({ server }) => {
         primaryColor={themeConfig.primaryColor}
         fontFamily={themeConfig.fontFamily}
         permissions={permissions}
-        collapsibleNav={false}
-        defaultNavExpanded={false}
+        collapsibleNav={true}
+        defaultNavExpanded={true}
         language="en"
       />
 

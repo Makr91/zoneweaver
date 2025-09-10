@@ -36,24 +36,17 @@ const getParentId = (path) => {
 /**
  * Transform zoneweaver API file object to cubone format
  * @param {Object} zwItem - Zoneweaver API file item
- * @param {string} currentPath - Current directory being browsed
  * @returns {Object} Cubone compatible file object
  */
-export const transformZoneweaverToFile = (zwItem, currentPath = '/') => {
-  // Ensure proper path format for cubone navigation
-  // Cubone expects: currentPath + "/" + file.name === file.path
-  const normalizedCurrentPath = currentPath === '/' ? '' : currentPath;
-  const expectedPath = normalizedCurrentPath + '/' + zwItem.name;
-  
+export const transformZoneweaverToFile = (zwItem) => {
   return {
     name: zwItem.name,
-    path: expectedPath, // Use expected path format for cubone
+    path: zwItem.path, // Use zoneweaver API paths exactly as provided
     isDirectory: zwItem.isDirectory,
     updatedAt: zwItem.mtime || zwItem.atime || new Date().toISOString(),
     size: zwItem.size || 0,
     // Additional metadata for internal use
     _zwMetadata: {
-      originalPath: zwItem.path, // Keep original path for API calls
       permissions: zwItem.permissions,
       uid: zwItem.uid,
       gid: zwItem.gid,
@@ -78,11 +71,10 @@ export const transformFilesToHierarchy = (zwFiles) => {
 /**
  * Extract path from cubone file object for API calls
  * @param {Object} file - Cubone file object
- * @returns {string} File path (uses original zoneweaver path if available)
+ * @returns {string} File path
  */
 export const getPathFromFile = (file) => {
-  // Use original zoneweaver path for API calls if available
-  return file._zwMetadata?.originalPath || file.path || '/';
+  return file.path || '/';
 };
 
 /**
