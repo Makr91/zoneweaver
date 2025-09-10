@@ -760,7 +760,7 @@ class ServerController {
 
       // Prepare request data - don't send empty objects
       let requestData = undefined;
-      if (req.method !== 'GET' && req.method !== 'DELETE') {
+      if (req.method !== 'GET') {
         // Only send data if there's actual content
         if (req.body && Object.keys(req.body).length > 0) {
           requestData = req.body;

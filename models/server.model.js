@@ -310,7 +310,7 @@ export default (sequelize, Sequelize) => {
         duration: `${totalDuration}ms`,
         isTimeout: error.code === 'ECONNABORTED' || error.message.includes('timeout'),
         isNetworkError: error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND',
-        url: `${serverUrl}/${encodedPath}`,
+        url: `${serverUrl}/${path}`,
         method: options.method || 'GET',
         requestData: options.data,
         timestamp: new Date().toISOString()
@@ -322,11 +322,11 @@ export default (sequelize, Sequelize) => {
         console.error(`Zoneweaver API request failed: ${errorMsg}`);
       }
       
-      return {
-        success: false,
-        error: errorMsg,
-        status: status || null
-      };
+        return {
+          success: false,
+          error: errorMsg,
+          status: status || null
+        };
     }
   };
 
