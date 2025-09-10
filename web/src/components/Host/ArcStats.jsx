@@ -25,7 +25,6 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                       className='button is-small is-ghost'
                       onClick={() => toggleSection('arcStats')}
                       title={sectionsCollapsed.arcStats ? 'Expand section' : 'Collapse section'}
-            }
           >
             <span className="icon">
               <i
