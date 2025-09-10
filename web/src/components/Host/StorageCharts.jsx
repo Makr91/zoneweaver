@@ -113,7 +113,6 @@ const StorageCharts = ({
                               className='button is-small is-ghost'
                               onClick={() => toggleSection('charts')}
                               title={sectionsCollapsed.charts ? 'Expand section' : 'Collapse section'}
-                }
               >
                 <span className="icon">
                   <i
