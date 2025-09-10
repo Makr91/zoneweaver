@@ -4,6 +4,7 @@
  */
 
 import { Sequelize } from 'sequelize';
+import { log } from '../utils/Logger.js';
 
 /**
  * Database Migration Helper Class
@@ -36,7 +37,11 @@ class DatabaseMigrations {
         return results.length > 0;
       }
     } catch (error) {
-      console.warn(`Failed to check column ${columnName} in table ${tableName}:`, error.message);
+      log.database.warn('Failed to check column in table', { 
+        tableName, 
+        columnName, 
+        error: error.message 
+      });
       return false;
     }
   }
@@ -64,7 +69,10 @@ class DatabaseMigrations {
         return results.length > 0;
       }
     } catch (error) {
-      console.warn(`Failed to check if table ${tableName} exists:`, error.message);
+      log.database.warn('Failed to check if table exists', { 
+        tableName, 
+        error: error.message 
+      });
       return false;
     }
   }
@@ -80,16 +88,20 @@ class DatabaseMigrations {
     try {
       const exists = await this.columnExists(tableName, columnName);
       if (exists) {
-        console.log(`  ✓ Column ${tableName}.${columnName} already exists`);
+        log.database.debug('Column already exists', { tableName, columnName });
         return true;
       }
 
-      console.log(`  + Adding column ${tableName}.${columnName}...`);
+      log.database.info('Adding column', { tableName, columnName });
       await this.queryInterface.addColumn(tableName, columnName, columnDefinition);
-      console.log(`  ✅ Added column ${tableName}.${columnName}`);
+      log.database.info('Added column successfully', { tableName, columnName });
       return true;
     } catch (error) {
-      console.error(`❌ Failed to add column ${tableName}.${columnName}:`, error.message);
+      log.database.error('Failed to add column', { 
+        tableName, 
+        columnName, 
+        error: error.message 
+      });
       return false;
     }
   }
@@ -105,11 +117,11 @@ class DatabaseMigrations {
     try {
       const exists = await this.tableExists(tableName);
       if (exists) {
-        console.log(`  ✓ Table ${tableName} already exists`);
+        log.database.debug('Table already exists', { tableName });
         return true;
       }
 
-      console.log(`  + Creating table ${tableName}...`);
+      log.database.info('Creating table', { tableName });
       await this.queryInterface.createTable(tableName, tableDefinition, options);
 
       // Create indexes if specified
@@ -121,17 +133,23 @@ class DatabaseMigrations {
               unique: index.unique || false,
               type: index.type,
             });
-            console.log(`  ✅ Created index ${index.name} on ${tableName}`);
+            log.database.info('Created index', { indexName: index.name, tableName });
           } catch (indexError) {
-            console.warn(`  ⚠️ Failed to create index ${index.name}:`, indexError.message);
+            log.database.warn('Failed to create index', { 
+              indexName: index.name, 
+              error: indexError.message 
+            });
           }
         }
       }
 
-      console.log(`  ✅ Created table ${tableName}`);
+      log.database.info('Created table successfully', { tableName });
       return true;
     } catch (error) {
-      console.error(`❌ Failed to create table ${tableName}:`, error.message);
+      log.database.error('Failed to create table', { 
+        tableName, 
+        error: error.message 
+      });
       return false;
     }
   }
@@ -142,7 +160,7 @@ class DatabaseMigrations {
    * @returns {Promise<boolean>} True if migration successful
    */
   async migrateUsersTable() {
-    console.log('🔧 Migrating users table for authentication fields...');
+    log.database.info('Migrating users table for authentication fields');
 
     const tableName = 'users';
     const columnsToAdd = [
@@ -185,20 +203,20 @@ class DatabaseMigrations {
     // Set auth_provider to 'local' for existing users
     if (allSuccessful) {
       try {
-        console.log('  + Setting auth_provider to "local" for existing users...');
+        log.database.info('Setting auth_provider to "local" for existing users');
         await this.sequelize.query(
           "UPDATE users SET auth_provider = 'local' WHERE auth_provider IS NULL"
         );
-        console.log('  ✅ Updated existing users to use local auth_provider');
+        log.database.info('Updated existing users to use local auth_provider');
       } catch (error) {
-        console.warn('  ⚠️ Failed to update existing users:', error.message);
+        log.database.warn('Failed to update existing users', { error: error.message });
       }
     }
 
     if (allSuccessful) {
-      console.log('✅ Users table migration completed successfully');
+      log.database.info('Users table migration completed successfully');
     } else {
-      console.warn('⚠️ Users table migration completed with some errors');
+      log.database.warn('Users table migration completed with some errors');
     }
 
     return allSuccessful;
@@ -210,7 +228,7 @@ class DatabaseMigrations {
    * @returns {Promise<boolean>} True if migration successful
    */
   async migrateOrganizationsTable() {
-    console.log('🔧 Migrating organizations table for organization codes...');
+    log.database.info('Migrating organizations table for organization codes');
 
     const tableName = 'organizations';
 
@@ -233,27 +251,26 @@ class DatabaseMigrations {
         // Check if unique index already exists
         const indexExists = await this.indexExists(tableName, 'unique_organization_code');
         if (!indexExists) {
-          console.log('  + Creating unique index on organization_code...');
+          log.database.info('Creating unique index on organization_code');
           await this.queryInterface.addIndex(tableName, ['organization_code'], {
             name: 'unique_organization_code',
             unique: true,
           });
-          console.log('  ✅ Created unique index on organization_code');
+          log.database.info('Created unique index on organization_code');
         } else {
-          console.log('  ✓ Unique index on organization_code already exists');
+          log.database.debug('Unique index on organization_code already exists');
         }
       } catch (indexError) {
-        console.warn(
-          '  ⚠️ Failed to create unique index on organization_code:',
-          indexError.message
-        );
+        log.database.warn('Failed to create unique index on organization_code', { 
+          error: indexError.message 
+        });
       }
     }
 
     if (success) {
-      console.log('✅ Organizations table migration completed successfully');
+      log.database.info('Organizations table migration completed successfully');
     } else {
-      console.warn('⚠️ Organizations table migration completed with some errors');
+      log.database.warn('Organizations table migration completed with some errors');
     }
 
     return success;
@@ -283,10 +300,11 @@ class DatabaseMigrations {
         return results.length > 0;
       }
     } catch (error) {
-      console.warn(
-        `Failed to check if index ${indexName} exists on table ${tableName}:`,
-        error.message
-      );
+      log.database.warn('Failed to check if index exists on table', { 
+        indexName, 
+        tableName, 
+        error: error.message 
+      });
       return false;
     }
   }
@@ -297,7 +315,7 @@ class DatabaseMigrations {
    * @returns {Promise<boolean>} True if creation successful
    */
   async createCredentialsTable() {
-    console.log('🔧 Creating federated_credentials table...');
+    log.database.info('Creating federated_credentials table');
 
     const tableName = 'federated_credentials';
     const tableDefinition = {
@@ -381,9 +399,9 @@ class DatabaseMigrations {
     const success = await this.createTableIfNotExists(tableName, tableDefinition, options);
 
     if (success) {
-      console.log('✅ Federated credentials table created successfully');
+      log.database.info('Federated credentials table created successfully');
     } else {
-      console.warn('⚠️ Federated credentials table creation failed');
+      log.database.warn('Federated credentials table creation failed');
     }
 
     return success;
@@ -395,7 +413,7 @@ class DatabaseMigrations {
    * @returns {Promise<boolean>} True if migration successful
    */
   async addTimestampColumns() {
-    console.log('🔧 Adding missing timestamp columns to existing tables...');
+    log.database.info('Adding missing timestamp columns to existing tables');
 
     const tablesToUpdate = ['users', 'organizations', 'invitations', 'servers'];
     let allSuccessful = true;
@@ -403,11 +421,11 @@ class DatabaseMigrations {
     for (const tableName of tablesToUpdate) {
       const tableExists = await this.tableExists(tableName);
       if (!tableExists) {
-        console.log(`  ⚠️ Table ${tableName} does not exist, skipping...`);
+        log.database.warn('Table does not exist, skipping', { tableName });
         continue;
       }
 
-      console.log(`  + Checking ${tableName} table for timestamp columns...`);
+      log.database.debug('Checking table for timestamp columns', { tableName });
 
       // Add created_at column
       const createdAtSuccess = await this.addColumnIfNotExists(tableName, 'created_at', {
@@ -432,7 +450,7 @@ class DatabaseMigrations {
       // Set default values for existing records
       if (createdAtSuccess || updatedAtSuccess) {
         try {
-          console.log(`  + Setting default timestamps for existing ${tableName} records...`);
+          log.database.debug('Setting default timestamps for existing records', { tableName });
           const now = new Date().toISOString();
 
           if (createdAtSuccess) {
@@ -449,17 +467,20 @@ class DatabaseMigrations {
             );
           }
 
-          console.log(`  ✅ Updated timestamp defaults for ${tableName}`);
+          log.database.info('Updated timestamp defaults', { tableName });
         } catch (error) {
-          console.warn(`  ⚠️ Failed to set default timestamps for ${tableName}:`, error.message);
+          log.database.warn('Failed to set default timestamps', { 
+            tableName, 
+            error: error.message 
+          });
         }
       }
     }
 
     if (allSuccessful) {
-      console.log('✅ Timestamp columns migration completed successfully');
+      log.database.info('Timestamp columns migration completed successfully');
     } else {
-      console.warn('⚠️ Timestamp columns migration completed with some errors');
+      log.database.warn('Timestamp columns migration completed with some errors');
     }
 
     return allSuccessful;
@@ -471,7 +492,7 @@ class DatabaseMigrations {
    * @returns {Promise<boolean>} True if migration successful
    */
   async migrateServersTable() {
-    console.log('🔧 Migrating servers table for missing columns...');
+    log.database.info('Migrating servers table for missing columns');
 
     const tableName = 'servers';
     const columnsToAdd = [
@@ -506,20 +527,20 @@ class DatabaseMigrations {
     // Set default values for existing records
     if (allSuccessful) {
       try {
-        console.log('  + Setting default values for existing servers...');
+        log.database.info('Setting default values for existing servers');
         await this.sequelize.query(
           'UPDATE servers SET allow_insecure = false WHERE allow_insecure IS NULL'
         );
-        console.log('  ✅ Updated existing servers with default allow_insecure value');
+        log.database.info('Updated existing servers with default allow_insecure value');
       } catch (error) {
-        console.warn('  ⚠️ Failed to update existing servers:', error.message);
+        log.database.warn('Failed to update existing servers', { error: error.message });
       }
     }
 
     if (allSuccessful) {
-      console.log('✅ Servers table migration completed successfully');
+      log.database.info('Servers table migration completed successfully');
     } else {
-      console.warn('⚠️ Servers table migration completed with some errors');
+      log.database.warn('Servers table migration completed with some errors');
     }
 
     return allSuccessful;
@@ -531,7 +552,7 @@ class DatabaseMigrations {
    * @returns {Promise<boolean>} True if all migrations successful
    */
   async runMigrations() {
-    console.log('🔄 Running Passport.js database migrations...');
+    log.database.info('Running Passport.js database migrations');
 
     try {
       // Add missing timestamp columns first (fixes JWT authentication)
@@ -549,10 +570,10 @@ class DatabaseMigrations {
       // Create federated_credentials table
       await this.createCredentialsTable();
 
-      console.log('✅ All Passport.js database migrations completed successfully');
+      log.database.info('All Passport.js database migrations completed successfully');
       return true;
     } catch (error) {
-      console.error('❌ Database migration failed:', error.message);
+      log.database.error('Database migration failed', { error: error.message });
       return false;
     }
   }
@@ -566,10 +587,10 @@ class DatabaseMigrations {
     try {
       // Sync all models to create tables if they don't exist
       await this.sequelize.sync({ alter: false }); // Don't alter existing tables, just create missing ones
-      console.log('✅ Database tables initialized');
+      log.database.info('Database tables initialized');
       return true;
     } catch (error) {
-      console.error('❌ Database table initialization failed:', error.message);
+      log.database.error('Database table initialization failed', { error: error.message });
       return false;
     }
   }
@@ -581,7 +602,7 @@ class DatabaseMigrations {
    */
   async setupDatabase() {
     try {
-      console.log('🔧 Setting up database schema...');
+      log.database.info('Setting up database schema');
 
       // First, initialize any missing tables
       await this.initializeTables();
@@ -589,10 +610,10 @@ class DatabaseMigrations {
       // Then run migrations to update existing tables
       await this.runMigrations();
 
-      console.log('✅ Database setup completed successfully');
+      log.database.info('Database setup completed successfully');
       return true;
     } catch (error) {
-      console.error('❌ Database setup failed:', error.message);
+      log.database.error('Database setup failed', { error: error.message });
       return false;
     }
   }

@@ -4,6 +4,7 @@ import multer from 'multer';
 import * as YAML from 'yaml';
 import { loadConfig, getConfigFilePath } from '../utils/config.js';
 import db from '../models/index.js';
+import { log } from '../utils/Logger.js';
 
 // Access Sequelize models
 const { server: ServerModel } = db;
@@ -167,7 +168,7 @@ class SettingsController {
         config,
       });
     } catch (error) {
-      console.error('Error loading settings:', error);
+      log.settings.error('Error loading settings', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to load settings: ${error.message}`,
@@ -326,8 +327,11 @@ class SettingsController {
       fs.writeFileSync(SettingsController.configPath, updatedYaml, 'utf8');
 
       // Log the change
-      console.log(`Settings updated by user ${req.user.username} (${req.user.role})`);
-      console.log(`Backup created: ${backupPath}`);
+      log.settings.info('Settings updated', { 
+        user: req.user.username, 
+        role: req.user.role,
+        backupPath 
+      });
 
       res.json({
         success: true,
@@ -337,7 +341,7 @@ class SettingsController {
         backupPath,
       });
     } catch (error) {
-      console.error('Error updating settings:', error);
+      log.settings.error('Error updating settings', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to update settings: ${error.message}`,
@@ -438,8 +442,11 @@ class SettingsController {
 
       fs.writeFileSync(SettingsController.configPath, resetYaml, 'utf8');
 
-      console.log(`Settings reset to defaults by user ${req.user.username} (${req.user.role})`);
-      console.log(`Backup created: ${backupPath}`);
+      log.settings.info('Settings reset to defaults', { 
+        user: req.user.username, 
+        role: req.user.role,
+        backupPath 
+      });
 
       res.json({
         success: true,
@@ -447,7 +454,7 @@ class SettingsController {
         backupPath,
       });
     } catch (error) {
-      console.error('Error resetting settings:', error);
+      log.settings.error('Error resetting settings', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to reset settings: ${error.message}`,
@@ -499,7 +506,10 @@ class SettingsController {
    */
   static restartServer(req, res) {
     try {
-      console.log(`Server restart requested by user ${req.user.username} (${req.user.role})`);
+      log.settings.info('Server restart requested', { 
+        user: req.user.username, 
+        role: req.user.role 
+      });
 
       res.json({
         success: true,
@@ -508,11 +518,11 @@ class SettingsController {
 
       // Increased delay to ensure response is fully sent
       setTimeout(() => {
-        console.log('Restarting server...');
+        log.settings.info('Restarting server...');
         process.exit(0); // Let process manager restart the app
       }, 2500);
     } catch (error) {
-      console.error('Error restarting server:', error);
+      log.settings.error('Error restarting server', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to restart server: ${error.message}`,
@@ -672,7 +682,7 @@ class SettingsController {
           // Ensure SSL directory exists
           if (!fs.existsSync(sslDir)) {
             fs.mkdirSync(sslDir, { recursive: true, mode: 0o700 });
-            console.log(`Created SSL directory: ${sslDir}`);
+            log.settings.info('Created SSL directory', { sslDir });
           }
 
           // Generate secure filename based on field type and timestamp
@@ -706,7 +716,11 @@ class SettingsController {
 
           // Save file to SSL directory
           fs.writeFileSync(filePath, req.file.buffer, { mode: 0o600 });
-          console.log(`SSL file uploaded by user ${req.user.username}: ${filename} -> ${filePath}`);
+          log.settings.info('SSL file uploaded', { 
+            user: req.user.username, 
+            filename, 
+            filePath 
+          });
 
           // Return success response
           res.json({
@@ -715,7 +729,7 @@ class SettingsController {
             filePath,
           });
         } catch (uploadError) {
-          console.error('SSL file upload error:', uploadError);
+          log.settings.error('SSL file upload error', { error: uploadError.message });
           res.status(500).json({
             success: false,
             message: `Failed to save SSL file: ${uploadError.message}`,
@@ -723,7 +737,7 @@ class SettingsController {
         }
       });
     } catch (error) {
-      console.error('SSL upload handler error:', error);
+      log.settings.error('SSL upload handler error', { error: error.message });
       res.status(500).json({
         success: false,
         message: `SSL file upload failed: ${error.message}`,
@@ -775,7 +789,7 @@ class SettingsController {
       try {
         setNestedValue(updatedConfig, path, value);
       } catch (error) {
-        console.warn(`Failed to update config path ${path}:`, error.message);
+        log.settings.warn('Failed to update config path', { path, error: error.message });
       }
     }
 
@@ -872,7 +886,7 @@ class SettingsController {
         backups,
       });
     } catch (error) {
-      console.error('Error listing backups:', error);
+      log.settings.error('Error listing backups', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to list backups: ${error.message}`,
@@ -938,10 +952,12 @@ class SettingsController {
       // Restore from backup
       fs.copyFileSync(backupPath, SettingsController.configPath);
 
-      console.log(
-        `Configuration restored from ${filename} by user ${req.user.username} (${req.user.role})`
-      );
-      console.log(`Current config backed up to: ${path.basename(restoreBackupPath)}`);
+      log.settings.info('Configuration restored from backup', { 
+        filename, 
+        user: req.user.username, 
+        role: req.user.role,
+        backupCreated: path.basename(restoreBackupPath)
+      });
 
       res.json({
         success: true,
@@ -950,7 +966,7 @@ class SettingsController {
         backupPath: path.basename(restoreBackupPath),
       });
     } catch (error) {
-      console.error('Error restoring backup:', error);
+      log.settings.error('Error restoring backup', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to restore backup: ${error.message}`,
@@ -1012,14 +1028,18 @@ class SettingsController {
       // Delete the backup file
       fs.unlinkSync(backupPath);
 
-      console.log(`Backup ${filename} deleted by user ${req.user.username} (${req.user.role})`);
+      log.settings.info('Backup deleted', { 
+        filename, 
+        user: req.user.username, 
+        role: req.user.role 
+      });
 
       res.json({
         success: true,
         message: 'Backup deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting backup:', error);
+      log.settings.error('Error deleting backup', { error: error.message });
       res.status(500).json({
         success: false,
         message: `Failed to delete backup: ${error.message}`,

@@ -3,12 +3,13 @@ import path from 'path';
 import { Sequelize } from 'sequelize';
 import { loadConfig } from '../utils/config.js';
 import { createMigrationHelper } from '../config/DatabaseMigrations.js';
+import { log, createTimer } from '../utils/Logger.js';
 
 let config;
 try {
   config = loadConfig();
 } catch (e) {
-  console.error(`Failed to load configuration: ${e.message}`);
+  log.app.error('Failed to load configuration', { error: e.message });
   process.exit(1);
 }
 
@@ -32,11 +33,26 @@ const dbConfig = {
 // Configure Sequelize based on database dialect
 // Handle both flat format and UI metadata format
 const dialect = dbConfig.dialect?.value || dbConfig.dialect || 'sqlite';
-const logging = dbConfig.logging?.value || dbConfig.logging || false;
+const loggingEnabled = dbConfig.logging?.value || dbConfig.logging || false;
+
+// Custom logging function for Sequelize
+const sequelizeLogging = loggingEnabled ? (msg, timing) => {
+  // Parse the query to check if it's a slow query
+  if (timing && timing > 1000) {
+    log.database.warn('Slow database query', { 
+      query: msg, 
+      duration_ms: timing 
+    });
+  } else {
+    // Log regular queries at debug level
+    log.database.debug(msg, { timing });
+  }
+} : false;
 
 const sequelizeConfig = {
-  logging,
+  logging: sequelizeLogging,
   dialect,
+  benchmark: true, // Enable timing for all queries
 };
 
 if (dialect === 'sqlite') {
@@ -47,10 +63,10 @@ if (dialect === 'sqlite') {
   const storageDir = path.dirname(sequelizeConfig.storage);
   if (!fs.existsSync(storageDir)) {
     fs.mkdirSync(storageDir, { recursive: true, mode: 0o755 });
-    console.log(`Created SQLite database directory: ${storageDir}`);
+    log.database.info('Created SQLite database directory', { directory: storageDir });
   }
 
-  console.log(`📁 Using SQLite database: ${sequelizeConfig.storage}`);
+  log.database.info('Using SQLite database', { storage: sequelizeConfig.storage });
 } else {
   // MySQL/PostgreSQL/MariaDB configuration
   sequelizeConfig.host = dbConfig.host?.value || dbConfig.host || 'localhost';
@@ -100,7 +116,10 @@ const modelPromises = modelFiles.map(async file => {
     const modelName = file.replace('.model.js', '');
     return { modelName, modelDefiner };
   } catch (error) {
-    console.warn(`Could not load model ${file}: ${error.message}`);
+    log.database.warn('Could not load model', { 
+      file, 
+      error: error.message 
+    });
     return null;
   }
 });
@@ -125,14 +144,29 @@ Object.keys(db).forEach(modelName => {
 
 // Test database connection and run migrations
 try {
+  const connectionTimer = createTimer('database_connection');
   await sequelize.authenticate();
-  console.log(`✅ Database connection established successfully (${sequelizeConfig.dialect})`);
+  const connectionTime = connectionTimer.end();
+  
+  log.database.info('Database connection established successfully', { 
+    dialect: sequelizeConfig.dialect,
+    duration_ms: connectionTime
+  });
 
   // Initialize automatic migration system
+  const migrationTimer = createTimer('database_migration');
   const migrationHelper = createMigrationHelper(sequelize);
   await migrationHelper.setupDatabase();
+  const migrationTime = migrationTimer.end();
+  
+  log.database.info('Database migrations completed', {
+    duration_ms: migrationTime
+  });
 } catch (error) {
-  console.error('❌ Unable to connect to database:', error.message);
+  log.database.error('Unable to connect to database', { 
+    error: error.message,
+    dialect: sequelizeConfig.dialect
+  });
   throw error;
 }
 

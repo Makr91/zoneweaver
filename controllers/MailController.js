@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { loadConfig } from '../utils/config.js';
+import { log } from '../utils/Logger.js';
 
 /**
  * Mail controller for sending emails (invitations, notifications, etc.)
@@ -19,10 +20,10 @@ class MailController {
       this.appConfig = fullConfig.app;
 
       if (!this.config) {
-        console.warn('Mail configuration not found in config.yaml');
+        log.mail.warn('Mail configuration not found in config.yaml');
       }
     } catch (error) {
-      console.error('Failed to load mail configuration:', error.message);
+      log.mail.error('Failed to load mail configuration', { error: error.message });
     }
   }
 
@@ -87,7 +88,10 @@ class MailController {
    */
   static async sendInvitationEmail(invitation) {
     try {
-      console.log('Attempting to send invitation email...');
+      log.mail.info('Attempting to send invitation email', { 
+        recipient: invitation.email,
+        organization: invitation.organization_name 
+      });
 
       const mailConfig = this.getConfig();
       if (!mailConfig) {
@@ -103,7 +107,7 @@ class MailController {
       const invitationLink = `${frontendUrl}/register?invite=${invitation.invite_code}`;
       const expirationDate = new Date(invitation.expires_at).toLocaleString();
 
-      console.log('Preparing invitation email...');
+      log.mail.debug('Preparing invitation email');
 
       const mailOptions = {
         from: mailConfig.smtp_from.value,
@@ -199,12 +203,12 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
         `,
       };
 
-      console.log('Sending invitation email...');
+      log.mail.info('Sending invitation email');
       const info = await transporter.sendMail(mailOptions);
 
-      console.log('Invitation email sent successfully:', info.messageId);
+      log.mail.info('Invitation email sent successfully', { messageId: info.messageId });
       if (nodemailer.getTestMessageUrl(info)) {
-        console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+        log.mail.debug('Preview URL', { url: nodemailer.getTestMessageUrl(info) });
       }
 
       return {
@@ -213,8 +217,10 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
         message: 'Invitation email sent successfully',
       };
     } catch (error) {
-      console.error('Error sending invitation email:', error);
-      console.error('Error stack:', error.stack);
+      log.mail.error('Error sending invitation email', { 
+        error: error.message,
+        stack: error.stack 
+      });
 
       return {
         success: false,
@@ -232,7 +238,11 @@ If you have any questions, please contact ${invitation.invited_by_username} or y
    */
   static async sendWelcomeEmail(user, organizationName) {
     try {
-      console.log('Attempting to send welcome email...');
+      log.mail.info('Attempting to send welcome email', { 
+        recipient: user.email,
+        username: user.username,
+        organization: organizationName 
+      });
 
       const mailConfig = this.getConfig();
       if (!mailConfig) {
@@ -331,10 +341,10 @@ Welcome aboard!
         `,
       };
 
-      console.log('Sending welcome email...');
+      log.mail.info('Sending welcome email');
       const info = await transporter.sendMail(mailOptions);
 
-      console.log('Welcome email sent successfully:', info.messageId);
+      log.mail.info('Welcome email sent successfully', { messageId: info.messageId });
 
       return {
         success: true,
@@ -342,7 +352,11 @@ Welcome aboard!
         message: 'Welcome email sent successfully',
       };
     } catch (error) {
-      console.error('Error sending welcome email:', error);
+      log.mail.error('Error sending welcome email', { 
+        error: error.message,
+        username: user.username,
+        email: user.email 
+      });
 
       return {
         success: false,
@@ -359,7 +373,9 @@ Welcome aboard!
    */
   static async testSmtpConnection(req, res) {
     try {
-      console.log('Testing SMTP connection...');
+      const { testEmail } = req.body;
+      
+      log.mail.info('Testing SMTP connection', { testEmail });
 
       const mailConfig = this.getConfig();
       if (!mailConfig) {
@@ -368,8 +384,6 @@ Welcome aboard!
           message: 'Mail configuration not available',
         });
       }
-
-      const { testEmail } = req.body;
       if (!testEmail) {
         return res.status(400).json({
           success: false,
@@ -379,11 +393,11 @@ Welcome aboard!
 
       const transporter = this.createTransporter();
 
-      console.log('Verifying SMTP connection...');
+      log.mail.debug('Verifying SMTP connection');
       await transporter.verify();
-      console.log('SMTP connection verified successfully');
+      log.mail.info('SMTP connection verified successfully');
 
-      console.log('Sending test email...');
+      log.mail.info('Sending test email');
       const info = await transporter.sendMail({
         from: mailConfig.smtp_from.value,
         to: testEmail,
@@ -409,7 +423,7 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
         `,
       });
 
-      console.log('Test email sent successfully:', info.messageId);
+      log.mail.info('Test email sent successfully', { messageId: info.messageId });
 
       res.json({
         success: true,
@@ -418,8 +432,10 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
         previewUrl: nodemailer.getTestMessageUrl(info) || null,
       });
     } catch (error) {
-      console.error('SMTP test failed:', error);
-      console.error('Error stack:', error.stack);
+      log.mail.error('SMTP test failed', { 
+        error: error.message,
+        stack: error.stack 
+      });
 
       res.status(500).json({
         success: false,

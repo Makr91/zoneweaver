@@ -2,6 +2,7 @@ import db from '../models/index.js';
 import MailController from './MailController.js';
 import jwt from 'jsonwebtoken';
 import { config } from '../index.js';
+import { log } from '../utils/Logger.js';
 
 // Access Sequelize models
 const { user: UserModel, organization: OrganizationModel, invitation: InvitationModel } = db;
@@ -135,7 +136,7 @@ class AuthController {
       if (isFirstUser) {
         // First user becomes super-admin and gets assigned to Default Organization
         userRole = 'super-admin';
-        console.log('Creating first user as super-admin');
+        log.auth.info('Creating first user as super-admin');
 
         // Create Default Organization for the super admin
         organization = await OrganizationModel.create({
@@ -144,13 +145,13 @@ class AuthController {
         });
 
         organizationId = organization.id;
-        console.log('Created Default Organization for super admin');
+        log.auth.info('Created Default Organization for super admin');
       } else {
         // Subsequent users must either have invite code or create/join organization
 
         if (inviteCode) {
           // User is registering with an invitation
-          console.log('Processing registration with invite code');
+          log.auth.debug('Processing registration with invite code');
 
           const inviteValidation = await InvitationModel.validateCode(inviteCode);
 
@@ -180,7 +181,7 @@ class AuthController {
           }
         } else if (organizationName) {
           // User is creating or joining an organization without invitation
-          console.log('Processing registration with organization name:', organizationName);
+          log.auth.debug('Processing registration with organization name', { organizationName });
 
           // Check if organization exists
           const existingOrg = await OrganizationModel.findByName(organizationName);
@@ -213,7 +214,7 @@ class AuthController {
             }
 
             // Create new organization and make user the admin
-            console.log('Creating new organization:', organizationName);
+            log.auth.info('Creating new organization', { organizationName });
 
             organization = await OrganizationModel.create({
               name: organizationName,
@@ -233,7 +234,7 @@ class AuthController {
       }
 
       // Create the user
-      console.log('Creating user with organization ID:', organizationId);
+      log.auth.info('Creating user with organization', { organizationId });
 
       // Hash password before creating user
       const bcrypt = (await import('bcrypt')).default;
@@ -253,7 +254,7 @@ class AuthController {
         const invitation = await InvitationModel.findByCode(inviteCode);
         if (invitation) {
           await invitation.markAsUsed();
-          console.log('Marked invitation as used');
+          log.auth.debug('Marked invitation as used');
         }
       }
 
@@ -261,10 +262,16 @@ class AuthController {
       try {
         if (organization) {
           await MailController.sendWelcomeEmail(newUser, organization.name);
-          console.log('Welcome email sent successfully');
+          log.mail.info('Welcome email sent successfully', { 
+            email: newUser.email, 
+            organization: organization.name 
+          });
         }
       } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError.message);
+        log.mail.error('Failed to send welcome email', { 
+          error: emailError.message,
+          email: newUser.email 
+        });
         // Continue with registration even if email fails
       }
 
@@ -292,7 +299,11 @@ class AuthController {
 
       res.status(201).json(response);
     } catch (error) {
-      console.error('Registration error:', error);
+      log.auth.error('Registration error', { 
+        error: error.message,
+        username: req.body.username,
+        email: req.body.email 
+      });
 
       if (error.message.includes('already exists')) {
         return res.status(409).json({
@@ -434,7 +445,10 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Login error:', error);
+      log.auth.error('Login error', { 
+        error: error.message,
+        identifier: req.body.identifier 
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error during login',
@@ -554,7 +568,11 @@ class AuthController {
         req.session.role = user.role;
       }
 
-      console.log(`✅ LDAP login successful: ${user.username} (${user.email})`);
+      log.auth.info('LDAP login successful', { 
+        username: user.username, 
+        email: user.email,
+        authProvider: 'ldap'
+      });
 
       res.json({
         success: true,
@@ -571,7 +589,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('LDAP login error:', error);
+      log.auth.error('LDAP login error', { error: error.message });
 
       // Handle specific LDAP errors
       if (
@@ -679,12 +697,17 @@ class AuthController {
       const passport = (await import('passport')).default;
       const strategyName = `oidc-${provider}`;
 
-      console.log(`🔐 Starting OIDC authentication flow for provider: ${provider}`);
-      console.log(`🔧 Using strategy: ${strategyName}`);
+      log.auth.info('Starting OIDC authentication flow', { 
+        provider,
+        strategyName 
+      });
 
       passport.authenticate(strategyName)(req, res, next);
     } catch (error) {
-      console.error('OIDC start login error:', error);
+      log.auth.error('OIDC start login error', { 
+        error: error.message,
+        provider: req.params.provider 
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error during OIDC authentication setup',
@@ -771,22 +794,27 @@ class AuthController {
       const passport = (await import('passport')).default;
       const strategyName = `oidc-${provider}`;
 
-      console.log(`🔐 Processing OIDC callback for provider: ${provider}`);
-      console.log(`🔧 Using strategy: ${strategyName}`);
+      log.auth.info('Processing OIDC callback', { 
+        provider,
+        strategyName 
+      });
 
       passport.authenticate(strategyName, {
         session: false,
         failureRedirect: `/ui/login?error=oidc_failed&provider=${provider}`,
       })(req, res, err => {
         if (err) {
-          console.error(`❌ OIDC callback error for ${provider}:`, err);
+          log.auth.error('OIDC callback error', { 
+            provider, 
+            error: err.message 
+          });
           return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
         }
 
         const user = req.user;
 
         if (!user) {
-          console.error(`❌ OIDC callback: No user object found for ${provider}`);
+          log.auth.error('OIDC callback: No user object found', { provider });
           return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
         }
 
@@ -809,7 +837,11 @@ class AuthController {
           req.session.role = user.role;
         }
 
-        console.log(`✅ OIDC login successful for ${provider}: ${user.username} (${user.email})`);
+        log.auth.info('OIDC login successful', { 
+          provider,
+          username: user.username,
+          email: user.email
+        });
 
         // Redirect to frontend with token (frontend will handle storage)
         // Use the request's protocol and host to build the correct redirect URL
@@ -817,11 +849,13 @@ class AuthController {
         const host = req.get('host');
         const frontendUrl = `${protocol}://${host}`;
 
-        console.log(`🔄 OIDC redirect URL: ${frontendUrl}/ui/auth/callback?token=...`);
+        log.auth.debug('OIDC redirect URL', { 
+          frontendUrl: `${frontendUrl}/ui/auth/callback` 
+        });
         res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
       });
     } catch (error) {
-      console.error('OIDC callback error:', error);
+      log.auth.error('OIDC callback error', { error: error.message });
 
       // Handle specific OIDC errors
       if (
@@ -867,7 +901,7 @@ class AuthController {
       if (req.session) {
         req.session.destroy(err => {
           if (err) {
-            console.error('Session destruction error:', err);
+            log.auth.error('Session destruction error', { error: err.message });
           }
         });
       }
@@ -877,7 +911,7 @@ class AuthController {
         message: 'Logout successful',
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      log.auth.error('Logout error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error during logout',
@@ -965,7 +999,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Get profile error:', error);
+      log.auth.error('Get profile error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1113,7 +1147,10 @@ class AuthController {
         message: 'Password changed successfully',
       });
     } catch (error) {
-      console.error('Change password error:', error);
+      log.auth.error('Change password error', { 
+        error: error.message,
+        userId 
+      });
 
       if (error.message.includes('Current password is incorrect')) {
         return res.status(400).json({
@@ -1217,7 +1254,10 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Token verification error:', error);
+      log.auth.error('Token verification error', { 
+        error: error.message,
+        errorName: error.name 
+      });
 
       if (error.name === 'JsonWebTokenError') {
         return res.status(401).json({
@@ -1339,7 +1379,7 @@ class AuthController {
         viewScope: currentUserRole === 'super-admin' ? 'all' : 'organization',
       });
     } catch (error) {
-      console.error('Get all users error:', error);
+      log.auth.error('Get all users error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1480,7 +1520,11 @@ class AuthController {
         message: 'User role updated successfully',
       });
     } catch (error) {
-      console.error('Update user role error:', error);
+      log.auth.error('Update user role error', { 
+        error: error.message,
+        userId: req.body.userId,
+        newRole: req.body.newRole 
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1598,7 +1642,10 @@ class AuthController {
         message: 'User deactivated successfully',
       });
     } catch (error) {
-      console.error('Deactivate user error:', error);
+      log.auth.error('Deactivate user error', { 
+        error: error.message,
+        userId: req.params.userId 
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1699,7 +1746,10 @@ class AuthController {
         message: 'User reactivated successfully',
       });
     } catch (error) {
-      console.error('Reactivate user error:', error);
+      log.auth.error('Reactivate user error', { 
+        error: error.message,
+        userId: req.params.userId 
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1827,7 +1877,10 @@ class AuthController {
         message: 'User permanently deleted successfully',
       });
     } catch (error) {
-      console.error('Delete user error:', error);
+      log.auth.error('Delete user error', { 
+        error: error.message,
+        userId: req.params.userId 
+      });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1879,7 +1932,7 @@ class AuthController {
         userCount: users.length,
       });
     } catch (error) {
-      console.error('Check setup status error:', error);
+      log.auth.error('Check setup status error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -1972,7 +2025,7 @@ class AuthController {
             }
           }
         } catch (error) {
-          console.error('Error parsing LDAP URL for display name:', error);
+          log.auth.error('Error parsing LDAP URL for display name', { error: error.message });
           // Fall back to generic name
         }
 
@@ -1997,7 +2050,7 @@ class AuthController {
           }
         });
       } catch (error) {
-        console.error('Error processing OIDC providers for auth methods:', error.message);
+        log.auth.error('Error processing OIDC providers for auth methods', { error: error.message });
       }
 
       res.json({
@@ -2005,7 +2058,7 @@ class AuthController {
         methods,
       });
     } catch (error) {
-      console.error('Get auth methods error:', error);
+      log.auth.error('Get auth methods error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -2244,7 +2297,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Send invitation error:', error);
+      log.auth.error('Send invitation error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error during invitation sending',
@@ -2356,7 +2409,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Validate invitation error:', error);
+      log.auth.error('Validate invitation error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error during invitation validation',
@@ -2443,7 +2496,7 @@ class AuthController {
         organizations: organizationsWithStats,
       });
     } catch (error) {
-      console.error('Get all organizations error:', error);
+      log.auth.error('Get all organizations error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -2543,7 +2596,7 @@ class AuthController {
         message: 'Organization deactivated successfully',
       });
     } catch (error) {
-      console.error('Deactivate organization error:', error);
+      log.auth.error('Deactivate organization error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -2655,7 +2708,7 @@ class AuthController {
         message: 'Organization deleted successfully',
       });
     } catch (error) {
-      console.error('Delete organization error:', error);
+      log.auth.error('Delete organization error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -2774,7 +2827,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Get organization error:', error);
+      log.auth.error('Get organization error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -2911,7 +2964,7 @@ class AuthController {
         message: 'Organization updated successfully',
       });
     } catch (error) {
-      console.error('Update organization error:', error);
+      log.auth.error('Update organization error', { error: error.message });
 
       if (error.message.includes('already exists')) {
         return res.status(409).json({
@@ -3010,7 +3063,7 @@ class AuthController {
         users,
       });
     } catch (error) {
-      console.error('Get organization users error:', error);
+      log.auth.error('Get organization users error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -3123,7 +3176,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Get organization stats error:', error);
+      log.auth.error('Get organization stats error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -3295,10 +3348,10 @@ class AuthController {
       try {
         const emailResult = await MailController.sendInvitationEmail(invitation);
         if (!emailResult.success) {
-          console.error('Failed to send invitation email:', emailResult.error);
+          log.mail.error('Failed to send invitation email', { error: emailResult.error });
         }
       } catch (emailError) {
-        console.error('Failed to send invitation email:', emailError.message);
+        log.mail.error('Failed to send invitation email', { error: emailError.message });
         // Continue with response even if email fails
       }
 
@@ -3314,7 +3367,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Create invitation error:', error);
+      log.auth.error('Create invitation error', { error: error.message });
 
       if (error.message.includes('already exists') || error.message.includes('already a member')) {
         return res.status(409).json({
@@ -3439,7 +3492,7 @@ class AuthController {
         invitations,
       });
     } catch (error) {
-      console.error('Get invitations error:', error);
+      log.auth.error('Get invitations error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -3583,10 +3636,10 @@ class AuthController {
       try {
         const emailResult = await MailController.sendInvitationEmail(invitation);
         if (!emailResult.success) {
-          console.error('Failed to send invitation email:', emailResult.error);
+          log.mail.error('Failed to send invitation email', { error: emailResult.error });
         }
       } catch (emailError) {
-        console.error('Failed to send invitation email:', emailError.message);
+        log.mail.error('Failed to send invitation email', { error: emailError.message });
         // Continue with response even if email fails
       }
 
@@ -3602,7 +3655,7 @@ class AuthController {
         },
       });
     } catch (error) {
-      console.error('Resend invitation error:', error);
+      log.auth.error('Resend invitation error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -3704,7 +3757,7 @@ class AuthController {
         message: 'Invitation revoked successfully',
       });
     } catch (error) {
-      console.error('Revoke invitation error:', error);
+      log.auth.error('Revoke invitation error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -3786,7 +3839,7 @@ class AuthController {
         organizationName: organization?.name || null,
       });
     } catch (error) {
-      console.error('Check organization exists error:', error);
+      log.auth.error('Check organization exists error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error',
@@ -3963,9 +4016,14 @@ class AuthController {
       if (shouldDeleteOrganization) {
         try {
           await OrganizationModel.deleteOrganization(user.organization_id);
-          console.log(`Organization ${user.organization_id} deleted as user was the last member`);
+          log.auth.info('Organization deleted as user was the last member', { 
+            organizationId: user.organization_id 
+          });
         } catch (orgError) {
-          console.error('Error deleting organization after user deletion:', orgError);
+          log.auth.error('Error deleting organization after user deletion', { 
+            error: orgError.message,
+            organizationId: user.organization_id 
+          });
           // Don't fail the user deletion if org deletion fails
         }
       }
@@ -3974,7 +4032,9 @@ class AuthController {
       if (req.session) {
         req.session.destroy(err => {
           if (err) {
-            console.error('Session destruction error after account deletion:', err);
+            log.auth.error('Session destruction error after account deletion', { 
+              error: err.message 
+            });
           }
         });
       }
@@ -3985,7 +4045,7 @@ class AuthController {
         organizationDeleted: shouldDeleteOrganization,
       });
     } catch (error) {
-      console.error('Self-deletion error:', error);
+      log.auth.error('Self-deletion error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'Internal server error during account deletion',
@@ -4099,7 +4159,7 @@ class AuthController {
         });
       }
 
-      console.log('🔧 Starting LDAP connection test...');
+      log.auth.info('Starting LDAP connection test');
 
       const { testUsername, testPassword } = req.body || {};
       const testResults = {
@@ -4111,7 +4171,7 @@ class AuthController {
 
       // Test 1: Basic Connection
       try {
-        console.log('📡 Testing LDAP connection...');
+        log.auth.debug('Testing LDAP connection');
 
         const ldap = await import('ldapjs');
         const client = ldap.createClient({
@@ -4125,13 +4185,13 @@ class AuthController {
 
         await new Promise((resolve, reject) => {
           client.on('connect', () => {
-            console.log('✅ LDAP connection established');
+            log.auth.info('LDAP connection established');
             testResults.connectionTest = true;
             resolve(true);
           });
 
           client.on('error', err => {
-            console.error('❌ LDAP connection error:', err.message);
+            log.auth.error('LDAP connection error', { error: err.message });
             reject(err);
           });
 
@@ -4142,7 +4202,7 @@ class AuthController {
 
         // Test 2: Bind with service account
         try {
-          console.log('🔑 Testing LDAP bind...');
+          log.auth.debug('Testing LDAP bind');
 
           await new Promise((resolve, reject) => {
             client.bind(
@@ -4150,10 +4210,10 @@ class AuthController {
               config.authentication.ldap_bind_credentials.value,
               err => {
                 if (err) {
-                  console.error('❌ LDAP bind failed:', err.message);
+                  log.auth.error('LDAP bind failed', { error: err.message });
                   reject(err);
                 } else {
-                  console.log('✅ LDAP bind successful');
+                  log.auth.info('LDAP bind successful');
                   testResults.bindTest = true;
                   resolve(true);
                 }
@@ -4163,7 +4223,7 @@ class AuthController {
 
           // Test 3: Search test
           try {
-            console.log('🔍 Testing LDAP search...');
+            log.auth.debug('Testing LDAP search');
 
             const searchOptions = {
               scope: 'sub',
@@ -4182,7 +4242,7 @@ class AuthController {
                 searchOptions,
                 (err, searchResult) => {
                   if (err) {
-                    console.error('❌ LDAP search failed:', err.message);
+                    log.auth.error('LDAP search failed', { error: err.message });
                     reject(err);
                     return;
                   }
@@ -4190,16 +4250,16 @@ class AuthController {
                   let entryCount = 0;
                   searchResult.on('searchEntry', entry => {
                     entryCount++;
-                    console.log('📄 Found LDAP entry:', entry.dn);
+                    log.auth.debug('Found LDAP entry', { dn: entry.dn });
                   });
 
                   searchResult.on('error', err => {
-                    console.error('❌ LDAP search error:', err.message);
+                    log.auth.error('LDAP search error', { error: err.message });
                     reject(err);
                   });
 
                   searchResult.on('end', _result => {
-                    console.log(`✅ LDAP search completed, found ${entryCount} entries`);
+                    log.auth.info('LDAP search completed', { entriesFound: entryCount });
                     testResults.searchTest = true;
                     resolve(true);
                   });
@@ -4210,7 +4270,7 @@ class AuthController {
             // Test 4: User authentication (if credentials provided)
             if (testUsername && testPassword) {
               try {
-                console.log('🔐 Testing user authentication...');
+                log.auth.debug('Testing user authentication');
 
                 // First find the user
                 const userSearchOptions = {
@@ -4266,33 +4326,33 @@ class AuthController {
                   userClient.bind(userDn, testPassword, err => {
                     userClient.destroy();
                     if (err) {
-                      console.error('❌ User authentication failed:', err.message);
+                      log.auth.error('User authentication failed', { error: err.message });
                       testResults.authTest = false;
                       resolve(false); // Don't fail the whole test
                     } else {
-                      console.log('✅ User authentication successful');
+                      log.auth.info('User authentication successful');
                       testResults.authTest = true;
                       resolve(true);
                     }
                   });
                 });
               } catch (authError) {
-                console.error('❌ User authentication test failed:', authError.message);
+                log.auth.error('User authentication test failed', { error: authError.message });
                 testResults.authTest = false;
               }
             }
           } catch (searchError) {
-            console.error('❌ LDAP search test failed:', searchError.message);
+            log.auth.error('LDAP search test failed', { error: searchError.message });
             throw searchError;
           }
         } catch (bindError) {
-          console.error('❌ LDAP bind test failed:', bindError.message);
+          log.auth.error('LDAP bind test failed', { error: bindError.message });
           throw bindError;
         }
 
         client.destroy();
       } catch (connectionError) {
-        console.error('❌ LDAP connection test failed:', connectionError.message);
+        log.auth.error('LDAP connection test failed', { error: connectionError.message });
         throw connectionError;
       }
 
@@ -4318,7 +4378,7 @@ class AuthController {
         details: testResults,
       });
     } catch (error) {
-      console.error('LDAP test error:', error);
+      log.auth.error('LDAP test error', { error: error.message });
       res.status(500).json({
         success: false,
         message: 'LDAP connection test failed',

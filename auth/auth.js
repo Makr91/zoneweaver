@@ -1,4 +1,5 @@
 import passport from '../auth/passport.js';
+import { log } from '../utils/Logger.js';
 
 /**
  * Authentication middleware for protecting routes (now using Passport.js)
@@ -9,7 +10,7 @@ import passport from '../auth/passport.js';
 export const authenticateToken = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
-      console.error('Token authentication error:', err);
+      log.auth.error('Token authentication error', { error: err.message });
       return res.status(500).json({
         success: false,
         message: 'Authentication error',

@@ -5,6 +5,7 @@ import * as client from 'openid-client';
 import { Strategy as OidcStrategy } from 'openid-client/passport';
 import { loadConfig } from '../utils/config.js';
 import db from '../models/index.js';
+import { log } from '../utils/Logger.js';
 
 // Load config directly to avoid circular dependency with index.js
 const config = loadConfig();
@@ -40,7 +41,7 @@ passport.use(
           role: user.role,
         });
       } catch (error) {
-        console.error('JWT Strategy error:', error);
+        log.auth.error('JWT Strategy error', { error: error.message });
         return done(error, false);
       }
     }
@@ -72,28 +73,26 @@ async function setupLdapStrategy() {
     const { user: UserModel } = db;
     await UserModel.findOne({ limit: 1 }); // Test query to ensure schema is ready
   } catch {
-    console.log('⏳ Database not ready yet, waiting for migrations to complete...');
+    log.database.info('Database not ready yet, waiting for migrations to complete');
     // Wait a bit for migrations to finish
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
   // Only setup LDAP if enabled in configuration
   if (!config.authentication?.ldap_enabled?.value) {
-    console.log('🔧 LDAP authentication disabled in configuration');
+    log.auth.info('LDAP authentication disabled in configuration');
     return;
   }
 
-  console.log('🔧 Setting up LDAP authentication strategy...');
-  console.log('📋 LDAP Configuration:');
-  console.log('  URL:', config.authentication.ldap_url.value);
-  console.log('  Bind DN:', config.authentication.ldap_bind_dn.value);
-  console.log('  Search Base:', config.authentication.ldap_search_base.value);
-  console.log('  Search Filter:', config.authentication.ldap_search_filter.value);
-  console.log('  Search Attributes:', config.authentication.ldap_search_attributes.value);
-  console.log(
-    '  TLS Reject Unauthorized:',
-    config.authentication.ldap_tls_reject_unauthorized?.value
-  );
+  log.auth.info('Setting up LDAP authentication strategy');
+  log.auth.debug('LDAP Configuration', {
+    url: config.authentication.ldap_url.value,
+    bindDn: config.authentication.ldap_bind_dn.value,
+    searchBase: config.authentication.ldap_search_base.value,
+    searchFilter: config.authentication.ldap_search_filter.value,
+    searchAttributes: config.authentication.ldap_search_attributes.value,
+    tlsRejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value
+  });
 
   passport.use(
     'ldap',
@@ -115,32 +114,34 @@ async function setupLdapStrategy() {
       },
       async (ldapUser, done) => {
         try {
-          console.log(
-            '🔐 LDAP authentication successful for user:',
-            ldapUser.uid || ldapUser.cn || 'unknown'
-          );
-          console.log('📄 LDAP User Profile:');
-          console.log('  UID:', ldapUser.uid);
-          console.log('  CN:', ldapUser.cn);
-          console.log('  Display Name:', ldapUser.displayName);
-          console.log('  Mail:', ldapUser.mail);
-          console.log('  Member Of:', ldapUser.memberOf);
-          console.log('  Raw Profile Keys:', Object.keys(ldapUser));
+          log.auth.info('LDAP authentication successful for user', { 
+            user: ldapUser.uid || ldapUser.cn || 'unknown' 
+          });
+          log.auth.debug('LDAP User Profile', {
+            uid: ldapUser.uid,
+            cn: ldapUser.cn,
+            displayName: ldapUser.displayName,
+            mail: ldapUser.mail,
+            memberOf: ldapUser.memberOf,
+            profileKeys: Object.keys(ldapUser)
+          });
 
           // Handle external user authentication and provisioning
           const result = await handleExternalUser('ldap', ldapUser);
-          console.log('✅ LDAP user processing complete:', result.username);
+          log.auth.info('LDAP user processing complete', { username: result.username });
           return done(null, result);
         } catch (error) {
-          console.error('❌ LDAP Strategy error during user processing:', error.message);
-          console.error('❌ Error stack:', error.stack);
+          log.auth.error('LDAP Strategy error during user processing', { 
+            error: error.message,
+            stack: error.stack 
+          });
           return done(error, false);
         }
       }
     )
   );
 
-  console.log('✅ LDAP authentication strategy configured successfully');
+  log.auth.info('LDAP authentication strategy configured successfully');
 }
 
 /**
@@ -153,7 +154,7 @@ async function setupOidcProviders() {
     const { user: UserModel } = db;
     await UserModel.findOne({ limit: 1 }); // Test query to ensure schema is ready
   } catch {
-    console.log('⏳ Database not ready yet, waiting for migrations to complete...');
+    log.database.info('Database not ready yet, waiting for migrations to complete');
     // Wait a bit for migrations to finish
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
@@ -162,16 +163,13 @@ async function setupOidcProviders() {
   const oidcProvidersConfig = config.authentication?.oidc_providers?.value || {};
 
   if (!oidcProvidersConfig || Object.keys(oidcProvidersConfig).length === 0) {
-    console.log('🔧 No OIDC providers configured');
+    log.auth.info('No OIDC providers configured');
     return;
   }
 
-  console.log('🔧 Setting up OIDC authentication providers...');
-  console.log(
-    '📋 Found',
-    Object.keys(oidcProvidersConfig).length,
-    'OIDC provider(s) in configuration'
-  );
+  log.auth.info('Setting up OIDC authentication providers', { 
+    providerCount: Object.keys(oidcProvidersConfig).length 
+  });
 
   for (const [providerName, providerConfig] of Object.entries(oidcProvidersConfig)) {
     try {
@@ -188,25 +186,27 @@ async function setupOidcProviders() {
 
       // Skip disabled providers
       if (!enabled) {
-        console.log(`⏭️ Skipping disabled OIDC provider: ${providerName}`);
+        log.auth.info('Skipping disabled OIDC provider', { providerName });
         continue;
       }
 
       // Validate required fields
       if (!issuer || !clientId || !clientSecret) {
-        console.error(
-          `❌ Invalid OIDC provider configuration for ${providerName}: missing required fields (issuer, client_id, client_secret)`
-        );
+        log.auth.error('Invalid OIDC provider configuration: missing required fields', { 
+          providerName,
+          missingFields: ['issuer', 'client_id', 'client_secret']
+        });
         continue;
       }
 
-      console.log(`🔧 Setting up OIDC provider: ${providerName}`);
-      console.log(`📋 ${providerName} Configuration:`);
-      console.log(`  Display Name: ${displayName}`);
-      console.log(`  Issuer: ${issuer}`);
-      console.log(`  Client ID: ${clientId}`);
-      console.log(`  Scope: ${scope}`);
-      console.log(`  Response Type: ${responseType}`);
+      log.auth.info('Setting up OIDC provider', { 
+        providerName,
+        displayName,
+        issuer,
+        clientId,
+        scope,
+        responseType
+      });
 
       // Use discovery for automatic configuration (best practice)
       const oidcConfig = await client.discovery(new URL(issuer), clientId, clientSecret);
@@ -223,46 +223,52 @@ async function setupOidcProviders() {
           },
           async (tokens, verified) => {
             try {
-              console.log(`🔐 OIDC authentication successful for provider: ${providerName}`);
+              log.auth.info('OIDC authentication successful for provider', { providerName });
 
               // Extract user info from tokens
               const userinfo = tokens.claims();
-              console.log(`📄 ${providerName} User Claims:`);
-              console.log('  Subject:', userinfo.sub);
-              console.log('  Email:', userinfo.email);
-              console.log(
-                '  Name:',
-                userinfo.name || `${userinfo.given_name} ${userinfo.family_name}`
-              );
-              console.log('  Profile Keys:', Object.keys(userinfo));
+              log.auth.debug('OIDC User Claims', {
+                providerName,
+                subject: userinfo.sub,
+                email: userinfo.email,
+                name: userinfo.name || `${userinfo.given_name} ${userinfo.family_name}`,
+                profileKeys: Object.keys(userinfo)
+              });
 
               // Handle external user authentication and provisioning with provider info
               const result = await handleExternalUser(`oidc-${providerName}`, userinfo);
-              console.log(`✅ OIDC user processing complete for ${providerName}:`, result.username);
+              log.auth.info('OIDC user processing complete', { 
+                providerName, 
+                username: result.username 
+              });
 
               return verified(null, result);
             } catch (error) {
-              console.error(
-                `❌ OIDC Strategy error for ${providerName} during user processing:`,
-                error.message
-              );
-              console.error('❌ Error stack:', error.stack);
+              log.auth.error('OIDC Strategy error during user processing', {
+                providerName,
+                error: error.message,
+                stack: error.stack
+              });
               return verified(error, false);
             }
           }
         )
       );
 
-      console.log(
-        `✅ OIDC provider "${providerName}" configured successfully as strategy "${strategyName}"`
-      );
+      log.auth.info('OIDC provider configured successfully', { 
+        providerName, 
+        strategyName 
+      });
     } catch (error) {
-      console.error(`❌ Failed to setup OIDC provider "${providerName}":`, error.message);
+      log.auth.error('Failed to setup OIDC provider', { 
+        providerName, 
+        error: error.message 
+      });
       continue; // Continue with other providers even if one fails
     }
   }
 
-  console.log('✅ OIDC provider setup completed');
+  log.auth.info('OIDC provider setup completed');
 }
 
 /**
@@ -275,7 +281,7 @@ async function handleExternalUser(provider, profile) {
   const { user: UserModel, credential: CredentialModel, organization: OrganizationModel } = db;
 
   try {
-    console.log(`🔍 Processing ${provider} user:`, profile);
+    log.auth.debug('Processing external user', { provider, profile });
 
     // Extract email from profile (different providers have different structures)
     const email = profile.mail || profile.email || profile.emails?.[0]?.value;
@@ -288,43 +294,50 @@ async function handleExternalUser(provider, profile) {
 
     // If no direct identifier, try to extract from DN (Distinguished Name)
     if (!subject && profile.dn) {
-      console.log(`🔍 No direct identifier found, extracting from DN: ${profile.dn}`);
+      log.auth.debug('No direct identifier found, extracting from DN', { dn: profile.dn });
       const dnMatch = profile.dn.match(/^uid=([^,]+)/i) || profile.dn.match(/^cn=([^,]+)/i);
       if (dnMatch) {
         subject = dnMatch[1];
-        console.log(`✅ Extracted identifier from DN: ${subject}`);
+        log.auth.info('Extracted identifier from DN', { subject });
       }
     }
 
     if (!subject) {
-      console.error('❌ Available profile fields:', Object.keys(profile));
-      console.error('❌ Profile DN:', profile.dn);
+      log.auth.error('No user identifier found in profile', { 
+        provider,
+        availableFields: Object.keys(profile),
+        profileDn: profile.dn 
+      });
       throw new Error(`No user identifier found in ${provider} profile`);
     }
 
-    console.log(`🔍 ${provider} user - email: ${email}, subject: ${subject}`);
+    log.auth.debug('External user identified', { provider, email, subject });
 
     // 1. Check if credential already exists (existing external user)
-    console.log(`🔍 Looking for existing credential: provider=${provider}, subject=${subject}`);
+    log.auth.debug('Looking for existing credential', { provider, subject });
 
     // Debug: Show all credentials for this provider
     const allCredentials = await CredentialModel.findAll({
       where: { provider },
       attributes: ['id', 'provider', 'subject', 'user_id', 'external_email'],
     });
-    console.log(
-      `🔍 All ${provider} credentials in DB:`,
-      allCredentials.map(c => `ID:${c.id} subject:${c.subject} email:${c.external_email}`)
-    );
+    log.auth.debug('All credentials in DB for provider', {
+      provider,
+      credentials: allCredentials.map(c => ({
+        id: c.id,
+        subject: c.subject,
+        email: c.external_email
+      }))
+    });
 
     const credential = await CredentialModel.findByProviderAndSubject(provider, subject);
-    console.log(
-      `🔍 Credential search result:`,
-      credential ? `Found credential ID ${credential.id}` : 'No credential found'
-    );
+    log.auth.debug('Credential search result', {
+      found: !!credential,
+      credentialId: credential?.id
+    });
 
     if (credential) {
-      console.log(`✅ Found existing ${provider} credential, updating profile...`);
+      log.auth.info('Found existing credential, updating profile', { provider });
       await credential.updateProfile(profile);
 
       const user = await UserModel.findByPk(credential.user_id);
@@ -334,16 +347,18 @@ async function handleExternalUser(provider, profile) {
 
       // If user doesn't have an organization, assign one
       if (!user.organization_id) {
-        console.log(`🔍 Credential user ${email} has no organization, determining organization...`);
+        log.auth.debug('Credential user has no organization, determining organization', { email });
         const organizationId = await determineUserOrganization(email, profile);
-        console.log(`🏢 Assigning credential user to organization ID: ${organizationId}`);
+        log.auth.info('Assigning credential user to organization', { organizationId });
 
         await user.update({
           organization_id: organizationId,
           last_login: new Date(),
         });
 
-        console.log(`✅ Updated credential user with organization_id: ${user.organization_id}`);
+        log.auth.info('Updated credential user with organization_id', { 
+          organizationId: user.organization_id 
+        });
       } else {
         // Update last login
         await user.update({ last_login: new Date() });
@@ -355,15 +370,15 @@ async function handleExternalUser(provider, profile) {
     // 2. Check if user exists by email (link external account to existing user)
     let user = await UserModel.findByEmail(email);
     if (user) {
-      console.log(`🔗 Linking ${provider} account to existing user: ${email}`);
+      log.auth.info('Linking external account to existing user', { provider, email });
 
       const baseProvider = provider.startsWith('oidc-') ? 'oidc' : provider;
 
       // If user doesn't have an organization, assign one
       if (!user.organization_id) {
-        console.log(`🔍 User ${email} has no organization, determining organization...`);
+        log.auth.debug('User has no organization, determining organization', { email });
         const organizationId = await determineUserOrganization(email, profile);
-        console.log(`🏢 Assigning existing user to organization ID: ${organizationId}`);
+        log.auth.info('Assigning existing user to organization', { organizationId });
 
         await user.update({
           organization_id: organizationId,
@@ -373,7 +388,9 @@ async function handleExternalUser(provider, profile) {
           last_login: new Date(),
         });
 
-        console.log(`✅ Updated existing user with organization_id: ${user.organization_id}`);
+        log.auth.info('Updated existing user with organization_id', { 
+          organizationId: user.organization_id 
+        });
       } else {
         // Update user's auth provider and linked timestamp
         await user.update({
@@ -389,7 +406,7 @@ async function handleExternalUser(provider, profile) {
         await CredentialModel.linkToUser(user.id, provider, { ...profile, subject });
       } catch {
         // Credential might already exist, just update profile
-        console.log(`🔄 Credential may already exist, updating profile...`);
+        log.auth.debug('Credential may already exist, updating profile');
       }
 
       return user;
@@ -398,8 +415,8 @@ async function handleExternalUser(provider, profile) {
     // 3. New external user - apply provisioning policy
     const organizationId = await determineUserOrganization(email, profile);
 
-    console.log(`👤 Creating new ${provider} user: ${email}`);
-    console.log(`🏢 Assigning user to organization ID: ${organizationId}`);
+    log.auth.info('Creating new external user', { provider, email });
+    log.auth.info('Assigning user to organization', { organizationId });
 
     const baseProvider = provider.startsWith('oidc-') ? 'oidc' : provider;
 
@@ -417,20 +434,21 @@ async function handleExternalUser(provider, profile) {
       is_active: true,
     });
 
-    console.log(`✅ Created user with organization_id: ${user.organization_id}`);
+    log.auth.info('Created user with organization_id', { organizationId: user.organization_id });
 
     // Create credential record
-    console.log(
-      `🔗 Creating credential: userId=${user.id}, provider=${provider}, subject=${subject}`
-    );
+    log.auth.debug('Creating credential', { userId: user.id, provider, subject });
     try {
       const credential = await CredentialModel.linkToUser(user.id, provider, {
         ...profile,
         subject,
       });
-      console.log(`✅ Created credential: ID=${credential.id}, subject=${credential.subject}`);
+      log.auth.info('Created credential successfully', { 
+        credentialId: credential.id, 
+        subject: credential.subject 
+      });
     } catch (credentialError) {
-      console.error(`❌ Failed to create credential:`, credentialError.message);
+      log.auth.error('Failed to create credential', { error: credentialError.message });
       throw credentialError;
     }
 
@@ -443,21 +461,28 @@ async function handleExternalUser(provider, profile) {
         },
       ],
     });
-    console.log(
-      `🔍 Database verification - User ID: ${dbUser.id}, Email: ${dbUser.email}, Organization ID: ${dbUser.organization_id}`
-    );
+    log.auth.debug('Database verification', {
+      userId: dbUser.id,
+      email: dbUser.email,
+      organizationId: dbUser.organization_id
+    });
     if (dbUser.organization) {
-      console.log(
-        `🔍 Database verification - Organization: ${dbUser.organization.name} (ID: ${dbUser.organization.id})`
-      );
+      log.auth.debug('Database verification - Organization found', {
+        orgName: dbUser.organization.name,
+        orgId: dbUser.organization.id
+      });
     } else {
-      console.log(`🔍 Database verification - NO ORGANIZATION FOUND IN DATABASE!`);
+      log.auth.warn('Database verification - NO ORGANIZATION FOUND IN DATABASE');
     }
 
-    console.log(`✅ Created new ${provider} user: ${user.username} (${user.email})`);
+    log.auth.info('Created new external user', { 
+      provider, 
+      username: user.username, 
+      email: user.email 
+    });
     return user;
   } catch (error) {
-    console.error(`❌ External user handling failed:`, error.message);
+    log.auth.error('External user handling failed', { error: error.message });
     throw error;
   }
 }
@@ -473,7 +498,7 @@ async function determineUserOrganization(email, _profile) {
   const domain = email.split('@')[1];
   let mappedOrgCode = null; // Track if we found a domain mapping
 
-  console.log(`🏢 Determining organization for domain: ${domain}`);
+  log.auth.debug('Determining organization for domain', { domain });
 
   // 1. Check pending invitation (highest priority)
   const invitation = await InvitationModel.findOne({
@@ -496,9 +521,10 @@ async function determineUserOrganization(email, _profile) {
   });
 
   if (invitation) {
-    console.log(
-      `📧 Found pending invitation for ${email}, using organization: ${invitation.organization_id}`
-    );
+    log.auth.info('Found pending invitation, using organization', { 
+      email, 
+      organizationId: invitation.organization_id 
+    });
 
     // Mark invitation as used
     await invitation.markAsUsed();
@@ -509,57 +535,62 @@ async function determineUserOrganization(email, _profile) {
   if (config.authentication?.external_domain_mapping_enabled?.value) {
     try {
       const mappingsJson = config.authentication.external_domain_mappings?.value || '{}';
-      console.log(`🔍 Raw domain mappings config: ${mappingsJson}`);
+      log.auth.debug('Raw domain mappings config', { mappingsJson });
 
       const mappings = JSON.parse(mappingsJson);
-      console.log(`🔍 Parsed domain mappings:`, mappings);
+      log.auth.debug('Parsed domain mappings', { mappings });
 
       for (const [orgCode, domains] of Object.entries(mappings)) {
-        console.log(`🔍 Checking org code ${orgCode} with domains:`, domains);
+        log.auth.debug('Checking org code with domains', { orgCode, domains });
         if (Array.isArray(domains) && domains.includes(domain)) {
-          console.log(`🗺️ Found domain mapping: ${domain} -> ${orgCode}`);
+          log.auth.info('Found domain mapping', { domain, orgCode });
           mappedOrgCode = orgCode; // Store the found mapping
 
           // Construct organization name from code and domain
           const orgName = `${orgCode} - ${domain.toUpperCase()}`;
-          console.log(`🔍 Looking for organization by name: ${orgName}`);
+          log.auth.debug('Looking for organization by name', { orgName });
 
           const org = await OrganizationModel.findByName(orgName);
           if (org) {
-            console.log(`✅ Using existing mapped organization: ${org.name} (${org.id})`);
+            log.auth.info('Using existing mapped organization', { 
+              orgName: org.name, 
+              orgId: org.id 
+            });
             return org.id;
           } else {
-            console.log(`❌ Organization "${orgName}" not found, will create new one`);
+            log.auth.debug('Organization not found, will create new one', { orgName });
             // No existing org found, but we have a domain mapping - break to use create_org with mapped code
             break;
           }
         }
       }
     } catch (error) {
-      console.error(`❌ Failed to parse domain mappings JSON:`, error.message);
-      console.error(`❌ Raw value:`, config.authentication.external_domain_mappings?.value);
+      log.auth.error('Failed to parse domain mappings JSON', { 
+        error: error.message,
+        rawValue: config.authentication.external_domain_mappings?.value 
+      });
     }
   }
 
   // 3. Apply fallback policy
   const fallbackAction =
     config.authentication?.external_provisioning_fallback_action?.value || 'require_invite';
-  console.log(`📋 Applying fallback policy: ${fallbackAction}`);
+  log.auth.debug('Applying fallback policy', { fallbackAction });
 
   switch (fallbackAction) {
     case 'require_invite':
       throw new Error(`Access denied: Invitation required for domain ${domain}`);
 
     case 'create_org': {
-      console.log(`🏗️ Creating new organization for domain: ${domain}`);
+      log.auth.info('Creating new organization for domain', { domain });
       // Use mapped organization code if found, otherwise generate random code
       const orgCode = mappedOrgCode || generateOrgCode();
       const orgName = `${orgCode} - ${domain.toUpperCase()}`;
 
       if (mappedOrgCode) {
-        console.log(`🗺️ Using configured organization code: ${orgCode}`);
+        log.auth.info('Using configured organization code', { orgCode });
       } else {
-        console.log(`🎲 Using generated organization code: ${orgCode}`);
+        log.auth.info('Using generated organization code', { orgCode });
       }
 
       const newOrg = await OrganizationModel.create({
@@ -567,7 +598,7 @@ async function determineUserOrganization(email, _profile) {
         description: `Auto-created organization for domain ${domain}`,
         is_active: true,
       });
-      console.log(`✅ Created organization: ${orgName} (${newOrg.id})`);
+      log.auth.info('Created organization', { orgName, orgId: newOrg.id });
       return newOrg.id;
     }
 

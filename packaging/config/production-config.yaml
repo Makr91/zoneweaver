@@ -227,18 +227,137 @@ logging:
   level:
     type: select
     value: info
-    options: ["error", "warn", "info", "debug"]
-    description: "Minimum logging level: error=critical issues only, warn=errors + warnings, info=general operations, debug=detailed diagnostics"
+    options: ["error", "warn", "info", "debug", "silent"]
+    description: "Global logging level: error=critical only, warn=errors+warnings, info=general operations, debug=detailed diagnostics, silent=disable all"
     section: "Logging"
+    subsection: "General"
     required: true
     order: 1
-  enabled:
+  
+  console_enabled:
     type: boolean
     value: true
-    description: "Enable application logging to console and files (disable only for testing)"
+    description: "Enable console output (automatically disabled in production)"
     section: "Logging"
+    subsection: "General"
     required: true
     order: 2
+    
+  log_directory:
+    type: string
+    value: "/var/log/zoneweaver"
+    description: "Directory for log files (must be writable by application)"
+    section: "Logging"
+    subsection: "General"
+    required: true
+    order: 3
+    
+  file_rotation:
+    max_size:
+      type: integer
+      value: 50
+      min: 10
+      max: 500
+      description: "Maximum log file size in MB before rotation"
+      section: "Logging"
+      subsection: "Rotation"
+      required: true
+      order: 1
+    max_files:
+      type: integer
+      value: 5
+      min: 1
+      max: 30
+      description: "Number of rotated log files to keep"
+      section: "Logging"
+      subsection: "Rotation"
+      required: true
+      order: 2
+      
+  performance_threshold_ms:
+    type: integer
+    value: 1000
+    min: 100
+    max: 10000
+    description: "Log operations slower than this threshold (milliseconds)"
+    section: "Logging"
+    subsection: "Performance"
+    required: true
+    order: 1
+    
+  categories:
+    auth:
+      type: select
+      value: info
+      options: ["error", "warn", "info", "debug"]
+      description: "Authentication/authorization logging level (login, registration, LDAP, OIDC)"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 1
+    database:
+      type: select
+      value: warn
+      options: ["error", "warn", "info", "debug"]
+      description: "Database operations logging level (queries, migrations, connections)"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 2
+    api:
+      type: select
+      value: info
+      options: ["error", "warn", "info", "debug"]
+      description: "API request/response logging level"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 3
+    proxy:
+      type: select
+      value: warn
+      options: ["error", "warn", "info", "debug"]
+      description: "Zoneweaver API proxy request logging level"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 4
+    mail:
+      type: select
+      value: info
+      options: ["error", "warn", "info", "debug"]
+      description: "Email operations logging level"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 5
+    websocket:
+      type: select
+      value: warn
+      options: ["error", "warn", "info", "debug"]
+      description: "WebSocket connections logging level (terminal, VNC, zlogin)"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 6
+    performance:
+      type: select
+      value: warn
+      options: ["error", "warn", "info", "debug"]
+      description: "Performance monitoring logging level"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 7
+    app:
+      type: select
+      value: info
+      options: ["error", "warn", "info", "debug"]
+      description: "General application logging level"
+      section: "Logging"
+      subsection: "Categories"
+      required: true
+      order: 8
 
 # Security & Performance Limits Configuration
 limits:

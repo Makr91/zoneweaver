@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { log } from '../utils/Logger.js';
 
 export default (sequelize, Sequelize) => {
   const Invitation = sequelize.define(
@@ -368,7 +369,7 @@ export default (sequelize, Sequelize) => {
     });
 
     if (result > 0) {
-      console.log(`Cleaned up ${result} expired invitations`);
+      log.database.info('Cleaned up expired invitations', { count: result });
     }
 
     return result;

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import https from 'https';
+import { log } from '../utils/Logger.js';
 
 export default (sequelize, Sequelize) => {
   const Server = sequelize.define(
@@ -197,7 +198,7 @@ export default (sequelize, Sequelize) => {
     const startTime = Date.now();
 
     try {
-      console.log('🚀 SERVER MODEL: Starting zoneweaver-api request', {
+      log.server.info('Starting zoneweaver-api request', {
         server: `${this.hostname}:${this.port}`,
         path,
         method: options.method || 'GET',
@@ -205,7 +206,6 @@ export default (sequelize, Sequelize) => {
         hasParams: !!options.params,
         dataSize: options.data ? JSON.stringify(options.data).length : 0,
         timeout: options.timeout || 60000,
-        timestamp,
       });
 
       // Smart FMRI detection and encoding
@@ -266,7 +266,7 @@ export default (sequelize, Sequelize) => {
 
       const finalUrl = `${serverUrl}/${encodedPath}`;
 
-      console.log('📡 SERVER MODEL: Request details', {
+      log.server.debug('Request details', {
         originalPath: path,
         encodedPath,
         finalUrl,
@@ -277,13 +277,13 @@ export default (sequelize, Sequelize) => {
         queryParams: options.params,
       });
 
-      console.log(`${timestamp} - API Request - ${finalUrl}`);
+      log.server.debug('API Request', { url: finalUrl, timestamp });
 
       const agent = new https.Agent({
         rejectUnauthorized: !this.allow_insecure,
       });
 
-      console.log('⏱️ SERVER MODEL: Making axios request...');
+      log.server.debug('Making axios request');
       const axiosStartTime = Date.now();
 
       const response = await axios({
@@ -301,13 +301,12 @@ export default (sequelize, Sequelize) => {
       const totalDuration = axiosEndTime - startTime;
       const axiosDuration = axiosEndTime - axiosStartTime;
 
-      console.log('✅ SERVER MODEL: Request successful', {
+      log.server.info('Request successful', {
         status: response.status,
         axiosDuration: `${axiosDuration}ms`,
         totalDuration: `${totalDuration}ms`,
         responseSize: JSON.stringify(response.data).length,
         responseHeaders: Object.keys(response.headers),
-        timestamp: new Date().toISOString(),
       });
 
       await this.updateLastUsed();
@@ -317,7 +316,7 @@ export default (sequelize, Sequelize) => {
       const errorMsg = error.response?.data?.message || error.message;
       const status = error.response?.status;
 
-      console.error('❌ SERVER MODEL: Request failed', {
+      log.server.error('Request failed', {
         error: error.message,
         code: error.code,
         status,
@@ -328,13 +327,12 @@ export default (sequelize, Sequelize) => {
         url: `${serverUrl}/${path}`,
         method: options.method || 'GET',
         requestData: options.data,
-        timestamp: new Date().toISOString(),
       });
 
       if (status) {
-        console.error(`Zoneweaver API request failed: ${status} - ${errorMsg}`);
+        log.server.error('Zoneweaver API request failed with status', { status, errorMsg });
       } else {
-        console.error(`Zoneweaver API request failed: ${errorMsg}`);
+        log.server.error('Zoneweaver API request failed', { errorMsg });
       }
 
       return {
