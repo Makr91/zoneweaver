@@ -1,6 +1,7 @@
 import axios from 'axios';
 import https from 'https';
 import { log } from '../utils/Logger.js';
+import { loadConfig } from '../utils/config.js';
 
 export default (sequelize, Sequelize) => {
   const Server = sequelize.define(
@@ -198,6 +199,19 @@ export default (sequelize, Sequelize) => {
     const startTime = Date.now();
 
     try {
+      // Load config for timeout settings
+      const config = loadConfig();
+      
+      // Detect file upload operations that need extended timeouts
+      const isFileUpload = path.includes('artifacts/upload') || path.includes('filesystem/upload');
+      
+      // Use configurable timeouts: 30min for uploads, 1min for everything else
+      const requestTimeout = options.timeout || (
+        isFileUpload 
+          ? config.limits?.api_timeouts?.file_upload?.value || 1800000  // 30 min default
+          : config.limits?.api_timeouts?.default_request?.value || 60000   // 1 min default
+      );
+
       log.server.info('Starting zoneweaver-api request', {
         server: `${this.hostname}:${this.port}`,
         path,
@@ -205,7 +219,8 @@ export default (sequelize, Sequelize) => {
         hasData: !!options.data,
         hasParams: !!options.params,
         dataSize: options.data ? JSON.stringify(options.data).length : 0,
-        timeout: options.timeout || 60000,
+        timeout: requestTimeout,
+        isFileUpload: isFileUpload,
       });
 
       // Smart FMRI detection and encoding
@@ -292,7 +307,7 @@ export default (sequelize, Sequelize) => {
         headers: requestHeaders,
         data: options.data,
         params: options.params,
-        timeout: options.timeout || 60000,
+        timeout: requestTimeout,
         httpsAgent: agent,
         validateStatus: status => status >= 200 && status < 400,
       });
