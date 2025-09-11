@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../../contexts/ServerContext";
 
@@ -52,53 +52,8 @@ const ArtifactManagement = ({ server }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load data on component mount and when filters change
-  useEffect(() => {
-    if (activeTab === "storage-paths") {
-      loadStoragePaths();
-    } else if (activeTab === "artifacts") {
-      loadArtifacts();
-    }
-  }, [server, activeTab]);
-
-  useEffect(() => {
-    if (activeTab === "artifacts") {
-      loadArtifacts();
-    }
-  }, [filters]);
-
-  const loadStoragePaths = async () => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-
-    try {
-      setStoragePathsLoading(true);
-      setError("");
-
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        "artifacts/storage/paths",
-        "GET"
-      );
-
-      if (result.success && result.data) {
-        setStoragePaths(result.data.paths || []);
-      } else {
-        setError(result.message || "Failed to load storage paths");
-        setStoragePaths([]);
-      }
-    } catch (err) {
-      setError(`Error loading storage paths: ${err.message}`);
-      setStoragePaths([]);
-    } finally {
-      setStoragePathsLoading(false);
-    }
-  };
-
-  const loadArtifacts = async (resetOffset = true) => {
+  // Use useCallback to stabilize function references
+  const loadArtifacts = useCallback(async (resetOffset = true) => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -149,7 +104,55 @@ const ArtifactManagement = ({ server }) => {
     } finally {
       setArtifactsLoading(false);
     }
+  }, [server, makeZoneweaverAPIRequest, artifactsPagination.limit, artifactsPagination.offset, filters.sort_by, filters.sort_order, filters.search, filters.type, filters.storage_location]);
+
+  // Load data on component mount and when tab changes
+  useEffect(() => {
+    if (activeTab === "storage-paths") {
+      loadStoragePaths();
+    } else if (activeTab === "artifacts") {
+      loadArtifacts();
+    }
+  }, [server, activeTab, loadArtifacts]);
+
+  // Load artifacts when filters change (but only individual filter values to prevent infinite loop)
+  useEffect(() => {
+    if (activeTab === "artifacts") {
+      loadArtifacts();
+    }
+  }, [activeTab, loadArtifacts, filters.search, filters.type, filters.storage_location, filters.sort_by, filters.sort_order]);
+
+  const loadStoragePaths = async () => {
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
+
+    try {
+      setStoragePathsLoading(true);
+      setError("");
+
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        "artifacts/storage/paths",
+        "GET"
+      );
+
+      if (result.success && result.data) {
+        setStoragePaths(result.data.paths || []);
+      } else {
+        setError(result.message || "Failed to load storage paths");
+        setStoragePaths([]);
+      }
+    } catch (err) {
+      setError(`Error loading storage paths: ${err.message}`);
+      setStoragePaths([]);
+    } finally {
+      setStoragePathsLoading(false);
+    }
   };
+
 
   const handleStoragePathCreate = () => {
     setShowStoragePathCreateModal(false);
@@ -337,6 +340,26 @@ const ArtifactManagement = ({ server }) => {
     loadArtifacts(false);
   };
 
+  // Handler for clicking on storage path name to filter artifacts
+  const handleStoragePathClick = (storagePath) => {
+    // Switch to artifacts tab
+    setActiveTab("artifacts");
+    
+    // Set filter to show only artifacts from this storage location
+    setFilters(prev => ({
+      ...prev,
+      storage_location: storagePath.id,
+      search: "", // Clear other filters for better UX
+      type: ""
+    }));
+
+    // Reset pagination
+    setArtifactsPagination(prev => ({
+      ...prev,
+      offset: 0
+    }));
+  };
+
   const clearError = () => setError("");
 
   if (!server) {
@@ -446,6 +469,7 @@ const ArtifactManagement = ({ server }) => {
                 onEdit={handleStoragePathEdit}
                 onDelete={handleStoragePathDelete}
                 onToggle={handleStoragePathToggle}
+                onNameClick={handleStoragePathClick}
               />
             </div>
           </div>

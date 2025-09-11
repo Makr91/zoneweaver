@@ -5,7 +5,8 @@ const StoragePathTable = ({
   loading,
   onEdit,
   onDelete,
-  onToggle
+  onToggle,
+  onNameClick
 }) => {
   const formatSize = (bytes) => {
     if (!bytes) return "0 B";
@@ -137,7 +138,21 @@ const StoragePathTable = ({
                   <span className="icon mr-2">
                     {getTypeIcon(storagePath.type)}
                   </span>
-                  <strong>{storagePath.name}</strong>
+                  {onNameClick ? (
+                    <a
+                      className="has-text-weight-bold is-clickable has-text-link"
+                      onClick={() => onNameClick(storagePath)}
+                      title={`View artifacts in ${storagePath.name} (${storagePath.file_count || 0} files)`}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {storagePath.name}
+                      <span className="icon is-small ml-1">
+                        <i className="fas fa-external-link-alt is-size-7" />
+                      </span>
+                    </a>
+                  ) : (
+                    <strong>{storagePath.name}</strong>
+                  )}
                 </div>
               </td>
               <td>
