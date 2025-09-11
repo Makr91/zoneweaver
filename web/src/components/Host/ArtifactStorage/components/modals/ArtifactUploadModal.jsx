@@ -124,7 +124,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const uploadFile = async (file) => {
+  const uploadFile = async (file, onProgress) => {
     const formDataUpload = new FormData();
     formDataUpload.append('file', file);
     formDataUpload.append('storage_path_id', formData.storage_path_id);
@@ -141,7 +141,10 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
         server.protocol,
         "artifacts/upload",
         "POST",
-        formDataUpload
+        formDataUpload,
+        null,
+        false,
+        onProgress
       );
 
       return result;
@@ -173,14 +176,30 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
         }));
         
         try {
-          const result = await uploadFile(file);
+          const result = await uploadFile(file, (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(prev => ({
+              ...prev,
+              [file.name]: { 
+                status: 'uploading', 
+                progress: percent,
+                loaded: progressEvent.loaded,
+                total: progressEvent.total
+              }
+            }));
+          });
           
           if (result.success) {
             setUploadProgress(prev => ({
               ...prev,
               [file.name]: { status: 'completed', progress: 100 }
             }));
-            results.push({ file: file.name, success: true });
+            results.push({ 
+              file: file.name, 
+              success: true, 
+              task_id: result.data?.task_id,
+              data: result.data
+            });
           } else {
             setUploadProgress(prev => ({
               ...prev,
@@ -348,7 +367,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
                                 progress.status === 'error' ? 'is-danger' :
                                 'is-info'
                               }`}>
-                                {progress.status === 'uploading' && 'Uploading...'}
+                                {progress.status === 'uploading' && `${progress.progress}%`}
                                 {progress.status === 'completed' && 'Complete'}
                                 {progress.status === 'error' && 'Error'}
                               </span>
@@ -356,6 +375,24 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
                           </div>
                         </div>
                       </div>
+                      {progress && progress.status === 'uploading' && (
+                        <div className="mt-2">
+                          <progress 
+                            className="progress is-primary is-small" 
+                            value={progress.progress} 
+                            max="100"
+                          >
+                            {progress.progress}%
+                          </progress>
+                          <div className="is-size-7 has-text-grey">
+                            {progress.loaded && progress.total && (
+                              <span>
+                                {formatFileSize(progress.loaded)} / {formatFileSize(progress.total)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       {progress && progress.status === 'error' && (
                         <div className="notification is-danger is-small mt-2">
                           {progress.error}

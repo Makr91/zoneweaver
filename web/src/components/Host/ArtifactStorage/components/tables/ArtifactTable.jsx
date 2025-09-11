@@ -365,9 +365,26 @@ const ArtifactTable = ({
                   {getDownloadStatusTag(download.status)}
                 </td>
                 <td>
-                  <span className="has-text-grey">
-                    {download.status === 'running' ? 'Downloading...' : 'Pending'}
-                  </span>
+                  {download.progress_info && download.progress_info.total_mb ? (
+                    <div>
+                      <div className="has-text-weight-semibold">
+                        {formatSize(download.progress_info.downloaded_mb * 1024 * 1024)} / {formatSize(download.progress_info.total_mb * 1024 * 1024)}
+                      </div>
+                      {download.progress_info.speed_kbps && (
+                        <div className="is-size-7 has-text-grey">
+                          {Math.round(download.progress_info.speed_kbps / 1024)} MB/s
+                        </div>
+                      )}
+                    </div>
+                  ) : download.progress_info && download.progress_info.file_size_mb ? (
+                    <div className="has-text-weight-semibold">
+                      {formatSize(download.progress_info.file_size_mb * 1024 * 1024)}
+                    </div>
+                  ) : (
+                    <span className="has-text-grey">
+                      {download.status === 'running' ? 'Processing...' : 'Pending'}
+                    </span>
+                  )}
                 </td>
                 <td>
                   <span className="icon has-text-grey" title="Download in progress">

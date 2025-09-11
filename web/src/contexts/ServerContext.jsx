@@ -357,6 +357,7 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} data - Request body data
    * @param {Object} params - URL parameters
    * @param {boolean} bypassCache - Force bypass cache for this request
+   * @param {Function} onUploadProgress - Upload progress callback for FormData
    * @returns {Promise<Object>} Request result
    */
   const makeZoneweaverAPIRequest = async (
@@ -367,7 +368,8 @@ export const ServerProvider = ({ children }) => {
     method = "GET",
     data = null,
     params = null,
-    bypassCache = false
+    bypassCache = false,
+    onUploadProgress = null
   ) => {
     try {
       const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
@@ -389,6 +391,14 @@ export const ServerProvider = ({ children }) => {
         validateStatus: (status) =>
           (status >= 200 && status < 300) ||
           (status === 304 && !path.includes("/vnc/") && !bypassCache),
+        // Add extended timeout for file uploads (30 minutes)
+        ...(data instanceof FormData && {
+          timeout: 1800000, // 30 minutes for large file uploads
+        }),
+        // Add upload progress tracking for FormData
+        ...(data instanceof FormData && onUploadProgress && {
+          onUploadProgress: onUploadProgress,
+        }),
       };
 
       if (data) {

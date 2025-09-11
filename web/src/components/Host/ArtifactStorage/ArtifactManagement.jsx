@@ -416,7 +416,9 @@ const ArtifactManagement = ({ server }) => {
             newMap.set(taskId, {
               ...current,
               status: taskStatus.status,
-              error_message: taskStatus.error_message
+              error_message: taskStatus.error_message,
+              progress_percent: taskStatus.progress_percent || 0,
+              progress_info: taskStatus.progress_info || {}
             });
           }
           
@@ -705,9 +707,26 @@ const ArtifactManagement = ({ server }) => {
           server={server}
           storagePaths={storagePaths}
           onClose={() => setShowArtifactUploadModal(false)}
-          onSuccess={() => {
+          onSuccess={(results) => {
             setShowArtifactUploadModal(false);
-            loadArtifacts(true);
+            
+            // Start tracking upload tasks for successful uploads
+            results.forEach(result => {
+              if (result.success && result.task_id && result.data) {
+                const storageLocation = storagePaths.find(sp => sp.id === result.data.storage_location?.id);
+                
+                startDownloadTracking(result.task_id, {
+                  taskId: result.task_id,
+                  filename: result.data.filename || result.file,
+                  isUpload: true, // Mark as upload task
+                  storage_location: result.data.storage_location || storageLocation,
+                  created_at: new Date().toISOString()
+                });
+              }
+            });
+
+            // Switch to artifacts tab to show upload progress
+            setActiveTab("artifacts");
           }}
           onError={setError}
         />

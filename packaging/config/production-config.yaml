@@ -372,6 +372,43 @@ limits:
     subsection: "General Limits"
     required: true
     order: 1
+
+  # API Client Timeouts for Large File Operations  
+  api_timeouts:
+    default_request:
+      type: integer
+      value: 60000
+      min: 5000
+      max: 600000
+      description: "Default API request timeout in milliseconds"
+      section: "Performance"
+      subsection: "API Client Timeouts"
+      required: true
+      order: 1
+    
+    file_upload:
+      type: integer
+      value: 1800000
+      min: 300000
+      max: 7200000
+      description: "File upload timeout in milliseconds (30 minutes for large ISOs/images)"
+      section: "Performance"
+      subsection: "API Client Timeouts"
+      required: true
+      order: 2
+
+  # File Upload Server Limits
+  file_uploads:
+    max_file_size_gb:
+      type: integer
+      value: 50
+      min: 1
+      max: 1000
+      description: "Maximum file size in GB for uploads (must coordinate with backend settings)"
+      section: "Performance"
+      subsection: "File Upload Limits"
+      required: true
+      order: 1
   
   # Authentication Rate Limiting (CodeQL Security Fix)
   authentication:
