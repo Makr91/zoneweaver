@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import ArcConfiguration from "./ArcConfiguration";
+import { ArtifactManagement } from "./ArtifactStorage";
 
 const StorageManagement = ({ server }) => {
   const [activeTab, setActiveTab] = useState("arc");
@@ -24,6 +25,14 @@ const StorageManagement = ({ server }) => {
                 <i className="fas fa-memory" />
               </span>
               <span>ZFS ARC</span>
+            </a>
+          </li>
+          <li className={activeTab === "artifacts" ? "is-active" : ""}>
+            <a onClick={() => setActiveTab("artifacts")}>
+              <span className="icon is-small">
+                <i className="fas fa-compact-disc" />
+              </span>
+              <span>ISO & Artifacts</span>
             </a>
           </li>
           <li className="is-disabled">
@@ -67,6 +76,30 @@ const StorageManagement = ({ server }) => {
             </div>
 
             <ArcConfiguration server={server} />
+          </div>
+        )}
+
+        {/* ISO & Artifacts Tab */}
+        {activeTab === "artifacts" && (
+          <div>
+            <div className="mb-4">
+              <h3 className="title is-6">
+                <span className="icon-text">
+                  <span className="icon">
+                    <i className="fas fa-compact-disc" />
+                  </span>
+                  <span>ISO & Artifact Management</span>
+                </span>
+              </h3>
+              <p className="content">
+                Manage ISO files, VM images, and artifact storage locations on{" "}
+                <strong>{server.hostname}</strong>. Configure storage paths,
+                upload files, download from URLs, and organize your virtualization
+                resources.
+              </p>
+            </div>
+
+            <ArtifactManagement server={server} />
           </div>
         )}
 
