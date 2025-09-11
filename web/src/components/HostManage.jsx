@@ -14,6 +14,7 @@ import ProcessManagement from "./Host/ProcessManagement";
 import ServiceManagement from "./Host/ServiceManagement";
 import StorageManagement from "./Host/StorageManagement";
 import TimeNTPManagement from "./Host/TimeNTPManagement";
+import UserGroupManagement from "./Host/UserGroupManagement";
 
 const HostManage = () => {
   const [activeTab, setActiveTab] = useState("services");
@@ -173,6 +174,14 @@ const HostManage = () => {
                   <span>File Manager</span>
                 </a>
               </li>
+              <li className={activeTab === "user-group" ? "is-active" : ""}>
+                <a onClick={() => setActiveTab("user-group")}>
+                  <span className="icon is-small">
+                    <i className="fas fa-users" />
+                  </span>
+                  <span>User & Group Management</span>
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -329,6 +338,23 @@ const HostManage = () => {
                 </div>
 
                 <EnhancedFileManager server={currentServer} />
+              </div>
+            )}
+
+            {/* User & Group Management Tab */}
+            {activeTab === "user-group" && (
+              <div>
+                <div className="mb-4">
+                  <h2 className="title is-5">User & Group Management</h2>
+                  <p className="content">
+                    Manage system users, groups, and roles on{" "}
+                    <strong>{currentServer.hostname}</strong>. Create, modify,
+                    and delete user accounts, manage group memberships, configure
+                    RBAC roles, and set user permissions and authorizations.
+                  </p>
+                </div>
+
+                <UserGroupManagement server={currentServer} />
               </div>
             )}
           </div>
