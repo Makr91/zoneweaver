@@ -2,12 +2,14 @@ import React, { useState } from "react";
 
 const ArtifactTable = ({
   artifacts,
+  activeDownloads,
   pagination,
   loading,
   onDetails,
   onDelete,
   onPaginationChange,
-  onSort
+  onSort,
+  onCancelDownload
 }) => {
   const [selectedArtifacts, setSelectedArtifacts] = useState(new Set());
   const [sortBy, setSortBy] = useState("filename");
@@ -132,6 +134,54 @@ const ArtifactTable = ({
     }
   };
 
+  const getDownloadStatusIcon = (status) => {
+    switch (status) {
+      case 'queued':
+        return <i className="fas fa-clock has-text-info" />;
+      case 'running':
+        return <i className="fas fa-spinner fa-spin has-text-primary" />;
+      case 'completed':
+        return <i className="fas fa-check-circle has-text-success" />;
+      case 'failed':
+        return <i className="fas fa-times-circle has-text-danger" />;
+      default:
+        return <i className="fas fa-question-circle has-text-grey" />;
+    }
+  };
+
+  const getDownloadStatusText = (status) => {
+    switch (status) {
+      case 'queued':
+        return 'Queued';
+      case 'running':
+        return 'Downloading...';
+      case 'completed':
+        return 'Completed';
+      case 'failed':
+        return 'Failed';
+      default:
+        return status;
+    }
+  };
+
+  const getDownloadStatusTag = (status) => {
+    switch (status) {
+      case 'queued':
+        return <span className="tag is-info is-small">Queued</span>;
+      case 'running':
+        return <span className="tag is-primary is-small">Downloading</span>;
+      case 'completed':
+        return <span className="tag is-success is-small">Completed</span>;
+      case 'failed':
+        return <span className="tag is-danger is-small">Failed</span>;
+      default:
+        return <span className="tag is-light is-small">{status}</span>;
+    }
+  };
+
+  // Convert activeDownloads Map to array for rendering
+  const activeDownloadsList = activeDownloads ? Array.from(activeDownloads.values()) : [];
+
   const renderPagination = () => {
     if (!pagination || pagination.total <= pagination.limit) {
       return null;
@@ -169,7 +219,7 @@ const ArtifactTable = ({
     );
   };
 
-  if (loading && artifacts.length === 0) {
+  if (loading && artifacts.length === 0 && activeDownloadsList.length === 0) {
     return (
       <div className="has-text-centered p-4">
         <span className="icon is-large">
@@ -180,7 +230,7 @@ const ArtifactTable = ({
     );
   }
 
-  if (artifacts.length === 0) {
+  if (artifacts.length === 0 && activeDownloadsList.length === 0) {
     return (
       <div className="has-text-centered p-4">
         <span className="icon is-large has-text-grey">
@@ -280,6 +330,102 @@ const ArtifactTable = ({
             </tr>
           </thead>
           <tbody>
+            {/* Active Downloads - Placeholder Rows */}
+            {activeDownloadsList.map((download) => (
+              <tr key={`download-${download.taskId}`} className="has-background-light">
+                <td>
+                  <span className="icon has-text-grey">
+                    <i className="fas fa-clock" />
+                  </span>
+                </td>
+                <td>
+                  <div className="is-flex is-align-items-center">
+                    <span className="icon mr-2">
+                      {getDownloadStatusIcon(download.status)}
+                    </span>
+                    <div>
+                      <div className="has-text-weight-semibold has-text-grey">
+                        {download.filename || "Downloading..."}
+                      </div>
+                      <div className="is-size-7 has-text-grey">
+                        <i className="fas fa-download mr-1" />
+                        {download.url && (
+                          <span title={download.url}>
+                            {download.url.length > 50 ? 
+                              `${download.url.substring(0, 47)}...` : 
+                              download.url
+                            }
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  {getDownloadStatusTag(download.status)}
+                </td>
+                <td>
+                  <span className="has-text-grey">
+                    {download.status === 'running' ? 'Downloading...' : 'Pending'}
+                  </span>
+                </td>
+                <td>
+                  <span className="icon has-text-grey" title="Download in progress">
+                    <i className="fas fa-clock" />
+                  </span>
+                </td>
+                <td>
+                  {download.storage_location && (
+                    <div>
+                      <div className="has-text-weight-semibold is-size-7 has-text-grey">
+                        {download.storage_location.name}
+                      </div>
+                      <div className="is-size-7 has-text-grey">
+                        {download.storage_location.path}
+                      </div>
+                    </div>
+                  )}
+                </td>
+                <td>
+                  <span className="is-size-7 has-text-grey">
+                    {formatDate(download.created_at)}
+                  </span>
+                </td>
+                <td>
+                  <div className="buttons are-small">
+                    {download.status === 'failed' && download.error_message && (
+                      <button
+                        className="button is-danger is-small"
+                        title={`Download failed: ${download.error_message}`}
+                        disabled
+                      >
+                        <span className="icon is-small">
+                          <i className="fas fa-exclamation-circle" />
+                        </span>
+                      </button>
+                    )}
+                    
+                    {(['queued', 'running'].includes(download.status)) && onCancelDownload && (
+                      <button
+                        className="button is-warning is-small"
+                        onClick={() => onCancelDownload(download.taskId)}
+                        title="Cancel download"
+                      >
+                        <span className="icon is-small">
+                          <i className="fas fa-times" />
+                        </span>
+                      </button>
+                    )}
+
+                    <span className="tag is-small has-text-grey">
+                      {getDownloadStatusText(download.status)}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+
+            {/* Regular Artifacts */}
             {artifacts.map((artifact) => (
               <tr key={artifact.id}>
                 <td>

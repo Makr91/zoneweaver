@@ -28,6 +28,10 @@ const ArtifactManagement = ({ server }) => {
     has_more: false
   });
   
+  // Active downloads state
+  const [activeDownloads, setActiveDownloads] = useState(new Map());
+  const [downloadPollingIntervals, setDownloadPollingIntervals] = useState(new Map());
+  
   // Filters state
   const [filters, setFilters] = useState({
     search: "",
@@ -51,6 +55,9 @@ const ArtifactManagement = ({ server }) => {
   const [error, setError] = useState("");
 
   const { makeZoneweaverAPIRequest } = useServers();
+
+  // Convert activeDownloads Map to array for rendering
+  const activeDownloadsList = activeDownloads ? Array.from(activeDownloads.values()) : [];
 
   // Use useCallback to stabilize function references
   const loadArtifacts = useCallback(async (resetOffset = true) => {
@@ -360,6 +367,114 @@ const ArtifactManagement = ({ server }) => {
     }));
   };
 
+  // Task polling function
+  const pollTaskStatus = useCallback(async (taskId) => {
+    if (!server || !makeZoneweaverAPIRequest) {
+      return null;
+    }
+
+    try {
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        `tasks/${taskId}`,
+        "GET"
+      );
+
+      return result.success ? result.data : null;
+    } catch (err) {
+      console.error(`Error polling task ${taskId}:`, err);
+      return null;
+    }
+  }, [server, makeZoneweaverAPIRequest]);
+
+  // Start tracking a download task
+  const startDownloadTracking = useCallback((taskId, downloadInfo) => {
+    // Add to active downloads
+    setActiveDownloads(prev => {
+      const newMap = new Map(prev);
+      newMap.set(taskId, {
+        ...downloadInfo,
+        status: 'queued',
+        startTime: Date.now(),
+        isPending: true // Mark as pending artifact
+      });
+      return newMap;
+    });
+
+    // Start polling for this task
+    const intervalId = setInterval(async () => {
+      const taskStatus = await pollTaskStatus(taskId);
+      
+      if (taskStatus) {
+        setActiveDownloads(prev => {
+          const newMap = new Map(prev);
+          const current = newMap.get(taskId);
+          
+          if (current) {
+            newMap.set(taskId, {
+              ...current,
+              status: taskStatus.status,
+              error_message: taskStatus.error_message
+            });
+          }
+          
+          return newMap;
+        });
+
+        // Handle completion
+        if (taskStatus.status === 'completed') {
+          stopDownloadTracking(taskId);
+          // Refresh artifacts list to show the new artifact
+          loadArtifacts(false);
+        } else if (taskStatus.status === 'failed') {
+          // Keep failed downloads visible for a while, then remove
+          setTimeout(() => {
+            stopDownloadTracking(taskId);
+          }, 10000); // Show failed status for 10 seconds
+        }
+      }
+    }, 2000); // Poll every 2 seconds
+
+    // Store interval ID for cleanup
+    setDownloadPollingIntervals(prev => {
+      const newMap = new Map(prev);
+      newMap.set(taskId, intervalId);
+      return newMap;
+    });
+  }, [pollTaskStatus, loadArtifacts]);
+
+  // Stop tracking a download task
+  const stopDownloadTracking = useCallback((taskId) => {
+    // Clear polling interval
+    setDownloadPollingIntervals(prev => {
+      const newMap = new Map(prev);
+      const intervalId = newMap.get(taskId);
+      if (intervalId) {
+        clearInterval(intervalId);
+        newMap.delete(taskId);
+      }
+      return newMap;
+    });
+
+    // Remove from active downloads
+    setActiveDownloads(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(taskId);
+      return newMap;
+    });
+  }, []);
+
+  // Cleanup intervals on unmount
+  useEffect(() => {
+    return () => {
+      downloadPollingIntervals.forEach(intervalId => {
+        clearInterval(intervalId);
+      });
+    };
+  }, [downloadPollingIntervals]);
+
   const clearError = () => setError("");
 
   if (!server) {
@@ -492,6 +607,43 @@ const ArtifactManagement = ({ server }) => {
               </p>
             </div>
 
+            {/* Active Downloads Notification */}
+            {activeDownloadsList.length > 0 && (
+              <div className="notification is-info mb-4">
+                <div className="level is-mobile">
+                  <div className="level-left">
+                    <div className="level-item">
+                      <span className="icon">
+                        <i className="fas fa-download" />
+                      </span>
+                      <span className="ml-2">
+                        <strong>{activeDownloadsList.length}</strong> download{activeDownloadsList.length !== 1 ? 's' : ''} in progress
+                      </span>
+                    </div>
+                  </div>
+                  <div className="level-right">
+                    <div className="level-item">
+                      <div className="tags">
+                        {activeDownloadsList.map((download) => (
+                          <span 
+                            key={download.taskId}
+                            className={`tag is-small ${
+                              download.status === 'running' ? 'is-primary' :
+                              download.status === 'queued' ? 'is-info' :
+                              download.status === 'failed' ? 'is-danger' :
+                              'is-light'
+                            }`}
+                          >
+                            {download.filename || 'Unknown'}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Filters */}
             <ArtifactFilters
               filters={filters}
@@ -508,6 +660,7 @@ const ArtifactManagement = ({ server }) => {
             <div className="box">
               <ArtifactTable
                 artifacts={artifacts}
+                activeDownloads={activeDownloads}
                 pagination={artifactsPagination}
                 loading={artifactsLoading}
                 onDetails={handleArtifactDetails}
@@ -517,6 +670,7 @@ const ArtifactManagement = ({ server }) => {
                   handleFilterChange("sort_by", sortBy);
                   handleFilterChange("sort_order", sortOrder);
                 }}
+                onCancelDownload={stopDownloadTracking}
               />
             </div>
           </div>
@@ -564,9 +718,24 @@ const ArtifactManagement = ({ server }) => {
           server={server}
           storagePaths={storagePaths}
           onClose={() => setShowArtifactDownloadModal(false)}
-          onSuccess={() => {
+          onSuccess={(result) => {
             setShowArtifactDownloadModal(false);
-            loadArtifacts(true);
+            
+            // Start tracking the download task
+            if (result.task_id) {
+              const storageLocation = storagePaths.find(sp => sp.id === result.storage_location?.id);
+              
+              startDownloadTracking(result.task_id, {
+                taskId: result.task_id,
+                filename: result.filename,
+                url: result.url,
+                storage_location: result.storage_location || storageLocation,
+                created_at: new Date().toISOString()
+              });
+
+              // Switch to artifacts tab to show the download progress
+              setActiveTab("artifacts");
+            }
           }}
           onError={setError}
         />
