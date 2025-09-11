@@ -377,10 +377,11 @@ export const ServerProvider = ({ children }) => {
         url: proxyUrl,
         method,
         headers: {
-          // Only set Content-Type for non-FormData requests - let browser handle FormData
-          ...(!(data instanceof FormData) && {
-            "Content-Type": "application/json",
-          }),
+          // Explicitly handle Content-Type for FormData vs JSON
+          ...(data instanceof FormData 
+            ? { "Content-Type": false } // Tell axios to not set Content-Type - browser will set multipart/form-data
+            : { "Content-Type": "application/json" }
+          ),
           // Add no-cache headers for VNC endpoints or when explicitly requested
           ...((path.includes("/vnc/") || bypassCache) && {
             "Cache-Control": "no-cache, no-store, must-revalidate",
