@@ -38,35 +38,60 @@ const getValue = configItem => {
   return configItem;
 };
 
-// Ensure log directory exists
+// Ensure log directory and subdirectories exist
 const logDir = getValue(loggingConfig.log_directory) || '/var/log/zoneweaver';
-if (!fs.existsSync(logDir)) {
-  try {
+const currentDir = path.join(logDir, 'current');
+const archivesDir = path.join(logDir, 'archives');
+const metaDir = path.join(logDir, '.meta'); // Hidden directory for audit files
+
+// Check if we can create/write to the log directory
+let effectiveLogDir = logDir;
+let effectiveCurrentDir = currentDir;
+let effectiveArchivesDir = archivesDir;
+let effectiveMetaDir = metaDir;
+
+try {
+  // Try to create main directory structure
+  if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
-  } catch {
-    // Fallback to local logs directory if can't create system directory
-    const fallbackDir = path.join(__dirname, '..', 'logs');
-    if (!fs.existsSync(fallbackDir)) {
-      fs.mkdirSync(fallbackDir, { recursive: true });
-    }
-    console.warn(`Could not create log directory ${logDir}, using ${fallbackDir}`);
   }
+  if (!fs.existsSync(currentDir)) {
+    fs.mkdirSync(currentDir, { recursive: true, mode: 0o755 });
+  }
+  if (!fs.existsSync(archivesDir)) {
+    fs.mkdirSync(archivesDir, { recursive: true, mode: 0o755 });
+  }
+  if (!fs.existsSync(metaDir)) {
+    fs.mkdirSync(metaDir, { recursive: true, mode: 0o755 });
+  }
+
+  // Test write permissions
+  const testFile = path.join(logDir, '.write-test');
+  fs.writeFileSync(testFile, 'test');
+  fs.unlinkSync(testFile);
+} catch {
+  // Fallback to local logs directory if can't create system directory
+  const fallbackDir = path.join(__dirname, '..', 'logs');
+  effectiveLogDir = fallbackDir;
+  effectiveCurrentDir = path.join(fallbackDir, 'current');
+  effectiveArchivesDir = path.join(fallbackDir, 'archives');
+  effectiveMetaDir = path.join(fallbackDir, '.meta');
+  
+  if (!fs.existsSync(fallbackDir)) {
+    fs.mkdirSync(fallbackDir, { recursive: true });
+  }
+  if (!fs.existsSync(effectiveCurrentDir)) {
+    fs.mkdirSync(effectiveCurrentDir, { recursive: true });
+  }
+  if (!fs.existsSync(effectiveArchivesDir)) {
+    fs.mkdirSync(effectiveArchivesDir, { recursive: true });
+  }
+  if (!fs.existsSync(effectiveMetaDir)) {
+    fs.mkdirSync(effectiveMetaDir, { recursive: true });
+  }
+  
+  console.warn(`Could not create log directory ${logDir}, using ${fallbackDir}`);
 }
-
-// Check if we can write to the log directory
-const canWriteToLogDir = (() => {
-  try {
-    const testFile = path.join(logDir, '.write-test');
-    fs.writeFileSync(testFile, 'test');
-    fs.unlinkSync(testFile);
-    return true;
-  } catch {
-    return false;
-  }
-})();
-
-// Use fallback directory if can't write to configured directory
-const effectiveLogDir = canWriteToLogDir ? logDir : path.join(__dirname, '..', 'logs');
 
 /**
  * Common log format configuration - optimized for production
@@ -95,7 +120,7 @@ const consoleFormat = winston.format.combine(
 );
 
 /**
- * Create a logger for a specific category with simple file rotation
+ * Create a logger for a specific category with organized directory structure
  * @param {string} category - Log category name
  * @param {string} filename - Log filename (without extension)
  * @returns {winston.Logger} Configured winston logger
@@ -105,33 +130,32 @@ const createCategoryLogger = (category, filename) => {
   const categoryLevel = getValue(categoryConfig) || getValue(loggingConfig.level) || 'info';
   const transports = [];
 
-  // Daily rotate file transport - CLEAN WITH COMPRESSION, NO AUDIT FILES
-  transports.push(
-    new DailyRotateFile({
-      filename: path.join(effectiveLogDir, `${filename}-%DATE%.log`),
-      datePattern: 'YYYY-MM-DD',
-      level: categoryLevel,
-      format: logFormat,
-      maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
-      maxFiles: getValue(loggingConfig.file_rotation?.max_files) || 5,
-      zippedArchive: true, // Compress old files
-      auditFile: null, // Explicitly disable audit JSON files
-    })
-  );
+  // Category-specific daily rotating file transport with organized structure
+  const categoryTransport = new DailyRotateFile({
+    filename: path.join(effectiveCurrentDir, `${filename}-%DATE%.log`),
+    datePattern: 'YYYY-MM-DD',
+    level: categoryLevel,
+    format: logFormat,
+    maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
+    maxFiles: getValue(loggingConfig.file_rotation?.max_files) || '14d',
+    zippedArchive: true, // Compress old files
+    auditFile: path.join(effectiveMetaDir, `${filename}-audit.json`), // Store audit files in .meta/
+    createSymlink: true,
+    symlinkName: path.join('..', `${filename}.log`), // Relative path to create symlink in parent directory
+  });
 
-  // All errors also go to daily rotated error.log
-  transports.push(
-    new DailyRotateFile({
-      filename: path.join(effectiveLogDir, 'error-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      level: 'error',
-      format: logFormat,
-      maxSize: '50m',
-      maxFiles: 7,
-      zippedArchive: true, // Compress old files
-      auditFile: null, // Explicitly disable audit JSON files
-    })
-  );
+  // Move compressed archives to archives/ folder
+  categoryTransport.on('archive', (zipFilename) => {
+    try {
+      const archiveFilename = path.basename(zipFilename);
+      const archivePath = path.join(effectiveArchivesDir, archiveFilename);
+      fs.renameSync(zipFilename, archivePath);
+    } catch (error) {
+      // Ignore errors - file might already be moved
+    }
+  });
+
+  transports.push(categoryTransport);
 
   // Console transport only if enabled and not in production
   const consoleEnabled = getValue(loggingConfig.console_enabled) !== false;
@@ -157,14 +181,85 @@ const createCategoryLogger = (category, filename) => {
 /**
  * Category-specific loggers
  */
-export const authLogger = createCategoryLogger('auth', 'auth');
+export const monitoringLogger = createCategoryLogger('monitoring', 'monitoring');
 export const databaseLogger = createCategoryLogger('database', 'database');
 export const apiRequestLogger = createCategoryLogger('api', 'api-requests');
-export const proxyLogger = createCategoryLogger('proxy', 'proxy');
-export const mailLogger = createCategoryLogger('mail', 'mail');
+export const filesystemLogger = createCategoryLogger('filesystem', 'filesystem');
+export const taskLogger = createCategoryLogger('task', 'tasks');
+export const authLogger = createCategoryLogger('auth', 'auth');
 export const websocketLogger = createCategoryLogger('websocket', 'websocket');
 export const performanceLogger = createCategoryLogger('performance', 'performance');
-export const appLogger = createCategoryLogger('app', 'application');
+
+/**
+ * General application logger with organized structure
+ */
+const appTransport = new DailyRotateFile({
+  filename: path.join(effectiveCurrentDir, 'application-%DATE%.log'),
+  datePattern: 'YYYY-MM-DD',
+  maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
+  maxFiles: getValue(loggingConfig.file_rotation?.max_files) || '14d',
+  zippedArchive: true,
+  format: logFormat,
+  auditFile: path.join(effectiveMetaDir, 'application-audit.json'),
+  createSymlink: true,
+  symlinkName: path.join('..', 'application.log'),
+});
+
+const errorTransport = new DailyRotateFile({
+  filename: path.join(effectiveCurrentDir, 'error-%DATE%.log'),
+  datePattern: 'YYYY-MM-DD',
+  level: 'error',
+  maxSize: '50m',
+  maxFiles: '30d',
+  zippedArchive: true,
+  format: logFormat,
+  auditFile: path.join(effectiveMetaDir, 'error-audit.json'),
+  createSymlink: true,
+  symlinkName: path.join('..', 'error.log'),
+});
+
+// Move compressed archives to archives/ folder
+appTransport.on('archive', (zipFilename) => {
+  try {
+    const archiveFilename = path.basename(zipFilename);
+    const archivePath = path.join(effectiveArchivesDir, archiveFilename);
+    fs.renameSync(zipFilename, archivePath);
+  } catch (error) {
+    // Ignore errors - file might already be moved
+  }
+});
+
+errorTransport.on('archive', (zipFilename) => {
+  try {
+    const archiveFilename = path.basename(zipFilename);
+    const archivePath = path.join(effectiveArchivesDir, archiveFilename);
+    fs.renameSync(zipFilename, archivePath);
+  } catch (error) {
+    // Ignore errors - file might already be moved
+  }
+});
+
+export const appLogger = winston.createLogger({
+  level: getValue(loggingConfig.level) || 'info',
+  format: logFormat,
+  transports: [appTransport, errorTransport],
+  defaultMeta: { category: 'app', service: 'zoneweaver' },
+  exitOnError: false,
+});
+
+// Add console output for development
+const consoleEnabled = getValue(loggingConfig.console_enabled) !== false;
+if (consoleEnabled && process.env.NODE_ENV !== 'production') {
+  appLogger.add(
+    new winston.transports.Console({
+      format: consoleFormat,
+    })
+  );
+}
+
+// Keep additional loggers for backward compatibility
+export const proxyLogger = createCategoryLogger('proxy', 'proxy');
+export const mailLogger = createCategoryLogger('mail', 'mail');
 export const serverLogger = createCategoryLogger('server', 'server');
 export const settingsLogger = createCategoryLogger('settings', 'settings');
 export const securityLogger = createCategoryLogger('security', 'security');
@@ -218,11 +313,11 @@ const safeLog = (logger, level, message, meta = {}) => {
  * Convenience logging functions for each category
  */
 export const log = {
-  auth: {
-    info: (msg, meta) => safeLog(authLogger, 'info', msg, meta),
-    warn: (msg, meta) => safeLog(authLogger, 'warn', msg, meta),
-    error: (msg, meta) => safeLog(authLogger, 'error', msg, meta),
-    debug: (msg, meta) => safeLog(authLogger, 'debug', msg, meta),
+  monitoring: {
+    info: (msg, meta) => safeLog(monitoringLogger, 'info', msg, meta),
+    warn: (msg, meta) => safeLog(monitoringLogger, 'warn', msg, meta),
+    error: (msg, meta) => safeLog(monitoringLogger, 'error', msg, meta),
+    debug: (msg, meta) => safeLog(monitoringLogger, 'debug', msg, meta),
   },
 
   database: {
@@ -237,6 +332,27 @@ export const log = {
     warn: (msg, meta) => safeLog(apiRequestLogger, 'warn', msg, meta),
     error: (msg, meta) => safeLog(apiRequestLogger, 'error', msg, meta),
     debug: (msg, meta) => safeLog(apiRequestLogger, 'debug', msg, meta),
+  },
+
+  filesystem: {
+    info: (msg, meta) => safeLog(filesystemLogger, 'info', msg, meta),
+    warn: (msg, meta) => safeLog(filesystemLogger, 'warn', msg, meta),
+    error: (msg, meta) => safeLog(filesystemLogger, 'error', msg, meta),
+    debug: (msg, meta) => safeLog(filesystemLogger, 'debug', msg, meta),
+  },
+
+  task: {
+    info: (msg, meta) => safeLog(taskLogger, 'info', msg, meta),
+    warn: (msg, meta) => safeLog(taskLogger, 'warn', msg, meta),
+    error: (msg, meta) => safeLog(taskLogger, 'error', msg, meta),
+    debug: (msg, meta) => safeLog(taskLogger, 'debug', msg, meta),
+  },
+
+  auth: {
+    info: (msg, meta) => safeLog(authLogger, 'info', msg, meta),
+    warn: (msg, meta) => safeLog(authLogger, 'warn', msg, meta),
+    error: (msg, meta) => safeLog(authLogger, 'error', msg, meta),
+    debug: (msg, meta) => safeLog(authLogger, 'debug', msg, meta),
   },
 
   proxy: {
