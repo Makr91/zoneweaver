@@ -82,11 +82,13 @@ const upload = multer({
   }
 });
 
-// Apply multer middleware to artifact upload routes
-app.use('/api/zapi/*/artifacts/upload', upload.array('file', 10));
+// Note: Removed multer middleware for artifact uploads
+// Proxy servers should stream data directly without buffering
+// Multer memoryStorage() was causing 762MB+ files to load entirely into RAM
 
-log.app.info('Multer configured for large file uploads', {
-  maxFileSize: `${config.limits?.file_uploads?.max_file_size_gb?.value || 50}GB`,
+log.app.info('File upload handling configured for streaming', {
+  approach: 'Pure streaming (no buffering)',
+  maxFileSize: 'No memory limit (streaming)',
   allowedTypes: ['.iso', '.img', '.vmdk', '.vhd', '.vhdx', '.qcow2', '.ova', '.ovf']
 });
 

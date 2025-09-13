@@ -276,72 +276,56 @@ export default (sequelize, Sequelize) => {
         Authorization: `Bearer ${this.api_key}`,
       };
 
-      // For FormData, let axios set Content-Type automatically (multipart/form-data with boundary)
-      // For regular data, set application/json
-      if (!(options.data instanceof FormData)) {
-        requestHeaders['Content-Type'] = 'application/json';
-      }
+        // For regular data, set application/json (multipart uploads now handled via streaming)
+        if (!requestHeaders['Content-Type'] && !requestHeaders['content-type']) {
+          requestHeaders['Content-Type'] = 'application/json';
+        }
 
-      if (options.headers) {
-        Object.keys(options.headers).forEach(key => {
-          const lowerKey = key.toLowerCase();
-          // Skip problematic headers that would interfere with FormData or authentication
-          if (!['authorization', 'x-api-key'].includes(lowerKey)) {
-            // For FormData uploads, skip Content-Type to let axios handle it
-            if (options.data instanceof FormData && lowerKey === 'content-type') {
-              return;
+        if (options.headers) {
+          Object.keys(options.headers).forEach(key => {
+            const lowerKey = key.toLowerCase();
+            // Skip problematic headers that would interfere with authentication
+            if (!['authorization', 'x-api-key'].includes(lowerKey)) {
+              requestHeaders[key] = options.headers[key];
             }
-            requestHeaders[key] = options.headers[key];
-          }
+          });
+        }
+
+        const finalUrl = `${serverUrl}/${encodedPath}`;
+
+        log.server.debug('Request details', {
+          originalPath: path,
+          encodedPath,
+          finalUrl,
+          headers: Object.keys(requestHeaders),
+          hasApiKey: !!this.api_key,
+          allowInsecure: this.allow_insecure,
+          queryParams: options.params,
+          hasData: !!options.data,
         });
-      }
 
-      const finalUrl = `${serverUrl}/${encodedPath}`;
+        log.server.debug('API Request', { url: finalUrl, timestamp });
 
-      log.server.debug('Request details', {
-        originalPath: path,
-        encodedPath,
-        finalUrl,
-        headers: Object.keys(requestHeaders),
-        hasApiKey: !!this.api_key,
-        allowInsecure: this.allow_insecure,
-        isFormData: options.data instanceof FormData,
-        queryParams: options.params,
-      });
+        const agent = new https.Agent({
+          rejectUnauthorized: !this.allow_insecure,
+        });
 
-      log.server.debug('API Request', { url: finalUrl, timestamp });
+        log.server.debug('Making axios request');
+        const axiosStartTime = Date.now();
 
-      const agent = new https.Agent({
-        rejectUnauthorized: !this.allow_insecure,
-      });
-
-      log.server.debug('Making axios request');
-      const axiosStartTime = Date.now();
-
-      // Build axios config
-      const axiosConfig = {
-        url: finalUrl,
-        method: options.method || 'GET',
-        headers: requestHeaders,
-        data: options.data,
-        params: options.params,
-        timeout: requestTimeout,
-        httpsAgent: agent,
-        validateStatus: status => status >= 200 && status < 400,
-      };
-
-      // Add upload progress tracking for FormData
-      if (options.data instanceof FormData && options.onUploadProgress) {
-        axiosConfig.onUploadProgress = options.onUploadProgress;
-        
-        log.server.info('Upload progress tracking enabled', {
-          path,
-          timeout: requestTimeout,
+        // Build axios config for JSON/regular requests (multipart handled via streaming)
+        const axiosConfig = {
+          url: finalUrl,
           method: options.method || 'GET',
-        });
-      }
+          headers: requestHeaders,
+          data: options.data,
+          params: options.params,
+          timeout: requestTimeout,
+          httpsAgent: agent,
+          validateStatus: status => status >= 200 && status < 400,
+        };
 
-      const response = await axios(axiosConfig);
+        const response = await axios(axiosConfig);
 
       const axiosEndTime = Date.now();
       const totalDuration = axiosEndTime - startTime;

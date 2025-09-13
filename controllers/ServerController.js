@@ -769,7 +769,89 @@ class ServerController {
       // Note: Multipart uploads now handled through standard ServerModel.makeRequest() flow
       // This ensures consistent timeout configuration, progress reporting, and error handling
 
-      // Handle request data - support both JSON and FormData
+      const startTime = Date.now();
+
+      // For large file uploads or multipart data, use pure streaming (proxy pattern)
+      if (req.headers['content-type']?.includes('multipart/form-data')) {
+        log.proxy.info('STREAM: Using pure streaming for multipart upload', {
+          path,
+          contentType: req.headers['content-type'],
+          contentLength: req.headers['content-length'],
+          method: req.method,
+        });
+
+        // Import axios for streaming request
+        const axios = (await import('axios')).default;
+        const serverUrl = `${protocol}://${hostname}:${port}`;
+        const targetUrl = `${serverUrl}/${path}`;
+
+        // Get server for API key
+        const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), protocol);
+        if (!server || !server.api_key) {
+          return res.status(500).json({
+            success: false,
+            message: 'Server configuration not found',
+          });
+        }
+
+        try {
+          // Prepare headers for backend request
+          const streamHeaders = {
+            ...cleanHeaders,
+            'Authorization': `Bearer ${server.api_key}`,
+            'User-Agent': 'Zoneweaver-Proxy/1.0',
+          };
+
+          // Stream the request directly to the backend
+          const response = await axios({
+            method: req.method,
+            url: targetUrl,
+            data: req, // Stream the incoming request directly
+            headers: streamHeaders,
+            params: req.query,
+            timeout: 1800000, // 30 minutes for large uploads
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity,
+            responseType: 'stream',
+          });
+
+          // Set response headers from backend
+          Object.keys(response.headers).forEach(key => {
+            if (!['connection', 'transfer-encoding'].includes(key.toLowerCase())) {
+              res.set(key, response.headers[key]);
+            }
+          });
+
+          res.status(response.status);
+          
+          // Stream the response back to client
+          response.data.pipe(res);
+
+          const duration = Date.now() - startTime;
+          log.proxy.info('STREAM: Upload completed successfully', {
+            duration: `${duration}ms`,
+            status: response.status,
+          });
+
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          log.proxy.error('STREAM: Upload failed', {
+            error: error.message,
+            duration: `${duration}ms`,
+            isTimeout: error.code === 'ECONNABORTED',
+          });
+
+          const status = error.response?.status || 500;
+          res.status(status).json({
+            success: false,
+            message: error.response?.data?.message || error.message || 'Upload failed',
+          });
+        }
+
+        return; // Exit early for streaming uploads
+      }
+
+      // For non-multipart requests, use standard ServerModel flow
       let requestData = undefined;
       let requestOptions = {
         method: req.method,
@@ -777,53 +859,12 @@ class ServerController {
         headers: cleanHeaders,
       };
 
-      if (req.method !== 'GET') {
-        // For multipart uploads, Express should have parsed FormData into req.body and req.files
-        // We need to reconstruct FormData for the backend call
-        if (req.headers['content-type']?.includes('multipart/form-data')) {
-          // Create new FormData for backend upload
-          const FormData = (await import('form-data')).default;
-          const formData = new FormData();
-
-          // Add form fields from req.body
-          if (req.body) {
-            for (const [key, value] of Object.entries(req.body)) {
-              formData.append(key, value);
-            }
-          }
-
-          // Add files from req.files
-          if (req.files) {
-            for (const file of req.files) {
-              formData.append(file.fieldname, file.buffer, {
-                filename: file.originalname,
-                contentType: file.mimetype,
-              });
-            }
-          }
-
-          requestData = formData;
-
-          log.proxy.info('UPLOAD: FormData reconstructed for backend', {
-            bodyKeys: req.body ? Object.keys(req.body) : [],
-            fileCount: req.files ? req.files.length : 0,
-            files: req.files ? req.files.map(f => ({ name: f.originalname, size: f.size })) : [],
-          });
-
-        } else if (req.body && Object.keys(req.body).length > 0) {
-          // Regular JSON data
-          requestData = req.body;
-        }
-      }
-
-      // Add request data to options
-      if (requestData) {
+      if (req.method !== 'GET' && req.body && Object.keys(req.body).length > 0) {
+        requestData = req.body;
         requestOptions.data = requestData;
       }
 
-      const startTime = Date.now();
-
-      // Make request through ServerModel
+      // Make request through ServerModel for JSON/regular requests
       const result = await ServerModel.makeRequest(hostname, parseInt(port), protocol, path, requestOptions);
 
       const duration = Date.now() - startTime;
