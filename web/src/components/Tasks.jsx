@@ -27,12 +27,45 @@ const TaskRow = memo(({ task }) => {
     return status;
   };
 
+  const renderProgress = (task) => {
+    const { status, progress_percent } = task;
+    
+    // Don't show progress for completed, prepared, or pending states
+    if (["completed", "prepared", "pending"].includes(status)) {
+      return "-";
+    }
+    
+    // For running tasks, show progress percentage if available, otherwise just show "running"
+    if (status === "running") {
+      if (progress_percent !== null && progress_percent !== undefined) {
+        return (
+          <div className="progress-container">
+            <progress className="progress is-small is-primary" value={progress_percent} max="100">
+              {progress_percent}%
+            </progress>
+            <span className="is-size-7">{progress_percent}%</span>
+          </div>
+        );
+      } else {
+        return "running";
+      }
+    }
+    
+    // For other statuses, show progress percentage if available
+    if (progress_percent !== null && progress_percent !== undefined) {
+      return `${progress_percent}%`;
+    }
+    
+    return "-";
+  };
+
   return (
     <tr key={task.id} className={getStatusClass(task.status)}>
       <td>{task.id}</td>
       <td>{task.operation}</td>
       <td>{task.zone_name}</td>
       <td>{renderStatus(task.status)}</td>
+      <td>{renderProgress(task)}</td>
       <td>{new Date(task.created_at).toLocaleString()}</td>
     </tr>
   );
@@ -103,6 +136,7 @@ const Tasks = () => {
               <th>Operation</th>
               <th>Zone</th>
               <th>Status</th>
+              <th>Progress</th>
               <th>Created At</th>
             </tr>
           </thead>

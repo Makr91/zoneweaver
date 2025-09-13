@@ -118,16 +118,16 @@ const ArtifactManagement = ({ server }) => {
     if (activeTab === "storage-paths") {
       loadStoragePaths();
     } else if (activeTab === "artifacts") {
-      loadArtifacts();
+      loadArtifacts(true); // Reset to first page when switching tabs
     }
-  }, [server, activeTab, loadArtifacts]);
+  }, [server, activeTab]); // Remove loadArtifacts from dependencies
 
-  // Load artifacts when filters change (but only individual filter values to prevent infinite loop)
+  // Load artifacts when filters change
   useEffect(() => {
     if (activeTab === "artifacts") {
-      loadArtifacts();
+      loadArtifacts(true); // Reset to first page when filters change
     }
-  }, [activeTab, loadArtifacts, filters.search, filters.type, filters.storage_location, filters.sort_by, filters.sort_order]);
+  }, [filters.search, filters.type, filters.storage_location, filters.sort_by, filters.sort_order]); // Remove activeTab and loadArtifacts from dependencies
 
   const loadStoragePaths = async () => {
     if (!server || !makeZoneweaverAPIRequest) {
