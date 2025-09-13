@@ -39,16 +39,15 @@ const TaskRow = memo(({ task }) => {
     if (status === "running") {
       if (progress_percent !== null && progress_percent !== undefined) {
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="level mb-0">
             <progress 
-              className="progress is-small is-primary" 
+              className="level-item progress is-small is-primary mb-0" 
               value={progress_percent} 
               max="100"
-              style={{ flex: 1, minWidth: '80px' }}
             >
               {progress_percent}%
             </progress>
-            <span className="is-size-7" style={{ whiteSpace: 'nowrap' }}>
+            <span className="level-item is-size-7">
               {progress_percent}%
             </span>
           </div>
