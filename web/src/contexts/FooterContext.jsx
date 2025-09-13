@@ -155,7 +155,7 @@ export const FooterProvider = ({ children }) => {
       const currentTasks = tasksRef.current;
       const params = { operation_ne: "discover", limit: 50 };
       if (currentTasks.length > 0) {
-        params.since = new Date(currentTasks[0].created_at).toISOString();
+        params.since = new Date(currentTasks[0].updatedAt).toISOString();
       }
 
       const result = await makeZoneweaverAPIRequest(
