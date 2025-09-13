@@ -131,7 +131,7 @@ const Tasks = () => {
     <div
       onScroll={handleScroll}
       ref={tableContainerRef}
-      className="has-height-100 has-overflow-y-auto"
+      className="has-overflow-y-scroll"
     >
       {loadingTasks && <p>Loading tasks...</p>}
       {tasksError && <p className="has-text-danger">{tasksError}</p>}
