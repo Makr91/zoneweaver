@@ -59,19 +59,38 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
   const handleDownloadFile = async () => {
     try {
-      // Create a link to download the artifact
-      const downloadUrl = `${server.protocol}://${server.hostname}:${server.port}/artifacts/${artifact.id}/download`;
-      
-      // Open download in new window/tab
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = artifact.filename;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Use ZAPI proxy to download the file
+      const result = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        `artifacts/${artifact.id}/download`,
+        "GET",
+        null,
+        null,
+        true // This tells makeZoneweaverAPIRequest to return blob data
+      );
+
+      if (result.success) {
+        // Create download link from blob
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = artifact.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Download failed:', result.message);
+        alert(`Download failed: ${result.message}`);
+      }
     } catch (err) {
       console.error('Error downloading file:', err);
+      alert(`Error downloading file: ${err.message}`);
     }
   };
 
@@ -200,33 +219,17 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Calculated Checksum</label>
+              <label className="label">Checksum</label>
               <div className="control">
                 <input
                   className="input is-family-monospace is-size-7"
                   type="text"
-                  value={artifactData.calculated_checksum || 'Not calculated'}
+                  value={artifactData.checksum || 'Not calculated'}
                   readOnly
                 />
               </div>
             </div>
           </div>
-          
-          {artifactData.user_provided_checksum && (
-            <div className="column">
-              <div className="field">
-                <label className="label">Expected Checksum</label>
-                <div className="control">
-                  <input
-                    className="input is-family-monospace is-size-7"
-                    type="text"
-                    value={artifactData.user_provided_checksum}
-                    readOnly
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="columns">

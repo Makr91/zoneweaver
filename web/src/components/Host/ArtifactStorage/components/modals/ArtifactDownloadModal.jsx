@@ -8,7 +8,7 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
     url: "",
     storage_path_id: "",
     filename: "",
-    expected_checksum: "",
+    checksum: "",
     checksum_algorithm: "sha256",
     overwrite_existing: false
   });
@@ -46,7 +46,7 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
       newErrors.storage_path_id = "Storage location is required";
     }
 
-    if (formData.expected_checksum.trim() && !formData.checksum_algorithm) {
+    if (formData.checksum.trim() && !formData.checksum_algorithm) {
       newErrors.checksum_algorithm = "Checksum algorithm is required when checksum is provided";
     }
 
@@ -113,8 +113,8 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
         requestBody.filename = formData.filename.trim();
       }
       
-      if (formData.expected_checksum.trim()) {
-        requestBody.expected_checksum = formData.expected_checksum.trim();
+      if (formData.checksum.trim()) {
+        requestBody.checksum = formData.checksum.trim();
         requestBody.checksum_algorithm = formData.checksum_algorithm;
       }
 
@@ -239,8 +239,8 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
               className="input"
               type="text"
               placeholder="Expected checksum for verification"
-              value={formData.expected_checksum}
-              onChange={(e) => handleInputChange("expected_checksum", e.target.value)}
+              value={formData.checksum}
+              onChange={(e) => handleInputChange("checksum", e.target.value)}
               disabled={loading}
             />
           </div>
@@ -249,7 +249,7 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
               <select
                 value={formData.checksum_algorithm}
                 onChange={(e) => handleInputChange("checksum_algorithm", e.target.value)}
-                disabled={loading || !formData.expected_checksum.trim()}
+                disabled={loading || !formData.checksum.trim()}
               >
                 <option value="md5">MD5</option>
                 <option value="sha1">SHA1</option>

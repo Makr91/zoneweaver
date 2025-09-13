@@ -6,7 +6,7 @@ import FormModal from "../../../../common/FormModal";
 const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError }) => {
   const [formData, setFormData] = useState({
     storage_path_id: "",
-    expected_checksum: "",
+    checksum: "",
     checksum_algorithm: "sha256"
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -41,7 +41,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
       newErrors.storage_path_id = "Storage location is required";
     }
 
-    if (formData.expected_checksum.trim() && !formData.checksum_algorithm) {
+    if (formData.checksum.trim() && !formData.checksum_algorithm) {
       newErrors.checksum_algorithm = "Checksum algorithm is required when checksum is provided";
     }
 
@@ -131,10 +131,14 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
         filename: file.name,
         size: file.size,
         storage_path_id: formData.storage_path_id,
-        expected_checksum: formData.expected_checksum.trim() || null,
-        checksum_algorithm: formData.checksum_algorithm,
         overwrite_existing: false
       };
+
+      // Only add checksum fields if user actually provides a checksum
+      if (formData.checksum.trim()) {
+        prepareData.checksum = formData.checksum.trim();
+        prepareData.checksum_algorithm = formData.checksum_algorithm;
+      }
 
       const prepareResult = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -435,8 +439,8 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
               className="input"
               type="text"
               placeholder="Expected checksum for verification"
-              value={formData.expected_checksum}
-              onChange={(e) => handleInputChange("expected_checksum", e.target.value)}
+              value={formData.checksum}
+              onChange={(e) => handleInputChange("checksum", e.target.value)}
               disabled={loading}
             />
           </div>
@@ -445,7 +449,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
               <select
                 value={formData.checksum_algorithm}
                 onChange={(e) => handleInputChange("checksum_algorithm", e.target.value)}
-                disabled={loading || !formData.expected_checksum.trim()}
+                disabled={loading || !formData.checksum.trim()}
               >
                 <option value="md5">MD5</option>
                 <option value="sha1">SHA1</option>
