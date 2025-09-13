@@ -125,21 +125,41 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
   };
 
   const uploadFile = async (file, onProgress) => {
-    const formDataUpload = new FormData();
-    formDataUpload.append('file', file);
-    formDataUpload.append('storage_path_id', formData.storage_path_id);
-    
-    if (formData.expected_checksum.trim()) {
-      formDataUpload.append('expected_checksum', formData.expected_checksum.trim());
-      formDataUpload.append('checksum_algorithm', formData.checksum_algorithm);
-    }
-
     try {
-      const result = await makeZoneweaverAPIRequest(
+      // Step 1: Prepare upload with JSON metadata
+      const prepareData = {
+        filename: file.name,
+        size: file.size,
+        storage_path_id: formData.storage_path_id,
+        expected_checksum: formData.expected_checksum.trim() || null,
+        checksum_algorithm: formData.checksum_algorithm,
+        overwrite_existing: false
+      };
+
+      const prepareResult = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        "artifacts/upload",
+        "artifacts/upload/prepare",
+        "POST",
+        prepareData
+      );
+
+      if (!prepareResult.success || !prepareResult.data?.task_id) {
+        throw new Error(`Prepare upload failed: ${prepareResult.message || 'No task ID received'}`);
+      }
+
+      const taskId = prepareResult.data.task_id;
+
+      // Step 2: Upload file using task ID
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const uploadResult = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        `artifacts/upload/${taskId}`,
         "POST",
         formDataUpload,
         null,
@@ -147,7 +167,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
         onProgress
       );
 
-      return result;
+      return uploadResult;
     } catch (err) {
       throw new Error(`Upload failed: ${err.message}`);
     }
