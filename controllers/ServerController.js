@@ -780,6 +780,83 @@ class ServerController {
       const startTime = Date.now();
 
 
+      // Special handling for artifact downloads (binary streaming)
+      const isArtifactDownload = path.includes('artifacts/') && path.endsWith('/download') && req.method === 'GET';
+      
+      if (isArtifactDownload) {
+        log.proxy.info('STREAM: Using pure streaming for artifact download', {
+          path,
+          method: req.method,
+          artifactId: path.split('/')[1], // Extract artifact ID
+        });
+
+        const serverUrl = `${protocol}://${hostname}:${port}`;
+        const targetUrl = `${serverUrl}/${path}`;
+
+        // Get server for API key
+        const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), protocol);
+        if (!server || !server.api_key) {
+          return res.status(500).json({
+            success: false,
+            message: 'Server configuration not found',
+          });
+        }
+
+        try {
+          // Prepare headers for backend request
+          const streamHeaders = {
+            ...cleanHeaders,
+            'Authorization': `Bearer ${server.api_key}`,
+            'User-Agent': 'Zoneweaver-Proxy/1.0',
+          };
+
+          // Stream the download directly from backend
+          const response = await axios({
+            method: req.method,
+            url: targetUrl,
+            headers: streamHeaders,
+            params: req.query,
+            responseType: 'stream', // Critical: Handle as binary stream
+            timeout: 300000, // 5 minutes for large downloads
+            maxContentLength: Infinity,
+          });
+
+          // Set response headers from backend (for download handling)
+          Object.keys(response.headers).forEach(key => {
+            if (!['connection', 'transfer-encoding'].includes(key.toLowerCase())) {
+              res.set(key, response.headers[key]);
+            }
+          });
+
+          res.status(response.status);
+          
+          // Stream the response back to client
+          response.data.pipe(res);
+
+          const duration = Date.now() - startTime;
+          log.proxy.info('STREAM: Artifact download completed successfully', {
+            duration: `${duration}ms`,
+            status: response.status,
+          });
+
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          log.proxy.error('STREAM: Artifact download failed', {
+            error: error.message,
+            duration: `${duration}ms`,
+            isTimeout: error.code === 'ECONNABORTED',
+          });
+
+          const status = error.response?.status || 500;
+          res.status(status).json({
+            success: false,
+            message: error.response?.data?.message || error.message || 'Download failed',
+          });
+        }
+
+        return; // Exit early for streaming downloads
+      }
+
       // For other multipart data, use pure streaming (proxy pattern)
       if (req.headers['content-type']?.includes('multipart/form-data')) {
         log.proxy.info('STREAM: Using pure streaming for multipart upload', {
