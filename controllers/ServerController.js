@@ -1,5 +1,10 @@
+import axios from 'axios';
+import Busboy from 'busboy';
+import { PassThrough } from 'stream';
+import FormData from 'form-data';
 import db from '../models/index.js';
 import { log } from '../utils/Logger.js';
+import { loadConfig } from '../utils/config.js';
 
 // Access Sequelize models
 const { server: ServerModel } = db;
@@ -771,7 +776,12 @@ class ServerController {
 
       const startTime = Date.now();
 
-      // For large file uploads or multipart data, use pure streaming (proxy pattern)
+      // Special handler for artifact uploads (two-step process)
+      if (path === 'artifacts/upload' && req.method === 'POST' && req.headers['content-type']?.includes('multipart/form-data')) {
+        return ServerController.handleArtifactUpload(req, res, hostname, parseInt(port || 5001), protocol, cleanHeaders, startTime);
+      }
+
+      // For other multipart data, use pure streaming (proxy pattern)
       if (req.headers['content-type']?.includes('multipart/form-data')) {
         log.proxy.info('STREAM: Using pure streaming for multipart upload', {
           path,
@@ -780,8 +790,6 @@ class ServerController {
           method: req.method,
         });
 
-        // Import axios for streaming request
-        const axios = (await import('axios')).default;
         const serverUrl = `${protocol}://${hostname}:${port}`;
         const targetUrl = `${serverUrl}/${path}`;
 
@@ -1110,8 +1118,6 @@ class ServerController {
         port: server.port,
       });
 
-      // Import axios
-      const axios = (await import('axios')).default;
 
       // Check if this is a WebSocket upgrade request
       if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
@@ -2415,6 +2421,197 @@ class ServerController {
       res.status(500).json({
         success: false,
         message: 'Failed to stop zlogin session',
+      });
+    }
+  }
+
+  /**
+   * Handle two-step artifact upload process
+   * Step 1: Parse multipart data and prepare upload
+   * Step 2: Stream file to upload endpoint
+   */
+  static async handleArtifactUpload(req, res, hostname, port, protocol, cleanHeaders, startTime) {
+    try {
+      log.proxy.info('ARTIFACT UPLOAD: Starting two-step upload process', {
+        contentLength: req.headers['content-length'],
+        contentType: req.headers['content-type'],
+      });
+
+      // Get server for API key
+      const server = await ServerController.getCachedServer(hostname, port, protocol);
+      if (!server || !server.api_key) {
+        return res.status(500).json({
+          success: false,
+          message: 'Server configuration not found',
+        });
+      }
+
+      // Load configuration for limits and timeouts
+      const config = loadConfig();
+      const maxFileSizeGB = config.limits?.file_uploads?.max_file_size_gb?.value || 50;
+      const prepareTimeoutMs = config.limits?.api_timeouts?.prepare_request?.value || 30000;
+      const uploadTimeoutMs = config.limits?.api_timeouts?.file_upload?.value || 1800000;
+
+      // Parse multipart data
+      const metadata = {};
+      let fileStream = null;
+      let filename = '';
+
+      const busboy = Busboy({ 
+        headers: req.headers,
+        limits: {
+          fileSize: maxFileSizeGB * 1024 * 1024 * 1024, // Convert GB to bytes
+        }
+      });
+
+      const parsePromise = new Promise((resolve, reject) => {
+        // Handle form fields (metadata)
+        busboy.on('field', (fieldname, value) => {
+          metadata[fieldname] = value;
+          log.proxy.debug('ARTIFACT UPLOAD: Field received', { fieldname, value: fieldname.includes('checksum') ? '[REDACTED]' : value });
+        });
+
+        // Handle file field
+        busboy.on('file', (fieldname, file, info) => {
+          filename = info.filename;
+          log.proxy.info('ARTIFACT UPLOAD: File field received', { 
+            fieldname, 
+            filename: info.filename, 
+            encoding: info.encoding, 
+            mimeType: info.mimeType 
+          });
+
+          // Create a PassThrough stream to capture file data
+          fileStream = new PassThrough();
+          file.pipe(fileStream);
+        });
+
+        // Handle completion
+        busboy.on('finish', () => {
+          log.proxy.debug('ARTIFACT UPLOAD: Multipart parsing completed', {
+            filename,
+            metadataKeys: Object.keys(metadata),
+          });
+          resolve();
+        });
+
+        // Handle errors
+        busboy.on('error', (error) => {
+          log.proxy.error('ARTIFACT UPLOAD: Multipart parsing failed', { error: error.message });
+          reject(error);
+        });
+      });
+
+      // Start parsing
+      req.pipe(busboy);
+      await parsePromise;
+
+      if (!fileStream) {
+        return res.status(400).json({
+          success: false,
+          message: 'No file found in upload',
+        });
+      }
+
+      log.proxy.info('ARTIFACT UPLOAD: Step 1 - Preparing upload', {
+        filename,
+        size: req.headers['content-length'],
+        storage_path_id: metadata.storage_path_id,
+      });
+
+      // Step 1: Prepare upload
+      const preparePayload = {
+        filename: filename,
+        size: parseInt(req.headers['content-length'], 10),
+        storage_path_id: metadata.storage_path_id,
+        expected_checksum: metadata.expected_checksum || null,
+        checksum_algorithm: metadata.checksum_algorithm || 'sha256',
+        overwrite_existing: metadata.overwrite_existing === 'true' || false,
+      };
+
+      const prepareResponse = await axios.post(
+        `${protocol}://${hostname}:${port}/artifacts/upload/prepare`,
+        preparePayload,
+        {
+          headers: {
+            'Authorization': `Bearer ${server.api_key}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Zoneweaver-Proxy/1.0',
+          },
+          timeout: 30000, // 30 seconds for prepare step
+        }
+      );
+
+      const taskId = prepareResponse.data.task_id;
+      log.proxy.info('ARTIFACT UPLOAD: Step 1 completed - Upload prepared', {
+        task_id: taskId,
+        upload_url: prepareResponse.data.upload_url,
+      });
+
+      // Step 2: Upload file
+      log.proxy.info('ARTIFACT UPLOAD: Step 2 - Streaming file to upload endpoint', {
+        task_id: taskId,
+        targetUrl: `${protocol}://${hostname}:${port}/artifacts/upload/${taskId}`,
+      });
+
+      // Create FormData with just the file
+      const formData = new FormData();
+      formData.append('file', fileStream, {
+        filename: filename,
+        contentType: 'application/octet-stream', // Let backend determine actual type
+      });
+
+      const uploadResponse = await axios.post(
+        `${protocol}://${hostname}:${port}/artifacts/upload/${taskId}`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${server.api_key}`,
+            'User-Agent': 'Zoneweaver-Proxy/1.0',
+            ...formData.getHeaders(), // Get proper multipart headers
+          },
+          timeout: 1800000, // 30 minutes for file upload
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        }
+      );
+
+      const duration = Date.now() - startTime;
+      log.proxy.info('ARTIFACT UPLOAD: Two-step upload completed successfully', {
+        task_id: taskId,
+        filename,
+        duration: `${duration}ms`,
+        status: uploadResponse.status,
+      });
+
+      // Return the upload response (Step 2) to frontend
+      res.status(uploadResponse.status).json(uploadResponse.data);
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      log.proxy.error('ARTIFACT UPLOAD: Two-step upload failed', {
+        error: error.message,
+        duration: `${duration}ms`,
+        step: error.config?.url?.includes('/prepare') ? 'prepare' : 'upload',
+        isTimeout: error.code === 'ECONNABORTED',
+      });
+
+      // Determine appropriate status code
+      let status = 500;
+      let message = 'Artifact upload failed';
+
+      if (error.response) {
+        status = error.response.status;
+        message = error.response.data?.message || error.response.statusText || message;
+      } else if (error.code === 'ECONNABORTED') {
+        status = 408;
+        message = 'Upload timeout - file may be too large or connection too slow';
+      }
+
+      res.status(status).json({
+        success: false,
+        message,
+        error: error.message,
       });
     }
   }
