@@ -111,7 +111,7 @@ const HostManage = () => {
                   <span className="icon is-small">
                     <i className="fas fa-network-wired" />
                   </span>
-                  <span>Network & Hostname</span>
+                  <span>Network</span>
                 </a>
               </li>
               <li className={activeTab === "packages" ? "is-active" : ""}>
@@ -137,7 +137,7 @@ const HostManage = () => {
                   <span className="icon is-small">
                     <i className="fas fa-database" />
                   </span>
-                  <span>Storage Management</span>
+                  <span>Storage</span>
                 </a>
               </li>
               <li className={activeTab === "time-ntp" ? "is-active" : ""}>
@@ -145,7 +145,7 @@ const HostManage = () => {
                   <span className="icon is-small">
                     <i className="fas fa-clock" />
                   </span>
-                  <span>Time & NTP</span>
+                  <span>Time</span>
                 </a>
               </li>
               <li className={activeTab === "processes" ? "is-active" : ""}>
@@ -179,7 +179,7 @@ const HostManage = () => {
                   <span className="icon is-small">
                     <i className="fas fa-users" />
                   </span>
-                  <span>User & Group Management</span>
+                  <span>User and Groups</span>
                 </a>
               </li>
             </ul>
@@ -207,7 +207,7 @@ const HostManage = () => {
             {activeTab === "network" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Network & Hostname Management</h2>
+                  <h2 className="title is-5">Network</h2>
                   <p className="content">
                     Manage network configuration and hostname settings on{" "}
                     <strong>{currentServer.hostname}</strong>. Configure VNICs,
@@ -257,7 +257,7 @@ const HostManage = () => {
             {activeTab === "storage" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Storage Management</h2>
+                  <h2 className="title is-5">Storage</h2>
                   <p className="content">
                     Manage ZFS storage configuration on{" "}
                     <strong>{currentServer.hostname}</strong>. Configure ZFS ARC
@@ -273,9 +273,7 @@ const HostManage = () => {
             {activeTab === "time-ntp" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">
-                    Time Synchronization & NTP Management
-                  </h2>
+                  <h2 className="title is-5">Time</h2>
                   <p className="content">
                     Manage time synchronization services, NTP configuration, and
                     timezone settings on{" "}
@@ -345,7 +343,7 @@ const HostManage = () => {
             {activeTab === "user-group" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">User & Group Management</h2>
+                  <h2 className="title is-5">User and Groups</h2>
                   <p className="content">
                     Manage system users, groups, and roles on{" "}
                     <strong>{currentServer.hostname}</strong>. Create, modify,
