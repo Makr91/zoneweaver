@@ -766,150 +766,65 @@ class ServerController {
         }
       }
 
-      // Special handling for multipart uploads (raw stream forwarding)
-      const isMultipart = req.headers['content-type']?.includes('multipart/form-data');
+      // Note: Multipart uploads now handled through standard ServerModel.makeRequest() flow
+      // This ensures consistent timeout configuration, progress reporting, and error handling
 
-      if (isMultipart && isFileUpload) {
-        log.proxy.info('UPLOAD: Forwarding multipart stream directly to backend');
+      // Handle request data - support both JSON and FormData
+      let requestData = undefined;
+      let requestOptions = {
+        method: req.method,
+        params: req.query,
+        headers: cleanHeaders,
+      };
 
-        const startTime = Date.now();
+      if (req.method !== 'GET') {
+        // For multipart uploads, Express should have parsed FormData into req.body and req.files
+        // We need to reconstruct FormData for the backend call
+        if (req.headers['content-type']?.includes('multipart/form-data')) {
+          // Create new FormData for backend upload
+          const FormData = (await import('form-data')).default;
+          const formData = new FormData();
 
-        try {
-          const targetUrl = `${protocol}://${hostname}:${port}/${path}`;
-
-          // Get server for API key
-          const server = await ServerController.getCachedServer(hostname, parseInt(port), protocol);
-          if (!server) {
-            throw new Error('Server not found for upload');
+          // Add form fields from req.body
+          if (req.body) {
+            for (const [key, value] of Object.entries(req.body)) {
+              formData.append(key, value);
+            }
           }
 
-          log.proxy.info('UPLOAD: Streaming to backend', {
-            targetUrl,
-            contentLength: req.headers['content-length'],
-            contentType: req.headers['content-type'],
-          });
-
-          // Use proper stream forwarding instead of sending Express request object
-          const https = (await import('https')).default;
-          const { URL } = await import('url');
-
-          const response = await new Promise((resolve, reject) => {
-            const targetURL = new URL(targetUrl);
-
-            const options = {
-              hostname: targetURL.hostname,
-              port: targetURL.port,
-              path: targetURL.pathname,
-              method: 'POST',
-              headers: {
-                'Content-Type': req.headers['content-type'],
-                'Content-Length': req.headers['content-length'],
-                Authorization: `Bearer ${server.api_key}`,
-                Accept: '*/*',
-                'User-Agent': 'Zoneweaver-Proxy/1.0',
-              },
-              timeout: 300000,
-            };
-
-            log.proxy.debug('UPLOAD: Creating HTTP request with proper headers', {
-              hostname: options.hostname,
-              port: options.port,
-              path: options.path,
-              headers: Object.keys(options.headers),
-              hasAuth: !!options.headers.Authorization,
-            });
-
-            const proxyReq = https.request(options, proxyRes => {
-              log.proxy.debug('UPLOAD: Backend response received', {
-                status: proxyRes.statusCode,
-                headers: Object.keys(proxyRes.headers),
+          // Add files from req.files
+          if (req.files) {
+            for (const file of req.files) {
+              formData.append(file.fieldname, file.buffer, {
+                filename: file.originalname,
+                contentType: file.mimetype,
               });
+            }
+          }
 
-              let responseData = '';
-              proxyRes.on('data', chunk => {
-                responseData += chunk;
-              });
+          requestData = formData;
 
-              proxyRes.on('end', () => {
-                try {
-                  const parsedData = JSON.parse(responseData);
-                  resolve({
-                    status: proxyRes.statusCode,
-                    data: parsedData,
-                  });
-                } catch {
-                  resolve({
-                    status: proxyRes.statusCode,
-                    data: responseData,
-                  });
-                }
-              });
-            });
-
-            proxyReq.on('error', error => {
-              log.proxy.error('UPLOAD: HTTP request error', {
-                error: error.message,
-                code: error.code,
-              });
-              reject(error);
-            });
-
-            proxyReq.on('timeout', () => {
-              log.proxy.error('UPLOAD: Request timeout');
-              proxyReq.destroy();
-              reject(new Error('Upload timeout'));
-            });
-
-            // Pipe the original request body to the proxy request
-            req.pipe(proxyReq);
+          log.proxy.info('UPLOAD: FormData reconstructed for backend', {
+            bodyKeys: req.body ? Object.keys(req.body) : [],
+            fileCount: req.files ? req.files.length : 0,
+            files: req.files ? req.files.map(f => ({ name: f.originalname, size: f.size })) : [],
           });
 
-          const duration = Date.now() - startTime;
-
-          log.proxy.info('UPLOAD: Multipart upload successful', {
-            status: response.status,
-            duration: `${duration}ms`,
-            responseSize: JSON.stringify(response.data).length,
-          });
-
-          return res.status(response.status).json(response.data);
-        } catch (uploadError) {
-          const duration = Date.now() - startTime;
-
-          log.proxy.error('UPLOAD: Multipart upload failed', {
-            error: uploadError.message,
-            code: uploadError.code,
-            status: uploadError.response?.status,
-            duration: `${duration}ms`,
-            isTimeout: uploadError.code === 'ECONNABORTED',
-          });
-
-          const status = uploadError.response?.status || 500;
-          return res.status(status).json({
-            success: false,
-            message: uploadError.response?.data?.message || uploadError.message,
-          });
+        } else if (req.body && Object.keys(req.body).length > 0) {
+          // Regular JSON data
+          requestData = req.body;
         }
       }
 
-      // Normal request processing for non-multipart requests
-      let requestData = undefined;
-      if (req.method !== 'GET') {
-        // Only send data if there's actual content
-        if (req.body && Object.keys(req.body).length > 0) {
-          requestData = req.body;
-        }
+      // Add request data to options
+      if (requestData) {
+        requestOptions.data = requestData;
       }
 
       const startTime = Date.now();
 
       // Make request through ServerModel
-      const result = await ServerModel.makeRequest(hostname, parseInt(port), protocol, path, {
-        method: req.method,
-        data: requestData,
-        params: req.query,
-        headers: cleanHeaders,
-      });
+      const result = await ServerModel.makeRequest(hostname, parseInt(port), protocol, path, requestOptions);
 
       const duration = Date.now() - startTime;
 

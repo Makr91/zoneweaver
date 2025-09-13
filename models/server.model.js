@@ -212,15 +212,21 @@ export default (sequelize, Sequelize) => {
           : config.limits?.api_timeouts?.default_request?.value || 60000   // 1 min default
       );
 
+      // Determine data size for logging
+      const dataSize = options.data instanceof FormData 
+        ? 'FormData (multipart)' 
+        : (options.data ? JSON.stringify(options.data).length : 0);
+
       log.server.info('Starting zoneweaver-api request', {
         server: `${this.hostname}:${this.port}`,
         path,
         method: options.method || 'GET',
         hasData: !!options.data,
         hasParams: !!options.params,
-        dataSize: options.data ? JSON.stringify(options.data).length : 0,
+        dataSize: dataSize,
         timeout: requestTimeout,
         isFileUpload: isFileUpload,
+        isFormData: options.data instanceof FormData,
       });
 
       // Smart FMRI detection and encoding
@@ -265,15 +271,26 @@ export default (sequelize, Sequelize) => {
           .join('/');
       }
 
+      // Build request headers - handle FormData specially
       const requestHeaders = {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${this.api_key}`,
       };
+
+      // For FormData, let axios set Content-Type automatically (multipart/form-data with boundary)
+      // For regular data, set application/json
+      if (!(options.data instanceof FormData)) {
+        requestHeaders['Content-Type'] = 'application/json';
+      }
 
       if (options.headers) {
         Object.keys(options.headers).forEach(key => {
           const lowerKey = key.toLowerCase();
-          if (!['authorization', 'x-api-key', 'content-type'].includes(lowerKey)) {
+          // Skip problematic headers that would interfere with FormData or authentication
+          if (!['authorization', 'x-api-key'].includes(lowerKey)) {
+            // For FormData uploads, skip Content-Type to let axios handle it
+            if (options.data instanceof FormData && lowerKey === 'content-type') {
+              return;
+            }
             requestHeaders[key] = options.headers[key];
           }
         });
@@ -288,7 +305,7 @@ export default (sequelize, Sequelize) => {
         headers: Object.keys(requestHeaders),
         hasApiKey: !!this.api_key,
         allowInsecure: this.allow_insecure,
-        requestData: options.data,
+        isFormData: options.data instanceof FormData,
         queryParams: options.params,
       });
 
@@ -301,7 +318,8 @@ export default (sequelize, Sequelize) => {
       log.server.debug('Making axios request');
       const axiosStartTime = Date.now();
 
-      const response = await axios({
+      // Build axios config
+      const axiosConfig = {
         url: finalUrl,
         method: options.method || 'GET',
         headers: requestHeaders,
@@ -310,7 +328,20 @@ export default (sequelize, Sequelize) => {
         timeout: requestTimeout,
         httpsAgent: agent,
         validateStatus: status => status >= 200 && status < 400,
-      });
+      };
+
+      // Add upload progress tracking for FormData
+      if (options.data instanceof FormData && options.onUploadProgress) {
+        axiosConfig.onUploadProgress = options.onUploadProgress;
+        
+        log.server.info('Upload progress tracking enabled', {
+          path,
+          timeout: requestTimeout,
+          method: options.method || 'GET',
+        });
+      }
+
+      const response = await axios(axiosConfig);
 
       const axiosEndTime = Date.now();
       const totalDuration = axiosEndTime - startTime;

@@ -57,7 +57,38 @@ const corsOptions = {
 app.set('trust proxy', config.frontend.trust_proxy.value);
 app.use(cors(corsOptions));
 app.options('*splat', cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Support large JSON payloads
+
+// Configure multer for large file uploads (artifacts, ISOs, etc.)
+import multer from 'multer';
+
+const upload = multer({
+  storage: multer.memoryStorage(), // Store files in memory for proxy forwarding
+  limits: {
+    fileSize: (config.limits?.file_uploads?.max_file_size_gb?.value || 50) * 1024 * 1024 * 1024, // Convert GB to bytes
+    files: 10, // Maximum 10 files per request
+    parts: 20, // Maximum form parts
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow common VM/ISO file types
+    const allowedTypes = ['.iso', '.img', '.vmdk', '.vhd', '.vhdx', '.qcow2', '.ova', '.ovf'];
+    const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+    
+    if (allowedTypes.includes(fileExtension)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Unsupported file type: ${fileExtension}. Allowed types: ${allowedTypes.join(', ')}`), false);
+    }
+  }
+});
+
+// Apply multer middleware to artifact upload routes
+app.use('/api/zapi/*/artifacts/upload', upload.array('file', 10));
+
+log.app.info('Multer configured for large file uploads', {
+  maxFileSize: `${config.limits?.file_uploads?.max_file_size_gb?.value || 50}GB`,
+  allowedTypes: ['.iso', '.img', '.vmdk', '.vhd', '.vhdx', '.qcow2', '.ova', '.ovf']
+});
 
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));
