@@ -66,9 +66,11 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         server.protocol,
         `artifacts/${artifact.id}/download`,
         "GET",
-        null,
-        null,
-        true // This tells makeZoneweaverAPIRequest to return blob data
+        null,        // data
+        null,        // params
+        false,       // bypassCache
+        null,        // onUploadProgress
+        "blob"       // responseType
       );
 
       if (result.success) {

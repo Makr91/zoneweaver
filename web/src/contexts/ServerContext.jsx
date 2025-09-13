@@ -358,6 +358,7 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} params - URL parameters
    * @param {boolean} bypassCache - Force bypass cache for this request
    * @param {Function} onUploadProgress - Upload progress callback for FormData
+   * @param {string} responseType - Response type ('json', 'blob', 'text', etc.)
    * @returns {Promise<Object>} Request result
    */
   const makeZoneweaverAPIRequest = async (
@@ -369,7 +370,8 @@ export const ServerProvider = ({ children }) => {
     data = null,
     params = null,
     bypassCache = false,
-    onUploadProgress = null
+    onUploadProgress = null,
+    responseType = "json"
   ) => {
     try {
       const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
@@ -388,6 +390,10 @@ export const ServerProvider = ({ children }) => {
             Pragma: "no-cache",
           }),
         },
+        // Set responseType for blob/binary responses
+        ...(responseType !== "json" && {
+          responseType: responseType,
+        }),
         // Handle 304 responses appropriately - success for non-VNC, error for VNC (should not happen with no-cache)
         validateStatus: (status) =>
           (status >= 200 && status < 300) ||
