@@ -41,7 +41,7 @@ const TaskRow = memo(({ task }) => {
         return (
           <div className="level mb-0">
             <progress 
-              className="level-item progress is-small is-primary mb-0" 
+              className="level-item progress is-width-unset is-small is-primary mb-0" 
               value={progress_percent} 
               max="100"
             >

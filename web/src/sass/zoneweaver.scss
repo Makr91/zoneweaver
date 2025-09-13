@@ -372,6 +372,10 @@ $beige-lighter: #eff0eb;
   content: '\e801';
 }
 
+.is-width-unset {
+  width: unset;
+}
+
 .has-overflow-y-scroll {
   overflow-y: scroll;
 }
