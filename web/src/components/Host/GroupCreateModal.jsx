@@ -8,7 +8,6 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [formData, setFormData] = useState({
     groupname: "",
     gid: "",
-    created_by: "api",
   });
 
   const { makeZoneweaverAPIRequest } = useServers();
@@ -34,7 +33,6 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
       const payload = {
         groupname: formData.groupname.trim(),
-        created_by: formData.created_by.trim() || "api",
       };
 
       if (formData.gid) {
@@ -152,22 +150,6 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
         <p className="help">
           Leave empty to auto-assign. System groups use GID &lt; 100
         </p>
-      </div>
-
-      <div className="field">
-        <label className="label">Created By</label>
-        <div className="control">
-          <input
-            className="input"
-            type="text"
-            value={formData.created_by}
-            onChange={(e) =>
-              handleInputChange("created_by", e.target.value)
-            }
-            disabled={loading}
-            placeholder="api"
-          />
-        </div>
       </div>
 
       <div className="notification is-info">
