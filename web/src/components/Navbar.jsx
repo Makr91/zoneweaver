@@ -284,44 +284,79 @@ const Navbar = () => {
     }
   };
 
-  // Health monitoring with exponential backoff
+  // Health monitoring with two phases: wait for shutdown, then recovery monitoring
   const startHealthMonitoring = () => {
-    console.log("🔄 Starting health monitoring...");
-    let retryCount = 0;
-    const maxRetries = 12; // ~5 minutes total
+    console.log("🔄 Starting health monitoring (waiting for server shutdown during grace period)...");
     
-    const checkHealth = async () => {
-      const delay = Math.min(1000 * Math.pow(2, retryCount), 60000); // Cap at 60 seconds
-      
+    // Phase 1: Wait for server to become unavailable during grace period
+    let shutdownCheckCount = 0;
+    const maxShutdownChecks = 30; // Check for up to 2.5 minutes (5s intervals)
+    
+    const waitForShutdown = async () => {
       try {
-        console.log(`⏱️ Health check attempt ${retryCount + 1}/${maxRetries} (delay: ${delay}ms)`);
+        console.log(`🔍 Shutdown detection check ${shutdownCheckCount + 1}/${maxShutdownChecks}`);
         const response = await axios.get('/api/health');
         
         if (response.data.success) {
-          console.log("✅ Server is back online, refreshing page...");
-          // Small delay to ensure server is fully ready
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-          return;
+          // Server still running, continue waiting
+          shutdownCheckCount++;
+          if (shutdownCheckCount < maxShutdownChecks) {
+            console.log("⏳ Server still running during grace period, checking again in 5s...");
+            setTimeout(waitForShutdown, 5000); // Check every 5 seconds
+          } else {
+            console.log("⚠️ Server didn't shut down within expected timeframe, starting recovery monitoring anyway...");
+            startRecoveryMonitoring();
+          }
         }
       } catch (error) {
-        console.log(`❌ Health check failed (attempt ${retryCount + 1}): ${error.message}`);
-      }
-      
-      retryCount++;
-      if (retryCount < maxRetries) {
-        console.log(`⏳ Retrying in ${delay}ms...`);
-        setTimeout(checkHealth, delay);
-      } else {
-        console.log("⚠️ Maximum retry attempts reached. Server may need manual intervention.");
-        // Show user a message that they can manually refresh
-        alert("Host restart is taking longer than expected. Please refresh the page manually to check if the server is back online.");
+        // Server is now unavailable - this is expected!
+        console.log("🛑 Server is now unavailable (shutdown detected), starting recovery monitoring...");
+        startRecoveryMonitoring();
       }
     };
     
-    // Start the first check
-    checkHealth();
+    // Phase 2: Exponential backoff recovery monitoring
+    const startRecoveryMonitoring = () => {
+      console.log("🔄 Starting recovery monitoring with exponential backoff...");
+      let retryCount = 0;
+      const maxRetries = 15; // ~8 minutes total with exponential backoff
+      
+      const checkRecovery = async () => {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 60000); // Cap at 60 seconds
+        
+        try {
+          console.log(`⏱️ Recovery check attempt ${retryCount + 1}/${maxRetries} (delay: ${delay}ms)`);
+          const response = await axios.get('/api/health');
+          
+          if (response.data.success) {
+            console.log("✅ Server is back online, refreshing page...");
+            // Small delay to ensure server is fully ready
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+            return;
+          }
+        } catch (error) {
+          console.log(`❌ Recovery check failed (attempt ${retryCount + 1}): ${error.message}`);
+        }
+        
+        retryCount++;
+        if (retryCount < maxRetries) {
+          console.log(`⏳ Retrying recovery check in ${delay}ms...`);
+          setTimeout(checkRecovery, delay);
+        } else {
+          console.log("⚠️ Maximum recovery attempts reached. Server may need manual intervention.");
+          // Show user a message that they can manually refresh
+          alert("Host restart is taking longer than expected. Please refresh the page manually to check if the server is back online.");
+        }
+      };
+      
+      // Start the first recovery check immediately
+      checkRecovery();
+    };
+    
+    // Start Phase 1: Wait for shutdown
+    waitForShutdown();
   };
 
   // VNC Console handlers
