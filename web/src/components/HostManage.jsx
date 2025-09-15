@@ -65,7 +65,7 @@ const HostManage = () => {
                 </button>
               </div>
             </div>
-            <div className="p-4">
+            <div className="px-4">
               <div className="notification is-info">
                 <p>
                   Please select a server from the navbar to manage its services.
@@ -96,7 +96,7 @@ const HostManage = () => {
           </div>
 
           {/* Tab Navigation */}
-          <div className="tabs is-boxed">
+          <div className="tabs is-boxed mb-0">
             <ul>
               <li className={activeTab === "services" ? "is-active" : ""}>
                 <a onClick={() => setActiveTab("services")}>
@@ -185,7 +185,7 @@ const HostManage = () => {
             </ul>
           </div>
 
-          <div className="p-4">
+          <div className="px-4">
             {/* Services Tab */}
             {activeTab === "services" && (
               <div>

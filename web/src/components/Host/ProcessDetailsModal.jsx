@@ -287,7 +287,7 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
       )}
 
       {/* Tab Navigation */}
-      <div className="tabs is-boxed">
+      <div className="tabs is-boxed mb-0">
         <ul>
           {tabs.map((tab) => (
             <li

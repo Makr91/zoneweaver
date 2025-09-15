@@ -513,7 +513,7 @@ const ZoneweaverAPISettings = () => {
               </button>
             </div>
           </div>
-          <div className="p-4">
+          <div className="px-4">
             {msg && <div className="notification is-infopy-2 mb-3">{msg}</div>}
             {!currentServer && (
               <div className="notification is-warning">

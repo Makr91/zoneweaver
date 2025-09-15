@@ -17,7 +17,7 @@ const StorageManagement = ({ server }) => {
   return (
     <div>
       {/* Sub-Tab Navigation */}
-      <div className="tabs is-boxed">
+      <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "arc" ? "is-active" : ""}>
             <a onClick={() => setActiveTab("arc")}>

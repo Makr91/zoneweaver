@@ -178,7 +178,7 @@ const RBACDiscoverySection = ({ server, onError }) => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="tabs is-boxed">
+      <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "authorizations" ? "is-active" : ""}>
             <a onClick={() => setActiveTab("authorizations")}>

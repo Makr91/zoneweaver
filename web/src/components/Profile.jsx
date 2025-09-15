@@ -150,7 +150,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="p-4">
+          <div className="px-4">
             {msg && (
               <div
                 className={`notification ${

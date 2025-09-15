@@ -29,7 +29,7 @@ const PackageManagement = ({ server }) => {
   return (
     <div>
       {/* Section Navigation */}
-      <div className="tabs is-boxed">
+      <div className="tabs is-boxed mb-0">
         <ul>
           {sections.map((section) => (
             <li

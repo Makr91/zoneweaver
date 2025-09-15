@@ -504,7 +504,7 @@ const ArtifactManagement = ({ server }) => {
   return (
     <div>
       {/* Sub-Tab Navigation */}
-      <div className="tabs is-boxed">
+      <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "storage-paths" ? "is-active" : ""}>
             <a onClick={() => setActiveTab("storage-paths")}>

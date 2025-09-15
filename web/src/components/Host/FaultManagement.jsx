@@ -19,7 +19,7 @@ const FaultManagement = ({ server }) => {
   return (
     <div>
       {/* Sub-Tab Navigation */}
-      <div className="tabs is-boxed">
+      <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "faults" ? "is-active" : ""}>
             <a onClick={() => setActiveTab("faults")}>

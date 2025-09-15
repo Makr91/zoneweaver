@@ -55,7 +55,7 @@ const HostDevices = () => {
                 <strong>Access Denied</strong>
               </div>
             </div>
-            <div className="p-4">
+            <div className="px-4">
               <div className="notification is-danger">
                 <p>Please log in to access device monitoring.</p>
               </div>
@@ -81,7 +81,7 @@ const HostDevices = () => {
                 <strong>Device Monitoring</strong>
               </div>
             </div>
-            <div className="p-4">
+            <div className="px-4">
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
@@ -124,7 +124,7 @@ const HostDevices = () => {
             loadDeviceData={loadDeviceData}
           />
 
-          <div className="p-4">
+          <div className="px-4">
             {error && (
               <div className="notification is-danger mb-4">
                 <p>{error}</p>

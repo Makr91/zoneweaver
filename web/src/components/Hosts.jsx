@@ -166,7 +166,7 @@ const Hosts = () => {
                 <strong>Host Overview</strong>
               </div>
             </div>
-            <div className="p-4">
+            <div className="px-4">
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
@@ -208,7 +208,7 @@ const Hosts = () => {
                 <strong>Host Overview</strong>
               </div>
             </div>
-            <div className="p-4">
+            <div className="px-4">
               <div className="notification is-warning">
                 <h2 className="title is-4">No Host Selected</h2>
                 <p>
@@ -246,7 +246,7 @@ const Hosts = () => {
             setAutoRefresh={setAutoRefresh}
           />
 
-          <div className="p-4">
+          <div className="px-4">
             {error && (
               <div className="notification is-danger">
                 <p>{error}</p>

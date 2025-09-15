@@ -1393,7 +1393,7 @@ const ZoneweaverSettings = () => {
                 <strong>Access Denied</strong>
               </div>
             </div>
-            <div className="p-4">
+            <div className="px-4">
               <div className="notification is-danger">
                 <h2 className="title is-4">Super Admin Access Required</h2>
                 <p>
@@ -1480,7 +1480,7 @@ const ZoneweaverSettings = () => {
           </div>
 
           {/* Dynamic Tab Navigation */}
-          <div className="tabs is-boxed">
+          <div className="tabs is-boxed mb-0">
             <ul>
               {/* API Servers Tab - Always First */}
               <li className={activeTab === "servers" ? "is-active" : ""}>
