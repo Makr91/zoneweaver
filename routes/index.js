@@ -370,6 +370,32 @@ router.all(
   ServerController.proxyToZoneweaverAPI
 );
 
+// VLAN Management Routes - Protected with API proxy rate limiting
+router.get(
+  '/api/zapi/:protocol/:hostname/:port/network/vlans',
+  apiProxyLimiter,
+  authenticate,
+  ServerController.proxyToZoneweaverAPI
+);
+router.get(
+  '/api/zapi/:protocol/:hostname/:port/network/vlans/:vlan',
+  apiProxyLimiter,
+  authenticate,
+  ServerController.proxyToZoneweaverAPI
+);
+router.post(
+  '/api/zapi/:protocol/:hostname/:port/network/vlans',
+  apiProxyLimiter,
+  authenticate,
+  ServerController.proxyToZoneweaverAPI
+);
+router.delete(
+  '/api/zapi/:protocol/:hostname/:port/network/vlans/:vlan',
+  apiProxyLimiter,
+  authenticate,
+  ServerController.proxyToZoneweaverAPI
+);
+
 // Zoneweaver API settings endpoints - Protected with admin rate limiting
 router.get(
   '/api/zapi/:protocol/:hostname/:port/settings',

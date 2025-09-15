@@ -7,6 +7,7 @@ import BridgeManagement from "./BridgeManagement";
 import EtherstubManagement from "./EtherstubManagement";
 import HostnameSettings from "./HostnameSettings";
 import IpAddressManagement from "./IpAddressManagement";
+import VlanManagement from "./VlanManagement";
 import VnicManagement from "./VnicManagement";
 
 const NetworkHostnameManagement = ({ server }) => {
@@ -26,6 +27,7 @@ const NetworkHostnameManagement = ({ server }) => {
   const sections = [
     { key: "hostname", label: "Hostname", icon: "fa-server" },
     { key: "vnics", label: "VNICs", icon: "fa-network-wired" },
+    { key: "vlans", label: "VLANs", icon: "fa-tags" },
     { key: "addresses", label: "IP Addresses", icon: "fa-globe" },
     { key: "aggregates", label: "Link Aggregates", icon: "fa-link" },
     { key: "bridges", label: "Bridges", icon: "fa-bridge-water" },
@@ -69,6 +71,10 @@ const NetworkHostnameManagement = ({ server }) => {
 
         {activeSection === "vnics" && (
           <VnicManagement server={server} onError={setError} />
+        )}
+
+        {activeSection === "vlans" && (
+          <VlanManagement server={server} onError={setError} />
         )}
 
         {activeSection === "addresses" && (
