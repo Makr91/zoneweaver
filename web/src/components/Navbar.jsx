@@ -123,6 +123,10 @@ const Navbar = () => {
     startVncSession,
     stopVncSession,
     getVncSessionInfo,
+    restartHost,
+    rebootHost,
+    shutdownHost,
+    getHostStatus,
   } = useServers();
 
   // Zone action handlers
@@ -212,6 +216,112 @@ const Navbar = () => {
       setLoading(false);
       handleModalClick(); // Close modal
     }
+  };
+
+  // Host action handlers
+  const handleHostAction = async (action) => {
+    if (!currentServer) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      let result;
+
+      switch (action) {
+        case "restart":
+          result = await restartHost(
+            currentServer.hostname,
+            currentServer.port,
+            currentServer.protocol,
+            {
+              gracePeriod: 60,
+              message: "Host restart initiated via Zoneweaver UI"
+            }
+          );
+          break;
+        case "reboot":
+          result = await rebootHost(
+            currentServer.hostname,
+            currentServer.port,
+            currentServer.protocol
+          );
+          break;
+        case "shutdown":
+          result = await shutdownHost(
+            currentServer.hostname,
+            currentServer.port,
+            currentServer.protocol,
+            {
+              gracePeriod: 60,
+              message: "Host shutdown initiated via Zoneweaver UI"
+            }
+          );
+          break;
+        default:
+          console.warn("Unknown host action:", action);
+          return;
+      }
+
+      if (result.success) {
+        console.log(`Host ${action} initiated successfully`);
+        console.log("Task ID:", result.data.task_id);
+        
+        // For restart/reboot actions, start health monitoring
+        if (action === "restart" || action === "reboot") {
+          setTimeout(() => {
+            startHealthMonitoring();
+          }, 3000); // Start monitoring after 3 seconds
+        }
+      } else {
+        console.error(`Failed to ${action} host:`, result.message);
+      }
+    } catch (error) {
+      console.error(`Error during host ${action}:`, error);
+    } finally {
+      setLoading(false);
+      handleModalClick(); // Close modal
+    }
+  };
+
+  // Health monitoring with exponential backoff
+  const startHealthMonitoring = () => {
+    console.log("🔄 Starting health monitoring...");
+    let retryCount = 0;
+    const maxRetries = 12; // ~5 minutes total
+    
+    const checkHealth = async () => {
+      const delay = Math.min(1000 * Math.pow(2, retryCount), 60000); // Cap at 60 seconds
+      
+      try {
+        console.log(`⏱️ Health check attempt ${retryCount + 1}/${maxRetries} (delay: ${delay}ms)`);
+        const response = await axios.get('/api/health');
+        
+        if (response.data.success) {
+          console.log("✅ Server is back online, refreshing page...");
+          // Small delay to ensure server is fully ready
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+          return;
+        }
+      } catch (error) {
+        console.log(`❌ Health check failed (attempt ${retryCount + 1}): ${error.message}`);
+      }
+      
+      retryCount++;
+      if (retryCount < maxRetries) {
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        setTimeout(checkHealth, delay);
+      } else {
+        console.log("⚠️ Maximum retry attempts reached. Server may need manual intervention.");
+        // Show user a message that they can manually refresh
+        alert("Host restart is taking longer than expected. Please refresh the page manually to check if the server is back online.");
+      }
+    };
+    
+    // Start the first check
+    checkHealth();
   };
 
   // VNC Console handlers
@@ -765,14 +875,27 @@ const Navbar = () => {
           <FormModal
             isOpen={!isModal}
             onClose={handleModalClick}
-            onSubmit={() => handleZoneAction(currentAction)}
+            onSubmit={() => 
+              currentMode === "host" 
+                ? handleHostAction(currentAction)
+                : handleZoneAction(currentAction)
+            }
             title={`Confirm ${currentMode} ${currentAction}`}
             icon={getActionIcon(currentAction)}
             submitText={loading ? "Processing..." : currentAction}
             submitVariant={getActionVariant(currentAction)}
             loading={loading}
           >
-            {currentZone && (
+            {currentMode === "host" && currentServer && (
+              <div className="notification is-warning">
+                <p>
+                  <strong>Target:</strong> {currentServer.hostname}
+                </p>
+                <p>This action will {currentAction === "restart" ? "restart" : "shutdown"} the entire host system.</p>
+                <p><strong>Warning:</strong> This will interrupt all system services and user sessions.</p>
+              </div>
+            )}
+            {currentMode === "zone" && currentZone && (
               <div className="notification is-info">
                 <p>
                   <strong>Target:</strong> {currentZone}
