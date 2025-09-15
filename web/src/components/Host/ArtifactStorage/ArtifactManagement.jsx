@@ -10,6 +10,8 @@ import ArtifactDownloadModal from "./components/modals/ArtifactDownloadModal";
 import ArtifactUploadModal from "./components/modals/ArtifactUploadModal";
 import StoragePathCreateModal from "./components/modals/StoragePathCreateModal";
 import StoragePathEditModal from "./components/modals/StoragePathEditModal";
+import ArtifactMoveModal from "./components/modals/ArtifactMoveModal";
+import ArtifactCopyModal from "./components/modals/ArtifactCopyModal";
 
 const ArtifactManagement = ({ server }) => {
   const [activeTab, setActiveTab] = useState("storage-paths");
@@ -47,6 +49,8 @@ const ArtifactManagement = ({ server }) => {
   const [showArtifactUploadModal, setShowArtifactUploadModal] = useState(false);
   const [showArtifactDownloadModal, setShowArtifactDownloadModal] = useState(false);
   const [showArtifactDetailsModal, setShowArtifactDetailsModal] = useState(false);
+  const [showArtifactMoveModal, setShowArtifactMoveModal] = useState(false);
+  const [showArtifactCopyModal, setShowArtifactCopyModal] = useState(false);
   const [selectedStoragePath, setSelectedStoragePath] = useState(null);
   const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [artifactDetails, setArtifactDetails] = useState(null);
@@ -264,6 +268,16 @@ const ArtifactManagement = ({ server }) => {
     } finally {
       setArtifactsLoading(false);
     }
+  };
+
+  const handleArtifactMove = (artifact) => {
+    setSelectedArtifact(artifact);
+    setShowArtifactMoveModal(true);
+  };
+
+  const handleArtifactCopy = (artifact) => {
+    setSelectedArtifact(artifact);
+    setShowArtifactCopyModal(true);
   };
 
   const handleArtifactDelete = async (artifactIds) => {
@@ -667,6 +681,8 @@ const ArtifactManagement = ({ server }) => {
                 loading={artifactsLoading}
                 onDetails={handleArtifactDetails}
                 onDelete={handleArtifactDelete}
+                onMove={handleArtifactMove}
+                onCopy={handleArtifactCopy}
                 onPaginationChange={handlePaginationChange}
                 onSort={(sortBy, sortOrder) => {
                   handleFilterChange("sort_by", sortBy);
@@ -770,6 +786,42 @@ const ArtifactManagement = ({ server }) => {
             setSelectedArtifact(null);
             setArtifactDetails(null);
           }}
+        />
+      )}
+
+      {showArtifactMoveModal && selectedArtifact && (
+        <ArtifactMoveModal
+          server={server}
+          artifact={selectedArtifact}
+          storagePaths={storagePaths}
+          onClose={() => {
+            setShowArtifactMoveModal(false);
+            setSelectedArtifact(null);
+          }}
+          onSuccess={() => {
+            setShowArtifactMoveModal(false);
+            setSelectedArtifact(null);
+            loadArtifacts();
+          }}
+          onError={setError}
+        />
+      )}
+
+      {showArtifactCopyModal && selectedArtifact && (
+        <ArtifactCopyModal
+          server={server}
+          artifact={selectedArtifact}
+          storagePaths={storagePaths}
+          onClose={() => {
+            setShowArtifactCopyModal(false);
+            setSelectedArtifact(null);
+          }}
+          onSuccess={() => {
+            setShowArtifactCopyModal(false);
+            setSelectedArtifact(null);
+            loadArtifacts();
+          }}
+          onError={setError}
         />
       )}
     </div>

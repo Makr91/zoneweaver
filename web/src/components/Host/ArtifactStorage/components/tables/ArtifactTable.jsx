@@ -7,6 +7,8 @@ const ArtifactTable = ({
   loading,
   onDetails,
   onDelete,
+  onMove,
+  onCopy,
   onPaginationChange,
   onSort,
   onCancelDownload
@@ -530,6 +532,32 @@ const ArtifactTable = ({
                         <i className="fas fa-trash" />
                       </span>
                     </button>
+
+                    <div className="dropdown is-hoverable is-right">
+                      <div className="dropdown-trigger">
+                        <button className="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                          <span className="icon is-small">
+                            <i className="fas fa-ellipsis-h" aria-hidden="true" />
+                          </span>
+                        </button>
+                      </div>
+                      <div className="dropdown-menu" id="dropdown-menu" role="menu">
+                        <div className="dropdown-content">
+                          <a href="#" className="dropdown-item" onClick={() => onMove(artifact)}>
+                            <span className="icon-text">
+                              <span className="icon"><i className="fas fa-truck" /></span>
+                              <span>Move</span>
+                            </span>
+                          </a>
+                          <a href="#" className="dropdown-item" onClick={() => onCopy(artifact)}>
+                            <span className="icon-text">
+                              <span className="icon"><i className="fas fa-copy" /></span>
+                              <span>Copy</span>
+                            </span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </td>
               </tr>
