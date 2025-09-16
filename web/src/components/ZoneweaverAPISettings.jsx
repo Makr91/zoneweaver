@@ -595,7 +595,7 @@ const ZoneweaverAPISettings = () => {
           <div className="field">
             <div className="control">
               {typeof value === "boolean" ? (
-                <label className="switch">
+                <label className="switch is-medium">
                   <input
                     type="checkbox"
                     checked={value}
@@ -603,7 +603,10 @@ const ZoneweaverAPISettings = () => {
                       handleSettingChange(path, e.target.checked)
                     }
                   />
-                  <span className="slider round" />
+                  <span className="check" />
+                  <span className="control-label">
+                    {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </span>
                 </label>
               ) : Array.isArray(value) ? (
                 <textarea
@@ -643,65 +646,7 @@ const ZoneweaverAPISettings = () => {
         <title>Zoneweaver API Settings - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <style>
-        {`
-        /* Toggle Switch Styles */
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 40px;
-          height: 22px;
-        }
-        
-        .switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-        
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          transition: .3s;
-        }
-        
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 16px;
-          width: 16px;
-          left: 3px;
-          bottom: 3px;
-          background-color: white;
-          transition: .3s;
-        }
-        
-        input:checked + .slider {
-          background-color: #00d1b2;
-        }
-        
-        input:focus + .slider {
-          box-shadow: 0 0 1px #00d1b2;
-        }
-        
-        input:checked + .slider:before {
-          transform: translateX(18px);
-        }
-        
-        .slider.round {
-          border-radius: 22px;
-        }
-        
-        .slider.round:before {
-          border-radius: 50%;
-        }
-      `}
-      </style>
+      {/* Use consistent toggle switch styling with main Zoneweaver settings */}
       <div className="container is-fluid p-0">
         <div className="box p-0 is-radiusless">
           <div className="titlebar box active level is-mobile mb-0 p-3">
