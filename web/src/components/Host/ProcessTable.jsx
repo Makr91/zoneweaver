@@ -51,11 +51,19 @@ const ProcessTable = ({
     });
 
   const parseMemorySize = (memStr) => {
-    if (!memStr) {
+    if (!memStr && memStr !== 0) {
       return 0;
     }
-    const match = memStr.match(/^(\d+(?:\.\d+)?)(K|M|G|T)?$/);
+    
+    // Convert to string to ensure we can call .match()
+    const memString = String(memStr);
+    const match = memString.match(/^(\d+(?:\.\d+)?)(K|M|G|T)?$/);
     if (!match) {
+      // If it's just a number (bytes), convert it
+      const numValue = parseFloat(memString);
+      if (!isNaN(numValue)) {
+        return numValue / 1024 / 1024; // Convert bytes to MB
+      }
       return 0;
     }
 
