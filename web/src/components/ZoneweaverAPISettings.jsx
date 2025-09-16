@@ -409,7 +409,7 @@ const ZoneweaverAPISettings = () => {
 
   // Check if a section is orchestration-related
   const isOrchestrationSection = (sectionName) => {
-    return sectionName.includes("orchestration") || sectionName.includes("zone_management");
+    return sectionName === "zones" || sectionName.includes("orchestration") || sectionName.includes("zone_management");
   };
 
   // Render orchestration control panel
