@@ -414,7 +414,7 @@ const ZoneweaverAPISettings = () => {
 
   // Render orchestration control panel
   const renderOrchestrationControls = () => (
-    <div className="box mb-4" style={{ backgroundColor: "#f8f9fa" }}>
+    <div className="box mb-4 is-dark">
       <h4 className="title is-6 mb-3">
         <span className="icon-text">
           <span className="icon has-text-info">
