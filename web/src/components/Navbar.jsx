@@ -811,18 +811,24 @@ const Navbar = () => {
             )}
 
             {/* Read-only actions available to all users */}
-            <a href="/ui/hosts" className="dropdown-item">
+            <button
+              onClick={() => navigate("/ui/hosts")}
+              className="dropdown-item"
+            >
               <span className="icon has-text-info mr-2">
                 <i className="fas fa-eye" />
               </span>
               <span>View Host Details</span>
-            </a>
-            <a href="/ui/zones" className="dropdown-item">
+            </button>
+            <button
+              onClick={() => navigate("/ui/host-manage")}
+              className="dropdown-item"
+            >
               <span className="icon has-text-info mr-2">
-                <i className="fas fa-server" />
+                <i className="fas fa-cogs" />
               </span>
-              <span>Manage Zones</span>
-            </a>
+              <span>Manage Host</span>
+            </button>
 
             {canPowerOffHosts(userRole) && (
               <>
