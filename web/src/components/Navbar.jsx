@@ -525,7 +525,11 @@ const Navbar = () => {
   const isShareableRoute = () => {
     const path = location.pathname;
     return (
-      path.startsWith("/ui/host") ||
+      path === "/ui/hosts" ||
+      path === "/ui/host-manage" ||
+      path === "/ui/host-networking" ||
+      path === "/ui/host-storage" ||
+      path === "/ui/host-devices" ||
       path.startsWith("/ui/zone") ||
       path === "/ui/zones"
     );
