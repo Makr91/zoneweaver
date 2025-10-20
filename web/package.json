@@ -94,7 +94,7 @@
     "prettier": "^3.6.2",
     "rollup": "npm:@rollup/wasm-node@^4.21.0",
     "sass": "^1.80.0",
-    "vite": "^7.1.2",
+    "vite": "^7.1.11",
     "yaml": "^2.3.4"
   }
 }
