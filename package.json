@@ -40,7 +40,7 @@
     "mariadb": "^3.4.5",
     "multer": "^2.0.2",
     "mysql2": "^3.6.0",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^7.0.10",
     "nodemon": "^3.1.9",
     "openid-client": "^6.7.1",
     "passport": "^0.7.0",
@@ -64,7 +64,7 @@
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@rollup/wasm-node": "^4.46.3",
-    "concurrently": "^9.2.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
