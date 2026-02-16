@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * ContentModal - Reusable modal for displaying read-only content
@@ -39,7 +40,7 @@ const ContentModal = ({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="modal is-active">
       {/* Background - clicking closes modal */}
       <div
@@ -81,7 +82,8 @@ const ContentModal = ({
           {children}
         </section>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

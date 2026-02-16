@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
 
-import RoleTable from "./RoleTable";
 import RoleCreateModal from "./RoleCreateModal";
 import RoleDetailsModal from "./RoleDetailsModal";
+import RoleTable from "./RoleTable";
 
 const RoleSection = ({ server, onError }) => {
   const [roles, setRoles] = useState([]);
@@ -80,7 +80,7 @@ const RoleSection = ({ server, onError }) => {
 
       let endpoint;
       let method;
-      let params = {};
+      const params = {};
 
       if (action === "delete") {
         endpoint = `system/roles/${encodeURIComponent(rolename)}`;
@@ -107,10 +107,9 @@ const RoleSection = ({ server, onError }) => {
         }
         await loadRoles();
         return { success: true, message: result.message };
-      } else {
-        onError(result.message || `Failed to ${action} role`);
-        return { success: false, message: result.message };
       }
+      onError(result.message || `Failed to ${action} role`);
+      return { success: false, message: result.message };
     } catch (err) {
       const errorMsg = `Error performing ${action}: ${err.message}`;
       onError(errorMsg);

@@ -2,15 +2,26 @@ import React, { useRef, useEffect, useContext, memo, useState } from "react";
 
 import { useFooter } from "../contexts/FooterContext";
 import { UserSettings } from "../contexts/UserSettingsContext";
+
 import TaskDetailModal from "./TaskDetailModal";
 
 const renderPriority = (task) => {
   const p = task.priority;
-  if (p >= 100) return <span className="has-text-danger">CRITICAL</span>;
-  if (p >= 80) return <span className="has-text-warning">HIGH</span>;
-  if (p >= 60) return <span>MEDIUM</span>;
-  if (p >= 50) return <span>SERVICE</span>;
-  if (p >= 40) return <span className="has-text-grey">LOW</span>;
+  if (p >= 100) {
+    return <span className="has-text-danger">CRITICAL</span>;
+  }
+  if (p >= 80) {
+    return <span className="has-text-warning">HIGH</span>;
+  }
+  if (p >= 60) {
+    return <span>MEDIUM</span>;
+  }
+  if (p >= 50) {
+    return <span>SERVICE</span>;
+  }
+  if (p >= 40) {
+    return <span className="has-text-grey">LOW</span>;
+  }
   return <span className="has-text-grey-light">BG</span>;
 };
 
@@ -59,12 +70,16 @@ const renderProgress = (task) => {
 };
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
+  if (!dateStr) {
+    return "-";
+  }
   return new Date(dateStr).toLocaleString();
 };
 
 const truncate = (str, max = 40) => {
-  if (!str) return "-";
+  if (!str) {
+    return "-";
+  }
   return str.length > max ? `${str.substring(0, max)}...` : str;
 };
 
@@ -75,11 +90,31 @@ export const TASK_COLUMNS = [
   { key: "status", label: "Status", render: renderStatus },
   { key: "progress", label: "Progress", render: renderProgress },
   { key: "priority", label: "Priority", render: renderPriority },
-  { key: "created_by", label: "Created By", render: (task) => task.created_by || "-" },
-  { key: "created_at", label: "Created", render: (task) => formatDate(task.created_at) },
-  { key: "started_at", label: "Started", render: (task) => formatDate(task.started_at) },
-  { key: "completed_at", label: "Completed", render: (task) => formatDate(task.completed_at) },
-  { key: "error_message", label: "Error", render: (task) => truncate(task.error_message) },
+  {
+    key: "created_by",
+    label: "Created By",
+    render: (task) => task.created_by || "-",
+  },
+  {
+    key: "created_at",
+    label: "Created",
+    render: (task) => formatDate(task.created_at),
+  },
+  {
+    key: "started_at",
+    label: "Started",
+    render: (task) => formatDate(task.started_at),
+  },
+  {
+    key: "completed_at",
+    label: "Completed",
+    render: (task) => formatDate(task.completed_at),
+  },
+  {
+    key: "error_message",
+    label: "Error",
+    render: (task) => truncate(task.error_message),
+  },
 ];
 
 const getStatusClass = (status) => {

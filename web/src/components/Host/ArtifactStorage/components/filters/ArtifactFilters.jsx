@@ -10,13 +10,13 @@ const ArtifactFilters = ({
   onScan,
   onUpload,
   onDownload,
-  loading
+  loading,
 }) => {
   const [localSearch, setLocalSearch] = useState(filters.search || "");
-  
+
   // Debounce search input to avoid excessive API calls
   const debouncedSearch = useDebounce(localSearch, 500);
-  
+
   useEffect(() => {
     onFilterChange("search", debouncedSearch);
   }, [debouncedSearch, onFilterChange]);
@@ -40,7 +40,8 @@ const ArtifactFilters = ({
     onFilterChange("storage_location", "");
   };
 
-  const hasActiveFilters = filters.search || filters.type || filters.storage_location;
+  const hasActiveFilters =
+    filters.search || filters.type || filters.storage_location;
 
   return (
     <div className="box mb-4">
@@ -81,8 +82,8 @@ const ArtifactFilters = ({
             <label className="label">Filter by Location</label>
             <div className="control">
               <div className="select is-fullwidth">
-                <select 
-                  value={filters.storage_location || ""} 
+                <select
+                  value={filters.storage_location || ""}
                   onChange={handleStorageLocationChange}
                 >
                   <option value="">All Locations</option>
@@ -143,7 +144,11 @@ const ArtifactFilters = ({
                 className="button is-primary"
                 onClick={onUpload}
                 disabled={loading || storagePaths.length === 0}
-                title={storagePaths.length === 0 ? "No storage locations configured" : "Upload files from your computer"}
+                title={
+                  storagePaths.length === 0
+                    ? "No storage locations configured"
+                    : "Upload files from your computer"
+                }
               >
                 <span className="icon">
                   <i className="fas fa-upload" />
@@ -156,7 +161,11 @@ const ArtifactFilters = ({
                 className="button is-success"
                 onClick={onDownload}
                 disabled={loading || storagePaths.length === 0}
-                title={storagePaths.length === 0 ? "No storage locations configured" : "Download files from URLs"}
+                title={
+                  storagePaths.length === 0
+                    ? "No storage locations configured"
+                    : "Download files from URLs"
+                }
               >
                 <span className="icon">
                   <i className="fas fa-download" />
@@ -179,7 +188,7 @@ const ArtifactFilters = ({
             </p>
           </div>
         </div>
-        
+
         {/* Storage Status Info */}
         <div className="column is-narrow">
           <div className="field">
@@ -188,7 +197,10 @@ const ArtifactFilters = ({
                 <span className="icon is-small">
                   <i className="fas fa-folder" />
                 </span>
-                <span>{storagePaths.length} storage location{storagePaths.length !== 1 ? 's' : ''}</span>
+                <span>
+                  {storagePaths.length} storage location
+                  {storagePaths.length !== 1 ? "s" : ""}
+                </span>
               </span>
               {storagePaths.length > 0 && (
                 <span className="tag is-light">
@@ -196,7 +208,7 @@ const ArtifactFilters = ({
                     <i className="fas fa-check" />
                   </span>
                   <span>
-                    {storagePaths.filter(p => p.enabled).length} enabled
+                    {storagePaths.filter((p) => p.enabled).length} enabled
                   </span>
                 </span>
               )}
@@ -209,19 +221,21 @@ const ArtifactFilters = ({
       {storagePaths.length === 0 && (
         <div className="notification is-warning">
           <p>
-            <strong>No storage locations configured.</strong> 
-            You need to create at least one storage location before you can upload or download artifacts.
-            Switch to the "Storage Locations" tab to get started.
+            <strong>No storage locations configured.</strong>
+            You need to create at least one storage location before you can
+            upload or download artifacts. Switch to the "Storage Locations" tab
+            to get started.
           </p>
         </div>
       )}
 
       {/* Disabled Storage Paths Warning */}
-      {storagePaths.length > 0 && storagePaths.every(p => !p.enabled) && (
+      {storagePaths.length > 0 && storagePaths.every((p) => !p.enabled) && (
         <div className="notification is-warning">
           <p>
             <strong>All storage locations are disabled.</strong>
-            Enable at least one storage location to upload or download artifacts.
+            Enable at least one storage location to upload or download
+            artifacts.
           </p>
         </div>
       )}
@@ -232,9 +246,7 @@ const ArtifactFilters = ({
           <p className="has-text-weight-semibold mb-2">Active Filters:</p>
           <div className="tags">
             {filters.search && (
-              <span className="tag is-info">
-                Search: "{filters.search}"
-              </span>
+              <span className="tag is-info">Search: "{filters.search}"</span>
             )}
             {filters.type && (
               <span className="tag is-info">
@@ -243,7 +255,9 @@ const ArtifactFilters = ({
             )}
             {filters.storage_location && (
               <span className="tag is-info">
-                Location: {storagePaths.find(p => p.id === filters.storage_location)?.name || filters.storage_location}
+                Location:{" "}
+                {storagePaths.find((p) => p.id === filters.storage_location)
+                  ?.name || filters.storage_location}
               </span>
             )}
           </div>

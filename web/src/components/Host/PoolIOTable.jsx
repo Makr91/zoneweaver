@@ -12,7 +12,7 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
           <h4 className="title is-5 mb-0">
             <span className="icon-text">
               <span className="icon">
-                <i className="fas fa-database"></i>
+                <i className="fas fa-database" />
               </span>
               <span>ZFS Pool I/O Performance ({poolIOStats.length})</span>
             </span>
@@ -20,14 +20,16 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
         </div>
         <div className="level-right">
           <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('poolIO')}
-                      title={sectionsCollapsed.poolIO ? 'Expand section' : 'Collapse section'}
+            className="button is-small is-ghost"
+            onClick={() => toggleSection("poolIO")}
+            title={
+              sectionsCollapsed.poolIO ? "Expand section" : "Collapse section"
+            }
           >
             <span className="icon">
               <i
                 className={`fas ${sectionsCollapsed.poolIO ? "fa-chevron-down" : "fa-chevron-up"}`}
-              ></i>
+              />
             </span>
           </button>
         </div>

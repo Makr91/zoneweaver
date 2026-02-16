@@ -22,18 +22,18 @@ const DeviceInventoryTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
-                      onClick={() => handleDeviceSort('device_name')}
+          className="title is-5 mb-0 is-clickable"
+          onClick={() => handleDeviceSort("device_name")}
           title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-microchip"></i>
+              <i className="fas fa-microchip" />
             </span>
             <span>PCI Device Inventory ({devices.length} devices)</span>
             {deviceSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
@@ -43,27 +43,31 @@ const DeviceInventoryTable = ({
         <div className="field is-grouped">
           <div className="control">
             <button
-                              className={`button is-small is-warning ${loading ? 'is-loading' : ''}`}
+              className={`button is-small is-warning ${loading ? "is-loading" : ""}`}
               onClick={handleDeviceRefresh}
               disabled={loading}
               title="Refresh device discovery"
             >
               <span className="icon">
-                <i className="fas fa-sync"></i>
+                <i className="fas fa-sync" />
               </span>
               <span>Discover</span>
             </button>
           </div>
           <div className="control">
             <button
-                              className='button is-small is-ghost'
-                              onClick={() => toggleSection('inventory')}
-                              title={sectionsCollapsed.inventory ? 'Expand section' : 'Collapse section'}
+              className="button is-small is-ghost"
+              onClick={() => toggleSection("inventory")}
+              title={
+                sectionsCollapsed.inventory
+                  ? "Expand section"
+                  : "Collapse section"
+              }
             >
               <span className="icon">
                 <i
                   className={`fas ${sectionsCollapsed.inventory ? "fa-chevron-down" : "fa-chevron-up"}`}
-                ></i>
+                />
               </span>
             </button>
           </div>
@@ -78,73 +82,73 @@ const DeviceInventoryTable = ({
               <tr>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleDeviceSort('device_name')}
+                  onClick={() => handleDeviceSort("device_name")}
                   title="Click to sort by device name"
                 >
                   Device Name{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "device_name")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleDeviceSort('vendor_name')}
+                  onClick={() => handleDeviceSort("vendor_name")}
                   title="Click to sort by vendor"
                 >
                   Vendor{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "vendor_name")}`}
-                  ></i>
+                  />
                 </th>
                 <th
-                                      className="is-clickable"
-                                      onClick={() => handleDeviceSort('pci_address')}
-                                      title="Click to sort by PCI address"
+                  className="is-clickable"
+                  onClick={() => handleDeviceSort("pci_address")}
+                  title="Click to sort by PCI address"
                 >
                   PCI Address{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "pci_address")}`}
-                  ></i>
+                  />
                 </th>
                 <th
-                                      className="is-clickable"
-                                      onClick={() => handleDeviceSort('device_category')}
+                  className="is-clickable"
+                  onClick={() => handleDeviceSort("device_category")}
                   title="Click to sort by category"
                 >
                   Category{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "device_category")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleDeviceSort('driver_name')}
+                  onClick={() => handleDeviceSort("driver_name")}
                   title="Click to sort by driver"
                 >
                   Driver{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "driver_name")}`}
-                  ></i>
+                  />
                 </th>
                 <th
-                                      className="is-clickable"
-                                      onClick={() => handleDeviceSort('driver_attached')}
+                  className="is-clickable"
+                  onClick={() => handleDeviceSort("driver_attached")}
                   title="Click to sort by driver status"
                 >
                   Status{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "driver_attached")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleDeviceSort('ppt_enabled')}
+                  onClick={() => handleDeviceSort("ppt_enabled")}
                   title="Click to sort by PPT status"
                 >
                   PPT Status{" "}
                   <i
                     className={`fas ${getSortIcon(deviceSort, "ppt_enabled")}`}
-                  ></i>
+                  />
                 </th>
                 <th>Assigned To</th>
               </tr>
@@ -155,7 +159,7 @@ const DeviceInventoryTable = ({
                   key={device.id || index}
                   className="is-clickable"
                   onClick={() => setSelectedDevice(device)}
-                                      title="Click to view device details"
+                  title="Click to view device details"
                 >
                   <td>
                     <strong>{device.device_name || "Unknown Device"}</strong>

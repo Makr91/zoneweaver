@@ -3,28 +3,34 @@ import React, { useState } from "react";
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
 
-const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onError }) => {
+const ArtifactDownloadModal = ({
+  server,
+  storagePaths,
+  onClose,
+  onSuccess,
+  onError,
+}) => {
   const [formData, setFormData] = useState({
     url: "",
     storage_path_id: "",
     filename: "",
     checksum: "",
     checksum_algorithm: "sha256",
-    overwrite_existing: false
+    overwrite_existing: false,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  const enabledStoragePaths = storagePaths.filter(path => path.enabled);
+  const enabledStoragePaths = storagePaths.filter((path) => path.enabled);
 
   // Set default storage path if only one is available
   React.useEffect(() => {
     if (enabledStoragePaths.length === 1 && !formData.storage_path_id) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        storage_path_id: enabledStoragePaths[0].id
+        storage_path_id: enabledStoragePaths[0].id,
       }));
     }
   }, [enabledStoragePaths, formData.storage_path_id]);
@@ -47,7 +53,8 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
     }
 
     if (formData.checksum.trim() && !formData.checksum_algorithm) {
-      newErrors.checksum_algorithm = "Checksum algorithm is required when checksum is provided";
+      newErrors.checksum_algorithm =
+        "Checksum algorithm is required when checksum is provided";
     }
 
     setErrors(newErrors);
@@ -55,16 +62,16 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
@@ -72,8 +79,8 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
   const extractFilenameFromUrl = (url) => {
     try {
       const urlObj = new URL(url);
-      const pathname = urlObj.pathname;
-      const filename = pathname.split('/').pop();
+      const { pathname } = urlObj;
+      const filename = pathname.split("/").pop();
       return filename || "";
     } catch {
       return "";
@@ -82,7 +89,7 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
 
   const handleUrlChange = (url) => {
     handleInputChange("url", url);
-    
+
     // Auto-suggest filename from URL if no custom filename is set
     if (!formData.filename.trim()) {
       const suggestedFilename = extractFilenameFromUrl(url);
@@ -94,25 +101,25 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setLoading(true);
-      
+
       const requestBody = {
         url: formData.url.trim(),
         storage_path_id: formData.storage_path_id,
-        overwrite_existing: formData.overwrite_existing
+        overwrite_existing: formData.overwrite_existing,
       };
 
       // Add optional fields only if they have values
       if (formData.filename.trim()) {
         requestBody.filename = formData.filename.trim();
       }
-      
+
       if (formData.checksum.trim()) {
         requestBody.checksum = formData.checksum.trim();
         requestBody.checksum_algorithm = formData.checksum_algorithm;
@@ -139,12 +146,14 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
     }
   };
 
-  const selectedStoragePath = enabledStoragePaths.find(p => p.id === formData.storage_path_id);
+  const selectedStoragePath = enabledStoragePaths.find(
+    (p) => p.id === formData.storage_path_id
+  );
 
   if (enabledStoragePaths.length === 0) {
     return (
       <FormModal
-        isOpen={true}
+        isOpen
         onClose={onClose}
         title="Download from URL"
         icon="fas fa-download"
@@ -156,8 +165,9 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
             <strong>No enabled storage locations available.</strong>
           </p>
           <p>
-            You need at least one enabled storage location before you can download artifacts. 
-            Please create or enable a storage location first.
+            You need at least one enabled storage location before you can
+            download artifacts. Please create or enable a storage location
+            first.
           </p>
         </div>
       </FormModal>
@@ -166,7 +176,7 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Download from URL"
@@ -175,7 +185,7 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
       submitVariant="is-success"
       submitIcon="fas fa-download"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
     >
       <div className="field">
         <label className="label">URL</label>
@@ -199,7 +209,9 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
           <div className="select is-fullwidth">
             <select
               value={formData.storage_path_id}
-              onChange={(e) => handleInputChange("storage_path_id", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("storage_path_id", e.target.value)
+              }
               disabled={loading}
               className={errors.storage_path_id ? "is-danger" : ""}
             >
@@ -212,7 +224,9 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
             </select>
           </div>
         </div>
-        {errors.storage_path_id && <p className="help is-danger">{errors.storage_path_id}</p>}
+        {errors.storage_path_id && (
+          <p className="help is-danger">{errors.storage_path_id}</p>
+        )}
         <p className="help">Where to store the downloaded file</p>
       </div>
 
@@ -248,7 +262,9 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
             <div className="select">
               <select
                 value={formData.checksum_algorithm}
-                onChange={(e) => handleInputChange("checksum_algorithm", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("checksum_algorithm", e.target.value)
+                }
                 disabled={loading || !formData.checksum.trim()}
               >
                 <option value="md5">MD5</option>
@@ -258,7 +274,9 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
             </div>
           </div>
         </div>
-        <p className="help">Optional checksum for file integrity verification</p>
+        <p className="help">
+          Optional checksum for file integrity verification
+        </p>
       </div>
 
       <div className="field">
@@ -267,7 +285,9 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
             <input
               type="checkbox"
               checked={formData.overwrite_existing}
-              onChange={(e) => handleInputChange("overwrite_existing", e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("overwrite_existing", e.target.checked)
+              }
               disabled={loading}
             />
             <span className="ml-2">Overwrite existing files</span>
@@ -281,12 +301,23 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
       {selectedStoragePath && (
         <div className="notification is-info">
           <div className="content">
-            <p><strong>Selected Storage Location:</strong></p>
+            <p>
+              <strong>Selected Storage Location:</strong>
+            </p>
             <ul>
-              <li><strong>Name:</strong> {selectedStoragePath.name}</li>
-              <li><strong>Path:</strong> {selectedStoragePath.path}</li>
-              <li><strong>Type:</strong> {selectedStoragePath.type.toUpperCase()}</li>
-              <li><strong>Available Files:</strong> {selectedStoragePath.file_count || 0}</li>
+              <li>
+                <strong>Name:</strong> {selectedStoragePath.name}
+              </li>
+              <li>
+                <strong>Path:</strong> {selectedStoragePath.path}
+              </li>
+              <li>
+                <strong>Type:</strong> {selectedStoragePath.type.toUpperCase()}
+              </li>
+              <li>
+                <strong>Available Files:</strong>{" "}
+                {selectedStoragePath.file_count || 0}
+              </li>
             </ul>
           </div>
         </div>
@@ -294,12 +325,16 @@ const ArtifactDownloadModal = ({ server, storagePaths, onClose, onSuccess, onErr
 
       <div className="notification is-light">
         <div className="content">
-          <p><strong>Download Process:</strong></p>
+          <p>
+            <strong>Download Process:</strong>
+          </p>
           <ol>
             <li>Download task will be created and queued</li>
             <li>File will be downloaded to the selected storage location</li>
             <li>Checksum verification will be performed if provided</li>
-            <li>The artifact will be registered in the system upon completion</li>
+            <li>
+              The artifact will be registered in the system upon completion
+            </li>
           </ol>
         </div>
       </div>

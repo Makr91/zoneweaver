@@ -57,7 +57,7 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title={`Set Password for ${user.username}`}
@@ -65,7 +65,7 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
       submitText="Set Password"
       submitIcon="fas fa-key"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       aria-label={`Set password for user ${user.username}`}
     >
       {error && (
@@ -84,18 +84,14 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
             className="input"
             type="password"
             value={formData.password}
-            onChange={(e) =>
-              handleInputChange("password", e.target.value)
-            }
+            onChange={(e) => handleInputChange("password", e.target.value)}
             required
             disabled={loading}
             placeholder="Enter new password"
             autoComplete="new-password"
           />
         </div>
-        <p className="help">
-          Password must be at least 8 characters long
-        </p>
+        <p className="help">Password must be at least 8 characters long</p>
       </div>
 
       <div className="field">
@@ -154,9 +150,7 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
               disabled={loading}
             />
             <span className="check" />
-            <span className="control-label">
-              Unlock account if locked
-            </span>
+            <span className="control-label">Unlock account if locked</span>
           </label>
         </div>
         <p className="help">

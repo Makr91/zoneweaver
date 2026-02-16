@@ -20,6 +20,9 @@ export default [
       ".vite/**/*",
       "public/**/*",
       "*.log",
+      "*.json",
+      "*.lock",
+      ".vscode/**/*",
     ],
   },
 
@@ -319,15 +322,6 @@ export default [
     rules: {
       "no-undef": "off", // Allow import assertions and special Vite syntax
       "import/no-unresolved": "off", // Vite handles special imports
-    },
-  },
-
-  // Configuration files (JSON, etc.) - Minimal rules
-  {
-    files: ["**/*.{json,jsonc,json5}"],
-    rules: {
-      "no-unused-vars": "off",
-      "no-undef": "off",
     },
   },
 

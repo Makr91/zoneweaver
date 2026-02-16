@@ -15,18 +15,18 @@ const DatasetsTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
+          className="title is-5 mb-0 is-clickable"
           onClick={resetDatasetSort}
           title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-folder-tree"></i>
+              <i className="fas fa-folder-tree" />
             </span>
             <span>ZFS Datasets ({storageDatasets.length})</span>
             {datasetSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
@@ -34,14 +34,16 @@ const DatasetsTable = ({
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('datasets')}
-                      title={sectionsCollapsed.datasets ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("datasets")}
+          title={
+            sectionsCollapsed.datasets ? "Expand section" : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.datasets ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>
@@ -55,73 +57,67 @@ const DatasetsTable = ({
                 <tr>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('name', e)}
+                    onClick={(e) => handleDatasetSort("name", e)}
                     title="Click to sort by dataset name. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Dataset Name{" "}
-                    <i
-                      className={`fas ${getSortIcon(datasetSort, "name")}`}
-                    ></i>
+                    <i className={`fas ${getSortIcon(datasetSort, "name")}`} />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('type', e)}
+                    onClick={(e) => handleDatasetSort("type", e)}
                     title="Click to sort by dataset type. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Type{" "}
-                    <i
-                      className={`fas ${getSortIcon(datasetSort, "type")}`}
-                    ></i>
+                    <i className={`fas ${getSortIcon(datasetSort, "type")}`} />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('used', e)}
+                    onClick={(e) => handleDatasetSort("used", e)}
                     title="Click to sort by used space. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Used{" "}
-                    <i
-                      className={`fas ${getSortIcon(datasetSort, "used")}`}
-                    ></i>
+                    <i className={`fas ${getSortIcon(datasetSort, "used")}`} />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('available', e)}
+                    onClick={(e) => handleDatasetSort("available", e)}
                     title="Click to sort by available space. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Available{" "}
                     <i
                       className={`fas ${getSortIcon(datasetSort, "available")}`}
-                    ></i>
+                    />
                   </th>
                   <th
-                                          className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('referenced', e)}
+                    className="is-clickable"
+                    onClick={(e) => handleDatasetSort("referenced", e)}
                     title="Click to sort by referenced space. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Referenced{" "}
                     <i
                       className={`fas ${getSortIcon(datasetSort, "referenced")}`}
-                    ></i>
+                    />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('compression', e)}
+                    onClick={(e) => handleDatasetSort("compression", e)}
                     title="Click to sort by compression. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Compression{" "}
                     <i
                       className={`fas ${getSortIcon(datasetSort, "compression")}`}
-                    ></i>
+                    />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handleDatasetSort('mountpoint', e)}
+                    onClick={(e) => handleDatasetSort("mountpoint", e)}
                     title="Click to sort by mountpoint. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Mountpoint{" "}
                     <i
                       className={`fas ${getSortIcon(datasetSort, "mountpoint")}`}
-                    ></i>
+                    />
                   </th>
                 </tr>
               </thead>

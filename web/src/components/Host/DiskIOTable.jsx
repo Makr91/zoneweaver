@@ -13,18 +13,18 @@ const DiskIOTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
-                      onClick={resetDiskIOSort}
+          className="title is-5 mb-0 is-clickable"
+          onClick={resetDiskIOSort}
           title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-chart-bar"></i>
+              <i className="fas fa-chart-bar" />
             </span>
             <span>Real-Time Disk I/O Statistics ({diskIOStats.length})</span>
             {diskIOSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
@@ -32,14 +32,16 @@ const DiskIOTable = ({
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('diskIO')}
-                      title={sectionsCollapsed.diskIO ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("diskIO")}
+          title={
+            sectionsCollapsed.diskIO ? "Expand section" : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.diskIO ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>

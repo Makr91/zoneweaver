@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
 
-import GroupTable from "./GroupTable";
 import GroupCreateModal from "./GroupCreateModal";
 import GroupDetailsModal from "./GroupDetailsModal";
+import GroupTable from "./GroupTable";
 
 const GroupSection = ({ server, onError }) => {
   const [groups, setGroups] = useState([]);

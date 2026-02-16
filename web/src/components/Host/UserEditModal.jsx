@@ -21,7 +21,9 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
   }, []);
 
   const loadEditOptions = async () => {
-    if (!server || !makeZoneweaverAPIRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
 
     try {
       // Load available groups for selection
@@ -88,24 +90,24 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
 
       // Build payload with only changed fields
       const payload = {};
-      
+
       if (formData.new_comment !== user.comment) {
         payload.new_comment = formData.new_comment.trim() || undefined;
       }
-      
+
       if (formData.new_shell !== user.shell) {
         payload.new_shell = formData.new_shell;
       }
-      
+
       // Always include arrays if they have values
       if (formData.new_groups.length > 0) {
         payload.new_groups = formData.new_groups;
       }
-      
+
       if (formData.new_authorizations.length > 0) {
         payload.new_authorizations = formData.new_authorizations;
       }
-      
+
       if (formData.new_profiles.length > 0) {
         payload.new_profiles = formData.new_profiles;
       }
@@ -185,7 +187,7 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title={`Edit User: ${user.username}`}
@@ -193,7 +195,7 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       submitText="Update User"
       submitIcon="fas fa-save"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       aria-label={`Edit user ${user.username}`}
     >
       <div className="field">
@@ -262,8 +264,7 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
           />
         </div>
         <p className="help">
-          Available groups:{" "}
-          {availableGroups.map((g) => g.groupname).join(", ")}
+          Available groups: {availableGroups.map((g) => g.groupname).join(", ")}
         </p>
       </div>
 
@@ -301,8 +302,8 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
 
       <div className="notification is-info">
         <p>
-          <strong>Note:</strong> Only fields that have been changed will be updated.
-          User ID (UID) and primary group (GID) cannot be modified.
+          <strong>Note:</strong> Only fields that have been changed will be
+          updated. User ID (UID) and primary group (GID) cannot be modified.
         </p>
       </div>
     </FormModal>

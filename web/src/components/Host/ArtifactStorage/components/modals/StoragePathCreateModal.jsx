@@ -8,7 +8,7 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
     name: "",
     path: "",
     type: "iso",
-    enabled: true
+    enabled: true,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -39,30 +39,30 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setLoading(true);
-      
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
@@ -73,7 +73,7 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
           name: formData.name.trim(),
           path: formData.path.trim(),
           type: formData.type,
-          enabled: formData.enabled
+          enabled: formData.enabled,
         }
       );
 
@@ -91,7 +91,7 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Create Storage Path"
@@ -100,7 +100,7 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitVariant="is-primary"
       submitIcon="fas fa-plus"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
     >
       <div className="field">
         <label className="label">Name</label>
@@ -131,7 +131,9 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
           />
         </div>
         {errors.path && <p className="help is-danger">{errors.path}</p>}
-        <p className="help">Absolute path to the storage directory on the host system</p>
+        <p className="help">
+          Absolute path to the storage directory on the host system
+        </p>
       </div>
 
       <div className="field">
@@ -149,7 +151,9 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </div>
         </div>
         {errors.type && <p className="help is-danger">{errors.type}</p>}
-        <p className="help">Type of artifacts this storage location will contain</p>
+        <p className="help">
+          Type of artifacts this storage location will contain
+        </p>
       </div>
 
       <div className="field">
@@ -165,18 +169,27 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </label>
         </div>
         <p className="help">
-          Enabled storage locations can be used for uploads and downloads. 
+          Enabled storage locations can be used for uploads and downloads.
           Disabled locations are read-only.
         </p>
       </div>
 
       <div className="notification is-info">
         <div className="content">
-          <p><strong>Important:</strong></p>
+          <p>
+            <strong>Important:</strong>
+          </p>
           <ul>
-            <li>The specified path must exist and be writable by the OmniOS system</li>
-            <li>Ensure adequate disk space is available for artifact storage</li>
-            <li>Path validation will be performed when creating the storage location</li>
+            <li>
+              The specified path must exist and be writable by the OmniOS system
+            </li>
+            <li>
+              Ensure adequate disk space is available for artifact storage
+            </li>
+            <li>
+              Path validation will be performed when creating the storage
+              location
+            </li>
           </ul>
         </div>
       </div>

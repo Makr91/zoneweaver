@@ -8,19 +8,25 @@ const RoleDetailsModal = ({ role, onClose }) => {
       return <span className="has-text-grey">N/A</span>;
     }
     if (Array.isArray(value)) {
-      return value.length > 0 ? value.join(", ") : <span className="has-text-grey">None</span>;
+      return value.length > 0 ? (
+        value.join(", ")
+      ) : (
+        <span className="has-text-grey">None</span>
+      );
     }
     return value;
   };
 
   const formatShell = (shell) => {
-    if (!shell) return "N/A";
+    if (!shell) {
+      return "N/A";
+    }
     return shell;
   };
 
   return (
     <ContentModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       title={`Role Details: ${role.rolename}`}
       icon="fas fa-user-shield"
@@ -36,25 +42,37 @@ const RoleDetailsModal = ({ role, onClose }) => {
             </span>
             <span>Basic Information</span>
           </h4>
-          
+
           <div className="table-container">
             <table className="table is-fullwidth">
               <tbody>
                 <tr>
-                  <td><strong>Role Name</strong></td>
+                  <td>
+                    <strong>Role Name</strong>
+                  </td>
                   <td className="is-family-monospace">{role.rolename}</td>
                 </tr>
                 <tr>
-                  <td><strong>Comment</strong></td>
+                  <td>
+                    <strong>Comment</strong>
+                  </td>
                   <td>{formatValue(role.comment)}</td>
                 </tr>
                 <tr>
-                  <td><strong>Shell</strong></td>
-                  <td className="is-family-monospace">{formatShell(role.shell)}</td>
+                  <td>
+                    <strong>Shell</strong>
+                  </td>
+                  <td className="is-family-monospace">
+                    {formatShell(role.shell)}
+                  </td>
                 </tr>
                 <tr>
-                  <td><strong>Home Directory</strong></td>
-                  <td className="is-family-monospace">{formatValue(role.home)}</td>
+                  <td>
+                    <strong>Home Directory</strong>
+                  </td>
+                  <td className="is-family-monospace">
+                    {formatValue(role.home)}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -74,12 +92,17 @@ const RoleDetailsModal = ({ role, onClose }) => {
             <table className="table is-fullwidth">
               <tbody>
                 <tr>
-                  <td><strong>Authorizations</strong></td>
+                  <td>
+                    <strong>Authorizations</strong>
+                  </td>
                   <td>
                     {role.authorizations && role.authorizations.length > 0 ? (
                       <div className="content">
                         {role.authorizations.map((auth, index) => (
-                          <div key={index} className="is-family-monospace is-size-7">
+                          <div
+                            key={index}
+                            className="is-family-monospace is-size-7"
+                          >
                             <span className="tag is-info is-light mr-1">
                               {auth}
                             </span>
@@ -93,7 +116,9 @@ const RoleDetailsModal = ({ role, onClose }) => {
                 </tr>
 
                 <tr>
-                  <td><strong>Profiles</strong></td>
+                  <td>
+                    <strong>Profiles</strong>
+                  </td>
                   <td>
                     {role.profiles && role.profiles.length > 0 ? (
                       <div className="tags">
@@ -122,36 +147,58 @@ const RoleDetailsModal = ({ role, onClose }) => {
         </span>
         <span>Role Usage</span>
       </h4>
-      
+
       <div className="content">
         <div className="notification is-light">
-          <p><strong>How Roles Work:</strong></p>
+          <p>
+            <strong>How Roles Work:</strong>
+          </p>
           <ul>
-            <li>Roles are special accounts that provide collections of privileges</li>
-            <li>Users can be granted the ability to assume roles using <code>su</code> or <code>pfexec</code></li>
-            <li>When a user assumes a role, they gain the role's authorizations and profiles</li>
-            <li>Roles typically use the profile shell (<code>/bin/pfsh</code>) for RBAC enforcement</li>
-            <li>Users must be explicitly granted permission to assume specific roles</li>
+            <li>
+              Roles are special accounts that provide collections of privileges
+            </li>
+            <li>
+              Users can be granted the ability to assume roles using{" "}
+              <code>su</code> or <code>pfexec</code>
+            </li>
+            <li>
+              When a user assumes a role, they gain the role's authorizations
+              and profiles
+            </li>
+            <li>
+              Roles typically use the profile shell (<code>/bin/pfsh</code>) for
+              RBAC enforcement
+            </li>
+            <li>
+              Users must be explicitly granted permission to assume specific
+              roles
+            </li>
           </ul>
         </div>
 
         <div className="notification is-info">
-          <p><strong>Assigning Roles to Users:</strong></p>
-          <p>To allow users to assume this role, edit their user account and add "<strong>{role.rolename}</strong>" to their roles list in the User Management section.</p>
+          <p>
+            <strong>Assigning Roles to Users:</strong>
+          </p>
+          <p>
+            To allow users to assume this role, edit their user account and add
+            "<strong>{role.rolename}</strong>" to their roles list in the User
+            Management section.
+          </p>
         </div>
       </div>
 
       {/* Shell Information */}
       {role.shell && (
         <div className="notification is-warning">
-          <p><strong>Shell Configuration:</strong></p>
           <p>
-            This role uses <code>{role.shell}</code>. 
-            {role.shell === "/bin/pfsh" ? (
-              " This is the recommended profile shell for RBAC roles."
-            ) : (
-              " Consider using /bin/pfsh for proper RBAC privilege enforcement."
-            )}
+            <strong>Shell Configuration:</strong>
+          </p>
+          <p>
+            This role uses <code>{role.shell}</code>.
+            {role.shell === "/bin/pfsh"
+              ? " This is the recommended profile shell for RBAC roles."
+              : " Consider using /bin/pfsh for proper RBAC privilege enforcement."}
           </p>
         </div>
       )}

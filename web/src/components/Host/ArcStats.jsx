@@ -14,7 +14,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
           <h4 className="title is-5 mb-0">
             <span className="icon-text">
               <span className="icon">
-                <i className="fas fa-memory"></i>
+                <i className="fas fa-memory" />
               </span>
               <span>ZFS ARC Statistics</span>
             </span>
@@ -22,14 +22,16 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
         </div>
         <div className="level-right">
           <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('arcStats')}
-                      title={sectionsCollapsed.arcStats ? 'Expand section' : 'Collapse section'}
+            className="button is-small is-ghost"
+            onClick={() => toggleSection("arcStats")}
+            title={
+              sectionsCollapsed.arcStats ? "Expand section" : "Collapse section"
+            }
           >
             <span className="icon">
               <i
                 className={`fas ${sectionsCollapsed.arcStats ? "fa-chevron-down" : "fa-chevron-up"}`}
-              ></i>
+              />
             </span>
           </button>
         </div>
@@ -43,7 +45,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                 <h6 className="title is-6 mb-2 has-text-info">
                   <span className="icon-text">
                     <span className="icon">
-                      <i className="fas fa-chart-pie"></i>
+                      <i className="fas fa-chart-pie" />
                     </span>
                     <span>ARC Overview</span>
                   </span>
@@ -200,7 +202,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   <h6 className="title is-6 mb-2 has-text-success">
                     <span className="icon-text">
                       <span className="icon">
-                        <i className="fas fa-memory"></i>
+                        <i className="fas fa-memory" />
                       </span>
                       <span>Memory Breakdown</span>
                     </span>
@@ -268,7 +270,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   <h6 className="title is-6 mb-2 has-text-warning">
                     <span className="icon-text">
                       <span className="icon">
-                        <i className="fas fa-bullseye"></i>
+                        <i className="fas fa-bullseye" />
                       </span>
                       <span>Hit/Miss Statistics</span>
                     </span>
@@ -348,7 +350,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   <h6 className="title is-6 mb-2 has-text-info">
                     <span className="icon-text">
                       <span className="icon">
-                        <i className="fas fa-exchange-alt"></i>
+                        <i className="fas fa-exchange-alt" />
                       </span>
                       <span>Demand vs Prefetch</span>
                     </span>
@@ -444,7 +446,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   <h6 className="title is-6 mb-2 has-text-danger">
                     <span className="icon-text">
                       <span className="icon">
-                        <i className="fas fa-layer-group"></i>
+                        <i className="fas fa-layer-group" />
                       </span>
                       <span>L2ARC Statistics</span>
                     </span>

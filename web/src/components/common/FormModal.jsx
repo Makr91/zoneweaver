@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * FormModal - Reusable modal for forms and interactive content
@@ -63,7 +64,7 @@ const FormModal = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className="modal is-active">
       {/* Background - clicking closes modal (unless loading) */}
       <div
@@ -142,7 +143,8 @@ const FormModal = ({
           </footer>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

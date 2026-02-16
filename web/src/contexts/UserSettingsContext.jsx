@@ -40,7 +40,14 @@ const UserSettingsProvider = ({ children }) => {
     const saved = localStorage.getItem("zoneweaver_task_visible_columns");
     return saved
       ? JSON.parse(saved)
-      : ["operation", "zone_name", "status", "progress", "priority", "created_at"];
+      : [
+          "operation",
+          "zone_name",
+          "status",
+          "progress",
+          "priority",
+          "created_at",
+        ];
   });
 
   const [hostsExpanded, setHostsExpanded] = useState(() => {
@@ -89,7 +96,10 @@ const UserSettingsProvider = ({ children }) => {
   }, [footerActiveView]);
 
   useEffect(() => {
-    localStorage.setItem("zoneweaver_task_min_priority", taskMinPriority.toString());
+    localStorage.setItem(
+      "zoneweaver_task_min_priority",
+      taskMinPriority.toString()
+    );
   }, [taskMinPriority]);
 
   useEffect(() => {

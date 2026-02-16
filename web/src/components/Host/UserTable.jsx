@@ -70,13 +70,17 @@ const UserTable = ({
   };
 
   const formatShell = (shell) => {
-    if (!shell) return "N/A";
+    if (!shell) {
+      return "N/A";
+    }
     const parts = shell.split("/");
     return parts[parts.length - 1] || shell;
   };
 
   const formatHome = (home) => {
-    if (!home) return "N/A";
+    if (!home) {
+      return "N/A";
+    }
     if (home.length > 25) {
       return `...${home.slice(-22)}`;
     }
@@ -121,119 +125,117 @@ const UserTable = ({
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => {
-            return (
-              <tr key={user.username || index}>
-                <td>
-                  <div className="is-flex is-align-items-center">
-                    {getUserStatusIcon(user)}
-                    <span className="ml-2">
-                      <strong>{user.username}</strong>
+          {users.map((user, index) => (
+            <tr key={user.username || index}>
+              <td>
+                <div className="is-flex is-align-items-center">
+                  {getUserStatusIcon(user)}
+                  <span className="ml-2">
+                    <strong>{user.username}</strong>
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span className="is-family-monospace">{user.uid}</span>
+              </td>
+              <td>
+                <span className="is-family-monospace">{user.gid}</span>
+              </td>
+              <td>
+                <span className="is-size-7" title={user.comment}>
+                  {user.comment || "N/A"}
+                </span>
+              </td>
+              <td>
+                <span
+                  className="is-family-monospace is-size-7"
+                  title={user.home}
+                >
+                  {formatHome(user.home)}
+                </span>
+              </td>
+              <td>
+                <span
+                  className="is-family-monospace is-size-7"
+                  title={user.shell}
+                >
+                  {formatShell(user.shell)}
+                </span>
+              </td>
+              <td>{getUserStatusTag(user)}</td>
+              <td>
+                <div className="buttons are-small">
+                  {/* Edit Button */}
+                  <button
+                    className="button"
+                    onClick={() => handleAction(user, "edit")}
+                    disabled={loading}
+                    title="Edit User"
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-edit" />
                     </span>
-                  </div>
-                </td>
-                <td>
-                  <span className="is-family-monospace">{user.uid}</span>
-                </td>
-                <td>
-                  <span className="is-family-monospace">{user.gid}</span>
-                </td>
-                <td>
-                  <span className="is-size-7" title={user.comment}>
-                    {user.comment || "N/A"}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className="is-family-monospace is-size-7"
-                    title={user.home}
+                  </button>
+
+                  {/* Set Password Button */}
+                  <button
+                    className="button is-info"
+                    onClick={() => handleAction(user, "setPassword")}
+                    disabled={loading}
+                    title="Set Password"
                   >
-                    {formatHome(user.home)}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className="is-family-monospace is-size-7"
-                    title={user.shell}
+                    <span className="icon is-small">
+                      <i className="fas fa-key" />
+                    </span>
+                  </button>
+
+                  {/* Lock/Unlock Button - only for non-system users */}
+                  {user.uid >= 100 && (
+                    <button
+                      className="button is-warning"
+                      onClick={() => handleAction(user, "lock")}
+                      disabled={loading}
+                      title="Lock Account"
+                    >
+                      <span className="icon is-small">
+                        <i className="fas fa-lock" />
+                      </span>
+                    </button>
+                  )}
+
+                  {/* View Details Button */}
+                  <button
+                    className="button"
+                    onClick={() => onViewDetails(user)}
+                    disabled={loading}
+                    title="View Details"
                   >
-                    {formatShell(user.shell)}
-                  </span>
-                </td>
-                <td>{getUserStatusTag(user)}</td>
-                <td>
-                  <div className="buttons are-small">
-                    {/* Edit Button */}
+                    <span className="icon is-small">
+                      <i className="fas fa-info-circle" />
+                    </span>
+                  </button>
+
+                  {/* Delete Button - only for non-system users */}
+                  {user.uid >= 100 && (
                     <button
-                      className="button"
-                      onClick={() => handleAction(user, "edit")}
+                      className={`button is-danger ${
+                        actionLoading[`${user.username}-delete`]
+                          ? "is-loading"
+                          : ""
+                      }`}
+                      onClick={() => handleAction(user, "delete")}
                       disabled={loading}
-                      title="Edit User"
+                      title="Delete User"
                     >
                       <span className="icon is-small">
-                        <i className="fas fa-edit" />
+                        <i className="fas fa-trash" />
                       </span>
                     </button>
-
-                    {/* Set Password Button */}
-                    <button
-                      className="button is-info"
-                      onClick={() => handleAction(user, "setPassword")}
-                      disabled={loading}
-                      title="Set Password"
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-key" />
-                      </span>
-                    </button>
-
-                    {/* Lock/Unlock Button - only for non-system users */}
-                    {user.uid >= 100 && (
-                      <button
-                        className="button is-warning"
-                        onClick={() => handleAction(user, "lock")}
-                        disabled={loading}
-                        title="Lock Account"
-                      >
-                        <span className="icon is-small">
-                          <i className="fas fa-lock" />
-                        </span>
-                      </button>
-                    )}
-
-                    {/* View Details Button */}
-                    <button
-                      className="button"
-                      onClick={() => onViewDetails(user)}
-                      disabled={loading}
-                      title="View Details"
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
-                    </button>
-
-                    {/* Delete Button - only for non-system users */}
-                    {user.uid >= 100 && (
-                      <button
-                        className={`button is-danger ${
-                          actionLoading[`${user.username}-delete`]
-                            ? "is-loading"
-                            : ""
-                        }`}
-                        onClick={() => handleAction(user, "delete")}
-                        disabled={loading}
-                        title="Delete User"
-                      >
-                        <span className="icon is-small">
-                          <i className="fas fa-trash" />
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

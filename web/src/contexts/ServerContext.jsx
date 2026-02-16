@@ -380,10 +380,9 @@ export const ServerProvider = ({ children }) => {
         method,
         headers: {
           // Explicitly handle Content-Type for FormData vs JSON
-          ...(data instanceof FormData 
+          ...(data instanceof FormData
             ? { "Content-Type": false } // Tell axios to not set Content-Type - browser will set multipart/form-data
-            : { "Content-Type": "application/json" }
-          ),
+            : { "Content-Type": "application/json" }),
           // Add no-cache headers for VNC endpoints or when explicitly requested
           ...((path.includes("/vnc/") || bypassCache) && {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -392,7 +391,7 @@ export const ServerProvider = ({ children }) => {
         },
         // Set responseType for blob/binary responses
         ...(responseType !== "json" && {
-          responseType: responseType,
+          responseType,
         }),
         // Handle 304 responses appropriately - success for non-VNC, error for VNC (should not happen with no-cache)
         validateStatus: (status) =>
@@ -403,9 +402,10 @@ export const ServerProvider = ({ children }) => {
           timeout: 1800000, // 30 minutes for large file uploads
         }),
         // Add upload progress tracking for FormData
-        ...(data instanceof FormData && onUploadProgress && {
-          onUploadProgress: onUploadProgress,
-        }),
+        ...(data instanceof FormData &&
+          onUploadProgress && {
+            onUploadProgress,
+          }),
       };
 
       if (data) {
@@ -995,8 +995,16 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} options - Options (live)
    * @returns {Promise<Object>} VLAN details
    */
-  const getVlanDetails = async (hostname, port, protocol, vlanName, options = {}) => {
-    console.log(`🔍 VLANS: Getting VLAN details for ${vlanName} from ${hostname}:${port}`);
+  const getVlanDetails = async (
+    hostname,
+    port,
+    protocol,
+    vlanName,
+    options = {}
+  ) => {
+    console.log(
+      `🔍 VLANS: Getting VLAN details for ${vlanName} from ${hostname}:${port}`
+    );
     return await makeZoneweaverAPIRequest(
       hostname,
       port,
@@ -1037,7 +1045,13 @@ export const ServerProvider = ({ children }) => {
    * @param {Object} options - Delete options (temporary, created_by)
    * @returns {Promise<Object>} Delete result
    */
-  const deleteVlan = async (hostname, port, protocol, vlanName, options = {}) => {
+  const deleteVlan = async (
+    hostname,
+    port,
+    protocol,
+    vlanName,
+    options = {}
+  ) => {
     console.log(`🗑️ VLANS: Deleting VLAN ${vlanName} from ${hostname}:${port}`);
     return await makeZoneweaverAPIRequest(
       hostname,
@@ -1430,7 +1444,7 @@ export const ServerProvider = ({ children }) => {
       {
         grace_period: options.gracePeriod || 60,
         message: options.message || "System restart via Zoneweaver UI",
-        confirm: true
+        confirm: true,
       }
     );
   };
@@ -1454,7 +1468,7 @@ export const ServerProvider = ({ children }) => {
       "POST",
       {
         confirm: true,
-        dump_core: options.dumpCore || false
+        dump_core: options.dumpCore || false,
       }
     );
   };
@@ -1480,7 +1494,7 @@ export const ServerProvider = ({ children }) => {
       {
         grace_period: options.gracePeriod || 60,
         message: options.message || "System shutdown via Zoneweaver UI",
-        confirm: true
+        confirm: true,
       }
     );
   };

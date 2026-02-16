@@ -7,16 +7,20 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
   const { makeZoneweaverAPIRequest } = useServers();
 
   const formatSize = (bytes) => {
-    if (!bytes) return "0 B";
-    
+    if (!bytes) {
+      return "0 B";
+    }
+
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+    return `${(bytes / 1024 ** i).toFixed(2)} ${sizes[i]}`;
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    
+    if (!dateString) {
+      return "N/A";
+    }
+
     try {
       const date = new Date(dateString);
       return date.toLocaleString();
@@ -27,14 +31,18 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
   const getTypeIcon = (fileType, extension) => {
     const type = fileType?.toLowerCase() || extension?.toLowerCase();
-    
+
     if (type === "iso" || extension?.toLowerCase() === ".iso") {
       return "fas fa-compact-disc has-text-info";
-    } else if (type === "image" || [".vmdk", ".vhd", ".vhdx", ".qcow2", ".img"].includes(extension?.toLowerCase())) {
+    } else if (
+      type === "image" ||
+      [".vmdk", ".vhd", ".vhdx", ".qcow2", ".img"].includes(
+        extension?.toLowerCase()
+      )
+    ) {
       return "fas fa-hdd has-text-warning";
-    } else {
-      return "fas fa-file has-text-grey";
     }
+    return "fas fa-file has-text-grey";
   };
 
   const getChecksumStatusIcon = (verified) => {
@@ -42,9 +50,8 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       return <i className="fas fa-check-circle has-text-success" />;
     } else if (verified === false) {
       return <i className="fas fa-times-circle has-text-danger" />;
-    } else {
-      return <i className="fas fa-question-circle has-text-grey" />;
     }
+    return <i className="fas fa-question-circle has-text-grey" />;
   };
 
   const getChecksumStatusText = (verified) => {
@@ -52,9 +59,8 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       return "Verified";
     } else if (verified === false) {
       return "Mismatch";
-    } else {
-      return "Not verified";
     }
+    return "Not verified";
   };
 
   const handleDownloadFile = async () => {
@@ -66,32 +72,32 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         server.protocol,
         `artifacts/${artifact.id}/download`,
         "GET",
-        null,        // data
-        null,        // params
-        false,       // bypassCache
-        null,        // onUploadProgress
-        "blob"       // responseType
+        null, // data
+        null, // params
+        false, // bypassCache
+        null, // onUploadProgress
+        "blob" // responseType
       );
 
       if (result.success) {
         // Create download link from blob
         const blob = result.data;
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = url;
         link.download = artifact.filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Clean up the blob URL
         window.URL.revokeObjectURL(url);
       } else {
-        console.error('Download failed:', result.message);
+        console.error("Download failed:", result.message);
         alert(`Download failed: ${result.message}`);
       }
     } catch (err) {
-      console.error('Error downloading file:', err);
+      console.error("Error downloading file:", err);
       alert(`Error downloading file: ${err.message}`);
     }
   };
@@ -100,7 +106,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
   return (
     <ContentModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       title={artifact.filename}
       icon={getTypeIcon(artifact.file_type, artifact.extension)}
@@ -110,35 +116,55 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         <div className="columns">
           <div className="column">
             <h4 className="title is-5">File Information</h4>
-            
+
             <table className="table is-fullwidth">
               <tbody>
                 <tr>
-                  <td><strong>Filename:</strong></td>
-                  <td className="is-family-monospace">{artifactData.filename}</td>
+                  <td>
+                    <strong>Filename:</strong>
+                  </td>
+                  <td className="is-family-monospace">
+                    {artifactData.filename}
+                  </td>
                 </tr>
                 <tr>
-                  <td><strong>File Type:</strong></td>
                   <td>
-                    <span className={`tag ${
-                      artifactData.file_type === 'iso' ? 'is-info' :
-                      artifactData.file_type === 'image' ? 'is-warning' :
-                      'is-light'
-                    }`}>
-                      {artifactData.file_type?.toUpperCase() || 'Unknown'}
+                    <strong>File Type:</strong>
+                  </td>
+                  <td>
+                    <span
+                      className={`tag ${
+                        artifactData.file_type === "iso"
+                          ? "is-info"
+                          : artifactData.file_type === "image"
+                            ? "is-warning"
+                            : "is-light"
+                      }`}
+                    >
+                      {artifactData.file_type?.toUpperCase() || "Unknown"}
                     </span>
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>Extension:</strong></td>
-                  <td className="is-family-monospace">{artifactData.extension || 'N/A'}</td>
+                  <td>
+                    <strong>Extension:</strong>
+                  </td>
+                  <td className="is-family-monospace">
+                    {artifactData.extension || "N/A"}
+                  </td>
                 </tr>
                 <tr>
-                  <td><strong>MIME Type:</strong></td>
-                  <td className="is-family-monospace">{artifactData.mime_type || 'N/A'}</td>
+                  <td>
+                    <strong>MIME Type:</strong>
+                  </td>
+                  <td className="is-family-monospace">
+                    {artifactData.mime_type || "N/A"}
+                  </td>
                 </tr>
                 <tr>
-                  <td><strong>File Size:</strong></td>
+                  <td>
+                    <strong>File Size:</strong>
+                  </td>
                   <td>
                     <strong>{formatSize(artifactData.size)}</strong>
                     <span className="ml-2 has-text-grey is-size-7">
@@ -147,8 +173,12 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>Path:</strong></td>
-                  <td className="is-family-monospace is-size-7">{artifactData.path}</td>
+                  <td>
+                    <strong>Path:</strong>
+                  </td>
+                  <td className="is-family-monospace is-size-7">
+                    {artifactData.path}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -156,21 +186,29 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
           <div className="column">
             <h4 className="title is-5">Storage Details</h4>
-            
+
             <table className="table is-fullwidth">
               <tbody>
                 {artifactData.storage_location && (
                   <>
                     <tr>
-                      <td><strong>Storage Name:</strong></td>
+                      <td>
+                        <strong>Storage Name:</strong>
+                      </td>
                       <td>{artifactData.storage_location.name}</td>
                     </tr>
                     <tr>
-                      <td><strong>Storage Path:</strong></td>
-                      <td className="is-family-monospace is-size-7">{artifactData.storage_location.path}</td>
+                      <td>
+                        <strong>Storage Path:</strong>
+                      </td>
+                      <td className="is-family-monospace is-size-7">
+                        {artifactData.storage_location.path}
+                      </td>
                     </tr>
                     <tr>
-                      <td><strong>Storage Type:</strong></td>
+                      <td>
+                        <strong>Storage Type:</strong>
+                      </td>
                       <td>
                         <span className="tag is-light">
                           {artifactData.storage_location.type?.toUpperCase()}
@@ -180,16 +218,20 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
                   </>
                 )}
                 <tr>
-                  <td><strong>Discovered:</strong></td>
+                  <td>
+                    <strong>Discovered:</strong>
+                  </td>
                   <td>{formatDate(artifactData.discovered_at)}</td>
                 </tr>
                 {artifactData.source_url && (
                   <tr>
-                    <td><strong>Source URL:</strong></td>
                     <td>
-                      <a 
-                        href={artifactData.source_url} 
-                        target="_blank" 
+                      <strong>Source URL:</strong>
+                    </td>
+                    <td>
+                      <a
+                        href={artifactData.source_url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="is-size-7"
                       >
@@ -226,7 +268,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
                 <input
                   className="input is-family-monospace is-size-7"
                   type="text"
-                  value={artifactData.checksum || 'Not calculated'}
+                  value={artifactData.checksum || "Not calculated"}
                   readOnly
                 />
               </div>
@@ -240,12 +282,12 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
               <label className="label">Algorithm</label>
               <div className="control">
                 <span className="tag is-info">
-                  {artifactData.checksum_algorithm?.toUpperCase() || 'N/A'}
+                  {artifactData.checksum_algorithm?.toUpperCase() || "N/A"}
                 </span>
               </div>
             </div>
           </div>
-          
+
           <div className="column is-narrow">
             <div className="field">
               <label className="label">Verification Status</label>
@@ -254,11 +296,15 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
                   <span className="icon">
                     {getChecksumStatusIcon(artifactData.checksum_verified)}
                   </span>
-                  <span className={`has-text-weight-semibold ${
-                    artifactData.checksum_verified === true ? 'has-text-success' :
-                    artifactData.checksum_verified === false ? 'has-text-danger' :
-                    'has-text-grey'
-                  }`}>
+                  <span
+                    className={`has-text-weight-semibold ${
+                      artifactData.checksum_verified === true
+                        ? "has-text-success"
+                        : artifactData.checksum_verified === false
+                          ? "has-text-danger"
+                          : "has-text-grey"
+                    }`}
+                  >
                     {getChecksumStatusText(artifactData.checksum_verified)}
                   </span>
                 </span>
@@ -270,8 +316,9 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         {artifactData.checksum_verified === false && (
           <div className="notification is-warning">
             <p>
-              <strong>Checksum Mismatch Warning:</strong> The calculated checksum does not match the expected checksum. 
-              This could indicate file corruption or an incorrect expected checksum value.
+              <strong>Checksum Mismatch Warning:</strong> The calculated
+              checksum does not match the expected checksum. This could indicate
+              file corruption or an incorrect expected checksum value.
             </p>
           </div>
         )}
@@ -282,10 +329,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         <h4 className="title is-5">Actions</h4>
         <div className="field is-grouped">
           <p className="control">
-            <button
-              className="button is-primary"
-              onClick={handleDownloadFile}
-            >
+            <button className="button is-primary" onClick={handleDownloadFile}>
               <span className="icon">
                 <i className="fas fa-download" />
               </span>
@@ -307,7 +351,9 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
             {artifactData.storage_location && (
               <div className="column">
                 <p className="heading">Storage Location ID</p>
-                <p className="is-family-monospace is-size-7">{artifactData.storage_location.id}</p>
+                <p className="is-family-monospace is-size-7">
+                  {artifactData.storage_location.id}
+                </p>
               </div>
             )}
           </div>
@@ -315,7 +361,8 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       </div>
 
       {/* File Type Specific Information */}
-      {(artifactData.file_type === 'iso' || artifactData.extension === '.iso') && (
+      {(artifactData.file_type === "iso" ||
+        artifactData.extension === ".iso") && (
         <div className="content">
           <h4 className="title is-5">
             <span className="icon-text">
@@ -327,32 +374,37 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
           </h4>
           <div className="notification is-info">
             <p>
-              This is an ISO 9660 disc image file, commonly used for distributing operating systems, 
-              software, and other bootable media. ISO files can be mounted as virtual drives or 
-              burned to physical media.
+              This is an ISO 9660 disc image file, commonly used for
+              distributing operating systems, software, and other bootable
+              media. ISO files can be mounted as virtual drives or burned to
+              physical media.
             </p>
           </div>
         </div>
       )}
 
-      {(artifactData.file_type === 'image' && ['.vmdk', '.vhd', '.vhdx', '.qcow2'].includes(artifactData.extension)) && (
-        <div className="content">
-          <h4 className="title is-5">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-hdd" />
+      {artifactData.file_type === "image" &&
+        [".vmdk", ".vhd", ".vhdx", ".qcow2"].includes(
+          artifactData.extension
+        ) && (
+          <div className="content">
+            <h4 className="title is-5">
+              <span className="icon-text">
+                <span className="icon">
+                  <i className="fas fa-hdd" />
+                </span>
+                <span>VM Image Information</span>
               </span>
-              <span>VM Image Information</span>
-            </span>
-          </h4>
-          <div className="notification is-warning">
-            <p>
-              This is a virtual machine disk image file. These files contain complete virtual machine 
-              hard drives and can be used with hypervisors such as VMware, VirtualBox, KVM, or Hyper-V.
-            </p>
+            </h4>
+            <div className="notification is-warning">
+              <p>
+                This is a virtual machine disk image file. These files contain
+                complete virtual machine hard drives and can be used with
+                hypervisors such as VMware, VirtualBox, KVM, or Hyper-V.
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </ContentModal>
   );
 };

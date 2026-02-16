@@ -22,7 +22,7 @@ const StorageSummary = ({
           <h4 className="title is-5 mb-0">
             <span className="icon-text">
               <span className="icon">
-                <i className="fas fa-chart-pie"></i>
+                <i className="fas fa-chart-pie" />
               </span>
               <span>Storage Summary</span>
             </span>
@@ -30,14 +30,16 @@ const StorageSummary = ({
         </div>
         <div className="level-right">
           <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('summary')}
-                      title={sectionsCollapsed.summary ? 'Expand section' : 'Collapse section'}
+            className="button is-small is-ghost"
+            onClick={() => toggleSection("summary")}
+            title={
+              sectionsCollapsed.summary ? "Expand section" : "Collapse section"
+            }
           >
             <span className="icon">
               <i
                 className={`fas ${sectionsCollapsed.summary ? "fa-chevron-down" : "fa-chevron-up"}`}
-              ></i>
+              />
             </span>
           </button>
         </div>

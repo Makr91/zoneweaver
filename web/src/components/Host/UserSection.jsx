@@ -3,11 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
 
+import SetPasswordModal from "./SetPasswordModal";
 import UserCreateModal from "./UserCreateModal";
 import UserDetailsModal from "./UserDetailsModal";
 import UserEditModal from "./UserEditModal";
 import UserTable from "./UserTable";
-import SetPasswordModal from "./SetPasswordModal";
 
 const UserSection = ({ server, onError }) => {
   const [users, setUsers] = useState([]);
@@ -89,7 +89,7 @@ const UserSection = ({ server, onError }) => {
       let endpoint;
       let method;
       let body;
-      let params = {};
+      const params = {};
 
       if (action === "delete") {
         endpoint = `system/users/${encodeURIComponent(username)}`;
@@ -133,10 +133,9 @@ const UserSection = ({ server, onError }) => {
         }
         await loadUsers();
         return { success: true, message: result.message };
-      } else {
-        onError(result.message || `Failed to ${action} user`);
-        return { success: false, message: result.message };
       }
+      onError(result.message || `Failed to ${action} user`);
+      return { success: false, message: result.message };
     } catch (err) {
       const errorMsg = `Error performing ${action}: ${err.message}`;
       onError(errorMsg);
@@ -430,7 +429,11 @@ const UserSection = ({ server, onError }) => {
             setSelectedUser(null);
           }}
           onSuccess={async (passwordData) => {
-            await handleUserAction(selectedUser.username, "setPassword", passwordData);
+            await handleUserAction(
+              selectedUser.username,
+              "setPassword",
+              passwordData
+            );
             setShowPasswordModal(false);
             setSelectedUser(null);
           }}

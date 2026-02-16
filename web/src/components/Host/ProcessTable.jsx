@@ -54,7 +54,7 @@ const ProcessTable = ({
     if (!memStr && memStr !== 0) {
       return 0;
     }
-    
+
     // Convert to string to ensure we can call .match()
     const memString = String(memStr);
     const match = memString.match(/^(\d+(?:\.\d+)?)(K|M|G|T)?$/);

@@ -62,7 +62,7 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
         <tbody>
           {groups.map((group, index) => {
             const groupType = getGroupType(group);
-            
+
             return (
               <tr key={group.groupname || index}>
                 <td>

@@ -15,20 +15,20 @@ const InterfacesTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
+          className="title is-5 mb-0 is-clickable"
           onClick={resetInterfaceSort}
           title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-ethernet"></i>
+              <i className="fas fa-ethernet" />
             </span>
             <span>
               Network Interfaces ({networkInterfaces.length} interfaces)
             </span>
             {interfaceSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
@@ -36,14 +36,16 @@ const InterfacesTable = ({
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('interfaces')}
-                      title={sectionsCollapsed.interfaces ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("interfaces")}
+          title={
+            sectionsCollapsed.interfaces ? "Expand section" : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.interfaces ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>
@@ -56,65 +58,57 @@ const InterfacesTable = ({
               <tr>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleInterfaceSort('link')}
+                  onClick={() => handleInterfaceSort("link")}
                   title="Click to sort by interface name"
                 >
                   Link{" "}
-                  <i
-                    className={`fas ${getSortIcon(interfaceSort, "link")}`}
-                  ></i>
+                  <i className={`fas ${getSortIcon(interfaceSort, "link")}`} />
                 </th>
                 <th
-                                      className="is-clickable"
-                                      onClick={() => handleInterfaceSort('class')}
+                  className="is-clickable"
+                  onClick={() => handleInterfaceSort("class")}
                   title="Click to sort by interface class"
                 >
                   Class{" "}
-                  <i
-                    className={`fas ${getSortIcon(interfaceSort, "class")}`}
-                  ></i>
+                  <i className={`fas ${getSortIcon(interfaceSort, "class")}`} />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleInterfaceSort('state')}
+                  onClick={() => handleInterfaceSort("state")}
                   title="Click to sort by interface state"
                 >
                   State{" "}
-                  <i
-                    className={`fas ${getSortIcon(interfaceSort, "state")}`}
-                  ></i>
+                  <i className={`fas ${getSortIcon(interfaceSort, "state")}`} />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleInterfaceSort('speed')}
+                  onClick={() => handleInterfaceSort("speed")}
                   title="Click to sort by interface speed"
                 >
                   Speed{" "}
-                  <i
-                    className={`fas ${getSortIcon(interfaceSort, "speed")}`}
-                  ></i>
+                  <i className={`fas ${getSortIcon(interfaceSort, "speed")}`} />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleInterfaceSort('mtu')}
+                  onClick={() => handleInterfaceSort("mtu")}
                   title="Click to sort by MTU"
                 >
                   MTU{" "}
                   <i className={`fas ${getSortIcon(interfaceSort, "mtu")}`} />
                 </th>
                 <th
-                                      className="is-clickable"
-                                      onClick={() => handleInterfaceSort('macaddress')}
+                  className="is-clickable"
+                  onClick={() => handleInterfaceSort("macaddress")}
                   title="Click to sort by MAC address"
                 >
                   MAC Address{" "}
                   <i
                     className={`fas ${getSortIcon(interfaceSort, "macaddress")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleInterfaceSort('vid')}
+                  onClick={() => handleInterfaceSort("vid")}
                   title="Click to sort by VLAN ID"
                 >
                   VLAN{" "}
@@ -122,13 +116,11 @@ const InterfacesTable = ({
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleInterfaceSort('zone')}
+                  onClick={() => handleInterfaceSort("zone")}
                   title="Click to sort by zone"
                 >
                   Zone{" "}
-                  <i
-                    className={`fas ${getSortIcon(interfaceSort, "zone")}`}
-                  ></i>
+                  <i className={`fas ${getSortIcon(interfaceSort, "zone")}`} />
                 </th>
               </tr>
             </thead>
@@ -167,13 +159,15 @@ const InterfacesTable = ({
                   <td>
                     {iface.zone && iface.zone !== "--" ? (
                       <button
-                                                  className='button is-small is-warning py-1 px-2 is-size-7'
-                                                  onClick={() => window.location.href = `/ui/zones?zone=${encodeURIComponent(iface.zone)}`}
-                                                  title={`Go to zone: ${iface.zone}`}
+                        className="button is-small is-warning py-1 px-2 is-size-7"
+                        onClick={() =>
+                          (window.location.href = `/ui/zones?zone=${encodeURIComponent(iface.zone)}`)
+                        }
+                        title={`Go to zone: ${iface.zone}`}
                       >
                         <span className="icon-text">
                           <span className="icon is-small">
-                            <i className="fas fa-external-link-alt"></i>
+                            <i className="fas fa-external-link-alt" />
                           </span>
                           <span>{iface.zone}</span>
                         </span>

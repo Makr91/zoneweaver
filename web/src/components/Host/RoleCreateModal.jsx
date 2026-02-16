@@ -119,17 +119,11 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }
   };
 
-  const shells = [
-    "/bin/pfsh",
-    "/bin/bash",
-    "/bin/sh",
-    "/bin/zsh",
-    "/bin/ksh",
-  ];
+  const shells = ["/bin/pfsh", "/bin/bash", "/bin/sh", "/bin/zsh", "/bin/ksh"];
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Create Role"
@@ -137,7 +131,7 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitText="Create Role"
       submitIcon="fas fa-plus"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       aria-label="Create new RBAC role"
     >
       <div className="field">
@@ -149,9 +143,7 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
             className="input"
             type="text"
             value={formData.rolename}
-            onChange={(e) =>
-              handleInputChange("rolename", e.target.value)
-            }
+            onChange={(e) => handleInputChange("rolename", e.target.value)}
             required
             disabled={loading}
             placeholder="Enter role name"
@@ -228,16 +220,12 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
             className="input"
             type="text"
             value={formData.profiles.join(", ")}
-            onChange={(e) =>
-              handleArrayInputChange("profiles", e.target.value)
-            }
+            onChange={(e) => handleArrayInputChange("profiles", e.target.value)}
             disabled={loading}
             placeholder="Media Backup, File System Management (comma-separated)"
           />
         </div>
-        <p className="help">
-          Enter profile names separated by commas
-        </p>
+        <p className="help">Enter profile names separated by commas</p>
       </div>
 
       <hr />

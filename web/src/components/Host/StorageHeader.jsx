@@ -22,7 +22,7 @@ const StorageHeader = ({
         <div className="control">
           <div className="select is-small">
             <select
-                              value={timeWindow}
+              value={timeWindow}
               onChange={(e) => setTimeWindow(e.target.value)}
               disabled={loading}
               title="Select time window for charts"
@@ -45,7 +45,7 @@ const StorageHeader = ({
             <select
               value={resolution}
               onChange={(e) => setResolution(e.target.value)}
-                              disabled={loading}
+              disabled={loading}
               title="Chart resolution - controls the number of data points"
             >
               <option value="realtime">Real-time (125 points)</option>
@@ -74,9 +74,11 @@ const StorageHeader = ({
         </div>
         <div className="control">
           <button
-                          className={`button is-small ${autoRefresh ? 'is-success' : 'is-warning'}`}
-                          onClick={() => setAutoRefresh(!autoRefresh)}
-                          title={autoRefresh ? 'Auto-refresh enabled' : 'Auto-refresh disabled'}
+            className={`button is-small ${autoRefresh ? "is-success" : "is-warning"}`}
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            title={
+              autoRefresh ? "Auto-refresh enabled" : "Auto-refresh disabled"
+            }
           >
             <span className="icon">
               <i className={`fas ${autoRefresh ? "fa-pause" : "fa-play"}`} />
@@ -86,12 +88,12 @@ const StorageHeader = ({
         </div>
         <div className="control">
           <button
-                          className={`button is-small is-info ${loading ? 'is-loading' : ''}`}
+            className={`button is-small is-info ${loading ? "is-loading" : ""}`}
             onClick={() => selectedServer && loadStorageData(selectedServer)}
-                          disabled={loading}
+            disabled={loading}
           >
             <span className="icon">
-              <i className="fas fa-sync"></i>
+              <i className="fas fa-sync" />
             </span>
             <span>Refresh</span>
           </button>

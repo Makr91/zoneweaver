@@ -3,10 +3,16 @@ import React, { useState, useEffect } from "react";
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
 
-const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError }) => {
+const StoragePathEditModal = ({
+  server,
+  storagePath,
+  onClose,
+  onSuccess,
+  onError,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
-    enabled: true
+    enabled: true,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -18,7 +24,7 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
     if (storagePath) {
       setFormData({
         name: storagePath.name || "",
-        enabled: storagePath.enabled ?? true
+        enabled: storagePath.enabled ?? true,
       });
     }
   }, [storagePath]);
@@ -37,30 +43,30 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error for this field when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setLoading(true);
-      
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
@@ -69,7 +75,7 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
         "PUT",
         {
           name: formData.name.trim(),
-          enabled: formData.enabled
+          enabled: formData.enabled,
         }
       );
 
@@ -91,7 +97,7 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Edit Storage Path"
@@ -100,7 +106,7 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
       submitVariant="is-primary"
       submitIcon="fas fa-save"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
     >
       <div className="field">
         <label className="label">Name</label>
@@ -126,7 +132,7 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
             className="input"
             type="text"
             value={storagePath.path}
-            disabled={true}
+            disabled
             readOnly
           />
         </div>
@@ -137,10 +143,7 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
         <label className="label">Type</label>
         <div className="control">
           <div className="select is-fullwidth">
-            <select
-              value={storagePath.type}
-              disabled={true}
-            >
+            <select value={storagePath.type} disabled>
               <option value="iso">ISO Files</option>
               <option value="image">VM Images</option>
             </select>
@@ -162,17 +165,18 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
           </label>
         </div>
         <p className="help">
-          {formData.enabled 
+          {formData.enabled
             ? "This storage location can be used for uploads and downloads"
-            : "This storage location is read-only when disabled"
-          }
+            : "This storage location is read-only when disabled"}
         </p>
       </div>
 
       {/* Storage location statistics */}
       <div className="notification is-light">
         <div className="content">
-          <p><strong>Storage Statistics:</strong></p>
+          <p>
+            <strong>Storage Statistics:</strong>
+          </p>
           <div className="columns is-mobile">
             <div className="column">
               <div className="has-text-centered">
@@ -184,10 +188,9 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
               <div className="has-text-centered">
                 <p className="heading">Total Size</p>
                 <p className="title is-6">
-                  {storagePath.total_size ? 
-                    `${(storagePath.total_size / (1024 * 1024 * 1024)).toFixed(1)} GB` : 
-                    "0 GB"
-                  }
+                  {storagePath.total_size
+                    ? `${(storagePath.total_size / (1024 * 1024 * 1024)).toFixed(1)} GB`
+                    : "0 GB"}
                 </p>
               </div>
             </div>
@@ -195,7 +198,9 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
               <div className="column">
                 <div className="has-text-centered">
                   <p className="heading">Disk Usage</p>
-                  <p className="title is-6">{storagePath.disk_usage.use_percent}</p>
+                  <p className="title is-6">
+                    {storagePath.disk_usage.use_percent}
+                  </p>
                 </div>
               </div>
             )}
@@ -206,8 +211,10 @@ const StoragePathEditModal = ({ server, storagePath, onClose, onSuccess, onError
       {!formData.enabled && storagePath.file_count > 0 && (
         <div className="notification is-warning">
           <p>
-            <strong>Warning:</strong> This storage location contains {storagePath.file_count} file(s). 
-            Disabling it will make these artifacts read-only and prevent new uploads or downloads to this location.
+            <strong>Warning:</strong> This storage location contains{" "}
+            {storagePath.file_count} file(s). Disabling it will make these
+            artifacts read-only and prevent new uploads or downloads to this
+            location.
           </p>
         </div>
       )}

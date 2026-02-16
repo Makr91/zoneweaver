@@ -14,7 +14,7 @@ const GroupDetailsModal = ({ group, onClose }) => {
 
   return (
     <ContentModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       title={`Group Details: ${group.groupname}`}
       icon="fas fa-users"
@@ -30,20 +30,26 @@ const GroupDetailsModal = ({ group, onClose }) => {
             </span>
             <span>Basic Information</span>
           </h4>
-          
+
           <div className="table-container">
             <table className="table is-fullwidth">
               <tbody>
                 <tr>
-                  <td><strong>Group Name</strong></td>
+                  <td>
+                    <strong>Group Name</strong>
+                  </td>
                   <td className="is-family-monospace">{group.groupname}</td>
                 </tr>
                 <tr>
-                  <td><strong>Group ID (GID)</strong></td>
+                  <td>
+                    <strong>Group ID (GID)</strong>
+                  </td>
                   <td className="is-family-monospace">{group.gid}</td>
                 </tr>
                 <tr>
-                  <td><strong>Group Type</strong></td>
+                  <td>
+                    <strong>Group Type</strong>
+                  </td>
                   <td>
                     <span className={`tag ${groupType.class}`}>
                       {groupType.type}
@@ -51,7 +57,9 @@ const GroupDetailsModal = ({ group, onClose }) => {
                   </td>
                 </tr>
                 <tr>
-                  <td><strong>Member Count</strong></td>
+                  <td>
+                    <strong>Member Count</strong>
+                  </td>
                   <td>
                     <span className="tag is-light">
                       {group.members ? group.members.length : 0} members
@@ -105,21 +113,37 @@ const GroupDetailsModal = ({ group, onClose }) => {
         </span>
         <span>Group Management</span>
       </h4>
-      
+
       <div className="content">
         <div className="notification is-light">
-          <p><strong>Managing Group Membership:</strong></p>
+          <p>
+            <strong>Managing Group Membership:</strong>
+          </p>
           <ul>
-            <li>To add users to this group, edit the user's secondary groups in User Management</li>
-            <li>To remove users, edit their user account and remove this group from their secondary groups</li>
-            <li>Primary group assignments are managed automatically during user creation</li>
+            <li>
+              To add users to this group, edit the user's secondary groups in
+              User Management
+            </li>
+            <li>
+              To remove users, edit their user account and remove this group
+              from their secondary groups
+            </li>
+            <li>
+              Primary group assignments are managed automatically during user
+              creation
+            </li>
           </ul>
         </div>
-        
+
         {group.gid < 100 && (
           <div className="notification is-warning">
-            <p><strong>System Group:</strong></p>
-            <p>This is a system group (GID &lt; 100). Modifying system groups may affect system functionality.</p>
+            <p>
+              <strong>System Group:</strong>
+            </p>
+            <p>
+              This is a system group (GID &lt; 100). Modifying system groups may
+              affect system functionality.
+            </p>
           </div>
         )}
       </div>

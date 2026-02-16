@@ -1,6 +1,7 @@
-import { HighchartsReact } from 'highcharts-react-official';
-import React from 'react';
-import Highcharts from '../Highcharts';
+import { HighchartsReact } from "highcharts-react-official";
+import React from "react";
+
+import Highcharts from "../Highcharts";
 
 const StorageCharts = ({
   chartData,
@@ -39,7 +40,7 @@ const StorageCharts = ({
           <h4 className="title is-5 mb-0">
             <span className="icon-text">
               <span className="icon">
-                <i className="fas fa-chart-area"></i>
+                <i className="fas fa-chart-area" />
               </span>
               <span>Real-Time Storage Performance Charts</span>
             </span>
@@ -66,42 +67,57 @@ const StorageCharts = ({
               <div className="field is-grouped">
                 <div className="control">
                   <button
-                                      className={`button is-small ${seriesVisibility.read ? 'is-info' : 'is-dark'}`}
-                                      onClick={() => setSeriesVisibility(prev => ({ ...prev, read: !prev.read }))}
-                                      title="Toggle Read bandwidth visibility on all charts"
+                    className={`button is-small ${seriesVisibility.read ? "is-info" : "is-dark"}`}
+                    onClick={() =>
+                      setSeriesVisibility((prev) => ({
+                        ...prev,
+                        read: !prev.read,
+                      }))
+                    }
+                    title="Toggle Read bandwidth visibility on all charts"
                   >
                     <span className="icon">
                       <i
                         className={`fas ${seriesVisibility.read ? "fa-eye" : "fa-eye-slash"}`}
-                      ></i>
+                      />
                     </span>
                     <span>Read</span>
                   </button>
                 </div>
                 <div className="control">
                   <button
-                                      className={`button is-small ${seriesVisibility.write ? 'is-warning' : 'is-dark'}`}
-                                      onClick={() => setSeriesVisibility(prev => ({ ...prev, write: !prev.write }))}
-                                      title="Toggle Write bandwidth visibility on all charts"
+                    className={`button is-small ${seriesVisibility.write ? "is-warning" : "is-dark"}`}
+                    onClick={() =>
+                      setSeriesVisibility((prev) => ({
+                        ...prev,
+                        write: !prev.write,
+                      }))
+                    }
+                    title="Toggle Write bandwidth visibility on all charts"
                   >
                     <span className="icon">
                       <i
                         className={`fas ${seriesVisibility.write ? "fa-eye" : "fa-eye-slash"}`}
-                      ></i>
+                      />
                     </span>
                     <span>Write</span>
                   </button>
                 </div>
                 <div className="control">
                   <button
-                                      className={`button is-small ${seriesVisibility.total ? 'is-success' : 'is-dark'}`}
-                                      onClick={() => setSeriesVisibility(prev => ({ ...prev, total: !prev.total }))}
-                                      title="Toggle Total bandwidth visibility on all charts"
+                    className={`button is-small ${seriesVisibility.total ? "is-success" : "is-dark"}`}
+                    onClick={() =>
+                      setSeriesVisibility((prev) => ({
+                        ...prev,
+                        total: !prev.total,
+                      }))
+                    }
+                    title="Toggle Total bandwidth visibility on all charts"
                   >
                     <span className="icon">
                       <i
                         className={`fas ${seriesVisibility.total ? "fa-eye" : "fa-eye-slash"}`}
-                      ></i>
+                      />
                     </span>
                     <span>Total</span>
                   </button>
@@ -110,14 +126,18 @@ const StorageCharts = ({
             </div>
             <div className="control">
               <button
-                              className='button is-small is-ghost'
-                              onClick={() => toggleSection('charts')}
-                              title={sectionsCollapsed.charts ? 'Expand section' : 'Collapse section'}
+                className="button is-small is-ghost"
+                onClick={() => toggleSection("charts")}
+                title={
+                  sectionsCollapsed.charts
+                    ? "Expand section"
+                    : "Collapse section"
+                }
               >
                 <span className="icon">
                   <i
                     className={`fas ${sectionsCollapsed.charts ? "fa-chevron-down" : "fa-chevron-up"}`}
-                  ></i>
+                  />
                 </span>
               </button>
             </div>
@@ -131,7 +151,7 @@ const StorageCharts = ({
             <h5 className="title is-6 mb-3">
               <span className="icon-text">
                 <span className="icon">
-                  <i className="fas fa-layer-group"></i>
+                  <i className="fas fa-layer-group" />
                 </span>
                 <span>All Devices Summary</span>
               </span>
@@ -141,17 +161,17 @@ const StorageCharts = ({
               <div className="column is-4">
                 <div className="is-chart-container is-relative">
                   <button
-                                      className='button is-small is-light is-chart-expand-button'
-                                      onClick={() => expandChart('summary-read', 'summary-read')}
+                    className="button is-small is-light is-chart-expand-button"
+                    onClick={() => expandChart("summary-read", "summary-read")}
                     title="Expand chart to full size"
                   >
                     <span className="icon">
-                      <i className="fas fa-expand"></i>
+                      <i className="fas fa-expand" />
                     </span>
                   </button>
                   <HighchartsReact
                     highcharts={Highcharts}
-                                      ref={ref => {
+                    ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-read"] = ref;
                       }
@@ -263,17 +283,19 @@ const StorageCharts = ({
               <div className="column is-4">
                 <div className="is-chart-container is-relative">
                   <button
-                                      className='button is-small is-light is-chart-expand-button'
-                                      onClick={() => expandChart('summary-write', 'summary-write')}
-                                      title="Expand chart to full size"
+                    className="button is-small is-light is-chart-expand-button"
+                    onClick={() =>
+                      expandChart("summary-write", "summary-write")
+                    }
+                    title="Expand chart to full size"
                   >
                     <span className="icon">
-                      <i className="fas fa-expand"></i>
+                      <i className="fas fa-expand" />
                     </span>
                   </button>
                   <HighchartsReact
                     highcharts={Highcharts}
-                                      ref={ref => {
+                    ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-write"] = ref;
                       }
@@ -385,17 +407,19 @@ const StorageCharts = ({
               <div className="column is-4">
                 <div className="is-chart-container is-relative">
                   <button
-                                      className='button is-small is-light is-chart-expand-button'
-                                      onClick={() => expandChart('summary-total', 'summary-total')}
-                                      title="Expand chart to full size"
+                    className="button is-small is-light is-chart-expand-button"
+                    onClick={() =>
+                      expandChart("summary-total", "summary-total")
+                    }
+                    title="Expand chart to full size"
                   >
                     <span className="icon">
-                      <i className="fas fa-expand"></i>
+                      <i className="fas fa-expand" />
                     </span>
                   </button>
                   <HighchartsReact
                     highcharts={Highcharts}
-                                      ref={ref => {
+                    ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-total"] = ref;
                       }
@@ -511,7 +535,7 @@ const StorageCharts = ({
               <h5 className="title is-6 mb-3">
                 <span className="icon-text">
                   <span className="icon">
-                    <i className="fas fa-chart-line"></i>
+                    <i className="fas fa-chart-line" />
                   </span>
                   <span>Individual Device Charts</span>
                 </span>
@@ -522,7 +546,9 @@ const StorageCharts = ({
                     const io = diskIOStats.find(
                       (io) => io.device_name === deviceName
                     );
-                    if (!io || !deviceData) {return null;}
+                    if (!io || !deviceData) {
+                      return null;
+                    }
 
                     const chartOptions = {
                       chart: {
@@ -640,19 +666,21 @@ const StorageCharts = ({
                       <div key={deviceName} className="column is-6">
                         <div className="is-chart-container is-relative">
                           <button
-                                                  className='button is-small is-ghost is-chart-expand-button'
-                                                  onClick={() => expandChart(deviceName, 'individual')}
-                                                  title="Expand chart to full size"
+                            className="button is-small is-ghost is-chart-expand-button"
+                            onClick={() =>
+                              expandChart(deviceName, "individual")
+                            }
+                            title="Expand chart to full size"
                           >
                             <span className="icon has-text-white">
-                              <i className="fas fa-expand"></i>
+                              <i className="fas fa-expand" />
                             </span>
                           </button>
                           <HighchartsReact
                             key={`chart-${deviceName}`}
                             highcharts={Highcharts}
                             options={chartOptions}
-                                                  ref={ref => {
+                            ref={(ref) => {
                               if (ref) {
                                 chartRefs.current[deviceName] = ref;
                               }
@@ -682,7 +710,7 @@ const StorageCharts = ({
               <h5 className="title is-6 mb-3">
                 <span className="icon-text">
                   <span className="icon">
-                    <i className="fas fa-database"></i>
+                    <i className="fas fa-database" />
                   </span>
                   <span>ZFS Pool I/O Performance Charts</span>
                 </span>
@@ -694,7 +722,9 @@ const StorageCharts = ({
                     const poolIO = poolIOStats.find(
                       (pool) => pool.pool === poolName
                     );
-                    if (!poolIO || !poolData) {return null;}
+                    if (!poolIO || !poolData) {
+                      return null;
+                    }
 
                     const chartOptions = {
                       chart: {
@@ -812,19 +842,19 @@ const StorageCharts = ({
                       <div key={poolName} className="column is-6">
                         <div className="is-chart-container is-relative">
                           <button
-                                                      className='button is-small is-ghost is-chart-expand-button'
-                                                      onClick={() => expandChart(poolName, 'pool')}
+                            className="button is-small is-ghost is-chart-expand-button"
+                            onClick={() => expandChart(poolName, "pool")}
                             title="Expand chart to full size"
                           >
                             <span className="icon has-text-white">
-                              <i className="fas fa-expand"></i>
+                              <i className="fas fa-expand" />
                             </span>
                           </button>
                           <HighchartsReact
                             key={`pool-chart-${poolName}`}
                             highcharts={Highcharts}
                             options={chartOptions}
-                                                      ref={ref => {
+                            ref={(ref) => {
                               if (ref) {
                                 poolChartRefs.current[poolName] = ref;
                               }
@@ -853,7 +883,7 @@ const StorageCharts = ({
               <h5 className="title is-6 mb-3">
                 <span className="icon-text">
                   <span className="icon">
-                    <i className="fas fa-memory"></i>
+                    <i className="fas fa-memory" />
                   </span>
                   <span>ZFS ARC Performance & Efficiency Metrics</span>
                 </span>
@@ -864,12 +894,12 @@ const StorageCharts = ({
                 <div className="column is-4">
                   <div className="is-chart-container is-relative">
                     <button
-                                          className='button is-small is-ghost is-chart-expand-button'
-                                          onClick={() => expandChart('arc-memory', 'arc-memory')}
+                      className="button is-small is-ghost is-chart-expand-button"
+                      onClick={() => expandChart("arc-memory", "arc-memory")}
                       title="Expand chart to full size"
                     >
                       <span className="icon has-text-white">
-                        <i className="fas fa-expand"></i>
+                        <i className="fas fa-expand" />
                       </span>
                     </button>
                     <HighchartsReact
@@ -981,12 +1011,14 @@ const StorageCharts = ({
                 <div className="column is-4">
                   <div className="is-chart-container is-relative">
                     <button
-                                          className='button is-small is-ghost is-chart-expand-button'
-                                          onClick={() => expandChart('arc-efficiency', 'arc-efficiency')}
-                                          title="Expand chart to full size"
+                      className="button is-small is-ghost is-chart-expand-button"
+                      onClick={() =>
+                        expandChart("arc-efficiency", "arc-efficiency")
+                      }
+                      title="Expand chart to full size"
                     >
                       <span className="icon has-text-white">
-                        <i className="fas fa-expand"></i>
+                        <i className="fas fa-expand" />
                       </span>
                     </button>
                     <HighchartsReact
@@ -1092,12 +1124,14 @@ const StorageCharts = ({
                 <div className="column is-4">
                   <div className="is-chart-container is-relative">
                     <button
-                                          className='button is-small is-ghost is-chart-expand-button'
-                                          onClick={() => expandChart('arc-compression', 'arc-compression')}
-                                          title="Expand chart to full size"
+                      className="button is-small is-ghost is-chart-expand-button"
+                      onClick={() =>
+                        expandChart("arc-compression", "arc-compression")
+                      }
+                      title="Expand chart to full size"
                     >
                       <span className="icon has-text-white">
-                        <i className="fas fa-expand"></i>
+                        <i className="fas fa-expand" />
                       </span>
                     </button>
                     <HighchartsReact

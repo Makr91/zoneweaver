@@ -33,7 +33,9 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
   }, [isAdvanced]);
 
   const loadAdvancedOptions = async () => {
-    if (!server || !makeZoneweaverAPIRequest) return;
+    if (!server || !makeZoneweaverAPIRequest) {
+      return;
+    }
 
     try {
       // Load available groups and roles for selection
@@ -213,7 +215,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Create User"
@@ -221,7 +223,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitText="Create User"
       submitIcon="fas fa-plus"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       aria-label="Create new user account"
     >
       {/* Mode Toggle */}
@@ -256,9 +258,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
                 className="input"
                 type="text"
                 value={formData.username}
-                onChange={(e) =>
-                  handleInputChange("username", e.target.value)
-                }
+                onChange={(e) => handleInputChange("username", e.target.value)}
                 required
                 disabled={loading}
                 placeholder="Enter username"
@@ -275,9 +275,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
                   className="input"
                   type="number"
                   value={formData.uid}
-                  onChange={(e) =>
-                    handleInputChange("uid", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("uid", e.target.value)}
                   disabled={loading}
                   placeholder="Auto-assign if empty"
                 />
@@ -405,9 +403,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
                 className="input"
                 type="text"
                 value={formData.project}
-                onChange={(e) =>
-                  handleInputChange("project", e.target.value)
-                }
+                onChange={(e) => handleInputChange("project", e.target.value)}
                 disabled={loading}
                 placeholder="admin_project"
               />
@@ -459,10 +455,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
               type="checkbox"
               checked={formData.create_personal_group}
               onChange={(e) =>
-                handleInputChange(
-                  "create_personal_group",
-                  e.target.checked
-                )
+                handleInputChange("create_personal_group", e.target.checked)
               }
               disabled={loading}
             />

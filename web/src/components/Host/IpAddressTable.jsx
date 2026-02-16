@@ -7,7 +7,7 @@ const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
         <h4 className="title is-5 mb-0">
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-globe"></i>
+              <i className="fas fa-globe" />
             </span>
             <span>IP Addresses</span>
           </span>
@@ -15,14 +15,18 @@ const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('ipAddresses')}
-                      title={sectionsCollapsed.ipAddresses ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("ipAddresses")}
+          title={
+            sectionsCollapsed.ipAddresses
+              ? "Expand section"
+              : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.ipAddresses ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>

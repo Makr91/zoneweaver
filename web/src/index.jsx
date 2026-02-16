@@ -21,20 +21,25 @@ if (import.meta.env.PROD) {
   register("/ui/sw.js", {
     registrationOptions: { scope: "/ui/" },
     ready(registration) {
-      console.log("Service worker is active.");
+      console.log("Service worker is active.", registration.scope);
     },
     registered(registration) {
-      console.log("Service worker has been registered.");
+      console.log("Service worker has been registered.", registration.scope);
     },
     cached(registration) {
-      console.log("Content has been cached for offline use.");
+      console.log(
+        "Content has been cached for offline use.",
+        registration.scope
+      );
     },
     updatefound(registration) {
-      console.log("New content is downloading.");
+      console.log("New content is downloading.", registration.installing);
     },
     updated(registration) {
-      console.log("New content is available; please refresh.");
-      // You could show a toast notification here asking user to refresh
+      console.log(
+        "New content is available; please refresh.",
+        registration.waiting
+      );
     },
     offline() {
       console.log(

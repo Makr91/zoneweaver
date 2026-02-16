@@ -99,7 +99,7 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Create Group"
@@ -107,7 +107,7 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitText="Create Group"
       submitIcon="fas fa-plus"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
       aria-label="Create new group"
     >
       <div className="field">
@@ -119,9 +119,7 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
             className="input"
             type="text"
             value={formData.groupname}
-            onChange={(e) =>
-              handleInputChange("groupname", e.target.value)
-            }
+            onChange={(e) => handleInputChange("groupname", e.target.value)}
             required
             disabled={loading}
             placeholder="Enter group name"
@@ -139,9 +137,7 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
             className="input"
             type="number"
             value={formData.gid}
-            onChange={(e) =>
-              handleInputChange("gid", e.target.value)
-            }
+            onChange={(e) => handleInputChange("gid", e.target.value)}
             disabled={loading}
             placeholder="Auto-assign if empty"
             min="100"

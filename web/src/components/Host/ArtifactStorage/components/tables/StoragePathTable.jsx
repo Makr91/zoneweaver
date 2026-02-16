@@ -6,22 +6,26 @@ const StoragePathTable = ({
   onEdit,
   onDelete,
   onToggle,
-  onNameClick
+  onNameClick,
 }) => {
   const formatSize = (bytes) => {
-    if (!bytes) return "0 B";
-    
+    if (!bytes) {
+      return "0 B";
+    }
+
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+    return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "Never";
-    
+    if (!dateString) {
+      return "Never";
+    }
+
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+      return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     } catch (err) {
       return dateString;
     }
@@ -49,22 +53,21 @@ const StoragePathTable = ({
     }
   };
 
-  const getStatusTag = (enabled) => {
-    return enabled ? (
+  const getStatusTag = (enabled) =>
+    enabled ? (
       <span className="tag is-success is-small">Enabled</span>
     ) : (
       <span className="tag is-danger is-small">Disabled</span>
     );
-  };
 
   const getDiskUsageBar = (diskUsage) => {
     if (!diskUsage || !diskUsage.use_percent) {
       return null;
     }
 
-    const percentage = parseInt(diskUsage.use_percent.replace('%', ''));
+    const percentage = parseInt(diskUsage.use_percent.replace("%", ""));
     let colorClass = "is-success";
-    
+
     if (percentage >= 90) {
       colorClass = "is-danger";
     } else if (percentage >= 75) {
@@ -74,9 +77,9 @@ const StoragePathTable = ({
     return (
       <div className="field">
         <label className="label is-size-7">Disk Usage</label>
-        <progress 
-          className={`progress is-small ${colorClass}`} 
-          value={percentage} 
+        <progress
+          className={`progress is-small ${colorClass}`}
+          value={percentage}
           max="100"
           title={`${diskUsage.used} / ${diskUsage.total} (${diskUsage.use_percent})`}
         >
@@ -143,7 +146,7 @@ const StoragePathTable = ({
                       className="has-text-weight-bold is-clickable has-text-link"
                       onClick={() => onNameClick(storagePath)}
                       title={`View artifacts in ${storagePath.name} (${storagePath.file_count || 0} files)`}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                     >
                       {storagePath.name}
                       <span className="icon is-small ml-1">
@@ -156,27 +159,21 @@ const StoragePathTable = ({
                 </div>
               </td>
               <td>
-                <span 
+                <span
                   className="is-family-monospace is-size-7"
                   title={storagePath.path}
                 >
                   {storagePath.path}
                 </span>
               </td>
-              <td>
-                {getTypeTag(storagePath.type)}
-              </td>
-              <td>
-                {getStatusTag(storagePath.enabled)}
-              </td>
+              <td>{getTypeTag(storagePath.type)}</td>
+              <td>{getStatusTag(storagePath.enabled)}</td>
               <td>
                 <span className="has-text-weight-semibold">
                   {storagePath.file_count || 0}
                 </span>
               </td>
-              <td>
-                {formatSize(storagePath.total_size)}
-              </td>
+              <td>{formatSize(storagePath.total_size)}</td>
               <td>
                 <span className="is-size-7">
                   {formatDate(storagePath.last_scan_at)}
@@ -208,10 +205,16 @@ const StoragePathTable = ({
                     className={`button ${storagePath.enabled ? "is-warning" : "is-success"}`}
                     onClick={() => onToggle(storagePath)}
                     disabled={loading}
-                    title={storagePath.enabled ? "Disable storage path" : "Enable storage path"}
+                    title={
+                      storagePath.enabled
+                        ? "Disable storage path"
+                        : "Enable storage path"
+                    }
                   >
                     <span className="icon is-small">
-                      <i className={`fas ${storagePath.enabled ? "fa-pause" : "fa-play"}`} />
+                      <i
+                        className={`fas ${storagePath.enabled ? "fa-pause" : "fa-play"}`}
+                      />
                     </span>
                   </button>
 

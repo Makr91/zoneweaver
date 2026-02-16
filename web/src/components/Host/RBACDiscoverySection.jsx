@@ -29,7 +29,13 @@ const RBACDiscoverySection = ({ server, onError }) => {
     } else if (activeTab === "roles") {
       loadRoles();
     }
-  }, [server, activeTab, debouncedAuthFilter, debouncedProfileFilter, filters.limit]);
+  }, [
+    server,
+    activeTab,
+    debouncedAuthFilter,
+    debouncedProfileFilter,
+    filters.limit,
+  ]);
 
   const loadAuthorizations = async () => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -214,7 +220,10 @@ const RBACDiscoverySection = ({ server, onError }) => {
             <div className="column">
               <div className="field">
                 <label className="label">
-                  Filter {activeTab === "authorizations" ? "Authorizations" : "Profiles"}
+                  Filter{" "}
+                  {activeTab === "authorizations"
+                    ? "Authorizations"
+                    : "Profiles"}
                 </label>
                 <div className="control">
                   <input
@@ -364,14 +373,15 @@ const RBACDiscoverySection = ({ server, onError }) => {
                         <td>
                           <code className="is-size-7">{auth.name}</code>
                         </td>
-                        <td className="is-size-7">{auth.short_description || "N/A"}</td>
+                        <td className="is-size-7">
+                          {auth.short_description || "N/A"}
+                        </td>
                         <td className="is-size-7" title={auth.long_description}>
-                          {auth.long_description ? 
-                            (auth.long_description.length > 50 ? 
-                              `${auth.long_description.substring(0, 50)}...` : 
-                              auth.long_description
-                            ) : "N/A"
-                          }
+                          {auth.long_description
+                            ? auth.long_description.length > 50
+                              ? `${auth.long_description.substring(0, 50)}...`
+                              : auth.long_description
+                            : "N/A"}
                         </td>
                         <td>
                           <button
@@ -542,13 +552,15 @@ const RBACDiscoverySection = ({ server, onError }) => {
       {/* Help Information */}
       <div className="notification is-info">
         <p>
-          <strong>Tip:</strong> Use the copy button next to each item to copy its name
-          to your clipboard. You can then paste it when creating or editing users and roles.
+          <strong>Tip:</strong> Use the copy button next to each item to copy
+          its name to your clipboard. You can then paste it when creating or
+          editing users and roles.
         </p>
         {activeTab === "authorizations" && (
           <p className="mt-2">
-            <strong>Authorization Wildcards:</strong> Many authorizations support wildcards (*).
-            For example, "solaris.admin.*" grants all admin-related authorizations.
+            <strong>Authorization Wildcards:</strong> Many authorizations
+            support wildcards (*). For example, "solaris.admin.*" grants all
+            admin-related authorizations.
           </p>
         )}
       </div>

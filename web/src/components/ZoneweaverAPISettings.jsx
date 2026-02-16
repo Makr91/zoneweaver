@@ -288,15 +288,17 @@ const ZoneweaverAPISettings = () => {
 
   // Zone orchestration functions
   const loadOrchestrationStatus = async () => {
-    if (!currentServer) return;
-    
+    if (!currentServer) {
+      return;
+    }
+
     try {
       const result = await getZoneOrchestrationStatus(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol
       );
-      
+
       if (result.success) {
         setOrchestrationStatus(result.data);
       }
@@ -306,15 +308,17 @@ const ZoneweaverAPISettings = () => {
   };
 
   const loadZonePriorities = async () => {
-    if (!currentServer) return;
-    
+    if (!currentServer) {
+      return;
+    }
+
     try {
       const result = await getZonePriorities(
         currentServer.hostname,
         currentServer.port,
         currentServer.protocol
       );
-      
+
       if (result.success) {
         setZonePriorities(result.data);
       }
@@ -324,8 +328,10 @@ const ZoneweaverAPISettings = () => {
   };
 
   const handleEnableOrchestration = async () => {
-    if (!currentServer) return;
-    
+    if (!currentServer) {
+      return;
+    }
+
     try {
       setOrchestrationLoading(true);
       const result = await enableZoneOrchestration(
@@ -333,7 +339,7 @@ const ZoneweaverAPISettings = () => {
         currentServer.port,
         currentServer.protocol
       );
-      
+
       if (result.success) {
         setMsg("Zone orchestration enabled successfully");
         await loadOrchestrationStatus();
@@ -349,8 +355,10 @@ const ZoneweaverAPISettings = () => {
   };
 
   const handleDisableOrchestration = async () => {
-    if (!currentServer) return;
-    
+    if (!currentServer) {
+      return;
+    }
+
     try {
       setOrchestrationLoading(true);
       const result = await disableZoneOrchestration(
@@ -358,7 +366,7 @@ const ZoneweaverAPISettings = () => {
         currentServer.port,
         currentServer.protocol
       );
-      
+
       if (result.success) {
         setMsg("Zone orchestration disabled successfully");
         await loadOrchestrationStatus();
@@ -374,8 +382,10 @@ const ZoneweaverAPISettings = () => {
   };
 
   const handleTestOrchestration = async (strategy = "parallel_by_priority") => {
-    if (!currentServer) return;
-    
+    if (!currentServer) {
+      return;
+    }
+
     try {
       setOrchestrationLoading(true);
       const result = await testZoneOrchestration(
@@ -384,9 +394,11 @@ const ZoneweaverAPISettings = () => {
         currentServer.protocol,
         strategy
       );
-      
+
       if (result.success) {
-        setMsg(`Orchestration test completed: ${result.data.total_zones} zones, estimated ${result.data.estimated_duration}s duration`);
+        setMsg(
+          `Orchestration test completed: ${result.data.total_zones} zones, estimated ${result.data.estimated_duration}s duration`
+        );
         console.log("Orchestration test result:", result.data);
       } else {
         setMsg(`Failed to test orchestration: ${result.message}`);
@@ -408,9 +420,10 @@ const ZoneweaverAPISettings = () => {
   }, [currentServer, user]);
 
   // Check if a section is orchestration-related
-  const isOrchestrationSection = (sectionName) => {
-    return sectionName === "zones" || sectionName.includes("orchestration") || sectionName.includes("zone_management");
-  };
+  const isOrchestrationSection = (sectionName) =>
+    sectionName === "zones" ||
+    sectionName.includes("orchestration") ||
+    sectionName.includes("zone_management");
 
   // Render orchestration control panel
   const renderOrchestrationControls = () => (
@@ -423,14 +436,18 @@ const ZoneweaverAPISettings = () => {
           <span>Zone Orchestration Control</span>
         </span>
       </h4>
-      
+
       <div className="columns">
         <div className="column is-half">
           <div className="field">
             <label className="label is-size-7">Status</label>
             <div className="control">
-              <span className={`tag ${orchestrationStatus?.orchestration_enabled ? "is-success" : "is-grey"}`}>
-                {orchestrationStatus?.orchestration_enabled ? "🟢 Enabled" : "🔴 Disabled"}
+              <span
+                className={`tag ${orchestrationStatus?.orchestration_enabled ? "is-success" : "is-grey"}`}
+              >
+                {orchestrationStatus?.orchestration_enabled
+                  ? "🟢 Enabled"
+                  : "🔴 Disabled"}
               </span>
               <span className="tag is-info ml-2">
                 Controller: {orchestrationStatus?.controller || "unknown"}
@@ -444,7 +461,10 @@ const ZoneweaverAPISettings = () => {
               <button
                 className="button is-small is-success"
                 onClick={handleEnableOrchestration}
-                disabled={orchestrationLoading || orchestrationStatus?.orchestration_enabled}
+                disabled={
+                  orchestrationLoading ||
+                  orchestrationStatus?.orchestration_enabled
+                }
               >
                 <span className="icon is-small">
                   <i className="fas fa-play" />
@@ -456,7 +476,10 @@ const ZoneweaverAPISettings = () => {
               <button
                 className="button is-small is-warning"
                 onClick={handleDisableOrchestration}
-                disabled={orchestrationLoading || !orchestrationStatus?.orchestration_enabled}
+                disabled={
+                  orchestrationLoading ||
+                  !orchestrationStatus?.orchestration_enabled
+                }
               >
                 <span className="icon is-small">
                   <i className="fas fa-pause" />
@@ -486,17 +509,19 @@ const ZoneweaverAPISettings = () => {
           <div className="field">
             <div className="control">
               <div className="tags">
-                {Object.entries(zonePriorities.priority_groups || {}).map(([priority, zones]) => (
-                  <span key={priority} className="tag is-light">
-                    Priority {priority}: {zones.length} zones
-                  </span>
-                ))}
+                {Object.entries(zonePriorities.priority_groups || {}).map(
+                  ([priority, zones]) => (
+                    <span key={priority} className="tag is-light">
+                      Priority {priority}: {zones.length} zones
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </div>
           <p className="help">
-            Total zones: {zonePriorities.total_zones || 0} | 
-            <button 
+            Total zones: {zonePriorities.total_zones || 0} |
+            <button
               className="button is-text is-small p-0 ml-1"
               onClick={loadZonePriorities}
               disabled={orchestrationLoading}
@@ -605,7 +630,9 @@ const ZoneweaverAPISettings = () => {
                   />
                   <span className="check" />
                   <span className="control-label">
-                    {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    {key
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </span>
                 </label>
               ) : Array.isArray(value) ? (
@@ -743,8 +770,9 @@ const ZoneweaverAPISettings = () => {
                       className={`tab-pane ${activeTab !== section.name ? "is-hidden" : ""}`}
                     >
                       {/* Special handling for orchestration sections */}
-                      {isOrchestrationSection(section.name) && renderOrchestrationControls()}
-                      
+                      {isOrchestrationSection(section.name) &&
+                        renderOrchestrationControls()}
+
                       {section.name === "host_monitoring" ? (
                         <div className="columns">
                           <div className="column is-8">

@@ -1,20 +1,33 @@
-import { useState, useEffect, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-import ContentModal from "./common/ContentModal";
 import { useServers } from "../contexts/ServerContext";
 
+import ContentModal from "./common/ContentModal";
+
 const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
+  if (!dateStr) {
+    return "-";
+  }
   return new Date(dateStr).toLocaleString();
 };
 
 const renderPriorityBadge = (priority) => {
-  if (priority >= 100) return <span className="tag is-danger">CRITICAL</span>;
-  if (priority >= 80) return <span className="tag is-warning">HIGH</span>;
-  if (priority >= 60) return <span className="tag is-info">MEDIUM</span>;
-  if (priority >= 50) return <span className="tag is-link">SERVICE</span>;
-  if (priority >= 40) return <span className="tag is-light">LOW</span>;
+  if (priority >= 100) {
+    return <span className="tag is-danger">CRITICAL</span>;
+  }
+  if (priority >= 80) {
+    return <span className="tag is-warning">HIGH</span>;
+  }
+  if (priority >= 60) {
+    return <span className="tag is-info">MEDIUM</span>;
+  }
+  if (priority >= 50) {
+    return <span className="tag is-link">SERVICE</span>;
+  }
+  if (priority >= 40) {
+    return <span className="tag is-light">LOW</span>;
+  }
   return <span className="tag is-light">BACKGROUND</span>;
 };
 
@@ -26,7 +39,9 @@ const renderStatusBadge = (status) => {
     pending: "is-light",
     cancelled: "is-dark",
   };
-  return <span className={`tag ${classMap[status] || "is-light"}`}>{status}</span>;
+  return (
+    <span className={`tag ${classMap[status] || "is-light"}`}>{status}</span>
+  );
 };
 
 const InfoRow = ({ label, children }) => (
@@ -42,10 +57,7 @@ InfoRow.propTypes = {
 };
 
 const SubtaskRow = ({ task, onSelect }) => (
-  <tr
-    onClick={() => onSelect(task)}
-    style={{ cursor: "pointer" }}
-  >
+  <tr onClick={() => onSelect(task)} style={{ cursor: "pointer" }}>
     <td>{task.operation}</td>
     <td>{task.zone_name}</td>
     <td>{renderStatusBadge(task.status)}</td>
@@ -91,7 +103,9 @@ const TaskDetailModal = ({ task, onClose }) => {
 
   // Connect to WebSocket for task output
   useEffect(() => {
-    if (!currentServer) return;
+    if (!currentServer) {
+      return;
+    }
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/api/servers/${currentServer.hostname}:${currentServer.port}/tasks/${task.id}/stream`;
@@ -130,7 +144,9 @@ const TaskDetailModal = ({ task, onClose }) => {
   }, []);
 
   const parseMetadata = (metadata) => {
-    if (!metadata) return null;
+    if (!metadata) {
+      return null;
+    }
     try {
       return JSON.parse(metadata);
     } catch {
@@ -143,7 +159,7 @@ const TaskDetailModal = ({ task, onClose }) => {
   return (
     <>
       <ContentModal
-        isOpen={true}
+        isOpen
         onClose={onClose}
         title={`Task: ${task.operation}`}
         icon="fas fa-tasks"
@@ -156,7 +172,9 @@ const TaskDetailModal = ({ task, onClose }) => {
           <InfoRow label="Operation">{task.operation}</InfoRow>
           <InfoRow label="Target">{task.zone_name}</InfoRow>
           <InfoRow label="Status">{renderStatusBadge(task.status)}</InfoRow>
-          <InfoRow label="Priority">{renderPriorityBadge(task.priority)}</InfoRow>
+          <InfoRow label="Priority">
+            {renderPriorityBadge(task.priority)}
+          </InfoRow>
           <InfoRow label="Created By">{task.created_by || "-"}</InfoRow>
           <InfoRow label="Created">{formatDate(task.created_at)}</InfoRow>
           <InfoRow label="Started">{formatDate(task.started_at)}</InfoRow>
@@ -198,7 +216,10 @@ const TaskDetailModal = ({ task, onClose }) => {
         {parsedMetadata && (
           <div className="box">
             <h6 className="title is-6">Metadata</h6>
-            <pre className="is-size-7" style={{ maxHeight: "200px", overflow: "auto" }}>
+            <pre
+              className="is-size-7"
+              style={{ maxHeight: "200px", overflow: "auto" }}
+            >
               {typeof parsedMetadata === "string"
                 ? parsedMetadata
                 : JSON.stringify(parsedMetadata, null, 2)}
@@ -234,7 +255,11 @@ const TaskDetailModal = ({ task, onClose }) => {
             {output.map((entry, idx) => (
               <div
                 key={idx}
-                className={entry.stream === "stderr" ? "has-text-danger" : "has-text-white"}
+                className={
+                  entry.stream === "stderr"
+                    ? "has-text-danger"
+                    : "has-text-white"
+                }
               >
                 {entry.data}
               </div>
@@ -271,10 +296,7 @@ const TaskDetailModal = ({ task, onClose }) => {
 
       {/* Child task detail modal (recursive) */}
       {childTask && (
-        <TaskDetailModal
-          task={childTask}
-          onClose={() => setChildTask(null)}
-        />
+        <TaskDetailModal task={childTask} onClose={() => setChildTask(null)} />
       )}
     </>
   );

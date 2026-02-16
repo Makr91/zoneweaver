@@ -94,8 +94,8 @@ const StorageManagement = ({ server }) => {
               <p className="content">
                 Manage ISO files, VM images, and artifact storage locations on{" "}
                 <strong>{server.hostname}</strong>. Configure storage paths,
-                upload files, download from URLs, and organize your virtualization
-                resources.
+                upload files, download from URLs, and organize your
+                virtualization resources.
               </p>
             </div>
 

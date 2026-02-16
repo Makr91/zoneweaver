@@ -3,20 +3,18 @@ import React from "react";
 import { ContentModal } from "../common";
 
 const VlanDetailsModal = ({ vlan, onClose }) => {
-  const renderDetailRow = (label, value, monospace = false) => {
-    return (
-      <div className="columns is-mobile">
-        <div className="column is-4">
-          <strong>{label}:</strong>
-        </div>
-        <div className="column">
-          <span className={monospace ? "is-family-monospace" : ""}>
-            {value || "N/A"}
-          </span>
-        </div>
+  const renderDetailRow = (label, value, monospace = false) => (
+    <div className="columns is-mobile">
+      <div className="column is-4">
+        <strong>{label}:</strong>
       </div>
-    );
-  };
+      <div className="column">
+        <span className={monospace ? "is-family-monospace" : ""}>
+          {value || "N/A"}
+        </span>
+      </div>
+    </div>
+  );
 
   const getStateTag = (state) => {
     switch (state?.toLowerCase()) {
@@ -54,7 +52,9 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
   };
 
   const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "N/A";
+    if (!timestamp) {
+      return "N/A";
+    }
     try {
       return new Date(timestamp).toLocaleString();
     } catch {
@@ -82,25 +82,21 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
           </h4>
 
           {renderDetailRow("VLAN Name", vlan.link, true)}
-          
+
           <div className="columns is-mobile">
             <div className="column is-4">
               <strong>VLAN ID:</strong>
             </div>
-            <div className="column">
-              {getVlanTag(vlan.vid)}
-            </div>
+            <div className="column">{getVlanTag(vlan.vid)}</div>
           </div>
 
           {renderDetailRow("Physical Link", vlan.over, true)}
-          
+
           <div className="columns is-mobile">
             <div className="column is-4">
               <strong>State:</strong>
             </div>
-            <div className="column">
-              {getStateTag(vlan.state)}
-            </div>
+            <div className="column">{getStateTag(vlan.state)}</div>
           </div>
 
           {renderDetailRow("Class", vlan.class)}
@@ -120,22 +116,24 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
               </span>
             </h4>
 
-            {vlan.details.link && renderDetailRow("Link Name", vlan.details.link, true)}
-            {vlan.details.class && renderDetailRow("Link Class", vlan.details.class)}
+            {vlan.details.link &&
+              renderDetailRow("Link Name", vlan.details.link, true)}
+            {vlan.details.class &&
+              renderDetailRow("Link Class", vlan.details.class)}
             {vlan.details.vid && renderDetailRow("VLAN ID", vlan.details.vid)}
-            {vlan.details.over && renderDetailRow("Over Link", vlan.details.over, true)}
+            {vlan.details.over &&
+              renderDetailRow("Over Link", vlan.details.over, true)}
             {vlan.details.state && (
               <div className="columns is-mobile">
                 <div className="column is-4">
                   <strong>Current State:</strong>
                 </div>
-                <div className="column">
-                  {getStateTag(vlan.details.state)}
-                </div>
+                <div className="column">{getStateTag(vlan.details.state)}</div>
               </div>
             )}
             {vlan.details.mtu && renderDetailRow("MTU Size", vlan.details.mtu)}
-            {vlan.details.flags && renderDetailRow("Interface Flags", vlan.details.flags)}
+            {vlan.details.flags &&
+              renderDetailRow("Interface Flags", vlan.details.flags)}
           </div>
         )}
 
@@ -150,18 +148,15 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
             </span>
           </h4>
 
-          {vlan.scan_timestamp && renderDetailRow(
-            "Last Scanned", 
-            formatTimestamp(vlan.scan_timestamp)
-          )}
-          {vlan.created_at && renderDetailRow(
-            "Created At", 
-            formatTimestamp(vlan.created_at)
-          )}
-          {vlan.updated_at && renderDetailRow(
-            "Updated At", 
-            formatTimestamp(vlan.updated_at)
-          )}
+          {vlan.scan_timestamp &&
+            renderDetailRow(
+              "Last Scanned",
+              formatTimestamp(vlan.scan_timestamp)
+            )}
+          {vlan.created_at &&
+            renderDetailRow("Created At", formatTimestamp(vlan.created_at))}
+          {vlan.updated_at &&
+            renderDetailRow("Updated At", formatTimestamp(vlan.updated_at))}
 
           <div className="columns is-mobile">
             <div className="column is-4">
@@ -176,7 +171,7 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
         </div>
 
         {/* Raw Data for Debugging */}
-        {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV === "development" && (
           <div className="box">
             <h4 className="title is-6 mb-3">
               <span className="icon-text">
@@ -186,7 +181,7 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
                 <span>Raw Data (Development)</span>
               </span>
             </h4>
-            
+
             <pre className="has-background-light p-3 is-size-7">
               {JSON.stringify(vlan, null, 2)}
             </pre>

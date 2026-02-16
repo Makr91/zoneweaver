@@ -1,43 +1,45 @@
-import { defineConfig } from "vite";
+import fs from "fs";
+
 import react from "@vitejs/plugin-react";
 import { NodePackageImporter } from "sass";
-import fs from "fs";
+import { defineConfig } from "vite";
 import YAML from "yaml";
-import pkg from '../package.json' with { type: 'json' };
+
+const pkg = JSON.parse(fs.readFileSync("../package.json", "utf8"));
 
 // Load configuration from YAML file
 // For vite.config.js, we need to handle the config path manually since we're in web/ directory
-function loadViteConfig() {
+const loadViteConfig = () => {
   // Check environment variable first (set by systemd)
   if (process.env.CONFIG_PATH) {
-    return YAML.parse(fs.readFileSync(process.env.CONFIG_PATH, 'utf8'));
+    return YAML.parse(fs.readFileSync(process.env.CONFIG_PATH, "utf8"));
   }
-  
+
   // Fallback to local config for development
-  const localConfigPath = '../config.yaml';
+  const localConfigPath = "../config.yaml";
   if (fs.existsSync(localConfigPath)) {
-    return YAML.parse(fs.readFileSync(localConfigPath, 'utf8'));
+    return YAML.parse(fs.readFileSync(localConfigPath, "utf8"));
   }
-  
+
   // Final fallback: return default configuration for build
   return {
     frontend: {
       port: 3000,
     },
     server: {
-      hostname: 'localhost',
+      hostname: "localhost",
       port: 3443,
-    }
+    },
   };
-}
+};
 
 const config = loadViteConfig();
 
 export default defineConfig({
   define: {
     // Define global constants that get replaced at build time from root package.json
-    '__APP_VERSION__': JSON.stringify(pkg.version),
-    '__APP_NAME__': JSON.stringify(pkg.name),
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_NAME__: JSON.stringify(pkg.name),
   },
   css: {
     preprocessorOptions: {
@@ -47,10 +49,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: [
-    react()
-  ],
-  base: '/ui/',
+  plugins: [react()],
+  base: "/ui/",
   publicDir: "public",
   server: {
     port: config.frontend?.port?.value || 3000,
@@ -58,11 +58,11 @@ export default defineConfig({
     https: false, // Disable HTTPS for dev server during build
     hmr: {
       port: config.frontend?.port?.value || 3000,
-      host: config.server?.hostname?.value || 'localhost',
+      host: config.server?.hostname?.value || "localhost",
     },
     proxy: {
       "/api": {
-        target: `http://${config.server?.hostname?.value || 'localhost'}:${config.server?.port?.value || 3443}`,
+        target: `http://${config.server?.hostname?.value || "localhost"}:${config.server?.port?.value || 3443}`,
         changeOrigin: true,
         secure: false,
       },
@@ -81,8 +81,11 @@ export default defineConfig({
         chunkFileNames: `assets/[name].js`,
         assetFileNames: (assetInfo) => {
           // Keep favicons at root level
-          if (assetInfo.name === 'favicon.ico' || assetInfo.name === 'dark-favicon.ico') {
-            return '[name][extname]';
+          if (
+            assetInfo.name === "favicon.ico" ||
+            assetInfo.name === "dark-favicon.ico"
+          ) {
+            return "[name][extname]";
           }
           return `assets/[name].[ext]`;
         },
@@ -92,45 +95,51 @@ export default defineConfig({
 
           // Highcharts (large, completely independent)
           // Include custom Highcharts wrapper to ensure proper loading order
-          if (id.includes('node_modules/highcharts') ||
-              id.includes('highcharts-react-official') ||
-              id.includes('src/components/Highcharts.jsx')) {
-            return 'charts';
+          if (
+            id.includes("node_modules/highcharts") ||
+            id.includes("highcharts-react-official") ||
+            id.includes("src/components/Highcharts.jsx")
+          ) {
+            return "charts";
           }
 
           // Terminal libraries (large, independent)
-          if (id.includes('node_modules/react-xtermjs')) {
-            return 'terminal';
+          if (id.includes("node_modules/react-xtermjs")) {
+            return "terminal";
           }
 
           // Flow/diagram libraries (large, independent)
-          if (id.includes('node_modules/@xyflow') ||
-              id.includes('node_modules/elkjs') ||
-              id.includes('node_modules/dagre')) {
-            return 'flow-diagrams';
+          if (
+            id.includes("node_modules/@xyflow") ||
+            id.includes("node_modules/elkjs") ||
+            id.includes("node_modules/dagre")
+          ) {
+            return "flow-diagrams";
           }
 
           // Everything else stays together in vendor to avoid dependency issues
           // This includes React, Router, Axios, utilities, etc.
-          if (id.includes('node_modules')) {
-            return 'vendor';
+          if (id.includes("node_modules")) {
+            return "vendor";
           }
-        }
-      }
+
+          return undefined;
+        },
+      },
     },
   },
   optimizeDeps: {
     include: [
       // Terminal libraries that need special handling
-      'react-xtermjs',
-      '@xterm/addon-fit',
-      '@xterm/addon-attach',
-      '@xterm/addon-web-links',
-      '@xterm/addon-serialize',
-      '@xterm/addon-clipboard',
-      '@xterm/addon-search',
-      '@xterm/addon-webgl'
+      "react-xtermjs",
+      "@xterm/addon-fit",
+      "@xterm/addon-attach",
+      "@xterm/addon-web-links",
+      "@xterm/addon-serialize",
+      "@xterm/addon-clipboard",
+      "@xterm/addon-search",
+      "@xterm/addon-webgl",
     ],
-    exclude: ["rollup"]
+    exclude: ["rollup"],
   },
 });

@@ -17,7 +17,7 @@ const PptDevicesTable = ({
           <h4 className="title is-5 mb-0">
             <span className="icon-text">
               <span className="icon">
-                <i className="fas fa-bolt"></i>
+                <i className="fas fa-bolt" />
               </span>
               <span>
                 PPT-Capable Devices ({pptStatus.ppt_devices.length} devices)
@@ -27,14 +27,18 @@ const PptDevicesTable = ({
         </div>
         <div className="level-right">
           <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('pptDevices')}
-                      title={sectionsCollapsed.pptDevices ? 'Expand section' : 'Collapse section'}
+            className="button is-small is-ghost"
+            onClick={() => toggleSection("pptDevices")}
+            title={
+              sectionsCollapsed.pptDevices
+                ? "Expand section"
+                : "Collapse section"
+            }
           >
             <span className="icon">
               <i
                 className={`fas ${sectionsCollapsed.pptDevices ? "fa-chevron-down" : "fa-chevron-up"}`}
-              ></i>
+              />
             </span>
           </button>
         </div>
@@ -92,12 +96,12 @@ const PptDevicesTable = ({
                   </td>
                   <td>
                     <button
-                                          className='button is-small is-info'
+                      className="button is-small is-info"
                       onClick={() => setSelectedDevice(device)}
                       title="View device details"
                     >
                       <span className="icon">
-                        <i className="fas fa-info-circle"></i>
+                        <i className="fas fa-info-circle" />
                       </span>
                       <span>Details</span>
                     </button>

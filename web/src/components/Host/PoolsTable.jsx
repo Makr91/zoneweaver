@@ -15,18 +15,18 @@ const PoolsTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
-                      onClick={resetPoolSort}
-                      title="Click to reset sorting to default"
+          className="title is-5 mb-0 is-clickable"
+          onClick={resetPoolSort}
+          title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-database"></i>
+              <i className="fas fa-database" />
             </span>
             <span>ZFS Storage Pools ({storagePools.length})</span>
             {poolSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
@@ -34,14 +34,16 @@ const PoolsTable = ({
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('pools')}
-                      title={sectionsCollapsed.pools ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("pools")}
+          title={
+            sectionsCollapsed.pools ? "Expand section" : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.pools ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>
@@ -55,7 +57,7 @@ const PoolsTable = ({
                 <tr>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handlePoolSort('pool', e)}
+                    onClick={(e) => handlePoolSort("pool", e)}
                     title="Click to sort by pool name. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Pool Name{" "}
@@ -63,7 +65,7 @@ const PoolsTable = ({
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={(e) => handlePoolSort('health', e)}
+                    onClick={(e) => handlePoolSort("health", e)}
                     title="Click to sort by health status. Hold Ctrl/Cmd to add to existing sort."
                   >
                     Health{" "}

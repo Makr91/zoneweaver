@@ -15,33 +15,35 @@ const DisksTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
+          className="title is-5 mb-0 is-clickable"
           onClick={resetDiskSort}
           title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-hard-drive"></i>
+              <i className="fas fa-hard-drive" />
             </span>
             <span>Physical Disks ({storageDisks.length})</span>
             {diskSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
         </h4>
       </div>
       <div className="level-right">
-          <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('disks')}
-                      title={sectionsCollapsed.disks ? 'Expand section' : 'Collapse section'}
+        <button
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("disks")}
+          title={
+            sectionsCollapsed.disks ? "Expand section" : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.disks ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>
@@ -55,17 +57,17 @@ const DisksTable = ({
                 <tr>
                   <th
                     className="is-clickable"
-                                          onClick={() => handleDiskSort('device_name')}
+                    onClick={() => handleDiskSort("device_name")}
                     title="Click to sort by device name"
                   >
                     Device{" "}
                     <i
                       className={`fas ${getSortIcon(diskSort, "device_name")}`}
-                    ></i>
+                    />
                   </th>
                   <th
-                                          className="is-clickable"
-                                          onClick={() => handleDiskSort('model')}
+                    className="is-clickable"
+                    onClick={() => handleDiskSort("model")}
                     title="Click to sort by model"
                   >
                     Model{" "}
@@ -73,37 +75,37 @@ const DisksTable = ({
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={() => handleDiskSort('serial_number')}
+                    onClick={() => handleDiskSort("serial_number")}
                     title="Click to sort by serial number"
                   >
                     Serial{" "}
                     <i
                       className={`fas ${getSortIcon(diskSort, "serial_number")}`}
-                    ></i>
+                    />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={() => handleDiskSort('capacity_bytes')}
+                    onClick={() => handleDiskSort("capacity_bytes")}
                     title="Click to sort by capacity"
                   >
                     Size{" "}
                     <i
                       className={`fas ${getSortIcon(diskSort, "capacity_bytes")}`}
-                    ></i>
+                    />
                   </th>
                   <th
-                                          className="is-clickable"
-                                          onClick={() => handleDiskSort('disk_type')}
+                    className="is-clickable"
+                    onClick={() => handleDiskSort("disk_type")}
                     title="Click to sort by disk type"
                   >
                     Type{" "}
                     <i
                       className={`fas ${getSortIcon(diskSort, "disk_type")}`}
-                    ></i>
+                    />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={() => handleDiskSort('health')}
+                    onClick={() => handleDiskSort("health")}
                     title="Click to sort by health status"
                   >
                     Health{" "}
@@ -111,23 +113,23 @@ const DisksTable = ({
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={() => handleDiskSort('temperature')}
+                    onClick={() => handleDiskSort("temperature")}
                     title="Click to sort by temperature"
                   >
                     Temperature{" "}
                     <i
                       className={`fas ${getSortIcon(diskSort, "temperature")}`}
-                    ></i>
+                    />
                   </th>
                   <th
                     className="is-clickable"
-                                          onClick={() => handleDiskSort('pool_assignment')}
+                    onClick={() => handleDiskSort("pool_assignment")}
                     title="Click to sort by pool assignment"
                   >
                     Pool{" "}
                     <i
                       className={`fas ${getSortIcon(diskSort, "pool_assignment")}`}
-                    ></i>
+                    />
                   </th>
                 </tr>
               </thead>

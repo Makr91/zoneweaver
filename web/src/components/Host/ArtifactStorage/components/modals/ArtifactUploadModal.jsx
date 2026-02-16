@@ -3,29 +3,35 @@ import React, { useState, useRef } from "react";
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
 
-const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError }) => {
+const ArtifactUploadModal = ({
+  server,
+  storagePaths,
+  onClose,
+  onSuccess,
+  onError,
+}) => {
   const [formData, setFormData] = useState({
     storage_path_id: "",
     checksum: "",
-    checksum_algorithm: "sha256"
+    checksum_algorithm: "sha256",
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [errors, setErrors] = useState({});
   const [dragOver, setDragOver] = useState(false);
-  
+
   const fileInputRef = useRef(null);
   const { makeZoneweaverAPIRequest } = useServers();
 
-  const enabledStoragePaths = storagePaths.filter(path => path.enabled);
+  const enabledStoragePaths = storagePaths.filter((path) => path.enabled);
 
   // Set default storage path if only one is available
   React.useEffect(() => {
     if (enabledStoragePaths.length === 1 && !formData.storage_path_id) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        storage_path_id: enabledStoragePaths[0].id
+        storage_path_id: enabledStoragePaths[0].id,
       }));
     }
   }, [enabledStoragePaths, formData.storage_path_id]);
@@ -42,22 +48,32 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
     }
 
     if (formData.checksum.trim() && !formData.checksum_algorithm) {
-      newErrors.checksum_algorithm = "Checksum algorithm is required when checksum is provided";
+      newErrors.checksum_algorithm =
+        "Checksum algorithm is required when checksum is provided";
     }
 
     // Validate file types and sizes
     const maxFileSize = 50 * 1024 * 1024 * 1024; // 50GB
-    const validExtensions = ['.iso', '.img', '.vmdk', '.vhd', '.vhdx', '.qcow2'];
-    
+    const validExtensions = [
+      ".iso",
+      ".img",
+      ".vmdk",
+      ".vhd",
+      ".vhdx",
+      ".qcow2",
+    ];
+
     for (const file of selectedFiles) {
       if (file.size > maxFileSize) {
         newErrors.files = `File "${file.name}" is too large (max 50GB)`;
         break;
       }
-      
-      const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+
+      const extension = file.name
+        .toLowerCase()
+        .substring(file.name.lastIndexOf("."));
       if (!validExtensions.includes(extension)) {
-        newErrors.files = `File "${file.name}" has an unsupported file type. Supported: ${validExtensions.join(', ')}`;
+        newErrors.files = `File "${file.name}" has an unsupported file type. Supported: ${validExtensions.join(", ")}`;
         break;
       }
     }
@@ -67,15 +83,15 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
@@ -83,11 +99,11 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
   const handleFileSelect = (files) => {
     const fileArray = Array.from(files);
     setSelectedFiles(fileArray);
-    
+
     if (errors.files) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        files: ""
+        files: "",
       }));
     }
   };
@@ -113,15 +129,17 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
   };
 
   const removeFile = (index) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const uploadFile = async (file, onProgress) => {
@@ -131,7 +149,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
         filename: file.name,
         size: file.size,
         storage_path_id: formData.storage_path_id,
-        overwrite_existing: false
+        overwrite_existing: false,
       };
 
       // Only add checksum fields if user actually provides a checksum
@@ -150,14 +168,16 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
       );
 
       if (!prepareResult.success || !prepareResult.data?.task_id) {
-        throw new Error(`Prepare upload failed: ${prepareResult.message || 'No task ID received'}`);
+        throw new Error(
+          `Prepare upload failed: ${prepareResult.message || "No task ID received"}`
+        );
       }
 
       const taskId = prepareResult.data.task_id;
 
       // Step 2: Upload file using task ID
       const formDataUpload = new FormData();
-      formDataUpload.append('file', file);
+      formDataUpload.append("file", file);
 
       const uploadResult = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -179,7 +199,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -187,67 +207,76 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
     try {
       setLoading(true);
       setUploadProgress({});
-      
+
       // Upload files sequentially to avoid overwhelming the server
       const results = [];
-      
+
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
-        
-        setUploadProgress(prev => ({
+
+        setUploadProgress((prev) => ({
           ...prev,
-          [file.name]: { status: 'uploading', progress: 0 }
+          [file.name]: { status: "uploading", progress: 0 },
         }));
-        
+
         try {
           const result = await uploadFile(file, (progressEvent) => {
-            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(prev => ({
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress((prev) => ({
               ...prev,
-              [file.name]: { 
-                status: 'uploading', 
+              [file.name]: {
+                status: "uploading",
                 progress: percent,
                 loaded: progressEvent.loaded,
-                total: progressEvent.total
-              }
+                total: progressEvent.total,
+              },
             }));
           });
-          
+
           if (result.success) {
-            setUploadProgress(prev => ({
+            setUploadProgress((prev) => ({
               ...prev,
-              [file.name]: { status: 'completed', progress: 100 }
+              [file.name]: { status: "completed", progress: 100 },
             }));
-            results.push({ 
-              file: file.name, 
-              success: true, 
+            results.push({
+              file: file.name,
+              success: true,
               task_id: result.data?.task_id,
-              data: result.data
+              data: result.data,
             });
           } else {
-            setUploadProgress(prev => ({
+            setUploadProgress((prev) => ({
               ...prev,
-              [file.name]: { status: 'error', progress: 0, error: result.message }
+              [file.name]: {
+                status: "error",
+                progress: 0,
+                error: result.message,
+              },
             }));
-            results.push({ file: file.name, success: false, error: result.message });
+            results.push({
+              file: file.name,
+              success: false,
+              error: result.message,
+            });
           }
         } catch (err) {
-          setUploadProgress(prev => ({
+          setUploadProgress((prev) => ({
             ...prev,
-            [file.name]: { status: 'error', progress: 0, error: err.message }
+            [file.name]: { status: "error", progress: 0, error: err.message },
           }));
           results.push({ file: file.name, success: false, error: err.message });
         }
       }
-      
+
       // Check if any uploads succeeded
-      const successfulUploads = results.filter(r => r.success);
+      const successfulUploads = results.filter((r) => r.success);
       if (successfulUploads.length > 0) {
         onSuccess(results);
       } else {
         onError("All uploads failed. Please check the files and try again.");
       }
-      
     } catch (err) {
       onError(`Error during upload: ${err.message}`);
     } finally {
@@ -255,12 +284,14 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
     }
   };
 
-  const selectedStoragePath = enabledStoragePaths.find(p => p.id === formData.storage_path_id);
+  const selectedStoragePath = enabledStoragePaths.find(
+    (p) => p.id === formData.storage_path_id
+  );
 
   if (enabledStoragePaths.length === 0) {
     return (
       <FormModal
-        isOpen={true}
+        isOpen
         onClose={onClose}
         title="Upload Files"
         icon="fas fa-upload"
@@ -272,8 +303,8 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
             <strong>No enabled storage locations available.</strong>
           </p>
           <p>
-            You need at least one enabled storage location before you can upload artifacts. 
-            Please create or enable a storage location first.
+            You need at least one enabled storage location before you can upload
+            artifacts. Please create or enable a storage location first.
           </p>
         </div>
       </FormModal>
@@ -282,7 +313,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Upload Files"
@@ -292,7 +323,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
       submitIcon="fas fa-upload"
       loading={loading}
       disabled={selectedFiles.length === 0}
-      showCancelButton={true}
+      showCancelButton
     >
       <div className="field">
         <label className="label">Storage Location</label>
@@ -300,7 +331,9 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
           <div className="select is-fullwidth">
             <select
               value={formData.storage_path_id}
-              onChange={(e) => handleInputChange("storage_path_id", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("storage_path_id", e.target.value)
+              }
               disabled={loading}
               className={errors.storage_path_id ? "is-danger" : ""}
             >
@@ -313,14 +346,16 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
             </select>
           </div>
         </div>
-        {errors.storage_path_id && <p className="help is-danger">{errors.storage_path_id}</p>}
+        {errors.storage_path_id && (
+          <p className="help is-danger">{errors.storage_path_id}</p>
+        )}
         <p className="help">Where to store the uploaded files</p>
       </div>
 
       <div className="field">
         <label className="label">Files</label>
-        <div 
-          className={`file is-boxed ${dragOver ? 'is-active' : ''} ${errors.files ? 'has-background-danger-light' : ''}`}
+        <div
+          className={`file is-boxed ${dragOver ? "is-active" : ""} ${errors.files ? "has-background-danger-light" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -337,7 +372,7 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
             />
             <span className="file-cta">
               <span className="file-icon">
-                <i className="fas fa-upload"></i>
+                <i className="fas fa-upload" />
               </span>
               <span className="file-label">
                 {dragOver ? "Drop files here" : "Choose files or drag and drop"}
@@ -347,14 +382,17 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
         </div>
         {errors.files && <p className="help is-danger">{errors.files}</p>}
         <p className="help">
-          Supported formats: ISO, IMG, VMDK, VHD, VHDX, QCOW2 (max 50GB per file)
+          Supported formats: ISO, IMG, VMDK, VHD, VHDX, QCOW2 (max 50GB per
+          file)
         </p>
       </div>
 
       {/* Selected Files List */}
       {selectedFiles.length > 0 && (
         <div className="field">
-          <label className="label">Selected Files ({selectedFiles.length})</label>
+          <label className="label">
+            Selected Files ({selectedFiles.length})
+          </label>
           <div className="box">
             {selectedFiles.map((file, index) => {
               const progress = uploadProgress[file.name];
@@ -386,24 +424,29 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
                               </button>
                             )}
                             {progress && (
-                              <span className={`tag is-small ml-2 ${
-                                progress.status === 'completed' ? 'is-success' :
-                                progress.status === 'error' ? 'is-danger' :
-                                'is-info'
-                              }`}>
-                                {progress.status === 'uploading' && `${progress.progress}%`}
-                                {progress.status === 'completed' && 'Complete'}
-                                {progress.status === 'error' && 'Error'}
+                              <span
+                                className={`tag is-small ml-2 ${
+                                  progress.status === "completed"
+                                    ? "is-success"
+                                    : progress.status === "error"
+                                      ? "is-danger"
+                                      : "is-info"
+                                }`}
+                              >
+                                {progress.status === "uploading" &&
+                                  `${progress.progress}%`}
+                                {progress.status === "completed" && "Complete"}
+                                {progress.status === "error" && "Error"}
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
-                      {progress && progress.status === 'uploading' && (
+                      {progress && progress.status === "uploading" && (
                         <div className="mt-2">
-                          <progress 
-                            className="progress is-primary is-small" 
-                            value={progress.progress} 
+                          <progress
+                            className="progress is-primary is-small"
+                            value={progress.progress}
                             max="100"
                           >
                             {progress.progress}%
@@ -411,13 +454,14 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
                           <div className="is-size-7 has-text-grey">
                             {progress.loaded && progress.total && (
                               <span>
-                                {formatFileSize(progress.loaded)} / {formatFileSize(progress.total)}
+                                {formatFileSize(progress.loaded)} /{" "}
+                                {formatFileSize(progress.total)}
                               </span>
                             )}
                           </div>
                         </div>
                       )}
-                      {progress && progress.status === 'error' && (
+                      {progress && progress.status === "error" && (
                         <div className="notification is-danger is-small mt-2">
                           {progress.error}
                         </div>
@@ -448,7 +492,9 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
             <div className="select">
               <select
                 value={formData.checksum_algorithm}
-                onChange={(e) => handleInputChange("checksum_algorithm", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("checksum_algorithm", e.target.value)
+                }
                 disabled={loading || !formData.checksum.trim()}
               >
                 <option value="md5">MD5</option>
@@ -458,18 +504,32 @@ const ArtifactUploadModal = ({ server, storagePaths, onClose, onSuccess, onError
             </div>
           </div>
         </div>
-        <p className="help">Optional checksum for file integrity verification (applies to all files)</p>
+        <p className="help">
+          Optional checksum for file integrity verification (applies to all
+          files)
+        </p>
       </div>
 
       {selectedStoragePath && (
         <div className="notification is-info">
           <div className="content">
-            <p><strong>Upload Destination:</strong></p>
+            <p>
+              <strong>Upload Destination:</strong>
+            </p>
             <ul>
-              <li><strong>Name:</strong> {selectedStoragePath.name}</li>
-              <li><strong>Path:</strong> {selectedStoragePath.path}</li>
-              <li><strong>Type:</strong> {selectedStoragePath.type.toUpperCase()}</li>
-              <li><strong>Current Files:</strong> {selectedStoragePath.file_count || 0}</li>
+              <li>
+                <strong>Name:</strong> {selectedStoragePath.name}
+              </li>
+              <li>
+                <strong>Path:</strong> {selectedStoragePath.path}
+              </li>
+              <li>
+                <strong>Type:</strong> {selectedStoragePath.type.toUpperCase()}
+              </li>
+              <li>
+                <strong>Current Files:</strong>{" "}
+                {selectedStoragePath.file_count || 0}
+              </li>
             </ul>
           </div>
         </div>

@@ -3,14 +3,23 @@ import React, { useState } from "react";
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
 
-const ArtifactMoveModal = ({ server, artifact, storagePaths, onClose, onSuccess, onError }) => {
+const ArtifactMoveModal = ({
+  server,
+  artifact,
+  storagePaths,
+  onClose,
+  onSuccess,
+  onError,
+}) => {
   const [destinationStoragePathId, setDestinationStoragePathId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  const availableStoragePaths = storagePaths.filter(path => path.enabled && path.id !== artifact.storage_location.id);
+  const availableStoragePaths = storagePaths.filter(
+    (path) => path.enabled && path.id !== artifact.storage_location.id
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +40,7 @@ const ArtifactMoveModal = ({ server, artifact, storagePaths, onClose, onSuccess,
         `artifacts/${artifact.id}/move`,
         "POST",
         {
-          destination_storage_location_id: destinationStoragePathId
+          destination_storage_location_id: destinationStoragePathId,
         }
       );
 
@@ -49,7 +58,7 @@ const ArtifactMoveModal = ({ server, artifact, storagePaths, onClose, onSuccess,
 
   return (
     <FormModal
-      isOpen={true}
+      isOpen
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Move Artifact"
@@ -57,11 +66,11 @@ const ArtifactMoveModal = ({ server, artifact, storagePaths, onClose, onSuccess,
       submitText="Move Artifact"
       submitVariant="is-primary"
       loading={loading}
-      showCancelButton={true}
+      showCancelButton
     >
       {error && (
         <div className="notification is-danger">
-          <button className="delete" onClick={() => setError("")}></button>
+          <button className="delete" onClick={() => setError("")} />
           {error}
         </div>
       )}
@@ -69,14 +78,24 @@ const ArtifactMoveModal = ({ server, artifact, storagePaths, onClose, onSuccess,
       <div className="field">
         <label className="label">Artifact</label>
         <div className="control">
-          <input className="input" type="text" value={artifact.filename} readOnly />
+          <input
+            className="input"
+            type="text"
+            value={artifact.filename}
+            readOnly
+          />
         </div>
       </div>
 
       <div className="field">
         <label className="label">Current Storage Location</label>
         <div className="control">
-          <input className="input" type="text" value={`${artifact.storage_location.name} (${artifact.storage_location.path})`} readOnly />
+          <input
+            className="input"
+            type="text"
+            value={`${artifact.storage_location.name} (${artifact.storage_location.path})`}
+            readOnly
+          />
         </div>
       </div>
 

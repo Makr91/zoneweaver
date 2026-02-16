@@ -9,13 +9,15 @@
  * @returns {string} Formatted size string
  */
 export const formatFileSize = (bytes, decimals = 1) => {
-  if (!bytes || bytes === 0) return "0 B";
-  
+  if (!bytes || bytes === 0) {
+    return "0 B";
+  }
+
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`;
+
+  return `${parseFloat((bytes / k ** i).toFixed(decimals))} ${sizes[i]}`;
 };
 
 /**
@@ -24,11 +26,13 @@ export const formatFileSize = (bytes, decimals = 1) => {
  * @returns {string} Formatted date string
  */
 export const formatDateTime = (dateString) => {
-  if (!dateString) return "N/A";
-  
+  if (!dateString) {
+    return "N/A";
+  }
+
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   } catch (err) {
     return dateString;
   }
@@ -41,33 +45,33 @@ export const formatDateTime = (dateString) => {
  */
 export const getFileTypeInfo = (extension) => {
   const ext = extension?.toLowerCase();
-  
+
   if (ext === ".iso") {
     return {
       type: "iso",
       icon: "fas fa-compact-disc",
       color: "has-text-info",
       tag: "is-info",
-      description: "ISO disc image"
+      description: "ISO disc image",
     };
   }
-  
+
   if ([".vmdk", ".vhd", ".vhdx", ".qcow2", ".img"].includes(ext)) {
     return {
       type: "image",
       icon: "fas fa-hdd",
-      color: "has-text-warning", 
+      color: "has-text-warning",
       tag: "is-warning",
-      description: "Virtual machine disk image"
+      description: "Virtual machine disk image",
     };
   }
-  
+
   return {
     type: "unknown",
     icon: "fas fa-file",
     color: "has-text-grey",
     tag: "is-light",
-    description: "Unknown file type"
+    description: "Unknown file type",
   };
 };
 
@@ -78,12 +82,12 @@ export const getFileTypeInfo = (extension) => {
  */
 export const validateFileType = (filename) => {
   const validExtensions = [".iso", ".img", ".vmdk", ".vhd", ".vhdx", ".qcow2"];
-  const extension = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-  
+  const extension = filename.toLowerCase().substring(filename.lastIndexOf("."));
+
   return {
     isValid: validExtensions.includes(extension),
-    extension: extension,
-    validExtensions: validExtensions
+    extension,
+    validExtensions,
   };
 };
 
@@ -95,9 +99,9 @@ export const validateFileType = (filename) => {
 export const extractFilenameFromUrl = (url) => {
   try {
     const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
-    const filename = pathname.split('/').pop();
-    return filename && filename.includes('.') ? filename : "";
+    const { pathname } = urlObj;
+    const filename = pathname.split("/").pop();
+    return filename && filename.includes(".") ? filename : "";
   } catch {
     return "";
   }
@@ -109,8 +113,10 @@ export const extractFilenameFromUrl = (url) => {
  * @returns {number} Percentage as number
  */
 export const parseUsagePercentage = (usageString) => {
-  if (!usageString) return 0;
-  return parseInt(usageString.replace('%', '')) || 0;
+  if (!usageString) {
+    return 0;
+  }
+  return parseInt(usageString.replace("%", "")) || 0;
 };
 
 /**
@@ -119,8 +125,12 @@ export const parseUsagePercentage = (usageString) => {
  * @returns {string} Bulma color class
  */
 export const getDiskUsageColor = (percentage) => {
-  if (percentage >= 90) return "is-danger";
-  if (percentage >= 75) return "is-warning";
+  if (percentage >= 90) {
+    return "is-danger";
+  }
+  if (percentage >= 75) {
+    return "is-warning";
+  }
   return "is-success";
 };
 
@@ -133,15 +143,15 @@ export const validateUrl = (url) => {
   try {
     const urlObj = new URL(url);
     return {
-      isValid: ['http:', 'https:'].includes(urlObj.protocol),
+      isValid: ["http:", "https:"].includes(urlObj.protocol),
       protocol: urlObj.protocol,
-      hostname: urlObj.hostname
+      hostname: urlObj.hostname,
     };
   } catch {
     return {
       isValid: false,
       protocol: null,
-      hostname: null
+      hostname: null,
     };
   }
 };
@@ -152,8 +162,10 @@ export const validateUrl = (url) => {
  * @returns {string} Human-readable progress message
  */
 export const getDownloadProgressMessage = (taskStatus) => {
-  if (!taskStatus) return "Unknown status";
-  
+  if (!taskStatus) {
+    return "Unknown status";
+  }
+
   switch (taskStatus.status) {
     case "queued":
       return "Download queued...";
@@ -179,24 +191,24 @@ export const getChecksumStatus = (verified) => {
       icon: "fas fa-check-circle",
       color: "has-text-success",
       text: "Verified",
-      tag: "is-success"
+      tag: "is-success",
     };
   }
-  
+
   if (verified === false) {
     return {
-      icon: "fas fa-times-circle", 
+      icon: "fas fa-times-circle",
       color: "has-text-danger",
       text: "Mismatch",
-      tag: "is-danger"
+      tag: "is-danger",
     };
   }
-  
+
   return {
     icon: "fas fa-question-circle",
     color: "has-text-grey",
     text: "Not verified",
-    tag: "is-light"
+    tag: "is-light",
   };
 };
 
@@ -208,20 +220,34 @@ export const getChecksumStatus = (verified) => {
  */
 export const buildArtifactQuery = (filters, pagination) => {
   const params = {};
-  
+
   if (pagination) {
-    if (pagination.limit) params.limit = pagination.limit;
-    if (pagination.offset) params.offset = pagination.offset;
+    if (pagination.limit) {
+      params.limit = pagination.limit;
+    }
+    if (pagination.offset) {
+      params.offset = pagination.offset;
+    }
   }
-  
+
   if (filters) {
-    if (filters.search?.trim()) params.search = filters.search.trim();
-    if (filters.type) params.type = filters.type;
-    if (filters.storage_location) params.storage_location_id = filters.storage_location;
-    if (filters.sort_by) params.sort_by = filters.sort_by;
-    if (filters.sort_order) params.sort_order = filters.sort_order;
+    if (filters.search?.trim()) {
+      params.search = filters.search.trim();
+    }
+    if (filters.type) {
+      params.type = filters.type;
+    }
+    if (filters.storage_location) {
+      params.storage_location_id = filters.storage_location;
+    }
+    if (filters.sort_by) {
+      params.sort_by = filters.sort_by;
+    }
+    if (filters.sort_order) {
+      params.sort_order = filters.sort_order;
+    }
   }
-  
+
   return params;
 };
 
@@ -231,8 +257,10 @@ export const buildArtifactQuery = (filters, pagination) => {
  * @returns {number} Total size in bytes
  */
 export const calculateTotalFileSize = (files) => {
-  if (!files) return 0;
-  
+  if (!files) {
+    return 0;
+  }
+
   return Array.from(files).reduce((total, file) => total + file.size, 0);
 };
 
@@ -240,9 +268,8 @@ export const calculateTotalFileSize = (files) => {
  * Generate unique task tracking ID
  * @returns {string} Unique ID string
  */
-export const generateTaskId = () => {
-  return `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-};
+export const generateTaskId = () =>
+  `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 /**
  * Check if storage path is suitable for file type
@@ -251,14 +278,20 @@ export const generateTaskId = () => {
  * @returns {boolean} Whether storage path is suitable
  */
 export const isStoragePathSuitable = (storagePath, fileExtension) => {
-  if (!storagePath || !fileExtension) return false;
-  
+  if (!storagePath || !fileExtension) {
+    return false;
+  }
+
   const fileTypeInfo = getFileTypeInfo(fileExtension);
-  
+
   // ISO files should go to ISO storage, VM images to image storage
-  if (fileTypeInfo.type === "iso" && storagePath.type === "iso") return true;
-  if (fileTypeInfo.type === "image" && storagePath.type === "image") return true;
-  
+  if (fileTypeInfo.type === "iso" && storagePath.type === "iso") {
+    return true;
+  }
+  if (fileTypeInfo.type === "image" && storagePath.type === "image") {
+    return true;
+  }
+
   // Allow any type if storage path is generic
   return storagePath.type === "artifact";
 };

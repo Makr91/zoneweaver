@@ -19,18 +19,18 @@ const BandwidthTable = ({
     <div className="level is-mobile mb-3">
       <div className="level-left">
         <h4
-                      className='title is-5 mb-0 is-clickable'
+          className="title is-5 mb-0 is-clickable"
           onClick={resetBandwidthSort}
-                      title="Click to reset sorting to default"
+          title="Click to reset sorting to default"
         >
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-chart-line"></i>
+              <i className="fas fa-chart-line" />
             </span>
             <span>Real-Time Network Bandwidth</span>
             {bandwidthSort.length > 1 && (
               <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down"></i>
+                <i className="fas fa-sort-amount-down" />
               </span>
             )}
           </span>
@@ -38,14 +38,16 @@ const BandwidthTable = ({
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('bandwidth')}
-                      title={sectionsCollapsed.bandwidth ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("bandwidth")}
+          title={
+            sectionsCollapsed.bandwidth ? "Expand section" : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.bandwidth ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>
@@ -58,73 +60,71 @@ const BandwidthTable = ({
               <tr>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('link')}
+                  onClick={() => handleBandwidthSort("link")}
                   title="Click to sort by interface name"
                 >
                   Interface{" "}
-                  <i
-                    className={`fas ${getSortIcon(bandwidthSort, "link")}`}
-                  ></i>
+                  <i className={`fas ${getSortIcon(bandwidthSort, "link")}`} />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('totalMbps')}
+                  onClick={() => handleBandwidthSort("totalMbps")}
                   title="Click to sort by total bandwidth"
                 >
                   Total Bandwidth{" "}
                   <i
                     className={`fas ${getSortIcon(bandwidthSort, "totalMbps")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('rxMbps')}
-                                      title="Click to sort by RX rate"
+                  onClick={() => handleBandwidthSort("rxMbps")}
+                  title="Click to sort by RX rate"
                 >
                   RX Rate{" "}
                   <i
                     className={`fas ${getSortIcon(bandwidthSort, "rxMbps")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('txMbps')}
+                  onClick={() => handleBandwidthSort("txMbps")}
                   title="Click to sort by TX rate"
                 >
                   TX Rate{" "}
                   <i
                     className={`fas ${getSortIcon(bandwidthSort, "txMbps")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('time_delta_seconds')}
+                  onClick={() => handleBandwidthSort("time_delta_seconds")}
                   title="Click to sort by measurement interval"
                 >
                   Interval{" "}
                   <i
                     className={`fas ${getSortIcon(bandwidthSort, "time_delta_seconds")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('ipackets_delta')}
+                  onClick={() => handleBandwidthSort("ipackets_delta")}
                   title="Click to sort by RX packet count"
                 >
                   RX Packets{" "}
                   <i
                     className={`fas ${getSortIcon(bandwidthSort, "ipackets_delta")}`}
-                  ></i>
+                  />
                 </th>
                 <th
                   className="is-clickable"
-                                      onClick={() => handleBandwidthSort('opackets_delta')}
+                  onClick={() => handleBandwidthSort("opackets_delta")}
                   title="Click to sort by TX packet count"
                 >
                   TX Packets{" "}
                   <i
                     className={`fas ${getSortIcon(bandwidthSort, "opackets_delta")}`}
-                  ></i>
+                  />
                 </th>
               </tr>
             </thead>

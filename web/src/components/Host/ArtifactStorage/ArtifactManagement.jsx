@@ -3,23 +3,23 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useServers } from "../../../contexts/ServerContext";
 
 import ArtifactFilters from "./components/filters/ArtifactFilters";
-import ArtifactTable from "./components/tables/ArtifactTable";
-import StoragePathTable from "./components/tables/StoragePathTable";
+import ArtifactCopyModal from "./components/modals/ArtifactCopyModal";
 import ArtifactDetailsModal from "./components/modals/ArtifactDetailsModal";
 import ArtifactDownloadModal from "./components/modals/ArtifactDownloadModal";
+import ArtifactMoveModal from "./components/modals/ArtifactMoveModal";
 import ArtifactUploadModal from "./components/modals/ArtifactUploadModal";
 import StoragePathCreateModal from "./components/modals/StoragePathCreateModal";
 import StoragePathEditModal from "./components/modals/StoragePathEditModal";
-import ArtifactMoveModal from "./components/modals/ArtifactMoveModal";
-import ArtifactCopyModal from "./components/modals/ArtifactCopyModal";
+import ArtifactTable from "./components/tables/ArtifactTable";
+import StoragePathTable from "./components/tables/StoragePathTable";
 
 const ArtifactManagement = ({ server }) => {
   const [activeTab, setActiveTab] = useState("storage-paths");
-  
+
   // Storage Paths state
   const [storagePaths, setStoragePaths] = useState([]);
   const [storagePathsLoading, setStoragePathsLoading] = useState(false);
-  
+
   // Artifacts state
   const [artifacts, setArtifacts] = useState([]);
   const [artifactsLoading, setArtifactsLoading] = useState(false);
@@ -27,95 +27,116 @@ const ArtifactManagement = ({ server }) => {
     total: 0,
     limit: 25,
     offset: 0,
-    has_more: false
+    has_more: false,
   });
-  
+
   // Active downloads state
   const [activeDownloads, setActiveDownloads] = useState(new Map());
-  const [downloadPollingIntervals, setDownloadPollingIntervals] = useState(new Map());
-  
+  const [downloadPollingIntervals, setDownloadPollingIntervals] = useState(
+    new Map()
+  );
+
   // Filters state
   const [filters, setFilters] = useState({
     search: "",
     type: "",
     storage_location: "",
     sort_by: "filename",
-    sort_order: "asc"
+    sort_order: "asc",
   });
-  
+
   // Modal states
-  const [showStoragePathCreateModal, setShowStoragePathCreateModal] = useState(false);
-  const [showStoragePathEditModal, setShowStoragePathEditModal] = useState(false);
+  const [showStoragePathCreateModal, setShowStoragePathCreateModal] =
+    useState(false);
+  const [showStoragePathEditModal, setShowStoragePathEditModal] =
+    useState(false);
   const [showArtifactUploadModal, setShowArtifactUploadModal] = useState(false);
-  const [showArtifactDownloadModal, setShowArtifactDownloadModal] = useState(false);
-  const [showArtifactDetailsModal, setShowArtifactDetailsModal] = useState(false);
+  const [showArtifactDownloadModal, setShowArtifactDownloadModal] =
+    useState(false);
+  const [showArtifactDetailsModal, setShowArtifactDetailsModal] =
+    useState(false);
   const [showArtifactMoveModal, setShowArtifactMoveModal] = useState(false);
   const [showArtifactCopyModal, setShowArtifactCopyModal] = useState(false);
   const [selectedStoragePath, setSelectedStoragePath] = useState(null);
   const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [artifactDetails, setArtifactDetails] = useState(null);
-  
+
   // General state
   const [error, setError] = useState("");
 
   const { makeZoneweaverAPIRequest } = useServers();
 
   // Convert activeDownloads Map to array for rendering
-  const activeDownloadsList = activeDownloads ? Array.from(activeDownloads.values()) : [];
+  const activeDownloadsList = activeDownloads
+    ? Array.from(activeDownloads.values())
+    : [];
 
   // Use useCallback to stabilize function references
-  const loadArtifacts = useCallback(async (resetOffset = true) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-
-    try {
-      setArtifactsLoading(true);
-      setError("");
-
-      const params = {
-        limit: artifactsPagination.limit,
-        offset: resetOffset ? 0 : artifactsPagination.offset,
-        sort_by: filters.sort_by,
-        sort_order: filters.sort_order
-      };
-
-      if (filters.search.trim()) {
-        params.search = filters.search.trim();
-      }
-      if (filters.type) {
-        params.type = filters.type;
-      }
-      if (filters.storage_location) {
-        params.storage_location_id = filters.storage_location;
+  const loadArtifacts = useCallback(
+    async (resetOffset = true) => {
+      if (!server || !makeZoneweaverAPIRequest) {
+        return;
       }
 
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        "artifacts",
-        "GET",
-        null,
-        params
-      );
+      try {
+        setArtifactsLoading(true);
+        setError("");
 
-      if (result.success && result.data) {
-        setArtifacts(result.data.artifacts || []);
-        if (result.data.pagination) {
-          setArtifactsPagination(result.data.pagination);
+        const params = {
+          limit: artifactsPagination.limit,
+          offset: resetOffset ? 0 : artifactsPagination.offset,
+          sort_by: filters.sort_by,
+          sort_order: filters.sort_order,
+        };
+
+        if (filters.search.trim()) {
+          params.search = filters.search.trim();
         }
-      } else {
-        setError(result.message || "Failed to load artifacts");
+        if (filters.type) {
+          params.type = filters.type;
+        }
+        if (filters.storage_location) {
+          params.storage_location_id = filters.storage_location;
+        }
+
+        const result = await makeZoneweaverAPIRequest(
+          server.hostname,
+          server.port,
+          server.protocol,
+          "artifacts",
+          "GET",
+          null,
+          params
+        );
+
+        if (result.success && result.data) {
+          setArtifacts(result.data.artifacts || []);
+          if (result.data.pagination) {
+            setArtifactsPagination(result.data.pagination);
+          }
+        } else {
+          setError(result.message || "Failed to load artifacts");
+          setArtifacts([]);
+        }
+      } catch (err) {
+        setError(`Error loading artifacts: ${err.message}`);
         setArtifacts([]);
+      } finally {
+        setArtifactsLoading(false);
       }
-    } catch (err) {
-      setError(`Error loading artifacts: ${err.message}`);
-      setArtifacts([]);
-    } finally {
-      setArtifactsLoading(false);
-    }
-  }, [server, makeZoneweaverAPIRequest, artifactsPagination.limit, artifactsPagination.offset, filters.sort_by, filters.sort_order, filters.search, filters.type, filters.storage_location]);
+    },
+    [
+      server,
+      makeZoneweaverAPIRequest,
+      artifactsPagination.limit,
+      artifactsPagination.offset,
+      filters.sort_by,
+      filters.sort_order,
+      filters.search,
+      filters.type,
+      filters.storage_location,
+    ]
+  );
 
   // Load data on component mount and when tab changes
   useEffect(() => {
@@ -131,7 +152,13 @@ const ArtifactManagement = ({ server }) => {
     if (activeTab === "artifacts") {
       loadArtifacts(true); // Reset to first page when filters change
     }
-  }, [filters.search, filters.type, filters.storage_location, filters.sort_by, filters.sort_order]); // Remove activeTab and loadArtifacts from dependencies
+  }, [
+    filters.search,
+    filters.type,
+    filters.storage_location,
+    filters.sort_by,
+    filters.sort_order,
+  ]); // Remove activeTab and loadArtifacts from dependencies
 
   const loadStoragePaths = async () => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -164,7 +191,6 @@ const ArtifactManagement = ({ server }) => {
     }
   };
 
-
   const handleStoragePathCreate = () => {
     setShowStoragePathCreateModal(false);
     loadStoragePaths();
@@ -182,7 +208,11 @@ const ArtifactManagement = ({ server }) => {
   };
 
   const handleStoragePathDelete = async (storagePath) => {
-    if (!window.confirm(`Are you sure you want to delete storage path "${storagePath.name}"? This will remove the storage location but not the files themselves.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete storage path "${storagePath.name}"? This will remove the storage location but not the files themselves.`
+      )
+    ) {
       return;
     }
 
@@ -199,7 +229,7 @@ const ArtifactManagement = ({ server }) => {
         {
           recursive: false,
           remove_db_records: true,
-          force: false
+          force: false,
         }
       );
 
@@ -227,7 +257,7 @@ const ArtifactManagement = ({ server }) => {
         `artifacts/storage/paths/${storagePath.id}`,
         "PUT",
         {
-          enabled: !storagePath.enabled
+          enabled: !storagePath.enabled,
         }
       );
 
@@ -281,7 +311,11 @@ const ArtifactManagement = ({ server }) => {
   };
 
   const handleArtifactDelete = async (artifactIds) => {
-    if (!window.confirm(`Are you sure you want to delete ${artifactIds.length} artifact(s)? This will permanently remove the files from storage.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${artifactIds.length} artifact(s)? This will permanently remove the files from storage.`
+      )
+    ) {
       return;
     }
 
@@ -298,7 +332,7 @@ const ArtifactManagement = ({ server }) => {
         {
           artifact_ids: artifactIds,
           delete_files: true,
-          force: false
+          force: false,
         }
       );
 
@@ -327,7 +361,7 @@ const ArtifactManagement = ({ server }) => {
         "POST",
         {
           verify_checksums: false,
-          remove_orphaned: false
+          remove_orphaned: false,
         }
       );
 
@@ -347,16 +381,16 @@ const ArtifactManagement = ({ server }) => {
   };
 
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handlePaginationChange = (newOffset) => {
-    setArtifactsPagination(prev => ({
+    setArtifactsPagination((prev) => ({
       ...prev,
-      offset: newOffset
+      offset: newOffset,
     }));
     loadArtifacts(false);
   };
@@ -365,106 +399,112 @@ const ArtifactManagement = ({ server }) => {
   const handleStoragePathClick = (storagePath) => {
     // Switch to artifacts tab
     setActiveTab("artifacts");
-    
+
     // Set filter to show only artifacts from this storage location
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       storage_location: storagePath.id,
       search: "", // Clear other filters for better UX
-      type: ""
+      type: "",
     }));
 
     // Reset pagination
-    setArtifactsPagination(prev => ({
+    setArtifactsPagination((prev) => ({
       ...prev,
-      offset: 0
+      offset: 0,
     }));
   };
 
   // Task polling function
-  const pollTaskStatus = useCallback(async (taskId) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return null;
-    }
+  const pollTaskStatus = useCallback(
+    async (taskId) => {
+      if (!server || !makeZoneweaverAPIRequest) {
+        return null;
+      }
 
-    try {
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        `tasks/${taskId}`,
-        "GET"
-      );
+      try {
+        const result = await makeZoneweaverAPIRequest(
+          server.hostname,
+          server.port,
+          server.protocol,
+          `tasks/${taskId}`,
+          "GET"
+        );
 
-      return result.success ? result.data : null;
-    } catch (err) {
-      console.error(`Error polling task ${taskId}:`, err);
-      return null;
-    }
-  }, [server, makeZoneweaverAPIRequest]);
+        return result.success ? result.data : null;
+      } catch (err) {
+        console.error(`Error polling task ${taskId}:`, err);
+        return null;
+      }
+    },
+    [server, makeZoneweaverAPIRequest]
+  );
 
   // Start tracking a download task
-  const startDownloadTracking = useCallback((taskId, downloadInfo) => {
-    // Add to active downloads
-    setActiveDownloads(prev => {
-      const newMap = new Map(prev);
-      newMap.set(taskId, {
-        ...downloadInfo,
-        status: 'queued',
-        startTime: Date.now(),
-        isPending: true // Mark as pending artifact
-      });
-      return newMap;
-    });
-
-    // Start polling for this task
-    const intervalId = setInterval(async () => {
-      const taskStatus = await pollTaskStatus(taskId);
-      
-      if (taskStatus) {
-        setActiveDownloads(prev => {
-          const newMap = new Map(prev);
-          const current = newMap.get(taskId);
-          
-          if (current) {
-            newMap.set(taskId, {
-              ...current,
-              status: taskStatus.status,
-              error_message: taskStatus.error_message,
-              progress_percent: taskStatus.progress_percent || 0,
-              progress_info: taskStatus.progress_info || {}
-            });
-          }
-          
-          return newMap;
+  const startDownloadTracking = useCallback(
+    (taskId, downloadInfo) => {
+      // Add to active downloads
+      setActiveDownloads((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(taskId, {
+          ...downloadInfo,
+          status: "queued",
+          startTime: Date.now(),
+          isPending: true, // Mark as pending artifact
         });
+        return newMap;
+      });
 
-        // Handle completion
-        if (taskStatus.status === 'completed') {
-          stopDownloadTracking(taskId);
-          // Refresh artifacts list to show the new artifact
-          loadArtifacts(false);
-        } else if (taskStatus.status === 'failed') {
-          // Keep failed downloads visible for a while, then remove
-          setTimeout(() => {
+      // Start polling for this task
+      const intervalId = setInterval(async () => {
+        const taskStatus = await pollTaskStatus(taskId);
+
+        if (taskStatus) {
+          setActiveDownloads((prev) => {
+            const newMap = new Map(prev);
+            const current = newMap.get(taskId);
+
+            if (current) {
+              newMap.set(taskId, {
+                ...current,
+                status: taskStatus.status,
+                error_message: taskStatus.error_message,
+                progress_percent: taskStatus.progress_percent || 0,
+                progress_info: taskStatus.progress_info || {},
+              });
+            }
+
+            return newMap;
+          });
+
+          // Handle completion
+          if (taskStatus.status === "completed") {
             stopDownloadTracking(taskId);
-          }, 10000); // Show failed status for 10 seconds
+            // Refresh artifacts list to show the new artifact
+            loadArtifacts(false);
+          } else if (taskStatus.status === "failed") {
+            // Keep failed downloads visible for a while, then remove
+            setTimeout(() => {
+              stopDownloadTracking(taskId);
+            }, 10000); // Show failed status for 10 seconds
+          }
         }
-      }
-    }, 2000); // Poll every 2 seconds
+      }, 2000); // Poll every 2 seconds
 
-    // Store interval ID for cleanup
-    setDownloadPollingIntervals(prev => {
-      const newMap = new Map(prev);
-      newMap.set(taskId, intervalId);
-      return newMap;
-    });
-  }, [pollTaskStatus, loadArtifacts]);
+      // Store interval ID for cleanup
+      setDownloadPollingIntervals((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(taskId, intervalId);
+        return newMap;
+      });
+    },
+    [pollTaskStatus, loadArtifacts]
+  );
 
   // Stop tracking a download task
   const stopDownloadTracking = useCallback((taskId) => {
     // Clear polling interval
-    setDownloadPollingIntervals(prev => {
+    setDownloadPollingIntervals((prev) => {
       const newMap = new Map(prev);
       const intervalId = newMap.get(taskId);
       if (intervalId) {
@@ -475,7 +515,7 @@ const ArtifactManagement = ({ server }) => {
     });
 
     // Remove from active downloads
-    setActiveDownloads(prev => {
+    setActiveDownloads((prev) => {
       const newMap = new Map(prev);
       newMap.delete(taskId);
       return newMap;
@@ -483,13 +523,14 @@ const ArtifactManagement = ({ server }) => {
   }, []);
 
   // Cleanup intervals on unmount
-  useEffect(() => {
-    return () => {
-      downloadPollingIntervals.forEach(intervalId => {
+  useEffect(
+    () => () => {
+      downloadPollingIntervals.forEach((intervalId) => {
         clearInterval(intervalId);
       });
-    };
-  }, [downloadPollingIntervals]);
+    },
+    [downloadPollingIntervals]
+  );
 
   const clearError = () => setError("");
 
@@ -548,7 +589,8 @@ const ArtifactManagement = ({ server }) => {
                 </span>
               </h3>
               <p className="content">
-                Configure designated storage locations for ISO files and VM artifacts on <strong>{server.hostname}</strong>.
+                Configure designated storage locations for ISO files and VM
+                artifacts on <strong>{server.hostname}</strong>.
               </p>
             </div>
 
@@ -619,7 +661,8 @@ const ArtifactManagement = ({ server }) => {
                 </span>
               </h3>
               <p className="content">
-                Manage ISO files, VM images, and other artifacts stored on <strong>{server.hostname}</strong>.
+                Manage ISO files, VM images, and other artifacts stored on{" "}
+                <strong>{server.hostname}</strong>.
               </p>
             </div>
 
@@ -633,7 +676,9 @@ const ArtifactManagement = ({ server }) => {
                         <i className="fas fa-download" />
                       </span>
                       <span className="ml-2">
-                        <strong>{activeDownloadsList.length}</strong> download{activeDownloadsList.length !== 1 ? 's' : ''} in progress
+                        <strong>{activeDownloadsList.length}</strong> download
+                        {activeDownloadsList.length !== 1 ? "s" : ""} in
+                        progress
                       </span>
                     </div>
                   </div>
@@ -641,16 +686,19 @@ const ArtifactManagement = ({ server }) => {
                     <div className="level-item">
                       <div className="tags">
                         {activeDownloadsList.map((download) => (
-                          <span 
+                          <span
                             key={download.taskId}
                             className={`tag is-small ${
-                              download.status === 'running' ? 'is-primary' :
-                              download.status === 'queued' ? 'is-info' :
-                              download.status === 'failed' ? 'is-danger' :
-                              'is-light'
+                              download.status === "running"
+                                ? "is-primary"
+                                : download.status === "queued"
+                                  ? "is-info"
+                                  : download.status === "failed"
+                                    ? "is-danger"
+                                    : "is-light"
                             }`}
                           >
-                            {download.filename || 'Unknown'}
+                            {download.filename || "Unknown"}
                           </span>
                         ))}
                       </div>
@@ -725,18 +773,21 @@ const ArtifactManagement = ({ server }) => {
           onClose={() => setShowArtifactUploadModal(false)}
           onSuccess={(results) => {
             setShowArtifactUploadModal(false);
-            
+
             // Start tracking upload tasks for successful uploads
-            results.forEach(result => {
+            results.forEach((result) => {
               if (result.success && result.task_id && result.data) {
-                const storageLocation = storagePaths.find(sp => sp.id === result.data.storage_location?.id);
-                
+                const storageLocation = storagePaths.find(
+                  (sp) => sp.id === result.data.storage_location?.id
+                );
+
                 startDownloadTracking(result.task_id, {
                   taskId: result.task_id,
                   filename: result.data.filename || result.file,
                   isUpload: true, // Mark as upload task
-                  storage_location: result.data.storage_location || storageLocation,
-                  created_at: new Date().toISOString()
+                  storage_location:
+                    result.data.storage_location || storageLocation,
+                  created_at: new Date().toISOString(),
                 });
               }
             });
@@ -755,17 +806,19 @@ const ArtifactManagement = ({ server }) => {
           onClose={() => setShowArtifactDownloadModal(false)}
           onSuccess={(result) => {
             setShowArtifactDownloadModal(false);
-            
+
             // Start tracking the download task
             if (result.task_id) {
-              const storageLocation = storagePaths.find(sp => sp.id === result.storage_location?.id);
-              
+              const storageLocation = storagePaths.find(
+                (sp) => sp.id === result.storage_location?.id
+              );
+
               startDownloadTracking(result.task_id, {
                 taskId: result.task_id,
                 filename: result.filename,
                 url: result.url,
                 storage_location: result.storage_location || storageLocation,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
               });
 
               // Switch to artifacts tab to show the download progress

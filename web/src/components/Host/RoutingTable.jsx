@@ -7,7 +7,7 @@ const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
         <h4 className="title is-5 mb-0">
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-route"></i>
+              <i className="fas fa-route" />
             </span>
             <span>Routing Table</span>
           </span>
@@ -15,14 +15,18 @@ const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
       </div>
       <div className="level-right">
         <button
-                      className='button is-small is-ghost'
-                      onClick={() => toggleSection('routingTable')}
-                      title={sectionsCollapsed.routingTable ? 'Expand section' : 'Collapse section'}
+          className="button is-small is-ghost"
+          onClick={() => toggleSection("routingTable")}
+          title={
+            sectionsCollapsed.routingTable
+              ? "Expand section"
+              : "Collapse section"
+          }
         >
           <span className="icon">
             <i
               className={`fas ${sectionsCollapsed.routingTable ? "fa-chevron-down" : "fa-chevron-up"}`}
-            ></i>
+            />
           </span>
         </button>
       </div>

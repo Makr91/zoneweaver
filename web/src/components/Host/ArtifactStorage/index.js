@@ -1,1 +1,1 @@
-export { default as ArtifactManagement } from './ArtifactManagement';
+export { default as ArtifactManagement } from "./ArtifactManagement";

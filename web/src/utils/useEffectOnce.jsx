@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 
 export const useEffectOnce = (effect) => {
+  const effectRef = useRef(effect);
   const destroyFunc = useRef();
   const effectCalled = useRef(false);
   const renderAfterCalled = useRef(false);
   const [, setVal] = useState(0);
+
+  effectRef.current = effect;
 
   if (effectCalled.current) {
     renderAfterCalled.current = true;
@@ -13,7 +16,7 @@ export const useEffectOnce = (effect) => {
   useEffect(() => {
     // only execute the effect first time around
     if (!effectCalled.current) {
-      destroyFunc.current = effect();
+      destroyFunc.current = effectRef.current();
       effectCalled.current = true;
     }
 

@@ -17,7 +17,7 @@ const DeviceFilters = ({
         <h4 className="title is-5 mb-0">
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-filter"></i>
+              <i className="fas fa-filter" />
             </span>
             <span>Device Filters & Search</span>
           </span>
@@ -27,12 +27,19 @@ const DeviceFilters = ({
         <div className="field is-grouped">
           <div className="control">
             <button
-                              className='button is-small is-info'
-                              onClick={() => setFilters({ category: '', pptStatus: '', driverStatus: '', searchText: '' })}
-                              title="Clear all filters"
+              className="button is-small is-info"
+              onClick={() =>
+                setFilters({
+                  category: "",
+                  pptStatus: "",
+                  driverStatus: "",
+                  searchText: "",
+                })
+              }
+              title="Clear all filters"
             >
               <span className="icon">
-                <i className="fas fa-times"></i>
+                <i className="fas fa-times" />
               </span>
               <span>Clear</span>
             </button>
@@ -42,11 +49,11 @@ const DeviceFilters = ({
               <div className="dropdown-trigger">
                 <button className="button is-small" aria-haspopup="true">
                   <span className="icon">
-                    <i className="fas fa-download"></i>
+                    <i className="fas fa-download" />
                   </span>
                   <span>Export</span>
                   <span className="icon is-small">
-                    <i className="fas fa-angle-down"></i>
+                    <i className="fas fa-angle-down" />
                   </span>
                 </button>
               </div>
@@ -59,7 +66,7 @@ const DeviceFilters = ({
                     }
                   >
                     <span className="icon mr-2">
-                      <i className="fas fa-file-csv"></i>
+                      <i className="fas fa-file-csv" />
                     </span>
                     <span>Export as CSV</span>
                   </a>
@@ -70,7 +77,7 @@ const DeviceFilters = ({
                     }
                   >
                     <span className="icon mr-2">
-                      <i className="fas fa-file-code"></i>
+                      <i className="fas fa-file-code" />
                     </span>
                     <span>Export as JSON</span>
                   </a>
@@ -80,14 +87,18 @@ const DeviceFilters = ({
           </div>
           <div className="control">
             <button
-                              className='button is-small is-ghost'
-                              onClick={() => toggleSection('filters')}
-                              title={sectionsCollapsed.filters ? 'Expand section' : 'Collapse section'}
+              className="button is-small is-ghost"
+              onClick={() => toggleSection("filters")}
+              title={
+                sectionsCollapsed.filters
+                  ? "Expand section"
+                  : "Collapse section"
+              }
             >
               <span className="icon">
                 <i
                   className={`fas ${sectionsCollapsed.filters ? "fa-chevron-down" : "fa-chevron-up"}`}
-                ></i>
+                />
               </span>
             </button>
           </div>
@@ -101,14 +112,19 @@ const DeviceFilters = ({
             <label className="label is-small">Search Devices</label>
             <div className="control has-icons-left">
               <input
-                                  className='input is-small'
-                                  type='text'
-                                  placeholder='Device name, vendor, PCI address...'
+                className="input is-small"
+                type="text"
+                placeholder="Device name, vendor, PCI address..."
                 value={filters.searchText}
-                                  onChange={(e) => setFilters(prev => ({ ...prev, searchText: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    searchText: e.target.value,
+                  }))
+                }
               />
               <span className="icon is-small is-left">
-                <i className="fas fa-search"></i>
+                <i className="fas fa-search" />
               </span>
             </div>
           </div>
@@ -120,7 +136,12 @@ const DeviceFilters = ({
               <div className="select is-small is-fullwidth">
                 <select
                   value={filters.category}
-                                      onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
                 >
                   <option value="">All Categories</option>
                   {Object.keys(deviceCategories).map((category) => (
@@ -141,7 +162,12 @@ const DeviceFilters = ({
               <div className="select is-small is-fullwidth">
                 <select
                   value={filters.pptStatus}
-                                      onChange={(e) => setFilters(prev => ({ ...prev, pptStatus: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      pptStatus: e.target.value,
+                    }))
+                  }
                 >
                   <option value="">All PPT Status</option>
                   <option value="enabled">PPT Capable</option>
@@ -160,7 +186,12 @@ const DeviceFilters = ({
               <div className="select is-small is-fullwidth">
                 <select
                   value={filters.driverStatus}
-                                      onChange={(e) => setFilters(prev => ({ ...prev, driverStatus: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      driverStatus: e.target.value,
+                    }))
+                  }
                 >
                   <option value="">All Driver Status</option>
                   <option value="attached">Driver Attached</option>

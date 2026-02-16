@@ -54,8 +54,8 @@ export const useZoneDetails = (currentServer, currentZone) => {
         if (datasetsResult.success) {
           setStorageDatasets(datasetsResult.data);
         }
-      } catch (error) {
-        console.warn("Error fetching monitoring data:", error);
+      } catch (monitoringErr) {
+        console.warn("Error fetching monitoring data:", monitoringErr);
       }
     },
     [
@@ -216,7 +216,11 @@ export const useZoneDetails = (currentServer, currentZone) => {
         setLoading(false);
       }
     },
-    [makeZoneweaverAPIRequest, loadMonitoringData]
+    [
+      makeZoneweaverAPIRequest,
+      loadMonitoringData,
+      initializeSessionFromExisting,
+    ]
   );
 
   useEffect(() => {
@@ -229,7 +233,7 @@ export const useZoneDetails = (currentServer, currentZone) => {
       setStoragePools([]);
       setStorageDatasets([]);
     }
-  }, [currentServer, currentZone]); // FIXED: Remove loadZoneDetails dependency to prevent infinite loop
+  }, [currentServer, currentZone, loadZoneDetails]);
 
   return {
     zoneDetails,

@@ -63,7 +63,7 @@ export const useZoneManager = (currentServer) => {
       setZones([]);
       setRunningZones([]);
     }
-  }, [currentServer]); // FIXED: Remove loadZones dependency to prevent infinite loop
+  }, [currentServer, loadZones]);
 
   const getZoneStatus = (zoneName) =>
     runningZones.includes(zoneName) ? "running" : "stopped";
