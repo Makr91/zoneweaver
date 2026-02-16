@@ -1,5 +1,6 @@
 import axios from "axios";
-import React, {
+import PropTypes from "prop-types";
+import {
   createContext,
   useState,
   useContext,
@@ -30,6 +31,60 @@ export const useServers = () => {
     throw new Error("useServers must be used within a ServerProvider");
   }
   return context;
+};
+
+/**
+ * Helper to create Axios configuration for Zoneweaver API requests
+ * Reduces complexity of the main request function
+ */
+const createAxiosConfig = ({
+  protocol,
+  hostname,
+  port,
+  path,
+  method,
+  data,
+  params,
+  bypassCache,
+  onUploadProgress,
+  responseType,
+}) => {
+  const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
+  const config = {
+    url: proxyUrl,
+    method,
+    headers: {
+      ...(data instanceof FormData
+        ? { "Content-Type": false }
+        : { "Content-Type": "application/json" }),
+      ...((path.includes("/vnc/") || bypassCache) && {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      }),
+    },
+    ...(responseType !== "json" && { responseType }),
+    validateStatus: (status) =>
+      (status >= 200 && status < 300) ||
+      (status === 304 && !path.includes("/vnc/") && !bypassCache),
+    ...(data instanceof FormData && { timeout: 1800000 }),
+    ...(data instanceof FormData && onUploadProgress && { onUploadProgress }),
+  };
+
+  if (data) {
+    config.data = data;
+  }
+
+  if (params) {
+    const searchParams = new URLSearchParams();
+    for (const key in params) {
+      if (Object.hasOwn(params, key)) {
+        searchParams.append(key, params[key]);
+      }
+    }
+    config.params = searchParams;
+  }
+
+  return config;
 };
 
 /**
@@ -65,6 +120,37 @@ export const ServerProvider = ({ children }) => {
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const loadingRef = useRef(false);
+
+  /**
+   * Load all servers from the application
+   */
+  const loadServers = useCallback(async () => {
+    // Prevent concurrent calls
+    if (loadingRef.current) {
+      console.log(
+        "📡 SERVER: loadServers already in progress, skipping duplicate"
+      );
+      return;
+    }
+
+    try {
+      loadingRef.current = true;
+      setLoading(true);
+      const response = await axios.get("/api/servers");
+
+      if (response.data.success) {
+        setServers(response.data.servers);
+        console.log("Servers loaded:", response.data.servers);
+      } else {
+        console.error("Failed to load servers:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error loading servers:", error);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+    }
+  }, []);
 
   // Persist currentServer to localStorage whenever it changes
   useEffect(() => {
@@ -121,7 +207,8 @@ export const ServerProvider = ({ children }) => {
       setCurrentServer(null);
       setHasLoadedOnce(false);
     }
-  }, [isAuthenticated, authLoading]);
+    return undefined;
+  }, [isAuthenticated, authLoading, hasLoadedOnce, loadServers]);
 
   /**
    * Re-establish currentServer connection after servers load
@@ -185,38 +272,7 @@ export const ServerProvider = ({ children }) => {
     } else if (servers.length > 0 && !currentServer) {
       console.log("📝 SERVER RE-ESTABLISHMENT: No currentServer to restore");
     }
-  }, [servers.length]); // Only depend on servers.length to avoid infinite loops
-
-  /**
-   * Load all servers from the application
-   */
-  const loadServers = useCallback(async () => {
-    // Prevent concurrent calls
-    if (loadingRef.current) {
-      console.log(
-        "📡 SERVER: loadServers already in progress, skipping duplicate"
-      );
-      return;
-    }
-
-    try {
-      loadingRef.current = true;
-      setLoading(true);
-      const response = await axios.get("/api/servers");
-
-      if (response.data.success) {
-        setServers(response.data.servers);
-        console.log("Servers loaded:", response.data.servers);
-      } else {
-        console.error("Failed to load servers:", response.data.message);
-      }
-    } catch (error) {
-      console.error("Error loading servers:", error);
-    } finally {
-      setLoading(false);
-      loadingRef.current = false;
-    }
-  }, []);
+  }, [servers, currentServer]);
 
   /**
    * Add a new Zoneweaver API Server (Admin only)
@@ -361,67 +417,34 @@ export const ServerProvider = ({ children }) => {
    * @param {string} responseType - Response type ('json', 'blob', 'text', etc.)
    * @returns {Promise<Object>} Request result
    */
-  const makeZoneweaverAPIRequest = async (
-    hostname,
-    port,
-    protocol,
-    path,
-    method = "GET",
-    data = null,
-    params = null,
-    bypassCache = false,
-    onUploadProgress = null,
-    responseType = "json"
-  ) => {
+  const makeZoneweaverAPIRequest = async (...args) => {
+    // Destructure arguments to maintain backward compatibility while satisfying max-params rule
+    const [
+      hostname,
+      port,
+      protocol,
+      path,
+      method = "GET",
+      data = null,
+      params = null,
+      bypassCache = false,
+      onUploadProgress = null,
+      responseType = "json",
+    ] = args;
+
     try {
-      const proxyUrl = `/api/zapi/${protocol}/${hostname}/${port}/${path}`;
-      const config = {
-        url: proxyUrl,
+      const config = createAxiosConfig({
+        protocol,
+        hostname,
+        port,
+        path,
         method,
-        headers: {
-          // Explicitly handle Content-Type for FormData vs JSON
-          ...(data instanceof FormData
-            ? { "Content-Type": false } // Tell axios to not set Content-Type - browser will set multipart/form-data
-            : { "Content-Type": "application/json" }),
-          // Add no-cache headers for VNC endpoints or when explicitly requested
-          ...((path.includes("/vnc/") || bypassCache) && {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          }),
-        },
-        // Set responseType for blob/binary responses
-        ...(responseType !== "json" && {
-          responseType,
-        }),
-        // Handle 304 responses appropriately - success for non-VNC, error for VNC (should not happen with no-cache)
-        validateStatus: (status) =>
-          (status >= 200 && status < 300) ||
-          (status === 304 && !path.includes("/vnc/") && !bypassCache),
-        // Add extended timeout for file uploads (30 minutes)
-        ...(data instanceof FormData && {
-          timeout: 1800000, // 30 minutes for large file uploads
-        }),
-        // Add upload progress tracking for FormData
-        ...(data instanceof FormData &&
-          onUploadProgress && {
-            onUploadProgress,
-          }),
-      };
-
-      if (data) {
-        config.data = data;
-      }
-
-      if (params) {
-        // Use URLSearchParams to ensure correct formatting, especially for keys with special characters
-        const searchParams = new URLSearchParams();
-        for (const key in params) {
-          if (Object.hasOwn(params, key)) {
-            searchParams.append(key, params[key]);
-          }
-        }
-        config.params = searchParams;
-      }
+        data,
+        params,
+        bypassCache,
+        onUploadProgress,
+        responseType,
+      });
 
       const response = await axios(config);
       return { success: true, data: response.data };
@@ -1660,6 +1683,10 @@ export const ServerProvider = ({ children }) => {
   return (
     <ServerContext.Provider value={value}>{children}</ServerContext.Provider>
   );
+};
+
+ServerProvider.propTypes = {
+  children: PropTypes.node,
 };
 
 export default ServerContext;

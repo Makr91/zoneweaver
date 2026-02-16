@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { createContext, useState, useEffect } from "react";
 
 const UserSettings = createContext();
 
@@ -160,6 +161,10 @@ const UserSettingsProvider = ({ children }) => {
       {children}
     </UserSettings.Provider>
   );
+};
+
+UserSettingsProvider.propTypes = {
+  children: PropTypes.node,
 };
 
 export { UserSettings, UserSettingsProvider };

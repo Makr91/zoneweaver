@@ -6,14 +6,8 @@ import { SerializeAddon } from "@xterm/addon-serialize";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import { WebglAddon } from "@xterm/addon-webgl";
 import axios from "axios";
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  useCallback,
-  useRef,
-} from "react";
+import PropTypes from "prop-types";
+import React, { createContext, useContext, useCallback, useRef } from "react";
 
 import { useServers } from "./ServerContext";
 
@@ -99,7 +93,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       }
 
       // WebSocket is available, create AttachAddon
-      const attachAddon = new AttachAddon(ws);
+      const attachAddon = new AttachAddon(ws, { bidirectional: !readOnly });
 
       const addons = [
         fitAddonsMap.current.get(zoneKey),
@@ -309,7 +303,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       );
       return await createOrReuseTerminalSession(server, zoneName);
     },
-    [createOrReuseTerminalSession]
+    [createOrReuseTerminalSession, getZoneKey]
   );
 
   const initializeSessionFromExisting = useCallback(
@@ -381,7 +375,7 @@ export const ZoneTerminalProvider = ({ children }) => {
   );
 
   const pasteTextToZone = useCallback(
-    async (server, zoneName, text) => {
+    (server, zoneName, text) => {
       const zoneKey = getZoneKey(server, zoneName);
       const ws = websocketsMap.current.get(zoneKey);
 
@@ -434,4 +428,8 @@ export const ZoneTerminalProvider = ({ children }) => {
       {children}
     </ZoneTerminalContext.Provider>
   );
+};
+
+ZoneTerminalProvider.propTypes = {
+  children: PropTypes.node,
 };

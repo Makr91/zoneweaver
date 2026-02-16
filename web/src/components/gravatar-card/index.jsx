@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 import GravatarSkeleton from "./skeleton.jsx";
 import "./style.scss";
@@ -147,3 +147,59 @@ export default function GravatarCard({ gravatarData, hasError, isLoading }) {
     </div>
   );
 }
+
+GravatarCard.propTypes = {
+  gravatarData: PropTypes.shape({
+    background_color: PropTypes.string,
+    header_image: PropTypes.string,
+    avatar_url: PropTypes.string,
+    avatar_alt_text: PropTypes.string,
+    hash: PropTypes.string,
+    display_name: PropTypes.string,
+    first_name: PropTypes.string,
+    last_name: PropTypes.string,
+    job_title: PropTypes.string,
+    company: PropTypes.string,
+    location: PropTypes.string,
+    pronouns: PropTypes.string,
+    timezone: PropTypes.string,
+    last_profile_edit: PropTypes.string,
+    registration_date: PropTypes.string,
+    description: PropTypes.string,
+    links: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string,
+        label: PropTypes.string,
+      })
+    ),
+    interests: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+      })
+    ),
+    languages: PropTypes.arrayOf(
+      PropTypes.shape({
+        code: PropTypes.string,
+        name: PropTypes.string,
+        is_primary: PropTypes.bool,
+      })
+    ),
+    verified_accounts: PropTypes.arrayOf(
+      PropTypes.shape({
+        service_label: PropTypes.string,
+        url: PropTypes.string,
+        service_icon: PropTypes.string,
+      })
+    ),
+    profile_url: PropTypes.string,
+    gallery: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string,
+        alt_text: PropTypes.string,
+      })
+    ),
+  }),
+  hasError: PropTypes.bool,
+  isLoading: PropTypes.bool,
+};

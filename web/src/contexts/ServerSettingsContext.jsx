@@ -1,4 +1,5 @@
-import React, { createContext, useState } from "react";
+import PropTypes from "prop-types";
+import { createContext, useState } from "react";
 
 const ServerSettings = createContext();
 
@@ -24,6 +25,10 @@ const ServerSettingsProvider = ({ children }) => {
       {children}
     </ServerSettings.Provider>
   );
+};
+
+ServerSettingsProvider.propTypes = {
+  children: PropTypes.node,
 };
 
 export { ServerSettings, ServerSettingsProvider };

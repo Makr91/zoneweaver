@@ -9,7 +9,13 @@ import { useServers } from "../contexts/ServerContext";
  * @param {function} setZoneDetails - The state setter function for the parent component's zoneDetails.
  * @returns {object} An object containing all VNC-related state and handler functions.
  */
-export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
+export const useVncSession = (
+  currentServer,
+  currentZone,
+  setZoneDetails,
+  previewVncRef,
+  modalVncRef
+) => {
   const [vncSession, setVncSession] = useState(null);
   const [loadingVnc, setLoadingVnc] = useState(false);
   const [showVncConsole, setShowVncConsole] = useState(false);
@@ -53,7 +59,15 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
       if (!currentServer) {
         return { ready: false, reason: "No current server selected" };
       }
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+
+      const poll = async (attemptsLeft) => {
+        if (attemptsLeft === 0) {
+          return {
+            ready: false,
+            reason: `Session not ready after ${maxAttempts} attempts.`,
+          };
+        }
+
         try {
           const vncResult = await makeZoneweaverAPIRequest(
             currentServer.hostname,
@@ -75,19 +89,19 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
               sessionInfo: vncResult.data.vnc_session_info,
             };
           }
-          if (attempt < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
         } catch (error) {
-          if (attempt < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
+          // Ignore error and continue polling
         }
-      }
-      return {
-        ready: false,
-        reason: `Session not ready after ${maxAttempts} attempts.`,
+
+        if (attemptsLeft > 1) {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 500);
+          });
+        }
+        return poll(attemptsLeft - 1);
       };
+
+      return await poll(maxAttempts);
     },
     [currentServer, makeZoneweaverAPIRequest]
   );
@@ -95,7 +109,7 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
   const handleVncConsole = useCallback(
     async (zoneName, openInNewTab = false) => {
       if (!currentServer) {
-        return;
+        return "";
       }
       let errorMsg = "";
       try {
@@ -140,8 +154,8 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
         errorMsg = `Error starting VNC console for ${zoneName}`;
       } finally {
         setLoadingVnc(false);
-        return errorMsg; // Return error message to be set by the component
       }
+      return errorMsg; // Return error message to be set by the component
     },
     [currentServer, startVncSession, waitForVncSessionReady, setZoneDetails]
   );
@@ -185,8 +199,8 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
         result.message = "Error killing VNC session.";
       } finally {
         setKillInProgress(false);
-        return result;
       }
+      return result;
     },
     [currentServer, killInProgress, stopVncSession, setZoneDetails]
   );
@@ -304,9 +318,18 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
         return { valid: false, reason: "No current server selected" };
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
 
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const pollValidation = async (attemptsLeft) => {
+        if (attemptsLeft === 0) {
+          return {
+            valid: false,
+            reason: `Session validation failed after ${maxAttempts} attempts.`,
+          };
+        }
+
         try {
           const vncResult = await makeZoneweaverAPIRequest(
             currentServer.hostname,
@@ -326,11 +349,12 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
             const hasConsoleUrl = vncResult.data.console_url;
             const hasWebPort = vncResult.data.web_port;
 
-            const isActive = hasActiveProperty
-              ? vncResult.data.active
-              : hasStatusProperty
-                ? vncResult.data.status === "active"
-                : false;
+            let isActive = false;
+            if (hasActiveProperty) {
+              isActive = vncResult.data.active;
+            } else if (hasStatusProperty) {
+              isActive = vncResult.data.status === "active";
+            }
 
             if (isActive && hasConsoleUrl && hasWebPort) {
               return {
@@ -340,30 +364,37 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
               };
             }
           }
-
-          if (attempt < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
         } catch (error) {
-          if (attempt < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
+          // Ignore error and continue polling
         }
-      }
 
-      return {
-        valid: false,
-        reason: `Session validation failed after ${maxAttempts} attempts.`,
+        if (attemptsLeft > 1) {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+        }
+        return pollValidation(attemptsLeft - 1);
       };
+
+      return pollValidation(maxAttempts);
     },
     [currentServer, makeZoneweaverAPIRequest]
   );
 
   const verifyKillCompletion = useCallback(
     async (zoneName, maxAttempts = 3) => {
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const pollKill = async (attemptsLeft) => {
+        if (attemptsLeft === 0) {
+          console.warn(
+            `VNC KILL VERIFY: Verification failed after ${maxAttempts} attempts`
+          );
+          return;
+        }
+
         try {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1500);
+          });
 
           const statusResult = await makeZoneweaverAPIRequest(
             currentServer.hostname,
@@ -388,13 +419,16 @@ export const useVncSession = (currentServer, currentZone, setZoneDetails) => {
             return;
           }
         } catch (error) {
-          console.error(`VNC KILL VERIFY: Error on attempt ${attempt}:`, error);
+          console.error(
+            `VNC KILL VERIFY: Error on attempt ${maxAttempts - attemptsLeft + 1}:`,
+            error
+          );
         }
-      }
 
-      console.warn(
-        `VNC KILL VERIFY: Verification failed after ${maxAttempts} attempts`
-      );
+        await pollKill(attemptsLeft - 1);
+      };
+
+      await pollKill(maxAttempts);
     },
     [currentServer, makeZoneweaverAPIRequest, setZoneDetails, showVncConsole]
   );

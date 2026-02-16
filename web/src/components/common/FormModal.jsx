@@ -64,12 +64,21 @@ const FormModal = ({
     }
   };
 
+  const handleBackgroundKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      handleBackgroundClick();
+    }
+  };
+
   return createPortal(
     <div className="modal is-active">
       {/* Background - clicking closes modal (unless loading) */}
       <div
         className="modal-background"
         onClick={handleBackgroundClick}
+        onKeyDown={handleBackgroundKeyDown}
+        role="button"
+        tabIndex={0}
         aria-label="Close modal"
       />
 

@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function GravatarSkeleton() {
   return (
     <div className="gravatar-card skeleton">

@@ -1,5 +1,12 @@
 import axios from "axios";
-import React, { createContext, useState, useContext, useEffect } from "react";
+import PropTypes from "prop-types";
+import {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 
 /**
  * Authentication context for Zoneweaver local user management
@@ -29,17 +36,36 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const fetchGravatarData = useCallback(async (userData) => {
+    if (!userData || !userData.email) {
+      return userData;
+    }
+    try {
+      console.log("Fetching Gravatar data for:", userData.email);
+      const response = await axios.get(`/api/profile/${userData.email}`);
+      console.log("Gravatar data response:", response.data);
+      return { ...userData, gravatar: response.data };
+    } catch (error) {
+      console.error("Failed to fetch Gravatar data:", error);
+      return userData;
+    }
+  }, []);
+
   /**
-   * Initialize authentication state on component mount
+   * Clear authentication state
    */
-  useEffect(() => {
-    initializeAuth();
+  const clearAuth = useCallback(() => {
+    localStorage.removeItem("authToken");
+    setToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
+    delete axios.defaults.headers.common.Authorization;
   }, []);
 
   /**
    * Initialize authentication by checking stored token
    */
-  const initializeAuth = async () => {
+  const initializeAuth = useCallback(async () => {
     const storedToken = localStorage.getItem("authToken");
 
     if (storedToken) {
@@ -52,8 +78,8 @@ export const AuthProvider = ({ children }) => {
         });
 
         if (response.data.success && response.data.user) {
-          const user = await fetchGravatarData(response.data.user);
-          setUser(user);
+          const userWithGravatar = await fetchGravatarData(response.data.user);
+          setUser(userWithGravatar);
           setToken(storedToken);
           setIsAuthenticated(true);
 
@@ -72,7 +98,14 @@ export const AuthProvider = ({ children }) => {
     }
 
     setLoading(false);
-  };
+  }, [clearAuth, fetchGravatarData]);
+
+  /**
+   * Initialize authentication state on component mount
+   */
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   /**
    * Login user with credentials
@@ -109,8 +142,8 @@ export const AuthProvider = ({ children }) => {
         // Store token and user data
         localStorage.setItem("authToken", newToken);
         setToken(newToken);
-        const user = await fetchGravatarData(userData);
-        setUser(user);
+        const userWithGravatar = await fetchGravatarData(userData);
+        setUser(userWithGravatar);
         setIsAuthenticated(true);
 
         // Set default authorization header
@@ -197,17 +230,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Clear authentication state
-   */
-  const clearAuth = () => {
-    localStorage.removeItem("authToken");
-    setToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
-    delete axios.defaults.headers.common.Authorization;
-  };
-
-  /**
    * Set authentication data from external provider (OIDC, etc.)
    * @param {string} authToken - JWT token from external auth
    */
@@ -224,8 +246,8 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get("/api/auth/verify");
 
       if (response.data.success && response.data.user) {
-        const user = await fetchGravatarData(response.data.user);
-        setUser(user);
+        const userWithGravatar = await fetchGravatarData(response.data.user);
+        setUser(userWithGravatar);
         setIsAuthenticated(true);
         console.log("✅ External authentication processed successfully");
       } else {
@@ -307,22 +329,11 @@ export const AuthProvider = ({ children }) => {
     setAuthData,
   };
 
-  const fetchGravatarData = async (user) => {
-    if (!user || !user.email) {
-      return user;
-    }
-    try {
-      console.log("Fetching Gravatar data for:", user.email);
-      const response = await axios.get(`/api/profile/${user.email}`);
-      console.log("Gravatar data response:", response.data);
-      return { ...user, gravatar: response.data };
-    } catch (error) {
-      console.error("Failed to fetch Gravatar data:", error);
-      return user;
-    }
-  };
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node,
 };
 
 export default AuthContext;

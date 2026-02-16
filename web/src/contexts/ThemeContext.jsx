@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const ThemeContext = createContext();
 
@@ -55,13 +56,18 @@ export const ThemeProvider = ({ children }) => {
       mediaQuery.addListener(handleChange);
       return () => mediaQuery.removeListener(handleChange);
     }
+    return undefined;
   }, [theme]);
 
   const toggleTheme = () => {
     setTheme((current) => {
-      const newTheme =
-        current === "auto" ? "light" : current === "light" ? "dark" : "auto";
-      return newTheme;
+      if (current === "auto") {
+        return "light";
+      }
+      if (current === "light") {
+        return "dark";
+      }
+      return "auto";
     });
   };
 
@@ -92,4 +98,8 @@ export const ThemeProvider = ({ children }) => {
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
+};
+
+ThemeProvider.propTypes = {
+  children: PropTypes.node,
 };

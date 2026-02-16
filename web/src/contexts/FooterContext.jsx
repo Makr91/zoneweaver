@@ -1,4 +1,5 @@
 import axios from "axios";
+import PropTypes from "prop-types";
 import React, {
   createContext,
   useState,
@@ -10,20 +11,6 @@ import React, {
 
 import { useServers } from "./ServerContext";
 import { UserSettings } from "./UserSettingsContext";
-
-// Throttle utility for performance optimization
-const throttle = (func, limit) => {
-  let inThrottle;
-  return function () {
-    const args = arguments;
-    const context = this;
-    if (!inThrottle) {
-      func.apply(context, args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-};
 
 const FooterContext = createContext();
 
@@ -63,88 +50,6 @@ export const FooterProvider = ({ children }) => {
   useEffect(() => {
     tasksRef.current = tasks;
   }, [tasks]);
-
-  // Single useEffect to manage task fetching and refresh intervals
-  useEffect(() => {
-    console.log("🔄 FOOTER: Polling state changed", {
-      currentServer: currentServer?.hostname || "none",
-      footerIsActive,
-      footerActiveView,
-      shouldPoll: !!(
-        currentServer &&
-        footerIsActive &&
-        footerActiveView === "tasks"
-      ),
-      hasInterval: !!intervalRef.current,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Clear existing interval first
-    if (intervalRef.current) {
-      console.log("🛑 FOOTER: Clearing existing polling interval");
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    const shouldPoll =
-      currentServer && footerIsActive && footerActiveView === "tasks";
-
-    if (currentServer) {
-      // Clear tasks when server changes
-      if (tasks.length > 0) {
-        setTasks([]);
-        setTasksError("");
-      }
-
-      // Only fetch and refresh tasks when footer is active and tasks view is selected
-      if (shouldPoll) {
-        console.log("🔄 FOOTER: Starting task polling");
-        const loadAndStartRefresh = async () => {
-          // Wait for initial load to complete
-          await fetchTasks();
-          // Only start the interval after initial load is done and if conditions are still met
-          if (currentServer && footerIsActive && footerActiveView === "tasks") {
-            console.log("⏰ FOOTER: Starting 1-second polling interval");
-            intervalRef.current = setInterval(() => {
-              // Double-check conditions before each fetch to prevent unnecessary requests
-              if (
-                currentServer &&
-                footerIsActive &&
-                footerActiveView === "tasks"
-              ) {
-                fetchTasks();
-              } else {
-                console.log(
-                  "🛑 FOOTER: Stopping interval due to changed conditions"
-                );
-                if (intervalRef.current) {
-                  clearInterval(intervalRef.current);
-                  intervalRef.current = null;
-                }
-              }
-            }, 1000);
-          }
-        };
-
-        loadAndStartRefresh();
-      } else {
-        console.log("🚫 FOOTER: Not starting polling - conditions not met");
-      }
-    } else {
-      // Clear tasks when no server selected
-      setTasks([]);
-      setTasksError("");
-      console.log("🚫 FOOTER: No server selected, tasks cleared");
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        console.log("🧹 FOOTER: Cleanup - clearing polling interval");
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [currentServer, footerIsActive, footerActiveView, taskMinPriority]);
 
   const fetchTasks = useCallback(async () => {
     if (!currentServer || !makeZoneweaverAPIRequest) {
@@ -236,6 +141,86 @@ export const FooterProvider = ({ children }) => {
       console.error("An error occurred while fetching tasks:", err);
     }
   }, [currentServer, makeZoneweaverAPIRequest, taskMinPriority]);
+
+  // Single useEffect to manage task fetching and refresh intervals
+  useEffect(() => {
+    console.log("🔄 FOOTER: Polling state changed", {
+      currentServer: currentServer?.hostname || "none",
+      footerIsActive,
+      footerActiveView,
+      shouldPoll: !!(
+        currentServer &&
+        footerIsActive &&
+        footerActiveView === "tasks"
+      ),
+      hasInterval: !!intervalRef.current,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Clear existing interval first
+    if (intervalRef.current) {
+      console.log("🛑 FOOTER: Clearing existing polling interval");
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    const shouldPoll =
+      currentServer && footerIsActive && footerActiveView === "tasks";
+
+    if (currentServer) {
+      // Clear tasks when server changes
+      setTasks([]);
+      setTasksError("");
+
+      // Only fetch and refresh tasks when footer is active and tasks view is selected
+      if (shouldPoll) {
+        console.log("🔄 FOOTER: Starting task polling");
+        const loadAndStartRefresh = async () => {
+          // Wait for initial load to complete
+          await fetchTasks();
+          // Only start the interval after initial load is done and if conditions are still met
+          if (currentServer && footerIsActive && footerActiveView === "tasks") {
+            console.log("⏰ FOOTER: Starting 1-second polling interval");
+            intervalRef.current = setInterval(() => {
+              // Double-check conditions before each fetch to prevent unnecessary requests
+              if (
+                currentServer &&
+                footerIsActive &&
+                footerActiveView === "tasks"
+              ) {
+                fetchTasks();
+              } else {
+                console.log(
+                  "🛑 FOOTER: Stopping interval due to changed conditions"
+                );
+                if (intervalRef.current) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
+              }
+            }, 1000);
+          }
+        };
+
+        loadAndStartRefresh();
+      } else {
+        console.log("🚫 FOOTER: Not starting polling - conditions not met");
+      }
+    } else {
+      // Clear tasks when no server selected
+      setTasks([]);
+      setTasksError("");
+      console.log("🚫 FOOTER: No server selected, tasks cleared");
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        console.log("🧹 FOOTER: Cleanup - clearing polling interval");
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [currentServer, footerIsActive, footerActiveView, fetchTasks]);
 
   // Clean up session when server changes
   useEffect(() => {
@@ -417,4 +402,8 @@ export const FooterProvider = ({ children }) => {
   return (
     <FooterContext.Provider value={value}>{children}</FooterContext.Provider>
   );
+};
+
+FooterProvider.propTypes = {
+  children: PropTypes.node,
 };
