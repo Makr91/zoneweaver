@@ -5,7 +5,7 @@ import * as YAML from 'yaml';
  * Get the config file path, checking environment variable first, then fallback
  * @returns {string} Path to config.yaml file
  */
-function getConfigPath() {
+const getConfigPath = () => {
   // Check environment variable first (set by systemd)
   if (process.env.CONFIG_PATH) {
     return process.env.CONFIG_PATH;
@@ -13,13 +13,13 @@ function getConfigPath() {
 
   // Fallback to local config for development
   return './config.yaml';
-}
+};
 
 /**
  * Load and parse the configuration file
  * @returns {Object} Parsed configuration object
  */
-export function loadConfig() {
+export const loadConfig = () => {
   try {
     const configPath = getConfigPath();
     const configFile = fs.readFileSync(configPath, 'utf8');
@@ -29,12 +29,10 @@ export function loadConfig() {
     console.error('Tried path:', getConfigPath());
     throw error;
   }
-}
+};
 
 /**
  * Get the configuration file path for external use
  * @returns {string} Configuration file path
  */
-export function getConfigFilePath() {
-  return getConfigPath();
-}
+export const getConfigFilePath = () => getConfigPath();

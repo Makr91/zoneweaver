@@ -347,8 +347,9 @@ const HostManage = () => {
                   <p className="content">
                     Manage system users, groups, and roles on{" "}
                     <strong>{currentServer.hostname}</strong>. Create, modify,
-                    and delete user accounts, manage group memberships, configure
-                    RBAC roles, and set user permissions and authorizations.
+                    and delete user accounts, manage group memberships,
+                    configure RBAC roles, and set user permissions and
+                    authorizations.
                   </p>
                 </div>
 

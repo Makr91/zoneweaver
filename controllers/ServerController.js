@@ -1,10 +1,6 @@
 import axios from 'axios';
-import Busboy from 'busboy';
-import { PassThrough } from 'stream';
-import FormData from 'form-data';
 import db from '../models/index.js';
 import { log } from '../utils/Logger.js';
-import { loadConfig } from '../utils/config.js';
 
 // Access Sequelize models
 const { server: ServerModel } = db;
@@ -16,7 +12,7 @@ const CACHE_TTL = 30000; // 30 seconds
 /**
  * Server controller for managing Zoneweaver API connections
  * This replaces the per-user API key system with application-level server management
- * NOTE TO AI: 
+ * NOTE TO AI:
  * Do not ever hardcode limits, timeouts, anything that is valuable to put in the production-config.yaml via the configloader
  * This application is 50% gui and 50% proxy server to a backend API called zoneweaver-api
  */
@@ -152,7 +148,7 @@ class ServerController {
         apiKey,
       });
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Server added successfully',
         server: {
@@ -170,7 +166,7 @@ class ServerController {
         hostname: req.body.hostname,
         port: req.body.port,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message || 'Failed to add server',
       });
@@ -215,16 +211,17 @@ class ServerController {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async getAllServers(req, res) {
+    void req;
     try {
       const servers = await ServerModel.getAllServers();
 
-      res.json({
+      return res.json({
         success: true,
         servers,
       });
     } catch (error) {
       log.server.error('Get servers error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to retrieve servers',
       });
@@ -315,7 +312,7 @@ class ServerController {
       // Test the server
       const testResult = await ServerModel.testServer(hostname, parseInt(port), protocol);
 
-      res.json({
+      return res.json({
         success: testResult.success,
         message: testResult.success ? 'Connection successful' : 'Connection failed',
         error: testResult.error || null,
@@ -327,7 +324,7 @@ class ServerController {
         hostname: req.body.hostname,
         port: req.body.port,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to test server connection',
       });
@@ -415,7 +412,7 @@ class ServerController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Server removed successfully',
       });
@@ -424,11 +421,245 @@ class ServerController {
         error: error.message,
         serverId: req.params.serverId,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to remove server',
       });
     }
+  }
+
+  static async proxyStreamingRequest(req, res, proxyConfig, streamConfig) {
+    const { cleanHeaders, hostname, port, protocol, path, startTime } = proxyConfig;
+    const serverUrl = `${protocol}://${hostname}:${port}`;
+    const targetUrl = `${serverUrl}/${path}`;
+
+    const server = await ServerController.getCachedServer(
+      hostname,
+      parseInt(port || 5001),
+      protocol
+    );
+    if (!server || !server.api_key) {
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration not found',
+      });
+    }
+
+    try {
+      const streamHeaders = {
+        ...cleanHeaders,
+        Authorization: `Bearer ${server.api_key}`,
+        'User-Agent': 'Zoneweaver-Proxy/1.0',
+      };
+
+      const response = await axios({
+        method: req.method,
+        url: targetUrl,
+        data: streamConfig.data,
+        headers: streamHeaders,
+        params: req.query,
+        responseType: 'stream',
+        timeout: streamConfig.timeout,
+        maxBodyLength: streamConfig.maxBodyLength || Infinity,
+        maxContentLength: Infinity,
+        ...(streamConfig.maxRedirects !== undefined && { maxRedirects: streamConfig.maxRedirects }),
+      });
+
+      Object.keys(response.headers).forEach(key => {
+        if (!['connection', 'transfer-encoding'].includes(key.toLowerCase())) {
+          res.set(key, response.headers[key]);
+        }
+      });
+
+      res.status(response.status);
+      response.data.pipe(res);
+
+      const duration = Date.now() - startTime;
+      log.proxy.info(`STREAM: ${streamConfig.label} completed successfully`, {
+        duration: `${duration}ms`,
+        status: response.status,
+      });
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      log.proxy.error(`STREAM: ${streamConfig.label} failed`, {
+        error: error.message,
+        duration: `${duration}ms`,
+        isTimeout: error.code === 'ECONNABORTED',
+      });
+
+      const status = error.response?.status || 500;
+      return res.status(status).json({
+        success: false,
+        message: error.response?.data?.message || error.message || `${streamConfig.label} failed`,
+      });
+    }
+
+    return undefined;
+  }
+
+  static logFileOperationResult(
+    result,
+    req,
+    fileOperation,
+    isFileUpload,
+    isFileDownload,
+    duration,
+    requestData
+  ) {
+    log.proxy.info('FILE OP: Proxy request completed', {
+      operation: fileOperation,
+      success: result.success,
+      status: result.status,
+      duration: `${duration}ms`,
+      responseSize: result.data ? JSON.stringify(result.data).length : 0,
+      error: result.error || null,
+    });
+
+    if (isFileUpload && result.success) {
+      log.proxy.info('UPLOAD: File uploaded successfully through proxy', {
+        fileName: result.data?.file?.name || 'unknown',
+        filePath: result.data?.file?.path || 'unknown',
+        fileSize: result.data?.file?.size || 'unknown',
+        duration: `${duration}ms`,
+      });
+    }
+
+    if (isFileDownload && result.success) {
+      log.proxy.info('DOWNLOAD: File download prepared through proxy', {
+        filePath: req.query.path,
+        duration: `${duration}ms`,
+        hasData: !!result.data,
+      });
+    }
+
+    if (!result.success) {
+      log.proxy.error('FILE OP: File operation failed through proxy', {
+        operation: fileOperation,
+        error: result.error,
+        status: result.status,
+        duration: `${duration}ms`,
+        requestData,
+        query: req.query,
+      });
+    }
+  }
+
+  /**
+   * Detect file operation type and log initial file operation details
+   * @param {Object} req - Express request object
+   * @param {string} path - API path
+   * @returns {Object} - File operation info
+   */
+  static detectFileOperation(req, path) {
+    const isFileUpload = path === 'filesystem/upload' && req.method === 'POST';
+    const isFileDownload = path === 'filesystem/download' && req.method === 'GET';
+    const isFileOperation = path.startsWith('filesystem');
+    const fileOpType = isFileUpload ? 'UPLOAD' : 'OTHER';
+    const fileOperation = isFileDownload ? 'DOWNLOAD' : fileOpType;
+
+    if (isFileOperation) {
+      log.proxy.info('FILE OP: Proxying file operation through zoneweaver proxy', {
+        operation: fileOperation,
+        method: req.method,
+        path,
+        query: req.query,
+        contentType: req.headers['content-type'] || 'none',
+        contentLength: req.headers['content-length'] || 'unknown',
+        userAgent: req.headers['user-agent'] || 'unknown',
+        hasAuth: !!req.headers.authorization,
+      });
+
+      if (isFileUpload) {
+        log.proxy.info('UPLOAD: Processing file upload through proxy', {
+          contentType: req.headers['content-type'],
+          contentLength: req.headers['content-length'],
+          boundary: req.headers['content-type']?.includes('boundary') ? 'present' : 'missing',
+          query: req.query,
+          bodyKeys: req.body ? Object.keys(req.body) : 'no body',
+        });
+      }
+
+      if (isFileDownload) {
+        log.proxy.info('DOWNLOAD: Processing file download through proxy', {
+          filePath: req.query.path || 'unknown',
+          query: req.query,
+          accept: req.headers.accept || 'none',
+        });
+      }
+    }
+
+    return { isFileUpload, isFileDownload, isFileOperation, fileOperation };
+  }
+
+  /**
+   * Build clean headers for proxying, excluding headers that shouldn't be forwarded
+   * @param {Object} req - Express request object
+   * @returns {Object} - Cleaned headers
+   */
+  static buildCleanHeaders(req) {
+    const cleanHeaders = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (!['host', 'authorization', 'cookie'].includes(key.toLowerCase())) {
+        cleanHeaders[key] = value;
+      }
+    }
+    return cleanHeaders;
+  }
+
+  /**
+   * Handle standard (non-streaming) proxy requests through ServerModel
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Object} proxyConfig - Proxy configuration (hostname, port, protocol, path, cleanHeaders, startTime)
+   * @param {Object} fileOpInfo - File operation info from detectFileOperation
+   * @returns {Object} - Express response
+   */
+  static async proxyStandardRequest(req, res, proxyConfig, fileOpInfo) {
+    const { hostname, port, protocol, path, cleanHeaders, startTime } = proxyConfig;
+    const { isFileUpload, isFileDownload, isFileOperation, fileOperation } = fileOpInfo;
+
+    let requestData;
+    const requestOptions = {
+      method: req.method,
+      params: req.query,
+      headers: cleanHeaders,
+    };
+
+    if (req.method !== 'GET' && req.body && Object.keys(req.body).length > 0) {
+      requestData = req.body;
+      requestOptions.data = requestData;
+    }
+
+    const result = await ServerModel.makeRequest(
+      hostname,
+      parseInt(port),
+      protocol,
+      path,
+      requestOptions
+    );
+
+    const duration = Date.now() - startTime;
+
+    if (isFileOperation) {
+      ServerController.logFileOperationResult(
+        result,
+        req,
+        fileOperation,
+        isFileUpload,
+        isFileDownload,
+        duration,
+        requestData
+      );
+    }
+
+    if (result.success) {
+      return res.status(result.status || 200).json(result.data);
+    }
+    const status = result.status || 500;
+    return res.status(status).json({
+      success: false,
+      message: result.error || 'Proxy request failed',
+    });
   }
 
   /**
@@ -728,136 +959,26 @@ class ServerController {
         ? req.params.splat.join('/')
         : req.params.splat || ''; // Express 5.x compatibility fix
 
-      // Enhanced debug logging for file operations
-      const isFileUpload = path === 'filesystem/upload' && req.method === 'POST';
-      const isFileDownload = path === 'filesystem/download' && req.method === 'GET';
-      const isFileOperation = path.startsWith('filesystem');
-
-      if (isFileOperation) {
-        log.proxy.info('FILE OP: Proxying file operation through zoneweaver proxy', {
-          operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
-          method: req.method,
-          path,
-          server: `${protocol}://${hostname}:${port}`,
-          query: req.query,
-          contentType: req.headers['content-type'] || 'none',
-          contentLength: req.headers['content-length'] || 'unknown',
-          userAgent: req.headers['user-agent'] || 'unknown',
-          hasAuth: !!req.headers.authorization,
-        });
-
-        if (isFileUpload) {
-          log.proxy.info('UPLOAD: Processing file upload through proxy', {
-            contentType: req.headers['content-type'],
-            contentLength: req.headers['content-length'],
-            boundary: req.headers['content-type']?.includes('boundary') ? 'present' : 'missing',
-            query: req.query,
-            bodyKeys: req.body ? Object.keys(req.body) : 'no body',
-          });
-        }
-
-        if (isFileDownload) {
-          log.proxy.info('DOWNLOAD: Processing file download through proxy', {
-            filePath: req.query.path || 'unknown',
-            query: req.query,
-            accept: req.headers.accept || 'none',
-          });
-        }
-      }
-
-      // Create clean headers for Zoneweaver API request - explicitly exclude problematic headers
-      const cleanHeaders = {};
-      for (const [key, value] of Object.entries(req.headers)) {
-        // Skip headers that should not be forwarded to Zoneweaver API
-        if (!['host', 'authorization', 'cookie'].includes(key.toLowerCase())) {
-          cleanHeaders[key] = value;
-        }
-      }
-
-      // Note: Multipart uploads now handled through standard ServerModel.makeRequest() flow
-      // This ensures consistent timeout configuration, progress reporting, and error handling
-
+      const fileOpInfo = ServerController.detectFileOperation(req, path);
+      const cleanHeaders = ServerController.buildCleanHeaders(req);
       const startTime = Date.now();
+      const proxyConfig = { cleanHeaders, hostname, port, protocol, path, startTime };
 
-
-      // Special handling for artifact downloads (binary streaming)
-      const isArtifactDownload = path.includes('artifacts/') && path.endsWith('/download') && req.method === 'GET';
-      
-      if (isArtifactDownload) {
+      // Artifact downloads - binary streaming
+      if (path.includes('artifacts/') && path.endsWith('/download') && req.method === 'GET') {
         log.proxy.info('STREAM: Using pure streaming for artifact download', {
           path,
           method: req.method,
-          artifactId: path.split('/')[1], // Extract artifact ID
+          artifactId: path.split('/')[1],
         });
-
-        const serverUrl = `${protocol}://${hostname}:${port}`;
-        const targetUrl = `${serverUrl}/${path}`;
-
-        // Get server for API key
-        const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), protocol);
-        if (!server || !server.api_key) {
-          return res.status(500).json({
-            success: false,
-            message: 'Server configuration not found',
-          });
-        }
-
-        try {
-          // Prepare headers for backend request
-          const streamHeaders = {
-            ...cleanHeaders,
-            'Authorization': `Bearer ${server.api_key}`,
-            'User-Agent': 'Zoneweaver-Proxy/1.0',
-          };
-
-          // Stream the download directly from backend
-          const response = await axios({
-            method: req.method,
-            url: targetUrl,
-            headers: streamHeaders,
-            params: req.query,
-            responseType: 'stream', // Critical: Handle as binary stream
-            timeout: 300000, // 5 minutes for large downloads
-            maxContentLength: Infinity,
-          });
-
-          // Set response headers from backend (for download handling)
-          Object.keys(response.headers).forEach(key => {
-            if (!['connection', 'transfer-encoding'].includes(key.toLowerCase())) {
-              res.set(key, response.headers[key]);
-            }
-          });
-
-          res.status(response.status);
-          
-          // Stream the response back to client
-          response.data.pipe(res);
-
-          const duration = Date.now() - startTime;
-          log.proxy.info('STREAM: Artifact download completed successfully', {
-            duration: `${duration}ms`,
-            status: response.status,
-          });
-
-        } catch (error) {
-          const duration = Date.now() - startTime;
-          log.proxy.error('STREAM: Artifact download failed', {
-            error: error.message,
-            duration: `${duration}ms`,
-            isTimeout: error.code === 'ECONNABORTED',
-          });
-
-          const status = error.response?.status || 500;
-          res.status(status).json({
-            success: false,
-            message: error.response?.data?.message || error.message || 'Download failed',
-          });
-        }
-
-        return; // Exit early for streaming downloads
+        const streamResult = await ServerController.proxyStreamingRequest(req, res, proxyConfig, {
+          timeout: 300000,
+          label: 'Artifact download',
+        });
+        return streamResult;
       }
 
-      // For other multipart data, use pure streaming (proxy pattern)
+      // Multipart uploads - streaming
       if (req.headers['content-type']?.includes('multipart/form-data')) {
         log.proxy.info('STREAM: Using pure streaming for multipart upload', {
           path,
@@ -865,143 +986,18 @@ class ServerController {
           contentLength: req.headers['content-length'],
           method: req.method,
         });
-
-        const serverUrl = `${protocol}://${hostname}:${port}`;
-        const targetUrl = `${serverUrl}/${path}`;
-
-        // Get server for API key
-        const server = await ServerController.getCachedServer(hostname, parseInt(port || 5001), protocol);
-        if (!server || !server.api_key) {
-          return res.status(500).json({
-            success: false,
-            message: 'Server configuration not found',
-          });
-        }
-
-        try {
-          // Prepare headers for backend request
-          const streamHeaders = {
-            ...cleanHeaders,
-            'Authorization': `Bearer ${server.api_key}`,
-            'User-Agent': 'Zoneweaver-Proxy/1.0',
-          };
-
-          // Stream the request directly to the backend
-          const response = await axios({
-            method: req.method,
-            url: targetUrl,
-            data: req, // Stream the incoming request directly
-            headers: streamHeaders,
-            params: req.query,
-            timeout: 1800000, // 30 minutes for large uploads
-            maxBodyLength: Infinity,
-            maxContentLength: Infinity,
-            responseType: 'stream',
-          });
-
-          // Set response headers from backend
-          Object.keys(response.headers).forEach(key => {
-            if (!['connection', 'transfer-encoding'].includes(key.toLowerCase())) {
-              res.set(key, response.headers[key]);
-            }
-          });
-
-          res.status(response.status);
-          
-          // Stream the response back to client
-          response.data.pipe(res);
-
-          const duration = Date.now() - startTime;
-          log.proxy.info('STREAM: Upload completed successfully', {
-            duration: `${duration}ms`,
-            status: response.status,
-          });
-
-        } catch (error) {
-          const duration = Date.now() - startTime;
-          log.proxy.error('STREAM: Upload failed', {
-            error: error.message,
-            duration: `${duration}ms`,
-            isTimeout: error.code === 'ECONNABORTED',
-          });
-
-          const status = error.response?.status || 500;
-          res.status(status).json({
-            success: false,
-            message: error.response?.data?.message || error.message || 'Upload failed',
-          });
-        }
-
-        return; // Exit early for streaming uploads
-      }
-
-      // For non-multipart requests, use standard ServerModel flow
-      let requestData = undefined;
-      let requestOptions = {
-        method: req.method,
-        params: req.query,
-        headers: cleanHeaders,
-      };
-
-      if (req.method !== 'GET' && req.body && Object.keys(req.body).length > 0) {
-        requestData = req.body;
-        requestOptions.data = requestData;
-      }
-
-      // Make request through ServerModel for JSON/regular requests
-      const result = await ServerModel.makeRequest(hostname, parseInt(port), protocol, path, requestOptions);
-
-      const duration = Date.now() - startTime;
-
-      // Enhanced logging for file operations
-      if (isFileOperation) {
-        log.proxy.info('FILE OP: Proxy request completed', {
-          operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
-          success: result.success,
-          status: result.status,
-          duration: `${duration}ms`,
-          responseSize: result.data ? JSON.stringify(result.data).length : 0,
-          error: result.error || null,
+        const uploadResult = await ServerController.proxyStreamingRequest(req, res, proxyConfig, {
+          data: req,
+          timeout: 1800000,
+          maxBodyLength: Infinity,
+          label: 'Upload',
         });
-
-        if (isFileUpload && result.success) {
-          log.proxy.info('UPLOAD: File uploaded successfully through proxy', {
-            fileName: result.data?.file?.name || 'unknown',
-            filePath: result.data?.file?.path || 'unknown',
-            fileSize: result.data?.file?.size || 'unknown',
-            duration: `${duration}ms`,
-          });
-        }
-
-        if (isFileDownload && result.success) {
-          log.proxy.info('DOWNLOAD: File download prepared through proxy', {
-            filePath: req.query.path,
-            duration: `${duration}ms`,
-            hasData: !!result.data,
-          });
-        }
-
-        if (!result.success) {
-          log.proxy.error('FILE OP: File operation failed through proxy', {
-            operation: isFileUpload ? 'UPLOAD' : isFileDownload ? 'DOWNLOAD' : 'OTHER',
-            error: result.error,
-            status: result.status,
-            duration: `${duration}ms`,
-            requestData,
-            query: req.query,
-          });
-        }
+        return uploadResult;
       }
 
-      if (result.success) {
-        res.status(result.status || 200).json(result.data);
-      } else {
-        const status = result.status || 500;
-        res.status(status).json({
-          success: false,
-          message: result.error || 'Proxy request failed',
-        });
-      }
+      // Standard JSON/regular requests
+      const result = await ServerController.proxyStandardRequest(req, res, proxyConfig, fileOpInfo);
+      return result;
     } catch (error) {
       log.proxy.error('PROXY: Zoneweaver API proxy error', {
         error: error.message,
@@ -1012,7 +1008,7 @@ class ServerController {
         port: req.params.port,
       });
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Proxy request failed',
       });
@@ -1194,16 +1190,15 @@ class ServerController {
         port: server.port,
       });
 
-
       // Check if this is a WebSocket upgrade request
       if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
         log.vnc.debug('WebSocket upgrade request for VNC websockify');
         // This will be handled by the WebSocket upgrade handler in index.js
-        return;
+        return undefined;
       }
 
       // Handle regular HTTP requests to websockify endpoint
-      const queryString = req.url.split('?')[1];
+      const [, queryString] = req.url.split('?');
 
       // Build URL using validated server properties and server-controlled path constant
       let zapiUrl = `${server.protocol}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/${allowedVncPath}`;
@@ -1222,11 +1217,15 @@ class ServerController {
         };
 
         // Forward relevant headers from original request
-        if (req.headers.accept) requestHeaders.Accept = req.headers.accept;
-        if (req.headers['accept-encoding'])
+        if (req.headers.accept) {
+          requestHeaders.Accept = req.headers.accept;
+        }
+        if (req.headers['accept-encoding']) {
           requestHeaders['Accept-Encoding'] = req.headers['accept-encoding'];
-        if (req.headers['accept-language'])
+        }
+        if (req.headers['accept-language']) {
           requestHeaders['Accept-Language'] = req.headers['accept-language'];
+        }
 
         const response = await axios({
           method: req.method,
@@ -1267,7 +1266,7 @@ class ServerController {
 
         // Pipe response directly
         res.status(response.status);
-        response.data.pipe(res);
+        return response.data.pipe(res);
       } catch (proxyError) {
         log.vnc.error('VNC proxy failed for websockify', {
           error: proxyError.message,
@@ -1275,21 +1274,20 @@ class ServerController {
 
         if (proxyError.response) {
           const statusCode = proxyError.response.status;
-          res.status(statusCode).json({
+          return res.status(statusCode).json({
             success: false,
             message: `VNC proxy error: ${statusCode}`,
             error: 'VNC session may not be active',
           });
-        } else {
-          res.status(500).json({
-            success: false,
-            message: `VNC proxy connection error: ${proxyError.message}`,
-          });
         }
+        return res.status(500).json({
+          success: false,
+          message: `VNC proxy connection error: ${proxyError.message}`,
+        });
       }
     } catch (error) {
       log.vnc.error('VNC proxy error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'VNC proxy request failed',
         error: error.message,
@@ -1360,6 +1358,7 @@ class ServerController {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   static async startTerminalSession(req, res) {
+    void req;
     try {
       // For now, we'll just use the most recent server.
       // In the future, we might want to pass the server info from the client.
@@ -1385,18 +1384,17 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, session: result.data });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to start terminal session',
-        });
+        return res.json({ success: true, session: result.data });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to start terminal session',
+      });
     } catch (error) {
       log.terminal.error('Start terminal session error', {
         error: error.message,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to start terminal session',
       });
@@ -1567,26 +1565,25 @@ class ServerController {
           websocket_url: sessionData.websocket_url,
         });
 
-        res.json({ success: true, data: sessionData });
-      } else {
-        log.terminal.error('TERMINAL START: Session creation failed', {
-          status: result.status,
-          error: result.error,
-          message: result.message,
-        });
-
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to start terminal session',
-        });
+        return res.json({ success: true, data: sessionData });
       }
+      log.terminal.error('TERMINAL START: Session creation failed', {
+        status: result.status,
+        error: result.error,
+        message: result.message,
+      });
+
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to start terminal session',
+      });
     } catch (error) {
       log.terminal.error('TERMINAL START: Exception occurred', {
         error: error.message,
         stack: error.stack,
       });
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to start terminal session',
       });
@@ -1667,16 +1664,15 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, sessions: result.data });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to get terminal sessions',
-        });
+        return res.json({ success: true, sessions: result.data });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to get terminal sessions',
+      });
     } catch (error) {
       log.terminal.error('Get terminal sessions error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get terminal sessions',
       });
@@ -1750,16 +1746,15 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, healthy: result.data.healthy });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to check terminal session health',
-        });
+        return res.json({ success: true, healthy: result.data.healthy });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to check terminal session health',
+      });
     } catch (error) {
       log.terminal.error('Check terminal health error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to check terminal session health',
       });
@@ -1845,16 +1840,15 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, session: result.data });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to get terminal session',
-        });
+        return res.json({ success: true, session: result.data });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to get terminal session',
+      });
     } catch (error) {
       log.terminal.error('Get terminal session error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get terminal session',
       });
@@ -1923,16 +1917,15 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, message: 'Terminal session stopped' });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to stop terminal session',
-        });
+        return res.json({ success: true, message: 'Terminal session stopped' });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to stop terminal session',
+      });
     } catch (error) {
       log.terminal.error('Stop terminal session error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to stop terminal session',
       });
@@ -2120,32 +2113,31 @@ class ServerController {
         });
 
         // Add websocket_url field that frontend expects for WebSocket connection
-        res.json({
+        return res.json({
           success: true,
           session: {
             ...result.data,
             websocket_url: `/zlogin/${result.data.id}`,
           },
         });
-      } else {
-        log.zlogin.error('ZLOGIN START: Session creation failed', {
-          status: result.status,
-          error: result.error,
-          message: result.message,
-        });
-
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to start zlogin session',
-        });
       }
+      log.zlogin.error('ZLOGIN START: Session creation failed', {
+        status: result.status,
+        error: result.error,
+        message: result.message,
+      });
+
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to start zlogin session',
+      });
     } catch (error) {
       log.zlogin.error('ZLOGIN START: Exception occurred', {
         error: error.message,
         stack: error.stack,
       });
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to start zlogin session',
       });
@@ -2249,16 +2241,15 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, sessions: result.data });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to get zlogin sessions',
-        });
+        return res.json({ success: true, sessions: result.data });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to get zlogin sessions',
+      });
     } catch (error) {
       log.zlogin.error('Get zlogin sessions error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get zlogin sessions',
       });
@@ -2382,16 +2373,15 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, session: result.data });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to get zlogin session',
-        });
+        return res.json({ success: true, session: result.data });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to get zlogin session',
+      });
     } catch (error) {
       log.zlogin.error('Get zlogin session error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to get zlogin session',
       });
@@ -2485,22 +2475,20 @@ class ServerController {
       );
 
       if (result.success) {
-        res.json({ success: true, message: 'Zlogin session stopped' });
-      } else {
-        res.status(result.status || 500).json({
-          success: false,
-          message: result.error || 'Failed to stop zlogin session',
-        });
+        return res.json({ success: true, message: 'Zlogin session stopped' });
       }
+      return res.status(result.status || 500).json({
+        success: false,
+        message: result.error || 'Failed to stop zlogin session',
+      });
     } catch (error) {
       log.zlogin.error('Stop zlogin session error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Failed to stop zlogin session',
       });
     }
   }
-
 }
 
 export default ServerController;

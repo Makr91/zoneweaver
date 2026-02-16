@@ -193,7 +193,51 @@ export default (sequelize, Sequelize) => {
     }
   };
 
-  Server.prototype.makeRequest = async function (path, options = {}, _useVncAuth = false) {
+  // Encode path segments with special handling for FMRI service paths
+  const encodeFmriPath = pathStr => {
+    if (
+      pathStr.startsWith('services/') &&
+      (pathStr.includes(':/') || pathStr.includes('lrc:') || pathStr.includes('svc:'))
+    ) {
+      const parts = pathStr.split('/');
+
+      if (parts.length >= 2) {
+        const fmriStart = 1;
+        let fmriEnd = parts.length;
+
+        if (parts[parts.length - 1] === 'properties' || parts[parts.length - 1] === 'details') {
+          fmriEnd = parts.length - 1;
+        }
+
+        const fmriParts = parts.slice(fmriStart, fmriEnd);
+        const fullFmri = fmriParts.join('/');
+        const encodedFmri = encodeURIComponent(fullFmri);
+
+        const beforeFmri = parts.slice(0, fmriStart);
+        const afterFmri = parts.slice(fmriEnd);
+
+        return [...beforeFmri, encodedFmri, ...afterFmri].join('/');
+      }
+      return pathStr
+        .split('/')
+        .map(segment => (segment ? encodeURIComponent(segment) : segment))
+        .join('/');
+    }
+    return pathStr
+      .split('/')
+      .map(segment => {
+        if (!segment) {
+          return segment;
+        }
+        if (segment.includes('%')) {
+          return segment;
+        }
+        return encodeURIComponent(segment);
+      })
+      .join('/');
+  };
+
+  Server.prototype.makeRequest = async function (path, options = {}) {
     const timestamp = new Date().toISOString();
     const serverUrl = this.getServerUrl();
     const startTime = Date.now();
@@ -201,21 +245,24 @@ export default (sequelize, Sequelize) => {
     try {
       // Load config for timeout settings
       const config = loadConfig();
-      
+
       // Detect file upload operations that need extended timeouts
       const isFileUpload = path.includes('artifacts/upload') || path.includes('filesystem/upload');
-      
+
       // Use configurable timeouts: 30min for uploads, 1min for everything else
-      const requestTimeout = options.timeout || (
-        isFileUpload 
-          ? config.limits?.api_timeouts?.file_upload?.value || 1800000  // 30 min default
-          : config.limits?.api_timeouts?.default_request?.value || 60000   // 1 min default
-      );
+      const requestTimeout =
+        options.timeout ||
+        (isFileUpload
+          ? config.limits?.api_timeouts?.file_upload?.value || 1800000 // 30 min default
+          : config.limits?.api_timeouts?.default_request?.value || 60000); // 1 min default
 
       // Determine data size for logging
-      const dataSize = options.data instanceof FormData 
-        ? 'FormData (multipart)' 
-        : (options.data ? JSON.stringify(options.data).length : 0);
+      let dataSize = 0;
+      if (options.data instanceof FormData) {
+        dataSize = 'FormData (multipart)';
+      } else if (options.data) {
+        dataSize = JSON.stringify(options.data).length;
+      }
 
       log.server.info('Starting zoneweaver-api request', {
         server: `${this.hostname}:${this.port}`,
@@ -223,109 +270,69 @@ export default (sequelize, Sequelize) => {
         method: options.method || 'GET',
         hasData: !!options.data,
         hasParams: !!options.params,
-        dataSize: dataSize,
+        dataSize,
         timeout: requestTimeout,
-        isFileUpload: isFileUpload,
+        isFileUpload,
         isFormData: options.data instanceof FormData,
       });
 
-      // Smart FMRI detection and encoding
-      let encodedPath;
-
-      if (
-        path.startsWith('services/') &&
-        (path.includes(':/') || path.includes('lrc:') || path.includes('svc:'))
-      ) {
-        const parts = path.split('/');
-
-        if (parts.length >= 2) {
-          const fmriStart = 1;
-          let fmriEnd = parts.length;
-
-          if (parts[parts.length - 1] === 'properties' || parts[parts.length - 1] === 'details') {
-            fmriEnd = parts.length - 1;
-          }
-
-          const fmriParts = parts.slice(fmriStart, fmriEnd);
-          const fullFmri = fmriParts.join('/');
-          const encodedFmri = encodeURIComponent(fullFmri);
-
-          const beforeFmri = parts.slice(0, fmriStart);
-          const afterFmri = parts.slice(fmriEnd);
-
-          encodedPath = [...beforeFmri, encodedFmri, ...afterFmri].join('/');
-        } else {
-          encodedPath = path
-            .split('/')
-            .map(segment => (segment ? encodeURIComponent(segment) : segment))
-            .join('/');
-        }
-      } else {
-        encodedPath = path
-          .split('/')
-          .map(segment => {
-            if (!segment) return segment;
-            if (segment.includes('%')) return segment; // Already encoded
-            return encodeURIComponent(segment);
-          })
-          .join('/');
-      }
+      const encodedPath = encodeFmriPath(path);
 
       // Build request headers - handle FormData specially
       const requestHeaders = {
         Authorization: `Bearer ${this.api_key}`,
       };
 
-        // For regular data, set application/json (multipart uploads now handled via streaming)
-        if (!requestHeaders['Content-Type'] && !requestHeaders['content-type']) {
-          requestHeaders['Content-Type'] = 'application/json';
-        }
+      // For regular data, set application/json (multipart uploads now handled via streaming)
+      if (!requestHeaders['Content-Type'] && !requestHeaders['content-type']) {
+        requestHeaders['Content-Type'] = 'application/json';
+      }
 
-        if (options.headers) {
-          Object.keys(options.headers).forEach(key => {
-            const lowerKey = key.toLowerCase();
-            // Skip problematic headers that would interfere with authentication
-            if (!['authorization', 'x-api-key'].includes(lowerKey)) {
-              requestHeaders[key] = options.headers[key];
-            }
-          });
-        }
-
-        const finalUrl = `${serverUrl}/${encodedPath}`;
-
-        log.server.debug('Request details', {
-          originalPath: path,
-          encodedPath,
-          finalUrl,
-          headers: Object.keys(requestHeaders),
-          hasApiKey: !!this.api_key,
-          allowInsecure: this.allow_insecure,
-          queryParams: options.params,
-          hasData: !!options.data,
+      if (options.headers) {
+        Object.keys(options.headers).forEach(key => {
+          const lowerKey = key.toLowerCase();
+          // Skip problematic headers that would interfere with authentication
+          if (!['authorization', 'x-api-key'].includes(lowerKey)) {
+            requestHeaders[key] = options.headers[key];
+          }
         });
+      }
 
-        log.server.debug('API Request', { url: finalUrl, timestamp });
+      const finalUrl = `${serverUrl}/${encodedPath}`;
 
-        const agent = new https.Agent({
-          rejectUnauthorized: !this.allow_insecure,
-        });
+      log.server.debug('Request details', {
+        originalPath: path,
+        encodedPath,
+        finalUrl,
+        headers: Object.keys(requestHeaders),
+        hasApiKey: !!this.api_key,
+        allowInsecure: this.allow_insecure,
+        queryParams: options.params,
+        hasData: !!options.data,
+      });
 
-        log.server.debug('Making axios request');
-        const axiosStartTime = Date.now();
+      log.server.debug('API Request', { url: finalUrl, timestamp });
 
-        // Build axios config for JSON/regular requests (multipart handled via streaming)
-        const axiosConfig = {
-          url: finalUrl,
-          method: options.method || 'GET',
-          headers: requestHeaders,
-          data: options.data,
-          params: options.params,
-          timeout: requestTimeout,
-          httpsAgent: agent,
-          validateStatus: status => status >= 200 && status < 400,
-        };
+      const agent = new https.Agent({
+        rejectUnauthorized: !this.allow_insecure,
+      });
 
-        const response = await axios(axiosConfig);
+      log.server.debug('Making axios request');
+      const axiosStartTime = Date.now();
+
+      // Build axios config for JSON/regular requests (multipart handled via streaming)
+      const axiosConfig = {
+        url: finalUrl,
+        method: options.method || 'GET',
+        headers: requestHeaders,
+        data: options.data,
+        params: options.params,
+        timeout: requestTimeout,
+        httpsAgent: agent,
+        validateStatus: status => status >= 200 && status < 400,
+      };
+
+      const response = await axios(axiosConfig);
 
       const axiosEndTime = Date.now();
       const totalDuration = axiosEndTime - startTime;
@@ -358,12 +365,6 @@ export default (sequelize, Sequelize) => {
         method: options.method || 'GET',
         requestData: options.data,
       });
-
-      if (status) {
-        log.server.error('Zoneweaver API request failed with status', { status, errorMsg });
-      } else {
-        log.server.error('Zoneweaver API request failed', { errorMsg });
-      }
 
       return {
         success: false,
@@ -539,9 +540,8 @@ export default (sequelize, Sequelize) => {
           apiKey: response.data.api_key,
           message: response.data.message,
         };
-      } else {
-        throw new Error('Invalid response from Zoneweaver API Server');
       }
+      throw new Error('Invalid response from Zoneweaver API Server');
     } catch (error) {
       if (error.response) {
         const errorMessage =

@@ -41,7 +41,7 @@ export const authenticateToken = (req, res, next) => {
 
     // Set user on request (same format as before)
     req.user = user;
-    next();
+    return next();
   })(req, res, next);
 };
 
@@ -78,7 +78,7 @@ export const authorize = allowedRoles => (req, res, next) => {
     });
   }
 
-  next();
+  return next();
 };
 
 /**
@@ -102,7 +102,7 @@ export const requireAdmin = (req, res, next) => {
     });
   }
 
-  next();
+  return next();
 };
 
 /**
@@ -126,7 +126,7 @@ export const requireSuperAdmin = (req, res, next) => {
     });
   }
 
-  next();
+  return next();
 };
 
 /**
@@ -142,12 +142,17 @@ export const optionalAuth = (req, res, next) => {
     return next(); // No auth header, continue without user
   }
 
-  passport.authenticate('jwt', { session: false }, (err, user, _info) => {
+  return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    if (err) {
+      log.auth.warn('Optional auth error', { error: err.message });
+    }
+    if (info) {
+      log.auth.debug('Optional auth info', { info: info.message });
+    }
     // Always continue to next middleware, regardless of auth result
     if (user) {
       req.user = user; // Set user if authentication succeeded
     }
-    // Ignore errors and failed authentication for optional auth
-    next();
+    return next();
   })(req, res, next);
 };

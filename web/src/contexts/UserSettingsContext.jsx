@@ -31,6 +31,18 @@ const UserSettingsProvider = ({ children }) => {
 
   const [tasksScrollPosition, setTasksScrollPosition] = useState(0);
 
+  const [taskMinPriority, setTaskMinPriority] = useState(() => {
+    const saved = localStorage.getItem("zoneweaver_task_min_priority");
+    return saved ? parseInt(saved) : 40;
+  });
+
+  const [taskVisibleColumns, setTaskVisibleColumns] = useState(() => {
+    const saved = localStorage.getItem("zoneweaver_task_visible_columns");
+    return saved
+      ? JSON.parse(saved)
+      : ["operation", "zone_name", "status", "progress", "priority", "created_at"];
+  });
+
   const [hostsExpanded, setHostsExpanded] = useState(() => {
     const saved = localStorage.getItem("zoneweaver_hosts_expanded");
     return saved ? JSON.parse(saved) : false;
@@ -77,6 +89,17 @@ const UserSettingsProvider = ({ children }) => {
   }, [footerActiveView]);
 
   useEffect(() => {
+    localStorage.setItem("zoneweaver_task_min_priority", taskMinPriority.toString());
+  }, [taskMinPriority]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "zoneweaver_task_visible_columns",
+      JSON.stringify(taskVisibleColumns)
+    );
+  }, [taskVisibleColumns]);
+
+  useEffect(() => {
     localStorage.setItem(
       "zoneweaver_hosts_expanded",
       JSON.stringify(hostsExpanded)
@@ -112,6 +135,10 @@ const UserSettingsProvider = ({ children }) => {
         setFooterActiveView,
         tasksScrollPosition,
         setTasksScrollPosition,
+        taskMinPriority,
+        setTaskMinPriority,
+        taskVisibleColumns,
+        setTaskVisibleColumns,
         hostsExpanded,
         setHostsExpanded,
         zonesExpanded,

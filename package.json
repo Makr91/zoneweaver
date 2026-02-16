@@ -18,7 +18,9 @@
     "lint:frontend": "cd web && npm run lint",
     "lint:frontend:fix": "cd web && npm run lint:fix",
     "lint:all": "npm run lint:backend && npm run lint:frontend",
-    "lint:fix:all": "npm run lint:fix && npm run lint:frontend:fix"
+    "lint:fix:all": "npm run lint:fix && npm run lint:frontend:fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "bhyve",

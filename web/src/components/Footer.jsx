@@ -5,7 +5,15 @@ import { useFooter } from "../contexts/FooterContext";
 import { UserSettings } from "../contexts/UserSettingsContext";
 
 import HostShell from "./Host/HostShell";
-import Tasks from "./Tasks";
+import Tasks, { TASK_COLUMNS } from "./Tasks";
+
+const PRIORITY_OPTIONS = [
+  { label: "All", value: 20 },
+  { label: "Low+", value: 40 },
+  { label: "Medium+", value: 60 },
+  { label: "High+", value: 80 },
+  { label: "Critical", value: 100 },
+];
 
 const Footer = () => {
   const userSettings = useContext(UserSettings);
@@ -14,9 +22,15 @@ const Footer = () => {
     setFooterIsActive,
     footerActiveView,
     setFooterActiveView,
+    taskMinPriority,
+    setTaskMinPriority,
+    taskVisibleColumns,
+    setTaskVisibleColumns,
   } = userSettings;
   const { restartShell } = useFooter();
   const [showShellDropdown, setShowShellDropdown] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showColumnsDropdown, setShowColumnsDropdown] = useState(false);
   const [versionClickCount, setVersionClickCount] = useState(0);
   const resizeTimeoutRef = useRef(null);
 
@@ -51,7 +65,6 @@ const Footer = () => {
 
   const handleShellButtonClick = () => {
     if (!footerIsActive) {
-      // Expand footer first if minimized
       userSettings.setFooterHeight(130);
       setFooterIsActive(true);
       handleViewChange("shell");
@@ -69,10 +82,24 @@ const Footer = () => {
     await restartShell();
   };
 
+  const handleColumnToggle = (columnKey) => {
+    setTaskVisibleColumns((prev) => {
+      if (prev.includes(columnKey)) {
+        if (prev.length <= 1) {
+          return prev;
+        }
+        return prev.filter((k) => k !== columnKey);
+      }
+      return [...prev, columnKey];
+    });
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showShellDropdown && !event.target.closest(".field.has-addons")) {
+      if (!event.target.closest(".field.has-addons")) {
         setShowShellDropdown(false);
+        setShowFilterDropdown(false);
+        setShowColumnsDropdown(false);
       }
     };
 
@@ -80,7 +107,7 @@ const Footer = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showShellDropdown]);
+  }, []);
 
   const handleResize = useCallback(
     (e, { size }) => {
@@ -113,6 +140,9 @@ const Footer = () => {
   );
 
   const effectiveHeight = footerIsActive ? userSettings.footerHeight : 0;
+  const isTasksView = footerActiveView === "tasks" && footerIsActive;
+  const currentPriorityLabel =
+    PRIORITY_OPTIONS.find((o) => o.value === taskMinPriority)?.label || "Low+";
 
   const FooterHeader = () => (
     <nav className="level mb-0">
@@ -175,6 +205,38 @@ const Footer = () => {
               </span>
             </button>
           </p>
+          {isTasksView && (
+            <>
+              <p className="control">
+                <button
+                  className={`button is-small ${showFilterDropdown ? "is-info" : "is-dark"}`}
+                  onClick={() => {
+                    setShowFilterDropdown(!showFilterDropdown);
+                    setShowColumnsDropdown(false);
+                  }}
+                  title={`Priority filter: ${currentPriorityLabel}`}
+                >
+                  <span className="icon">
+                    <i className="fas fa-filter" />
+                  </span>
+                </button>
+              </p>
+              <p className="control">
+                <button
+                  className={`button is-small ${showColumnsDropdown ? "is-info" : "is-dark"}`}
+                  onClick={() => {
+                    setShowColumnsDropdown(!showColumnsDropdown);
+                    setShowFilterDropdown(false);
+                  }}
+                  title="Toggle columns"
+                >
+                  <span className="icon">
+                    <i className="fas fa-table-columns" />
+                  </span>
+                </button>
+              </p>
+            </>
+          )}
           <p className="control">
             <button className="button is-small is-dark" onClick={handleToggle}>
               <span className="icon">
@@ -188,6 +250,8 @@ const Footer = () => {
               </span>
             </button>
           </p>
+
+          {/* Shell restart dropdown */}
           <div
             className={`dropdown ${showShellDropdown && footerIsActive ? "is-active" : ""} is-right`}
           >
@@ -202,6 +266,58 @@ const Footer = () => {
                   </span>
                   <span>Restart Shell</span>
                 </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Priority filter dropdown */}
+          <div
+            className={`dropdown ${showFilterDropdown ? "is-active" : ""} is-right`}
+            style={{ position: "absolute", right: 0, top: "100%" }}
+          >
+            <div className="dropdown-menu" style={{ minWidth: "120px" }}>
+              <div className="dropdown-content">
+                {PRIORITY_OPTIONS.map((option) => (
+                  <a
+                    key={option.value}
+                    className={`dropdown-item is-clickable ${taskMinPriority === option.value ? "is-active" : ""}`}
+                    onClick={() => {
+                      setTaskMinPriority(option.value);
+                      setShowFilterDropdown(false);
+                    }}
+                  >
+                    {option.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Column toggle dropdown */}
+          <div
+            className={`dropdown ${showColumnsDropdown ? "is-active" : ""} is-right`}
+            style={{ position: "absolute", right: 0, top: "100%" }}
+          >
+            <div className="dropdown-menu" style={{ minWidth: "160px" }}>
+              <div className="dropdown-content">
+                {TASK_COLUMNS.map((col) => (
+                  <label
+                    key={col.key}
+                    className="dropdown-item is-clickable"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={taskVisibleColumns.includes(col.key)}
+                      onChange={() => handleColumnToggle(col.key)}
+                    />
+                    {col.label}
+                  </label>
+                ))}
               </div>
             </div>
           </div>

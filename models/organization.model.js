@@ -222,7 +222,7 @@ export default (sequelize, Sequelize) => {
 
   // Hook to handle cascading deletes properly
   Organization.addHook('beforeDestroy', async (organization, options) => {
-    const transaction = options.transaction;
+    const { transaction } = options;
 
     // Delete all users in this organization
     await sequelize.models.user.destroy({

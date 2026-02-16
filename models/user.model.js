@@ -149,7 +149,7 @@ export default (sequelize, Sequelize) => {
 
   // Instance methods
   User.prototype.toJSON = function () {
-    const values = Object.assign({}, this.get());
+    const values = { ...this.get() };
     // Always exclude password_hash when converting to JSON
     delete values.password_hash;
     return values;

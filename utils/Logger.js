@@ -9,12 +9,11 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { loadConfig } from './config.js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 // Get logging configuration from config.yaml
 const config = loadConfig();
@@ -76,7 +75,7 @@ try {
   effectiveCurrentDir = path.join(fallbackDir, 'current');
   effectiveArchivesDir = path.join(fallbackDir, 'archives');
   effectiveMetaDir = path.join(fallbackDir, '.meta');
-  
+
   if (!fs.existsSync(fallbackDir)) {
     fs.mkdirSync(fallbackDir, { recursive: true });
   }
@@ -89,7 +88,7 @@ try {
   if (!fs.existsSync(effectiveMetaDir)) {
     fs.mkdirSync(effectiveMetaDir, { recursive: true });
   }
-  
+
   console.warn(`Could not create log directory ${logDir}, using ${fallbackDir}`);
 }
 
@@ -145,12 +144,12 @@ const createCategoryLogger = (category, filename) => {
   });
 
   // Move compressed archives to archives/ folder
-  categoryTransport.on('archive', (zipFilename) => {
+  categoryTransport.on('archive', zipFilename => {
     try {
       const archiveFilename = path.basename(zipFilename);
       const archivePath = path.join(effectiveArchivesDir, archiveFilename);
       fs.renameSync(zipFilename, archivePath);
-    } catch (error) {
+    } catch {
       // Ignore errors - file might already be moved
     }
   });
@@ -219,22 +218,22 @@ const errorTransport = new DailyRotateFile({
 });
 
 // Move compressed archives to archives/ folder
-appTransport.on('archive', (zipFilename) => {
+appTransport.on('archive', zipFilename => {
   try {
     const archiveFilename = path.basename(zipFilename);
     const archivePath = path.join(effectiveArchivesDir, archiveFilename);
     fs.renameSync(zipFilename, archivePath);
-  } catch (error) {
+  } catch {
     // Ignore errors - file might already be moved
   }
 });
 
-errorTransport.on('archive', (zipFilename) => {
+errorTransport.on('archive', zipFilename => {
   try {
     const archiveFilename = path.basename(zipFilename);
     const archivePath = path.join(effectiveArchivesDir, archiveFilename);
     fs.renameSync(zipFilename, archivePath);
-  } catch (error) {
+  } catch {
     // Ignore errors - file might already be moved
   }
 });
@@ -278,7 +277,8 @@ const safeLog = (logger, level, message, meta = {}) => {
   try {
     // Remove circular references and large objects
     const safeMeta = JSON.parse(
-      JSON.stringify(meta, (key, value) => {
+      JSON.stringify(meta, (_key, value) => {
+        void _key;
         // Skip very large values
         if (typeof value === 'string' && value.length > 1000) {
           return `${value.substring(0, 1000)}... (truncated)`;
@@ -287,9 +287,12 @@ const safeLog = (logger, level, message, meta = {}) => {
         if (typeof value === 'object' && value !== null) {
           const seen = new WeakSet();
           return JSON.parse(
-            JSON.stringify(value, (k, v) => {
+            JSON.stringify(value, (_k, v) => {
+              void _k;
               if (typeof v === 'object' && v !== null) {
-                if (seen.has(v)) return '[Circular]';
+                if (seen.has(v)) {
+                  return '[Circular]';
+                }
                 seen.add(v);
               }
               return v;
@@ -480,7 +483,7 @@ export const createRequestLogger = (requestId, req) => {
   };
 
   // Only log non-static requests
-  if (!req.path.startsWith('/static') && !req.path.match(/\.(js|css|png|jpg|ico)$/)) {
+  if (!req.path.startsWith('/static') && !req.path.match(/\.(?:js|css|png|jpg|ico)$/)) {
     apiRequestLogger.info('Request started', logData);
   }
 
@@ -489,7 +492,7 @@ export const createRequestLogger = (requestId, req) => {
       const duration = Date.now() - start;
 
       // Skip logging for static assets
-      if (req.path.startsWith('/static') || req.path.match(/\.(js|css|png|jpg|ico)$/)) {
+      if (req.path.startsWith('/static') || req.path.match(/\.(?:js|css|png|jpg|ico)$/)) {
         return;
       }
 

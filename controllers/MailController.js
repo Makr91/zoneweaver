@@ -425,7 +425,7 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
 
       log.mail.info('Test email sent successfully', { messageId: info.messageId });
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Test email sent successfully',
         messageId: info.messageId,
@@ -437,7 +437,7 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
         stack: error.stack,
       });
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'SMTP test failed',
         error: error.message,

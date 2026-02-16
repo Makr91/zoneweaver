@@ -158,6 +158,7 @@ class SettingsController {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   static getSettings(req, res) {
+    void req;
     try {
       const config = loadConfig();
 
@@ -519,7 +520,7 @@ class SettingsController {
       // Increased delay to ensure response is fully sent
       setTimeout(() => {
         log.settings.info('Restarting server...');
-        process.exit(0); // Let process manager restart the app
+        process.kill(process.pid, 'SIGTERM'); // Let process manager restart the app
       }, 2500);
     } catch (error) {
       log.settings.error('Error restarting server', { error: error.message });
@@ -540,7 +541,8 @@ class SettingsController {
       limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit for SSL files
       },
-      fileFilter: (req, file, cb) => {
+      fileFilter: (filterReq, file, cb) => {
+        void filterReq;
         // Validate SSL file types
         const allowedExtensions = ['.pem', '.crt', '.key', '.cer', '.ca'];
         const fileExtension = path.extname(file.originalname).toLowerCase();
@@ -723,14 +725,14 @@ class SettingsController {
           });
 
           // Return success response
-          res.json({
+          return res.json({
             success: true,
             message: `SSL certificate uploaded successfully: ${filename}`,
             filePath,
           });
         } catch (uploadError) {
           log.settings.error('SSL file upload error', { error: uploadError.message });
-          res.status(500).json({
+          return res.status(500).json({
             success: false,
             message: `Failed to save SSL file: ${uploadError.message}`,
           });
@@ -756,8 +758,8 @@ class SettingsController {
     const updatedConfig = JSON.parse(JSON.stringify(currentConfig));
 
     // Helper function to set nested value by path
-    const setNestedValue = (obj, path, value) => {
-      const keys = path.split('.');
+    const setNestedValue = (obj, keyPath, value) => {
+      const keys = keyPath.split('.');
       let current = obj;
 
       // Navigate to the parent object
@@ -775,7 +777,7 @@ class SettingsController {
       if (
         current[finalKey] &&
         typeof current[finalKey] === 'object' &&
-        Object.prototype.hasOwnProperty.call(current[finalKey], 'value')
+        Object.hasOwn(current[finalKey], 'value')
       ) {
         current[finalKey].value = value;
       } else {
@@ -785,11 +787,11 @@ class SettingsController {
     };
 
     // Update each value in the config structure
-    for (const [path, value] of Object.entries(newValues)) {
+    for (const [keyPath, value] of Object.entries(newValues)) {
       try {
-        setNestedValue(updatedConfig, path, value);
+        setNestedValue(updatedConfig, keyPath, value);
       } catch (error) {
-        log.settings.warn('Failed to update config path', { path, error: error.message });
+        log.settings.warn('Failed to update config path', { keyPath, error: error.message });
       }
     }
 
@@ -864,6 +866,7 @@ class SettingsController {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   static getBackups(req, res) {
+    void req;
     try {
       const configDir = path.dirname(SettingsController.configPath);
       const files = fs.readdirSync(configDir);
@@ -959,7 +962,7 @@ class SettingsController {
         backupCreated: path.basename(restoreBackupPath),
       });
 
-      res.json({
+      return res.json({
         success: true,
         message:
           'Configuration restored successfully. Settings will take effect after next page reload.',
@@ -967,7 +970,7 @@ class SettingsController {
       });
     } catch (error) {
       log.settings.error('Error restoring backup', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: `Failed to restore backup: ${error.message}`,
       });
@@ -1034,13 +1037,13 @@ class SettingsController {
         role: req.user.role,
       });
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Backup deleted successfully',
       });
     } catch (error) {
       log.settings.error('Error deleting backup', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: `Failed to delete backup: ${error.message}`,
       });

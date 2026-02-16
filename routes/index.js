@@ -200,8 +200,8 @@ router.get('/api/profile/:identifier', standardLimiter, async (req, res) => {
   const { identifier } = req.params;
 
   try {
-    const config = loadConfig();
-    const apiKey = config.integrations?.gravatar?.api_key?.value;
+    const appConfig = loadConfig();
+    const apiKey = appConfig.integrations?.gravatar?.api_key?.value;
 
     const hash = crypto.createHash('sha256').update(identifier.trim().toLowerCase()).digest('hex');
 
@@ -740,6 +740,7 @@ router.post(
 
 // Health check endpoint - Simple health status for restart monitoring
 router.get('/api/health', standardLimiter, (req, res) => {
+  void req;
   res.json({
     success: true,
     status: 'healthy',
@@ -754,6 +755,7 @@ router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'we
 
 // Catch all handler: send back Vite's index.html file for client-side routing - Protected with static file rate limiting (CodeQL flagged)
 router.get('/ui/*splat', staticFileLimiter, (req, res) => {
+  void req;
   res.sendFile(path.join(process.cwd(), 'web/dist/index.html'));
 });
 

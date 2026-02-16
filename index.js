@@ -2,6 +2,7 @@ import express from 'express';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
+import { setTimeout as delay } from 'timers/promises';
 import cors from 'cors';
 import session from 'express-session';
 import SequelizeStore from 'connect-session-sequelize';
@@ -59,38 +60,7 @@ app.use(cors(corsOptions));
 app.options('*splat', cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // Support large JSON payloads
 
-// Configure multer for large file uploads (artifacts, ISOs, etc.)
-import multer from 'multer';
-
-const upload = multer({
-  storage: multer.memoryStorage(), // Store files in memory for proxy forwarding
-  limits: {
-    fileSize: (config.limits?.file_uploads?.max_file_size_gb?.value || 50) * 1024 * 1024 * 1024, // Convert GB to bytes
-    files: 10, // Maximum 10 files per request
-    parts: 20, // Maximum form parts
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow common VM/ISO file types
-    const allowedTypes = ['.iso', '.img', '.vmdk', '.vhd', '.vhdx', '.qcow2', '.ova', '.ovf'];
-    const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
-    
-    if (allowedTypes.includes(fileExtension)) {
-      cb(null, true);
-    } else {
-      cb(new Error(`Unsupported file type: ${fileExtension}. Allowed types: ${allowedTypes.join(', ')}`), false);
-    }
-  }
-});
-
-// Note: Removed multer middleware for artifact uploads
-// Proxy servers should stream data directly without buffering
-// Multer memoryStorage() was causing 762MB+ files to load entirely into RAM
-
-log.app.info('File upload handling configured for streaming', {
-  approach: 'Pure streaming (no buffering)',
-  maxFileSize: 'No memory limit (streaming)',
-  allowedTypes: ['.iso', '.img', '.vmdk', '.vhd', '.vhdx', '.qcow2', '.ova', '.ovf']
-});
+// Note: Multer middleware removed — proxy servers stream data directly without buffering
 
 // Serve static files from the React app build
 app.use(express.static('./web/dist'));
@@ -141,7 +111,7 @@ log.app.info('Session middleware configured for OIDC support');
 (async () => {
   try {
     // Wait a moment for any ongoing migrations to complete
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await delay(1000);
 
     // Test database access to ensure schema is ready
     try {
@@ -149,7 +119,7 @@ log.app.info('Session middleware configured for OIDC support');
       log.database.info('Database schema ready for authentication');
     } catch {
       log.database.info('Waiting for database migrations to complete...');
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await delay(3000);
     }
 
     // Now safe to import and initialize Passport
@@ -184,6 +154,7 @@ app.use((req, res, next) => {
 
 // Middleware to track VNC console requests for WebSocket fallback
 app.use('/api/servers/:serverAddress/zones/:zoneName/vnc/console', (req, res, next) => {
+  void res;
   const { serverAddress, zoneName } = req.params;
   const clientId = req.ip || req.connection.remoteAddress;
 
@@ -212,7 +183,7 @@ app.use(router);
 // Swagger API Documentation middleware
 app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   // Dynamically set the server URL based on the current request
-  const protocol = req.protocol;
+  const { protocol } = req;
   const host = req.get('host');
   const dynamicSpecs = {
     ...specs,
@@ -251,7 +222,7 @@ app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
 
 // Serve the OpenAPI spec JSON separately to avoid asset loading issues
 app.get('/api-docs/swagger.json', (req, res) => {
-  const protocol = req.protocol;
+  const { protocol } = req;
   const host = req.get('host');
   const dynamicSpecs = {
     ...specs,
@@ -268,416 +239,337 @@ app.get('/api-docs/swagger.json', (req, res) => {
 
 // Handle React Router routes - serve index.html for all non-API routes - Protected with static file rate limiting (CodeQL flagged)
 app.get('*splat', staticFileLimiter, (req, res) => {
+  void req;
   res.sendFile('./web/dist/index.html', { root: '.' });
 });
 
 /**
- * Handle WebSocket upgrade for VNC proxy using native WebSocket implementation
- * This provides more reliable WebSocket proxying for NoVNC connections
+ * Resolve server address from request referer/origin headers, with fallback to most recent server
  */
-async function handleWebSocketUpgrade(request, socket, head) {
-  const timestamp = new Date().toISOString();
+const resolveServerFromRequest = async request => {
+  const referer = request.headers.referer || request.headers.origin;
+  if (referer) {
+    const urlParams = new URLSearchParams(referer.split('?')[1]);
+    const host = urlParams.get('host');
+    if (host) {
+      const server = await ServerModel.getServerByHostname(host);
+      if (server) {
+        return `${server.hostname}:${server.port}`;
+      }
+    }
+  }
+  const servers = await ServerModel.getAllServers();
+  if (servers.length > 0) {
+    return `${servers[0].hostname}:${servers[0].port}`;
+  }
+  return null;
+};
 
+/**
+ * Get authenticated server credentials from "hostname:port" address string
+ */
+const getAuthenticatedServer = address => {
+  const [hostname, serverPort] = address.split(':');
+  return ServerModel.getServer(hostname, parseInt(serverPort || 5001), 'https');
+};
+
+/**
+ * Create bidirectional WebSocket proxy for simple (non-VNC) sessions
+ */
+const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, logContext) => {
+  const { WebSocket, WebSocketServer } = await import('ws');
+  const wss = new WebSocketServer({ noServer: true });
+  const backendWs = new WebSocket(backendUrl, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'User-Agent': 'Zoneweaver-Proxy/1.0',
+    },
+  });
+
+  backendWs.on('error', err => {
+    log.websocket.error('Backend WebSocket connection failed', {
+      ...logContext,
+      error: err.message,
+    });
+    socket.destroy();
+  });
+
+  wss.handleUpgrade(request, socket, head, clientWs => {
+    backendWs.on('open', () => {
+      log.websocket.info('Backend WebSocket connected', logContext);
+      clientWs.on('message', data => backendWs.send(data));
+      backendWs.on('message', data => clientWs.send(data));
+      clientWs.on('close', () => backendWs.close());
+      backendWs.on('close', () => clientWs.close());
+    });
+  });
+};
+
+/**
+ * Handle terminal/zlogin WebSocket upgrade by resolving server from referer
+ */
+const handleSessionUpgrade = async (sessionType, sessionId, request, socket, head) => {
+  if (!serverModelReady || !ServerModel) {
+    log.websocket.error(`WebSocket ${sessionType}: ServerModel not initialized`, { sessionId });
+    socket.destroy();
+    return;
+  }
+
+  const serverAddress = await resolveServerFromRequest(request);
+  if (!serverAddress) {
+    log.websocket.error(`WebSocket ${sessionType}: Could not determine target server`, {
+      sessionId,
+    });
+    socket.destroy();
+    return;
+  }
+
+  const server = await getAuthenticatedServer(serverAddress);
+  if (!server || !server.api_key) {
+    log.websocket.error(`WebSocket ${sessionType}: No server or API key`, { sessionId });
+    socket.destroy();
+    return;
+  }
+
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/${sessionType}/${sessionId}`;
+  log.websocket.info(`WebSocket ${sessionType}: Connecting`, { backendUrl });
+
+  await createSimpleWsProxy(request, socket, head, backendUrl, server.api_key, {
+    sessionType,
+    sessionId,
+  });
+};
+
+/**
+ * Handle task output stream WebSocket upgrade
+ */
+const handleTaskStreamUpgrade = async (serverAddr, taskId, request, socket, head) => {
+  if (!serverModelReady || !ServerModel) {
+    log.websocket.error('WebSocket task stream: ServerModel not initialized', { taskId });
+    socket.destroy();
+    return;
+  }
+
+  const server = await getAuthenticatedServer(serverAddr);
+  if (!server || !server.api_key) {
+    log.websocket.error('WebSocket task stream: No server or API key', { taskId });
+    socket.destroy();
+    return;
+  }
+
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/tasks/${taskId}/stream`;
+  log.websocket.info('WebSocket task stream: Connecting', { backendUrl });
+
+  await createSimpleWsProxy(request, socket, head, backendUrl, server.api_key, {
+    type: 'task-stream',
+    taskId,
+  });
+};
+
+/**
+ * Resolve VNC target from URL (direct match or websockify fallback)
+ */
+const resolveVncTarget = (url, request) => {
+  const directMatch = url.pathname.match(
+    /^\/api\/servers\/(?<addr>[^/]+)\/zones\/(?<zone>[^/]+)\/vnc\/websockify/
+  );
+  if (directMatch) {
+    return { serverAddress: directMatch.groups.addr, zoneName: directMatch.groups.zone };
+  }
+
+  if (url.pathname !== '/websockify') {
+    return null;
+  }
+
+  log.websocket.debug('WebSocket fallback: websockify detected', {
+    referer: request.headers.referer,
+    origin: request.headers.origin,
+  });
+
+  const referer = request.headers.referer || request.headers.origin;
+  if (referer) {
+    const urlMatch = referer.match(/\/zones\/(?<zone>[^/?#]+)/);
+    if (urlMatch) {
+      log.websocket.debug('WebSocket fallback: found zone in URL', {
+        zoneName: urlMatch.groups.zone,
+      });
+      return {
+        serverAddress: 'hv-04-backend.home.m4kr.net:5001',
+        zoneName: urlMatch.groups.zone,
+      };
+    }
+  }
+
+  const clientId = request.connection.remoteAddress || request.socket.remoteAddress;
+  const storedSession = activeVncSessions.get(clientId);
+  if (storedSession) {
+    log.websocket.info('WebSocket fallback: found stored session', storedSession);
+    return storedSession;
+  }
+
+  log.websocket.debug('WebSocket fallback: no VNC target found', { clientId });
+  return null;
+};
+
+/**
+ * Create VNC WebSocket proxy with binary subprotocol support
+ */
+const createVncWsProxy = async (vncTarget, request, socket, head) => {
+  const { serverAddress, zoneName } = vncTarget;
+  const [hostname, serverPort] = serverAddress.split(':');
+
+  log.websocket.info('WebSocket upgrade for VNC', { zoneName, hostname, serverPort });
+
+  if (!serverModelReady || !ServerModel) {
+    log.websocket.error('WebSocket VNC: ServerModel not initialized', { zoneName });
+    socket.destroy();
+    return;
+  }
+
+  const server = await ServerModel.getServer(hostname, parseInt(serverPort || 5001), 'https');
+  if (!server || !server.api_key) {
+    log.websocket.error('WebSocket VNC: No server or API key', { hostname, serverPort });
+    socket.destroy();
+    return;
+  }
+
+  const { WebSocket, WebSocketServer } = await import('ws');
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`;
+
+  log.websocket.info('Connecting to backend VNC WebSocket', { backendUrl });
+
+  const wss = new WebSocketServer({
+    noServer: true,
+    perMessageDeflate: false,
+    compression: 'DISABLED',
+    handleProtocols: protocols =>
+      Array.from(protocols).includes('binary') ? 'binary' : Array.from(protocols)[0] || null,
+  });
+
+  const backendWs = new WebSocket(backendUrl, ['binary'], {
+    headers: {
+      Authorization: `Bearer ${server.api_key}`,
+      'User-Agent': 'Zoneweaver-Proxy/1.0',
+    },
+    perMessageDeflate: false,
+    extensions: {},
+    compression: 'DISABLED',
+  });
+
+  backendWs.on('error', err => {
+    log.websocket.error('Backend VNC WebSocket connection failed', {
+      zoneName,
+      error: err.message,
+    });
+    socket.destroy();
+  });
+
+  wss.handleUpgrade(request, socket, head, clientWs => {
+    log.websocket.info('Client VNC WebSocket established', { zoneName });
+
+    backendWs.on('open', () => {
+      log.websocket.info('Backend VNC WebSocket connected', { zoneName });
+
+      clientWs.on('message', (data, isBinary) => {
+        if (backendWs.readyState === WebSocket.OPEN) {
+          backendWs.send(data, { binary: isBinary });
+        }
+      });
+
+      backendWs.on('message', (data, isBinary) => {
+        if (clientWs.readyState === WebSocket.OPEN) {
+          clientWs.send(data, { binary: isBinary });
+        }
+      });
+
+      clientWs.on('close', () => {
+        log.websocket.info('Client VNC WebSocket disconnected', { zoneName });
+        backendWs.close();
+      });
+
+      clientWs.on('error', err => {
+        log.websocket.error('Client VNC WebSocket error', { zoneName, error: err.message });
+        backendWs.close();
+      });
+
+      backendWs.on('close', () => {
+        log.websocket.info('Backend VNC WebSocket closed', { zoneName });
+        if (clientWs.readyState === WebSocket.OPEN) {
+          clientWs.close();
+        }
+      });
+
+      backendWs.on('error', err => {
+        log.websocket.error('Backend VNC WebSocket error', { zoneName, error: err.message });
+        if (clientWs.readyState === WebSocket.OPEN) {
+          clientWs.close();
+        }
+      });
+    });
+
+    backendWs.on('error', err => {
+      log.websocket.error('Failed to connect to backend VNC WebSocket', {
+        zoneName,
+        error: err.message,
+      });
+      clientWs.close();
+    });
+  });
+};
+
+/**
+ * Handle WebSocket upgrade for VNC proxy, terminal sessions, and task streams
+ */
+const handleWebSocketUpgrade = async (request, socket, head) => {
   try {
     const url = new URL(request.url, `https://${request.headers.host}`);
 
-    // Check if this is a Terminal or Zlogin WebSocket request
-    const termMatch = url.pathname.match(/^\/term\/([^/]+)/);
-    const zloginMatch = url.pathname.match(/^\/zlogin\/([^/]+)/);
-
+    const zloginMatch = url.pathname.match(/^\/zlogin\/(?<sessionId>[^/]+)/);
     if (zloginMatch) {
-      const sessionId = zloginMatch[1];
-
-      if (!serverModelReady || !ServerModel) {
-        log.websocket.error('WebSocket zlogin: ServerModel not initialized', {
-          sessionId,
-          timestamp,
-        });
-        socket.destroy();
-        return;
-      }
-
-      // Get server information from referer header
-      const referer = request.headers.referer || request.headers.origin;
-      let serverAddress = null;
-
-      if (referer) {
-        const urlParams = new URLSearchParams(referer.split('?')[1]);
-        const host = urlParams.get('host');
-        if (host) {
-          const server = await ServerModel.getServerByHostname(host);
-          if (server) {
-            serverAddress = `${server.hostname}:${server.port}`;
-          }
-        }
-      }
-
-      if (!serverAddress) {
-        // Fallback to the most recently used server
-        const servers = await ServerModel.getAllServers();
-        if (servers.length > 0) {
-          serverAddress = `${servers[0].hostname}:${servers[0].port}`;
-        }
-      }
-
-      if (!serverAddress) {
-        log.websocket.error('WebSocket zlogin: Could not determine target server', {
-          sessionId,
-          timestamp,
-        });
-        socket.destroy();
-        return;
-      }
-
-      const [hostname, port] = serverAddress.split(':');
-      const server = await ServerModel.getServer(hostname, parseInt(port || 5001), 'https');
-
-      if (!server || !server.api_key) {
-        log.websocket.error('WebSocket zlogin: No server or API key', {
-          sessionId,
-          hostname,
-          port,
-          timestamp,
-        });
-        socket.destroy();
-        return;
-      }
-
-      const { WebSocket, WebSocketServer } = await import('ws');
-      const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zlogin/${sessionId}`;
-
-      const wss = new WebSocketServer({ noServer: true });
-      const backendWs = new WebSocket(backendUrl, {
-        headers: {
-          Authorization: `Bearer ${server.api_key}`,
-          'User-Agent': 'Zoneweaver-Proxy/1.0',
-        },
-      });
-
-      // Add immediate error handler to prevent server crashes
-      backendWs.on('error', err => {
-        log.websocket.error('WebSocket zlogin: Backend connection failed', {
-          backendUrl,
-          error: err.message,
-          timestamp,
-        });
-        socket.destroy(); // Close the client connection gracefully
-      });
-
-      wss.handleUpgrade(request, socket, head, clientWs => {
-        backendWs.on('open', () => {
-          log.websocket.info('WebSocket zlogin: Connected', { backendUrl, timestamp });
-          clientWs.on('message', data => backendWs.send(data));
-          backendWs.on('message', data => clientWs.send(data));
-          clientWs.on('close', () => backendWs.close());
-          backendWs.on('close', () => clientWs.close());
-        });
-      });
+      await handleSessionUpgrade('zlogin', zloginMatch.groups.sessionId, request, socket, head);
       return;
     }
 
+    const termMatch = url.pathname.match(/^\/term\/(?<sessionId>[^/]+)/);
     if (termMatch) {
-      const sessionId = termMatch[1];
-      log.websocket.info('WebSocket upgrade for terminal session', { sessionId });
-
-      if (!serverModelReady || !ServerModel) {
-        log.websocket.error('WebSocket upgrade failed: ServerModel not fully initialized', {
-          sessionId,
-        });
-        socket.destroy();
-        return;
-      }
-
-      // Get server information from referer header
-      const referer = request.headers.referer || request.headers.origin;
-      let serverAddress = null;
-
-      if (referer) {
-        const urlParams = new URLSearchParams(referer.split('?')[1]);
-        const host = urlParams.get('host');
-        if (host) {
-          const server = await ServerModel.getServerByHostname(host);
-          if (server) {
-            serverAddress = `${server.hostname}:${server.port}`;
-          }
-        }
-      }
-
-      if (!serverAddress) {
-        // Fallback to the most recently used server
-        const servers = await ServerModel.getAllServers();
-        if (servers.length > 0) {
-          serverAddress = `${servers[0].hostname}:${servers[0].port}`;
-        }
-      }
-
-      if (!serverAddress) {
-        log.websocket.error(
-          'WebSocket upgrade failed: Could not determine target server for terminal session',
-          { sessionId }
-        );
-        socket.destroy();
-        return;
-      }
-
-      const [hostname, port] = serverAddress.split(':');
-      const server = await ServerModel.getServer(hostname, parseInt(port || 5001), 'https');
-
-      if (!server || !server.api_key) {
-        log.websocket.error('WebSocket upgrade failed: No server or API key', { hostname, port });
-        socket.destroy();
-        return;
-      }
-
-      const { WebSocket, WebSocketServer } = await import('ws');
-      const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/term/${sessionId}`;
-      log.websocket.info('Connecting to backend terminal WebSocket', { backendUrl });
-
-      const wss = new WebSocketServer({ noServer: true });
-      const backendWs = new WebSocket(backendUrl, {
-        headers: {
-          Authorization: `Bearer ${server.api_key}`,
-          'User-Agent': 'Zoneweaver-Proxy/1.0',
-        },
-      });
-
-      // Add immediate error handler to prevent server crashes
-      backendWs.on('error', err => {
-        log.websocket.error('Backend WebSocket connection failed for terminal', {
-          sessionId,
-          error: err.message,
-        });
-        socket.destroy(); // Close the client connection gracefully
-      });
-
-      wss.handleUpgrade(request, socket, head, clientWs => {
-        log.websocket.info('Client WebSocket established for terminal session', { sessionId });
-        backendWs.on('open', () => {
-          log.websocket.info('Backend WebSocket connected for terminal session', { sessionId });
-          clientWs.on('message', data => backendWs.send(data));
-          backendWs.on('message', data => clientWs.send(data));
-          clientWs.on('close', () => backendWs.close());
-          backendWs.on('close', () => clientWs.close());
-        });
-      });
+      await handleSessionUpgrade('term', termMatch.groups.sessionId, request, socket, head);
       return;
     }
 
-    // Handle fallback for noVNC default /websockify path
-    if (url.pathname === '/websockify') {
-      log.websocket.debug(
-        'WebSocket fallback: websockify detected, extracting server/zone from referer',
-        {
-          referer: request.headers.referer,
-          origin: request.headers.origin,
-        }
+    const taskMatch = url.pathname.match(
+      /^\/api\/servers\/(?<addr>[^/]+)\/tasks\/(?<taskId>[a-fA-F0-9-]+)\/stream/
+    );
+    if (taskMatch) {
+      await handleTaskStreamUpgrade(
+        taskMatch.groups.addr,
+        taskMatch.groups.taskId,
+        request,
+        socket,
+        head
       );
-
-      // Since referer might not have API path, try to maintain a mapping of active VNC sessions
-      // For now, let's add a simple mapping based on recent VNC console requests
-
-      // Check if we can extract zone info from URL params in referer
-      const referer = request.headers.referer || request.headers.origin;
-      let serverAddress = null;
-      let zoneName = null;
-
-      if (referer) {
-        // Try to find zone info in URL fragments or query params
-        const urlMatch = referer.match(/\/zones\/([^/?#]+)/);
-        if (urlMatch) {
-          zoneName = urlMatch[1];
-          log.websocket.debug('WebSocket fallback: found zone in URL', { zoneName });
-
-          // For now, assume the most recent server (could be improved with session mapping)
-          serverAddress = 'hv-04-backend.home.m4kr.net:5001'; // Default from your logs
-          log.websocket.debug('WebSocket fallback: using default server', { serverAddress });
-        }
-      }
-
-      if (serverAddress && zoneName) {
-        log.websocket.info('WebSocket fallback: extracted zone on server', {
-          zoneName,
-          serverAddress,
-        });
-
-        // Redirect to proper VNC WebSocket handling
-        request.url = `/api/servers/${serverAddress}/zones/${zoneName}/vnc/websockify`;
-        url.pathname = request.url;
-        log.websocket.debug('WebSocket fallback: redirected', { url: request.url });
-      } else {
-        log.websocket.debug('WebSocket fallback: could not extract server/zone info from referer');
-
-        // Try to get from stored active sessions
-        const clientId = request.connection.remoteAddress || request.socket.remoteAddress;
-        log.websocket.debug('WebSocket fallback: checking stored sessions', { clientId });
-
-        const storedSession = activeVncSessions.get(clientId);
-        if (storedSession) {
-          serverAddress = storedSession.serverAddress;
-          zoneName = storedSession.zoneName;
-          log.websocket.info('WebSocket fallback: found stored session', {
-            zoneName,
-            serverAddress,
-          });
-
-          // Redirect to proper VNC WebSocket handling
-          request.url = `/api/servers/${serverAddress}/zones/${zoneName}/vnc/websockify`;
-          url.pathname = request.url;
-          log.websocket.debug('WebSocket fallback: redirected from stored session', {
-            url: request.url,
-          });
-        } else {
-          log.websocket.debug('WebSocket fallback: no stored session found', {
-            clientId,
-            activeSessions: Array.from(activeVncSessions.keys()),
-          });
-        }
-      }
+      return;
     }
 
-    const finalVncMatch = url.pathname.match(
-      /^\/api\/servers\/([^/]+)\/zones\/([^/]+)\/vnc\/websockify/
-    );
-
-    if (!finalVncMatch) {
-      log.websocket.debug('WebSocket upgrade rejected: URL does not match VNC pattern', {
+    const vncTarget = resolveVncTarget(url, request);
+    if (!vncTarget) {
+      log.websocket.debug('WebSocket upgrade rejected: URL does not match any pattern', {
         pathname: url.pathname,
       });
       socket.destroy();
       return;
     }
 
-    const [, serverAddress, zoneName] = finalVncMatch;
-    const [hostname, port] = serverAddress.split(':');
-
-    log.websocket.info('WebSocket upgrade for VNC', { zoneName, hostname, port });
-
-    if (!serverModelReady || !ServerModel) {
-      log.websocket.error(
-        'WebSocket upgrade failed: ServerModel not fully initialized for VNC session',
-        {
-          zoneName,
-        }
-      );
-      socket.destroy();
-      return;
-    }
-
-    const server = await ServerModel.getServer(hostname, parseInt(port || 5001), 'https');
-
-    if (!server || !server.api_key) {
-      log.websocket.error('WebSocket upgrade failed: No server or API key for VNC', {
-        hostname,
-        port,
-      });
-      socket.destroy();
-      return;
-    }
-
-    // Import WebSocket and WebSocketServer for proper WebSocket-to-WebSocket proxying
-    const { WebSocket, WebSocketServer } = await import('ws');
-
-    // Create WebSocket connection to backend
-    const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`;
-
-    log.websocket.info('Connecting to backend VNC WebSocket', { backendUrl });
-
-    // Create WebSocket server for the client connection with no compression
-    const wss = new WebSocketServer({
-      noServer: true,
-      perMessageDeflate: false,
-      compression: 'DISABLED',
-      handleProtocols: protocols =>
-        // Handle binary subprotocol for VNC connections
-        Array.from(protocols).includes('binary') ? 'binary' : Array.from(protocols)[0] || null,
-    });
-
-    // Create backend WebSocket with binary subprotocol but no compression/extensions
-    const backendWs = new WebSocket(backendUrl, ['binary'], {
-      headers: {
-        Authorization: `Bearer ${server.api_key}`,
-        'User-Agent': 'Zoneweaver-Proxy/1.0',
-      },
-      // Disable all extensions to prevent frame issues
-      perMessageDeflate: false,
-      extensions: {},
-      compression: 'DISABLED',
-    });
-
-    // Add immediate error handler to prevent server crashes
-    backendWs.on('error', err => {
-      log.websocket.error('Backend WebSocket connection failed for VNC', {
-        zoneName,
-        error: err.message,
-      });
-      socket.destroy(); // Close the client connection gracefully
-    });
-
-    // Handle WebSocket upgrade
-    wss.handleUpgrade(request, socket, head, clientWs => {
-      log.websocket.info('Client VNC WebSocket established', { zoneName });
-
-      // Wait for backend connection before setting up forwarding
-      backendWs.on('open', () => {
-        log.websocket.info('Backend VNC WebSocket connected', { zoneName });
-
-        // Set up WebSocket-to-WebSocket forwarding
-        clientWs.on('message', (data, isBinary) => {
-          if (backendWs.readyState === WebSocket.OPEN) {
-            backendWs.send(data, { binary: isBinary });
-          }
-        });
-
-        backendWs.on('message', (data, isBinary) => {
-          if (clientWs.readyState === WebSocket.OPEN) {
-            clientWs.send(data, { binary: isBinary });
-          }
-        });
-
-        // Handle disconnections
-        clientWs.on('close', () => {
-          log.websocket.info('Client VNC WebSocket disconnected', { zoneName });
-          backendWs.close();
-        });
-
-        clientWs.on('error', err => {
-          log.websocket.error('Client VNC WebSocket error', { zoneName, error: err.message });
-          backendWs.close();
-        });
-
-        backendWs.on('close', () => {
-          log.websocket.info('Backend VNC WebSocket closed', { zoneName });
-          if (clientWs.readyState === WebSocket.OPEN) {
-            clientWs.close();
-          }
-        });
-
-        backendWs.on('error', err => {
-          log.websocket.error('Backend VNC WebSocket error', { zoneName, error: err.message });
-          if (clientWs.readyState === WebSocket.OPEN) {
-            clientWs.close();
-          }
-        });
-      });
-
-      backendWs.on('error', err => {
-        log.websocket.error('Failed to connect to backend VNC WebSocket', {
-          zoneName,
-          error: err.message,
-        });
-        clientWs.close();
-      });
-    });
+    await createVncWsProxy(vncTarget, request, socket, head);
   } catch (error) {
     log.websocket.error('WebSocket upgrade error', { error: error.message });
     socket.destroy();
   }
-}
+};
 
 /**
  * Generate SSL certificates if they don't exist and generate_ssl is enabled
  */
-async function generateSSLCertificatesIfNeeded() {
+const generateSSLCertificatesIfNeeded = async () => {
   if (!config.server.ssl_generate.value) {
     return false; // SSL generation disabled
   }
@@ -724,7 +616,7 @@ async function generateSSLCertificatesIfNeeded() {
     log.app.warn('Continuing with HTTP fallback...');
     return false; // Generation failed
   }
-}
+};
 
 // SSL/HTTPS Configuration
 (async () => {

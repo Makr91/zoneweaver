@@ -10,6 +10,132 @@ const { user: UserModel, organization: OrganizationModel, invitation: Invitation
 /**
  * Authentication controller for Zoneweaver user management
  */
+/**
+ * Resolve organization context for registration.
+ * Determines the organization, role, and any validation errors based on
+ * whether this is the first user, an invite-based registration, or a new org creation.
+ * @returns {{ organizationId: number|null, userRole: string, organization: object|null, error: { status: number, message: string }|null }}
+ */
+const resolveRegistrationOrganization = async (
+  isFirstUser,
+  inviteCode,
+  organizationName,
+  email,
+  username
+) => {
+  if (isFirstUser) {
+    log.auth.info('Creating first user as super-admin');
+
+    const organization = await OrganizationModel.create({
+      name: 'Default Organization',
+      description: 'Auto-created organization for system administrators',
+    });
+
+    log.auth.info('Created Default Organization for super admin');
+    return { organizationId: organization.id, userRole: 'super-admin', organization, error: null };
+  }
+
+  if (inviteCode) {
+    log.auth.debug('Processing registration with invite code');
+
+    const inviteValidation = await InvitationModel.validateCode(inviteCode);
+
+    if (!inviteValidation.valid) {
+      return {
+        organizationId: null,
+        userRole: 'user',
+        organization: null,
+        error: { status: 400, message: inviteValidation.reason },
+      };
+    }
+
+    if (inviteValidation.invitation.email.toLowerCase() !== email.toLowerCase()) {
+      return {
+        organizationId: null,
+        userRole: 'user',
+        organization: null,
+        error: { status: 400, message: 'This invitation is for a different email address' },
+      };
+    }
+
+    const orgId = inviteValidation.invitation.organization_id;
+    const organization = await OrganizationModel.findByPk(orgId);
+
+    if (!organization) {
+      return {
+        organizationId: null,
+        userRole: 'user',
+        organization: null,
+        error: { status: 400, message: 'Invalid organization in invitation' },
+      };
+    }
+
+    return { organizationId: orgId, userRole: 'user', organization, error: null };
+  }
+
+  if (organizationName) {
+    log.auth.debug('Processing registration with organization name', { organizationName });
+
+    const existingOrg = await OrganizationModel.findByName(organizationName);
+
+    if (existingOrg) {
+      return {
+        organizationId: null,
+        userRole: 'user',
+        organization: null,
+        error: {
+          status: 400,
+          message: 'This organization already exists. You need an invitation to join it.',
+        },
+      };
+    }
+
+    if (!config.authentication?.local_allow_new_organizations?.value) {
+      return {
+        organizationId: null,
+        userRole: 'user',
+        organization: null,
+        error: {
+          status: 403,
+          message:
+            'New organization registration is currently disabled. Please contact an administrator or join with an invitation code.',
+        },
+      };
+    }
+
+    const existingUserByEmail = await UserModel.findByEmail(email);
+    const existingUserByUsername = await UserModel.findByUsername(username);
+
+    if (existingUserByEmail || existingUserByUsername) {
+      return {
+        organizationId: null,
+        userRole: 'user',
+        organization: null,
+        error: { status: 409, message: 'User with this username or email already exists' },
+      };
+    }
+
+    log.auth.info('Creating new organization', { organizationName });
+
+    const organization = await OrganizationModel.create({
+      name: organizationName,
+      description: `Organization created by ${username}`,
+    });
+
+    return { organizationId: organization.id, userRole: 'admin', organization, error: null };
+  }
+
+  return {
+    organizationId: null,
+    userRole: 'user',
+    organization: null,
+    error: {
+      status: 400,
+      message: 'Organization name or invitation code is required for registration',
+    },
+  };
+};
+
 class AuthController {
   /**
    * @swagger
@@ -129,109 +255,23 @@ class AuthController {
       // Check if this is the first user (super-admin)
       const isFirstUser = await UserModel.isFirstUser();
 
-      let organizationId = null;
-      let userRole = 'user';
-      let organization = null;
+      // Resolve organization context for registration
+      const orgResult = await resolveRegistrationOrganization(
+        isFirstUser,
+        inviteCode,
+        organizationName,
+        email,
+        username
+      );
 
-      if (isFirstUser) {
-        // First user becomes super-admin and gets assigned to Default Organization
-        userRole = 'super-admin';
-        log.auth.info('Creating first user as super-admin');
-
-        // Create Default Organization for the super admin
-        organization = await OrganizationModel.create({
-          name: 'Default Organization',
-          description: 'Auto-created organization for system administrators',
+      if (orgResult.error) {
+        return res.status(orgResult.error.status).json({
+          success: false,
+          message: orgResult.error.message,
         });
-
-        organizationId = organization.id;
-        log.auth.info('Created Default Organization for super admin');
-      } else {
-        // Subsequent users must either have invite code or create/join organization
-
-        if (inviteCode) {
-          // User is registering with an invitation
-          log.auth.debug('Processing registration with invite code');
-
-          const inviteValidation = await InvitationModel.validateCode(inviteCode);
-
-          if (!inviteValidation.valid) {
-            return res.status(400).json({
-              success: false,
-              message: inviteValidation.reason,
-            });
-          }
-
-          // Check if invitation email matches registration email
-          if (inviteValidation.invitation.email.toLowerCase() !== email.toLowerCase()) {
-            return res.status(400).json({
-              success: false,
-              message: 'This invitation is for a different email address',
-            });
-          }
-
-          organizationId = inviteValidation.invitation.organization_id;
-          organization = await OrganizationModel.findByPk(organizationId);
-
-          if (!organization) {
-            return res.status(400).json({
-              success: false,
-              message: 'Invalid organization in invitation',
-            });
-          }
-        } else if (organizationName) {
-          // User is creating or joining an organization without invitation
-          log.auth.debug('Processing registration with organization name', { organizationName });
-
-          // Check if organization exists
-          const existingOrg = await OrganizationModel.findByName(organizationName);
-
-          if (existingOrg) {
-            // Organization exists - user needs invitation to join
-            return res.status(400).json({
-              success: false,
-              message: 'This organization already exists. You need an invitation to join it.',
-            });
-          } else {
-            // Check if new organization creation is allowed
-            if (!config.authentication?.local_allow_new_organizations?.value) {
-              return res.status(403).json({
-                success: false,
-                message:
-                  'New organization registration is currently disabled. Please contact an administrator or join with an invitation code.',
-              });
-            }
-
-            // Check if user already exists BEFORE creating organization
-            const existingUserByEmail = await UserModel.findByEmail(email);
-            const existingUserByUsername = await UserModel.findByUsername(username);
-
-            if (existingUserByEmail || existingUserByUsername) {
-              return res.status(409).json({
-                success: false,
-                message: 'User with this username or email already exists',
-              });
-            }
-
-            // Create new organization and make user the admin
-            log.auth.info('Creating new organization', { organizationName });
-
-            organization = await OrganizationModel.create({
-              name: organizationName,
-              description: `Organization created by ${username}`,
-            });
-
-            organizationId = organization.id;
-            userRole = 'admin'; // First user in new org becomes admin
-          }
-        } else {
-          // No invite code and no organization name provided
-          return res.status(400).json({
-            success: false,
-            message: 'Organization name or invitation code is required for registration',
-          });
-        }
       }
+
+      const { organizationId, userRole, organization } = orgResult;
 
       // Create the user
       log.auth.info('Creating user with organization', { organizationId });
@@ -275,14 +315,18 @@ class AuthController {
         // Continue with registration even if email fails
       }
 
+      // Build registration success message
+      let registrationMessage = 'User registered successfully';
+      if (isFirstUser) {
+        registrationMessage = 'Super admin account created successfully';
+      } else if (organization) {
+        registrationMessage = `User registered successfully in organization: ${organization.name}`;
+      }
+
       // Response
       const response = {
         success: true,
-        message: isFirstUser
-          ? 'Super admin account created successfully'
-          : organization
-            ? `User registered successfully in organization: ${organization.name}`
-            : 'User registered successfully',
+        message: registrationMessage,
         user: {
           id: newUser.id,
           username: newUser.username,
@@ -297,7 +341,7 @@ class AuthController {
         response.message += ' (invitation accepted)';
       }
 
-      res.status(201).json(response);
+      return res.status(201).json(response);
     } catch (error) {
       log.auth.error('Registration error', {
         error: error.message,
@@ -312,7 +356,7 @@ class AuthController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during registration',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined,
@@ -431,7 +475,7 @@ class AuthController {
         req.session.role = user.role;
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Login successful',
         token,
@@ -449,7 +493,7 @@ class AuthController {
         error: error.message,
         identifier: req.body.identifier,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during login',
       });
@@ -574,7 +618,7 @@ class AuthController {
         authProvider: 'ldap',
       });
 
-      res.json({
+      return res.json({
         success: true,
         message: 'LDAP login successful',
         token,
@@ -619,7 +663,7 @@ class AuthController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during LDAP authentication',
       });
@@ -702,13 +746,13 @@ class AuthController {
         strategyName,
       });
 
-      passport.authenticate(strategyName)(req, res, next);
+      return passport.authenticate(strategyName)(req, res, next);
     } catch (error) {
       log.auth.error('OIDC start login error', {
         error: error.message,
         provider: req.params.provider,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during OIDC authentication setup',
       });
@@ -799,7 +843,7 @@ class AuthController {
         strategyName,
       });
 
-      passport.authenticate(strategyName, {
+      return passport.authenticate(strategyName, {
         session: false,
         failureRedirect: `/ui/login?error=oidc_failed&provider=${provider}`,
       })(req, res, err => {
@@ -811,7 +855,7 @@ class AuthController {
           return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
         }
 
-        const user = req.user;
+        const { user } = req;
 
         if (!user) {
           log.auth.error('OIDC callback: No user object found', { provider });
@@ -845,14 +889,14 @@ class AuthController {
 
         // Redirect to frontend with token (frontend will handle storage)
         // Use the request's protocol and host to build the correct redirect URL
-        const protocol = req.protocol;
+        const { protocol } = req;
         const host = req.get('host');
         const frontendUrl = `${protocol}://${host}`;
 
         log.auth.debug('OIDC redirect URL', {
           frontendUrl: `${frontendUrl}/ui/auth/callback`,
         });
-        res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
+        return res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
       });
     } catch (error) {
       log.auth.error('OIDC callback error', { error: error.message });
@@ -865,7 +909,7 @@ class AuthController {
         return res.redirect('/ui/login?error=access_denied');
       }
 
-      res.redirect('/ui/login?error=token_generation_failed');
+      return res.redirect('/ui/login?error=token_generation_failed');
     }
   }
 
@@ -986,7 +1030,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         user: {
           id: user.id,
@@ -1000,7 +1044,7 @@ class AuthController {
       });
     } catch (error) {
       log.auth.error('Get profile error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1142,7 +1186,7 @@ class AuthController {
 
       await user.update({ password_hash: newPasswordHash });
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Password changed successfully',
       });
@@ -1160,7 +1204,7 @@ class AuthController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1244,7 +1288,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         valid: true,
         user: {
@@ -1272,7 +1316,7 @@ class AuthController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1374,14 +1418,14 @@ class AuthController {
         return userJson;
       });
 
-      res.json({
+      return res.json({
         success: true,
         users: transformedUsers,
         viewScope: currentUserRole === 'super-admin' ? 'all' : 'organization',
       });
     } catch (error) {
       log.auth.error('Get all users error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1516,7 +1560,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'User role updated successfully',
       });
@@ -1526,7 +1570,7 @@ class AuthController {
         userId: req.body.userId,
         newRole: req.body.newRole,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1638,7 +1682,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'User deactivated successfully',
       });
@@ -1647,7 +1691,7 @@ class AuthController {
         error: error.message,
         userId: req.params.userId,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1742,7 +1786,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'User reactivated successfully',
       });
@@ -1751,7 +1795,7 @@ class AuthController {
         error: error.message,
         userId: req.params.userId,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1873,7 +1917,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'User permanently deleted successfully',
       });
@@ -1882,7 +1926,7 @@ class AuthController {
         error: error.message,
         userId: req.params.userId,
       });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -1924,6 +1968,7 @@ class AuthController {
    */
   static async checkSetupStatus(req, res) {
     try {
+      void req;
       const users = await UserModel.findAll();
       const needsSetup = users.length === 0;
 
@@ -1992,6 +2037,7 @@ class AuthController {
    */
   static getAuthMethods(req, res) {
     try {
+      void req;
       const methods = [];
 
       // Local authentication - always available
@@ -2011,9 +2057,9 @@ class AuthController {
           const ldapUrl = config.authentication.ldap_url?.value;
           if (ldapUrl) {
             // Extract hostname from LDAP URL
-            const urlMatch = ldapUrl.match(/^ldaps?:\/\/([^:/]+)/i);
+            const urlMatch = ldapUrl.match(/^ldaps?:\/\/(?<host>[^:/]+)/i);
             if (urlMatch) {
-              const hostname = urlMatch[1];
+              const { host: hostname } = urlMatch.groups;
               // Extract domain (remove subdomain if present)
               const domainParts = hostname.split('.');
               if (domainParts.length >= 2) {
@@ -2227,7 +2273,7 @@ class AuthController {
         });
       }
 
-      const MailController = (await import('./MailController.js')).default;
+      const MailCtrl = (await import('./MailController.js')).default;
 
       // Determine target organization
       let targetOrgId = organizationId;
@@ -2282,14 +2328,14 @@ class AuthController {
       }
 
       // Send invitation email
-      await MailController.sendInvitationMail(
+      await MailCtrl.sendInvitationMail(
         email,
         invitation.invite_code,
         organizationName,
         invitation.expires_at
       );
 
-      res.json({
+      return res.json({
         success: true,
         message: `Invitation sent successfully to ${email}`,
         invitation: {
@@ -2301,7 +2347,7 @@ class AuthController {
       });
     } catch (error) {
       log.auth.error('Send invitation error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during invitation sending',
       });
@@ -2401,9 +2447,9 @@ class AuthController {
         });
       }
 
-      const invitation = validation.invitation;
+      const { invitation } = validation;
 
-      res.json({
+      return res.json({
         success: true,
         invitation: {
           email: invitation.email,
@@ -2413,7 +2459,7 @@ class AuthController {
       });
     } catch (error) {
       log.auth.error('Validate invitation error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during invitation validation',
       });
@@ -2465,6 +2511,7 @@ class AuthController {
    */
   static async getAllOrganizations(req, res) {
     try {
+      void req;
       // Get organizations with user statistics
       const organizations = await OrganizationModel.findAll({
         where: { is_active: true },
@@ -2494,13 +2541,13 @@ class AuthController {
         return orgJson;
       });
 
-      res.json({
+      return res.json({
         success: true,
         organizations: organizationsWithStats,
       });
     } catch (error) {
       log.auth.error('Get all organizations error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -2594,13 +2641,13 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Organization deactivated successfully',
       });
     } catch (error) {
       log.auth.error('Deactivate organization error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -2706,13 +2753,13 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Organization deleted successfully',
       });
     } catch (error) {
       log.auth.error('Delete organization error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -2822,7 +2869,7 @@ class AuthController {
       // Get organization statistics
       const stats = await OrganizationModel.getStats(parseInt(id));
 
-      res.json({
+      return res.json({
         success: true,
         organization: {
           ...organization,
@@ -2831,7 +2878,7 @@ class AuthController {
       });
     } catch (error) {
       log.auth.error('Get organization error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -2947,8 +2994,12 @@ class AuthController {
       }
 
       const updates = {};
-      if (name) updates.name = name;
-      if (description !== undefined) updates.description = description;
+      if (name) {
+        updates.name = name;
+      }
+      if (description !== undefined) {
+        updates.description = description;
+      }
 
       const [affectedRows] = await OrganizationModel.update(updates, {
         where: { id: parseInt(id), is_active: true },
@@ -2962,7 +3013,7 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Organization updated successfully',
       });
@@ -2976,7 +3027,7 @@ class AuthController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3061,13 +3112,13 @@ class AuthController {
 
       const users = await UserModel.findByOrganization(parseInt(id), includeInactive === 'true');
 
-      res.json({
+      return res.json({
         success: true,
         users,
       });
     } catch (error) {
       log.auth.error('Get organization users error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3171,7 +3222,7 @@ class AuthController {
       const stats = await OrganizationModel.getStats(parseInt(id));
       const inviteStats = await InvitationModel.getInvitationStats(parseInt(id));
 
-      res.json({
+      return res.json({
         success: true,
         stats: {
           ...stats,
@@ -3180,7 +3231,7 @@ class AuthController {
       });
     } catch (error) {
       log.auth.error('Get organization stats error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3358,7 +3409,7 @@ class AuthController {
         // Continue with response even if email fails
       }
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: 'Invitation created and sent successfully',
         invitation: {
@@ -3379,7 +3430,7 @@ class AuthController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3490,13 +3541,13 @@ class AuthController {
         includeExpired === 'true'
       );
 
-      res.json({
+      return res.json({
         success: true,
         invitations,
       });
     } catch (error) {
       log.auth.error('Get invitations error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3646,7 +3697,7 @@ class AuthController {
         // Continue with response even if email fails
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Invitation resent successfully',
         invitation: {
@@ -3659,7 +3710,7 @@ class AuthController {
       });
     } catch (error) {
       log.auth.error('Resend invitation error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3755,13 +3806,13 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Invitation revoked successfully',
       });
     } catch (error) {
       log.auth.error('Revoke invitation error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -3836,14 +3887,14 @@ class AuthController {
 
       const organization = await OrganizationModel.findByName(name);
 
-      res.json({
+      return res.json({
         success: true,
         exists: !!organization,
         organizationName: organization?.name || null,
       });
     } catch (error) {
       log.auth.error('Check organization exists error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error',
       });
@@ -4042,14 +4093,14 @@ class AuthController {
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Account deleted successfully',
         organizationDeleted: shouldDeleteOrganization,
       });
     } catch (error) {
       log.auth.error('Self-deletion error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during account deletion',
       });
@@ -4256,12 +4307,12 @@ class AuthController {
                     log.auth.debug('Found LDAP entry', { dn: entry.dn });
                   });
 
-                  searchResult.on('error', err => {
-                    log.auth.error('LDAP search error', { error: err.message });
-                    reject(err);
+                  searchResult.on('error', searchErr => {
+                    log.auth.error('LDAP search error', { error: searchErr.message });
+                    reject(searchErr);
                   });
 
-                  searchResult.on('end', _result => {
+                  searchResult.on('end', () => {
                     log.auth.info('LDAP search completed', { entriesFound: entryCount });
                     testResults.searchTest = true;
                     resolve(true);
@@ -4300,8 +4351,8 @@ class AuthController {
                         foundDn = entry.dn;
                       });
 
-                      searchResult.on('error', err => {
-                        reject(err);
+                      searchResult.on('error', searchErr => {
+                        reject(searchErr);
                       });
 
                       searchResult.on('end', () => {
@@ -4375,14 +4426,14 @@ class AuthController {
         message = 'LDAP connection test failed - check configuration';
       }
 
-      res.json({
+      return res.json({
         success: overallSuccess,
         message,
         details: testResults,
       });
     } catch (error) {
       log.auth.error('LDAP test error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'LDAP connection test failed',
         error: error.message,

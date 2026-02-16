@@ -44,7 +44,8 @@ export const FooterProvider = ({ children }) => {
   }, []);
 
   const { currentServer, makeZoneweaverAPIRequest } = useServers();
-  const { footerActiveView, footerIsActive } = useContext(UserSettings);
+  const { footerActiveView, footerIsActive, taskMinPriority } =
+    useContext(UserSettings);
   const [tasks, setTasks] = useState([]);
   const [tasksError, setTasksError] = useState("");
   const [session, setSession] = useState(null);
@@ -143,7 +144,7 @@ export const FooterProvider = ({ children }) => {
         intervalRef.current = null;
       }
     };
-  }, [currentServer, footerIsActive, footerActiveView]);
+  }, [currentServer, footerIsActive, footerActiveView, taskMinPriority]);
 
   const fetchTasks = useCallback(async () => {
     if (!currentServer || !makeZoneweaverAPIRequest) {
@@ -153,7 +154,7 @@ export const FooterProvider = ({ children }) => {
     try {
       // Get current tasks from ref to determine since parameter
       const currentTasks = tasksRef.current;
-      const params = { operation_ne: "discover", limit: 50 };
+      const params = { min_priority: taskMinPriority, limit: 50 };
       if (currentTasks.length > 0) {
         params.since = new Date(currentTasks[0].updatedAt).toISOString();
       }
@@ -234,7 +235,7 @@ export const FooterProvider = ({ children }) => {
     } catch (err) {
       console.error("An error occurred while fetching tasks:", err);
     }
-  }, [currentServer, makeZoneweaverAPIRequest]);
+  }, [currentServer, makeZoneweaverAPIRequest, taskMinPriority]);
 
   // Clean up session when server changes
   useEffect(() => {

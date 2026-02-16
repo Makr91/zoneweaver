@@ -2,88 +2,121 @@ import React, { useRef, useEffect, useContext, memo, useState } from "react";
 
 import { useFooter } from "../contexts/FooterContext";
 import { UserSettings } from "../contexts/UserSettingsContext";
+import TaskDetailModal from "./TaskDetailModal";
 
-const TaskRow = memo(({ task }) => {
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "failed":
-        return "task-failed";
-      case "running":
-        return "task-running";
-      default:
-        return "";
-    }
-  };
+const renderPriority = (task) => {
+  const p = task.priority;
+  if (p >= 100) return <span className="has-text-danger">CRITICAL</span>;
+  if (p >= 80) return <span className="has-text-warning">HIGH</span>;
+  if (p >= 60) return <span>MEDIUM</span>;
+  if (p >= 50) return <span>SERVICE</span>;
+  if (p >= 40) return <span className="has-text-grey">LOW</span>;
+  return <span className="has-text-grey-light">BG</span>;
+};
 
-  const renderStatus = (status) => {
-    if (status === "running") {
+const renderStatus = (task) => {
+  if (task.status === "running") {
+    return (
+      <span>
+        <i className="fas fa-spinner fa-spin mr-1" />
+        {task.status}
+      </span>
+    );
+  }
+  return task.status;
+};
+
+const renderProgress = (task) => {
+  const { status, progress_percent } = task;
+
+  if (["completed", "prepared", "pending"].includes(status)) {
+    return "-";
+  }
+
+  if (status === "running") {
+    if (progress_percent !== null && progress_percent !== undefined) {
       return (
-        <span>
-          <i className="fas fa-spinner fa-spin mr-1" />
-          {status}
-        </span>
+        <div className="level mb-0">
+          <progress
+            className="level-item progress is-width-unset is-small is-primary mb-0"
+            value={progress_percent}
+            max="100"
+          >
+            {progress_percent}%
+          </progress>
+          <span className="level-item is-size-7">{progress_percent}%</span>
+        </div>
       );
     }
-    return status;
-  };
+    return "running";
+  }
 
-  const renderProgress = (task) => {
-    const { status, progress_percent } = task;
-    
-    // Don't show progress for completed, prepared, or pending states
-    if (["completed", "prepared", "pending"].includes(status)) {
-      return "-";
-    }
-    
-    // For running tasks, show progress percentage if available, otherwise just show "running"
-    if (status === "running") {
-      if (progress_percent !== null && progress_percent !== undefined) {
-        return (
-          <div className="level mb-0">
-            <progress 
-              className="level-item progress is-width-unset is-small is-primary mb-0" 
-              value={progress_percent} 
-              max="100"
-            >
-              {progress_percent}%
-            </progress>
-            <span className="level-item is-size-7">
-              {progress_percent}%
-            </span>
-          </div>
-        );
-      } else {
-        return "running";
-      }
-    }
-    
-    // For other statuses, show progress percentage if available
-    if (progress_percent !== null && progress_percent !== undefined) {
-      return `${progress_percent}%`;
-    }
-    
-    return "-";
-  };
+  if (progress_percent !== null && progress_percent !== undefined) {
+    return `${progress_percent}%`;
+  }
 
-  return (
-    <tr key={task.id} className={getStatusClass(task.status)}>
-      <td>{task.id}</td>
-      <td>{task.operation}</td>
-      <td>{task.zone_name}</td>
-      <td>{renderStatus(task.status)}</td>
-      <td>{renderProgress(task)}</td>
-      <td>{new Date(task.created_at).toLocaleString()}</td>
-    </tr>
-  );
-});
+  return "-";
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  return new Date(dateStr).toLocaleString();
+};
+
+const truncate = (str, max = 40) => {
+  if (!str) return "-";
+  return str.length > max ? `${str.substring(0, max)}...` : str;
+};
+
+export const TASK_COLUMNS = [
+  { key: "id", label: "ID", render: (task) => task.id },
+  { key: "operation", label: "Operation", render: (task) => task.operation },
+  { key: "zone_name", label: "Target", render: (task) => task.zone_name },
+  { key: "status", label: "Status", render: renderStatus },
+  { key: "progress", label: "Progress", render: renderProgress },
+  { key: "priority", label: "Priority", render: renderPriority },
+  { key: "created_by", label: "Created By", render: (task) => task.created_by || "-" },
+  { key: "created_at", label: "Created", render: (task) => formatDate(task.created_at) },
+  { key: "started_at", label: "Started", render: (task) => formatDate(task.started_at) },
+  { key: "completed_at", label: "Completed", render: (task) => formatDate(task.completed_at) },
+  { key: "error_message", label: "Error", render: (task) => truncate(task.error_message) },
+];
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case "failed":
+      return "task-failed";
+    case "running":
+      return "task-running";
+    default:
+      return "";
+  }
+};
+
+const TaskRow = memo(({ task, visibleColumns, onSelect }) => (
+  <tr
+    className={getStatusClass(task.status)}
+    onClick={() => onSelect(task)}
+    style={{ cursor: "pointer" }}
+  >
+    {visibleColumns.map((col) => (
+      <td key={col.key}>{col.render(task)}</td>
+    ))}
+  </tr>
+));
 
 const Tasks = () => {
   const { tasks, loadingTasks, tasksError } = useFooter();
-  const { tasksScrollPosition, setTasksScrollPosition } =
+  const { tasksScrollPosition, setTasksScrollPosition, taskVisibleColumns } =
     useContext(UserSettings);
   const tableContainerRef = useRef(null);
   const [previousTasksLength, setPreviousTasksLength] = useState(0);
   const [isScrollRestored, setIsScrollRestored] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  const visibleColumns = TASK_COLUMNS.filter((col) =>
+    taskVisibleColumns.includes(col.key)
+  );
 
   // Only restore scroll position on initial load or server change
   useEffect(() => {
@@ -101,10 +134,9 @@ const Tasks = () => {
       tasks.length > previousTasksLength
     ) {
       const newTasksCount = tasks.length - previousTasksLength;
-      const rowHeight = 40; // Approximate height of a table row
+      const rowHeight = 40;
       const addedHeight = newTasksCount * rowHeight;
 
-      // Only adjust if user isn't at the very top
       if (tableContainerRef.current.scrollTop > 0) {
         tableContainerRef.current.scrollTop += addedHeight;
       }
@@ -127,33 +159,43 @@ const Tasks = () => {
   };
 
   return (
-    <div
-      onScroll={handleScroll}
-      ref={tableContainerRef}
-      className="has-overflow-y-scroll"
-    >
-      {loadingTasks && <p>Loading tasks...</p>}
-      {tasksError && <p className="has-text-danger">{tasksError}</p>}
-      {!loadingTasks && !tasksError && (
-        <table className="table is-fullwidth is-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Operation</th>
-              <th>Zone</th>
-              <th>Status</th>
-              <th>Progress</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => (
-              <TaskRow key={task.id} task={task} />
-            ))}
-          </tbody>
-        </table>
+    <>
+      <div
+        onScroll={handleScroll}
+        ref={tableContainerRef}
+        className="has-overflow-y-scroll"
+      >
+        {loadingTasks && <p>Loading tasks...</p>}
+        {tasksError && <p className="has-text-danger">{tasksError}</p>}
+        {!loadingTasks && !tasksError && (
+          <table className="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                {visibleColumns.map((col) => (
+                  <th key={col.key}>{col.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  visibleColumns={visibleColumns}
+                  onSelect={setSelectedTask}
+                />
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
       )}
-    </div>
+    </>
   );
 };
 

@@ -27,15 +27,14 @@ class DatabaseMigrations {
       if (this.sequelize.getDialect() === 'sqlite') {
         const [results] = await this.sequelize.query(`PRAGMA table_info(${tableName})`);
         return results.some(col => col.name === columnName);
-      } else {
-        // MySQL/PostgreSQL
-        const [results] = await this.sequelize.query(`
+      }
+      // MySQL/PostgreSQL
+      const [results] = await this.sequelize.query(`
                     SELECT COLUMN_NAME 
                     FROM INFORMATION_SCHEMA.COLUMNS 
                     WHERE TABLE_NAME = '${tableName}' AND COLUMN_NAME = '${columnName}'
                 `);
-        return results.length > 0;
-      }
+      return results.length > 0;
     } catch (error) {
       log.database.warn('Failed to check column in table', {
         tableName,
@@ -59,15 +58,14 @@ class DatabaseMigrations {
                     WHERE type='table' AND name='${tableName}'
                 `);
         return results.length > 0;
-      } else {
-        // MySQL/PostgreSQL
-        const [results] = await this.sequelize.query(`
+      }
+      // MySQL/PostgreSQL
+      const [results] = await this.sequelize.query(`
                     SELECT TABLE_NAME 
                     FROM INFORMATION_SCHEMA.TABLES 
                     WHERE TABLE_NAME = '${tableName}'
                 `);
-        return results.length > 0;
-      }
+      return results.length > 0;
     } catch (error) {
       log.database.warn('Failed to check if table exists', {
         tableName,
@@ -126,21 +124,26 @@ class DatabaseMigrations {
 
       // Create indexes if specified
       if (options.indexes) {
-        for (const index of options.indexes) {
-          try {
-            await this.queryInterface.addIndex(tableName, index.fields, {
+        const indexResults = await Promise.allSettled(
+          options.indexes.map(index =>
+            this.queryInterface.addIndex(tableName, index.fields, {
               name: index.name,
               unique: index.unique || false,
               type: index.type,
-            });
-            log.database.info('Created index', { indexName: index.name, tableName });
-          } catch (indexError) {
+            })
+          )
+        );
+        indexResults.forEach((result, i) => {
+          const { name: indexName } = options.indexes[i];
+          if (result.status === 'fulfilled') {
+            log.database.info('Created index', { indexName, tableName });
+          } else {
             log.database.warn('Failed to create index', {
-              indexName: index.name,
-              error: indexError.message,
+              indexName,
+              error: result.reason.message,
             });
           }
-        }
+        });
       }
 
       log.database.info('Created table successfully', { tableName });
@@ -191,14 +194,12 @@ class DatabaseMigrations {
       },
     ];
 
-    let allSuccessful = true;
-
-    for (const column of columnsToAdd) {
-      const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
-      if (!success) {
-        allSuccessful = false;
-      }
-    }
+    const columnResults = await Promise.all(
+      columnsToAdd.map(column =>
+        this.addColumnIfNotExists(tableName, column.name, column.definition)
+      )
+    );
+    const allSuccessful = columnResults.every(Boolean);
 
     // Set auth_provider to 'local' for existing users
     if (allSuccessful) {
@@ -290,15 +291,14 @@ class DatabaseMigrations {
                     WHERE type='index' AND name='${indexName}' AND tbl_name='${tableName}'
                 `);
         return results.length > 0;
-      } else {
-        // MySQL/PostgreSQL
-        const [results] = await this.sequelize.query(`
+      }
+      // MySQL/PostgreSQL
+      const [results] = await this.sequelize.query(`
                     SELECT INDEX_NAME 
                     FROM INFORMATION_SCHEMA.STATISTICS 
                     WHERE TABLE_NAME = '${tableName}' AND INDEX_NAME = '${indexName}'
                 `);
-        return results.length > 0;
-      }
+      return results.length > 0;
     } catch (error) {
       log.database.warn('Failed to check if index exists on table', {
         indexName,
@@ -416,18 +416,15 @@ class DatabaseMigrations {
     log.database.info('Adding missing timestamp columns to existing tables');
 
     const tablesToUpdate = ['users', 'organizations', 'invitations', 'servers'];
-    let allSuccessful = true;
-
-    for (const tableName of tablesToUpdate) {
-      const tableExists = await this.tableExists(tableName);
-      if (!tableExists) {
+    const migrateTableTimestamps = async tableName => {
+      const exists = await this.tableExists(tableName);
+      if (!exists) {
         log.database.warn('Table does not exist, skipping', { tableName });
-        continue;
+        return true;
       }
 
       log.database.debug('Checking table for timestamp columns', { tableName });
 
-      // Add created_at column
       const createdAtSuccess = await this.addColumnIfNotExists(tableName, 'created_at', {
         type: Sequelize.DATE,
         allowNull: true,
@@ -435,7 +432,6 @@ class DatabaseMigrations {
         comment: 'Record creation timestamp',
       });
 
-      // Add updated_at column
       const updatedAtSuccess = await this.addColumnIfNotExists(tableName, 'updated_at', {
         type: Sequelize.DATE,
         allowNull: true,
@@ -443,11 +439,6 @@ class DatabaseMigrations {
         comment: 'Record last update timestamp',
       });
 
-      if (!createdAtSuccess || !updatedAtSuccess) {
-        allSuccessful = false;
-      }
-
-      // Set default values for existing records
       if (createdAtSuccess || updatedAtSuccess) {
         try {
           log.database.debug('Setting default timestamps for existing records', { tableName });
@@ -475,7 +466,12 @@ class DatabaseMigrations {
           });
         }
       }
-    }
+
+      return createdAtSuccess && updatedAtSuccess;
+    };
+
+    const tableResults = await Promise.all(tablesToUpdate.map(migrateTableTimestamps));
+    const allSuccessful = tableResults.every(Boolean);
 
     if (allSuccessful) {
       log.database.info('Timestamp columns migration completed successfully');
@@ -515,14 +511,12 @@ class DatabaseMigrations {
       },
     ];
 
-    let allSuccessful = true;
-
-    for (const column of columnsToAdd) {
-      const success = await this.addColumnIfNotExists(tableName, column.name, column.definition);
-      if (!success) {
-        allSuccessful = false;
-      }
-    }
+    const columnResults = await Promise.all(
+      columnsToAdd.map(column =>
+        this.addColumnIfNotExists(tableName, column.name, column.definition)
+      )
+    );
+    const allSuccessful = columnResults.every(Boolean);
 
     // Set default values for existing records
     if (allSuccessful) {
@@ -624,8 +618,6 @@ class DatabaseMigrations {
  * @param {Object} sequelize - Sequelize instance
  * @returns {DatabaseMigrations} Migration helper instance
  */
-export function createMigrationHelper(sequelize) {
-  return new DatabaseMigrations(sequelize);
-}
+export const createMigrationHelper = sequelize => new DatabaseMigrations(sequelize);
 
 export default DatabaseMigrations;
