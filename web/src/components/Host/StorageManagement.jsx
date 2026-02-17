@@ -1,5 +1,5 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 import ArcConfiguration from "./ArcConfiguration";
 import { ArtifactManagement } from "./ArtifactStorage";
@@ -21,6 +21,7 @@ const StorageManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "arc" ? "is-active" : ""}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               role="button"
@@ -43,6 +44,7 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className={activeTab === "artifacts" ? "is-active" : ""}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               role="button"
@@ -65,7 +67,8 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className="is-disabled">
-            <a href="#" onClick={(e) => e.preventDefault()}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <a role="button" aria-disabled="true">
               <span className="icon is-small">
                 <i className="fas fa-database" />
               </span>
@@ -73,7 +76,8 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className="is-disabled">
-            <a href="#" onClick={(e) => e.preventDefault()}>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            <a role="button" aria-disabled="true">
               <span className="icon is-small">
                 <i className="fas fa-folder-tree" />
               </span>
@@ -99,8 +103,8 @@ const StorageManagement = ({ server }) => {
               <p className="content">
                 Configure ZFS Adaptive Replacement Cache (ARC) settings on{" "}
                 <strong>{server.hostname}</strong>. The ARC is ZFS&apos;s
-                intelligent caching layer that stores frequently accessed data in system
-                memory to improve performance.
+                intelligent caching layer that stores frequently accessed data
+                in system memory to improve performance.
               </p>
             </div>
 
