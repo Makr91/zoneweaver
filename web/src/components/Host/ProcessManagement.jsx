@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
@@ -32,13 +33,7 @@ const ProcessManagement = ({ server }) => {
   // Debounce the pattern filter to avoid excessive API calls
   const debouncedPattern = useDebounce(filters.pattern, 500);
 
-  // Load processes on component mount and when filters change
-  useEffect(() => {
-    loadProcesses();
-    loadZones();
-  }, [server, debouncedPattern, filters.zone, filters.user, filters.detailed]);
-
-  const loadZones = async () => {
+  const loadZones = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -62,9 +57,9 @@ const ProcessManagement = ({ server }) => {
     } catch (err) {
       console.error("Error loading zones:", err);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
 
-  const loadProcesses = async () => {
+  const loadProcesses = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -116,11 +111,24 @@ const ProcessManagement = ({ server }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    debouncedPattern,
+    filters.zone,
+    filters.user,
+    filters.detailed,
+  ]);
+
+  // Load processes on component mount and when filters change
+  useEffect(() => {
+    loadProcesses();
+    loadZones();
+  }, [loadProcesses, loadZones]);
 
   const handleProcessAction = async (pid, action, options = {}) => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false, message: "Server not available" };
     }
 
     try {
@@ -168,7 +176,7 @@ const ProcessManagement = ({ server }) => {
 
   const handleBatchKill = async (pattern, signal = "TERM", zone = "") => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false, message: "Server not available" };
     }
 
     try {
@@ -192,13 +200,13 @@ const ProcessManagement = ({ server }) => {
       if (result.success) {
         await loadProcesses();
         return {
-          success: true,
+          success: true, 
           message: result.message,
           killed: result.killed || [],
         };
       }
       setError(result.message || "Failed to perform batch kill");
-      return { success: false, message: result.message };
+      return { success: false, message: result.message }; 
     } catch (err) {
       const errorMsg = `Error performing batch kill: ${err.message}`;
       setError(errorMsg);
@@ -261,9 +269,12 @@ const ProcessManagement = ({ server }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Command</label>
+              <label className="label" htmlFor="command-filter">
+                Filter by Command
+              </label>
               <div className="control">
                 <input
+                  id="command-filter"
                   className="input"
                   type="text"
                   placeholder="Enter command pattern..."
@@ -277,16 +288,19 @@ const ProcessManagement = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Zone</label>
+              <label className="label" htmlFor="zone-filter">
+                Filter by Zone
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="zone-filter"
                     value={filters.zone}
                     onChange={(e) => handleFilterChange("zone", e.target.value)}
                   >
                     <option value="">All Zones</option>
-                    {availableZones.map((zone, index) => (
-                      <option key={index} value={zone}>
+                    {availableZones.map((zone) => (
+                      <option key={zone} value={zone}>
                         {zone}
                       </option>
                     ))}
@@ -297,16 +311,19 @@ const ProcessManagement = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by User</label>
+              <label className="label" htmlFor="user-filter">
+                Filter by User
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="user-filter"
                     value={filters.user}
                     onChange={(e) => handleFilterChange("user", e.target.value)}
                   >
                     <option value="">All Users</option>
-                    {availableUsers.map((user, index) => (
-                      <option key={index} value={user}>
+                    {availableUsers.map((user) => (
+                      <option key={user} value={user}>
                         {user}
                       </option>
                     ))}
@@ -317,10 +334,13 @@ const ProcessManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Detailed View</label>
+              <label className="label" htmlFor="detailed-view-toggle">
+                Detailed View
+              </label>
               <div className="control">
-                <label className="switch is-medium">
+                <label className="switch is-medium" htmlFor="detailed-view-toggle">
                   <input
+                    id="detailed-view-toggle"
                     type="checkbox"
                     checked={filters.detailed}
                     onChange={(e) =>
@@ -335,9 +355,12 @@ const ProcessManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="refresh-button">
+                Refresh
+              </label>
               <div className="control">
                 <button
+                  id="refresh-button"
                   className="button is-info"
                   onClick={loadProcesses}
                   disabled={loading}
@@ -352,9 +375,12 @@ const ProcessManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="clear-filters-button">
+                Clear
+              </label>
               <div className="control">
                 <button
+                  id="clear-filters-button"
                   className="button"
                   onClick={clearFilters}
                   disabled={loading}
@@ -369,9 +395,12 @@ const ProcessManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="batch-kill-button">
+                Actions
+              </label>
               <div className="control">
                 <button
+                  id="batch-kill-button"
                   className="button is-warning"
                   onClick={() => setShowBatchKillModal(true)}
                   disabled={loading}
@@ -459,6 +488,14 @@ const ProcessManagement = ({ server }) => {
       />
     </div>
   );
+};
+
+ProcessManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default ProcessManagement;

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const ProcessTable = ({
@@ -11,6 +12,39 @@ const ProcessTable = ({
   const [sortField, setSortField] = useState("pid");
   const [sortDirection, setSortDirection] = useState("asc");
 
+  const parseMemorySize = (memStr) => {
+    if (!memStr && memStr !== 0) {
+      return 0;
+    }
+
+    // Convert to string to ensure we can call .match()
+    const memString = String(memStr);
+    const match = memString.match(/^(?<value>\d+(?:\.\d+)?)(?<unit>[KMGT])?$/);
+    if (!match) {
+      // If it's just a number (bytes), convert it
+      const numValue = parseFloat(memString);
+      if (!isNaN(numValue)) {
+        return numValue / 1024 / 1024; // Convert bytes to MB
+      }
+      return 0;
+    }
+
+    const value = parseFloat(match.groups.value);
+    const unit = match.groups.unit || "";
+
+    switch (unit) {
+      case "K":
+        return value / 1024;
+      case "M":
+        return value;
+      case "G":
+        return value * 1024;
+      case "T":
+        return value * 1024 * 1024;
+      default:
+        return value / 1024 / 1024; // Assume bytes
+    }
+  };
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -45,44 +79,22 @@ const ProcessTable = ({
       }
 
       if (sortDirection === "asc") {
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        if (aVal < bVal) {
+          return -1;
+        }
+        if (aVal > bVal) {
+          return 1;
+        }
+        return 0;
       }
-      return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      if (aVal > bVal) {
+        return -1;
+      }
+      if (aVal < bVal) {
+        return 1;
+      }
+      return 0;
     });
-
-  const parseMemorySize = (memStr) => {
-    if (!memStr && memStr !== 0) {
-      return 0;
-    }
-
-    // Convert to string to ensure we can call .match()
-    const memString = String(memStr);
-    const match = memString.match(/^(\d+(?:\.\d+)?)(K|M|G|T)?$/);
-    if (!match) {
-      // If it's just a number (bytes), convert it
-      const numValue = parseFloat(memString);
-      if (!isNaN(numValue)) {
-        return numValue / 1024 / 1024; // Convert bytes to MB
-      }
-      return 0;
-    }
-
-    const value = parseFloat(match[1]);
-    const unit = match[2] || "";
-
-    switch (unit) {
-      case "K":
-        return value / 1024;
-      case "M":
-        return value;
-      case "G":
-        return value * 1024;
-      case "T":
-        return value * 1024 * 1024;
-      default:
-        return value / 1024 / 1024; // Assume bytes
-    }
-  };
 
   const formatMemory = (memStr) => {
     if (!memStr) {
@@ -124,11 +136,10 @@ const ProcessTable = ({
     if (sortField !== field) {
       return <i className="fas fa-sort" />;
     }
-    return sortDirection === "asc" ? (
-      <i className="fas fa-sort-up" />
-    ) : (
-      <i className="fas fa-sort-down" />
-    );
+    if (sortDirection === "asc") {
+      return <i className="fas fa-sort-up" />;
+    }
+    return <i className="fas fa-sort-down" />;
   };
 
   const truncateCommand = (command, maxLength = 50) => {
@@ -313,6 +324,15 @@ const ProcessTable = ({
       </table>
     </div>
   );
+};
+
+ProcessTable.propTypes = {
+  processes: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
+  onKillProcess: PropTypes.func.isRequired,
+  onSendSignal: PropTypes.func.isRequired,
+  showDetailedView: PropTypes.bool.isRequired,
 };
 
 export default ProcessTable;

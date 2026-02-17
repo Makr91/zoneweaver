@@ -1,4 +1,5 @@
 import axios from "axios";
+import PropTypes from "prop-types";
 import React, { useState, useEffect } from "react";
 
 const ProvisioningStatus = ({ currentServer }) => {
@@ -20,7 +21,7 @@ const ProvisioningStatus = ({ currentServer }) => {
         setStatus(response.data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to load provisioning status");
+        setError(`Failed to load provisioning status: ${err.message}`);
         setLoading(false);
       }
     };
@@ -56,6 +57,14 @@ const ProvisioningStatus = ({ currentServer }) => {
       </div>
     </div>
   );
+};
+
+ProvisioningStatus.propTypes = {
+  currentServer: PropTypes.shape({
+    protocol: PropTypes.string,
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
 };
 
 export default React.memo(ProvisioningStatus);
