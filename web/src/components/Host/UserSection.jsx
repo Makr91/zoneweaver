@@ -74,13 +74,15 @@ const UserSection = ({ server, onError }) => {
   }, [server, makeZoneweaverAPIRequest, debouncedPattern, filters, onError]);
 
   const pollTask = useCallback(
-    async (taskId) => {
-      const maxPolls = 30;
-      let polls = 0;
+    (taskId) => {
+      const checkTaskStatus = async (pollCount) => {
+        const maxPolls = 30;
 
-      while (polls < maxPolls) {
+        if (pollCount >= maxPolls) {
+          return;
+        }
+
         try {
-          // eslint-disable-next-line no-await-in-loop
           const taskResult = await makeZoneweaverAPIRequest(
             server.hostname,
             server.port,
@@ -95,20 +97,20 @@ const UserSection = ({ server, onError }) => {
               if (status === "failed" && taskResult.data?.error_message) {
                 onError(taskResult.data.error_message);
               }
-              break;
+              return;
             }
           }
 
-          // eslint-disable-next-line no-await-in-loop
-          await new Promise((resolve) => {
-            setTimeout(resolve, 1000);
-          });
-          polls++;
+          // Schedule next poll after delay
+          setTimeout(() => {
+            void checkTaskStatus(pollCount + 1);
+          }, 1000);
         } catch (err) {
           console.error("Error polling task:", err);
-          break;
         }
-      }
+      };
+
+      void checkTaskStatus(0);
     },
     [server, makeZoneweaverAPIRequest, onError]
   );
@@ -165,7 +167,7 @@ const UserSection = ({ server, onError }) => {
       if (result.success) {
         if (result.data?.task_id) {
           // Task-based operation, poll for completion
-          await pollTask(result.data.task_id);
+          pollTask(result.data.task_id);
         }
         await loadUsers();
         return { success: true, message: result.message };
@@ -310,7 +312,9 @@ const UserSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <div className="label">&nbsp;</div>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -327,7 +331,9 @@ const UserSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <div className="label">&nbsp;</div>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button"

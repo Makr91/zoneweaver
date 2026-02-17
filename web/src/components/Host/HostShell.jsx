@@ -30,6 +30,7 @@ const HostShell = () => {
     try {
       addonsRef.current.webglAddon = new WebglAddon();
     } catch (error) {
+      console.error("HOSTSHELL: WebGL addon not available:", error);
       addonsRef.current.webglAddon = null;
     }
   }
@@ -42,7 +43,7 @@ const HostShell = () => {
         console.error("HOSTSHELL: Failed to attach terminal to DOM:", error);
       }
     }
-  }, [instance, ref?.current]);
+  }, [instance, ref]);
 
   useEffect(() => {
     if (instance) {
@@ -74,21 +75,17 @@ const HostShell = () => {
   useEffect(() => {
     if (!instance || !session?.websocket) {
       setIsReady(false);
-      return;
+      return undefined;
     }
 
     const { websocket } = session;
+    let attachAddon = null;
 
     const checkConnection = () => {
       if (websocket.readyState === WebSocket.OPEN) {
-        const attachAddon = new AttachAddon(websocket);
+        attachAddon = new AttachAddon(websocket);
         instance.loadAddon(attachAddon);
         setIsReady(true);
-
-        return () => {
-          attachAddon?.dispose();
-          setIsReady(false);
-        };
       }
     };
 
@@ -108,8 +105,12 @@ const HostShell = () => {
     return () => {
       websocket.removeEventListener("open", onOpen);
       websocket.removeEventListener("close", onClose);
+      if (attachAddon) {
+        attachAddon.dispose();
+      }
+      setIsReady(false);
     };
-  }, [instance, session?.websocket]);
+  }, [instance, session]);
 
   useEffect(() => {
     const handleFooterResize = () => {

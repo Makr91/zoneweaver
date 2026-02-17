@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import FormModal from "../../common/FormModal";
 
@@ -14,18 +15,9 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
-  // Load file content on mount
-  useEffect(() => {
-    loadFileContent();
-  }, [file]);
-
-  // Track changes
-  useEffect(() => {
-    setHasChanges(content !== originalContent);
-  }, [content, originalContent]);
-
-  const loadFileContent = async () => {
+  const loadFileContent = useCallback(async () => {
     if (!file || !isTextFile(file)) {
       setError("This file cannot be edited as text");
       return;
@@ -44,13 +36,23 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
       } else {
         setError(result.message || "Failed to load file content");
       }
-    } catch (error) {
-      console.error("Error loading file content:", error);
-      setError(`Failed to load file content: ${error.message}`);
+    } catch (err) {
+      console.error("Error loading file content:", err);
+      setError(`Failed to load file content: ${err.message}`);
     } finally {
       setLoading(false);
     }
-  };
+  }, [api, file]);
+
+  // Load file content on mount
+  useEffect(() => {
+    loadFileContent();
+  }, [loadFileContent]);
+
+  // Track changes
+  useEffect(() => {
+    setHasChanges(content !== originalContent);
+  }, [content, originalContent]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -66,23 +68,24 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
     try {
       await onSave(content);
       // onSave will handle closing the modal and error handling
-    } catch (error) {
-      console.error("Error saving file:", error);
-      setError(`Failed to save file: ${error.message}`);
+    } catch (err) {
+      console.error("Error saving file:", err);
+      setError(`Failed to save file: ${err.message}`);
       setLoading(false);
     }
   };
 
   const handleClose = () => {
     if (hasChanges) {
-      const confirmClose = window.confirm(
-        "You have unsaved changes. Are you sure you want to close without saving?"
-      );
-      if (!confirmClose) {
-        return;
-      }
+      setShowCloseConfirm(true);
+      return;
     }
 
+    onClose();
+  };
+
+  const confirmClose = () => {
+    setShowCloseConfirm(false);
     onClose();
   };
 
@@ -165,9 +168,12 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
         )}
 
         {/* Content editor */}
-        <label className="label">File Content</label>
+        <label className="label" htmlFor="file-content-textarea">
+          File Content
+        </label>
         <div className="control">
           <textarea
+            id="file-content-textarea"
             className="textarea"
             rows="25"
             value={content}
@@ -238,8 +244,51 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
           </div>
         </div>
       )}
+
+      {/* Close Confirmation Modal */}
+      {showCloseConfirm && (
+        <FormModal
+          isOpen
+          onClose={() => setShowCloseConfirm(false)}
+          onSubmit={confirmClose}
+          title="Unsaved Changes"
+          icon="fas fa-exclamation-triangle"
+          submitText="Discard Changes"
+          submitVariant="is-danger"
+          cancelText="Keep Editing"
+        >
+          <div className="notification is-warning">
+            <p>
+              <strong>Warning:</strong> You have unsaved changes that will be
+              lost.
+            </p>
+          </div>
+          <p>Are you sure you want to close without saving?</p>
+        </FormModal>
+      )}
     </FormModal>
   );
+};
+
+TextFileEditor.propTypes = {
+  file: PropTypes.shape({
+    name: PropTypes.string,
+    path: PropTypes.string,
+    size: PropTypes.number,
+    updatedAt: PropTypes.string,
+    _zwMetadata: PropTypes.shape({
+      mimeType: PropTypes.string,
+      syntax: PropTypes.string,
+      permissions: PropTypes.shape({
+        octal: PropTypes.string,
+      }),
+    }),
+  }).isRequired,
+  api: PropTypes.shape({
+    getFileContent: PropTypes.func.isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
 };
 
 export default TextFileEditor;

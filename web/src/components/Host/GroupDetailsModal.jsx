@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import ContentModal from "../common/ContentModal";
 
 const GroupDetailsModal = ({ group, onClose }) => {
@@ -81,8 +83,8 @@ const GroupDetailsModal = ({ group, onClose }) => {
           {group.members && group.members.length > 0 ? (
             <div className="content">
               <div className="tags">
-                {group.members.map((member, index) => (
-                  <span key={index} className="tag is-primary is-light">
+                {group.members.map((member) => (
+                  <span key={member} className="tag is-primary is-light">
                     <span className="icon is-small">
                       <i className="fas fa-user" />
                     </span>
@@ -119,8 +121,8 @@ const GroupDetailsModal = ({ group, onClose }) => {
           </p>
           <ul>
             <li>
-              To add users to this group, edit the user's secondary groups in
-              User Management
+              To add users to this group, edit the user&apos;s secondary groups
+              in User Management
             </li>
             <li>
               To remove users, edit their user account and remove this group
@@ -147,6 +149,15 @@ const GroupDetailsModal = ({ group, onClose }) => {
       </div>
     </ContentModal>
   );
+};
+
+GroupDetailsModal.propTypes = {
+  group: PropTypes.shape({
+    groupname: PropTypes.string.isRequired,
+    gid: PropTypes.number.isRequired,
+    members: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default GroupDetailsModal;

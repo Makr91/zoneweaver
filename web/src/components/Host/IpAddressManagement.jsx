@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { FormModal } from "../common";
 
 import IpAddressCreateModal from "./IpAddressCreateModal";
 import IpAddressTableManagement from "./IpAddressTableManagement";
@@ -10,6 +11,9 @@ const IpAddressManagement = ({ server, onError }) => {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [filters, setFilters] = useState({
     interface: "",
     ip_version: "",
@@ -85,21 +89,18 @@ const IpAddressManagement = ({ server, onError }) => {
     loadAddresses();
   }, [loadAddresses]);
 
-  const handleDeleteAddress = async (addrobj) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    // eslint-disable-next-line no-alert
-    if (
-      !window.confirm(
-        `Are you sure you want to delete IP address "${addrobj}"?`
-      )
-    ) {
+  const handleDeleteAddress = (addrobj) => {
+    setAddressToDelete(addrobj);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAddress = async () => {
+    if (!server || !makeZoneweaverAPIRequest || !addressToDelete) {
       return;
     }
 
     try {
-      setLoading(true);
+      setDeleting(true);
       onError("");
 
       // Use query parameters instead of request body for DELETE request
@@ -107,7 +108,7 @@ const IpAddressManagement = ({ server, onError }) => {
         server.hostname,
         server.port,
         server.protocol,
-        `network/addresses/${encodeURIComponent(addrobj)}`,
+        `network/addresses/${encodeURIComponent(addressToDelete)}`,
         "DELETE",
         null, // No request body to avoid parsing issues
         {
@@ -118,15 +119,19 @@ const IpAddressManagement = ({ server, onError }) => {
       );
 
       if (result.success) {
+        setShowDeleteModal(false);
+        setAddressToDelete(null);
         // Refresh addresses list after deletion
         await loadAddresses();
       } else {
-        onError(result.message || `Failed to delete IP address "${addrobj}"`);
+        onError(
+          result.message || `Failed to delete IP address "${addressToDelete}"`
+        );
       }
     } catch (err) {
-      onError(`Error deleting IP address "${addrobj}": ${err.message}`);
+      onError(`Error deleting IP address "${addressToDelete}": ${err.message}`);
     } finally {
-      setLoading(false);
+      setDeleting(false);
     }
   };
 
@@ -369,6 +374,36 @@ const IpAddressManagement = ({ server, onError }) => {
           }}
           onError={onError}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && addressToDelete && (
+        <FormModal
+          isOpen
+          onClose={() => {
+            setShowDeleteModal(false);
+            setAddressToDelete(null);
+          }}
+          onSubmit={confirmDeleteAddress}
+          title="Delete IP Address"
+          icon="fas fa-trash"
+          submitText="Delete"
+          submitVariant="is-danger"
+          loading={deleting}
+        >
+          <div className="notification is-danger is-light">
+            <p>
+              <strong>Warning:</strong> This action cannot be undone.
+            </p>
+          </div>
+          <p className="mb-4">
+            Are you sure you want to delete the IP address{" "}
+            <strong className="is-family-monospace">{addressToDelete}</strong>?
+          </p>
+          <p className="has-text-grey is-size-7">
+            This will remove the IP address configuration from the system.
+          </p>
+        </FormModal>
       )}
     </div>
   );

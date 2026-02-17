@@ -83,7 +83,9 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
             {/* Traffic Flow */}
             <div className="column is-one-third">
-              <p className="has-text-weight-bold is-size-7 mb-2">Traffic Flow</p>
+              <p className="has-text-weight-bold is-size-7 mb-2">
+                Traffic Flow
+              </p>
               <div className="field is-grouped is-grouped-multiline">
                 {trafficIndicators.map((indicator) => (
                   <div key={indicator.label} className="control">

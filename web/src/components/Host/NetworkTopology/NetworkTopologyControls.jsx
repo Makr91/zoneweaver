@@ -58,7 +58,10 @@ const NetworkTopologyControls = (props) => {
           <div className="level-item">
             <div className="field is-grouped">
               <div className="control">
-                <label className="label is-small mb-1" htmlFor="edge-type-select">
+                <label
+                  className="label is-small mb-1"
+                  htmlFor="edge-type-select"
+                >
                   Edge Type:
                 </label>
               </div>
@@ -122,7 +125,9 @@ const NetworkTopologyControls = (props) => {
                           checked={enabled}
                           onChange={() => handleNodeTypeChange(nodeType)}
                         />
-                        <span className="ml-1">{getNodeTypeLabel(nodeType)}</span>
+                        <span className="ml-1">
+                          {getNodeTypeLabel(nodeType)}
+                        </span>
                       </label>
                     </div>
                   )

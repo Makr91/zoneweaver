@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const HostHeader = ({
   currentServer,
   loading,
@@ -100,5 +102,21 @@ const HostHeader = ({
     </div>
   </div>
 );
+
+HostHeader.propTypes = {
+  currentServer: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+  }).isRequired,
+  loading: PropTypes.bool.isRequired,
+  refreshInterval: PropTypes.number.isRequired,
+  setRefreshInterval: PropTypes.func.isRequired,
+  refreshAllData: PropTypes.func.isRequired,
+  timeWindow: PropTypes.string.isRequired,
+  setTimeWindow: PropTypes.func.isRequired,
+  resolution: PropTypes.string.isRequired,
+  setResolution: PropTypes.func.isRequired,
+  autoRefresh: PropTypes.bool.isRequired,
+  setAutoRefresh: PropTypes.func.isRequired,
+};
 
 export default HostHeader;

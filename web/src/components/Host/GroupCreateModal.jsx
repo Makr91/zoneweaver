@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -17,6 +18,45 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const pollTask = async (taskId) => {
+    const checkTaskStatus = async (pollCount) => {
+      if (pollCount >= 30) {
+        return;
+      }
+
+      try {
+        const taskResult = await makeZoneweaverAPIRequest(
+          server.hostname,
+          server.port,
+          server.protocol,
+          `tasks/${taskId}`,
+          "GET"
+        );
+
+        if (taskResult.success) {
+          const status = taskResult.data?.status;
+          if (status === "completed" || status === "failed") {
+            if (status === "failed" && taskResult.data?.error_message) {
+              onError(taskResult.data.error_message);
+            }
+            return;
+          }
+        }
+
+        // Schedule next poll
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(checkTaskStatus(pollCount + 1));
+          }, 1000);
+        });
+      } catch (err) {
+        console.error("Error polling task:", err);
+      }
+    };
+
+    await checkTaskStatus(0);
   };
 
   const handleSubmit = async (e) => {
@@ -64,39 +104,6 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }
   };
 
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
-
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
-    }
-  };
-
   return (
     <FormModal
       isOpen
@@ -111,11 +118,12 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
       aria-label="Create new group"
     >
       <div className="field">
-        <label className="label">
+        <label className="label" htmlFor="group-name-input">
           Group Name <span className="has-text-danger">*</span>
         </label>
         <div className="control">
           <input
+            id="group-name-input"
             className="input"
             type="text"
             value={formData.groupname}
@@ -131,9 +139,12 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Group ID (GID)</label>
+        <label className="label" htmlFor="group-gid-input">
+          Group ID (GID)
+        </label>
         <div className="control">
           <input
+            id="group-gid-input"
             className="input"
             type="number"
             value={formData.gid}
@@ -156,6 +167,17 @@ const GroupCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+GroupCreateModal.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.number.isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default GroupCreateModal;

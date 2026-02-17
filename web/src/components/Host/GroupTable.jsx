@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
@@ -60,11 +61,11 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
           </tr>
         </thead>
         <tbody>
-          {groups.map((group, index) => {
+          {groups.map((group) => {
             const groupType = getGroupType(group);
 
             return (
-              <tr key={group.groupname || index}>
+              <tr key={`${group.gid}-${group.groupname}`}>
                 <td>
                   <div className="is-flex is-align-items-center">
                     <span className="icon has-text-primary">
@@ -81,8 +82,8 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
                 <td>
                   {group.members && group.members.length > 0 ? (
                     <div className="tags">
-                      {group.members.slice(0, 3).map((member, idx) => (
-                        <span key={idx} className="tag is-light is-small">
+                      {group.members.slice(0, 3).map((member) => (
+                        <span key={member} className="tag is-light is-small">
                           {member}
                         </span>
                       ))}
@@ -141,6 +142,19 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+GroupTable.propTypes = {
+  groups: PropTypes.arrayOf(
+    PropTypes.shape({
+      groupname: PropTypes.string.isRequired,
+      gid: PropTypes.number.isRequired,
+      members: PropTypes.arrayOf(PropTypes.string),
+    })
+  ).isRequired,
+  loading: PropTypes.bool.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default GroupTable;

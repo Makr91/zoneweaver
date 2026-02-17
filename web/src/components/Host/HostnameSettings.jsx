@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -11,12 +12,7 @@ const HostnameSettings = ({ server, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load current hostname information
-  useEffect(() => {
-    loadHostnameInfo();
-  }, [server]);
-
-  const loadHostnameInfo = async () => {
+  const loadHostnameInfo = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -44,7 +40,12 @@ const HostnameSettings = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [makeZoneweaverAPIRequest, server, onError]);
+
+  // Load current hostname information
+  useEffect(() => {
+    loadHostnameInfo();
+  }, [loadHostnameInfo]);
 
   const handleChangeHostname = async (e) => {
     e.preventDefault();
@@ -114,7 +115,7 @@ const HostnameSettings = ({ server, onError }) => {
       }
 
       // Label format check: start/end with alphanumeric, hyphens allowed in middle
-      const labelRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?$/;
+      const labelRegex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
       if (!labelRegex.test(label)) {
         return false;
       }
@@ -211,9 +212,12 @@ const HostnameSettings = ({ server, onError }) => {
 
         <form onSubmit={handleChangeHostname}>
           <div className="field">
-            <label className="label">New Hostname</label>
+            <label className="label" htmlFor="new-hostname-input">
+              New Hostname
+            </label>
             <div className="control">
               <input
+                id="new-hostname-input"
                 className={`input ${newHostname && !isHostnameValid(newHostname) ? "is-danger" : ""}`}
                 type="text"
                 placeholder="Enter new hostname"
@@ -290,6 +294,15 @@ const HostnameSettings = ({ server, onError }) => {
       </div>
     </div>
   );
+};
+
+HostnameSettings.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.number.isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default HostnameSettings;

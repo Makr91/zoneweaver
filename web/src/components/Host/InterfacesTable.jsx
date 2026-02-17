@@ -1,9 +1,14 @@
 import PropTypes from "prop-types";
+
 import { formatSpeed } from "./NetworkingUtils";
 
 const getClassTagColor = (ifaceClass) => {
-  if (ifaceClass === "phys") return "is-primary";
-  if (ifaceClass === "vnic") return "is-info";
+  if (ifaceClass === "phys") {
+    return "is-primary";
+  }
+  if (ifaceClass === "vnic") {
+    return "is-info";
+  }
   return "is-dark";
 };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const BridgeTable = ({ bridges, loading, onDelete, onViewDetails }) => {
   const [deleteLoading, setDeleteLoading] = useState({});
@@ -165,6 +166,23 @@ const BridgeTable = ({ bridges, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+BridgeTable.propTypes = {
+  bridges: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      protection: PropTypes.string,
+      priority: PropTypes.number,
+      links: PropTypes.arrayOf(PropTypes.string),
+      max_age: PropTypes.number,
+      hello_time: PropTypes.number,
+      forward_delay: PropTypes.number,
+    })
+  ).isRequired,
+  loading: PropTypes.bool.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default BridgeTable;

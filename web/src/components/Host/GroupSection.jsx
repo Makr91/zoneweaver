@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
@@ -13,6 +14,8 @@ const GroupSection = ({ server, onError }) => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
   const [filters, setFilters] = useState({
     pattern: "",
     includeSystem: false,
@@ -24,12 +27,7 @@ const GroupSection = ({ server, onError }) => {
   // Debounce the pattern filter to avoid excessive API calls
   const debouncedPattern = useDebounce(filters.pattern, 500);
 
-  // Load groups on component mount and when filters change
-  useEffect(() => {
-    loadGroups();
-  }, [server, debouncedPattern, filters.includeSystem, filters.limit]);
-
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -71,7 +69,61 @@ const GroupSection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    debouncedPattern,
+    filters.includeSystem,
+    filters.limit,
+    onError,
+  ]);
+
+  // Load groups on component mount and when filters change
+  useEffect(() => {
+    loadGroups();
+  }, [loadGroups]);
+
+  const pollTask = useCallback(
+    (taskId) => {
+      const checkTaskStatus = async (pollCount) => {
+        const maxPolls = 30;
+
+        if (pollCount >= maxPolls) {
+          return;
+        }
+
+        try {
+          const taskResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `tasks/${taskId}`,
+            "GET"
+          );
+
+          if (taskResult.success) {
+            const status = taskResult.data?.status;
+            if (status === "completed" || status === "failed") {
+              if (status === "failed" && taskResult.data?.error_message) {
+                onError(taskResult.data.error_message);
+              }
+              return;
+            }
+          }
+
+          // Schedule next poll after delay
+          setTimeout(() => {
+            void checkTaskStatus(pollCount + 1);
+          }, 1000);
+        } catch (err) {
+          console.error("Error polling task:", err);
+        }
+      };
+
+      void checkTaskStatus(0);
+    },
+    [server, makeZoneweaverAPIRequest, onError]
+  );
 
   const handleGroupAction = async (groupname, action) => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -93,7 +145,7 @@ const GroupSection = ({ server, onError }) => {
       if (result.success) {
         // Poll task if task_id is returned
         if (result.data?.task_id) {
-          await pollTask(result.data.task_id);
+          pollTask(result.data.task_id);
         }
         await loadGroups();
       } else {
@@ -103,39 +155,6 @@ const GroupSection = ({ server, onError }) => {
       onError(`Error performing ${action}: ${err.message}`);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
-
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
     }
   };
 
@@ -154,6 +173,24 @@ const GroupSection = ({ server, onError }) => {
     });
   };
 
+  const handleDeleteGroup = (group) => {
+    setGroupToDelete(group);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmDeleteGroup = () => {
+    if (groupToDelete) {
+      handleGroupAction(groupToDelete.groupname, "delete");
+      setShowDeleteConfirmModal(false);
+      setGroupToDelete(null);
+    }
+  };
+
+  const cancelDeleteGroup = () => {
+    setShowDeleteConfirmModal(false);
+    setGroupToDelete(null);
+  };
+
   return (
     <div>
       <div className="mb-4">
@@ -169,9 +206,12 @@ const GroupSection = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Group Name</label>
+              <label className="label" htmlFor="filter-group-name">
+                Filter by Group Name
+              </label>
               <div className="control">
                 <input
+                  id="filter-group-name"
                   className="input"
                   type="text"
                   placeholder="Enter group name pattern..."
@@ -185,10 +225,13 @@ const GroupSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Include System Groups</label>
+              <label className="label" htmlFor="filter-include-system">
+                Include System Groups
+              </label>
               <div className="control">
                 <label className="switch is-medium">
                   <input
+                    id="filter-include-system"
                     type="checkbox"
                     checked={filters.includeSystem}
                     onChange={(e) =>
@@ -203,10 +246,13 @@ const GroupSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Limit Results</label>
+              <label className="label" htmlFor="filter-limit">
+                Limit Results
+              </label>
               <div className="control">
                 <div className="select">
                   <select
+                    id="filter-limit"
                     value={filters.limit}
                     onChange={(e) =>
                       handleFilterChange("limit", parseInt(e.target.value))
@@ -223,7 +269,9 @@ const GroupSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -240,7 +288,9 @@ const GroupSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button"
@@ -288,15 +338,7 @@ const GroupSection = ({ server, onError }) => {
         <GroupTable
           groups={groups}
           loading={loading}
-          onDelete={(group) => {
-            if (
-              window.confirm(
-                `Are you sure you want to delete group "${group.groupname}"?`
-              )
-            ) {
-              handleGroupAction(group.groupname, "delete");
-            }
-          }}
+          onDelete={handleDeleteGroup}
           onViewDetails={(group) => {
             setSelectedGroup(group);
             setShowDetailsModal(true);
@@ -327,8 +369,63 @@ const GroupSection = ({ server, onError }) => {
           onError={onError}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && groupToDelete && (
+        <div className="modal is-active">
+          <button
+            className="modal-background"
+            onClick={cancelDeleteGroup}
+            type="button"
+            aria-label="Close modal"
+          />
+          <div className="modal-card">
+            <header className="modal-card-head">
+              <p className="modal-card-title">Confirm Delete</p>
+              <button
+                className="delete"
+                aria-label="close"
+                onClick={cancelDeleteGroup}
+              />
+            </header>
+            <section className="modal-card-body">
+              <p>
+                Are you sure you want to delete group{" "}
+                <strong>{groupToDelete.groupname}</strong>?
+              </p>
+              <p className="mt-3 has-text-danger">
+                <span className="icon">
+                  <i className="fas fa-exclamation-triangle" />
+                </span>
+                <span>This action cannot be undone.</span>
+              </p>
+            </section>
+            <footer className="modal-card-foot">
+              <button
+                className="button is-danger"
+                onClick={confirmDeleteGroup}
+                disabled={loading}
+              >
+                Delete Group
+              </button>
+              <button className="button" onClick={cancelDeleteGroup}>
+                Cancel
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </div>
   );
+};
+
+GroupSection.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.number.isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default GroupSection;
