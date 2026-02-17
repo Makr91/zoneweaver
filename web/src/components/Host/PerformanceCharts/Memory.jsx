@@ -1,4 +1,5 @@
 import { HighchartsReact } from "highcharts-react-official";
+import PropTypes from "prop-types";
 
 import Highcharts from "../../Highcharts";
 
@@ -101,5 +102,19 @@ const MemoryChart = ({
     </div>
   </div>
 );
+
+MemoryChart.propTypes = {
+  memoryChartData: PropTypes.shape({
+    used: PropTypes.array.isRequired,
+    free: PropTypes.array.isRequired,
+    cached: PropTypes.array.isRequired,
+  }).isRequired,
+  memorySeriesVisibility: PropTypes.shape({
+    used: PropTypes.bool,
+    free: PropTypes.bool,
+    cached: PropTypes.bool,
+  }).isRequired,
+  expandChart: PropTypes.func.isRequired,
+};
 
 export default MemoryChart;

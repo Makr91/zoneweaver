@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { FormModal } from "../common";
@@ -78,7 +79,7 @@ const KillProcessModal = ({ process, onClose, onConfirm }) => {
         </p>
         <p className="mt-2">
           The process will first receive SIGTERM for graceful shutdown. If it
-          doesn't respond, SIGKILL will be sent to force termination.
+          doesn&apos;t respond, SIGKILL will be sent to force termination.
         </p>
       </div>
 
@@ -108,6 +109,17 @@ const KillProcessModal = ({ process, onClose, onConfirm }) => {
       </div>
     </FormModal>
   );
+};
+
+KillProcessModal.propTypes = {
+  process: PropTypes.shape({
+    pid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    username: PropTypes.string,
+    zone: PropTypes.string,
+    command: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
 };
 
 // Send Signal Modal
@@ -196,10 +208,13 @@ const SendSignalModal = ({ process, onClose, onConfirm }) => {
         <h3 className="title is-6">Signal Selection</h3>
 
         <div className="field">
-          <label className="label">Signal to Send</label>
+          <label className="label" htmlFor="signal-select">
+            Signal to Send
+          </label>
           <div className="control">
             <div className="select is-fullwidth">
               <select
+                id="signal-select"
                 value={signal}
                 onChange={(e) => setSignal(e.target.value)}
               >
@@ -243,6 +258,17 @@ const SendSignalModal = ({ process, onClose, onConfirm }) => {
       </div>
     </FormModal>
   );
+};
+
+SendSignalModal.propTypes = {
+  process: PropTypes.shape({
+    pid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    username: PropTypes.string,
+    zone: PropTypes.string,
+    command: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
 };
 
 // Batch Kill Modal
@@ -302,11 +328,12 @@ const BatchKillModal = ({ onClose, onConfirm, availableZones }) => {
         <h3 className="title is-6">Process Selection</h3>
 
         <div className="field">
-          <label className="label">
+          <label className="label" htmlFor="batch-kill-pattern">
             Command Pattern <span className="has-text-danger">*</span>
           </label>
           <div className="control">
             <input
+              id="batch-kill-pattern"
               className="input"
               type="text"
               placeholder="e.g., apache, bhyve, nginx..."
@@ -322,13 +349,19 @@ const BatchKillModal = ({ onClose, onConfirm, availableZones }) => {
         </div>
 
         <div className="field">
-          <label className="label">Zone Filter (Optional)</label>
+          <label className="label" htmlFor="batch-kill-zone-filter">
+            Zone Filter (Optional)
+          </label>
           <div className="control">
             <div className="select is-fullwidth">
-              <select value={zone} onChange={(e) => setZone(e.target.value)}>
+              <select
+                id="batch-kill-zone-filter"
+                value={zone}
+                onChange={(e) => setZone(e.target.value)}
+              >
                 <option value="">All Zones</option>
-                {availableZones.map((zoneName, index) => (
-                  <option key={index} value={zoneName}>
+                {availableZones.map((zoneName) => (
+                  <option key={zoneName} value={zoneName}>
                     {zoneName}
                   </option>
                 ))}
@@ -346,21 +379,20 @@ const BatchKillModal = ({ onClose, onConfirm, availableZones }) => {
         <h3 className="title is-6">Signal Options</h3>
 
         <div className="field">
-          <label className="label">Signal to Send</label>
+          <label className="label" htmlFor="batch-kill-signal">
+            Signal to Send
+          </label>
           <div className="control">
             <div className="select is-fullwidth">
               <select
+                id="batch-kill-signal"
                 value={signal}
                 onChange={(e) => setSignal(e.target.value)}
               >
                 {signals.map((sig) => (
                   <option key={sig} value={sig}>
-                    SIG{sig}{" "}
-                    {sig === "TERM"
-                      ? "(Graceful)"
-                      : sig === "KILL"
-                        ? "(Force)"
-                        : ""}
+                    SIG{sig} {sig === "TERM" && "(Graceful)"}
+                    {sig === "KILL" && "(Force)"}
                   </option>
                 ))}
               </select>
@@ -395,6 +427,12 @@ const BatchKillModal = ({ onClose, onConfirm, availableZones }) => {
       </div>
     </FormModal>
   );
+};
+
+BatchKillModal.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  availableZones: PropTypes.array.isRequired,
 };
 
 // Main component that renders the appropriate modal
@@ -436,5 +474,18 @@ const ProcessActionModals = ({
     )}
   </>
 );
+
+ProcessActionModals.propTypes = {
+  selectedProcess: PropTypes.object,
+  showKillModal: PropTypes.bool.isRequired,
+  showSignalModal: PropTypes.bool.isRequired,
+  showBatchKillModal: PropTypes.bool.isRequired,
+  availableZones: PropTypes.array.isRequired,
+  onCloseKillModal: PropTypes.func.isRequired,
+  onCloseSignalModal: PropTypes.func.isRequired,
+  onCloseBatchKillModal: PropTypes.func.isRequired,
+  onProcessAction: PropTypes.func.isRequired,
+  onBatchKill: PropTypes.func.isRequired,
+};
 
 export default ProcessActionModals;

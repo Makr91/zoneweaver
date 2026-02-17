@@ -200,13 +200,13 @@ const ProcessManagement = ({ server }) => {
       if (result.success) {
         await loadProcesses();
         return {
-          success: true, 
+          success: true,
           message: result.message,
           killed: result.killed || [],
         };
       }
       setError(result.message || "Failed to perform batch kill");
-      return { success: false, message: result.message }; 
+      return { success: false, message: result.message };
     } catch (err) {
       const errorMsg = `Error performing batch kill: ${err.message}`;
       setError(errorMsg);
@@ -338,7 +338,10 @@ const ProcessManagement = ({ server }) => {
                 Detailed View
               </label>
               <div className="control">
-                <label className="switch is-medium" htmlFor="detailed-view-toggle">
+                <label
+                  className="switch is-medium"
+                  htmlFor="detailed-view-toggle"
+                >
                   <input
                     id="detailed-view-toggle"
                     type="checkbox"

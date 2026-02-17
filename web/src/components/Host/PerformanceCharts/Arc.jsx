@@ -1,4 +1,5 @@
 import { HighchartsReact } from "highcharts-react-official";
+import PropTypes from "prop-types";
 
 import Highcharts from "../../Highcharts";
 
@@ -198,5 +199,14 @@ const ZfsArcChart = ({ arcChartData, expandChart }) => (
     </div>
   </div>
 );
+
+ZfsArcChart.propTypes = {
+  arcChartData: PropTypes.shape({
+    sizeData: PropTypes.array,
+    targetData: PropTypes.array,
+    hitRateData: PropTypes.array,
+  }).isRequired,
+  expandChart: PropTypes.func.isRequired,
+};
 
 export default ZfsArcChart;

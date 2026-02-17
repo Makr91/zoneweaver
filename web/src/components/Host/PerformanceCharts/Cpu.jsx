@@ -1,4 +1,5 @@
 import { HighchartsReact } from "highcharts-react-official";
+import PropTypes from "prop-types";
 
 import Highcharts from "../../Highcharts";
 
@@ -172,5 +173,20 @@ const CpuChart = ({
     </div>
   </div>
 );
+
+CpuChart.propTypes = {
+  cpuChartData: PropTypes.shape({
+    overall: PropTypes.array,
+    cores: PropTypes.object,
+    load: PropTypes.object,
+  }).isRequired,
+  cpuSeriesVisibility: PropTypes.shape({
+    overall: PropTypes.bool,
+    cores: PropTypes.bool,
+    load: PropTypes.bool,
+  }).isRequired,
+  setCpuSeriesVisibility: PropTypes.func.isRequired,
+  expandChart: PropTypes.func.isRequired,
+};
 
 export default CpuChart;

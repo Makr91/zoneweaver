@@ -1,11 +1,12 @@
 import { HighchartsReact } from "highcharts-react-official";
+import PropTypes from "prop-types";
 
 import Highcharts from "../../Highcharts";
 
-const NetworkChart = ({
-  networkChartData,
-  networkSeriesVisibility,
-  setNetworkSeriesVisibility,
+const StorageIOChart = ({
+  chartData,
+  storageSeriesVisibility,
+  setStorageSeriesVisibility,
   expandChart,
 }) => (
   <div className="column is-4">
@@ -14,56 +15,56 @@ const NetworkChart = ({
         <p className="card-header-title has-text-white">
           <span className="icon-text">
             <span className="icon">
-              <i className="fas fa-network-wired" />
+              <i className="fas fa-hdd" />
             </span>
-            <span>Network</span>
+            <span>Storage I/O</span>
           </span>
         </p>
         <div className="card-header-icon">
           <div className="field is-grouped">
             <div className="control">
               <button
-                className={`button is-small ${networkSeriesVisibility.read ? "is-info" : "is-dark"}`}
+                className={`button is-small ${storageSeriesVisibility.read ? "is-info" : "is-dark"}`}
                 onClick={() =>
-                  setNetworkSeriesVisibility((prev) => ({
+                  setStorageSeriesVisibility((prev) => ({
                     ...prev,
                     read: !prev.read,
                   }))
                 }
-                title="Toggle RX bandwidth visibility"
+                title="Toggle Read bandwidth visibility"
               >
                 <span className="icon">
                   <i
-                    className={`fas ${networkSeriesVisibility.read ? "fa-eye" : "fa-eye-slash"}`}
+                    className={`fas ${storageSeriesVisibility.read ? "fa-eye" : "fa-eye-slash"}`}
                   />
                 </span>
-                <span>RX</span>
+                <span>Read</span>
               </button>
             </div>
             <div className="control">
               <button
-                className={`button is-small ${networkSeriesVisibility.write ? "is-warning" : "is-dark"}`}
+                className={`button is-small ${storageSeriesVisibility.write ? "is-warning" : "is-dark"}`}
                 onClick={() =>
-                  setNetworkSeriesVisibility((prev) => ({
+                  setStorageSeriesVisibility((prev) => ({
                     ...prev,
                     write: !prev.write,
                   }))
                 }
-                title="Toggle TX bandwidth visibility"
+                title="Toggle Write bandwidth visibility"
               >
                 <span className="icon">
                   <i
-                    className={`fas ${networkSeriesVisibility.write ? "fa-eye" : "fa-eye-slash"}`}
+                    className={`fas ${storageSeriesVisibility.write ? "fa-eye" : "fa-eye-slash"}`}
                   />
                 </span>
-                <span>TX</span>
+                <span>Write</span>
               </button>
             </div>
             <div className="control">
               <button
-                className={`button is-small ${networkSeriesVisibility.total ? "is-success" : "is-dark"}`}
+                className={`button is-small ${storageSeriesVisibility.total ? "is-success" : "is-dark"}`}
                 onClick={() =>
-                  setNetworkSeriesVisibility((prev) => ({
+                  setStorageSeriesVisibility((prev) => ({
                     ...prev,
                     total: !prev.total,
                   }))
@@ -72,7 +73,7 @@ const NetworkChart = ({
               >
                 <span className="icon">
                   <i
-                    className={`fas ${networkSeriesVisibility.total ? "fa-eye" : "fa-eye-slash"}`}
+                    className={`fas ${storageSeriesVisibility.total ? "fa-eye" : "fa-eye-slash"}`}
                   />
                 </span>
                 <span>Total</span>
@@ -81,7 +82,7 @@ const NetworkChart = ({
             <div className="control">
               <button
                 className="button is-small is-light"
-                onClick={() => expandChart("network", "network")}
+                onClick={() => expandChart("storage", "storage-io")}
                 title="Expand chart to full size"
               >
                 <span className="icon">
@@ -93,7 +94,7 @@ const NetworkChart = ({
         </div>
       </header>
       <div className="card-content p-2">
-        {networkChartData && Object.keys(networkChartData).length > 0 ? (
+        {chartData && Object.keys(chartData).length > 0 ? (
           <div>
             <HighchartsReact
               highcharts={Highcharts}
@@ -113,7 +114,7 @@ const NetworkChart = ({
                   useUTC: false,
                 },
                 title: {
-                  text: "Network Bandwidth",
+                  text: "ZFS Pool I/O",
                   style: {
                     fontSize: "12px",
                     fontWeight: "bold",
@@ -135,7 +136,7 @@ const NetworkChart = ({
                 },
                 yAxis: {
                   title: {
-                    text: "Mbps",
+                    text: "MB/s",
                     style: {
                       fontSize: "10px",
                       color: "#b0bec5",
@@ -168,39 +169,38 @@ const NetworkChart = ({
                     lineWidth: 2,
                   },
                 },
-                series: Object.entries(networkChartData)
+                series: Object.entries(chartData)
                   .filter(
                     ([, data]) => data.totalData && data.totalData.length > 0
                   )
-                  .flatMap(([interfaceName, data], interfaceIndex) => {
+                  .flatMap(([poolName, data], poolIndex) => {
                     const baseHue =
-                      (interfaceIndex * 360) /
-                      Object.keys(networkChartData).length;
+                      (poolIndex * 360) / Object.keys(chartData).length;
                     return [
-                      // RX series for this interface
+                      // Read series for this pool
                       {
-                        name: `${interfaceName} RX`,
-                        data: data.rxData || [],
+                        name: `${poolName} Read`,
+                        data: data.readData || [],
                         color: `hsl(${baseHue}, 70%, 75%)`,
-                        visible: networkSeriesVisibility.read,
+                        visible: storageSeriesVisibility.read,
                         dashStyle: "Solid",
                         lineWidth: 2,
                       },
-                      // TX series for this interface
+                      // Write series for this pool
                       {
-                        name: `${interfaceName} TX`,
-                        data: data.txData || [],
+                        name: `${poolName} Write`,
+                        data: data.writeData || [],
                         color: `hsl(${baseHue}, 70%, 50%)`,
-                        visible: networkSeriesVisibility.write,
+                        visible: storageSeriesVisibility.write,
                         dashStyle: "Dash",
                         lineWidth: 2,
                       },
-                      // Total series for this interface
+                      // Total series for this pool
                       {
-                        name: `${interfaceName} Total`,
+                        name: `${poolName} Total`,
                         data: data.totalData || [],
                         color: `hsl(${baseHue}, 70%, 35%)`,
-                        visible: networkSeriesVisibility.total,
+                        visible: storageSeriesVisibility.total,
                         dashStyle: "Solid",
                         lineWidth: 3,
                       },
@@ -211,7 +211,7 @@ const NetworkChart = ({
                 },
                 tooltip: {
                   shared: true,
-                  valueSuffix: " Mbps",
+                  valueSuffix: " MB/s",
                   backgroundColor: "#263238",
                   borderColor: "#37474f",
                   style: {
@@ -224,7 +224,7 @@ const NetworkChart = ({
           </div>
         ) : (
           <div className="has-text-centered p-4">
-            <p className="has-text-grey">No real interface data available</p>
+            <p className="has-text-grey">No pool I/O data available</p>
           </div>
         )}
       </div>
@@ -232,4 +232,15 @@ const NetworkChart = ({
   </div>
 );
 
-export default NetworkChart;
+StorageIOChart.propTypes = {
+  chartData: PropTypes.object.isRequired,
+  storageSeriesVisibility: PropTypes.shape({
+    read: PropTypes.bool,
+    write: PropTypes.bool,
+    total: PropTypes.bool,
+  }).isRequired,
+  setStorageSeriesVisibility: PropTypes.func.isRequired,
+  expandChart: PropTypes.func.isRequired,
+};
+
+export default StorageIOChart;

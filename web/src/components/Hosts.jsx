@@ -5,12 +5,12 @@ import { useServers } from "../contexts/ServerContext";
 
 import HostHeader from "./Host/HostHeader";
 import NetworkStorageSummary from "./Host/NetworkStorageSummary";
-import CpuChart from "./Host/PerformanceCharts/CpuChart";
-import ExpandedChartModal from "./Host/PerformanceCharts/ExpandedChartModal";
-import MemoryChart from "./Host/PerformanceCharts/MemoryChart";
-import NetworkChart from "./Host/PerformanceCharts/NetworkChart";
-import StorageIOChart from "./Host/PerformanceCharts/StorageIOChart";
-import ZfsArcChart from "./Host/PerformanceCharts/ZfsArcChart";
+import ZfsArcChart from "./Host/PerformanceCharts/Arc.jsx";
+import CpuChart from "./Host/PerformanceCharts/Cpu.jsx";
+import ExpandedChartModal from "./Host/PerformanceCharts/Expanded/Modal.jsx";
+import MemoryChart from "./Host/PerformanceCharts/Memory.jsx";
+import NetworkChart from "./Host/PerformanceCharts/Network.jsx";
+import StorageIOChart from "./Host/PerformanceCharts/StorageIO.jsx";
 import ProvisioningStatus from "./Host/ProvisioningStatus.jsx";
 import SystemInfo from "./Host/SystemInfo";
 import { useHostData } from "./Host/useHostData";

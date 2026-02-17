@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const PackageTable = ({
@@ -242,6 +243,15 @@ const PackageTable = ({
       </table>
     </div>
   );
+};
+
+PackageTable.propTypes = {
+  packages: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onInstall: PropTypes.func.isRequired,
+  onUninstall: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
+  isSearchMode: PropTypes.bool.isRequired,
 };
 
 export default PackageTable;

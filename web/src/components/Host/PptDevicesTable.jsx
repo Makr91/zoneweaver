@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const PptDevicesTable = ({
   pptStatus,
   sectionsCollapsed,
@@ -112,6 +114,25 @@ const PptDevicesTable = ({
       )}
     </div>
   );
+};
+
+PptDevicesTable.propTypes = {
+  pptStatus: PropTypes.shape({
+    ppt_devices: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.any,
+        device_name: PropTypes.string,
+        pci_address: PropTypes.string,
+        ppt_device_path: PropTypes.string,
+        assigned_to_zones: PropTypes.arrayOf(PropTypes.string),
+      })
+    ),
+  }).isRequired,
+  sectionsCollapsed: PropTypes.shape({
+    pptDevices: PropTypes.bool,
+  }).isRequired,
+  toggleSection: PropTypes.func.isRequired,
+  setSelectedDevice: PropTypes.func.isRequired,
 };
 
 export default PptDevicesTable;

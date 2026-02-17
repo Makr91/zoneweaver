@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { ContentModal } from "../common";
@@ -15,37 +16,44 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  const loadAdditionalData = async (type) => {
-    if (!server || !makeZoneweaverAPIRequest || additionalData[type] !== null) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        `system/processes/${process.pid}/${type}`,
-        "GET"
-      );
-
-      if (result.success) {
-        setAdditionalData((prev) => ({
-          ...prev,
-          [type]: result.data,
-        }));
-      } else {
-        setError(result.message || `Failed to load ${type} data`);
+  const loadAdditionalData = useCallback(
+    async (type) => {
+      if (
+        !server ||
+        !makeZoneweaverAPIRequest ||
+        additionalData[type] !== null
+      ) {
+        return;
       }
-    } catch (err) {
-      setError(`Error loading ${type} data: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      try {
+        setLoading(true);
+        setError("");
+
+        const result = await makeZoneweaverAPIRequest(
+          server.hostname,
+          server.port,
+          server.protocol,
+          `system/processes/${process.pid}/${type}`,
+          "GET"
+        );
+
+        if (result.success) {
+          setAdditionalData((prev) => ({
+            ...prev,
+            [type]: result.data,
+          }));
+        } else {
+          setError(result.message || `Failed to load ${type} data`);
+        }
+      } catch (err) {
+        setError(`Error loading ${type} data: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [server, makeZoneweaverAPIRequest, process.pid, additionalData]
+  );
 
   useEffect(() => {
     if (activeTab === "files" && additionalData.files === null) {
@@ -55,7 +63,7 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
     } else if (activeTab === "stack" && additionalData.stack === null) {
       loadAdditionalData("stack");
     }
-  }, [activeTab]);
+  }, [activeTab, additionalData, loadAdditionalData]);
 
   const formatMemory = (bytes) => {
     if (!bytes) {
@@ -103,8 +111,8 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
           <div className="table-container">
             <table className="table is-fullwidth">
               <tbody>
-                {basicDetails.map((detail, index) => (
-                  <tr key={index}>
+                {basicDetails.map((detail) => (
+                  <tr key={detail.label}>
                     <td>
                       <strong>{detail.label}</strong>
                     </td>
@@ -161,8 +169,8 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {additionalData.files.map((file, index) => (
-                <tr key={index}>
+              {additionalData.files.map((file) => (
+                <tr key={file.fd}>
                   <td className="is-family-monospace">{file.fd}</td>
                   <td className="is-family-monospace is-size-7">
                     {file.description}
@@ -212,8 +220,8 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
             </thead>
             <tbody>
               {Object.entries(additionalData.limits).map(
-                ([resource, limit], index) => (
-                  <tr key={index}>
+                ([resource, limit]) => (
+                  <tr key={resource}>
                     <td>
                       <strong>{resource}</strong>
                     </td>
@@ -294,12 +302,15 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
               key={tab.key}
               className={activeTab === tab.key ? "is-active" : ""}
             >
-              <a onClick={() => setActiveTab(tab.key)}>
+              <button
+                className="button is-text"
+                onClick={() => setActiveTab(tab.key)}
+              >
                 <span className="icon is-small">
                   <i className={`fas ${tab.icon}`} />
                 </span>
                 <span>{tab.label}</span>
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -314,6 +325,21 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
       </div>
     </ContentModal>
   );
+};
+
+ProcessDetailsModal.propTypes = {
+  process: PropTypes.shape({
+    pid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    details: PropTypes.shape({
+      open_files_sample: PropTypes.string,
+    }),
+  }).isRequired,
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default ProcessDetailsModal;

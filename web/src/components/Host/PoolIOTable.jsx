@@ -1,7 +1,22 @@
+import PropTypes from "prop-types";
+
 const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
   if (poolIOStats.length === 0) {
     return null;
   }
+
+  const getPoolTypeClass = (type) => {
+    switch (type) {
+      case "raidz2":
+        return "is-success";
+      case "raidz1":
+        return "is-info";
+      case "mirror":
+        return "is-warning";
+      default:
+        return "is-dark";
+    }
+  };
 
   return (
     <div className="box mb-4">
@@ -51,28 +66,20 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
               </tr>
             </thead>
             <tbody>
-              {poolIOStats.map((poolIO, index) => {
+              {poolIOStats.map((poolIO) => {
                 const readBandwidthMB =
                   (poolIO.read_bandwidth_bytes || 0) / (1024 * 1024);
                 const writeBandwidthMB =
                   (poolIO.write_bandwidth_bytes || 0) / (1024 * 1024);
 
                 return (
-                  <tr key={index}>
+                  <tr key={poolIO.pool}>
                     <td>
                       <strong>{poolIO.pool}</strong>
                     </td>
                     <td>
                       <span
-                        className={`tag ${
-                          poolIO.pool_type === "raidz2"
-                            ? "is-success"
-                            : poolIO.pool_type === "raidz1"
-                              ? "is-info"
-                              : poolIO.pool_type === "mirror"
-                                ? "is-warning"
-                                : "is-dark"
-                        }`}
+                        className={`tag ${getPoolTypeClass(poolIO.pool_type)}`}
                       >
                         {poolIO.pool_type}
                       </span>
@@ -89,18 +96,14 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
                       <span className="tag is-info">
                         {readBandwidthMB >= 1
                           ? `${readBandwidthMB.toFixed(2)} MB/s`
-                          : readBandwidthMB > 0
-                            ? `${(readBandwidthMB * 1024).toFixed(0)} KB/s`
-                            : poolIO.read_bandwidth || "0 B/s"}
+                          : `${(readBandwidthMB * 1024).toFixed(0)} KB/s`}
                       </span>
                     </td>
                     <td>
                       <span className="tag is-warning">
                         {writeBandwidthMB >= 1
                           ? `${writeBandwidthMB.toFixed(2)} MB/s`
-                          : writeBandwidthMB > 0
-                            ? `${(writeBandwidthMB * 1024).toFixed(0)} KB/s`
-                            : poolIO.write_bandwidth || "0 B/s"}
+                          : `${(writeBandwidthMB * 1024).toFixed(0)} KB/s`}
                       </span>
                     </td>
                     <td>
@@ -128,6 +131,12 @@ const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
       )}
     </div>
   );
+};
+
+PoolIOTable.propTypes = {
+  poolIOStats: PropTypes.array.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
 };
 
 export default PoolIOTable;
