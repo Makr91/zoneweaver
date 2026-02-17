@@ -1,10 +1,298 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
 
+const AvailableUpdatesTab = ({
+  updateData,
+  refreshing,
+  checkingUpdates,
+  onRefreshMetadata,
+  onCheckForUpdates,
+  onShowInstallModal,
+  diskSpaceWarning,
+}) => {
+  const [showRawOutput, setShowRawOutput] = useState(false);
+
+  const formatLastChecked = (timestamp) => {
+    if (!timestamp) {
+      return "Never";
+    }
+    return new Date(timestamp).toLocaleString();
+  };
+
+  return (
+    <div>
+      {/* Header with actions */}
+      <div className="level mb-4">
+        <div className="level-left">
+          <div className="level-item">
+            <h2 className="title is-5">System Updates</h2>
+          </div>
+        </div>
+        <div className="level-right">
+          <div className="level-item">
+            <div className="buttons">
+              <button
+                className={`button is-info ${refreshing ? "is-loading" : ""}`}
+                onClick={onRefreshMetadata}
+                disabled={refreshing || checkingUpdates}
+              >
+                <span className="icon">
+                  <i className="fas fa-sync-alt" />
+                </span>
+                <span>Refresh Metadata</span>
+              </button>
+              <button
+                className={`button is-primary ${checkingUpdates ? "is-loading" : ""}`}
+                onClick={onCheckForUpdates}
+                disabled={checkingUpdates || refreshing}
+              >
+                <span className="icon">
+                  <i className="fas fa-search" />
+                </span>
+                <span>Check Updates</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Update Status */}
+      {updateData && (
+        <div className="box">
+          <div className="columns">
+            <div className="column">
+              <div className="field">
+                <div className="label">Updates Available</div>
+                <div className="control">
+                  <span
+                    className={`tag is-large ${updateData.updates_available ? "is-warning" : "is-success"}`}
+                  >
+                    {updateData.updates_available ? "Yes" : "No"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="column">
+              <div className="field">
+                <div className="label">Total Updates</div>
+                <div className="control">
+                  <span className="tag is-large is-info">
+                    {updateData.total_updates || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="column">
+              <div className="field">
+                <div className="label">Last Checked</div>
+                <div className="control">
+                  <span className="has-text-grey">
+                    {formatLastChecked(updateData.last_checked)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Disk Space Warning */}
+          {diskSpaceWarning && (
+            <div className="notification is-warning">
+              <h4 className="title is-6">
+                <span className="icon">
+                  <i className="fas fa-exclamation-triangle" />
+                </span>
+                Insufficient Disk Space
+              </h4>
+              <p>
+                <strong>Available:</strong> {diskSpaceWarning.available}
+                <br />
+                <strong>Required:</strong> {diskSpaceWarning.required}
+              </p>
+              <p className="mt-2">
+                Free up disk space before installing updates.
+              </p>
+            </div>
+          )}
+
+          {/* Install Updates Button */}
+          {updateData.updates_available && !diskSpaceWarning && (
+            <div className="has-text-centered mt-4">
+              <button
+                className="button is-warning is-large"
+                onClick={onShowInstallModal}
+              >
+                <span className="icon">
+                  <i className="fas fa-download" />
+                </span>
+                <span>Install {updateData.total_updates} Updates</span>
+              </button>
+            </div>
+          )}
+
+          {/* Plan Summary */}
+          {updateData.plan_summary && (
+            <div className="mt-4">
+              <h4 className="title is-6">Update Plan Summary</h4>
+              <div className="columns is-multiline">
+                <div className="column is-3">
+                  <div className="box has-text-centered">
+                    <p className="heading">Install</p>
+                    <p className="title is-4">
+                      {updateData.plan_summary.packages_to_install || 0}
+                    </p>
+                  </div>
+                </div>
+                <div className="column is-3">
+                  <div className="box has-text-centered">
+                    <p className="heading">Update</p>
+                    <p className="title is-4">
+                      {updateData.plan_summary.packages_to_update || 0}
+                    </p>
+                  </div>
+                </div>
+                <div className="column is-3">
+                  <div className="box has-text-centered">
+                    <p className="heading">Remove</p>
+                    <p className="title is-4">
+                      {updateData.plan_summary.packages_to_remove || 0}
+                    </p>
+                  </div>
+                </div>
+                <div className="column is-3">
+                  <div className="box has-text-centered">
+                    <p className="heading">Download Size</p>
+                    <p className="title is-6">
+                      {updateData.plan_summary.total_download_size || "Unknown"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Raw Output Toggle */}
+          {updateData.raw_output && (
+            <div className="mt-4">
+              <button
+                className="button is-small"
+                onClick={() => setShowRawOutput(!showRawOutput)}
+              >
+                <span className="icon">
+                  <i
+                    className={`fas fa-chevron-${showRawOutput ? "up" : "down"}`}
+                  />
+                </span>
+                <span>{showRawOutput ? "Hide" : "Show"} Raw Output</span>
+              </button>
+
+              {showRawOutput && (
+                <pre className="box mt-2 has-background-black has-text-light is-size-7">
+                  {updateData.raw_output}
+                </pre>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+AvailableUpdatesTab.propTypes = {
+  updateData: PropTypes.object,
+  refreshing: PropTypes.bool,
+  checkingUpdates: PropTypes.bool,
+  onRefreshMetadata: PropTypes.func.isRequired,
+  onCheckForUpdates: PropTypes.func.isRequired,
+  onShowInstallModal: PropTypes.func.isRequired,
+  diskSpaceWarning: PropTypes.object,
+};
+
+const UpdateHistoryTab = ({ historyLoading, updateHistory, onRefresh }) => (
+  <div>
+    <div className="level mb-4">
+      <div className="level-left">
+        <div className="level-item">
+          <h2 className="title is-5">Update History</h2>
+        </div>
+      </div>
+      <div className="level-right">
+        <div className="level-item">
+          <button
+            className={`button is-primary ${historyLoading ? "is-loading" : ""}`}
+            onClick={onRefresh}
+            disabled={historyLoading}
+          >
+            <span className="icon">
+              <i className="fas fa-sync-alt" />
+            </span>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div className="box">
+      {historyLoading && (
+        <div className="has-text-centered p-6">
+          <span className="icon is-large">
+            <i className="fas fa-spinner fa-spin fa-2x" />
+          </span>
+          <p className="mt-2">Loading update history...</p>
+        </div>
+      )}
+      {!historyLoading && updateHistory.length === 0 && (
+        <div className="has-text-centered p-6">
+          <span className="icon is-large has-text-grey">
+            <i className="fas fa-history fa-2x" />
+          </span>
+          <p className="mt-2 has-text-grey">No update history available</p>
+        </div>
+      )}
+      {!historyLoading && updateHistory.length > 0 && (
+        <div className="table-container">
+          <table className="table is-fullwidth is-striped">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Operation</th>
+                <th>User</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {updateHistory.map((entry) => (
+                <tr key={`${entry.date}-${entry.operation}-${entry.user}`}>
+                  <td>{new Date(entry.date).toLocaleString()}</td>
+                  <td>{entry.operation}</td>
+                  <td>{entry.user}</td>
+                  <td>
+                    <span
+                      className={`tag ${entry.status === "Succeeded" ? "is-success" : "is-danger"}`}
+                    >
+                      {entry.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+UpdateHistoryTab.propTypes = {
+  historyLoading: PropTypes.bool,
+  updateHistory: PropTypes.array.isRequired,
+  onRefresh: PropTypes.func.isRequired,
+};
+
 const SystemUpdatesSection = ({ server, onError }) => {
-  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [installing, setInstalling] = useState(false);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
@@ -12,20 +300,11 @@ const SystemUpdatesSection = ({ server, onError }) => {
   const [updateHistory, setUpdateHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
-  const [showRawOutput, setShowRawOutput] = useState(false);
   const [activeTab, setActiveTab] = useState("updates");
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Check for updates on component mount
-  useEffect(() => {
-    if (server) {
-      checkForUpdates();
-      loadUpdateHistory();
-    }
-  }, [server]);
-
-  const checkForUpdates = async () => {
+  const checkForUpdates = useCallback(async () => {
     setCheckingUpdates(true);
     try {
       const response = await makeZoneweaverAPIRequest(
@@ -47,9 +326,33 @@ const SystemUpdatesSection = ({ server, onError }) => {
     } finally {
       setCheckingUpdates(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, onError]);
 
-  const refreshMetadata = async () => {
+  const loadUpdateHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const response = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        "system/updates/history",
+        "GET",
+        null,
+        { limit: 20 }
+      );
+      if (response.success) {
+        setUpdateHistory(response.data.history || []);
+      } else {
+        onError(`Failed to load update history: ${response.error}`);
+      }
+    } catch (error) {
+      onError(`Error loading update history: ${error.message}`);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [server, makeZoneweaverAPIRequest, onError]);
+
+  const refreshMetadata = useCallback(async () => {
     setRefreshing(true);
     try {
       const response = await makeZoneweaverAPIRequest(
@@ -77,9 +380,9 @@ const SystemUpdatesSection = ({ server, onError }) => {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, onError, checkForUpdates]);
 
-  const installUpdates = async () => {
+  const installUpdates = useCallback(async () => {
     setInstalling(true);
     try {
       const response = await makeZoneweaverAPIRequest(
@@ -111,38 +414,21 @@ const SystemUpdatesSection = ({ server, onError }) => {
     } finally {
       setInstalling(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    onError,
+    checkForUpdates,
+    loadUpdateHistory,
+  ]);
 
-  const loadUpdateHistory = async () => {
-    setHistoryLoading(true);
-    try {
-      const response = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        "system/updates/history",
-        "GET",
-        null,
-        { limit: 20 }
-      );
-      if (response.success) {
-        setUpdateHistory(response.data.history || []);
-      } else {
-        onError(`Failed to load update history: ${response.error}`);
-      }
-    } catch (error) {
-      onError(`Error loading update history: ${error.message}`);
-    } finally {
-      setHistoryLoading(false);
+  // Check for updates on component mount
+  useEffect(() => {
+    if (server) {
+      checkForUpdates();
+      loadUpdateHistory();
     }
-  };
-
-  const formatLastChecked = (timestamp) => {
-    if (!timestamp) {
-      return "Never";
-    }
-    return new Date(timestamp).toLocaleString();
-  };
+  }, [server, checkForUpdates, loadUpdateHistory]);
 
   const getDiskSpaceWarning = () => {
     if (!updateData?.raw_output) {
@@ -151,13 +437,13 @@ const SystemUpdatesSection = ({ server, onError }) => {
 
     const output = updateData.raw_output;
     const spaceMatch = output.match(
-      /Insufficient disk space.*Available space: ([\d.]+\s+\w+).*Estimated required: ([\d.]+\s+\w+)/
+      /Insufficient disk space.*Available space: (?<available>[\d.]+\s+\w+).*Estimated required: (?<required>[\d.]+\s+\w+)/
     );
 
-    if (spaceMatch) {
+    if (spaceMatch && spaceMatch.groups) {
       return {
-        available: spaceMatch[1],
-        required: spaceMatch[2],
+        available: spaceMatch.groups.available,
+        required: spaceMatch.groups.required,
       };
     }
     return null;
@@ -171,7 +457,19 @@ const SystemUpdatesSection = ({ server, onError }) => {
       <div className="tabs is-boxed mb-4">
         <ul>
           <li className={activeTab === "updates" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("updates")}>
+            <a
+              href="#updates"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("updates");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveTab("updates");
+                }
+              }}
+            >
               <span className="icon is-small">
                 <i className="fas fa-download" />
               </span>
@@ -179,7 +477,19 @@ const SystemUpdatesSection = ({ server, onError }) => {
             </a>
           </li>
           <li className={activeTab === "history" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("history")}>
+            <a
+              href="#history"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("history");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveTab("history");
+                }
+              }}
+            >
               <span className="icon is-small">
                 <i className="fas fa-history" />
               </span>
@@ -191,258 +501,24 @@ const SystemUpdatesSection = ({ server, onError }) => {
 
       {/* Available Updates Tab */}
       {activeTab === "updates" && (
-        <div>
-          {/* Header with actions */}
-          <div className="level mb-4">
-            <div className="level-left">
-              <div className="level-item">
-                <h2 className="title is-5">System Updates</h2>
-              </div>
-            </div>
-            <div className="level-right">
-              <div className="level-item">
-                <div className="buttons">
-                  <button
-                    className={`button is-info ${refreshing ? "is-loading" : ""}`}
-                    onClick={refreshMetadata}
-                    disabled={refreshing || checkingUpdates}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-sync-alt" />
-                    </span>
-                    <span>Refresh Metadata</span>
-                  </button>
-                  <button
-                    className={`button is-primary ${checkingUpdates ? "is-loading" : ""}`}
-                    onClick={checkForUpdates}
-                    disabled={checkingUpdates || refreshing}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-search" />
-                    </span>
-                    <span>Check Updates</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Update Status */}
-          {updateData && (
-            <div className="box">
-              <div className="columns">
-                <div className="column">
-                  <div className="field">
-                    <label className="label">Updates Available</label>
-                    <div className="control">
-                      <span
-                        className={`tag is-large ${updateData.updates_available ? "is-warning" : "is-success"}`}
-                      >
-                        {updateData.updates_available ? "Yes" : "No"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="column">
-                  <div className="field">
-                    <label className="label">Total Updates</label>
-                    <div className="control">
-                      <span className="tag is-large is-info">
-                        {updateData.total_updates || 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="column">
-                  <div className="field">
-                    <label className="label">Last Checked</label>
-                    <div className="control">
-                      <span className="has-text-grey">
-                        {formatLastChecked(updateData.last_checked)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Disk Space Warning */}
-              {diskSpaceWarning && (
-                <div className="notification is-warning">
-                  <h4 className="title is-6">
-                    <span className="icon">
-                      <i className="fas fa-exclamation-triangle" />
-                    </span>
-                    Insufficient Disk Space
-                  </h4>
-                  <p>
-                    <strong>Available:</strong> {diskSpaceWarning.available}
-                    <br />
-                    <strong>Required:</strong> {diskSpaceWarning.required}
-                  </p>
-                  <p className="mt-2">
-                    Free up disk space before installing updates.
-                  </p>
-                </div>
-              )}
-
-              {/* Install Updates Button */}
-              {updateData.updates_available && !diskSpaceWarning && (
-                <div className="has-text-centered mt-4">
-                  <button
-                    className="button is-warning is-large"
-                    onClick={() => setShowInstallModal(true)}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-download" />
-                    </span>
-                    <span>Install {updateData.total_updates} Updates</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Plan Summary */}
-              {updateData.plan_summary && (
-                <div className="mt-4">
-                  <h4 className="title is-6">Update Plan Summary</h4>
-                  <div className="columns is-multiline">
-                    <div className="column is-3">
-                      <div className="box has-text-centered">
-                        <p className="heading">Install</p>
-                        <p className="title is-4">
-                          {updateData.plan_summary.packages_to_install || 0}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="column is-3">
-                      <div className="box has-text-centered">
-                        <p className="heading">Update</p>
-                        <p className="title is-4">
-                          {updateData.plan_summary.packages_to_update || 0}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="column is-3">
-                      <div className="box has-text-centered">
-                        <p className="heading">Remove</p>
-                        <p className="title is-4">
-                          {updateData.plan_summary.packages_to_remove || 0}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="column is-3">
-                      <div className="box has-text-centered">
-                        <p className="heading">Download Size</p>
-                        <p className="title is-6">
-                          {updateData.plan_summary.total_download_size ||
-                            "Unknown"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Raw Output Toggle */}
-              {updateData.raw_output && (
-                <div className="mt-4">
-                  <button
-                    className="button is-small"
-                    onClick={() => setShowRawOutput(!showRawOutput)}
-                  >
-                    <span className="icon">
-                      <i
-                        className={`fas fa-chevron-${showRawOutput ? "up" : "down"}`}
-                      />
-                    </span>
-                    <span>{showRawOutput ? "Hide" : "Show"} Raw Output</span>
-                  </button>
-
-                  {showRawOutput && (
-                    <pre className="box mt-2 has-background-black has-text-light is-size-7">
-                      {updateData.raw_output}
-                    </pre>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <AvailableUpdatesTab
+          updateData={updateData}
+          refreshing={refreshing}
+          checkingUpdates={checkingUpdates}
+          onRefreshMetadata={refreshMetadata}
+          onCheckForUpdates={checkForUpdates}
+          onShowInstallModal={() => setShowInstallModal(true)}
+          diskSpaceWarning={diskSpaceWarning}
+        />
       )}
 
       {/* Update History Tab */}
       {activeTab === "history" && (
-        <div>
-          <div className="level mb-4">
-            <div className="level-left">
-              <div className="level-item">
-                <h2 className="title is-5">Update History</h2>
-              </div>
-            </div>
-            <div className="level-right">
-              <div className="level-item">
-                <button
-                  className={`button is-primary ${historyLoading ? "is-loading" : ""}`}
-                  onClick={loadUpdateHistory}
-                  disabled={historyLoading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="box">
-            {historyLoading ? (
-              <div className="has-text-centered p-6">
-                <span className="icon is-large">
-                  <i className="fas fa-spinner fa-spin fa-2x" />
-                </span>
-                <p className="mt-2">Loading update history...</p>
-              </div>
-            ) : updateHistory.length === 0 ? (
-              <div className="has-text-centered p-6">
-                <span className="icon is-large has-text-grey">
-                  <i className="fas fa-history fa-2x" />
-                </span>
-                <p className="mt-2 has-text-grey">
-                  No update history available
-                </p>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table className="table is-fullwidth is-striped">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Operation</th>
-                      <th>User</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {updateHistory.map((entry, index) => (
-                      <tr key={index}>
-                        <td>{new Date(entry.date).toLocaleString()}</td>
-                        <td>{entry.operation}</td>
-                        <td>{entry.user}</td>
-                        <td>
-                          <span
-                            className={`tag ${entry.status === "Succeeded" ? "is-success" : "is-danger"}`}
-                          >
-                            {entry.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
+        <UpdateHistoryTab
+          historyLoading={historyLoading}
+          updateHistory={updateHistory}
+          onRefresh={loadUpdateHistory}
+        />
       )}
 
       {/* Install Confirmation Modal */}
@@ -481,6 +557,15 @@ const SystemUpdatesSection = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+SystemUpdatesSection.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default SystemUpdatesSection;

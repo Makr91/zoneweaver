@@ -301,8 +301,7 @@ const TimeSyncConfig = ({ server, onError }) => {
         <h2 className="title is-5">NTP Configuration Management</h2>
         <p className="content">
           Configure time synchronization settings on{" "}
-          <strong>{server.hostname}</strong>.
-          {getServiceDescription()}
+          <strong>{server.hostname}</strong>.{getServiceDescription()}
         </p>
       </div>
 
