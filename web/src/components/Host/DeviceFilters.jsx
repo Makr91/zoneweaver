@@ -1,5 +1,3 @@
-import React from "react";
-
 import { exportDeviceData } from "./DeviceUtils";
 
 const DeviceFilters = ({

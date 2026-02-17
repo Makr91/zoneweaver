@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
   const [actionLoading, setActionLoading] = useState({});

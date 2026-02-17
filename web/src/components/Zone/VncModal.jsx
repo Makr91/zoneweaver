@@ -1,5 +1,3 @@
-import React from "react";
-
 import VncActionsDropdown from "../VncActionsDropdown";
 import VncViewerReact from "../VncViewerReact";
 

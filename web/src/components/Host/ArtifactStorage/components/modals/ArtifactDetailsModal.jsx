@@ -1,5 +1,3 @@
-import React from "react";
-
 import { useServers } from "../../../../../contexts/ServerContext";
 import ContentModal from "../../../../common/ContentModal";
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import ArcConfiguration from "./ArcConfiguration";
 import { ArtifactManagement } from "./ArtifactStorage";

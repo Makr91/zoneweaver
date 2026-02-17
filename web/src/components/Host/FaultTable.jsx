@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
   const [actionLoading, setActionLoading] = useState({});

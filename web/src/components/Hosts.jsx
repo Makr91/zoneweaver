@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import React, { useState, useRef } from "react";
+import { useState } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";

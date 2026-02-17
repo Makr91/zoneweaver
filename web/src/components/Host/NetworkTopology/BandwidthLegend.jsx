@@ -1,5 +1,3 @@
-import React from "react";
-
 const BandwidthLegend = ({ horizontal = false }) => {
   const bandwidthRanges = [
     { label: "< 25%", color: "#48c78e", description: "Light load" },

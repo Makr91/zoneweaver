@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
@@ -7,7 +7,52 @@ import { useHostSystemManagement } from "../hooks/useHostSystemManagement";
 import { canManageSettings } from "../utils/permissions";
 
 import ApiKeysTab from "./ApiKeysTab";
-import { ContentModal } from "./common";
+import { ContentModal, FormModal } from "./common";
+
+// Helper function moved outside component
+const organizeBySection = (settingsData) => {
+  const sections = [];
+
+  const collectSectionContent = (obj, basePath = []) => {
+    const content = [];
+
+    Object.entries(obj).forEach(([key, value]) => {
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        // This is a subsection
+        content.push({
+          type: "subsection",
+          name: key,
+          fields: collectSectionContent(value, [...basePath, key]),
+        });
+      } else {
+        // This is a field
+        content.push({
+          type: "field",
+          key,
+          value,
+          path: [...basePath, key],
+        });
+      }
+    });
+
+    return content;
+  };
+
+  Object.entries(settingsData).forEach(([key, value]) => {
+    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      sections.push({
+        name: key,
+        content: collectSectionContent(value, [key]),
+      });
+    }
+  });
+
+  return sections;
+};
 
 const ZoneweaverAPISettings = () => {
   const { user } = useAuth();
@@ -23,6 +68,18 @@ const ZoneweaverAPISettings = () => {
   const [zonePriorities, setZonePriorities] = useState(null);
   const [orchestrationLoading, setOrchestrationLoading] = useState(false);
 
+  // Confirmation Modal State
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+    confirmText: "Confirm",
+    variant: "is-primary",
+  });
+
+  const [showBackupModal, setShowBackupModal] = useState(false);
+
   // Hook for orchestration functions
   const {
     getZoneOrchestrationStatus,
@@ -32,15 +89,7 @@ const ZoneweaverAPISettings = () => {
     testZoneOrchestration,
   } = useHostSystemManagement();
 
-  // Load settings on component mount
-  useEffect(() => {
-    if (user && canManageSettings(user.role) && currentServer) {
-      loadSettings();
-      loadBackups();
-    }
-  }, [user, currentServer]);
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     if (!currentServer) {
       return;
     }
@@ -73,9 +122,9 @@ const ZoneweaverAPISettings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentServer, makeZoneweaverAPIRequest, activeTab]);
 
-  const loadBackups = async () => {
+  const loadBackups = useCallback(async () => {
     if (!currentServer) {
       return;
     }
@@ -92,7 +141,64 @@ const ZoneweaverAPISettings = () => {
     } catch (error) {
       console.error("Error loading backups:", error);
     }
-  };
+  }, [currentServer, makeZoneweaverAPIRequest]);
+
+  // Zone orchestration functions
+  const loadOrchestrationStatus = useCallback(async () => {
+    if (!currentServer) {
+      return;
+    }
+
+    try {
+      const result = await getZoneOrchestrationStatus(
+        currentServer.hostname,
+        currentServer.port,
+        currentServer.protocol
+      );
+
+      if (result.success) {
+        setOrchestrationStatus(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading orchestration status:", error);
+    }
+  }, [currentServer, getZoneOrchestrationStatus]);
+
+  const loadZonePriorities = useCallback(async () => {
+    if (!currentServer) {
+      return;
+    }
+
+    try {
+      const result = await getZonePriorities(
+        currentServer.hostname,
+        currentServer.port,
+        currentServer.protocol
+      );
+
+      if (result.success) {
+        setZonePriorities(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading zone priorities:", error);
+    }
+  }, [currentServer, getZonePriorities]);
+
+  // Load settings on component mount
+  useEffect(() => {
+    if (user && canManageSettings(user.role) && currentServer) {
+      loadSettings();
+      loadBackups();
+    }
+  }, [user, currentServer, loadSettings, loadBackups]);
+
+  // Load orchestration data when component mounts or server changes
+  useEffect(() => {
+    if (currentServer && user && canManageSettings(user.role)) {
+      loadOrchestrationStatus();
+      loadZonePriorities();
+    }
+  }, [currentServer, user, loadOrchestrationStatus, loadZonePriorities]);
 
   const handleSettingChange = (path, value) => {
     setSettings((prev) => {
@@ -140,18 +246,7 @@ const ZoneweaverAPISettings = () => {
     }
   };
 
-  const restoreBackup = async (filename) => {
-    if (!currentServer) {
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to restore the configuration from ${filename}? This will overwrite current settings.`
-      )
-    ) {
-      return;
-    }
-
+  const performRestoreBackup = async (filename) => {
     try {
       setLoading(true);
       setMsg("");
@@ -179,19 +274,25 @@ const ZoneweaverAPISettings = () => {
       );
     } finally {
       setLoading(false);
+      setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
     }
   };
 
-  const restartServer = async () => {
+  const requestRestoreBackup = (filename) => {
     if (!currentServer) {
       return;
     }
-    if (
-      !window.confirm("Are you sure you want to restart the Zoneweaver server?")
-    ) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Restore Backup",
+      message: `Are you sure you want to restore the configuration from ${filename}? This will overwrite current settings.`,
+      onConfirm: () => performRestoreBackup(filename),
+      confirmText: "Restore",
+      variant: "is-warning",
+    });
+  };
 
+  const performRestartServer = async () => {
     try {
       setLoading(true);
       setMsg("Initiating server restart...");
@@ -218,21 +319,25 @@ const ZoneweaverAPISettings = () => {
       );
     } finally {
       setLoading(false);
+      setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
     }
   };
 
-  const deleteBackup = async (filename) => {
+  const requestRestartServer = () => {
     if (!currentServer) {
       return;
     }
-    if (
-      !window.confirm(
-        `Are you sure you want to permanently delete the backup ${filename}? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Restart Server",
+      message: "Are you sure you want to restart the Zoneweaver server?",
+      onConfirm: performRestartServer,
+      confirmText: "Restart",
+      variant: "is-danger",
+    });
+  };
 
+  const performDeleteBackup = async (filename) => {
     try {
       setLoading(true);
       setMsg("");
@@ -260,10 +365,23 @@ const ZoneweaverAPISettings = () => {
       );
     } finally {
       setLoading(false);
+      setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
     }
   };
 
-  const [showBackupModal, setShowBackupModal] = useState(false);
+  const requestDeleteBackup = (filename) => {
+    if (!currentServer) {
+      return;
+    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Delete Backup",
+      message: `Are you sure you want to permanently delete the backup ${filename}? This action cannot be undone.`,
+      onConfirm: () => performDeleteBackup(filename),
+      confirmText: "Delete",
+      variant: "is-danger",
+    });
+  };
 
   const createBackup = async () => {
     try {
@@ -283,47 +401,6 @@ const ZoneweaverAPISettings = () => {
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Zone orchestration functions
-  const loadOrchestrationStatus = async () => {
-    if (!currentServer) {
-      return;
-    }
-
-    try {
-      const result = await getZoneOrchestrationStatus(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol
-      );
-
-      if (result.success) {
-        setOrchestrationStatus(result.data);
-      }
-    } catch (error) {
-      console.error("Error loading orchestration status:", error);
-    }
-  };
-
-  const loadZonePriorities = async () => {
-    if (!currentServer) {
-      return;
-    }
-
-    try {
-      const result = await getZonePriorities(
-        currentServer.hostname,
-        currentServer.port,
-        currentServer.protocol
-      );
-
-      if (result.success) {
-        setZonePriorities(result.data);
-      }
-    } catch (error) {
-      console.error("Error loading zone priorities:", error);
     }
   };
 
@@ -411,14 +488,6 @@ const ZoneweaverAPISettings = () => {
     }
   };
 
-  // Load orchestration data when component mounts or server changes
-  useEffect(() => {
-    if (currentServer && user && canManageSettings(user.role)) {
-      loadOrchestrationStatus();
-      loadZonePriorities();
-    }
-  }, [currentServer, user]);
-
   // Check if a section is orchestration-related
   const isOrchestrationSection = (sectionName) =>
     sectionName === "zones" ||
@@ -440,7 +509,7 @@ const ZoneweaverAPISettings = () => {
       <div className="columns">
         <div className="column is-half">
           <div className="field">
-            <label className="label is-size-7">Status</label>
+            <p className="label is-size-7">Status</p>
             <div className="control">
               <span
                 className={`tag ${orchestrationStatus?.orchestration_enabled ? "is-success" : "is-grey"}`}
@@ -505,7 +574,7 @@ const ZoneweaverAPISettings = () => {
 
       {zonePriorities && (
         <div className="mt-4">
-          <label className="label is-size-7">Zone Priorities</label>
+          <p className="label is-size-7">Zone Priorities</p>
           <div className="field">
             <div className="control">
               <div className="tags">
@@ -538,59 +607,82 @@ const ZoneweaverAPISettings = () => {
     return <div>Access Denied</div>;
   }
 
-  const organizeBySection = (settings) => {
-    const sections = [];
+  const renderField = (item, isIndented = false) => {
+    const { key, value, path } = item;
+    const fieldId = path.join(".");
 
-    const collectSectionContent = (obj, basePath = []) => {
-      const content = [];
+    let inputElement;
+    if (typeof value === "boolean") {
+      inputElement = (
+        <label className="switch is-medium">
+          <input
+            id={fieldId}
+            type="checkbox"
+            checked={value}
+            onChange={(e) => handleSettingChange(path, e.target.checked)}
+          />
+          <span className="check" />
+          <span className="control-label">
+            {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+          </span>
+        </label>
+      );
+    } else if (Array.isArray(value)) {
+      inputElement = (
+        <textarea
+          id={fieldId}
+          className="textarea is-small"
+          rows="10"
+          value={value.join("\n")}
+          onChange={(e) =>
+            handleSettingChange(path, e.target.value.split("\n"))
+          }
+        />
+      );
+    } else {
+      inputElement = (
+        <input
+          id={fieldId}
+          className="input is-small"
+          type={typeof value === "number" ? "number" : "text"}
+          value={value}
+          onChange={(e) =>
+            handleSettingChange(
+              path,
+              typeof value === "number"
+                ? Number(e.target.value)
+                : e.target.value
+            )
+          }
+        />
+      );
+    }
 
-      Object.entries(obj).forEach(([key, value]) => {
-        if (
-          typeof value === "object" &&
-          value !== null &&
-          !Array.isArray(value)
-        ) {
-          // This is a subsection
-          content.push({
-            type: "subsection",
-            name: key,
-            fields: collectSectionContent(value, [...basePath, key]),
-          });
-        } else {
-          // This is a field
-          content.push({
-            type: "field",
-            key,
-            value,
-            path: [...basePath, key],
-          });
-        }
-      });
-
-      return content;
-    };
-
-    Object.entries(settings).forEach(([key, value]) => {
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        !Array.isArray(value)
-      ) {
-        sections.push({
-          name: key,
-          content: collectSectionContent(value, [key]),
-        });
-      }
-    });
-
-    return sections;
+    return (
+      <div key={fieldId} className="field is-horizontal mb-1">
+        <div
+          className={`field-label is-small is-flex-grow-0 ${
+            isIndented ? "pl-5" : "pl-0"
+          }`}
+        >
+          <label className="label is-size-7 has-text-left" htmlFor={fieldId}>
+            {key.replace(/_/g, " ")}
+          </label>
+        </div>
+        <div className="field-body">
+          <div className="field">
+            <div className="control">{inputElement}</div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderSectionContent = (content) =>
-    content.map((item, index) => {
+    content.map((item) => {
       if (item.type === "subsection") {
         return (
-          <div key={index} className="mb-4">
+          <div key={item.name} className="mb-4">
             <h5 className="subtitle is-6 has-text-weight-semibold has-text-grey mb-2">
               {item.name
                 .replace(/_/g, " ")
@@ -602,69 +694,6 @@ const ZoneweaverAPISettings = () => {
       }
       return renderField(item, false);
     });
-
-  const renderField = (item, isIndented = false) => {
-    const { key, value, path } = item;
-    return (
-      <div key={path.join(".")} className="field is-horizontal mb-1">
-        <div
-          className={`field-label is-small is-flex-grow-0 ${
-            isIndented ? "pl-5" : "pl-0"
-          }`}
-        >
-          <label className="label is-size-7 has-text-left">
-            {key.replace(/_/g, " ")}
-          </label>
-        </div>
-        <div className="field-body">
-          <div className="field">
-            <div className="control">
-              {typeof value === "boolean" ? (
-                <label className="switch is-medium">
-                  <input
-                    type="checkbox"
-                    checked={value}
-                    onChange={(e) =>
-                      handleSettingChange(path, e.target.checked)
-                    }
-                  />
-                  <span className="check" />
-                  <span className="control-label">
-                    {key
-                      .replace(/_/g, " ")
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  </span>
-                </label>
-              ) : Array.isArray(value) ? (
-                <textarea
-                  className="textarea is-small"
-                  rows="10"
-                  value={value.join("\n")}
-                  onChange={(e) =>
-                    handleSettingChange(path, e.target.value.split("\n"))
-                  }
-                />
-              ) : (
-                <input
-                  className="input is-small"
-                  type={typeof value === "number" ? "number" : "text"}
-                  value={value}
-                  onChange={(e) =>
-                    handleSettingChange(
-                      path,
-                      typeof value === "number"
-                        ? Number(e.target.value)
-                        : e.target.value
-                    )
-                  }
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="zw-page-content-scrollable">
@@ -713,7 +742,7 @@ const ZoneweaverAPISettings = () => {
               </button>
               <button
                 className="button is-small is-danger"
-                onClick={restartServer}
+                onClick={requestRestartServer}
                 disabled={loading}
               >
                 <span className="icon is-small">
@@ -742,13 +771,17 @@ const ZoneweaverAPISettings = () => {
                           activeTab === section.name ? "is-active" : ""
                         }
                       >
-                        <a onClick={() => setActiveTab(section.name)}>
+                        <button
+                          className="button is-ghost"
+                          onClick={() => setActiveTab(section.name)}
+                          style={{ textDecoration: "none" }}
+                        >
                           <span>
                             {section.name
                               .replace(/_/g, " ")
                               .replace(/\b\w/g, (l) => l.toUpperCase())}
                           </span>
-                        </a>
+                        </button>
                       </li>
                     ))}
                     <li
@@ -756,9 +789,13 @@ const ZoneweaverAPISettings = () => {
                         activeTab === "api_management" ? "is-active" : ""
                       }
                     >
-                      <a onClick={() => setActiveTab("api_management")}>
+                      <button
+                        className="button is-ghost"
+                        onClick={() => setActiveTab("api_management")}
+                        style={{ textDecoration: "none" }}
+                      >
                         <span>API Management</span>
-                      </a>
+                      </button>
                     </li>
                   </ul>
                 </div>
@@ -839,7 +876,7 @@ const ZoneweaverAPISettings = () => {
                                 <button
                                   className="button is-small is-warning is-fullwidth"
                                   onClick={() => {
-                                    restoreBackup(backup.filename);
+                                    requestRestoreBackup(backup.filename);
                                     setShowBackupModal(false);
                                   }}
                                   disabled={loading}
@@ -850,7 +887,9 @@ const ZoneweaverAPISettings = () => {
                               <p className="control is-expanded">
                                 <button
                                   className="button is-small is-danger is-fullwidth"
-                                  onClick={() => deleteBackup(backup.filename)}
+                                  onClick={() =>
+                                    requestDeleteBackup(backup.filename)
+                                  }
                                   disabled={loading}
                                 >
                                   Delete
@@ -864,6 +903,29 @@ const ZoneweaverAPISettings = () => {
                   </table>
                 )}
               </ContentModal>
+            )}
+
+            {/* Confirmation Modal */}
+            {confirmDialog.isOpen && (
+              <FormModal
+                isOpen={confirmDialog.isOpen}
+                onClose={() =>
+                  setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
+                }
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (confirmDialog.onConfirm) {
+                    confirmDialog.onConfirm();
+                  }
+                }}
+                title={confirmDialog.title}
+                submitText={confirmDialog.confirmText}
+                submitVariant={confirmDialog.variant}
+                loading={loading}
+                showCancelButton
+              >
+                <p>{confirmDialog.message}</p>
+              </FormModal>
             )}
           </div>
         </div>

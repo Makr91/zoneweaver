@@ -1,5 +1,3 @@
-import React from "react";
-
 const ServerHelpPanel = ({ useExistingApiKey }) => (
   <div className="box">
     <h2 className="title is-6">Setup Guide</h2>

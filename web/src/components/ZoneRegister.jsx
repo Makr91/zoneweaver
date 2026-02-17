@@ -1,11 +1,10 @@
-//import React, { useState, useEffect } from 'react'
 import axios from "axios";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ZoneRegister = () => {
   const [frontendhost, setFrontendHost] = useState("");
-  const [frontendport, setFrontendPort] = useState("");
+  const [frontendport, setFrontendPort] = useState("3000");
   const [frontendproto, setFrontendProto] = useState("");
 
   const [backendhost, setBackendHost] = useState("");
@@ -58,26 +57,26 @@ const ZoneRegister = () => {
                 <div className="columns is-centered">
                   <div className="column is-4-desktop">
                     <div className="field mt-5">
-                      <label className="label">Backend Host Protocol</label>
-                      <select className="controls">
-                        <option
-                          value={backendproto}
-                          onChange={(e) => setBackendProto(e.target.value)}
-                        >
-                          http
-                        </option>
-                        <option
-                          value={backendproto}
-                          onChange={(e) => setBackendProto(e.target.value)}
-                        >
-                          https
-                        </option>
+                      <label className="label" htmlFor="backendproto">
+                        Backend Host Protocol
+                      </label>
+                      <select
+                        className="controls"
+                        id="backendproto"
+                        value={backendproto}
+                        onChange={(e) => setBackendProto(e.target.value)}
+                      >
+                        <option value="http">http</option>
+                        <option value="https">https</option>
                       </select>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">Backend Host Address</label>
+                      <label className="label" htmlFor="backendhost">
+                        Backend Host Address
+                      </label>
                       <div className="controls">
                         <input
+                          id="backendhost"
                           type="text"
                           className="input"
                           placeholder="Backend Host"
@@ -87,9 +86,12 @@ const ZoneRegister = () => {
                       </div>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">Port</label>
+                      <label className="label" htmlFor="backendport">
+                        Port
+                      </label>
                       <div className="controls">
                         <input
+                          id="backendport"
                           type="text"
                           className="input"
                           autoComplete="off"
@@ -100,11 +102,12 @@ const ZoneRegister = () => {
                       </div>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">
+                      <label className="label" htmlFor="backendcode">
                         Backend Node Security Code
                       </label>
                       <div className="controls">
                         <input
+                          id="backendcode"
                           autoComplete="new-password"
                           className="input"
                           type="password"
@@ -118,9 +121,12 @@ const ZoneRegister = () => {
 
                   <div className="column is-4-desktop">
                     <div className="field mt-5">
-                      <label className="label">Frontend Host Protocol</label>
+                      <label className="label" htmlFor="frontendproto">
+                        Frontend Host Protocol
+                      </label>
                       <div className="controls">
                         <input
+                          id="frontendproto"
                           type="text"
                           className="input"
                           placeholder="Frontend Host Protocol"
@@ -130,9 +136,12 @@ const ZoneRegister = () => {
                       </div>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">Frontend Host Address</label>
+                      <label className="label" htmlFor="frontendhost">
+                        Frontend Host Address
+                      </label>
                       <div className="controls">
                         <input
+                          id="frontendhost"
                           type="text"
                           className="input"
                           placeholder="Frontend Host"
@@ -142,24 +151,28 @@ const ZoneRegister = () => {
                       </div>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">Port</label>
+                      <label className="label" htmlFor="frontendport">
+                        Port
+                      </label>
                       <div className="controls">
                         <input
+                          id="frontendport"
                           type="text"
                           className="input"
                           autoComplete="off"
                           placeholder="Port"
-                          value="3000"
+                          value={frontendport}
                           onChange={(e) => setFrontendPort(e.target.value)}
                         />
                       </div>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">
+                      <label className="label" htmlFor="frontendcode">
                         Frontend Node Security Code
                       </label>
                       <div className="controls">
                         <input
+                          id="frontendcode"
                           autoComplete="new-password"
                           className="input"
                           type="password"

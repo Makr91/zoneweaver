@@ -1,5 +1,3 @@
-import React from "react";
-
 const PoolIOTable = ({ poolIOStats, sectionsCollapsed, toggleSection }) => {
   if (poolIOStats.length === 0) {
     return null;

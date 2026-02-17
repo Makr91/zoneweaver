@@ -1,5 +1,3 @@
-import React from "react";
-
 import { formatSpeed } from "./NetworkingUtils";
 
 const InterfacesTable = ({

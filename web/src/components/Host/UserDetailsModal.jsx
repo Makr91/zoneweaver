@@ -1,5 +1,3 @@
-import React from "react";
-
 import ContentModal from "../common/ContentModal";
 
 const UserDetailsModal = ({ user, onClose }) => {

@@ -3,7 +3,6 @@ import {
   EdgeLabelRenderer,
   useInternalNode,
 } from "@xyflow/react";
-import React from "react";
 
 import { getEdgeParams } from "../utils/edgeUtils";
 

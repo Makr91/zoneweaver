@@ -1,5 +1,3 @@
-import React from "react";
-
 const ZoneManager = ({ serverStats, currentServer, handleZoneAction }) => (
   <div className="box mb-5">
     <div className="level is-mobile mb-4">

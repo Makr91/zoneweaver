@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
   const [actionLoading, setActionLoading] = useState({});

@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const ZoneStorage = ({ configuration }) => {
   if (
@@ -100,7 +100,7 @@ const ZoneStorage = ({ configuration }) => {
                 {(configuration.disk || [])
                   .filter((disk) => disk !== null && disk !== undefined)
                   .map((disk, index) => (
-                    <tr key={index}>
+                    <tr key={disk.path || index}>
                       <td className="px-3 py-2">
                         <span className="has-text-grey is-size-7 is-family-monospace">
                           {disk?.path || "N/A"}
@@ -130,6 +130,26 @@ const ZoneStorage = ({ configuration }) => {
       )}
     </div>
   );
+};
+
+ZoneStorage.propTypes = {
+  configuration: PropTypes.shape({
+    diskif: PropTypes.string,
+    bootdisk: PropTypes.shape({
+      path: PropTypes.string,
+      blocksize: PropTypes.string,
+      sparse: PropTypes.string,
+      size: PropTypes.string,
+    }),
+    disk: PropTypes.arrayOf(
+      PropTypes.shape({
+        path: PropTypes.string,
+        blocksize: PropTypes.string,
+        sparse: PropTypes.string,
+        size: PropTypes.string,
+      })
+    ),
+  }),
 };
 
 export default ZoneStorage;

@@ -1,5 +1,4 @@
 import { Handle, Position } from "@xyflow/react";
-import React from "react";
 
 const PhysicalNicNode = ({ data }) => {
   const { label, state, speed, bandwidth, ipAddresses, mtu, flags } = data;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
   const [actionLoading, setActionLoading] = useState({});

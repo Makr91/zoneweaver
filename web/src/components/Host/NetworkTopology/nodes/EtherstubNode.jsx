@@ -1,5 +1,4 @@
 import { Handle, Position } from "@xyflow/react";
-import React from "react";
 
 const EtherstubNode = ({ data }) => {
   const { label, connectedVnics, class: deviceClass, flags } = data;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const BridgeTable = ({ bridges, loading, onDelete, onViewDetails }) => {
   const [deleteLoading, setDeleteLoading] = useState({});

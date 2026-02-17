@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const ZoneNetwork = ({ configuration }) => {
   if (!configuration || !configuration.net || configuration.net.length === 0) {
@@ -67,7 +67,7 @@ const ZoneNetwork = ({ configuration }) => {
                     netInterface !== null && netInterface !== undefined
                 )
                 .map((netInterface, index) => (
-                  <tr key={index}>
+                  <tr key={netInterface?.["mac-addr"] || index}>
                     <td className="px-3 py-2">
                       <span className="has-text-grey is-family-monospace">
                         {netInterface?.["global-nic"] || "N/A"}
@@ -101,6 +101,22 @@ const ZoneNetwork = ({ configuration }) => {
       </div>
     </div>
   );
+};
+
+ZoneNetwork.propTypes = {
+  configuration: PropTypes.shape({
+    netif: PropTypes.string,
+    "ip-type": PropTypes.string,
+    net: PropTypes.arrayOf(
+      PropTypes.shape({
+        "global-nic": PropTypes.string,
+        physical: PropTypes.string,
+        "mac-addr": PropTypes.string,
+        "vlan-id": PropTypes.string,
+        "mac-addr-type": PropTypes.string,
+      })
+    ),
+  }),
 };
 
 export default ZoneNetwork;

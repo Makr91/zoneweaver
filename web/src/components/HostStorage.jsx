@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import ArcStats from "./Host/ArcStats";
 import DatasetsTable from "./Host/DatasetsTable";

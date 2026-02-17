@@ -1,5 +1,3 @@
-import React from "react";
-
 import { formatBytes, parseSize } from "./StorageUtils";
 
 const DatasetsTable = ({

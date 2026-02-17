@@ -1,5 +1,3 @@
-import React from "react";
-
 const DeviceHeader = ({ selectedServer, loading, loadDeviceData }) => (
   <div className="titlebar box active level is-mobile mb-0 p-3">
     <div className="level-left">

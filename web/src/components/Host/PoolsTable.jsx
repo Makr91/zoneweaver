@@ -1,5 +1,3 @@
-import React from "react";
-
 import { formatBytes, getHealthColor, parseSize } from "./StorageUtils";
 
 const PoolsTable = ({

@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import BandwidthCharts from "./Host/BandwidthCharts";
 import BandwidthTable from "./Host/BandwidthTable";

@@ -1,5 +1,4 @@
 import { Handle, Position } from "@xyflow/react";
-import React from "react";
 
 const VnicNode = ({ data }) => {
   const {

@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
@@ -110,6 +110,15 @@ const Zones = () => {
     pasteTextToZone,
   } = useZoneTerminal();
 
+  const handleZoneSelect = useCallback(
+    (zoneName) => {
+      selectZone(zoneName);
+      // Zone details load now automatically includes session detection
+      // No need for separate session refresh orchestration
+    },
+    [selectZone]
+  );
+
   // Handle URL query parameter for zone selection
   useEffect(() => {
     const zloginParam = searchParams.get("zlogin");
@@ -152,13 +161,14 @@ const Zones = () => {
         setError(`Zone '${zoneParam}' not found on the current server.`);
       }
     }
-  }, [searchParams, zones, setSearchParams]);
-
-  const handleZoneSelect = (zoneName) => {
-    selectZone(zoneName);
-    // Zone details load now automatically includes session detection
-    // No need for separate session refresh orchestration
-  };
+  }, [
+    searchParams,
+    zones,
+    setSearchParams,
+    handleZoneSelect,
+    handleZloginConsole,
+    handleVncConsole,
+  ]);
 
   // Sync local selectedZone with global currentZone
   useEffect(() => {
@@ -208,8 +218,11 @@ const Zones = () => {
       );
       setActiveConsoleType("vnc");
     }
-    // IMPORTANT: Removed activeConsoleType from dependency array to prevent circular updates
-  }, [zoneDetails.active_vnc_session, zoneDetails.zlogin_session]);
+  }, [
+    zoneDetails.active_vnc_session,
+    zoneDetails.zlogin_session,
+    activeConsoleType,
+  ]);
 
   // Previous state tracking to fix infinite loop
   const prevShowZloginConsole = useRef(showZloginConsole);
@@ -264,8 +277,8 @@ const Zones = () => {
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
-                  You haven't added any Zoneweaver API Servers yet. Add a server
-                  to start managing zones.
+                  You haven&apos;t added any Zoneweaver API Servers yet. Add a
+                  server to start managing zones.
                 </p>
                 <div className="mt-4">
                   <a
@@ -432,11 +445,12 @@ const Zones = () => {
                             </p>
                             <ul>
                               <li>
-                                The zone configuration hasn't been loaded yet
+                                The zone configuration hasn&apos;t been loaded
+                                yet
                               </li>
                               <li>
-                                The Zoneweaver API doesn't have configuration
-                                data for this zone
+                                The Zoneweaver API doesn&apos;t have
+                                configuration data for this zone
                               </li>
                               <li>The zone might be in a transitional state</li>
                             </ul>

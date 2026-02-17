@@ -1,4 +1,5 @@
-import React, { useCallback, memo } from "react";
+import PropTypes from "prop-types";
+import { useCallback, memo } from "react";
 import { XTerm } from "react-xtermjs";
 
 import { useZoneTerminal } from "../contexts/ZoneTerminalContext";
@@ -33,9 +34,11 @@ const ZoneShell = memo(
     // Handle terminal ready
     const onTerminalReady = useCallback(
       (terminal) => {
-        console.log(`🔧 ZONESHELL: Terminal ready for ${zoneName}`);
+        console.log(
+          `🔧 ZONESHELL [${context}]: Terminal ready for ${zoneName} (${terminal.cols}x${terminal.rows})`
+        );
       },
-      [zoneName]
+      [zoneName, context]
     );
 
     // Handle terminal data
@@ -93,5 +96,13 @@ const ZoneShell = memo(
 );
 
 ZoneShell.displayName = "ZoneShell";
+
+ZoneShell.propTypes = {
+  zoneName: PropTypes.string.isRequired,
+  readOnly: PropTypes.bool,
+  context: PropTypes.string,
+  style: PropTypes.object,
+  className: PropTypes.string,
+};
 
 export default ZoneShell;

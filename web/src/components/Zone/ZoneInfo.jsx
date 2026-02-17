@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const ZoneInfo = ({
   zoneDetails,
@@ -11,6 +11,109 @@ const ZoneInfo = ({
   }
 
   const { zone_info, configuration } = zoneDetails;
+
+  const getHealthClass = (status) => {
+    if (status === "healthy") {
+      return "has-text-success";
+    }
+    if (status === "warning") {
+      return "has-text-warning";
+    }
+    return "has-text-danger";
+  };
+
+  const renderConfigurationRows = () => {
+    if (!configuration) {
+      return null;
+    }
+
+    return (
+      <>
+        <tr>
+          <td className="px-3 py-2">
+            <strong>Zone Name</strong>
+          </td>
+          <td className="px-3 py-2">
+            <code className="is-size-7">{configuration.zonename}</code>
+          </td>
+        </tr>
+        <tr>
+          <td className="px-3 py-2">
+            <strong>Zone Path</strong>
+          </td>
+          <td className="px-3 py-2">
+            <code className="is-size-7">{configuration.zonepath}</code>
+          </td>
+        </tr>
+        {configuration.bootargs && (
+          <tr>
+            <td className="px-3 py-2">
+              <strong>Boot Args</strong>
+            </td>
+            <td className="px-3 py-2">
+              <code className="is-size-7">
+                {configuration.bootargs || "None"}
+              </code>
+            </td>
+          </tr>
+        )}
+        {configuration.hostid && (
+          <tr>
+            <td className="px-3 py-2">
+              <strong>Host ID</strong>
+            </td>
+            <td className="px-3 py-2">
+              <span className="tag">{configuration.hostid || "None"}</span>
+            </td>
+          </tr>
+        )}
+        {configuration.pool && (
+          <tr>
+            <td className="px-3 py-2">
+              <strong>Pool</strong>
+            </td>
+            <td className="px-3 py-2">
+              <span className="tag">{configuration.pool || "None"}</span>
+            </td>
+          </tr>
+        )}
+        {configuration["scheduling-class"] && (
+          <tr>
+            <td className="px-3 py-2">
+              <strong>Scheduling Class</strong>
+            </td>
+            <td className="px-3 py-2">
+              <span className="tag">
+                {configuration["scheduling-class"] || "None"}
+              </span>
+            </td>
+          </tr>
+        )}
+        {configuration.limitpriv && (
+          <tr>
+            <td className="px-3 py-2">
+              <strong>Limit Privileges</strong>
+            </td>
+            <td className="px-3 py-2">
+              <span className="tag">{configuration.limitpriv || "None"}</span>
+            </td>
+          </tr>
+        )}
+        {configuration["fs-allowed"] && (
+          <tr>
+            <td className="px-3 py-2">
+              <strong>FS Allowed</strong>
+            </td>
+            <td className="px-3 py-2">
+              <span className="tag">
+                {configuration["fs-allowed"] || "None"}
+              </span>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="box mb-0 pt-0 pd-0">
@@ -47,11 +150,7 @@ const ZoneInfo = ({
                 <td className="px-3 py-2">
                   <span
                     className={`has-text-weight-semibold ${
-                      monitoringHealth.status === "healthy"
-                        ? "has-text-success"
-                        : monitoringHealth.status === "warning"
-                          ? "has-text-warning"
-                          : "has-text-danger"
+                      getHealthClass(monitoringHealth.status)
                     }`}
                   >
                     {monitoringHealth.status
@@ -106,103 +205,39 @@ const ZoneInfo = ({
                 </td>
               </tr>
             )}
-            {configuration && (
-              <>
-                <tr>
-                  <td className="px-3 py-2">
-                    <strong>Zone Name</strong>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="is-size-7">{configuration.zonename}</code>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-3 py-2">
-                    <strong>Zone Path</strong>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="is-size-7">{configuration.zonepath}</code>
-                  </td>
-                </tr>
-                {configuration.bootargs && (
-                  <tr>
-                    <td className="px-3 py-2">
-                      <strong>Boot Args</strong>
-                    </td>
-                    <td className="px-3 py-2">
-                      <code className="is-size-7">
-                        {configuration.bootargs || "None"}
-                      </code>
-                    </td>
-                  </tr>
-                )}
-                {configuration.hostid && (
-                  <tr>
-                    <td className="px-3 py-2">
-                      <strong>Host ID</strong>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="tag">
-                        {configuration.hostid || "None"}
-                      </span>
-                    </td>
-                  </tr>
-                )}
-                {configuration.pool && (
-                  <tr>
-                    <td className="px-3 py-2">
-                      <strong>Pool</strong>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="tag">
-                        {configuration.pool || "None"}
-                      </span>
-                    </td>
-                  </tr>
-                )}
-                {configuration["scheduling-class"] && (
-                  <tr>
-                    <td className="px-3 py-2">
-                      <strong>Scheduling Class</strong>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="tag">
-                        {configuration["scheduling-class"] || "None"}
-                      </span>
-                    </td>
-                  </tr>
-                )}
-                {configuration.limitpriv && (
-                  <tr>
-                    <td className="px-3 py-2">
-                      <strong>Limit Privileges</strong>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="tag">
-                        {configuration.limitpriv || "None"}
-                      </span>
-                    </td>
-                  </tr>
-                )}
-                {configuration["fs-allowed"] && (
-                  <tr>
-                    <td className="px-3 py-2">
-                      <strong>FS Allowed</strong>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="tag">
-                        {configuration["fs-allowed"] || "None"}
-                      </span>
-                    </td>
-                  </tr>
-                )}
-              </>
-            )}
+            {renderConfigurationRows()}
           </tbody>
         </table>
       </div>
     </div>
   );
+};
+
+ZoneInfo.propTypes = {
+  zoneDetails: PropTypes.shape({
+    zone_info: PropTypes.shape({
+      last_seen: PropTypes.string,
+      is_orphaned: PropTypes.bool,
+      auto_discovered: PropTypes.bool,
+    }),
+    configuration: PropTypes.shape({
+      zonename: PropTypes.string,
+      zonepath: PropTypes.string,
+      bootargs: PropTypes.string,
+      hostid: PropTypes.string,
+      pool: PropTypes.string,
+      "scheduling-class": PropTypes.string,
+      limitpriv: PropTypes.string,
+      "fs-allowed": PropTypes.string,
+    }),
+  }),
+  monitoringHealth: PropTypes.shape({
+    status: PropTypes.string,
+    networkErrors: PropTypes.number,
+    storageErrors: PropTypes.number,
+  }),
+  getZoneStatus: PropTypes.func.isRequired,
+  selectedZone: PropTypes.string,
 };
 
 export default ZoneInfo;

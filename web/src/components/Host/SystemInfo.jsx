@@ -1,5 +1,3 @@
-import React from "react";
-
 import { formatUptime, bytesToSize, getCpuCount } from "./utils";
 
 const SystemInfo = ({

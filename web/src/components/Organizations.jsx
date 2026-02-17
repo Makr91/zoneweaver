@@ -1,6 +1,6 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
 

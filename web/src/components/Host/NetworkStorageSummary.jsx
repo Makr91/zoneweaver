@@ -1,5 +1,3 @@
-import React from "react";
-
 const NetworkStorageSummary = ({ serverStats, storageSummary }) => (
   <div className="columns is-multiline mb-5">
     {/* Network Summary Card */}

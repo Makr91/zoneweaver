@@ -1,5 +1,3 @@
-import React from "react";
-
 const NetworkTopologyControls = (props) => {
   const {
     filters,

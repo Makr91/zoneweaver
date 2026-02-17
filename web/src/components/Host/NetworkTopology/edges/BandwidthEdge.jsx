@@ -1,5 +1,4 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from "@xyflow/react";
-import React from "react";
 
 import { getBandwidthColor, getVlanColor } from "../utils/topologyAutoMapper";
 

@@ -1,6 +1,4 @@
 import { HighchartsReact } from "highcharts-react-official";
-import React from "react";
-
 import Highcharts from "../../Highcharts";
 
 const MemoryChart = ({

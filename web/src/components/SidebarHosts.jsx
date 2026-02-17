@@ -1,5 +1,3 @@
-import React from "react";
-
 import DashEntry from "./DashEntry";
 
 const SidebarHosts = () => (

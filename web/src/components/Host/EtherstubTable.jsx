@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const EtherstubTable = ({ etherstubs, loading, onDelete, onViewDetails }) => {
   const [deleteLoading, setDeleteLoading] = useState({});

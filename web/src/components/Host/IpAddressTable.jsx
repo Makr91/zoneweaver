@@ -1,5 +1,3 @@
-import React from "react";
-
 const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
   <div className="box mb-4">
     <div className="level is-mobile mb-3">

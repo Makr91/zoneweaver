@@ -1,5 +1,3 @@
-import React from "react";
-
 const ServerStatusCard = ({ testResult, useExistingApiKey }) => {
   if (!testResult) {
     return null;

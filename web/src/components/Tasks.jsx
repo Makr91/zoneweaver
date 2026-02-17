@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext, memo, useState } from "react";
+import { useRef, useEffect, useContext, memo, useState } from "react";
 
 import { useFooter } from "../contexts/FooterContext";
 import { UserSettings } from "../contexts/UserSettingsContext";

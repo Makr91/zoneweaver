@@ -1,6 +1,6 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
@@ -12,6 +12,183 @@ import ServerForm from "./Host/ServerForm";
 import ServerHelpPanel from "./Host/ServerHelpPanel";
 import ServerStatusCard from "./Host/ServerStatusCard";
 import ServerTable from "./Host/ServerTable";
+
+// Helper functions moved outside component to fix no-use-before-define and reduce complexity
+const inferSection = (path) => {
+  const sectionMap = {
+    frontend: "Frontend",
+    server: "Server",
+    database: "Database",
+    mail: "Mail",
+    authentication: "Authentication",
+    cors: "Security",
+    logging: "Logging",
+    limits: "Performance",
+    environment: "Environment",
+    integrations: "Integrations",
+    gravatar: "Integrations", // Map gravatar to Integrations
+  };
+
+  const pathParts = path.split(".");
+  return sectionMap[pathParts[0]];
+};
+
+const inferSubsection = (path, section) => {
+  if (section === "Integrations") {
+    const pathParts = path.split(".");
+    if (pathParts[0] === "integrations" && pathParts[1]) {
+      // Convert subsection name to title case
+      return pathParts[1].charAt(0).toUpperCase() + pathParts[1].slice(1);
+    }
+    if (pathParts[0] === "gravatar") {
+      return "Gravatar";
+    }
+  }
+  return null;
+};
+
+const generateLabel = (fieldName) =>
+  fieldName
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+const getSectionIcon = (section) => {
+  const iconMap = {
+    Application: "fas fa-cogs",
+    Server: "fas fa-server",
+    Frontend: "fas fa-desktop",
+    Database: "fas fa-database",
+    Mail: "fas fa-envelope",
+    Authentication: "fas fa-shield-alt",
+    Security: "fas fa-lock",
+    Logging: "fas fa-file-alt",
+    Performance: "fas fa-tachometer-alt",
+    Environment: "fas fa-globe",
+    Integrations: "fas fa-puzzle-piece",
+  };
+  return iconMap[section] || "fas fa-cog";
+};
+
+const processConfig = (config) => {
+  const extractedValues = {};
+  const organizedSections = {};
+  const sectionMetadata = config._sections || {};
+
+  const processObject = (obj, path = "", sectionName = "General") => {
+    for (const [key, value] of Object.entries(obj || {})) {
+      // Skip metadata sections
+      if (key === "_sections") {
+        continue;
+      }
+
+      const fullPath = path ? `${path}.${key}` : key;
+
+      if (
+        value &&
+        typeof value === "object" &&
+        value.type &&
+        Object.hasOwn(value, "value")
+      ) {
+        // This is a metadata field
+        extractedValues[fullPath] = value.value;
+
+        // Determine section from metadata or infer from path
+        const section = value.section || inferSection(fullPath) || sectionName;
+        const subsection =
+          value.subsection || inferSubsection(fullPath, section);
+
+        if (!organizedSections[section]) {
+          const metadata = sectionMetadata[section] || {};
+          organizedSections[section] = {
+            title: section,
+            icon: metadata.icon || getSectionIcon(section),
+            description: metadata.description || "",
+            fields: [],
+            subsections: {},
+          };
+        }
+
+        const fieldData = {
+          key: fullPath,
+          path: fullPath,
+          type: value.type,
+          label: value.label || generateLabel(key),
+          description: value.description || "",
+          placeholder: value.placeholder || "",
+          required: value.required || false,
+          options: value.options || null,
+          validation: value.validation || {},
+          conditional: value.conditional || null,
+          order: value.order || 0,
+          value: value.value,
+        };
+
+        // Special handling for object-type fields
+        if (
+          value.type === "object" &&
+          value.value &&
+          typeof value.value === "object"
+        ) {
+          // Create the parent subsection but don't add the object as a field
+          if (subsection) {
+            if (!organizedSections[section].subsections[subsection]) {
+              organizedSections[section].subsections[subsection] = {
+                title: subsection,
+                fields: [],
+              };
+            }
+            // Don't add the object field itself, just ensure the subsection exists
+          }
+
+          // Recurse into their value to process nested fields
+          processObject(value.value, fullPath, section);
+        } else {
+          // Regular field processing for non-object fields
+          if (subsection) {
+            // Organize into subsections
+            if (!organizedSections[section].subsections[subsection]) {
+              organizedSections[section].subsections[subsection] = {
+                title: subsection,
+                fields: [],
+              };
+            }
+            organizedSections[section].subsections[subsection].fields.push(
+              fieldData
+            );
+          } else {
+            // Add to main section
+            organizedSections[section].fields.push(fieldData);
+          }
+        }
+      } else if (
+        value &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        !Object.hasOwn(value, "type")
+      ) {
+        // This is a nested object, recurse with section inference
+        const inferredSection = inferSection(fullPath) || sectionName;
+        processObject(value, fullPath, inferredSection);
+      } else if (Array.isArray(value) || typeof value !== "object") {
+        // This is a direct value (backward compatibility)
+        extractedValues[fullPath] = value;
+      }
+    }
+  };
+
+  processObject(config);
+
+  // Sort fields within each section and subsection by order
+  Object.values(organizedSections).forEach((section) => {
+    section.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
+    Object.values(section.subsections).forEach((subsection) => {
+      subsection.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
+    });
+  });
+
+  return { extractedValues, organizedSections };
+};
 
 const ZoneweaverSettings = () => {
   const { user } = useAuth();
@@ -79,37 +256,8 @@ const ZoneweaverSettings = () => {
     selectServer,
   } = useServers();
 
-  // Load settings on component mount
-  useEffect(() => {
-    if (user && canManageSettings(user.role)) {
-      loadSettings();
-      loadServers();
-    }
-  }, [user]);
-
-  // Load servers when allServers changes (avoid unnecessary calls)
-  useEffect(() => {
-    if (user && canManageSettings(user.role)) {
-      loadServers();
-    }
-  }, [allServers, user]);
-
-  // Handle URL parameter for direct tab navigation
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab) {
-      setActiveTab(tab);
-      if (tab === "servers") {
-        setShowAddForm(true);
-      }
-      setSearchParams({}); // Clear URL parameter after processing
-    } else if (!activeTab && Object.keys(sections).length > 0) {
-      // Set first section as default active tab
-      setActiveTab(Object.keys(sections)[0]);
-    }
-  }, [searchParams, setSearchParams, sections, activeTab]);
-
-  const loadServers = async () => {
+  // Define functions before useEffect to fix no-use-before-define
+  const loadServers = useCallback(async () => {
     try {
       // Load servers with API keys for settings page display
       const response = await axios.get("/api/servers?includeApiKeys=true");
@@ -127,7 +275,63 @@ const ZoneweaverSettings = () => {
       const serverList = getServers();
       setServers(serverList);
     }
-  };
+  }, [getServers]);
+
+  const loadSettings = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/api/settings");
+
+      if (response.data.success) {
+        const { extractedValues, organizedSections } = processConfig(
+          response.data.config
+        );
+        setValues(extractedValues);
+        setSections(organizedSections);
+      } else {
+        setMsg(`Failed to load settings: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error);
+      setMsg(
+        `Error loading settings: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load settings on component mount
+  useEffect(() => {
+    if (user && canManageSettings(user.role)) {
+      loadSettings();
+      loadServers();
+    }
+  }, [user, loadSettings, loadServers]);
+
+  // Load servers when allServers changes (avoid unnecessary calls)
+  useEffect(() => {
+    if (user && canManageSettings(user.role)) {
+      loadServers();
+    }
+  }, [allServers, user, loadServers]);
+
+  // Handle URL parameter for direct tab navigation
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+      if (tab === "servers") {
+        setShowAddForm(true);
+      }
+      setSearchParams({}); // Clear URL parameter after processing
+    } else if (!activeTab && Object.keys(sections).length > 0) {
+      // Set first section as default active tab
+      setActiveTab(Object.keys(sections)[0]);
+    }
+  }, [searchParams, setSearchParams, sections, activeTab]);
 
   // Server management functions
   const deleteServer = async (serverId) => {
@@ -154,8 +358,8 @@ const ZoneweaverSettings = () => {
     }
   };
 
-  const editServer = (hostname) => {
-    const server = servers.find((s) => s.hostname === hostname);
+  const editServer = (serverHostname) => {
+    const server = servers.find((s) => s.hostname === serverHostname);
     if (server) {
       selectServer(server);
       navigate("/ui/host-manage");
@@ -191,6 +395,17 @@ const ZoneweaverSettings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setHostname("");
+    setPort("5001");
+    setProtocol("https");
+    setEntityName("Zoneweaver-Production");
+    setApiKey("");
+    setUseExistingApiKey(false);
+    setTestResult(null);
+    setMsg("");
   };
 
   const addServerHandler = async (e) => {
@@ -248,225 +463,6 @@ const ZoneweaverSettings = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setHostname("");
-    setPort("5001");
-    setProtocol("https");
-    setEntityName("Zoneweaver-Production");
-    setApiKey("");
-    setUseExistingApiKey(false);
-    setTestResult(null);
-    setMsg("");
-  };
-
-  const loadSettings = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("/api/settings");
-
-      if (response.data.success) {
-        const { extractedValues, organizedSections } = processConfig(
-          response.data.config
-        );
-        setValues(extractedValues);
-        setSections(organizedSections);
-      } else {
-        setMsg(`Failed to load settings: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error loading settings:", error);
-      setMsg(
-        `Error loading settings: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Process configuration to extract values and organize by sections and subsections
-  const processConfig = (config) => {
-    const extractedValues = {};
-    const organizedSections = {};
-    const sectionMetadata = config._sections || {};
-
-    const processObject = (obj, path = "", sectionName = "General") => {
-      for (const [key, value] of Object.entries(obj || {})) {
-        // Skip metadata sections
-        if (key === "_sections") {
-          continue;
-        }
-
-        const fullPath = path ? `${path}.${key}` : key;
-
-        if (
-          value &&
-          typeof value === "object" &&
-          value.type &&
-          value.hasOwnProperty("value")
-        ) {
-          // This is a metadata field
-          extractedValues[fullPath] = value.value;
-
-          // Determine section from metadata or infer from path
-          const section =
-            value.section || inferSection(fullPath) || sectionName;
-          const subsection =
-            value.subsection || inferSubsection(fullPath, section);
-
-          if (!organizedSections[section]) {
-            const metadata = sectionMetadata[section] || {};
-            organizedSections[section] = {
-              title: section,
-              icon: metadata.icon || getSectionIcon(section),
-              description: metadata.description || "",
-              fields: [],
-              subsections: {},
-            };
-          }
-
-          const fieldData = {
-            key: fullPath,
-            path: fullPath,
-            type: value.type,
-            label: value.label || generateLabel(key),
-            description: value.description || "",
-            placeholder: value.placeholder || "",
-            required: value.required || false,
-            options: value.options || null,
-            validation: value.validation || {},
-            conditional: value.conditional || null,
-            order: value.order || 0,
-            value: value.value,
-          };
-
-          // Special handling for object-type fields
-          if (
-            value.type === "object" &&
-            value.value &&
-            typeof value.value === "object"
-          ) {
-            // Create the parent subsection but don't add the object as a field
-            if (subsection) {
-              if (!organizedSections[section].subsections[subsection]) {
-                organizedSections[section].subsections[subsection] = {
-                  title: subsection,
-                  fields: [],
-                };
-              }
-              // Don't add the object field itself, just ensure the subsection exists
-            }
-
-            // Recurse into their value to process nested fields
-            processObject(value.value, fullPath, section);
-          } else {
-            // Regular field processing for non-object fields
-            if (subsection) {
-              // Organize into subsections
-              if (!organizedSections[section].subsections[subsection]) {
-                organizedSections[section].subsections[subsection] = {
-                  title: subsection,
-                  fields: [],
-                };
-              }
-              organizedSections[section].subsections[subsection].fields.push(
-                fieldData
-              );
-            } else {
-              // Add to main section
-              organizedSections[section].fields.push(fieldData);
-            }
-          }
-        } else if (
-          value &&
-          typeof value === "object" &&
-          !Array.isArray(value) &&
-          !value.hasOwnProperty("type")
-        ) {
-          // This is a nested object, recurse with section inference
-          const inferredSection = inferSection(fullPath) || sectionName;
-          processObject(value, fullPath, inferredSection);
-        } else if (Array.isArray(value) || typeof value !== "object") {
-          // This is a direct value (backward compatibility)
-          extractedValues[fullPath] = value;
-        }
-      }
-    };
-
-    processObject(config);
-
-    // Sort fields within each section and subsection by order
-    Object.values(organizedSections).forEach((section) => {
-      section.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
-      Object.values(section.subsections).forEach((subsection) => {
-        subsection.fields.sort((a, b) => (a.order || 0) - (b.order || 0));
-      });
-    });
-
-    return { extractedValues, organizedSections };
-  };
-
-  // Infer section from field path
-  const inferSection = (path) => {
-    const sectionMap = {
-      frontend: "Frontend",
-      server: "Server",
-      database: "Database",
-      mail: "Mail",
-      authentication: "Authentication",
-      cors: "Security",
-      logging: "Logging",
-      limits: "Performance",
-      environment: "Environment",
-      integrations: "Integrations",
-      gravatar: "Integrations", // Map gravatar to Integrations
-    };
-
-    const pathParts = path.split(".");
-    return sectionMap[pathParts[0]];
-  };
-
-  // Infer subsection from field path for integrations
-  const inferSubsection = (path, section) => {
-    if (section === "Integrations") {
-      const pathParts = path.split(".");
-      if (pathParts[0] === "integrations" && pathParts[1]) {
-        // Convert subsection name to title case
-        return pathParts[1].charAt(0).toUpperCase() + pathParts[1].slice(1);
-      }
-      if (pathParts[0] === "gravatar") {
-        return "Gravatar";
-      }
-    }
-    return null;
-  };
-
-  // Generate human-readable label from field name
-  const generateLabel = (fieldName) =>
-    fieldName
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-
-  // Get icon for section
-  const getSectionIcon = (section) => {
-    const iconMap = {
-      Application: "fas fa-cogs",
-      Server: "fas fa-server",
-      Frontend: "fas fa-desktop",
-      Database: "fas fa-database",
-      Mail: "fas fa-envelope",
-      Authentication: "fas fa-shield-alt",
-      Security: "fas fa-lock",
-      Logging: "fas fa-file-alt",
-      Performance: "fas fa-tachometer-alt",
-      Environment: "fas fa-globe",
-      Integrations: "fas fa-puzzle-piece",
-    };
-    return iconMap[section] || "fas fa-cog";
   };
 
   // Handle field value changes
@@ -620,7 +616,7 @@ const ZoneweaverSettings = () => {
 
     return (
       <div className="field" key={field.path}>
-        <label className="label">
+        <label className="label" htmlFor={field.path}>
           <span className="icon is-small mr-2">
             <i className={config.icon} />
           </span>
@@ -632,6 +628,7 @@ const ZoneweaverSettings = () => {
           <label className="label is-small">File Path:</label>
           <div className="control">
             <input
+              id={field.path}
               className="input is-small"
               type="text"
               value={currentValue || ""}
@@ -730,6 +727,7 @@ const ZoneweaverSettings = () => {
 
     const fieldProps = {
       key: field.path,
+      id: field.path,
       value: currentValue || "",
       onChange: (e) => {
         const value =
@@ -748,6 +746,7 @@ const ZoneweaverSettings = () => {
         inputElement = (
           <label className="switch is-medium">
             <input
+              id={field.path}
               type="checkbox"
               checked={!!currentValue}
               onChange={fieldProps.onChange}
@@ -860,7 +859,9 @@ const ZoneweaverSettings = () => {
     return (
       <div className="field" key={field.path}>
         {field.type !== "boolean" && (
-          <label className="label">{field.label}</label>
+          <label className="label" htmlFor={field.path}>
+            {field.label}
+          </label>
         )}
         <div className="control">{inputElement}</div>
         {field.description && (
@@ -896,76 +897,6 @@ const ZoneweaverSettings = () => {
         }`
       );
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetToDefaults = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to reset all settings to defaults? This cannot be undone."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setMsg("");
-
-      const response = await axios.post("/api/settings/reset");
-
-      if (response.data.success) {
-        setMsg(response.data.message);
-        await loadSettings();
-      } else {
-        setMsg(`Failed to reset settings: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error resetting settings:", error);
-      setMsg(
-        `Error resetting settings: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const restartServer = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to restart the server? This will briefly interrupt service for all users."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setMsg("Initiating server restart...");
-
-      const response = await axios.post("/api/settings/restart");
-
-      if (response.data.success) {
-        setMsg("Server restart initiated. Monitoring server health...");
-
-        // Start health checking after a brief delay
-        setTimeout(() => {
-          monitorServerRestart();
-        }, 3000);
-      } else {
-        setMsg(`Failed to restart server: ${response.data.message}`);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Error restarting server:", error);
-      setMsg(
-        `Error restarting server: ${
-          error.response?.data?.message || error.message
-        }`
-      );
       setLoading(false);
     }
   };
@@ -1010,6 +941,43 @@ const ZoneweaverSettings = () => {
     checkHealth();
   };
 
+  const restartServer = async () => {
+    if (
+      !window.confirm(
+        "Are you sure you want to restart the server? This will briefly interrupt service for all users."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMsg("Initiating server restart...");
+
+      const response = await axios.post("/api/settings/restart");
+
+      if (response.data.success) {
+        setMsg("Server restart initiated. Monitoring server health...");
+
+        // Start health checking after a brief delay
+        setTimeout(() => {
+          monitorServerRestart();
+        }, 3000);
+      } else {
+        setMsg(`Failed to restart server: ${response.data.message}`);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error restarting server:", error);
+      setMsg(
+        `Error restarting server: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+      setLoading(false);
+    }
+  };
+
   // Backup management functions
   const loadBackups = async () => {
     try {
@@ -1025,32 +993,6 @@ const ZoneweaverSettings = () => {
       console.error("Error loading backups:", error);
       setMsg(
         `Error loading backups: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createManualBackup = async () => {
-    try {
-      setLoading(true);
-      setMsg("Creating backup...");
-
-      // Create backup by saving current settings (which auto-creates backup)
-      const response = await axios.put("/api/settings", {});
-
-      if (response.data.success) {
-        setMsg("Manual backup created successfully!");
-        await loadBackups(); // Refresh backup list
-      } else {
-        setMsg(`Failed to create backup: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error creating backup:", error);
-      setMsg(
-        `Error creating backup: ${
           error.response?.data?.message || error.message
         }`
       );
@@ -1941,7 +1883,8 @@ const ZoneweaverSettings = () => {
                                 <div className="level-right">
                                   <button
                                     className="button is-primary is-small"
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       resetOidcProviderForm();
                                       setShowOidcProviderModal(true);
                                     }}
@@ -2676,8 +2619,8 @@ const ZoneweaverSettings = () => {
                       </span>
                     </div>
                     <p className="help">
-                      The OIDC issuer URL (check your provider's documentation
-                      for the correct URL)
+                      The OIDC issuer URL (check your provider&apos;s
+                      documentation for the correct URL)
                     </p>
                   </div>
                 </div>
@@ -2859,7 +2802,7 @@ const ZoneweaverSettings = () => {
                       developer console
                     </li>
                     <li>
-                      Add{" "}
+                      Add
                       <code>
                         https://your-domain.com/api/auth/oidc/callback
                       </code>{" "}

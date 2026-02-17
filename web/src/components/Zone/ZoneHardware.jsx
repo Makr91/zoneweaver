@@ -1,5 +1,3 @@
-import React from "react";
-
 const ZoneHardware = ({ zoneDetails }) => {
   if (
     !zoneDetails?.configuration ||
