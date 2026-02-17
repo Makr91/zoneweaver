@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
   const [actionLoading, setActionLoading] = useState({});
@@ -241,6 +242,13 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+FaultTable.propTypes = {
+  faults: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onAction: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default FaultTable;

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 import FaultList from "./FaultList";
 import FaultManagerConfig from "./FaultManagerConfig";
@@ -22,36 +23,36 @@ const FaultManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "faults" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("faults")}>
+            <button type="button" className="button is-ghost" onClick={() => setActiveTab("faults")}>
               <span className="icon is-small">
                 <i className="fas fa-exclamation-triangle" />
               </span>
               <span>Current Faults</span>
-            </a>
+            </button>
           </li>
           <li className={activeTab === "logs" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("logs")}>
+            <button type="button" className="button is-ghost" onClick={() => setActiveTab("logs")}>
               <span className="icon is-small">
                 <i className="fas fa-file-alt" />
               </span>
               <span>System Logs</span>
-            </a>
+            </button>
           </li>
           <li className={activeTab === "config" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("config")}>
+            <button type="button" className="button is-ghost" onClick={() => setActiveTab("config")}>
               <span className="icon is-small">
                 <i className="fas fa-cog" />
               </span>
               <span>Configuration</span>
-            </a>
+            </button>
           </li>
           <li className={activeTab === "syslog-config" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("syslog-config")}>
+            <button type="button" className="button is-ghost" onClick={() => setActiveTab("syslog-config")}>
               <span className="icon is-small">
                 <i className="fas fa-edit" />
               </span>
               <span>Syslog Config</span>
-            </a>
+            </button>
           </li>
         </ul>
       </div>
@@ -149,6 +150,10 @@ const FaultManagement = ({ server }) => {
       </div>
     </div>
   );
+};
+
+FaultManagement.propTypes = {
+  server: PropTypes.object.isRequired,
 };
 
 export default FaultManagement;

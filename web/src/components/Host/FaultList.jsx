@@ -260,7 +260,7 @@ const FaultList = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">&nbsp;</span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -277,7 +277,7 @@ const FaultList = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">&nbsp;</span>
               <div className="control">
                 <button
                   className="button"

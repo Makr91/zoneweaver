@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -129,7 +130,7 @@ const FaultManagerConfig = ({ server }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label is-small">Total Modules</label>
+              <span className="label is-small">Total Modules</span>
               <p className="control">
                 <span className="tag is-info is-medium">{config.length}</span>
               </p>
@@ -137,7 +138,7 @@ const FaultManagerConfig = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label is-small">Module Types</label>
+              <span className="label is-small">Module Types</span>
               <div className="control">
                 <div className="tags">
                   {[
@@ -153,7 +154,7 @@ const FaultManagerConfig = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label is-small">Status</label>
+              <span className="label is-small">Status</span>
               <p className="control">
                 <span className="tag is-success">
                   <span className="icon is-small">
@@ -294,6 +295,10 @@ const FaultManagerConfig = ({ server }) => {
       </div>
     </div>
   );
+};
+
+FaultManagerConfig.propTypes = {
+  server: PropTypes.object.isRequired,
 };
 
 export default FaultManagerConfig;
