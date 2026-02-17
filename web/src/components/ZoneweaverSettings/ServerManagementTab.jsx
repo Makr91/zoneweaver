@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,7 +14,6 @@ import ServerTable from "../Host/ServerTable";
  */
 const ServerManagementTab = ({
   servers,
-  setServers,
   showAddForm,
   setShowAddForm,
   hostname,
@@ -30,7 +30,6 @@ const ServerManagementTab = ({
   setUseExistingApiKey,
   testResult,
   setTestResult,
-  msg,
   setMsg,
   serverContext,
 }) => {
@@ -306,6 +305,34 @@ const ServerManagementTab = ({
       />
     </>
   );
+};
+
+ServerManagementTab.propTypes = {
+  servers: PropTypes.array.isRequired,
+  showAddForm: PropTypes.bool.isRequired,
+  setShowAddForm: PropTypes.func.isRequired,
+  hostname: PropTypes.string.isRequired,
+  setHostname: PropTypes.func.isRequired,
+  port: PropTypes.string.isRequired,
+  setPort: PropTypes.func.isRequired,
+  protocol: PropTypes.string.isRequired,
+  setProtocol: PropTypes.func.isRequired,
+  entityName: PropTypes.string.isRequired,
+  setEntityName: PropTypes.func.isRequired,
+  apiKey: PropTypes.string.isRequired,
+  setApiKey: PropTypes.func.isRequired,
+  useExistingApiKey: PropTypes.bool.isRequired,
+  setUseExistingApiKey: PropTypes.func.isRequired,
+  testResult: PropTypes.string,
+  setTestResult: PropTypes.func.isRequired,
+  setMsg: PropTypes.func.isRequired,
+  serverContext: PropTypes.shape({
+    removeServer: PropTypes.func.isRequired,
+    addServer: PropTypes.func.isRequired,
+    testServer: PropTypes.func.isRequired,
+    refreshServers: PropTypes.func.isRequired,
+    selectServer: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 export default ServerManagementTab;

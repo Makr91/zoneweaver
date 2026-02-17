@@ -1,16 +1,15 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import axios from "axios";
-import { useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useServers } from "../../contexts/ServerContext";
+import useSettingsAPI from "../../hooks/useSettingsAPI";
 import useSettingsState from "../../hooks/useSettingsState";
 import { canManageSettings } from "../../utils/permissions";
-import { processConfig } from "../../utils/settingsUtils";
+import { ConfirmModal } from "../common";
 
 import BackupManager from "./BackupManager";
-import FieldRenderer from "./FieldRenderer";
 import ServerManagementTab from "./ServerManagementTab";
 import SettingsContent from "./SettingsContent";
 import TestingPanel from "./TestingPanel";
@@ -23,6 +22,7 @@ const ZoneweaverSettings = () => {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const serverContext = useServers();
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
   // Get all state from the custom hook
   const state = useSettingsState();
@@ -84,75 +84,40 @@ const ZoneweaverSettings = () => {
     },
   } = state;
 
-  // Load servers with API keys for settings page display
-  const loadServers = useCallback(async () => {
-    try {
-      const response = await axios.get("/api/servers?includeApiKeys=true");
-      if (response.data.success) {
-        setServers(response.data.servers);
-      } else {
-        const serverList = serverContext.getServers();
-        setServers(serverList);
-      }
-    } catch (error) {
-      console.warn(
-        "Failed to load servers with API keys, using fallback:",
-        error.message
-      );
-      const serverList = serverContext.getServers();
-      setServers(serverList);
-    }
-  }, [serverContext, setServers]);
+  // Handle field value changes
+  const handleFieldChange = useCallback(
+    (fieldPath, value) => {
+      setValues((prev) => ({
+        ...prev,
+        [fieldPath]: value,
+      }));
+    },
+    [setValues]
+  );
 
-  // Load settings from API
-  const loadSettings = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("/api/settings");
-
-      if (response.data.success) {
-        const { extractedValues, organizedSections } = processConfig(
-          response.data.config
-        );
-        setValues(extractedValues);
-        setSections(organizedSections);
-      } else {
-        setMsg(`Failed to load settings: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error loading settings:", error);
-      setMsg(
-        `Error loading settings: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading, setValues, setSections, setMsg]);
-
-  // Load backups from API
-  const loadBackups = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("/api/settings/backups");
-
-      if (response.data.success) {
-        setBackups(response.data.backups);
-      } else {
-        setMsg(`Failed to load backups: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error loading backups:", error);
-      setMsg(
-        `Error loading backups: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading, setBackups, setMsg]);
+  // Get API handlers from custom hook
+  const {
+    loadServers,
+    loadSettings,
+    loadBackups,
+    handleSaveSettings,
+    executeServerRestart: executeRestart,
+    createBackup,
+    handleSslFileUpload,
+  } = useSettingsAPI({
+    setSections,
+    setValues,
+    setMsg,
+    setLoading,
+    setRequiresRestart,
+    setServers,
+    setBackups,
+    setUploadingFiles,
+    setSslFiles,
+    handleFieldChange,
+    values,
+    serverContext,
+  });
 
   // Load settings and servers on mount
   useEffect(() => {
@@ -168,6 +133,31 @@ const ZoneweaverSettings = () => {
       loadServers();
     }
   }, [serverContext.servers, user, loadServers]);
+
+  // Reset OIDC Provider Form
+  const resetOidcProviderForm = useCallback(() => {
+    setOidcProviderForm({
+      name: "",
+      displayName: "",
+      issuer: "",
+      clientId: "",
+      clientSecret: "",
+      scope: "openid profile email",
+      responseType: "code",
+      enabled: true,
+    });
+  }, [setOidcProviderForm]);
+
+  // Show restart confirmation dialog
+  const handleRestartServer = useCallback(() => {
+    setShowRestartConfirm(true);
+  }, []);
+
+  // Open backup modal handler
+  const handleOpenBackupModal = useCallback(async () => {
+    await loadBackups();
+    setShowBackupModal(true);
+  }, [loadBackups, setShowBackupModal]);
 
   // Handle URL parameter for direct tab navigation
   useEffect(() => {
@@ -189,247 +179,6 @@ const ZoneweaverSettings = () => {
     setActiveTab,
     setShowAddForm,
   ]);
-
-  // Handle field value changes
-  const handleFieldChange = useCallback(
-    (fieldPath, value) => {
-      setValues((prev) => ({
-        ...prev,
-        [fieldPath]: value,
-      }));
-    },
-    [setValues]
-  );
-
-  // Toggle subsection collapse state
-  const toggleSubsection = useCallback(
-    (sectionName, subsectionName) => {
-      const key = `${sectionName}-${subsectionName}`;
-      setCollapsedSubsections((prev) => ({
-        ...prev,
-        [key]: !prev[key],
-      }));
-    },
-    [setCollapsedSubsections]
-  );
-
-  // Check if subsection is collapsed
-  const isSubsectionCollapsed = useCallback(
-    (sectionName, subsectionName) => {
-      const key = `${sectionName}-${subsectionName}`;
-      return collapsedSubsections[key] || false;
-    },
-    [collapsedSubsections]
-  );
-
-  // SSL file upload handler
-  const handleSslFileUpload = useCallback(
-    async (fieldPath, file) => {
-      if (!file) {
-        return;
-      }
-
-      setUploadingFiles((prev) => ({ ...prev, [fieldPath]: true }));
-
-      try {
-        const formData = new FormData();
-        formData.append("sslFile", file);
-        formData.append("fieldPath", fieldPath);
-
-        const response = await axios.post(
-          "/api/settings/ssl/upload",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (response.data.success) {
-          handleFieldChange(fieldPath, response.data.filePath);
-          setSslFiles((prev) => ({
-            ...prev,
-            [fieldPath]: {
-              name: file.name,
-              size: file.size,
-              uploadedPath: response.data.filePath,
-            },
-          }));
-          setMsg(`SSL certificate uploaded successfully: ${file.name}`);
-        } else {
-          setMsg(`Failed to upload SSL certificate: ${response.data.message}`);
-        }
-      } catch (error) {
-        console.error("SSL file upload error:", error);
-        setMsg(
-          `Error uploading SSL certificate: ${error.response?.data?.message || error.message}`
-        );
-      } finally {
-        setUploadingFiles((prev) => ({ ...prev, [fieldPath]: false }));
-      }
-    },
-    [setUploadingFiles, handleFieldChange, setSslFiles, setMsg]
-  );
-
-  // SSL file delete handler
-  const handleSslFileDelete = useCallback(
-    async (fieldPath) => {
-      try {
-        const response = await axios.delete("/api/settings/ssl/delete", {
-          data: { fieldPath },
-        });
-
-        if (response.data.success) {
-          handleFieldChange(fieldPath, "");
-          setSslFiles((prev) => {
-            const updated = { ...prev };
-            delete updated[fieldPath];
-            return updated;
-          });
-          setMsg("SSL certificate deleted successfully");
-        } else {
-          setMsg(`Failed to delete SSL certificate: ${response.data.message}`);
-        }
-      } catch (error) {
-        console.error("SSL file delete error:", error);
-        setMsg(
-          `Error deleting SSL certificate: ${error.response?.data?.message || error.message}`
-        );
-      }
-    },
-    [handleFieldChange, setSslFiles, setMsg]
-  );
-
-  // Save settings handler
-  const handleSaveSettings = useCallback(async () => {
-    setLoading(true);
-    setMsg("");
-    setRequiresRestart(false);
-
-    try {
-      const response = await axios.put("/api/settings", values);
-
-      if (response.data.success) {
-        setMsg(response.data.message);
-        setRequiresRestart(response.data.requiresRestart);
-        await loadSettings();
-      } else {
-        setMsg(`Failed to save settings: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      setMsg(
-        `Error saving settings: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading, setMsg, setRequiresRestart, values, loadSettings]);
-
-  // Monitor server restart
-  const monitorServerRestart = useCallback(async () => {
-    let attempts = 0;
-    const maxAttempts = 30;
-    const checkInterval = 3000;
-
-    const checkHealth = async () => {
-      attempts++;
-
-      try {
-        setMsg(`Checking server health... (${attempts}/${maxAttempts})`);
-
-        const response = await axios.get("/api/health", {
-          timeout: 5000,
-        });
-
-        if (response.data.success && response.data.status === "healthy") {
-          setMsg("Server restart completed successfully! Reloading page...");
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-          return;
-        }
-      } catch (error) {
-        console.log(`Health check attempt ${attempts} failed:`, error.message);
-      }
-
-      if (attempts >= maxAttempts) {
-        setMsg("Server restart timeout. Please refresh the page manually.");
-        setLoading(false);
-        return;
-      }
-
-      setTimeout(checkHealth, checkInterval);
-    };
-
-    await checkHealth();
-  }, [setMsg, setLoading]);
-
-  // Restart server handler
-  const handleRestartServer = useCallback(async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to restart the server? This will briefly interrupt service for all users."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setMsg("Initiating server restart...");
-
-      const response = await axios.post("/api/settings/restart");
-
-      if (response.data.success) {
-        setMsg("Server restart initiated. Monitoring server health...");
-        setTimeout(() => {
-          monitorServerRestart();
-        }, 3000);
-      } else {
-        setMsg(`Failed to restart server: ${response.data.message}`);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Error restarting server:", error);
-      setMsg(
-        `Error restarting server: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-      setLoading(false);
-    }
-  }, [setLoading, setMsg, monitorServerRestart]);
-
-  // Create backup handler
-  const createBackup = useCallback(async () => {
-    try {
-      setLoading(true);
-      setMsg("Creating backup...");
-
-      await handleSaveSettings();
-      await loadBackups();
-      setMsg("Backup created successfully");
-    } catch (error) {
-      console.error("Error creating backup:", error);
-      setMsg(
-        `Error creating backup: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading, setMsg, handleSaveSettings, loadBackups]);
-
-  // Open backup modal handler
-  const handleOpenBackupModal = useCallback(async () => {
-    await loadBackups();
-    setShowBackupModal(true);
-  }, [loadBackups, setShowBackupModal]);
 
   // Check permissions
   if (!user || !canManageSettings(user.role)) {
@@ -534,7 +283,21 @@ const ZoneweaverSettings = () => {
           <div className="tabs is-boxed mb-0">
             <ul>
               <li className={activeTab === "servers" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("servers")}>
+                <a
+                  href="#servers"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveTab("servers");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveTab("servers");
+                    }
+                  }}
+                  role="tab"
+                  aria-selected={activeTab === "servers"}
+                >
                   <span className="icon is-small">
                     <i className="fas fa-server" />
                   </span>
@@ -546,7 +309,21 @@ const ZoneweaverSettings = () => {
                   key={sectionName}
                   className={activeTab === sectionName ? "is-active" : ""}
                 >
-                  <a onClick={() => setActiveTab(sectionName)}>
+                  <a
+                    href={`#${sectionName}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveTab(sectionName);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setActiveTab(sectionName);
+                      }
+                    }}
+                    role="tab"
+                    aria-selected={activeTab === sectionName}
+                  >
                     <span className="icon is-small">
                       <i className={section.icon} />
                     </span>
@@ -559,25 +336,27 @@ const ZoneweaverSettings = () => {
 
           {/* Message banner */}
           <div className="p-0">
-            {msg && (
-              <div
-                className={`notification ${
-                  msg.includes("successfully")
-                    ? "is-success"
-                    : msg.includes("Error")
-                      ? "is-danger"
-                      : "is-warning"
-                } mb-4 mx-4 mt-4`}
-              >
-                <p>{msg}</p>
-              </div>
-            )}
+            {msg &&
+              (() => {
+                let messageClass = "is-warning";
+                if (msg.includes("successfully")) {
+                  messageClass = "is-success";
+                } else if (msg.includes("Error")) {
+                  messageClass = "is-danger";
+                }
+                return (
+                  <div
+                    className={`notification ${messageClass} mb-4 mx-4 mt-4`}
+                  >
+                    <p>{msg}</p>
+                  </div>
+                );
+              })()}
 
             {/* Server Management Tab */}
             {activeTab === "servers" && (
               <ServerManagementTab
                 servers={servers}
-                setServers={setServers}
                 showAddForm={showAddForm}
                 setShowAddForm={setShowAddForm}
                 hostname={hostname}
@@ -594,7 +373,6 @@ const ZoneweaverSettings = () => {
                 setUseExistingApiKey={setUseExistingApiKey}
                 testResult={testResult}
                 setTestResult={setTestResult}
-                msg={msg}
                 setMsg={setMsg}
                 serverContext={serverContext}
               />
@@ -604,8 +382,25 @@ const ZoneweaverSettings = () => {
             {Object.entries(sections).map(
               ([sectionName, section]) =>
                 activeTab === sectionName && (
-                  <div key={sectionName}>
-                    {sectionName === "Authentication" ? (
+                  <div key={sectionName} className="px-4">
+                    <SettingsContent
+                      activeTab={sectionName}
+                      sections={{ [sectionName]: section }}
+                      values={values}
+                      collapsedSubsections={collapsedSubsections}
+                      setCollapsedSubsections={setCollapsedSubsections}
+                      sslFiles={sslFiles}
+                      uploadingFiles={uploadingFiles}
+                      loading={loading}
+                      onFieldChange={handleFieldChange}
+                      onSslFileUpload={handleSslFileUpload}
+                      resetOidcProviderForm={resetOidcProviderForm}
+                      setShowOidcProviderModal={setShowOidcProviderModal}
+                    />
+
+                    {/* Testing Panel for Authentication and Mail */}
+                    {(sectionName === "Authentication" ||
+                      sectionName === "Mail") && (
                       <TestingPanel
                         values={values}
                         testResults={testResults}
@@ -622,77 +417,99 @@ const ZoneweaverSettings = () => {
                         setOidcProviderForm={setOidcProviderForm}
                         oidcProviderLoading={oidcProviderLoading}
                         setOidcProviderLoading={setOidcProviderLoading}
+                        resetOidcProviderForm={resetOidcProviderForm}
                         setMsg={setMsg}
                         loading={loading}
                         section={section}
                         sectionName={sectionName}
                       />
-                    ) : (
-                      <SettingsContent
-                        sectionName={sectionName}
-                        section={section}
-                        values={values}
-                        handleFieldChange={handleFieldChange}
-                        loading={loading}
-                        toggleSubsection={toggleSubsection}
-                        isSubsectionCollapsed={isSubsectionCollapsed}
-                        sslFiles={sslFiles}
-                        uploadingFiles={uploadingFiles}
-                        handleSslFileUpload={handleSslFileUpload}
-                        handleSslFileDelete={handleSslFileDelete}
-                      />
                     )}
                   </div>
                 )
             )}
+
+            {/* Restart Warning */}
+            {requiresRestart && activeTab !== "servers" && (
+              <div className="notification is-warning mx-4 mt-4">
+                <h3 className="title is-6">Server Restart Required</h3>
+                <p>
+                  Some of your changes require a server restart to take effect.
+                </p>
+                <div className="mt-3">
+                  <button
+                    className="button is-danger"
+                    onClick={handleRestartServer}
+                    disabled={loading}
+                  >
+                    <span className="icon">
+                      <i className="fas fa-power-off" />
+                    </span>
+                    <span>Restart Server Now</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Backup Manager Modal */}
-          {showBackupModal && (
-            <BackupManager
-              backups={backups}
-              loading={loading}
-              setLoading={setLoading}
-              setMsg={setMsg}
-              loadBackups={loadBackups}
-              loadSettings={loadSettings}
-              showBackupModal={showBackupModal}
-              setShowBackupModal={setShowBackupModal}
-            />
-          )}
+          <BackupManager
+            backups={backups}
+            setBackups={setBackups}
+            showBackupModal={showBackupModal}
+            setShowBackupModal={setShowBackupModal}
+            setMsg={setMsg}
+            onBackupRestore={loadSettings}
+          />
 
           {/* Help Section */}
           {activeTab !== "servers" && Object.keys(sections).length > 0 && (
-            <div className="box mx-4 mb-4 has-background-light">
-              <div className="content">
-                <h3 className="title is-6">
-                  <span className="icon is-small mr-2">
-                    <i className="fas fa-question-circle" />
-                  </span>
-                  Need Help?
-                </h3>
-                <p className="is-size-7">
-                  Changes to settings are saved immediately when you click the{" "}
-                  <strong>Save</strong> button.
-                  {requiresRestart && (
-                    <>
-                      {" "}
-                      Some settings require a server restart to take effect.
-                      Click the <strong>Restart</strong> button to apply these
-                      changes.
-                    </>
-                  )}
+            <div className="box mx-4 mb-4">
+              <h2 className="title is-6">Settings Information</h2>
+              <div className="content is-size-7">
+                <p>
+                  <strong>Important:</strong> These settings affect the entire
+                  Zoneweaver application for all users.
                 </p>
-                <p className="is-size-7">
-                  You can create backups of your settings at any time using the{" "}
-                  <strong>Backup</strong> button, and restore them later using
-                  the <strong>Restore</strong> button.
+                <ul>
+                  <li>
+                    Changes require super-admin privileges and take effect
+                    immediately
+                  </li>
+                  <li>
+                    Some settings may require users to refresh their browsers
+                  </li>
+                  <li>
+                    Performance settings affect resource usage and responsiveness
+                  </li>
+                  <li>
+                    Security settings impact user sessions and authentication
+                  </li>
+                </ul>
+                <p className="mt-3">
+                  <strong>Current User:</strong> {user.username}{" "}
+                  <span className="tag is-danger is-small">Super Admin</span>
                 </p>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Restart Server Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showRestartConfirm}
+        onClose={() => setShowRestartConfirm(false)}
+        onConfirm={() => {
+          setShowRestartConfirm(false);
+          executeRestart();
+        }}
+        title="Restart Server"
+        message="Are you sure you want to restart the server? This will briefly interrupt service for all users."
+        confirmText="Restart Server"
+        confirmVariant="is-danger"
+        icon="fas fa-redo"
+        loading={loading}
+      />
     </div>
   );
 };

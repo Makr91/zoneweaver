@@ -80,6 +80,70 @@ export const getSectionIcon = (section) => {
 };
 
 /**
+ * Ensures a section exists in organizedSections
+ */
+const ensureSection = (organizedSections, section, sectionMetadata) => {
+  if (!organizedSections[section]) {
+    const metadata = sectionMetadata[section] || {};
+    organizedSections[section] = {
+      title: section,
+      icon: metadata.icon || getSectionIcon(section),
+      description: metadata.description || "",
+      fields: [],
+      subsections: {},
+    };
+  }
+};
+
+/**
+ * Ensures a subsection exists in a section
+ */
+const ensureSubsection = (organizedSections, section, subsection) => {
+  if (!organizedSections[section].subsections[subsection]) {
+    organizedSections[section].subsections[subsection] = {
+      title: subsection,
+      fields: [],
+    };
+  }
+};
+
+/**
+ * Creates field data object from value metadata
+ */
+const createFieldData = (fullPath, key, value) => ({
+  key: fullPath,
+  path: fullPath,
+  type: value.type,
+  label: value.label || generateLabel(key),
+  description: value.description || "",
+  placeholder: value.placeholder || "",
+  required: value.required || false,
+  options: value.options || null,
+  validation: value.validation || {},
+  conditional: value.conditional || null,
+  order: value.order || 0,
+  value: value.value,
+});
+
+/**
+ * Checks if a value is a metadata field
+ */
+const isMetadataField = (value) =>
+  value &&
+  typeof value === "object" &&
+  value.type &&
+  Object.hasOwn(value, "value");
+
+/**
+ * Checks if a value is a nested object (not a field)
+ */
+const isNestedObject = (value) =>
+  value &&
+  typeof value === "object" &&
+  !Array.isArray(value) &&
+  !Object.hasOwn(value, "type");
+
+/**
  * Processes raw configuration into organized structure with sections, subsections, and fields
  * @param {object} config - Raw configuration object with metadata
  * @returns {{extractedValues: object, organizedSections: object}} Processed configuration
@@ -98,12 +162,7 @@ export const processConfig = (config) => {
 
       const fullPath = path ? `${path}.${key}` : key;
 
-      if (
-        value &&
-        typeof value === "object" &&
-        value.type &&
-        Object.hasOwn(value, "value")
-      ) {
+      if (isMetadataField(value)) {
         // This is a metadata field
         extractedValues[fullPath] = value.value;
 
@@ -112,31 +171,9 @@ export const processConfig = (config) => {
         const subsection =
           value.subsection || inferSubsection(fullPath, section);
 
-        if (!organizedSections[section]) {
-          const metadata = sectionMetadata[section] || {};
-          organizedSections[section] = {
-            title: section,
-            icon: metadata.icon || getSectionIcon(section),
-            description: metadata.description || "",
-            fields: [],
-            subsections: {},
-          };
-        }
+        ensureSection(organizedSections, section, sectionMetadata);
 
-        const fieldData = {
-          key: fullPath,
-          path: fullPath,
-          type: value.type,
-          label: value.label || generateLabel(key),
-          description: value.description || "",
-          placeholder: value.placeholder || "",
-          required: value.required || false,
-          options: value.options || null,
-          validation: value.validation || {},
-          conditional: value.conditional || null,
-          order: value.order || 0,
-          value: value.value,
-        };
+        const fieldData = createFieldData(fullPath, key, value);
 
         // Special handling for object-type fields
         if (
@@ -146,41 +183,22 @@ export const processConfig = (config) => {
         ) {
           // Create the parent subsection but don't add the object as a field
           if (subsection) {
-            if (!organizedSections[section].subsections[subsection]) {
-              organizedSections[section].subsections[subsection] = {
-                title: subsection,
-                fields: [],
-              };
-            }
-            // Don't add the object field itself, just ensure the subsection exists
+            ensureSubsection(organizedSections, section, subsection);
           }
 
           // Recurse into their value to process nested fields
           processObject(value.value, fullPath, section);
+        } else if (subsection) {
+          // Regular field processing for subsection fields
+          ensureSubsection(organizedSections, section, subsection);
+          organizedSections[section].subsections[subsection].fields.push(
+            fieldData
+          );
         } else {
-          // Regular field processing for non-object fields
-          if (subsection) {
-            // Organize into subsections
-            if (!organizedSections[section].subsections[subsection]) {
-              organizedSections[section].subsections[subsection] = {
-                title: subsection,
-                fields: [],
-              };
-            }
-            organizedSections[section].subsections[subsection].fields.push(
-              fieldData
-            );
-          } else {
-            // Add to main section
-            organizedSections[section].fields.push(fieldData);
-          }
+          // Add to main section
+          organizedSections[section].fields.push(fieldData);
         }
-      } else if (
-        value &&
-        typeof value === "object" &&
-        !Array.isArray(value) &&
-        !Object.hasOwn(value, "type")
-      ) {
+      } else if (isNestedObject(value)) {
         // This is a nested object, recurse with section inference
         const inferredSection = inferSection(fullPath) || sectionName;
         processObject(value, fullPath, inferredSection);

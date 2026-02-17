@@ -1,4 +1,5 @@
 import axios from "axios";
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { ContentModal } from "../common";
@@ -36,7 +37,7 @@ const BackupManager = ({
     }
   };
 
-  const restoreFromBackup = async (backupFilename) => {
+  const restoreFromBackup = (backupFilename) => {
     setConfirmDialog({
       type: "restore",
       filename: backupFilename,
@@ -79,7 +80,7 @@ const BackupManager = ({
     }
   };
 
-  const deleteBackup = async (backupFilename) => {
+  const deleteBackup = (backupFilename) => {
     setConfirmDialog({
       type: "delete",
       filename: backupFilename,
@@ -223,6 +224,15 @@ const BackupManager = ({
       )}
     </>
   );
+};
+
+BackupManager.propTypes = {
+  backups: PropTypes.array.isRequired,
+  setBackups: PropTypes.func.isRequired,
+  showBackupModal: PropTypes.bool.isRequired,
+  setShowBackupModal: PropTypes.func.isRequired,
+  setMsg: PropTypes.func.isRequired,
+  onBackupRestore: PropTypes.func,
 };
 
 export default BackupManager;

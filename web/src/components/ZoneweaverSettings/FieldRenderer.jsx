@@ -1,14 +1,13 @@
+import PropTypes from "prop-types";
+
 const FieldRenderer = ({
   field,
-  sectionName,
-  subsectionName,
   values,
   sslFiles,
   uploadingFiles,
   loading,
   onFieldChange,
   onSslFileUpload,
-  onSetMsg,
 }) => {
   // Check if field should be shown based on conditional logic
   const shouldShowField = (fieldToCheck) => {
@@ -345,6 +344,27 @@ const FieldRenderer = ({
   }
 
   return renderField(field);
+};
+
+FieldRenderer.propTypes = {
+  field: PropTypes.shape({
+    path: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    value: PropTypes.any,
+    placeholder: PropTypes.string,
+    required: PropTypes.bool,
+    description: PropTypes.string,
+    options: PropTypes.array,
+    validation: PropTypes.object,
+    conditional: PropTypes.object,
+  }).isRequired,
+  values: PropTypes.object.isRequired,
+  sslFiles: PropTypes.object.isRequired,
+  uploadingFiles: PropTypes.object.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onFieldChange: PropTypes.func.isRequired,
+  onSslFileUpload: PropTypes.func.isRequired,
 };
 
 export default FieldRenderer;
