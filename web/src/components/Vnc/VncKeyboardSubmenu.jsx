@@ -60,11 +60,26 @@ const VncKeyboardSubmenu = ({
     }
   };
 
+  const getModifierClass = (mod, isActive) => {
+    if (!isActive) {
+      return "is-light";
+    }
+    if (mod === "alt") {
+      return "is-warning";
+    }
+    if (mod === "shift") {
+      return "is-info";
+    }
+    return "is-primary";
+  };
+
   return (
     <div
       className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center"
       onMouseEnter={() => setShowKeyboardInput(true)}
       onMouseLeave={() => setShowKeyboardInput(false)}
+      role="button"
+      tabIndex={0}
     >
       <div className="is-flex is-align-items-center">
         <span className="icon mr-2">
@@ -92,6 +107,14 @@ const VncKeyboardSubmenu = ({
             <div
               className="dropdown-item is-clickable"
               onClick={handleCtrlAltDel}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleCtrlAltDel();
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <span className="icon mr-2">
                 <i className="fas fa-power-off" />
@@ -102,6 +125,14 @@ const VncKeyboardSubmenu = ({
             <div
               className="dropdown-item is-clickable"
               onClick={() => handleKeyboardShortcut("Alt+Tab", keysymMap.tab)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleKeyboardShortcut("Alt+Tab", keysymMap.tab);
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <span className="icon mr-2">
                 <i className="fas fa-window-restore" />
@@ -112,6 +143,14 @@ const VncKeyboardSubmenu = ({
             <div
               className="dropdown-item is-clickable"
               onClick={() => handleKeyboardShortcut("Alt+F4", keysymMap.f4)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleKeyboardShortcut("Alt+F4", keysymMap.f4);
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <span className="icon mr-2">
                 <i className="fas fa-times" />
@@ -133,7 +172,7 @@ const VncKeyboardSubmenu = ({
                 {["ctrl", "alt", "shift"].map((mod) => (
                   <div className="control" key={mod}>
                     <button
-                      className={`button is-small ${modifierKeys[mod] ? (mod === "alt" ? "is-warning" : mod === "shift" ? "is-info" : "is-primary") : "is-light"}`}
+                      className={`button is-small ${getModifierClass(mod, modifierKeys[mod])}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleModifier(mod);
@@ -165,6 +204,8 @@ const VncKeyboardSubmenu = ({
               className="dropdown-item is-relative"
               onMouseEnter={() => setShowFunctionKeys(true)}
               onMouseLeave={() => setShowFunctionKeys(false)}
+              role="button"
+              tabIndex={0}
             >
               <span className="icon mr-2">
                 <i className="fas fa-keyboard" />
@@ -177,17 +218,25 @@ const VncKeyboardSubmenu = ({
               {showFunctionKeys && (
                 <div className="dropdown-menu has-z-index-modal-top zw-dropdown-function-keys">
                   <div className="dropdown-content">
-                    {[...Array(12)].map((_, i) => {
+                    {[...Array(12).keys()].map((i) => {
                       const fKeyNum = i + 1;
                       const keyCode = `F${fKeyNum}`;
                       const keysym = keysymMap[`f${fKeyNum}`];
                       return (
                         <div
-                          key={i}
+                          key={keyCode}
                           className="dropdown-item is-clickable"
                           onClick={() =>
                             handleKeyboardShortcut(keyCode, keysym, true)
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleKeyboardShortcut(keyCode, keysym, true);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
                           title={`Send ${modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift ? buildKeyString(`F${fKeyNum}`) : `F${fKeyNum}`} to guest`}
                         >
                           <span className="icon mr-2">
