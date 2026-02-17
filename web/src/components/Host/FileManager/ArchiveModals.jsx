@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import FormModal from "../../common/FormModal";
 
@@ -121,7 +121,9 @@ const CreateArchiveModal = ({
 
       {/* Archive name */}
       <div className="field">
-        <label htmlFor="archive-name" className="label">Archive Name</label>
+        <label htmlFor="archive-name" className="label">
+          Archive Name
+        </label>
         <div className="control">
           <input
             id="archive-name"
@@ -140,7 +142,9 @@ const CreateArchiveModal = ({
 
       {/* Format selection */}
       <div className="field">
-        <label htmlFor="archive-format" className="label">Archive Format</label>
+        <label htmlFor="archive-format" className="label">
+          Archive Format
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
@@ -160,7 +164,9 @@ const CreateArchiveModal = ({
 
       {/* Destination path */}
       <div className="field">
-        <label htmlFor="archive-destination" className="label">Destination Directory</label>
+        <label htmlFor="archive-destination" className="label">
+          Destination Directory
+        </label>
         <div className="control">
           <input
             id="archive-destination"
@@ -282,7 +288,9 @@ const ExtractArchiveModal = ({
 
       {/* Destination path */}
       <div className="field">
-        <label htmlFor="extract-destination" className="label">Extract To Directory</label>
+        <label htmlFor="extract-destination" className="label">
+          Extract To Directory
+        </label>
         <div className="control">
           <input
             id="extract-destination"

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -110,7 +110,9 @@ const StoragePathEditModal = ({
       showCancelButton
     >
       <div className="field">
-        <label htmlFor="edit-storage-path-name" className="label">Name</label>
+        <label htmlFor="edit-storage-path-name" className="label">
+          Name
+        </label>
         <div className="control">
           <input
             id="edit-storage-path-name"
@@ -128,7 +130,9 @@ const StoragePathEditModal = ({
 
       {/* Read-only fields */}
       <div className="field">
-        <label htmlFor="edit-storage-path-path" className="label">Path</label>
+        <label htmlFor="edit-storage-path-path" className="label">
+          Path
+        </label>
         <div className="control">
           <input
             id="edit-storage-path-path"
@@ -143,10 +147,16 @@ const StoragePathEditModal = ({
       </div>
 
       <div className="field">
-        <label htmlFor="edit-storage-path-type" className="label">Type</label>
+        <label htmlFor="edit-storage-path-type" className="label">
+          Type
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
-            <select id="edit-storage-path-type" value={storagePath.type} disabled>
+            <select
+              id="edit-storage-path-type"
+              value={storagePath.type}
+              disabled
+            >
               <option value="iso">ISO Files</option>
               <option value="image">VM Images</option>
             </select>

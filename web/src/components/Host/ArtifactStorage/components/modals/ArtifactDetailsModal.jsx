@@ -1,5 +1,3 @@
-import PropTypes from "prop-types";
-
 import { useServers } from "../../../../../contexts/ServerContext";
 import ContentModal from "../../../../common/ContentModal";
 

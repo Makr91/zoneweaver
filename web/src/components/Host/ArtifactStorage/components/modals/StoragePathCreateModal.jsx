@@ -1,5 +1,5 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -104,7 +104,9 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
       showCancelButton
     >
       <div className="field">
-        <label htmlFor="storage-path-name" className="label">Name</label>
+        <label htmlFor="storage-path-name" className="label">
+          Name
+        </label>
         <div className="control">
           <input
             id="storage-path-name"
@@ -121,7 +123,9 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label htmlFor="storage-path-path" className="label">Path</label>
+        <label htmlFor="storage-path-path" className="label">
+          Path
+        </label>
         <div className="control">
           <input
             id="storage-path-path"
@@ -140,7 +144,9 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label htmlFor="storage-path-type" className="label">Type</label>
+        <label htmlFor="storage-path-type" className="label">
+          Type
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select

@@ -240,8 +240,8 @@ const ArtifactFilters = ({
           <p>
             <strong>No storage locations configured.</strong>
             You need to create at least one storage location before you can
-            upload or download artifacts. Switch to the "Storage Locations" tab
-            to get started.
+            upload or download artifacts. Switch to the &quot;Storage
+            Locations&quot; tab to get started.
           </p>
         </div>
       )}
@@ -263,7 +263,9 @@ const ArtifactFilters = ({
           <p className="has-text-weight-semibold mb-2">Active Filters:</p>
           <div className="tags">
             {filters.search && (
-              <span className="tag is-info">Search: "{filters.search}"</span>
+              <span className="tag is-info">
+                Search: &quot;{filters.search}&quot;
+              </span>
             )}
             {filters.type && (
               <span className="tag is-info">

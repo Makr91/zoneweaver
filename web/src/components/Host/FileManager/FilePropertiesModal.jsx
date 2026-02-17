@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import FormModal from "../../common/FormModal";
 
@@ -210,7 +210,9 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* User selection */}
           <div className="field">
-            <label htmlFor="file-props-user" className="label">User</label>
+            <label htmlFor="file-props-user" className="label">
+              User
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
@@ -235,7 +237,9 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* Group selection */}
           <div className="field">
-            <label htmlFor="file-props-group" className="label">Group</label>
+            <label htmlFor="file-props-group" className="label">
+              Group
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select

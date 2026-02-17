@@ -1,5 +1,5 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -77,7 +77,9 @@ const ArtifactMoveModal = ({
       )}
 
       <div className="field">
-        <label htmlFor="move-artifact-name" className="label">Artifact</label>
+        <label htmlFor="move-artifact-name" className="label">
+          Artifact
+        </label>
         <div className="control">
           <input
             id="move-artifact-name"
@@ -90,7 +92,9 @@ const ArtifactMoveModal = ({
       </div>
 
       <div className="field">
-        <label htmlFor="move-current-location" className="label">Current Storage Location</label>
+        <label htmlFor="move-current-location" className="label">
+          Current Storage Location
+        </label>
         <div className="control">
           <input
             id="move-current-location"
@@ -103,7 +107,9 @@ const ArtifactMoveModal = ({
       </div>
 
       <div className="field">
-        <label htmlFor="move-destination-location" className="label">Destination Storage Location</label>
+        <label htmlFor="move-destination-location" className="label">
+          Destination Storage Location
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select

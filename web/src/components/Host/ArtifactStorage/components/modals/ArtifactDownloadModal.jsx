@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import PropTypes from "prop-types";
+import React, { useState } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -189,7 +189,9 @@ const ArtifactDownloadModal = ({
       showCancelButton
     >
       <div className="field">
-        <label htmlFor="download-url" className="label">URL</label>
+        <label htmlFor="download-url" className="label">
+          URL
+        </label>
         <div className="control">
           <input
             id="download-url"
@@ -206,7 +208,9 @@ const ArtifactDownloadModal = ({
       </div>
 
       <div className="field">
-        <label htmlFor="download-storage-location" className="label">Storage Location</label>
+        <label htmlFor="download-storage-location" className="label">
+          Storage Location
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
@@ -234,7 +238,9 @@ const ArtifactDownloadModal = ({
       </div>
 
       <div className="field">
-        <label htmlFor="download-filename" className="label">Filename (Optional)</label>
+        <label htmlFor="download-filename" className="label">
+          Filename (Optional)
+        </label>
         <div className="control">
           <input
             id="download-filename"

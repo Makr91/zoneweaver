@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import ArchiveModals from "./ArchiveModals";
 import { isTextFile, isArchiveFile } from "./FileManagerTransforms";

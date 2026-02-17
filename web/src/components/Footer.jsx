@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { ResizableBox } from "react-resizable";
 
@@ -112,6 +111,7 @@ const Footer = () => {
 
   const handleResize = useCallback(
     (e, { size }) => {
+      void e;
       if (footerIsActive) {
         userSettings.setFooterHeight(size.height);
 
@@ -373,7 +373,5 @@ const Footer = () => {
     </div>
   );
 };
-
-Footer.propTypes = {};
 
 export default Footer;

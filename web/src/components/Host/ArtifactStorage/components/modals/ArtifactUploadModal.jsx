@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
 import PropTypes from "prop-types";
+import { useState, useRef } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -327,7 +327,9 @@ const ArtifactUploadModal = ({
       showCancelButton
     >
       <div className="field">
-        <label htmlFor="upload-storage-location" className="label">Storage Location</label>
+        <label htmlFor="upload-storage-location" className="label">
+          Storage Location
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
@@ -392,9 +394,7 @@ const ArtifactUploadModal = ({
       {/* Selected Files List */}
       {selectedFiles.length > 0 && (
         <div className="field">
-          <span className="label">
-            Selected Files ({selectedFiles.length})
-          </span>
+          <span className="label">Selected Files ({selectedFiles.length})</span>
           <div className="box">
             {selectedFiles.map((file, index) => {
               const progress = uploadProgress[file.name];

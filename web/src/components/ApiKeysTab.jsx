@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
 import { useServers } from "../contexts/ServerContext";
@@ -267,7 +266,5 @@ const ApiKeysTab = () => {
     </div>
   );
 };
-
-ApiKeysTab.propTypes = {};
 
 export default ApiKeysTab;
