@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const NetworkSummary = ({
   networkInterfaces,
   sectionsCollapsed,
@@ -86,6 +88,19 @@ const NetworkSummary = ({
       )}
     </div>
   );
+};
+
+NetworkSummary.propTypes = {
+  networkInterfaces: PropTypes.arrayOf(
+    PropTypes.shape({
+      class: PropTypes.string,
+      state: PropTypes.string,
+    })
+  ).isRequired,
+  sectionsCollapsed: PropTypes.shape({
+    summary: PropTypes.bool.isRequired,
+  }).isRequired,
+  toggleSection: PropTypes.func.isRequired,
 };
 
 export default NetworkSummary;

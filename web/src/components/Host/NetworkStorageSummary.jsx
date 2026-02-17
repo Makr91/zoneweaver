@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const NetworkStorageSummary = ({ serverStats, storageSummary }) => (
   <div className="columns is-multiline mb-5">
     {/* Network Summary Card */}
@@ -99,5 +101,21 @@ const NetworkStorageSummary = ({ serverStats, storageSummary }) => (
     </div>
   </div>
 );
+
+NetworkStorageSummary.propTypes = {
+  serverStats: PropTypes.shape({
+    networkInterfaces: PropTypes.objectOf(
+      PropTypes.arrayOf(
+        PropTypes.shape({
+          address: PropTypes.string,
+        })
+      )
+    ),
+  }).isRequired,
+  storageSummary: PropTypes.shape({
+    pools: PropTypes.arrayOf(PropTypes.any),
+    datasets: PropTypes.arrayOf(PropTypes.any),
+  }).isRequired,
+};
 
 export default NetworkStorageSummary;

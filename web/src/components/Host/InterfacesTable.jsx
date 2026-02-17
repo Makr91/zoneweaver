@@ -1,4 +1,11 @@
+import PropTypes from "prop-types";
 import { formatSpeed } from "./NetworkingUtils";
+
+const getClassTagColor = (ifaceClass) => {
+  if (ifaceClass === "phys") return "is-primary";
+  if (ifaceClass === "vnic") return "is-info";
+  return "is-dark";
+};
 
 const InterfacesTable = ({
   networkInterfaces,
@@ -12,8 +19,8 @@ const InterfacesTable = ({
   <div className="box mb-4">
     <div className="level is-mobile mb-3">
       <div className="level-left">
-        <h4
-          className="title is-5 mb-0 is-clickable"
+        <button
+          className="button is-ghost title is-5 mb-0 p-0"
           onClick={resetInterfaceSort}
           title="Click to reset sorting to default"
         >
@@ -30,7 +37,7 @@ const InterfacesTable = ({
               </span>
             )}
           </span>
-        </h4>
+        </button>
       </div>
       <div className="level-right">
         <button
@@ -123,21 +130,13 @@ const InterfacesTable = ({
               </tr>
             </thead>
             <tbody>
-              {networkInterfaces.map((iface, index) => (
-                <tr key={index}>
+              {networkInterfaces.map((iface) => (
+                <tr key={iface.link}>
                   <td>
                     <strong>{iface.link}</strong>
                   </td>
                   <td>
-                    <span
-                      className={`tag ${
-                        iface.class === "phys"
-                          ? "is-primary"
-                          : iface.class === "vnic"
-                            ? "is-info"
-                            : "is-dark"
-                      }`}
-                    >
+                    <span className={`tag ${getClassTagColor(iface.class)}`}>
                       {iface.class}
                     </span>
                   </td>
@@ -189,5 +188,28 @@ const InterfacesTable = ({
       ))}
   </div>
 );
+
+InterfacesTable.propTypes = {
+  networkInterfaces: PropTypes.arrayOf(
+    PropTypes.shape({
+      link: PropTypes.string.isRequired,
+      class: PropTypes.string,
+      state: PropTypes.string,
+      speed: PropTypes.number,
+      mtu: PropTypes.number,
+      macaddress: PropTypes.string,
+      vid: PropTypes.number,
+      zone: PropTypes.string,
+    })
+  ).isRequired,
+  interfaceSort: PropTypes.arrayOf(PropTypes.string).isRequired,
+  handleInterfaceSort: PropTypes.func.isRequired,
+  getSortIcon: PropTypes.func.isRequired,
+  resetInterfaceSort: PropTypes.func.isRequired,
+  sectionsCollapsed: PropTypes.shape({
+    interfaces: PropTypes.bool.isRequired,
+  }).isRequired,
+  toggleSection: PropTypes.func.isRequired,
+};
 
 export default InterfacesTable;

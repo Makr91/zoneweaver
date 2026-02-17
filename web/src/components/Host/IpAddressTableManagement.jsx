@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
   const [actionLoading, setActionLoading] = useState({});
@@ -149,13 +150,13 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
           </tr>
         </thead>
         <tbody>
-          {addresses.map((address, index) => {
+          {addresses.map((address) => {
             const enableLoading = actionLoading[`${address.addrobj}-enable`];
             const disableLoading = actionLoading[`${address.addrobj}-disable`];
             const deleteLoading = actionLoading[`${address.addrobj}-delete`];
 
             return (
-              <tr key={address.id || address.addrobj || index}>
+              <tr key={address.addrobj}>
                 <td>
                   <div className="is-flex is-align-items-center">
                     {getStateIcon(address.state)}
@@ -250,6 +251,24 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
       </table>
     </div>
   );
+};
+
+IpAddressTable.propTypes = {
+  addresses: PropTypes.arrayOf(
+    PropTypes.shape({
+      addrobj: PropTypes.string.isRequired,
+      interface: PropTypes.string.isRequired,
+      addr: PropTypes.string,
+      ip_address: PropTypes.string,
+      prefix_length: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      type: PropTypes.string,
+      ip_version: PropTypes.string,
+      state: PropTypes.string,
+    })
+  ).isRequired,
+  loading: PropTypes.bool.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onToggle: PropTypes.func.isRequired,
 };
 
 export default IpAddressTable;

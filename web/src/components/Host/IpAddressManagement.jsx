@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -18,18 +19,7 @@ const IpAddressManagement = ({ server, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load IP addresses on component mount and when filters change
-  useEffect(() => {
-    loadAddresses();
-  }, [
-    server,
-    filters.interface,
-    filters.ip_version,
-    filters.type,
-    filters.state,
-  ]);
-
-  const loadAddresses = async () => {
+  const loadAddresses = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -80,12 +70,26 @@ const IpAddressManagement = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    makeZoneweaverAPIRequest,
+    server,
+    filters.interface,
+    filters.ip_version,
+    filters.type,
+    filters.state,
+    onError,
+  ]);
+
+  // Load IP addresses on component mount and when filters change
+  useEffect(() => {
+    loadAddresses();
+  }, [loadAddresses]);
 
   const handleDeleteAddress = async (addrobj) => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
+    // eslint-disable-next-line no-alert
     if (
       !window.confirm(
         `Are you sure you want to delete IP address "${addrobj}"?`
@@ -191,9 +195,12 @@ const IpAddressManagement = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Interface</label>
+              <label className="label" htmlFor="filter-interface">
+                Filter by Interface
+              </label>
               <div className="control">
                 <input
+                  id="filter-interface"
                   className="input"
                   type="text"
                   placeholder="e.g., vnic0"
@@ -207,10 +214,13 @@ const IpAddressManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">IP Version</label>
+              <label className="label" htmlFor="filter-ip-version">
+                IP Version
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-ip-version"
                     value={filters.ip_version}
                     onChange={(e) =>
                       handleFilterChange("ip_version", e.target.value)
@@ -226,10 +236,13 @@ const IpAddressManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Address Type</label>
+              <label className="label" htmlFor="filter-type">
+                Address Type
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-type"
                     value={filters.type}
                     onChange={(e) => handleFilterChange("type", e.target.value)}
                   >
@@ -244,10 +257,13 @@ const IpAddressManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">State</label>
+              <label className="label" htmlFor="filter-state">
+                State
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-state"
                     value={filters.state}
                     onChange={(e) =>
                       handleFilterChange("state", e.target.value)
@@ -268,7 +284,9 @@ const IpAddressManagement = ({ server, onError }) => {
         <div className="columns">
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -285,7 +303,9 @@ const IpAddressManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button"
@@ -352,6 +372,15 @@ const IpAddressManagement = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+IpAddressManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.number.isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default IpAddressManagement;

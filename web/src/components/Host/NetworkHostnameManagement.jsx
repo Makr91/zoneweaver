@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -44,12 +45,16 @@ const NetworkHostnameManagement = ({ server }) => {
               key={section.key}
               className={activeSection === section.key ? "is-active" : ""}
             >
-              <a onClick={() => setActiveSection(section.key)}>
+              <button
+                type="button"
+                className="button is-ghost p-2"
+                onClick={() => setActiveSection(section.key)}
+              >
                 <span className="icon is-small">
                   <i className={`fas ${section.icon}`} />
                 </span>
                 <span>{section.label}</span>
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -95,6 +100,14 @@ const NetworkHostnameManagement = ({ server }) => {
       </div>
     </div>
   );
+};
+
+NetworkHostnameManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.number,
+    protocol: PropTypes.string,
+  }).isRequired,
 };
 
 export default NetworkHostnameManagement;

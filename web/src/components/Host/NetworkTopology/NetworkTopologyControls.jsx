@@ -1,3 +1,16 @@
+import PropTypes from "prop-types";
+
+const getNodeTypeLabel = (nodeType) => {
+  const labels = {
+    physicalNic: "Physical NICs",
+    aggregate: "Aggregates",
+    etherstub: "Etherstubs",
+    vnic: "VNICs",
+    zone: "Zones",
+  };
+  return labels[nodeType] || nodeType;
+};
+
 const NetworkTopologyControls = (props) => {
   const {
     filters,
@@ -45,11 +58,14 @@ const NetworkTopologyControls = (props) => {
           <div className="level-item">
             <div className="field is-grouped">
               <div className="control">
-                <label className="label is-small mb-1">Edge Type:</label>
+                <label className="label is-small mb-1" htmlFor="edge-type-select">
+                  Edge Type:
+                </label>
               </div>
               <div className="control">
                 <div className="select is-small">
                   <select
+                    id="edge-type-select"
                     value={edgeType}
                     onChange={(e) => handleEdgeTypeChange(e.target.value)}
                     title="Select edge visualization type"
@@ -106,19 +122,7 @@ const NetworkTopologyControls = (props) => {
                           checked={enabled}
                           onChange={() => handleNodeTypeChange(nodeType)}
                         />
-                        <span className="ml-1">
-                          {nodeType === "physicalNic"
-                            ? "Physical NICs"
-                            : nodeType === "aggregate"
-                              ? "Aggregates"
-                              : nodeType === "etherstub"
-                                ? "Etherstubs"
-                                : nodeType === "vnic"
-                                  ? "VNICs"
-                                  : nodeType === "zone"
-                                    ? "Zones"
-                                    : nodeType}
-                        </span>
+                        <span className="ml-1">{getNodeTypeLabel(nodeType)}</span>
                       </label>
                     </div>
                   )
@@ -213,6 +217,34 @@ const NetworkTopologyControls = (props) => {
       )}
     </div>
   );
+};
+
+NetworkTopologyControls.propTypes = {
+  filters: PropTypes.shape({
+    nodeTypes: PropTypes.objectOf(PropTypes.bool).isRequired,
+    vlans: PropTypes.arrayOf(PropTypes.number),
+    zones: PropTypes.arrayOf(PropTypes.string),
+    showIdleLinks: PropTypes.bool,
+    showUnattachedNodes: PropTypes.bool,
+  }).isRequired,
+  onFilterChange: PropTypes.func.isRequired,
+  showFilters: PropTypes.bool.isRequired,
+  onToggleFilters: PropTypes.func.isRequired,
+  networkData: PropTypes.shape({
+    vnics: PropTypes.arrayOf(
+      PropTypes.shape({
+        vid: PropTypes.number,
+      })
+    ),
+    zones: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+      })
+    ),
+  }),
+  horizontal: PropTypes.bool,
+  edgeType: PropTypes.string,
+  onEdgeTypeChange: PropTypes.func,
 };
 
 export default NetworkTopologyControls;

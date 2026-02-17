@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
   <div className="box mb-4">
     <div className="level is-mobile mb-3">
@@ -43,8 +45,8 @@ const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
               </tr>
             </thead>
             <tbody>
-              {ipAddresses.map((ip, index) => (
-                <tr key={index}>
+              {ipAddresses.map((ip) => (
+                <tr key={`${ip.interface}-${ip.ip_address}`}>
                   <td>
                     <strong>{ip.interface}</strong>
                   </td>
@@ -82,5 +84,21 @@ const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
       ))}
   </div>
 );
+
+IpAddressTable.propTypes = {
+  ipAddresses: PropTypes.arrayOf(
+    PropTypes.shape({
+      interface: PropTypes.string.isRequired,
+      ip_address: PropTypes.string.isRequired,
+      prefix_length: PropTypes.number,
+      ip_version: PropTypes.string,
+      state: PropTypes.string,
+    })
+  ).isRequired,
+  sectionsCollapsed: PropTypes.shape({
+    ipAddresses: PropTypes.bool.isRequired,
+  }).isRequired,
+  toggleSection: PropTypes.func.isRequired,
+};
 
 export default IpAddressTable;

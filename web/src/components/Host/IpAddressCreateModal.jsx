@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -21,12 +22,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load available interfaces when modal opens
-  useEffect(() => {
-    loadInterfaces();
-  }, [server]);
-
-  const loadInterfaces = async () => {
+  const loadInterfaces = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -90,7 +86,12 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
     } finally {
       setLoadingInterfaces(false);
     }
-  };
+  }, [makeZoneweaverAPIRequest, server]);
+
+  // Load available interfaces when modal opens
+  useEffect(() => {
+    loadInterfaces();
+  }, [loadInterfaces]);
 
   // Auto-generate address object name when interface or type changes
   useEffect(() => {
@@ -126,7 +127,7 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }
 
     // Validate address object format
-    const addrobjRegex = /^[a-zA-Z][a-zA-Z0-9_\/]*$/;
+    const addrobjRegex = /^[a-zA-Z][a-zA-Z0-9_/]*$/;
     if (!addrobjRegex.test(formData.addrobj)) {
       onError(
         "Address object name must start with a letter and contain only letters, numbers, underscores, and slashes"
@@ -145,8 +146,8 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       }
 
       // Validate IPv4 address format
-      const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-      const ipv6Regex = /^([0-9a-fA-F:]+)$/;
+      const ipv4Regex = /^(?:\d{1,3})\.(?:\d{1,3})\.(?:\d{1,3})\.(?:\d{1,3})$/;
+      const ipv6Regex = /^(?:[0-9a-fA-F:]+)$/;
 
       if (
         !ipv4Regex.test(formData.address) &&
@@ -236,10 +237,13 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       loading={creating}
     >
       <div className="field">
-        <label className="label">Interface *</label>
+        <label className="label" htmlFor="interface-select">
+          Interface *
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="interface-select"
               value={formData.interface}
               onChange={(e) => handleInputChange("interface", e.target.value)}
               disabled={creating || loadingInterfaces}
@@ -250,8 +254,8 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
                   ? "Loading interfaces..."
                   : "Select an interface"}
               </option>
-              {interfaces.map((iface, index) => (
-                <option key={index} value={iface.name}>
+              {interfaces.map((iface) => (
+                <option key={iface.name} value={iface.name}>
                   {iface.name} ({iface.type}
                   {iface.over ? ` over ${iface.over}` : ""})
                 </option>
@@ -263,9 +267,12 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Address Object Name *</label>
+        <label className="label" htmlFor="addrobj-input">
+          Address Object Name *
+        </label>
         <div className="control">
           <input
+            id="addrobj-input"
             className="input"
             type="text"
             placeholder="e.g., vnic0/v4static"
@@ -279,10 +286,13 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Address Type</label>
+        <label className="label" htmlFor="type-select">
+          Address Type
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="type-select"
               value={formData.type}
               onChange={(e) => handleInputChange("type", e.target.value)}
               disabled={creating}
@@ -300,9 +310,12 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
           <div className="columns">
             <div className="column is-two-thirds">
               <div className="field">
-                <label className="label">IP Address *</label>
+                <label className="label" htmlFor="address-input">
+                  IP Address *
+                </label>
                 <div className="control">
                   <input
+                    id="address-input"
                     className="input"
                     type="text"
                     placeholder="192.168.1.100 or 2001:db8::1"
@@ -319,10 +332,13 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
             </div>
             <div className="column">
               <div className="field">
-                <label className="label">Netmask *</label>
+                <label className="label" htmlFor="netmask-select">
+                  Netmask *
+                </label>
                 <div className="control">
                   <div className="select is-fullwidth">
                     <select
+                      id="netmask-select"
                       value={formData.netmask}
                       onChange={(e) =>
                         handleInputChange("netmask", e.target.value)
@@ -352,9 +368,12 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label className="label">Wait Timeout (seconds)</label>
+            <label className="label" htmlFor="wait-input">
+              Wait Timeout (seconds)
+            </label>
             <div className="control">
               <input
+                id="wait-input"
                 className="input"
                 type="number"
                 min="1"
@@ -414,6 +433,17 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+IpAddressCreateModal.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.number.isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default IpAddressCreateModal;

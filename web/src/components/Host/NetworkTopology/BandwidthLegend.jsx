@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const BandwidthLegend = ({ horizontal = false }) => {
   const bandwidthRanges = [
     { label: "< 25%", color: "#48c78e", description: "Light load" },
@@ -39,12 +41,12 @@ const BandwidthLegend = ({ horizontal = false }) => {
           <div className="columns is-multiline is-mobile">
             {/* Bandwidth Saturation */}
             <div className="column is-one-third">
-              <label className="label is-size-7 mb-2">
+              <p className="has-text-weight-bold is-size-7 mb-2">
                 Bandwidth Saturation
-              </label>
+              </p>
               <div className="field is-grouped is-grouped-multiline">
-                {bandwidthRanges.map((range, index) => (
-                  <div key={index} className="control">
+                {bandwidthRanges.map((range) => (
+                  <div key={range.label} className="control">
                     <span
                       className="tag is-small zw-bandwidth-tag"
                       style={{
@@ -61,10 +63,10 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
             {/* Node Types */}
             <div className="column is-one-third">
-              <label className="label is-size-7 mb-2">Node Types</label>
+              <p className="has-text-weight-bold is-size-7 mb-2">Node Types</p>
               <div className="field is-grouped is-grouped-multiline">
-                {nodeTypes.map((type, index) => (
-                  <div key={index} className="control">
+                {nodeTypes.map((type) => (
+                  <div key={type.label} className="control">
                     <span className="tag is-small is-white">
                       <span
                         className="icon is-small mr-1"
@@ -81,10 +83,10 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
             {/* Traffic Flow */}
             <div className="column is-one-third">
-              <label className="label is-size-7 mb-2">Traffic Flow</label>
+              <p className="has-text-weight-bold is-size-7 mb-2">Traffic Flow</p>
               <div className="field is-grouped is-grouped-multiline">
-                {trafficIndicators.map((indicator, index) => (
-                  <div key={index} className="control">
+                {trafficIndicators.map((indicator) => (
+                  <div key={indicator.label} className="control">
                     <span className="tag is-small is-white">
                       {indicator.symbol ? (
                         <span
@@ -145,10 +147,12 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
         {/* Bandwidth Saturation */}
         <div className="field">
-          <label className="label is-size-7 mb-2">Bandwidth Saturation</label>
+          <p className="has-text-weight-bold is-size-7 mb-2">
+            Bandwidth Saturation
+          </p>
           <div className="content">
-            {bandwidthRanges.map((range, index) => (
-              <div key={index} className="level is-mobile mb-1">
+            {bandwidthRanges.map((range) => (
+              <div key={range.label} className="level is-mobile mb-1">
                 <div className="level-left">
                   <div className="level-item">
                     <span
@@ -175,10 +179,10 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
         {/* Node Types */}
         <div className="field">
-          <label className="label is-size-7 mb-2">Node Types</label>
+          <p className="has-text-weight-bold is-size-7 mb-2">Node Types</p>
           <div className="content">
-            {nodeTypes.map((type, index) => (
-              <div key={index} className="level is-mobile mb-1">
+            {nodeTypes.map((type) => (
+              <div key={type.label} className="level is-mobile mb-1">
                 <div className="level-left">
                   <div className="level-item">
                     <span
@@ -197,10 +201,10 @@ const BandwidthLegend = ({ horizontal = false }) => {
 
         {/* Traffic Flow */}
         <div className="field">
-          <label className="label is-size-7 mb-2">Traffic Flow</label>
+          <p className="has-text-weight-bold is-size-7 mb-2">Traffic Flow</p>
           <div className="content">
-            {trafficIndicators.map((indicator, index) => (
-              <div key={index} className="level is-mobile mb-1">
+            {trafficIndicators.map((indicator) => (
+              <div key={indicator.label} className="level is-mobile mb-1">
                 <div className="level-left">
                   <div className="level-item">
                     {indicator.symbol ? (
@@ -267,6 +271,10 @@ const BandwidthLegend = ({ horizontal = false }) => {
       </div>
     </div>
   );
+};
+
+BandwidthLegend.propTypes = {
+  horizontal: PropTypes.bool,
 };
 
 export default BandwidthLegend;
