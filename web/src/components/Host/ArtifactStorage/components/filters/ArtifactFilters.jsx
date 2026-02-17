@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 
 import { useDebounce } from "../../../../../utils/debounce";
@@ -48,9 +49,12 @@ const ArtifactFilters = ({
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label className="label">Search Artifacts</label>
+            <label htmlFor="artifact-search" className="label">
+              Search Artifacts
+            </label>
             <div className="control has-icons-left">
               <input
+                id="artifact-search"
                 className="input"
                 type="text"
                 placeholder="Search by filename..."
@@ -65,10 +69,16 @@ const ArtifactFilters = ({
         </div>
         <div className="column">
           <div className="field">
-            <label className="label">Filter by Type</label>
+            <label htmlFor="artifact-type-filter" className="label">
+              Filter by Type
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
-                <select value={filters.type || ""} onChange={handleTypeChange}>
+                <select
+                  id="artifact-type-filter"
+                  value={filters.type || ""}
+                  onChange={handleTypeChange}
+                >
                   <option value="">All Types</option>
                   <option value="iso">ISO Files</option>
                   <option value="image">VM Images</option>
@@ -79,10 +89,13 @@ const ArtifactFilters = ({
         </div>
         <div className="column">
           <div className="field">
-            <label className="label">Filter by Location</label>
+            <label htmlFor="artifact-location-filter" className="label">
+              Filter by Location
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="artifact-location-filter"
                   value={filters.storage_location || ""}
                   onChange={handleStorageLocationChange}
                 >
@@ -99,7 +112,9 @@ const ArtifactFilters = ({
         </div>
         <div className="column is-narrow">
           <div className="field">
-            <label className="label">&nbsp;</label>
+            <span className="label" aria-hidden="true">
+              &nbsp;
+            </span>
             <div className="control">
               <button
                 className="button is-info"
@@ -117,7 +132,9 @@ const ArtifactFilters = ({
         </div>
         <div className="column is-narrow">
           <div className="field">
-            <label className="label">&nbsp;</label>
+            <span className="label" aria-hidden="true">
+              &nbsp;
+            </span>
             <div className="control">
               <button
                 className="button"
@@ -265,6 +282,17 @@ const ArtifactFilters = ({
       )}
     </div>
   );
+};
+
+ArtifactFilters.propTypes = {
+  filters: PropTypes.object.isRequired,
+  storagePaths: PropTypes.array.isRequired,
+  onFilterChange: PropTypes.func.isRequired,
+  onRefresh: PropTypes.func.isRequired,
+  onScan: PropTypes.func.isRequired,
+  onUpload: PropTypes.func.isRequired,
+  onDownload: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
 };
 
 export default ArtifactFilters;

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const StoragePathTable = ({
   storagePaths,
   loading,
@@ -74,7 +76,7 @@ const StoragePathTable = ({
 
     return (
       <div className="field">
-        <label className="label is-size-7">Disk Usage</label>
+        <span className="label is-size-7">Disk Usage</span>
         <progress
           className={`progress is-small ${colorClass}`}
           value={percentage}
@@ -140,17 +142,18 @@ const StoragePathTable = ({
                     {getTypeIcon(storagePath.type)}
                   </span>
                   {onNameClick ? (
-                    <a
-                      className="has-text-weight-bold is-clickable has-text-link"
+                    <button
+                      type="button"
+                      className="has-text-weight-bold is-clickable has-text-link button is-ghost p-0"
                       onClick={() => onNameClick(storagePath)}
                       title={`View artifacts in ${storagePath.name} (${storagePath.file_count || 0} files)`}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", border: "none", background: "none" }}
                     >
                       {storagePath.name}
                       <span className="icon is-small ml-1">
                         <i className="fas fa-external-link-alt is-size-7" />
                       </span>
-                    </a>
+                    </button>
                   ) : (
                     <strong>{storagePath.name}</strong>
                   )}
@@ -234,6 +237,15 @@ const StoragePathTable = ({
       </table>
     </div>
   );
+};
+
+StoragePathTable.propTypes = {
+  storagePaths: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  onNameClick: PropTypes.func,
 };
 
 export default StoragePathTable;

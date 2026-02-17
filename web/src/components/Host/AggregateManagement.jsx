@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -249,10 +250,13 @@ const AggregateManagement = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by State</label>
+              <label htmlFor="aggregate-filter-state" className="label">
+                Filter by State
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="aggregate-filter-state"
                     value={filters.state}
                     onChange={(e) =>
                       handleFilterChange("state", e.target.value)
@@ -269,10 +273,13 @@ const AggregateManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Policy</label>
+              <label htmlFor="aggregate-filter-policy" className="label">
+                Filter by Policy
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="aggregate-filter-policy"
                     value={filters.policy}
                     onChange={(e) =>
                       handleFilterChange("policy", e.target.value)
@@ -293,7 +300,9 @@ const AggregateManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -310,7 +319,9 @@ const AggregateManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button"
@@ -389,6 +400,11 @@ const AggregateManagement = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+AggregateManagement.propTypes = {
+  server: PropTypes.object.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default AggregateManagement;

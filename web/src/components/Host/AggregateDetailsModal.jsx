@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
@@ -324,6 +326,12 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
       </div>
     </ContentModal>
   );
+};
+
+AggregateDetailsModal.propTypes = {
+  aggregate: PropTypes.object.isRequired,
+  aggregateDetails: PropTypes.object,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default AggregateDetailsModal;

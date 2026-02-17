@@ -60,8 +60,9 @@ const DashEntryDropDown = ({ title, icon }) => {
     return (
       <div className="field has-addons mb-0">
         <p className="control is-expanded">
-          <a
-            className="button is-fullwidth is-justify-content-start"
+          <button
+            type="button"
+            className="button is-fullwidth is-justify-content-start is-ghost"
             onClick={handleNavigate}
           >
             <span>
@@ -70,17 +71,21 @@ const DashEntryDropDown = ({ title, icon }) => {
               </span>
               <span>{title}</span>
             </span>
-          </a>
+          </button>
         </p>
         <p className="control pr-2">
-          <a className="button" onClick={handleToggle}>
+          <button
+            type="button"
+            className="button is-ghost"
+            onClick={handleToggle}
+          >
             <span className="icon">
               <i
                 className={`fas fa-angle-${isExpanded ? "up" : "down"}`}
-                aria-hidden="false"
+                aria-hidden="true"
               />
             </span>
-          </a>
+          </button>
         </p>
       </div>
     );

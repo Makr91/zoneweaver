@@ -1,5 +1,5 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 import FaultList from "./FaultList";
 import FaultManagerConfig from "./FaultManagerConfig";
@@ -23,7 +23,11 @@ const FaultManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "faults" ? "is-active" : ""}>
-            <button type="button" className="button is-ghost" onClick={() => setActiveTab("faults")}>
+            <button
+              type="button"
+              className="button is-ghost"
+              onClick={() => setActiveTab("faults")}
+            >
               <span className="icon is-small">
                 <i className="fas fa-exclamation-triangle" />
               </span>
@@ -31,7 +35,11 @@ const FaultManagement = ({ server }) => {
             </button>
           </li>
           <li className={activeTab === "logs" ? "is-active" : ""}>
-            <button type="button" className="button is-ghost" onClick={() => setActiveTab("logs")}>
+            <button
+              type="button"
+              className="button is-ghost"
+              onClick={() => setActiveTab("logs")}
+            >
               <span className="icon is-small">
                 <i className="fas fa-file-alt" />
               </span>
@@ -39,7 +47,11 @@ const FaultManagement = ({ server }) => {
             </button>
           </li>
           <li className={activeTab === "config" ? "is-active" : ""}>
-            <button type="button" className="button is-ghost" onClick={() => setActiveTab("config")}>
+            <button
+              type="button"
+              className="button is-ghost"
+              onClick={() => setActiveTab("config")}
+            >
               <span className="icon is-small">
                 <i className="fas fa-cog" />
               </span>
@@ -47,7 +59,11 @@ const FaultManagement = ({ server }) => {
             </button>
           </li>
           <li className={activeTab === "syslog-config" ? "is-active" : ""}>
-            <button type="button" className="button is-ghost" onClick={() => setActiveTab("syslog-config")}>
+            <button
+              type="button"
+              className="button is-ghost"
+              onClick={() => setActiveTab("syslog-config")}
+            >
               <span className="icon is-small">
                 <i className="fas fa-edit" />
               </span>

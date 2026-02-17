@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import {
   calculateBandwidth,
   formatBandwidth,
@@ -16,10 +18,11 @@ const BandwidthTable = ({
   <div className="box mb-4">
     <div className="level is-mobile mb-3">
       <div className="level-left">
-        <h4
-          className="title is-5 mb-0 is-clickable"
+        <button
+          className="title is-5 mb-0 is-clickable button is-ghost p-0"
           onClick={resetBandwidthSort}
           title="Click to reset sorting to default"
+          type="button"
         >
           <span className="icon-text">
             <span className="icon">
@@ -32,7 +35,7 @@ const BandwidthTable = ({
               </span>
             )}
           </span>
-        </h4>
+        </button>
       </div>
       <div className="level-right">
         <button
@@ -186,5 +189,15 @@ const BandwidthTable = ({
       ))}
   </div>
 );
+
+BandwidthTable.propTypes = {
+  networkUsage: PropTypes.array.isRequired,
+  bandwidthSort: PropTypes.array.isRequired,
+  handleBandwidthSort: PropTypes.func.isRequired,
+  getSortIcon: PropTypes.func.isRequired,
+  resetBandwidthSort: PropTypes.func.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+};
 
 export default BandwidthTable;

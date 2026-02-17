@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const ArtifactTable = ({
   artifacts,
@@ -592,9 +593,9 @@ const ArtifactTable = ({
                         role="menu"
                       >
                         <div className="dropdown-content">
-                          <a
-                            href="#"
-                            className="dropdown-item"
+                          <button
+                            type="button"
+                            className="dropdown-item button is-ghost"
                             onClick={() => onMove(artifact)}
                           >
                             <span className="icon-text">
@@ -603,10 +604,10 @@ const ArtifactTable = ({
                               </span>
                               <span>Move</span>
                             </span>
-                          </a>
-                          <a
-                            href="#"
-                            className="dropdown-item"
+                          </button>
+                          <button
+                            type="button"
+                            className="dropdown-item button is-ghost"
                             onClick={() => onCopy(artifact)}
                           >
                             <span className="icon-text">
@@ -615,7 +616,7 @@ const ArtifactTable = ({
                               </span>
                               <span>Copy</span>
                             </span>
-                          </a>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -631,6 +632,20 @@ const ArtifactTable = ({
       {renderPagination()}
     </div>
   );
+};
+
+ArtifactTable.propTypes = {
+  artifacts: PropTypes.array.isRequired,
+  activeDownloads: PropTypes.instanceOf(Map),
+  pagination: PropTypes.object,
+  loading: PropTypes.bool.isRequired,
+  onDetails: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onMove: PropTypes.func.isRequired,
+  onCopy: PropTypes.func.isRequired,
+  onPaginationChange: PropTypes.func.isRequired,
+  onSort: PropTypes.func.isRequired,
+  onCancelDownload: PropTypes.func,
 };
 
 export default ArtifactTable;

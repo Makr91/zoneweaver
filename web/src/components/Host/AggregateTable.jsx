@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
@@ -221,6 +222,13 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+AggregateTable.propTypes = {
+  aggregates: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default AggregateTable;

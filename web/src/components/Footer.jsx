@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { ResizableBox } from "react-resizable";
 
@@ -154,20 +155,23 @@ const Footer = () => {
           >
             Zoneweaver
           </a>{" "}
-          <span
+          <button
+            type="button"
             onClick={handleVersionClick}
-            className="has-text-primary"
+            className="has-text-primary button is-ghost p-0"
             style={{
               cursor: "pointer",
               transition: "transform 0.1s ease",
               display: "inline-block",
+              border: "none",
+              background: "none",
             }}
             onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
             onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
             title="Click me 3 times for a surprise!"
           >
             v{__APP_VERSION__ || "1.0.0"}
-          </span>
+          </button>
           <span className="has-text-primary"> © </span>
           <a href="https://startcloud.com/" className="has-text-primary">
             STARTcloud.com&#8482; {new Date().getFullYear()}
@@ -257,15 +261,16 @@ const Footer = () => {
           >
             <div className="dropdown-menu">
               <div className="dropdown-content">
-                <a
-                  className="dropdown-item is-clickable"
+                <button
+                  type="button"
+                  className="dropdown-item is-clickable button is-ghost"
                   onClick={handleRestartShell}
                 >
                   <span className="icon mr-2">
                     <i className="fas fa-refresh" />
                   </span>
                   <span>Restart Shell</span>
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -278,16 +283,17 @@ const Footer = () => {
             <div className="dropdown-menu" style={{ minWidth: "120px" }}>
               <div className="dropdown-content">
                 {PRIORITY_OPTIONS.map((option) => (
-                  <a
+                  <button
+                    type="button"
                     key={option.value}
-                    className={`dropdown-item is-clickable ${taskMinPriority === option.value ? "is-active" : ""}`}
+                    className={`dropdown-item is-clickable button is-ghost ${taskMinPriority === option.value ? "is-active" : ""}`}
                     onClick={() => {
                       setTaskMinPriority(option.value);
                       setShowFilterDropdown(false);
                     }}
                   >
                     {option.label}
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
@@ -367,4 +373,7 @@ const Footer = () => {
     </div>
   );
 };
+
+Footer.propTypes = {};
+
 export default Footer;

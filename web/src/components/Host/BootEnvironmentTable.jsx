@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const BootEnvironmentTable = ({
   bootEnvironments,
@@ -264,6 +265,15 @@ const BootEnvironmentTable = ({
       </table>
     </div>
   );
+};
+
+BootEnvironmentTable.propTypes = {
+  bootEnvironments: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onActivate: PropTypes.func.isRequired,
+  onMount: PropTypes.func.isRequired,
+  onUnmount: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default BootEnvironmentTable;

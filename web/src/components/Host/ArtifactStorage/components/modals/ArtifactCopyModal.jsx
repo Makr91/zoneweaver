@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
@@ -76,9 +77,12 @@ const ArtifactCopyModal = ({
       )}
 
       <div className="field">
-        <label className="label">Artifact</label>
+        <label htmlFor="copy-artifact-name" className="label">
+          Artifact
+        </label>
         <div className="control">
           <input
+            id="copy-artifact-name"
             className="input"
             type="text"
             value={artifact.filename}
@@ -88,9 +92,12 @@ const ArtifactCopyModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Current Storage Location</label>
+        <label htmlFor="copy-current-location" className="label">
+          Current Storage Location
+        </label>
         <div className="control">
           <input
+            id="copy-current-location"
             className="input"
             type="text"
             value={`${artifact.storage_location.name} (${artifact.storage_location.path})`}
@@ -100,10 +107,13 @@ const ArtifactCopyModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Destination Storage Location</label>
+        <label htmlFor="copy-destination-location" className="label">
+          Destination Storage Location
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="copy-destination-location"
               value={destinationStoragePathId}
               onChange={(e) => setDestinationStoragePathId(e.target.value)}
               disabled={loading}
@@ -120,6 +130,15 @@ const ArtifactCopyModal = ({
       </div>
     </FormModal>
   );
+};
+
+ArtifactCopyModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  artifact: PropTypes.object.isRequired,
+  storagePaths: PropTypes.array.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default ArtifactCopyModal;

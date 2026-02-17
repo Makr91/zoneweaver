@@ -1,4 +1,5 @@
 import { HighchartsReact } from "highcharts-react-official";
+import PropTypes from "prop-types";
 
 import Highcharts from "../Highcharts";
 
@@ -618,6 +619,21 @@ const BandwidthCharts = ({
       )}
     </div>
   );
+};
+
+BandwidthCharts.propTypes = {
+  chartData: PropTypes.object.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+  timeWindow: PropTypes.number,
+  setTimeWindow: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
+  chartSortBy: PropTypes.string.isRequired,
+  setChartSortBy: PropTypes.func.isRequired,
+  getSortedChartEntries: PropTypes.func.isRequired,
+  expandChart: PropTypes.func.isRequired,
+  summaryChartRefs: PropTypes.object.isRequired,
+  chartRefs: PropTypes.object.isRequired,
 };
 
 export default BandwidthCharts;

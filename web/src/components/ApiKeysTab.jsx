@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
 import { useServers } from "../contexts/ServerContext";
@@ -109,9 +110,12 @@ const ApiKeysTab = () => {
           </p>
         </div>
         <div className="field">
-          <label className="label">Your API Key:</label>
+          <label htmlFor="generated-api-key" className="label">
+            Your API Key:
+          </label>
           <div className="control">
             <textarea
+              id="generated-api-key"
               className="textarea is-family-monospace"
               value={generatedKey || ""}
               readOnly
@@ -142,9 +146,12 @@ const ApiKeysTab = () => {
         <h4 className="title is-4">Generate New API Key</h4>
         <form onSubmit={handleGenerateKey}>
           <div className="field">
-            <label className="label">Name</label>
+            <label htmlFor="api-key-name" className="label">
+              Name
+            </label>
             <div className="control">
               <input
+                id="api-key-name"
                 className="input"
                 type="text"
                 value={newKeyName}
@@ -155,9 +162,12 @@ const ApiKeysTab = () => {
             </div>
           </div>
           <div className="field">
-            <label className="label">Description</label>
+            <label htmlFor="api-key-description" className="label">
+              Description
+            </label>
             <div className="control">
               <input
+                id="api-key-description"
                 className="input"
                 type="text"
                 value={newKeyDescription}
@@ -257,5 +267,7 @@ const ApiKeysTab = () => {
     </div>
   );
 };
+
+ApiKeysTab.propTypes = {};
 
 export default ApiKeysTab;

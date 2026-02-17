@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -242,9 +243,10 @@ const BootEnvironmentManagement = ({ server }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Name</label>
+              <label htmlFor="be-filter-name" className="label">Filter by Name</label>
               <div className="control">
                 <input
+                  id="be-filter-name"
                   className="input"
                   type="text"
                   placeholder="Enter boot environment name..."
@@ -256,10 +258,11 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Status</label>
+              <label htmlFor="be-filter-status" className="label">Filter by Status</label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="be-filter-status"
                     value={filters.status}
                     onChange={(e) =>
                       handleFilterChange("status", e.target.value)
@@ -276,7 +279,7 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Show Detailed</label>
+              <span className="label">Show Detailed</span>
               <div className="control">
                 <label className="switch is-medium">
                   <input
@@ -294,7 +297,7 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Show Snapshots</label>
+              <span className="label">Show Snapshots</span>
               <div className="control">
                 <label className="switch is-medium">
                   <input
@@ -312,7 +315,7 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">&nbsp;</span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -329,7 +332,7 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">&nbsp;</span>
               <div className="control">
                 <button
                   className="button"
@@ -411,6 +414,10 @@ const BootEnvironmentManagement = ({ server }) => {
       )}
     </div>
   );
+};
+
+BootEnvironmentManagement.propTypes = {
+  server: PropTypes.object.isRequired,
 };
 
 export default BootEnvironmentManagement;

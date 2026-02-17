@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -290,9 +291,12 @@ const AggregateCreateModal = ({
       }
     >
       <div className="field">
-        <label className="label">Aggregate Name *</label>
+        <label htmlFor="aggregate-name" className="label">
+          Aggregate Name *
+        </label>
         <div className="control">
           <input
+            id="aggregate-name"
             className="input"
             type="text"
             placeholder="e.g., aggr0"
@@ -309,11 +313,12 @@ const AggregateCreateModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Member Links *</label>
+        <span className="label">Member Links *</span>
         <div className="field has-addons">
           <div className="control is-expanded">
             <div className="select is-fullwidth">
               <select
+                id="aggregate-link-select"
                 value={newLink}
                 onChange={(e) => setNewLink(e.target.value)}
                 disabled={creating || loadingLinks}
@@ -371,10 +376,13 @@ const AggregateCreateModal = ({
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label className="label">Load Balancing Policy</label>
+            <label htmlFor="aggregate-policy" className="label">
+              Load Balancing Policy
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="aggregate-policy"
                   value={formData.policy}
                   onChange={(e) => handleInputChange("policy", e.target.value)}
                   disabled={creating}
@@ -393,10 +401,13 @@ const AggregateCreateModal = ({
         </div>
         <div className="column">
           <div className="field">
-            <label className="label">LACP Mode</label>
+            <label htmlFor="aggregate-lacp-mode" className="label">
+              LACP Mode
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="aggregate-lacp-mode"
                   value={formData.lacp_mode}
                   onChange={(e) =>
                     handleInputChange("lacp_mode", e.target.value)
@@ -415,10 +426,13 @@ const AggregateCreateModal = ({
 
       {formData.lacp_mode !== "off" && (
         <div className="field">
-          <label className="label">LACP Timer</label>
+          <label htmlFor="aggregate-lacp-timer" className="label">
+            LACP Timer
+          </label>
           <div className="control">
             <div className="select is-fullwidth">
               <select
+                id="aggregate-lacp-timer"
                 value={formData.lacp_timer}
                 onChange={(e) =>
                   handleInputChange("lacp_timer", e.target.value)
@@ -434,9 +448,12 @@ const AggregateCreateModal = ({
       )}
 
       <div className="field">
-        <label className="label">MAC Address (Optional)</label>
+        <label htmlFor="aggregate-mac" className="label">
+          MAC Address (Optional)
+        </label>
         <div className="control">
           <input
+            id="aggregate-mac"
             className="input"
             type="text"
             placeholder="XX:XX:XX:XX:XX:XX"
@@ -506,6 +523,15 @@ const AggregateCreateModal = ({
       </div>
     </FormModal>
   );
+};
+
+AggregateCreateModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  existingAggregates: PropTypes.array,
+  cdpServiceRunning: PropTypes.bool,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default AggregateCreateModal;

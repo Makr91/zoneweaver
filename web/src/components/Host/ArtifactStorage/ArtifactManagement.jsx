@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../../contexts/ServerContext";
@@ -548,20 +549,28 @@ const ArtifactManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "storage-paths" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("storage-paths")}>
+            <button
+              type="button"
+              className="button is-ghost"
+              onClick={() => setActiveTab("storage-paths")}
+            >
               <span className="icon is-small">
                 <i className="fas fa-folder" />
               </span>
               <span>Storage Locations</span>
-            </a>
+            </button>
           </li>
           <li className={activeTab === "artifacts" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("artifacts")}>
+            <button
+              type="button"
+              className="button is-ghost"
+              onClick={() => setActiveTab("artifacts")}
+            >
               <span className="icon is-small">
                 <i className="fas fa-compact-disc" />
               </span>
               <span>Artifacts</span>
-            </a>
+            </button>
           </li>
         </ul>
       </div>
@@ -879,6 +888,10 @@ const ArtifactManagement = ({ server }) => {
       )}
     </div>
   );
+};
+
+ArtifactManagement.propTypes = {
+  server: PropTypes.object.isRequired,
 };
 
 export default ArtifactManagement;

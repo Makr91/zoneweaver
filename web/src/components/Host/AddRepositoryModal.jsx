@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -132,9 +133,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
         <h3 className="title is-6">Basic Information</h3>
 
         <div className="field">
-          <label className="label">Publisher Name *</label>
+          <label htmlFor="repo-publisher-name" className="label">
+            Publisher Name *
+          </label>
           <div className="control">
             <input
+              id="repo-publisher-name"
               className="input"
               type="text"
               placeholder="e.g., omnios, extra.omnios"
@@ -147,9 +151,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
 
         <div className="field">
-          <label className="label">Origin URL *</label>
+          <label htmlFor="repo-origin-url" className="label">
+            Origin URL *
+          </label>
           <div className="control">
             <input
+              id="repo-origin-url"
               className="input"
               type="url"
               placeholder="https://pkg.omnios.org/r151050/core/"
@@ -262,9 +269,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
 
           <div className="column">
             <div className="field">
-              <label className="label">Search Before</label>
+              <label htmlFor="repo-search-before" className="label">
+                Search Before
+              </label>
               <div className="control">
                 <input
+                  id="repo-search-before"
                   className="input"
                   type="text"
                   placeholder="Publisher name"
@@ -277,9 +287,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
             </div>
 
             <div className="field">
-              <label className="label">Search After</label>
+              <label htmlFor="repo-search-after" className="label">
+                Search After
+              </label>
               <div className="control">
                 <input
+                  id="repo-search-after"
                   className="input"
                   type="text"
                   placeholder="Publisher name"
@@ -292,9 +305,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
             </div>
 
             <div className="field">
-              <label className="label">Proxy</label>
+              <label htmlFor="repo-proxy" className="label">
+                Proxy
+              </label>
               <div className="control">
                 <input
+                  id="repo-proxy"
                   className="input"
                   type="text"
                   placeholder="http://proxy.example.com:8080"
@@ -312,9 +328,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
         <h3 className="title is-6">SSL Configuration (Optional)</h3>
 
         <div className="field">
-          <label className="label">SSL Certificate</label>
+          <label htmlFor="repo-ssl-cert" className="label">
+            SSL Certificate
+          </label>
           <div className="control">
             <textarea
+              id="repo-ssl-cert"
               className="textarea"
               placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
               value={formData.sslCert}
@@ -325,9 +344,12 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
 
         <div className="field">
-          <label className="label">SSL Private Key</label>
+          <label htmlFor="repo-ssl-key" className="label">
+            SSL Private Key
+          </label>
           <div className="control">
             <textarea
+              id="repo-ssl-key"
               className="textarea"
               placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
               value={formData.sslKey}
@@ -339,6 +361,13 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+AddRepositoryModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default AddRepositoryModal;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -159,9 +160,10 @@ const BridgeManagement = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Name</label>
+              <label htmlFor="bridge-filter-name" className="label">Filter by Name</label>
               <div className="control">
                 <input
+                  id="bridge-filter-name"
                   className="input"
                   type="text"
                   placeholder="Bridge name"
@@ -173,7 +175,7 @@ const BridgeManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">&nbsp;</span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -190,7 +192,7 @@ const BridgeManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <span className="label" aria-hidden="true">&nbsp;</span>
               <div className="control">
                 <button
                   className="button"
@@ -257,6 +259,11 @@ const BridgeManagement = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+BridgeManagement.propTypes = {
+  server: PropTypes.object.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default BridgeManagement;

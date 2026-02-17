@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { useServers } from "../../../../../contexts/ServerContext";
 import ContentModal from "../../../../common/ContentModal";
 
@@ -261,9 +263,12 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Checksum</label>
+              <label htmlFor="artifact-checksum" className="label">
+                Checksum
+              </label>
               <div className="control">
                 <input
+                  id="artifact-checksum"
                   className="input is-family-monospace is-size-7"
                   type="text"
                   value={artifactData.checksum || "Not calculated"}
@@ -277,7 +282,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         <div className="columns">
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Algorithm</label>
+              <span className="label">Algorithm</span>
               <div className="control">
                 <span className="tag is-info">
                   {artifactData.checksum_algorithm?.toUpperCase() || "N/A"}
@@ -288,7 +293,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Verification Status</label>
+              <span className="label">Verification Status</span>
               <div className="control">
                 <span className="icon-text">
                   <span className="icon">

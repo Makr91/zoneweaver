@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -221,7 +221,9 @@ const FaultList = ({ server }) => {
         <div className="columns">
           <div className="column is-3">
             <div className="field">
-              <label htmlFor="fault-limit" className="label">Max Faults</label>
+              <label htmlFor="fault-limit" className="label">
+                Max Faults
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
@@ -260,7 +262,9 @@ const FaultList = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <span className="label" aria-hidden="true">&nbsp;</span>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -277,7 +281,9 @@ const FaultList = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <span className="label" aria-hidden="true">&nbsp;</span>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button"

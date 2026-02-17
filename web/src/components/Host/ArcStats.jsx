@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 
 import { formatBytes } from "./StorageUtils";
@@ -521,6 +522,12 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
       )}
     </div>
   );
+};
+
+ArcStats.propTypes = {
+  arcStats: PropTypes.array.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
 };
 
 export default ArcStats;
