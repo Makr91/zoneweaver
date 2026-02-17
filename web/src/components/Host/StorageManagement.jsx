@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 import ArcConfiguration from "./ArcConfiguration";
 import { ArtifactManagement } from "./ArtifactStorage";
@@ -20,7 +21,21 @@ const StorageManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "arc" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("arc")}>
+            <a
+              href="#"
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("arc");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveTab("arc");
+                }
+              }}
+            >
               <span className="icon is-small">
                 <i className="fas fa-memory" />
               </span>
@@ -28,7 +43,21 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className={activeTab === "artifacts" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("artifacts")}>
+            <a
+              href="#"
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("artifacts");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setActiveTab("artifacts");
+                }
+              }}
+            >
               <span className="icon is-small">
                 <i className="fas fa-compact-disc" />
               </span>
@@ -36,7 +65,7 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className="is-disabled">
-            <a>
+            <a href="#" onClick={(e) => e.preventDefault()}>
               <span className="icon is-small">
                 <i className="fas fa-database" />
               </span>
@@ -44,7 +73,7 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className="is-disabled">
-            <a>
+            <a href="#" onClick={(e) => e.preventDefault()}>
               <span className="icon is-small">
                 <i className="fas fa-folder-tree" />
               </span>
@@ -69,8 +98,8 @@ const StorageManagement = ({ server }) => {
               </h3>
               <p className="content">
                 Configure ZFS Adaptive Replacement Cache (ARC) settings on{" "}
-                <strong>{server.hostname}</strong>. The ARC is ZFS's intelligent
-                caching layer that stores frequently accessed data in system
+                <strong>{server.hostname}</strong>. The ARC is ZFS&apos;s
+                intelligent caching layer that stores frequently accessed data in system
                 memory to improve performance.
               </p>
             </div>
@@ -119,6 +148,12 @@ const StorageManagement = ({ server }) => {
       </div>
     </div>
   );
+};
+
+StorageManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+  }),
 };
 
 export default StorageManagement;
