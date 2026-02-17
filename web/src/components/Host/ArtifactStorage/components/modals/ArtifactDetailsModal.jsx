@@ -63,6 +63,26 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
     return "Not verified";
   };
 
+  const getFileTypeTagClass = (fileType) => {
+    if (fileType === "iso") {
+      return "is-info";
+    }
+    if (fileType === "image") {
+      return "is-warning";
+    }
+    return "is-light";
+  };
+
+  const getChecksumVerificationClass = (verified) => {
+    if (verified === true) {
+      return "has-text-success";
+    }
+    if (verified === false) {
+      return "has-text-danger";
+    }
+    return "has-text-grey";
+  };
+
   const handleDownloadFile = async () => {
     try {
       // Use ZAPI proxy to download the file
@@ -133,13 +153,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
                   </td>
                   <td>
                     <span
-                      className={`tag ${
-                        artifactData.file_type === "iso"
-                          ? "is-info"
-                          : artifactData.file_type === "image"
-                            ? "is-warning"
-                            : "is-light"
-                      }`}
+                      className={`tag ${getFileTypeTagClass(artifactData.file_type)}`}
                     >
                       {artifactData.file_type?.toUpperCase() || "Unknown"}
                     </span>
@@ -300,13 +314,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
                     {getChecksumStatusIcon(artifactData.checksum_verified)}
                   </span>
                   <span
-                    className={`has-text-weight-semibold ${
-                      artifactData.checksum_verified === true
-                        ? "has-text-success"
-                        : artifactData.checksum_verified === false
-                          ? "has-text-danger"
-                          : "has-text-grey"
-                    }`}
+                    className={`has-text-weight-semibold ${getChecksumVerificationClass(artifactData.checksum_verified)}`}
                   >
                     {getChecksumStatusText(artifactData.checksum_verified)}
                   </span>

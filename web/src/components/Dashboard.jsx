@@ -60,16 +60,22 @@ const Dashboard = () => {
           const healthSuccess =
             healthResult.status === "fulfilled" && healthResult.value.success;
 
+          const getErrorMessage = () => {
+            if (statsSuccess) {
+              return null;
+            }
+            if (statsResult.status === "fulfilled") {
+              return statsResult.value.message || "Failed to fetch data";
+            }
+            return statsResult.reason?.message || "Connection failed";
+          };
+
           return {
             server,
             success: statsSuccess,
             data: statsSuccess ? statsResult.value.data : null,
             healthData: healthSuccess ? healthResult.value.data : null,
-            error: statsSuccess
-              ? null
-              : statsResult.status === "fulfilled"
-                ? statsResult.value.message || "Failed to fetch data"
-                : statsResult.reason?.message || "Connection failed",
+            error: getErrorMessage(),
           };
         } catch (error) {
           return {
@@ -568,7 +574,7 @@ const Dashboard = () => {
                       <>
                         {infrastructureData.servers
                           .filter((s) => s.success && s.data)
-                          .map((serverResult, index) => {
+                          .map((serverResult) => {
                             const zoneCount =
                               serverResult.data.allzones?.length || 0;
                             const runningCount =
@@ -581,7 +587,10 @@ const Dashboard = () => {
                                 : 0;
 
                             return (
-                              <div key={index} className="mb-3">
+                              <div
+                                key={`${serverResult.server.hostname}-${serverResult.server.port}`}
+                                className="mb-3"
+                              >
                                 <div className="level is-mobile mb-1">
                                   <div className="level-left">
                                     <div className="level-item">
@@ -635,7 +644,7 @@ const Dashboard = () => {
 
             {/* Server Status - Individual Cards */}
             <div className="columns is-multiline is-variable is-2 mb-0">
-              {infrastructureData.servers?.map((serverResult, index) => {
+              {infrastructureData.servers?.map((serverResult) => {
                 const { server, success, data, error } = serverResult;
                 const status = getServerHealthStatus(serverResult);
                 const statusColor = getStatusColor(status);
@@ -660,7 +669,10 @@ const Dashboard = () => {
                 }
 
                 return (
-                  <div key={index} className="column is-6">
+                  <div
+                    key={`${server.hostname}-${server.port}-card`}
+                    className="column is-6"
+                  >
                     <div className="box">
                       <h2 className="title is-5 mb-3">
                         <span className="icon-text">
@@ -788,7 +800,7 @@ const Dashboard = () => {
                         getServerHealthStatus(s) !== "healthy" ||
                         s.healthData?.reboot_required
                     )
-                    .map((serverResult, index) => {
+                    .map((serverResult) => {
                       const status = getServerHealthStatus(serverResult);
                       const statusColor =
                         status === "offline" ? "is-danger" : "is-warning";
@@ -847,7 +859,7 @@ const Dashboard = () => {
 
                       return (
                         <div
-                          key={index}
+                          key={`${serverResult.server.hostname}-${serverResult.server.port}-health`}
                           className={`notification ${serverResult.healthData?.reboot_required ? "is-warning" : statusColor} mb-3`}
                         >
                           <div className="level is-mobile">
@@ -866,8 +878,8 @@ const Dashboard = () => {
                             </div>
                           </div>
                           <ul className="mt-2">
-                            {issues.map((issue, idx) => (
-                              <li key={idx}>{issue}</li>
+                            {issues.map((issue) => (
+                              <li key={issue}>{issue}</li>
                             ))}
                           </ul>
                         </div>

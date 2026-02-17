@@ -157,8 +157,8 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {memberLinks.map((link, index) => (
-                  <tr key={index}>
+                {memberLinks.map((link) => (
+                  <tr key={link}>
                     <td>
                       <span className="is-family-monospace">{link}</span>
                     </td>

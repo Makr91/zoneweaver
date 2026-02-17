@@ -143,6 +143,16 @@ const ArtifactUploadModal = ({
     return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
+  const getProgressTagClass = (progressStatus) => {
+    if (progressStatus === "completed") {
+      return "is-success";
+    }
+    if (progressStatus === "error") {
+      return "is-danger";
+    }
+    return "is-info";
+  };
+
   const uploadFile = async (file, onProgress) => {
     try {
       // Step 1: Prepare upload with JSON metadata
@@ -418,7 +428,10 @@ const ArtifactUploadModal = ({
             {selectedFiles.map((file, index) => {
               const progress = uploadProgress[file.name];
               return (
-                <div key={index} className="media">
+                <div
+                  key={`file-${index}-${file.name}-${file.size}`}
+                  className="media"
+                >
                   <div className="media-content">
                     <div className="content">
                       <div className="level is-mobile">
@@ -446,13 +459,7 @@ const ArtifactUploadModal = ({
                             )}
                             {progress && (
                               <span
-                                className={`tag is-small ml-2 ${
-                                  progress.status === "completed"
-                                    ? "is-success"
-                                    : progress.status === "error"
-                                      ? "is-danger"
-                                      : "is-info"
-                                }`}
+                                className={`tag is-small ml-2 ${getProgressTagClass(progress.status)}`}
                               >
                                 {progress.status === "uploading" &&
                                   `${progress.progress}%`}

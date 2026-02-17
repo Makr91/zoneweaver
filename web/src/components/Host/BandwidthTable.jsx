@@ -130,10 +130,10 @@ const BandwidthTable = ({
               </tr>
             </thead>
             <tbody>
-              {networkUsage.map((usage, index) => {
+              {networkUsage.map((usage) => {
                 const bandwidth = calculateBandwidth(usage);
                 return (
-                  <tr key={index}>
+                  <tr key={usage.link}>
                     <td>
                       <strong>{usage.link}</strong>
                     </td>

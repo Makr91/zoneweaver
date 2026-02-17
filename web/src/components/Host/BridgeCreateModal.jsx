@@ -339,8 +339,8 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
                 </option>
                 {availableLinks
                   .filter((link) => !formData.links.includes(link.link))
-                  .map((link, index) => (
-                    <option key={index} value={link.link}>
+                  .map((link) => (
+                    <option key={link.link} value={link.link}>
                       {link.link} ({link.class}, {link.state},{" "}
                       {link.speed || "Unknown speed"})
                     </option>
@@ -366,8 +366,8 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
               <strong>Current Links:</strong>
             </p>
             <div className="tags">
-              {formData.links.map((link, index) => (
-                <span key={index} className="tag is-info">
+              {formData.links.map((link) => (
+                <span key={link} className="tag is-info">
                   {link}
                   <button
                     type="button"

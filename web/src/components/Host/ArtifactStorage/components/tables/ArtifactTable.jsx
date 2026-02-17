@@ -191,6 +191,19 @@ const ArtifactTable = ({
     }
   };
 
+  const getDownloadTagClass = (status) => {
+    if (status === "running") {
+      return "is-primary";
+    }
+    if (status === "queued") {
+      return "is-info";
+    }
+    if (status === "failed") {
+      return "is-danger";
+    }
+    return "is-light";
+  };
+
   // Convert activeDownloads Map to array for rendering
   const activeDownloadsList = activeDownloads
     ? Array.from(activeDownloads.values())
@@ -359,10 +372,7 @@ const ArtifactTable = ({
           <tbody>
             {/* Active Downloads - Placeholder Rows */}
             {activeDownloadsList.map((download) => (
-              <tr
-                key={`download-${download.taskId}`}
-                className="has-background-light"
-              >
+              <tr key={download.taskId} className="has-background-light">
                 <td>
                   <span className="icon has-text-grey">
                     <i className="fas fa-clock" />

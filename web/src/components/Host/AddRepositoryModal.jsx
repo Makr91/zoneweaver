@@ -174,7 +174,10 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
         <h3 className="title is-6">Mirror URLs (Optional)</h3>
 
         {formData.mirrors.map((mirror, index) => (
-          <div key={index} className="field has-addons mb-3">
+          <div
+            key={`mirror-${index}-${mirror || "empty"}`}
+            className="field has-addons mb-3"
+          >
             <div className="control is-expanded">
               <input
                 className="input"
