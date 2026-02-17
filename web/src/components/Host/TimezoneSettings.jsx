@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -17,18 +18,7 @@ const TimezoneSettings = ({ server, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load timezone information on component mount
-  useEffect(() => {
-    loadTimezoneInfo();
-    loadAvailableTimezones();
-  }, [server]);
-
-  // Filter timezones when search or region changes
-  useEffect(() => {
-    filterTimezones();
-  }, [availableTimezones, searchFilter, regionFilter]);
-
-  const loadTimezoneInfo = async () => {
+  const loadTimezoneInfo = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -56,9 +46,9 @@ const TimezoneSettings = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, onError]);
 
-  const loadAvailableTimezones = async () => {
+  const loadAvailableTimezones = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -83,9 +73,9 @@ const TimezoneSettings = ({ server, onError }) => {
       console.warn("Error loading available timezones:", err.message);
       setAvailableTimezones([]);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
 
-  const filterTimezones = () => {
+  const filterTimezones = useCallback(() => {
     if (!availableTimezones || availableTimezones.length === 0) {
       setFilteredTimezones([]);
       return;
@@ -110,17 +100,28 @@ const TimezoneSettings = ({ server, onError }) => {
     filtered.sort();
 
     setFilteredTimezones(filtered);
-  };
+  }, [availableTimezones, searchFilter, regionFilter]);
+
+  // Load timezone information on component mount
+  useEffect(() => {
+    loadTimezoneInfo();
+    loadAvailableTimezones();
+  }, [loadTimezoneInfo, loadAvailableTimezones]);
+
+  // Filter timezones when search or region changes
+  useEffect(() => {
+    filterTimezones();
+  }, [filterTimezones]);
 
   const handleChangeTimezone = async () => {
     if (!selectedTimezone) {
       onError("Please select a timezone");
-      return;
+      return { success: false };
     }
 
     if (selectedTimezone === timezoneInfo?.timezone) {
       onError("Selected timezone is the same as current timezone");
-      return;
+      return { success: false };
     }
 
     try {
@@ -204,7 +205,7 @@ const TimezoneSettings = ({ server, onError }) => {
       UTC: "Coordinated Universal Time",
     };
 
-    const region = timezone.split("/")[0];
+    const [region] = timezone.split("/");
     return descriptions[region] || "";
   };
 
@@ -297,9 +298,12 @@ const TimezoneSettings = ({ server, onError }) => {
         <div className="columns mb-4">
           <div className="column">
             <div className="field">
-              <label className="label">Search Timezones</label>
+              <label className="label" htmlFor="timezone-search">
+                Search Timezones
+              </label>
               <div className="control has-icons-left">
                 <input
+                  id="timezone-search"
                   className="input"
                   type="text"
                   placeholder="Search timezones..."
@@ -314,10 +318,13 @@ const TimezoneSettings = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Region</label>
+              <label className="label" htmlFor="timezone-region">
+                Filter by Region
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="timezone-region"
                     value={regionFilter}
                     onChange={(e) => setRegionFilter(e.target.value)}
                   >
@@ -336,7 +343,7 @@ const TimezoneSettings = ({ server, onError }) => {
 
         {/* Timezone Selection */}
         <div className="field">
-          <label className="label">
+          <label className="label" htmlFor="timezone-select">
             Select New Timezone
             {filteredTimezones.length > 0 && (
               <span className="is-size-7 has-text-grey ml-2">
@@ -347,6 +354,7 @@ const TimezoneSettings = ({ server, onError }) => {
           <div className="control">
             <div className="select is-fullwidth">
               <select
+                id="timezone-select"
                 value={selectedTimezone}
                 onChange={(e) => setSelectedTimezone(e.target.value)}
                 disabled={changing || filteredTimezones.length === 0}
@@ -371,9 +379,12 @@ const TimezoneSettings = ({ server, onError }) => {
         {/* Manual Entry Fallback */}
         {availableTimezones.length === 0 && (
           <div className="field">
-            <label className="label">Manual Timezone Entry</label>
+            <label className="label" htmlFor="timezone-manual">
+              Manual Timezone Entry
+            </label>
             <div className="control">
               <input
+                id="timezone-manual"
                 className="input is-family-monospace"
                 type="text"
                 placeholder="e.g., America/Chicago, Europe/London, Asia/Tokyo"
@@ -470,6 +481,15 @@ const TimezoneSettings = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+TimezoneSettings.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default TimezoneSettings;

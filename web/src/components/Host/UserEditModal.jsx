@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import FormModal from "../common/FormModal";
@@ -16,11 +17,7 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  useEffect(() => {
-    loadEditOptions();
-  }, []);
-
-  const loadEditOptions = async () => {
+  const loadEditOptions = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -61,7 +58,11 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
     } catch (err) {
       console.error("Error loading edit options:", err);
     }
-  };
+  }, [server, user.username, makeZoneweaverAPIRequest]);
+
+  useEffect(() => {
+    loadEditOptions();
+  }, [loadEditOptions]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -80,6 +81,46 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       [field]: items,
     }));
   };
+
+  const pollTask = useCallback(
+    async (taskId) => {
+      const maxPolls = 30;
+      let polls = 0;
+
+      while (polls < maxPolls) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const taskResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `tasks/${taskId}`,
+            "GET"
+          );
+
+          if (taskResult.success) {
+            const status = taskResult.data?.status;
+            if (status === "completed" || status === "failed") {
+              if (status === "failed" && taskResult.data?.error_message) {
+                onError(taskResult.data.error_message);
+              }
+              break;
+            }
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+          polls++;
+        } catch (err) {
+          console.error("Error polling task:", err);
+          break;
+        }
+      }
+    },
+    [server, makeZoneweaverAPIRequest, onError]
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,39 +184,6 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
     }
   };
 
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
-
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
-    }
-  };
-
   const shells = [
     "/bin/bash",
     "/bin/sh",
@@ -199,9 +207,12 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       aria-label={`Edit user ${user.username}`}
     >
       <div className="field">
-        <label className="label">Username</label>
+        <label className="label" htmlFor="user-edit-username">
+          Username
+        </label>
         <div className="control">
           <input
+            id="user-edit-username"
             className="input"
             type="text"
             value={user.username}
@@ -213,9 +224,12 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Comment</label>
+        <label className="label" htmlFor="user-edit-comment">
+          Comment
+        </label>
         <div className="control">
           <input
+            id="user-edit-comment"
             className="input"
             type="text"
             value={formData.new_comment}
@@ -227,10 +241,13 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Shell</label>
+        <label className="label" htmlFor="user-edit-shell">
+          Shell
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="user-edit-shell"
               value={formData.new_shell}
               onChange={(e) => handleInputChange("new_shell", e.target.value)}
               disabled={loading}
@@ -250,9 +267,12 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       <h5 className="title is-6">RBAC Configuration</h5>
 
       <div className="field">
-        <label className="label">Secondary Groups</label>
+        <label className="label" htmlFor="user-edit-groups">
+          Secondary Groups
+        </label>
         <div className="control">
           <input
+            id="user-edit-groups"
             className="input"
             type="text"
             value={formData.new_groups.join(", ")}
@@ -269,9 +289,12 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Authorizations</label>
+        <label className="label" htmlFor="user-edit-authorizations">
+          Authorizations
+        </label>
         <div className="control">
           <textarea
+            id="user-edit-authorizations"
             className="textarea"
             rows="2"
             value={formData.new_authorizations.join(", ")}
@@ -285,9 +308,12 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Profiles</label>
+        <label className="label" htmlFor="user-edit-profiles">
+          Profiles
+        </label>
         <div className="control">
           <input
+            id="user-edit-profiles"
             className="input"
             type="text"
             value={formData.new_profiles.join(", ")}
@@ -308,6 +334,22 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+UserEditModal.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  user: PropTypes.shape({
+    username: PropTypes.string,
+    comment: PropTypes.string,
+    shell: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default UserEditModal;

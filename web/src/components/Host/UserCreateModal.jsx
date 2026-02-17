@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import FormModal from "../common/FormModal";
@@ -26,13 +27,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  useEffect(() => {
-    if (isAdvanced) {
-      loadAdvancedOptions();
-    }
-  }, [isAdvanced]);
-
-  const loadAdvancedOptions = async () => {
+  const loadAdvancedOptions = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -70,7 +65,13 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
     } catch (err) {
       console.error("Error loading advanced options:", err);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
+
+  useEffect(() => {
+    if (isAdvanced) {
+      loadAdvancedOptions();
+    }
+  }, [isAdvanced, loadAdvancedOptions]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -90,13 +91,45 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }));
   };
 
-  const handleMultiSelectChange = (field, selectedOptions) => {
-    const values = Array.from(selectedOptions).map((option) => option.value);
-    setFormData((prev) => ({
-      ...prev,
-      [field]: values,
-    }));
-  };
+  const pollTask = useCallback(
+    async (taskId) => {
+      const maxPolls = 30;
+      let polls = 0;
+
+      while (polls < maxPolls) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const taskResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `tasks/${taskId}`,
+            "GET"
+          );
+
+          if (taskResult.success) {
+            const status = taskResult.data?.status;
+            if (status === "completed" || status === "failed") {
+              if (status === "failed" && taskResult.data?.error_message) {
+                onError(taskResult.data.error_message);
+              }
+              break;
+            }
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+          polls++;
+        } catch (err) {
+          console.error("Error polling task:", err);
+          break;
+        }
+      }
+    },
+    [server, makeZoneweaverAPIRequest, onError]
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -171,39 +204,6 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }
   };
 
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
-
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
-    }
-  };
-
   const shells = [
     "/bin/bash",
     "/bin/sh",
@@ -250,11 +250,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label className="label">
+            <label className="label" htmlFor="user-create-username">
               Username <span className="has-text-danger">*</span>
             </label>
             <div className="control">
               <input
+                id="user-create-username"
                 className="input"
                 type="text"
                 value={formData.username}
@@ -269,9 +270,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
         {isAdvanced && (
           <div className="column">
             <div className="field">
-              <label className="label">User ID (UID)</label>
+              <label className="label" htmlFor="user-create-uid">
+                User ID (UID)
+              </label>
               <div className="control">
                 <input
+                  id="user-create-uid"
                   className="input"
                   type="number"
                   value={formData.uid}
@@ -286,9 +290,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Comment</label>
+        <label className="label" htmlFor="user-create-comment">
+          Comment
+        </label>
         <div className="control">
           <input
+            id="user-create-comment"
             className="input"
             type="text"
             value={formData.comment}
@@ -300,10 +307,13 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Shell</label>
+        <label className="label" htmlFor="user-create-shell">
+          Shell
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="user-create-shell"
               value={formData.shell}
               onChange={(e) => handleInputChange("shell", e.target.value)}
               disabled={loading}
@@ -325,9 +335,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           <h5 className="title is-6">RBAC Configuration</h5>
 
           <div className="field">
-            <label className="label">Groups</label>
+            <label className="label" htmlFor="user-create-groups">
+              Groups
+            </label>
             <div className="control">
               <input
+                id="user-create-groups"
                 className="input"
                 type="text"
                 value={formData.groups.join(", ")}
@@ -345,9 +358,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </div>
 
           <div className="field">
-            <label className="label">Authorizations</label>
+            <label className="label" htmlFor="user-create-authorizations">
+              Authorizations
+            </label>
             <div className="control">
               <textarea
+                id="user-create-authorizations"
                 className="textarea"
                 rows="2"
                 value={formData.authorizations.join(", ")}
@@ -361,9 +377,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </div>
 
           <div className="field">
-            <label className="label">Profiles</label>
+            <label className="label" htmlFor="user-create-profiles">
+              Profiles
+            </label>
             <div className="control">
               <input
+                id="user-create-profiles"
                 className="input"
                 type="text"
                 value={formData.profiles.join(", ")}
@@ -377,9 +396,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </div>
 
           <div className="field">
-            <label className="label">Roles</label>
+            <label className="label" htmlFor="user-create-roles">
+              Roles
+            </label>
             <div className="control">
               <input
+                id="user-create-roles"
                 className="input"
                 type="text"
                 value={formData.roles.join(", ")}
@@ -397,9 +419,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </div>
 
           <div className="field">
-            <label className="label">Project</label>
+            <label className="label" htmlFor="user-create-project">
+              Project
+            </label>
             <div className="control">
               <input
+                id="user-create-project"
                 className="input"
                 type="text"
                 value={formData.project}
@@ -411,9 +436,12 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           </div>
 
           <div className="field">
-            <label className="label">Created By</label>
+            <label className="label" htmlFor="user-create-created-by">
+              Created By
+            </label>
             <div className="control">
               <input
+                id="user-create-created-by"
                 className="input"
                 type="text"
                 value={formData.created_by}
@@ -435,6 +463,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
         <div className="control">
           <label className="switch">
             <input
+              id="user-create-home"
               type="checkbox"
               checked={formData.create_home}
               onChange={(e) =>
@@ -452,6 +481,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
         <div className="control">
           <label className="switch">
             <input
+              id="user-create-personal-group"
               type="checkbox"
               checked={formData.create_personal_group}
               onChange={(e) =>
@@ -470,6 +500,7 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
           <div className="control">
             <label className="switch">
               <input
+                id="user-create-force-zfs"
                 type="checkbox"
                 checked={formData.force_zfs}
                 onChange={(e) =>
@@ -485,6 +516,17 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       )}
     </FormModal>
   );
+};
+
+UserCreateModal.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default UserCreateModal;

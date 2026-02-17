@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import ContentModal from "../common/ContentModal";
 
 const UserDetailsModal = ({ user, onClose }) => {
@@ -23,6 +25,26 @@ const UserDetailsModal = ({ user, onClose }) => {
   };
 
   const userType = getUserType();
+
+  const getAccountStatusClass = (status) => {
+    if (status === "active") {
+      return "is-success";
+    }
+    if (status === "locked") {
+      return "is-danger";
+    }
+    return "is-warning";
+  };
+
+  const getPasswordStatusClass = (status) => {
+    if (status === "set") {
+      return "is-success";
+    }
+    if (status === "expired") {
+      return "is-warning";
+    }
+    return "is-light";
+  };
 
   return (
     <ContentModal
@@ -122,8 +144,8 @@ const UserDetailsModal = ({ user, onClose }) => {
                       <td>
                         {user.attributes.groups.length > 0 ? (
                           <div className="tags">
-                            {user.attributes.groups.map((group, index) => (
-                              <span key={index} className="tag is-light">
+                            {user.attributes.groups.map((group) => (
+                              <span key={group} className="tag is-light">
                                 {group}
                               </span>
                             ))}
@@ -143,16 +165,14 @@ const UserDetailsModal = ({ user, onClose }) => {
                       <td>
                         {user.attributes.authorizations.length > 0 ? (
                           <div className="content">
-                            {user.attributes.authorizations.map(
-                              (auth, index) => (
-                                <div
-                                  key={index}
-                                  className="is-family-monospace is-size-7"
-                                >
-                                  {auth}
-                                </div>
-                              )
-                            )}
+                            {user.attributes.authorizations.map((auth) => (
+                              <div
+                                key={auth}
+                                className="is-family-monospace is-size-7"
+                              >
+                                {auth}
+                              </div>
+                            ))}
                           </div>
                         ) : (
                           <span className="has-text-grey">None</span>
@@ -169,9 +189,9 @@ const UserDetailsModal = ({ user, onClose }) => {
                       <td>
                         {user.attributes.profiles.length > 0 ? (
                           <div className="tags">
-                            {user.attributes.profiles.map((profile, index) => (
+                            {user.attributes.profiles.map((profile) => (
                               <span
-                                key={index}
+                                key={profile}
                                 className="tag is-primary is-light"
                               >
                                 {profile}
@@ -193,9 +213,9 @@ const UserDetailsModal = ({ user, onClose }) => {
                       <td>
                         {user.attributes.roles.length > 0 ? (
                           <div className="tags">
-                            {user.attributes.roles.map((role, index) => (
+                            {user.attributes.roles.map((role) => (
                               <span
-                                key={index}
+                                key={role}
                                 className="tag is-warning is-light"
                               >
                                 {role}
@@ -227,13 +247,9 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         <span
-                          className={`tag ${
-                            user.attributes.account_status === "active"
-                              ? "is-success"
-                              : user.attributes.account_status === "locked"
-                                ? "is-danger"
-                                : "is-warning"
-                          }`}
+                          className={`tag ${getAccountStatusClass(
+                            user.attributes.account_status
+                          )}`}
                         >
                           {user.attributes.account_status}
                         </span>
@@ -248,13 +264,9 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         <span
-                          className={`tag ${
-                            user.attributes.password_status === "set"
-                              ? "is-success"
-                              : user.attributes.password_status === "expired"
-                                ? "is-warning"
-                                : "is-light"
-                          }`}
+                          className={`tag ${getPasswordStatusClass(
+                            user.attributes.password_status
+                          )}`}
                         >
                           {user.attributes.password_status}
                         </span>
@@ -278,8 +290,8 @@ const UserDetailsModal = ({ user, onClose }) => {
           ) : (
             <div className="notification is-info">
               <p>
-                Extended attributes not loaded. Click "View Details" to load
-                full user information.
+                Extended attributes not loaded. Click &quot;View Details&quot;
+                to load full user information.
               </p>
             </div>
           )}
@@ -305,6 +317,28 @@ const UserDetailsModal = ({ user, onClose }) => {
       )}
     </ContentModal>
   );
+};
+
+UserDetailsModal.propTypes = {
+  user: PropTypes.shape({
+    username: PropTypes.string,
+    uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    gid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    comment: PropTypes.string,
+    home: PropTypes.string,
+    shell: PropTypes.string,
+    attributes: PropTypes.shape({
+      groups: PropTypes.arrayOf(PropTypes.string),
+      authorizations: PropTypes.arrayOf(PropTypes.string),
+      profiles: PropTypes.arrayOf(PropTypes.string),
+      roles: PropTypes.arrayOf(PropTypes.string),
+      project: PropTypes.string,
+      account_status: PropTypes.string,
+      password_status: PropTypes.string,
+      last_login: PropTypes.string,
+    }),
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default UserDetailsModal;

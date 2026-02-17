@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
-import TimeSyncConfig from "./TimeSyncConfig";
-import TimeSyncStatus from "./TimeSyncStatus";
+import TimeSyncConfig from "./TimeSync/Config";
+import TimeSyncStatus from "./TimeSync/Status";
 import TimezoneSettings from "./TimezoneSettings";
 
 const TimeNTPManagement = ({ server }) => {
