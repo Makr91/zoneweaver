@@ -7,8 +7,6 @@ const BandwidthCharts = ({
   chartData,
   sectionsCollapsed,
   toggleSection,
-  timeWindow,
-  setTimeWindow,
   loading,
   chartSortBy,
   setChartSortBy,
@@ -465,146 +463,142 @@ const BandwidthCharts = ({
               </span>
             </h5>
             <div className="columns is-multiline">
-              {getSortedChartEntries().map(
-                ([interfaceName, data], chartIndex) => {
-                  const chartOptions = {
-                    chart: {
-                      type: "spline",
-                      animation: Highcharts.svg,
-                      marginRight: 10,
-                      height: 300,
-                      backgroundColor: "#1e2a3a",
+              {getSortedChartEntries().map(([interfaceName, data]) => {
+                const chartOptions = {
+                  chart: {
+                    type: "spline",
+                    animation: Highcharts.svg,
+                    marginRight: 10,
+                    height: 300,
+                    backgroundColor: "#1e2a3a",
+                    style: {
+                      fontFamily:
+                        '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+                    },
+                  },
+                  time: {
+                    useUTC: false,
+                  },
+                  title: {
+                    text: interfaceName,
+                    style: {
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      color: "#ffffff",
+                    },
+                  },
+                  xAxis: {
+                    type: "datetime",
+                    tickPixelInterval: 150,
+                    labels: {
                       style: {
-                        fontFamily:
-                          '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-                      },
-                    },
-                    time: {
-                      useUTC: false,
-                    },
-                    title: {
-                      text: interfaceName,
-                      style: {
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        color: "#ffffff",
-                      },
-                    },
-                    xAxis: {
-                      type: "datetime",
-                      tickPixelInterval: 150,
-                      labels: {
-                        style: {
-                          fontSize: "10px",
-                          color: "#b0bec5",
-                        },
-                      },
-                      lineColor: "#37474f",
-                      tickColor: "#37474f",
-                      gridLineColor: "#37474f",
-                    },
-                    yAxis: {
-                      title: {
-                        text: "Bandwidth (Mbps)",
-                        style: {
-                          fontSize: "12px",
-                          color: "#b0bec5",
-                        },
-                      },
-                      min: 0,
-                      labels: {
-                        style: {
-                          fontSize: "10px",
-                          color: "#b0bec5",
-                        },
-                      },
-                      lineColor: "#37474f",
-                      tickColor: "#37474f",
-                      gridLineColor: "#37474f",
-                    },
-                    legend: {
-                      enabled: true,
-                      itemStyle: {
                         fontSize: "10px",
-                        color: "#ffffff",
-                      },
-                      itemHoverStyle: {
-                        color: "#64b5f6",
+                        color: "#b0bec5",
                       },
                     },
-                    plotOptions: {
-                      spline: {
-                        marker: {
-                          enabled: false,
-                        },
-                        lineWidth: 2,
-                      },
-                    },
-                    series: [
-                      {
-                        name: "RX",
-                        data: data.rxData,
-                        color: "#64b5f6",
-                        fillOpacity: 0.3,
-                      },
-                      {
-                        name: "TX",
-                        data: data.txData,
-                        color: "#ff9800",
-                        fillOpacity: 0.3,
-                      },
-                      {
-                        name: "Total",
-                        data: data.totalData,
-                        color: "#4caf50",
-                        fillOpacity: 0.2,
-                        lineWidth: 3,
-                      },
-                    ],
-                    credits: {
-                      enabled: false,
-                    },
-                    tooltip: {
-                      shared: true,
-                      valueSuffix: " Mbps",
-                      backgroundColor: "#263238",
-                      borderColor: "#37474f",
+                    lineColor: "#37474f",
+                    tickColor: "#37474f",
+                    gridLineColor: "#37474f",
+                  },
+                  yAxis: {
+                    title: {
+                      text: "Bandwidth (Mbps)",
                       style: {
-                        color: "#ffffff",
-                        fontSize: "11px",
+                        fontSize: "12px",
+                        color: "#b0bec5",
                       },
                     },
-                  };
+                    min: 0,
+                    labels: {
+                      style: {
+                        fontSize: "10px",
+                        color: "#b0bec5",
+                      },
+                    },
+                    lineColor: "#37474f",
+                    tickColor: "#37474f",
+                    gridLineColor: "#37474f",
+                  },
+                  legend: {
+                    enabled: true,
+                    itemStyle: {
+                      fontSize: "10px",
+                      color: "#ffffff",
+                    },
+                    itemHoverStyle: {
+                      color: "#64b5f6",
+                    },
+                  },
+                  plotOptions: {
+                    spline: {
+                      marker: {
+                        enabled: false,
+                      },
+                      lineWidth: 2,
+                    },
+                  },
+                  series: [
+                    {
+                      name: "RX",
+                      data: data.rxData,
+                      color: "#64b5f6",
+                      fillOpacity: 0.3,
+                    },
+                    {
+                      name: "TX",
+                      data: data.txData,
+                      color: "#ff9800",
+                      fillOpacity: 0.3,
+                    },
+                    {
+                      name: "Total",
+                      data: data.totalData,
+                      color: "#4caf50",
+                      fillOpacity: 0.2,
+                      lineWidth: 3,
+                    },
+                  ],
+                  credits: {
+                    enabled: false,
+                  },
+                  tooltip: {
+                    shared: true,
+                    valueSuffix: " Mbps",
+                    backgroundColor: "#263238",
+                    borderColor: "#37474f",
+                    style: {
+                      color: "#ffffff",
+                      fontSize: "11px",
+                    },
+                  },
+                };
 
-                  return (
-                    <div key={`chart-${interfaceName}`} className="column is-6">
-                      <div className="is-chart-container is-relative">
-                        <button
-                          className="button is-small is-light is-chart-expand-button"
-                          onClick={() =>
-                            expandChart(interfaceName, "individual")
+                return (
+                  <div key={`chart-${interfaceName}`} className="column is-6">
+                    <div className="is-chart-container is-relative">
+                      <button
+                        className="button is-small is-light is-chart-expand-button"
+                        onClick={() => expandChart(interfaceName, "individual")}
+                        title="Expand chart to full size"
+                      >
+                        <span className="icon">
+                          <i className="fas fa-expand" />
+                        </span>
+                      </button>
+                      <HighchartsReact
+                        key={`chart-${interfaceName}`}
+                        highcharts={Highcharts}
+                        options={chartOptions}
+                        ref={(ref) => {
+                          if (ref) {
+                            chartRefs.current[interfaceName] = ref;
                           }
-                          title="Expand chart to full size"
-                        >
-                          <span className="icon">
-                            <i className="fas fa-expand" />
-                          </span>
-                        </button>
-                        <HighchartsReact
-                          key={`chart-${interfaceName}`}
-                          highcharts={Highcharts}
-                          options={chartOptions}
-                          ref={(ref) => {
-                            if (ref) {
-                              chartRefs.current[interfaceName] = ref;
-                            }
-                          }}
-                        />
-                      </div>
+                        }}
+                      />
                     </div>
-                  );
-                }
-              )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -625,8 +619,6 @@ BandwidthCharts.propTypes = {
   chartData: PropTypes.object.isRequired,
   sectionsCollapsed: PropTypes.object.isRequired,
   toggleSection: PropTypes.func.isRequired,
-  timeWindow: PropTypes.number,
-  setTimeWindow: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   chartSortBy: PropTypes.string.isRequired,
   setChartSortBy: PropTypes.func.isRequired,

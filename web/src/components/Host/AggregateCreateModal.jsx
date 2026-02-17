@@ -318,7 +318,9 @@ const AggregateCreateModal = ({
       </div>
 
       <div className="field">
-        <span className="label">Member Links *</span>
+        <label htmlFor="aggregate-link-select" className="label">
+          Member Links *
+        </label>
         <div className="field has-addons">
           <div className="control is-expanded">
             <div className="select is-fullwidth">

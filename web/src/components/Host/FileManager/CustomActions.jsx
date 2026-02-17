@@ -61,9 +61,9 @@ const CustomActions = ({
       } else {
         setError(result.message || "Failed to save file");
       }
-    } catch (error) {
-      console.error("Error saving file:", error);
-      setError(`Failed to save file: ${error.message}`);
+    } catch (saveErr) {
+      console.error("Error saving file:", saveErr);
+      setError(`Failed to save file: ${saveErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +118,7 @@ const CustomActions = ({
 
   // Listen for custom events from file preview
   useEffect(() => {
-    const handleEditFile = (e) => {
+    const handleEditFileEvent = (e) => {
       const file = e.detail;
       if (isTextFile(file)) {
         setTextEditorFile(file);
@@ -128,7 +128,7 @@ const CustomActions = ({
       }
     };
 
-    const handleExtractArchive = (e) => {
+    const handleExtractArchiveEvent = (e) => {
       const file = e.detail;
       if (isArchiveFile(file)) {
         setArchiveFileForExtract(file);
@@ -138,34 +138,34 @@ const CustomActions = ({
       }
     };
 
-    const handleShowProperties = (e) => {
+    const handleShowPropertiesEvent = (e) => {
       const file = e.detail;
       setPropertiesFile(file);
       setShowPropertiesModal(true);
     };
 
-    document.addEventListener("zoneweaver-edit-file", handleEditFile);
+    document.addEventListener("zoneweaver-edit-file", handleEditFileEvent);
     document.addEventListener(
       "zoneweaver-extract-archive",
-      handleExtractArchive
+      handleExtractArchiveEvent
     );
     document.addEventListener(
       "zoneweaver-show-properties",
-      handleShowProperties
+      handleShowPropertiesEvent
     );
 
     return () => {
-      document.removeEventListener("zoneweaver-edit-file", handleEditFile);
+      document.removeEventListener("zoneweaver-edit-file", handleEditFileEvent);
       document.removeEventListener(
         "zoneweaver-extract-archive",
-        handleExtractArchive
+        handleExtractArchiveEvent
       );
       document.removeEventListener(
         "zoneweaver-show-properties",
-        handleShowProperties
+        handleShowPropertiesEvent
       );
     };
-  }, []);
+  }, [setError]);
 
   // Inject custom CSS for context menu integration
   useEffect(() => {

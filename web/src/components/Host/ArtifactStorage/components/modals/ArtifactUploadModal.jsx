@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -28,7 +28,7 @@ const ArtifactUploadModal = ({
   const enabledStoragePaths = storagePaths.filter((path) => path.enabled);
 
   // Set default storage path if only one is available
-  React.useEffect(() => {
+  useEffect(() => {
     if (enabledStoragePaths.length === 1 && !formData.storage_path_id) {
       setFormData((prev) => ({
         ...prev,
@@ -193,8 +193,8 @@ const ArtifactUploadModal = ({
       );
 
       return uploadResult;
-    } catch (err) {
-      throw new Error(`Upload failed: ${err.message}`);
+    } catch (uploadErr) {
+      throw new Error(`Upload failed: ${uploadErr.message}`);
     }
   };
 
@@ -262,12 +262,20 @@ const ArtifactUploadModal = ({
               error: result.message,
             });
           }
-        } catch (err) {
+        } catch (fileErr) {
           setUploadProgress((prev) => ({
             ...prev,
-            [file.name]: { status: "error", progress: 0, error: err.message },
+            [file.name]: {
+              status: "error",
+              progress: 0,
+              error: fileErr.message,
+            },
           }));
-          results.push({ file: file.name, success: false, error: err.message });
+          results.push({
+            file: file.name,
+            success: false,
+            error: fileErr.message,
+          });
         }
       }
 
@@ -278,8 +286,8 @@ const ArtifactUploadModal = ({
       } else {
         onError("All uploads failed. Please check the files and try again.");
       }
-    } catch (err) {
-      onError(`Error during upload: ${err.message}`);
+    } catch (submitErr) {
+      onError(`Error during upload: ${submitErr.message}`);
     } finally {
       setLoading(false);
     }
@@ -357,15 +365,26 @@ const ArtifactUploadModal = ({
       </div>
 
       <div className="field">
-        <span className="label">Files</span>
+        <label htmlFor="artifact-upload-file-input" className="label">
+          Files
+        </label>
         <div
           className={`file is-boxed ${dragOver ? "is-active" : ""} ${errors.files ? "has-background-danger-light" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              void e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
         >
           <label className="file-label">
             <input
+              id="artifact-upload-file-input"
               ref={fileInputRef}
               className="file-input"
               type="file"
@@ -478,10 +497,13 @@ const ArtifactUploadModal = ({
       )}
 
       <div className="field">
-        <span className="label">Checksum (Optional)</span>
+        <label htmlFor="artifact-checksum-input" className="label">
+          Checksum (Optional)
+        </label>
         <div className="field has-addons">
           <div className="control is-expanded">
             <input
+              id="artifact-checksum-input"
               className="input"
               type="text"
               placeholder="Expected checksum for verification"

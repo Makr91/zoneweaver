@@ -49,8 +49,8 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       if (groupsResult.success && groupsResult.data?.groups) {
         setSystemGroups(groupsResult.data.groups);
       }
-    } catch (error) {
-      console.error("Error loading system data:", error);
+    } catch (loadErr) {
+      console.error("Error loading system data:", loadErr);
     }
   };
 
@@ -133,9 +133,9 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       } else {
         setError(result.message || "Failed to update permissions");
       }
-    } catch (error) {
-      console.error("Error updating permissions:", error);
-      setError(`Failed to update permissions: ${error.message}`);
+    } catch (submitErr) {
+      console.error("Error updating permissions:", submitErr);
+      setError(`Failed to update permissions: ${submitErr.message}`);
     } finally {
       setLoading(false);
     }
@@ -447,7 +447,9 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* Common permission presets */}
           <div className="field">
-            <span className="label">Quick Presets</span>
+            <span className="label" aria-hidden="true">
+              Quick Presets
+            </span>
             <div className="buttons">
               <button
                 type="button"

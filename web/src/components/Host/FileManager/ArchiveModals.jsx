@@ -3,11 +3,7 @@ import { useState, useEffect } from "react";
 
 import FormModal from "../../common/FormModal";
 
-import {
-  isArchiveFile,
-  getArchiveFormat,
-  getPathFromFile,
-} from "./FileManagerTransforms";
+import { getArchiveFormat } from "./FileManagerTransforms";
 
 /**
  * Archive Creation Modal
@@ -64,9 +60,9 @@ const CreateArchiveModal = ({
       } else {
         setError(result.message || "Failed to create archive");
       }
-    } catch (error) {
-      console.error("Error creating archive:", error);
-      setError(`Failed to create archive: ${error.message}`);
+    } catch (createErr) {
+      console.error("Error creating archive:", createErr);
+      setError(`Failed to create archive: ${createErr.message}`);
     } finally {
       setLoading(false);
     }
@@ -232,9 +228,9 @@ const ExtractArchiveModal = ({
       } else {
         setError(result.message || "Failed to extract archive");
       }
-    } catch (error) {
-      console.error("Error extracting archive:", error);
-      setError(`Failed to extract archive: ${error.message}`);
+    } catch (extractErr) {
+      console.error("Error extracting archive:", extractErr);
+      setError(`Failed to extract archive: ${extractErr.message}`);
     } finally {
       setLoading(false);
     }
@@ -309,7 +305,9 @@ const ExtractArchiveModal = ({
 
       {/* Quick destination options */}
       <div className="field">
-        <span className="label">Quick Options</span>
+        <span className="label" aria-hidden="true">
+          Quick Options
+        </span>
         <div className="buttons">
           <button
             type="button"

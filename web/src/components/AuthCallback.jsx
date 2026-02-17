@@ -68,8 +68,8 @@ const AuthCallback = () => {
           // Default redirect to dashboard
           navigate("/ui", { replace: true });
         }
-      } catch (error) {
-        console.error("Error processing authentication callback:", error);
+      } catch (authError) {
+        console.error("Error processing authentication callback:", authError);
         navigate("/ui/login", {
           state: { error: "Failed to process authentication" },
           replace: true,

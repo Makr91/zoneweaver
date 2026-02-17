@@ -1,23 +1,30 @@
-import PropTypes from "prop-types";
 import { FileManager } from "@cubone/react-file-manager";
+import PropTypes from "prop-types";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import "@cubone/react-file-manager/dist/style.css";
 
 import { useAuth } from "../../../contexts/AuthContext";
 import { useServers } from "../../../contexts/ServerContext";
-import { useTheme } from "../../../contexts/ThemeContext";
 import { canManageHosts, canViewHosts } from "../../../utils/permissions";
 
 import ArchiveModals from "./ArchiveModals";
 import { ZoneweaverFileManagerAPI } from "./FileManagerAPI";
-import { isTextFile, isArchiveFile } from "./FileManagerTransforms";
+import {
+  transformZoneweaverToFile,
+  isTextFile,
+  isArchiveFile,
+} from "./FileManagerTransforms";
 import FilePropertiesModal from "./FilePropertiesModal";
 import TextFileEditor from "./TextFileEditor";
 import "./HostFileManager.scss";
 
 const getFileSizeDisplay = (file) => {
-  if (file.isDirectory) return "Directory";
-  if (file.size) return `${Math.round(file.size / 1024)} KB`;
+  if (file.isDirectory) {
+    return "Directory";
+  }
+  if (file.size) {
+    return `${Math.round(file.size / 1024)} KB`;
+  }
   return "Unknown size";
 };
 
@@ -111,7 +118,6 @@ const HostFileManager = ({ server }) => {
   const [propertiesFile, setPropertiesFile] = useState(null);
 
   const { user } = useAuth();
-  const { theme } = useTheme();
   const serverContext = useServers();
 
   // Initialize API instance
@@ -171,26 +177,30 @@ const HostFileManager = ({ server }) => {
           const pathParts = path.split("/").filter(Boolean);
 
           // Load all parent directories in parallel to avoid await-in-loop
-          const parentDirPromises = pathParts.slice(0, -1).map(async (_, i) => {
-            const searchPath = `/${pathParts.slice(0, i + 1).join("/")}`;
+          const parentDirPromises = Array.from(
+            { length: pathParts.length - 1 },
+            async (unusedElement, i) => {
+              void unusedElement;
+              const searchPath = `/${pathParts.slice(0, i + 1).join("/")}`;
 
-            // Check cache first
-            let parentDirs = directoryCache.get(searchPath);
-            if (!parentDirs) {
-              try {
-                const parentFiles = await api.loadFiles(searchPath);
-                parentDirs = parentFiles.filter((file) => file.isDirectory);
-                setDirectoryCache((prev) =>
-                  new Map(prev).set(searchPath, parentDirs)
-                );
-              } catch (parentErr) {
-                void parentErr;
-                console.log("Could not load parent directory:", searchPath);
-                return [];
+              // Check cache first
+              let parentDirs = directoryCache.get(searchPath);
+              if (!parentDirs) {
+                try {
+                  const parentFiles = await api.loadFiles(searchPath);
+                  parentDirs = parentFiles.filter((file) => file.isDirectory);
+                  setDirectoryCache((prev) =>
+                    new Map(prev).set(searchPath, parentDirs)
+                  );
+                } catch (parentErr) {
+                  void parentErr;
+                  console.log("Could not load parent directory:", searchPath);
+                  return [];
+                }
               }
+              return parentDirs || [];
             }
-            return parentDirs || [];
-          });
+          );
 
           const allParentDirs = await Promise.all(parentDirPromises);
 
@@ -406,7 +416,7 @@ const HostFileManager = ({ server }) => {
   // Download handler with authentication
   const handleDownload = async (filesToDownload) => {
     try {
-      const currentServer = serverContext.currentServer;
+      const { currentServer } = serverContext;
       if (!currentServer) {
         setError("No server selected");
         return;

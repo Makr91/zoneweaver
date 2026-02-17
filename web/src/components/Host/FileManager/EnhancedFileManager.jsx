@@ -11,11 +11,7 @@ import { canManageHosts, canViewHosts } from "../../../utils/permissions";
 import ArchiveModals from "./ArchiveModals";
 import { useCuboneExtensions } from "./CuboneExtensions";
 import { ZoneweaverFileManagerAPI } from "./FileManagerAPI";
-import {
-  transformZoneweaverToFile,
-  isTextFile,
-  isArchiveFile,
-} from "./FileManagerTransforms";
+import { isTextFile, isArchiveFile } from "./FileManagerTransforms";
 import FilePropertiesModal from "./FilePropertiesModal";
 import TextFileEditor from "./TextFileEditor";
 import "./HostFileManager.scss";
@@ -301,9 +297,9 @@ const EnhancedFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to create folder");
       }
-    } catch (error) {
-      console.error("Error creating folder:", error);
-      setError(`Failed to create folder: ${error.message}`);
+    } catch (createErr) {
+      console.error("Error creating folder:", createErr);
+      setError(`Failed to create folder: ${createErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -328,10 +324,10 @@ const EnhancedFileManager = ({ server }) => {
       const uploadedFile = JSON.parse(response);
       console.log("✅ UPLOAD: File uploaded successfully:", uploadedFile.name);
       loadFiles(); // Refresh entire file list
-    } catch (error) {
+    } catch (uploadErr) {
       console.error(
         "❌ UPLOAD: Error processing uploaded file response:",
-        error
+        uploadErr
       );
       loadFiles(); // Refresh as fallback
     }
@@ -349,9 +345,9 @@ const EnhancedFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to rename file");
       }
-    } catch (error) {
-      console.error("Error renaming file:", error);
-      setError(`Failed to rename file: ${error.message}`);
+    } catch (renameErr) {
+      console.error("Error renaming file:", renameErr);
+      setError(`Failed to rename file: ${renameErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -372,9 +368,9 @@ const EnhancedFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to delete files");
       }
-    } catch (error) {
-      console.error("Error deleting files:", error);
-      setError(`Failed to delete files: ${error.message}`);
+    } catch (deleteErr) {
+      console.error("Error deleting files:", deleteErr);
+      setError(`Failed to delete files: ${deleteErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -403,9 +399,9 @@ const EnhancedFileManager = ({ server }) => {
       } else {
         setError(result.message || `Failed to ${operationType} files`);
       }
-    } catch (error) {
-      console.error(`Error ${operationType} files:`, error);
-      setError(`Failed to ${operationType} files: ${error.message}`);
+    } catch (pasteErr) {
+      console.error(`Error ${operationType} files:`, pasteErr);
+      setError(`Failed to ${operationType} files: ${pasteErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -451,8 +447,8 @@ const EnhancedFileManager = ({ server }) => {
           }
         }
       }
-    } catch (error) {
-      setError(`Failed to download files: ${error.message}`);
+    } catch (downloadErr) {
+      setError(`Failed to download files: ${downloadErr.message}`);
     }
   };
 
@@ -509,9 +505,9 @@ const EnhancedFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to save file");
       }
-    } catch (error) {
-      console.error("Error saving file:", error);
-      setError(`Failed to save file: ${error.message}`);
+    } catch (saveErr) {
+      console.error("Error saving file:", saveErr);
+      setError(`Failed to save file: ${saveErr.message}`);
     } finally {
       setIsLoading(false);
     }

@@ -4,6 +4,21 @@ import { useNavigate } from "react-router-dom";
 
 import { UserSettings } from "../contexts/UserSettingsContext";
 
+const getExpandedState = (
+  title,
+  hostsExpanded,
+  zonesExpanded,
+  settingsExpanded
+) => {
+  if (title === "Hosts") {
+    return hostsExpanded;
+  }
+  if (title === "Zones") {
+    return zonesExpanded;
+  }
+  return settingsExpanded;
+};
+
 const DashEntryDropDown = ({ title, icon }) => {
   const navigate = useNavigate();
   const userContext = useContext(UserSettings);
@@ -49,12 +64,12 @@ const DashEntryDropDown = ({ title, icon }) => {
     }
   };
 
-  const isExpanded =
-    title === "Hosts"
-      ? hostsExpanded
-      : title === "Zones"
-        ? zonesExpanded
-        : settingsExpanded;
+  const isExpanded = getExpandedState(
+    title,
+    hostsExpanded,
+    zonesExpanded,
+    settingsExpanded
+  );
 
   if (!userContext.sidebarMinimized) {
     return (
