@@ -1,4 +1,7 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
+
+import { ConfirmModal } from "../common";
 
 const UserTable = ({
   users,
@@ -11,28 +14,17 @@ const UserTable = ({
   onViewDetails,
 }) => {
   const [actionLoading, setActionLoading] = useState({});
+  const [confirmAction, setConfirmAction] = useState(null);
 
-  const handleAction = async (user, action) => {
+  const executeAction = async (user, action) => {
     const key = `${user.username}-${action}`;
     setActionLoading((prev) => ({ ...prev, [key]: true }));
 
     try {
       if (action === "delete") {
-        if (
-          window.confirm(
-            `Are you sure you want to delete user "${user.username}"?\n\nThis will also remove their home directory and personal group.`
-          )
-        ) {
-          await onDelete(user);
-        }
+        await onDelete(user);
       } else if (action === "lock") {
-        if (
-          window.confirm(
-            `Are you sure you want to lock user "${user.username}"?`
-          )
-        ) {
-          await onLock(user);
-        }
+        await onLock(user);
       } else if (action === "unlock") {
         await onUnlock(user);
       } else if (action === "edit") {
@@ -42,6 +34,31 @@ const UserTable = ({
       }
     } finally {
       setActionLoading((prev) => ({ ...prev, [key]: false }));
+      setConfirmAction(null);
+    }
+  };
+
+  const handleActionClick = (user, action) => {
+    if (action === "delete") {
+      setConfirmAction({
+        type: "delete",
+        user,
+        title: "Delete User",
+        message: `Are you sure you want to delete user "${user.username}"?\n\nThis will also remove their home directory and personal group.`,
+        confirmText: "Delete",
+        variant: "is-danger",
+      });
+    } else if (action === "lock") {
+      setConfirmAction({
+        type: "lock",
+        user,
+        title: "Lock User Account",
+        message: `Are you sure you want to lock user "${user.username}"?`,
+        confirmText: "Lock",
+        variant: "is-warning",
+      });
+    } else {
+      executeAction(user, action);
     }
   };
 
@@ -168,7 +185,7 @@ const UserTable = ({
                   {/* Edit Button */}
                   <button
                     className="button"
-                    onClick={() => handleAction(user, "edit")}
+                    onClick={() => handleActionClick(user, "edit")}
                     disabled={loading}
                     title="Edit User"
                   >
@@ -180,7 +197,7 @@ const UserTable = ({
                   {/* Set Password Button */}
                   <button
                     className="button is-info"
-                    onClick={() => handleAction(user, "setPassword")}
+                    onClick={() => handleActionClick(user, "setPassword")}
                     disabled={loading}
                     title="Set Password"
                   >
@@ -193,7 +210,7 @@ const UserTable = ({
                   {user.uid >= 100 && (
                     <button
                       className="button is-warning"
-                      onClick={() => handleAction(user, "lock")}
+                      onClick={() => handleActionClick(user, "lock")}
                       disabled={loading}
                       title="Lock Account"
                     >
@@ -223,7 +240,7 @@ const UserTable = ({
                           ? "is-loading"
                           : ""
                       }`}
-                      onClick={() => handleAction(user, "delete")}
+                      onClick={() => handleActionClick(user, "delete")}
                       disabled={loading}
                       title="Delete User"
                     >
@@ -238,8 +255,39 @@ const UserTable = ({
           ))}
         </tbody>
       </table>
+
+      {/* Confirmation Modal */}
+      {confirmAction && (
+        <ConfirmModal
+          isOpen={!!confirmAction}
+          onClose={() => setConfirmAction(null)}
+          onConfirm={() =>
+            executeAction(confirmAction.user, confirmAction.type)
+          }
+          title={confirmAction.title}
+          message={confirmAction.message}
+          confirmText={confirmAction.confirmText}
+          confirmVariant={confirmAction.variant}
+          loading={
+            actionLoading[
+              `${confirmAction.user.username}-${confirmAction.type}`
+            ]
+          }
+        />
+      )}
     </div>
   );
+};
+
+UserTable.propTypes = {
+  users: PropTypes.arrayOf(PropTypes.object).isRequired,
+  loading: PropTypes.bool,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onLock: PropTypes.func.isRequired,
+  onUnlock: PropTypes.func.isRequired,
+  onSetPassword: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default UserTable;

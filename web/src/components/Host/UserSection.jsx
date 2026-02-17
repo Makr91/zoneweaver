@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
@@ -28,12 +29,7 @@ const UserSection = ({ server, onError }) => {
   // Debounce the pattern filter to avoid excessive API calls
   const debouncedPattern = useDebounce(filters.pattern, 500);
 
-  // Load users on component mount and when filters change
-  useEffect(() => {
-    loadUsers();
-  }, [server, debouncedPattern, filters.includeSystem, filters.limit]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -75,11 +71,51 @@ const UserSection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, debouncedPattern, filters, onError]);
+
+  const pollTask = useCallback(
+    async (taskId) => {
+      const maxPolls = 30;
+      let polls = 0;
+
+      while (polls < maxPolls) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const taskResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `tasks/${taskId}`,
+            "GET"
+          );
+
+          if (taskResult.success) {
+            const status = taskResult.data?.status;
+            if (status === "completed" || status === "failed") {
+              if (status === "failed" && taskResult.data?.error_message) {
+                onError(taskResult.data.error_message);
+              }
+              break;
+            }
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+          polls++;
+        } catch (err) {
+          console.error("Error polling task:", err);
+          break;
+        }
+      }
+    },
+    [server, makeZoneweaverAPIRequest, onError]
+  );
 
   const handleUserAction = async (username, action, options = {}) => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false, message: "Server not available" };
     }
 
     try {
@@ -145,38 +181,10 @@ const UserSection = ({ server, onError }) => {
     }
   };
 
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
-
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
-    }
-  };
+  // Load users on component mount and when filters change
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const handleViewDetails = async (user) => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -239,9 +247,12 @@ const UserSection = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Username</label>
+              <label className="label" htmlFor="filter-username">
+                Filter by Username
+              </label>
               <div className="control">
                 <input
+                  id="filter-username"
                   className="input"
                   type="text"
                   placeholder="Enter username pattern..."
@@ -255,10 +266,13 @@ const UserSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Include System Users</label>
+              <label className="label" htmlFor="filter-include-system">
+                Include System Users
+              </label>
               <div className="control">
                 <label className="switch is-medium">
                   <input
+                    id="filter-include-system"
                     type="checkbox"
                     checked={filters.includeSystem}
                     onChange={(e) =>
@@ -273,10 +287,13 @@ const UserSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Limit Results</label>
+              <label className="label" htmlFor="filter-limit">
+                Limit Results
+              </label>
               <div className="control">
                 <div className="select">
                   <select
+                    id="filter-limit"
                     value={filters.limit}
                     onChange={(e) =>
                       handleFilterChange("limit", parseInt(e.target.value))
@@ -293,7 +310,7 @@ const UserSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <div className="label">&nbsp;</div>
               <div className="control">
                 <button
                   className="button is-info"
@@ -310,7 +327,7 @@ const UserSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <div className="label">&nbsp;</div>
               <div className="control">
                 <button
                   className="button"
@@ -441,6 +458,15 @@ const UserSection = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+UserSection.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default UserSection;

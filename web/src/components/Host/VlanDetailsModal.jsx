@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const VlanDetailsModal = ({ vlan, onClose }) => {
@@ -169,7 +171,7 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
         </div>
 
         {/* Raw Data for Debugging */}
-        {process.env.NODE_ENV === "development" && (
+        {import.meta.env.MODE === "development" && (
           <div className="box">
             <h4 className="title is-6 mb-3">
               <span className="icon-text">
@@ -188,6 +190,24 @@ const VlanDetailsModal = ({ vlan, onClose }) => {
       </div>
     </ContentModal>
   );
+};
+
+VlanDetailsModal.propTypes = {
+  vlan: PropTypes.shape({
+    link: PropTypes.string,
+    vid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    over: PropTypes.string,
+    state: PropTypes.string,
+    class: PropTypes.string,
+    mtu: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    flags: PropTypes.string,
+    details: PropTypes.object,
+    scan_timestamp: PropTypes.string,
+    created_at: PropTypes.string,
+    updated_at: PropTypes.string,
+    source: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default VlanDetailsModal;

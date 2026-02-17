@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
 
+import VnicBasicFields from "./VNIC/VnicBasicFields";
+import VnicOptionalFields from "./VNIC/VnicOptionalFields";
+import VnicOptionsFields from "./VNIC/VnicOptionsFields";
+import VnicPropertiesFields from "./VNIC/VnicPropertiesFields";
+
 const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -16,95 +21,8 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
   const [creating, setCreating] = useState(false);
   const [availableLinks, setAvailableLinks] = useState([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
-  const [propertyKey, setPropertyKey] = useState("");
-  const [propertyValue, setPropertyValue] = useState("");
 
   const { makeZoneweaverAPIRequest } = useServers();
-
-  // Common VNIC properties dropdown options
-  const commonProperties = [
-    "maxbw", // Maximum bandwidth (e.g., 100M, 1G)
-    "priority", // Priority (low, medium, high)
-    "cpus", // CPU binding (e.g., 0,1,2)
-    "protection", // Protection modes
-    "allowed-ips", // Allowed IP addresses
-    "allowed-dhcp-cids", // Allowed DHCP client IDs
-    "rxrings", // Number of receive rings
-    "txrings", // Number of transmit rings
-    "mtu", // Maximum transmission unit
-    "cos", // Class of service
-    "pvid", // Port VLAN ID
-    "ethertype", // Ethernet type filter
-  ];
-
-  // Property value options for properties that have limited choices
-  const propertyValueOptions = {
-    priority: ["low", "medium", "high"],
-    protection: ["mac-nospoof", "restricted", "ip-nospoof", "dhcp-nospoof"],
-    cos: ["0", "1", "2", "3", "4", "5", "6", "7"],
-    ethertype: [
-      "0x0800", // IPv4
-      "0x86dd", // IPv6
-      "0x0806", // ARP
-      "0x8100", // VLAN
-      "0x8137", // IPX
-      "0x809b", // AppleTalk
-      "0x8863", // PPPoE Discovery
-      "0x8864", // PPPoE Session
-    ],
-    maxbw: [
-      "10M", // 10 Megabits
-      "100M", // 100 Megabits
-      "1G", // 1 Gigabit
-      "10G", // 10 Gigabits
-      "25G", // 25 Gigabits
-      "40G", // 40 Gigabits
-      "100G", // 100 Gigabits
-    ],
-    rxrings: ["1", "2", "4", "8", "16"],
-    txrings: ["1", "2", "4", "8", "16"],
-    mtu: [
-      "1500", // Standard Ethernet
-      "9000", // Jumbo frames
-      "9216", // Jumbo frames (Cisco)
-      "1514", // Standard + VLAN tag
-      "1518", // Standard + VLAN + FCS
-    ],
-  };
-
-  // Get the appropriate input for property value based on the selected property
-  const getPropertyValueInput = () => {
-    if (propertyValueOptions[propertyKey]) {
-      // Use dropdown for properties with predefined options
-      return (
-        <div className="select is-fullwidth">
-          <select
-            value={propertyValue}
-            onChange={(e) => setPropertyValue(e.target.value)}
-            disabled={creating}
-          >
-            <option value="">Select {propertyKey} value</option>
-            {propertyValueOptions[propertyKey].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
-    }
-    // Use text input for other properties
-    return (
-      <input
-        className="input"
-        type="text"
-        placeholder="Property value"
-        value={propertyValue}
-        onChange={(e) => setPropertyValue(e.target.value)}
-        disabled={creating}
-      />
-    );
-  };
 
   const loadAvailableLinks = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -318,18 +236,14 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }));
   };
 
-  const addProperty = () => {
-    if (propertyKey.trim() && propertyValue.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        properties: {
-          ...prev.properties,
-          [propertyKey.trim()]: propertyValue.trim(),
-        },
-      }));
-      setPropertyKey("");
-      setPropertyValue("");
-    }
+  const addProperty = (key, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      properties: {
+        ...prev.properties,
+        [key]: value,
+      },
+    }));
   };
 
   const removeProperty = (key) => {
@@ -446,183 +360,34 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitVariant="is-primary"
       loading={creating}
     >
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="vnic-create-name">
-              VNIC Name *
-            </label>
-            <div className="control">
-              <input
-                id="vnic-create-name"
-                className="input"
-                type="text"
-                placeholder="Auto-generated based on link"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                disabled={creating}
-                required
-              />
-            </div>
-            <p className="help">
-              Auto-generated when you select a link. Must start with a letter.
-            </p>
-          </div>
-        </div>
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="vnic-create-link">
-              Physical Link *
-            </label>
-            <div className="control">
-              <div className="select is-fullwidth">
-                <select
-                  id="vnic-create-link"
-                  value={formData.link}
-                  onChange={(e) => handleInputChange("link", e.target.value)}
-                  disabled={creating || loadingLinks}
-                  required
-                >
-                  <option value="">
-                    {loadingLinks
-                      ? "Loading available links..."
-                      : "Select a link to attach VNIC to"}
-                  </option>
-                  {availableLinks.map((link) => (
-                    <option key={link.name} value={link.name}>
-                      {link.name} ({link.type}, {link.state}, {link.speed})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <VnicBasicFields
+        name={formData.name}
+        link={formData.link}
+        availableLinks={availableLinks}
+        loadingLinks={loadingLinks}
+        onChange={handleInputChange}
+        disabled={creating}
+      />
 
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="vnic-create-vlan">
-              VLAN ID (Optional)
-            </label>
-            <div className="control">
-              <input
-                id="vnic-create-vlan"
-                className="input"
-                type="number"
-                min="1"
-                max="4094"
-                placeholder="e.g., 100"
-                value={formData.vlan_id}
-                onChange={(e) => handleInputChange("vlan_id", e.target.value)}
-                disabled={creating}
-              />
-            </div>
-            <p className="help">1-4094 (leave empty for untagged)</p>
-          </div>
-        </div>
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="vnic-create-mac">
-              MAC Address (Optional)
-            </label>
-            <div className="control">
-              <input
-                id="vnic-create-mac"
-                className="input"
-                type="text"
-                placeholder="XX:XX:XX:XX:XX:XX"
-                value={formData.mac_address}
-                onChange={(e) =>
-                  handleInputChange("mac_address", e.target.value)
-                }
-                disabled={creating}
-              />
-            </div>
-            <p className="help">Leave empty to auto-generate</p>
-          </div>
-        </div>
-      </div>
+      <VnicOptionalFields
+        vlanId={formData.vlan_id}
+        macAddress={formData.mac_address}
+        onChange={handleInputChange}
+        disabled={creating}
+      />
 
-      <div className="field">
-        <label className="label" htmlFor="vnic-create-prop-key">
-          Additional Properties
-        </label>
-        <div className="field has-addons">
-          <div className="control">
-            <div className="select">
-              <select
-                id="vnic-create-prop-key"
-                value={propertyKey}
-                onChange={(e) => setPropertyKey(e.target.value)}
-                disabled={creating}
-              >
-                <option value="">Select property</option>
-                {commonProperties
-                  .filter((prop) => !formData.properties[prop])
-                  .map((prop, index) => (
-                    <option key={index} value={prop}>
-                      {prop}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </div>
-          <div className="control is-expanded">{getPropertyValueInput()}</div>
-          <div className="control">
-            <button
-              type="button"
-              className="button is-info"
-              onClick={addProperty}
-              disabled={
-                !propertyKey.trim() || !propertyValue.trim() || creating
-              }
-            >
-              Add
-            </button>
-          </div>
-        </div>
+      <VnicPropertiesFields
+        properties={formData.properties}
+        onAddProperty={addProperty}
+        onRemoveProperty={removeProperty}
+        disabled={creating}
+      />
 
-        {Object.keys(formData.properties).length > 0 && (
-          <div className="content mt-3">
-            <p>
-              <strong>Current Properties:</strong>
-            </p>
-            <div className="tags">
-              {Object.entries(formData.properties).map(
-                ([key, value]) => (
-                  <span key={key} className="tag is-info">
-                    {key}={value}
-                    <button
-                      type="button"
-                      className="delete is-small"
-                      onClick={() => removeProperty(key)}
-                      disabled={creating}
-                    />
-                  </span>
-                )
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.temporary}
-              onChange={(e) => handleInputChange("temporary", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">
-              Temporary (not persistent across reboots)
-            </span>
-          </label>
-        </div>
-      </div>
+      <VnicOptionsFields
+        temporary={formData.temporary}
+        onChange={handleInputChange}
+        disabled={creating}
+      />
     </FormModal>
   );
 };

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const VlanTable = ({ vlans, loading, onDelete, onViewDetails }) => {
@@ -175,6 +176,13 @@ const VlanTable = ({ vlans, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+VlanTable.propTypes = {
+  vlans: PropTypes.arrayOf(PropTypes.object).isRequired,
+  loading: PropTypes.bool,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default VlanTable;

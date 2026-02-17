@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { ConfirmModal } from "../common";
 
 import VlanCreateModal from "./VlanCreateModal";
 import VlanDetailsModal from "./VlanDetailsModal";
@@ -18,16 +20,12 @@ const VlanManagement = ({ server, onError }) => {
     over: "",
     state: "",
   });
+  const [vlanToDelete, setVlanToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load VLANs on component mount and when filters change
-  useEffect(() => {
-    loadVlans();
-    loadFilterOptions();
-  }, [server, filters.vid, filters.over, filters.state]);
-
-  const loadFilterOptions = async () => {
+  const loadFilterOptions = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -54,9 +52,9 @@ const VlanManagement = ({ server, onError }) => {
     } catch (err) {
       console.error("Error loading filter options:", err);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
 
-  const loadVlans = async () => {
+  const loadVlans = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -104,28 +102,32 @@ const VlanManagement = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
+  }, [server, makeZoneweaverAPIRequest, filters, onError]);
+
+  // Load VLANs on component mount and when filters change
+  useEffect(() => {
+    loadVlans();
+    loadFilterOptions();
+  }, [loadVlans, loadFilterOptions]);
+
+  const handleDeleteVlan = (vlanName) => {
+    setVlanToDelete(vlanName);
   };
 
-  const handleDeleteVlan = async (vlanName) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    if (
-      !window.confirm(`Are you sure you want to delete VLAN "${vlanName}"?`)
-    ) {
+  const confirmDeleteVlan = async () => {
+    if (!server || !makeZoneweaverAPIRequest || !vlanToDelete) {
       return;
     }
 
     try {
-      setLoading(true);
+      setDeleting(true);
       onError("");
 
-      // Use query parameters instead of request body for DELETE request
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        `network/vlans/${encodeURIComponent(vlanName)}`,
+        `network/vlans/${encodeURIComponent(vlanToDelete)}`,
         "DELETE",
         null, // No request body to avoid parsing issues
         {
@@ -139,12 +141,13 @@ const VlanManagement = ({ server, onError }) => {
         // Refresh VLANs list after deletion
         await loadVlans();
       } else {
-        onError(result.message || `Failed to delete VLAN "${vlanName}"`);
+        onError(result.message || `Failed to delete VLAN "${vlanToDelete}"`);
       }
     } catch (err) {
-      onError(`Error deleting VLAN "${vlanName}": ${err.message}`);
+      onError(`Error deleting VLAN "${vlanToDelete}": ${err.message}`);
     } finally {
-      setLoading(false);
+      setDeleting(false);
+      setVlanToDelete(null);
     }
   };
 
@@ -208,9 +211,12 @@ const VlanManagement = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by VLAN ID</label>
+              <label className="label" htmlFor="filter-vid">
+                Filter by VLAN ID
+              </label>
               <div className="control">
                 <input
+                  id="filter-vid"
                   className="input"
                   type="number"
                   min="1"
@@ -224,16 +230,19 @@ const VlanManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Physical Link</label>
+              <label className="label" htmlFor="filter-over">
+                Filter by Physical Link
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-over"
                     value={filters.over}
                     onChange={(e) => handleFilterChange("over", e.target.value)}
                   >
                     <option value="">All Physical Links</option>
-                    {availableLinks.map((link, index) => (
-                      <option key={index} value={link}>
+                    {availableLinks.map((link) => (
+                      <option key={link} value={link}>
                         {link}
                       </option>
                     ))}
@@ -244,10 +253,13 @@ const VlanManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by State</label>
+              <label className="label" htmlFor="filter-state">
+                Filter by State
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-state"
                     value={filters.state}
                     onChange={(e) =>
                       handleFilterChange("state", e.target.value)
@@ -264,7 +276,7 @@ const VlanManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <div className="label">&nbsp;</div>
               <div className="control">
                 <button
                   className="button is-info"
@@ -281,7 +293,7 @@ const VlanManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <div className="label">&nbsp;</div>
               <div className="control">
                 <button
                   className="button"
@@ -357,8 +369,31 @@ const VlanManagement = ({ server, onError }) => {
           onError={onError}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {vlanToDelete && (
+        <ConfirmModal
+          isOpen={!!vlanToDelete}
+          onClose={() => setVlanToDelete(null)}
+          onConfirm={confirmDeleteVlan}
+          title="Delete VLAN"
+          message={`Are you sure you want to delete VLAN "${vlanToDelete}"? This action cannot be undone.`}
+          confirmText="Delete"
+          confirmVariant="is-danger"
+          loading={deleting}
+        />
+      )}
     </div>
   );
+};
+
+VlanManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default VlanManagement;
