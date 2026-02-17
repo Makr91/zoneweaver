@@ -1,10 +1,296 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import axios from "axios";
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
 
 import { FormModal } from "./common";
+
+const ProfileInfo = ({ user }) => (
+  <div className="box">
+    <h2 className="title is-5">Profile Information</h2>
+    <div className="content">
+      {user?.gravatar?.avatar_url && (
+        <div className="field has-text-centered mb-4">
+          <figure className="image is-128x128 is-inline-block">
+            <img
+              src={user.gravatar.avatar_url}
+              alt="Profile Avatar"
+              className="is-rounded"
+            />
+          </figure>
+        </div>
+      )}
+
+      {user?.gravatar?.display_name && (
+        <div className="field">
+          <label className="label" htmlFor="display_name">
+            Display Name
+          </label>
+          <div className="control">
+            <input
+              id="display_name"
+              className="input"
+              type="text"
+              value={user.gravatar.display_name}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {user?.gravatar?.first_name && (
+        <div className="field">
+          <label className="label" htmlFor="first_name">
+            First Name
+          </label>
+          <div className="control">
+            <input
+              id="first_name"
+              className="input"
+              type="text"
+              value={user.gravatar.first_name}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {user?.gravatar?.last_name && (
+        <div className="field">
+          <label className="label" htmlFor="last_name">
+            Last Name
+          </label>
+          <div className="control">
+            <input
+              id="last_name"
+              className="input"
+              type="text"
+              value={user.gravatar.last_name}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {user?.gravatar?.job_title && (
+        <div className="field">
+          <label className="label" htmlFor="job_title">
+            Job Title
+          </label>
+          <div className="control">
+            <input
+              id="job_title"
+              className="input"
+              type="text"
+              value={user.gravatar.job_title}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {user?.gravatar?.location && (
+        <div className="field">
+          <label className="label" htmlFor="location">
+            Location
+          </label>
+          <div className="control">
+            <input
+              id="location"
+              className="input"
+              type="text"
+              value={user.gravatar.location}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {user?.gravatar?.timezone && (
+        <div className="field">
+          <label className="label" htmlFor="timezone">
+            Timezone
+          </label>
+          <div className="control">
+            <input
+              id="timezone"
+              className="input"
+              type="text"
+              value={user.gravatar.timezone}
+              disabled
+            />
+          </div>
+        </div>
+      )}
+
+      {(!user?.gravatar || Object.keys(user.gravatar).length === 0) && (
+        <div className="notification is-info">
+          <p>No Gravatar profile found for this email address.</p>
+          <p className="is-size-7 mt-2">
+            <a
+              href="https://gravatar.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Create a Gravatar profile
+            </a>{" "}
+            to display your profile information here.
+          </p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+ProfileInfo.propTypes = {
+  user: PropTypes.shape({
+    gravatar: PropTypes.shape({
+      avatar_url: PropTypes.string,
+      display_name: PropTypes.string,
+      first_name: PropTypes.string,
+      last_name: PropTypes.string,
+      job_title: PropTypes.string,
+      location: PropTypes.string,
+      timezone: PropTypes.string,
+    }),
+  }),
+};
+
+const PasswordManagement = ({
+  showPasswordChange,
+  setShowPasswordChange,
+  passwordData,
+  setPasswordData,
+  handlePasswordChange,
+  loading,
+  setMsg,
+}) => (
+  <div className="box">
+    <h2 className="title is-5">Password Management</h2>
+
+    {!showPasswordChange ? (
+      <div>
+        <p className="mb-3">
+          Change your account password for enhanced security.
+        </p>
+        <button
+          className="button is-primary"
+          onClick={() => setShowPasswordChange(true)}
+        >
+          Change Password
+        </button>
+      </div>
+    ) : (
+      <form onSubmit={handlePasswordChange}>
+        <div className="field">
+          <label className="label" htmlFor="currentPassword">
+            Current Password
+          </label>
+          <div className="control">
+            <input
+              id="currentPassword"
+              className="input"
+              type="password"
+              value={passwordData.currentPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  currentPassword: e.target.value,
+                })
+              }
+              required
+            />
+          </div>
+        </div>
+
+        <div className="field">
+          <label className="label" htmlFor="newPassword">
+            New Password
+          </label>
+          <div className="control">
+            <input
+              id="newPassword"
+              className="input"
+              type="password"
+              value={passwordData.newPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  newPassword: e.target.value,
+                })
+              }
+              required
+              minLength="8"
+            />
+          </div>
+          <p className="help">Must be at least 8 characters long</p>
+        </div>
+
+        <div className="field">
+          <label className="label" htmlFor="confirmPassword">
+            Confirm New Password
+          </label>
+          <div className="control">
+            <input
+              id="confirmPassword"
+              className="input"
+              type="password"
+              value={passwordData.confirmPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  confirmPassword: e.target.value,
+                })
+              }
+              required
+            />
+          </div>
+        </div>
+
+        <div className="field is-grouped">
+          <div className="control">
+            <button
+              type="submit"
+              className={`button is-primary ${loading ? "is-loading" : ""}`}
+              disabled={loading}
+            >
+              Update Password
+            </button>
+          </div>
+          <div className="control">
+            <button
+              type="button"
+              className="button"
+              onClick={() => {
+                setShowPasswordChange(false);
+                setPasswordData({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+                setMsg("");
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    )}
+  </div>
+);
+
+PasswordManagement.propTypes = {
+  showPasswordChange: PropTypes.bool.isRequired,
+  setShowPasswordChange: PropTypes.func.isRequired,
+  passwordData: PropTypes.object.isRequired,
+  setPasswordData: PropTypes.func.isRequired,
+  handlePasswordChange: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
+  setMsg: PropTypes.func.isRequired,
+};
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -135,6 +421,16 @@ const Profile = () => {
     }
   };
 
+  const getNotificationClass = () => {
+    if (msg.includes("successfully")) {
+      return "is-success";
+    }
+    if (msg.includes("Error") || msg.includes("must")) {
+      return "is-danger";
+    }
+    return "is-warning";
+  };
+
   return (
     <div className="zw-page-content-scrollable">
       <Helmet>
@@ -152,139 +448,14 @@ const Profile = () => {
 
           <div className="px-4">
             {msg && (
-              <div
-                className={`notification ${
-                  msg.includes("successfully")
-                    ? "is-success"
-                    : msg.includes("Error") || msg.includes("must")
-                      ? "is-danger"
-                      : "is-warning"
-                }`}
-              >
+              <div className={`notification ${getNotificationClass()}`}>
                 <p>{msg}</p>
               </div>
             )}
 
             <div className="columns">
               <div className="column is-one-third">
-                {/* Profile Information */}
-                <div className="box">
-                  <h2 className="title is-5">Profile Information</h2>
-                  <div className="content">
-                    {user?.gravatar?.avatar_url && (
-                      <div className="field has-text-centered mb-4">
-                        <figure className="image is-128x128 is-inline-block">
-                          <img
-                            src={user.gravatar.avatar_url}
-                            alt="Profile Avatar"
-                            className="is-rounded"
-                          />
-                        </figure>
-                      </div>
-                    )}
-
-                    {user?.gravatar?.display_name && (
-                      <div className="field">
-                        <label className="label">Display Name</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="text"
-                            value={user.gravatar.display_name}
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {user?.gravatar?.first_name && (
-                      <div className="field">
-                        <label className="label">First Name</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="text"
-                            value={user.gravatar.first_name}
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {user?.gravatar?.last_name && (
-                      <div className="field">
-                        <label className="label">Last Name</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="text"
-                            value={user.gravatar.last_name}
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {user?.gravatar?.job_title && (
-                      <div className="field">
-                        <label className="label">Job Title</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="text"
-                            value={user.gravatar.job_title}
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {user?.gravatar?.location && (
-                      <div className="field">
-                        <label className="label">Location</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="text"
-                            value={user.gravatar.location}
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {user?.gravatar?.timezone && (
-                      <div className="field">
-                        <label className="label">Timezone</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="text"
-                            value={user.gravatar.timezone}
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {(!user?.gravatar ||
-                      Object.keys(user.gravatar).length === 0) && (
-                      <div className="notification is-info">
-                        <p>No Gravatar profile found for this email address.</p>
-                        <p className="is-size-7 mt-2">
-                          <a
-                            href="https://gravatar.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Create a Gravatar profile
-                          </a>{" "}
-                          to display your profile information here.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ProfileInfo user={user} />
               </div>
 
               <div className="column">
@@ -293,9 +464,12 @@ const Profile = () => {
                   <h2 className="title is-5">Account Information</h2>
                   <div className="content">
                     <div className="field">
-                      <label className="label">Username</label>
+                      <label className="label" htmlFor="username">
+                        Username
+                      </label>
                       <div className="control">
                         <input
+                          id="username"
                           className="input"
                           type="text"
                           value={user?.username || ""}
@@ -317,7 +491,7 @@ const Profile = () => {
                     </div>
 
                     <div className="field">
-                      <label className="label">Role</label>
+                      <p className="label">Role</p>
                       <div className="control">
                         <span
                           className={`tag is-medium ${getRoleBadgeClass(user?.role)}`}
@@ -328,9 +502,12 @@ const Profile = () => {
                     </div>
 
                     <div className="field">
-                      <label className="label">Member Since</label>
+                      <label className="label" htmlFor="createdAt">
+                        Member Since
+                      </label>
                       <div className="control">
                         <input
+                          id="createdAt"
                           className="input"
                           type="text"
                           value={
@@ -345,113 +522,15 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Password Management */}
-                <div className="box">
-                  <h2 className="title is-5">Password Management</h2>
-
-                  {!showPasswordChange ? (
-                    <div>
-                      <p className="mb-3">
-                        Change your account password for enhanced security.
-                      </p>
-                      <button
-                        className="button is-primary"
-                        onClick={() => setShowPasswordChange(true)}
-                      >
-                        Change Password
-                      </button>
-                    </div>
-                  ) : (
-                    <form onSubmit={handlePasswordChange}>
-                      <div className="field">
-                        <label className="label">Current Password</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="password"
-                            value={passwordData.currentPassword}
-                            onChange={(e) =>
-                              setPasswordData({
-                                ...passwordData,
-                                currentPassword: e.target.value,
-                              })
-                            }
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="field">
-                        <label className="label">New Password</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="password"
-                            value={passwordData.newPassword}
-                            onChange={(e) =>
-                              setPasswordData({
-                                ...passwordData,
-                                newPassword: e.target.value,
-                              })
-                            }
-                            required
-                            minLength="8"
-                          />
-                        </div>
-                        <p className="help">
-                          Must be at least 8 characters long
-                        </p>
-                      </div>
-
-                      <div className="field">
-                        <label className="label">Confirm New Password</label>
-                        <div className="control">
-                          <input
-                            className="input"
-                            type="password"
-                            value={passwordData.confirmPassword}
-                            onChange={(e) =>
-                              setPasswordData({
-                                ...passwordData,
-                                confirmPassword: e.target.value,
-                              })
-                            }
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="field is-grouped">
-                        <div className="control">
-                          <button
-                            type="submit"
-                            className={`button is-primary ${loading ? "is-loading" : ""}`}
-                            disabled={loading}
-                          >
-                            Update Password
-                          </button>
-                        </div>
-                        <div className="control">
-                          <button
-                            type="button"
-                            className="button"
-                            onClick={() => {
-                              setShowPasswordChange(false);
-                              setPasswordData({
-                                currentPassword: "",
-                                newPassword: "",
-                                confirmPassword: "",
-                              });
-                              setMsg("");
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </form>
-                  )}
-                </div>
+                <PasswordManagement
+                  showPasswordChange={showPasswordChange}
+                  setShowPasswordChange={setShowPasswordChange}
+                  passwordData={passwordData}
+                  setPasswordData={setPasswordData}
+                  handlePasswordChange={handlePasswordChange}
+                  loading={loading}
+                  setMsg={setMsg}
+                />
 
                 {/* Account Deletion */}
                 <div className="box">
@@ -517,9 +596,12 @@ const Profile = () => {
           </div>
 
           <div className="field">
-            <label className="label">Current Password</label>
+            <label className="label" htmlFor="deletePassword">
+              Current Password
+            </label>
             <div className="control">
               <input
+                id="deletePassword"
                 className="input"
                 type="password"
                 value={deleteData.password}
@@ -532,11 +614,12 @@ const Profile = () => {
           </div>
 
           <div className="field">
-            <label className="label">
-              Type "DELETE" to confirm account deletion:
+            <label className="label" htmlFor="deleteConfirm">
+              Type &quot;DELETE&quot; to confirm account deletion:
             </label>
             <div className="control">
               <input
+                id="deleteConfirm"
                 className="input"
                 type="text"
                 value={deleteData.confirmText}
