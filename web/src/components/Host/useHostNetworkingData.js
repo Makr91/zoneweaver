@@ -857,10 +857,6 @@ export const useHostNetworkingData = () => {
     return sort.direction === "asc" ? "fa-sort-up" : "fa-sort-down";
   };
 
-  const handleServerChange = () => {
-    // Server changes are handled via the useEffect
-  };
-
   console.log("🐛 DEBUG: Returning enhanced hook interface with topology data");
 
   return {
@@ -909,7 +905,6 @@ export const useHostNetworkingData = () => {
     user,
     getServers: () => (currentServer ? [currentServer] : []),
     servers: currentServer ? [currentServer] : [], // Added for useMemo dependency
-    handleServerChange,
     loadNetworkData,
     loadHistoricalChartData,
   };

@@ -125,18 +125,6 @@ export const useHostDevicesData = () => {
     }
   };
 
-  const handleServerChange = (event) => {
-    const serverKey = event.target.value;
-    const serverList = getServers();
-    const server = serverList.find(
-      (s) => `${s.hostname}:${s.port}` === serverKey
-    );
-    if (server) {
-      setSelectedServer(server);
-      loadDeviceData(server);
-    }
-  };
-
   const handleDeviceRefresh = async () => {
     if (!selectedServer) {
       return;
@@ -323,7 +311,6 @@ export const useHostDevicesData = () => {
     user,
     getServers,
     servers, // Added for useMemo dependency
-    handleServerChange,
     handleDeviceRefresh,
     applyFilters,
     loadDeviceData,

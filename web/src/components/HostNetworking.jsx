@@ -62,11 +62,9 @@ const HostNetworking = () => {
     getSortedChartEntries,
     user,
     getServers,
-    handleServerChange,
     loadNetworkData,
     servers,
   } = useHostNetworkingData();
-
   console.log(
     "🐛 DEBUG: Hook data destructured successfully, user:",
     !!user,
@@ -75,7 +73,7 @@ const HostNetworking = () => {
   );
 
   // Use useMemo to prevent getServers() calls on every render
-  const serverList = useMemo(() => getServers(), [servers]);
+  const serverList = useMemo(() => getServers(), [getServers, servers]);
 
   // Network monitoring is accessible to all authenticated users
   // No permission check needed - removed the user access restriction
@@ -99,8 +97,8 @@ const HostNetworking = () => {
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
-                  You haven't added any Zoneweaver API Servers yet. Add a server
-                  to start monitoring network interfaces.
+                  You haven&apos;t added any Zoneweaver API Servers yet. Add a
+                  server to start monitoring network interfaces.
                 </p>
                 <div className="mt-4">
                   <a

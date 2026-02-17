@@ -251,18 +251,6 @@ export const useHostStorageData = () => {
     }
   };
 
-  const handleServerChange = (event) => {
-    const serverKey = event.target.value;
-    const serverList = getServers();
-    const server = serverList.find(
-      (s) => `${s.hostname}:${s.port}` === serverKey
-    );
-    if (server) {
-      setSelectedServer(server);
-      loadStorageData(server);
-    }
-  };
-
   // Multi-column sorting helper functions
   const handlePoolSort = (column, event) => {
     setPoolSort((prevSort) => {
@@ -1336,7 +1324,6 @@ export const useHostStorageData = () => {
     user,
     getServers,
     servers, // Added for useMemo dependency
-    handleServerChange,
     loadStorageData,
     parseSize,
   };

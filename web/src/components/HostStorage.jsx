@@ -68,13 +68,12 @@ const HostStorage = () => {
     setSeriesVisibility,
     user,
     getServers,
-    handleServerChange,
     loadStorageData,
     servers,
   } = useHostStorageData();
 
   // Use useMemo to prevent getServers() calls on every render
-  const serverList = useMemo(() => getServers(), [servers]);
+  const serverList = useMemo(() => getServers(), [getServers, servers]);
 
   if (!user) {
     return (
@@ -121,8 +120,8 @@ const HostStorage = () => {
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
-                  You haven't added any Zoneweaver API Servers yet. Add a server
-                  to start monitoring storage systems.
+                  You haven&apos;t added any Zoneweaver API Servers yet. Add a
+                  server to start monitoring storage systems.
                 </p>
                 <div className="mt-4">
                   <a

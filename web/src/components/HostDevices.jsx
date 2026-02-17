@@ -30,7 +30,6 @@ const HostDevices = () => {
     getSortIcon,
     user,
     getServers,
-    handleServerChange,
     handleDeviceRefresh,
     applyFilters,
     loadDeviceData,
@@ -38,7 +37,7 @@ const HostDevices = () => {
   } = useHostDevicesData();
 
   // Use useMemo to prevent getServers() calls on every render
-  const serverList = useMemo(() => getServers(), [servers]);
+  const serverList = useMemo(() => getServers(), [getServers, servers]);
 
   if (!user) {
     return (
