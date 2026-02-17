@@ -318,11 +318,11 @@ export const FooterProvider = ({ children }) => {
         );
       };
 
-      ws.onerror = (error) => {
+      ws.onerror = (wsError) => {
         console.error(
           "🚨 FOOTER: WebSocket error for session:",
           sessionData.id,
-          error
+          wsError
         );
       };
 
@@ -337,8 +337,8 @@ export const FooterProvider = ({ children }) => {
       setSession(sessionWithWs);
 
       console.log("✅ FOOTER: Session created:", sessionData.id);
-    } catch (error) {
-      console.error("Failed to create session:", error);
+    } catch (createErr) {
+      console.error("Failed to create session:", createErr);
     } finally {
       terminalCreating.current = false;
     }
@@ -383,8 +383,8 @@ export const FooterProvider = ({ children }) => {
 
       // Create new session
       await createSession();
-    } catch (error) {
-      console.error("Failed to restart shell:", error);
+    } catch (restartErr) {
+      console.error("Failed to restart shell:", restartErr);
     }
   }, [currentServer, createSession]);
 

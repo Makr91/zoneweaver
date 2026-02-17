@@ -330,7 +330,11 @@ const ExtractArchiveModal = ({
             }}
           >
             New Folder (
-            {archiveFile.name.replace(/\.(?:tar\.gz|tar\.bz2|zip|tar|gz)$/i, "")})
+            {archiveFile.name.replace(
+              /\.(?:tar\.gz|tar\.bz2|zip|tar|gz)$/i,
+              ""
+            )}
+            )
           </button>
         </div>
       </div>

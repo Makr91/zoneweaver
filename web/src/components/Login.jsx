@@ -62,8 +62,8 @@ const Login = () => {
         setAuthMethods([{ id: "local", name: "Local Account", enabled: true }]);
         setAuthMethod("local");
       }
-    } catch (error) {
-      console.error("Error loading auth methods:", error);
+    } catch (methodsErr) {
+      console.error("Error loading auth methods:", methodsErr);
       // Fallback to local authentication
       setAuthMethods([{ id: "local", name: "Local Account", enabled: true }]);
       setAuthMethod("local");
@@ -142,8 +142,8 @@ const Login = () => {
       } else {
         setMsg(result.message);
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (loginErr) {
+      console.error("Login error:", loginErr);
       setMsg("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

@@ -34,8 +34,8 @@ const Landing = () => {
           // System is set up but user not logged in - go to login
           navigate("/login");
         }
-      } catch (error) {
-        console.error("Error checking setup status:", error);
+      } catch (setupErr) {
+        console.error("Error checking setup status:", setupErr);
         // If we can't check setup status, assume we need to register
         navigate("/register");
       } finally {

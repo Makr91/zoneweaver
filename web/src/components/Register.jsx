@@ -50,8 +50,8 @@ const Register = () => {
       } else {
         setMsg(`Invalid invitation: ${response.data.reason}`);
       }
-    } catch (error) {
-      console.error("Error validating invitation:", error);
+    } catch (validateErr) {
+      console.error("Error validating invitation:", validateErr);
       setMsg("Error validating invitation code");
     }
   };
@@ -66,8 +66,8 @@ const Register = () => {
         if (response.data.success) {
           setNeedsSetup(response.data.needsSetup);
         }
-      } catch (error) {
-        console.error("Error checking setup status:", error);
+      } catch (setupErr) {
+        console.error("Error checking setup status:", setupErr);
       } finally {
         setCheckingSetup(false);
       }
@@ -142,8 +142,8 @@ const Register = () => {
       } else {
         setMsg(result.message);
       }
-    } catch (error) {
-      console.error("Registration error:", error);
+    } catch (registerErr) {
+      console.error("Registration error:", registerErr);
       setMsg("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

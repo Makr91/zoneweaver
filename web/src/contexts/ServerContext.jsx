@@ -55,8 +55,11 @@ export const ServerProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem("zoneweaver_currentServer");
       return saved ? JSON.parse(saved) : null;
-    } catch (error) {
-      console.warn("Failed to restore currentServer from localStorage:", error);
+    } catch (restoreErr) {
+      console.warn(
+        "Failed to restore currentServer from localStorage:",
+        restoreErr
+      );
       return null;
     }
   });
@@ -66,8 +69,11 @@ export const ServerProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem("zoneweaver_currentZone");
       return saved ? JSON.parse(saved) : null;
-    } catch (error) {
-      console.warn("Failed to restore currentZone from localStorage:", error);
+    } catch (restoreZoneErr) {
+      console.warn(
+        "Failed to restore currentZone from localStorage:",
+        restoreZoneErr
+      );
       return null;
     }
   });
@@ -98,8 +104,8 @@ export const ServerProvider = ({ children }) => {
       } else {
         console.error("Failed to load servers:", response.data.message);
       }
-    } catch (error) {
-      console.error("Error loading servers:", error);
+    } catch (loadErr) {
+      console.error("Error loading servers:", loadErr);
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -124,8 +130,8 @@ export const ServerProvider = ({ children }) => {
       } else {
         localStorage.removeItem("zoneweaver_currentServer");
       }
-    } catch (error) {
-      console.warn("Failed to save currentServer to localStorage:", error);
+    } catch (saveErr) {
+      console.warn("Failed to save currentServer to localStorage:", saveErr);
     }
   }, [currentServer]);
 
@@ -140,8 +146,8 @@ export const ServerProvider = ({ children }) => {
       } else {
         localStorage.removeItem("zoneweaver_currentZone");
       }
-    } catch (error) {
-      console.warn("Failed to save currentZone to localStorage:", error);
+    } catch (saveZoneErr) {
+      console.warn("Failed to save currentZone to localStorage:", saveZoneErr);
     }
   }, [currentZone]);
 
@@ -250,11 +256,11 @@ export const ServerProvider = ({ children }) => {
         return { success: true, message: response.data.message };
       }
       return { success: false, message: response.data.message };
-    } catch (error) {
-      console.error("Add server error:", error);
+    } catch (addErr) {
+      console.error("Add server error:", addErr);
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to add server",
+        message: addErr.response?.data?.message || "Failed to add server",
       };
     } finally {
       setLoading(false);
@@ -278,11 +284,11 @@ export const ServerProvider = ({ children }) => {
         message: response.data.message,
         serverInfo: response.data.serverInfo,
       };
-    } catch (error) {
-      console.error("Test server error:", error);
+    } catch (testErr) {
+      console.error("Test server error:", testErr);
       return {
         success: false,
-        message: error.response?.data?.message || "Connection test failed",
+        message: testErr.response?.data?.message || "Connection test failed",
       };
     }
   };
@@ -309,11 +315,11 @@ export const ServerProvider = ({ children }) => {
         return { success: true, message: response.data.message };
       }
       return { success: false, message: response.data.message };
-    } catch (error) {
-      console.error("Remove server error:", error);
+    } catch (removeErr) {
+      console.error("Remove server error:", removeErr);
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to remove server",
+        message: removeErr.response?.data?.message || "Failed to remove server",
       };
     } finally {
       setLoading(false);

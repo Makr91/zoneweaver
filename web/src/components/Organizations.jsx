@@ -26,10 +26,10 @@ const Organizations = () => {
       } else {
         setMsg("Failed to load organizations");
       }
-    } catch (error) {
-      console.error("Error loading organizations:", error);
+    } catch (loadErr) {
+      console.error("Error loading organizations:", loadErr);
       setMsg(
-        `Error loading organizations: ${error.response?.data?.message || error.message}`
+        `Error loading organizations: ${loadErr.response?.data?.message || loadErr.message}`
       );
     } finally {
       setLoading(false);

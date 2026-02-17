@@ -45,8 +45,8 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`/api/profile/${userData.email}`);
       console.log("Gravatar data response:", response.data);
       return { ...userData, gravatar: response.data };
-    } catch (error) {
-      console.error("Failed to fetch Gravatar data:", error);
+    } catch (gravatarErr) {
+      console.error("Failed to fetch Gravatar data:", gravatarErr);
       return userData;
     }
   }, []);
@@ -89,8 +89,8 @@ export const AuthProvider = ({ children }) => {
           // Invalid token, clear it
           clearAuth();
         }
-      } catch (error) {
-        console.error("Token verification failed:", error);
+      } catch (verifyErr) {
+        console.error("Token verification failed:", verifyErr);
         clearAuth();
         setLoading(false);
         return;
@@ -156,12 +156,12 @@ export const AuthProvider = ({ children }) => {
         response.data.message
       );
       return { success: false, message: response.data.message };
-    } catch (error) {
-      console.error(`${authMethod.toUpperCase()} login error:`, error);
+    } catch (loginErr) {
+      console.error(`${authMethod.toUpperCase()} login error:`, loginErr);
       return {
         success: false,
         message:
-          error.response?.data?.message ||
+          loginErr.response?.data?.message ||
           `${authMethod.toUpperCase()} login failed`,
       };
     }
@@ -178,13 +178,13 @@ export const AuthProvider = ({ children }) => {
         success: true,
         methods: response.data.methods || [],
       };
-    } catch (error) {
-      console.error("Get auth methods error:", error);
+    } catch (methodsErr) {
+      console.error("Get auth methods error:", methodsErr);
       return {
         success: false,
         methods: [{ id: "local", name: "Local Account", enabled: true }], // Fallback
         message:
-          error.response?.data?.message ||
+          methodsErr.response?.data?.message ||
           "Failed to load authentication methods",
       };
     }
@@ -207,11 +207,11 @@ export const AuthProvider = ({ children }) => {
         return { success: true, message: response.data.message };
       }
       return { success: false, message: response.data.message };
-    } catch (error) {
-      console.error("Registration error:", error);
+    } catch (registerErr) {
+      console.error("Registration error:", registerErr);
       return {
         success: false,
-        message: error.response?.data?.message || "Registration failed",
+        message: registerErr.response?.data?.message || "Registration failed",
       };
     }
   };
@@ -222,8 +222,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await axios.post("/api/auth/logout");
-    } catch (error) {
-      console.error("Logout error:", error);
+    } catch (logoutErr) {
+      console.error("Logout error:", logoutErr);
     } finally {
       clearAuth();
     }
@@ -253,10 +253,10 @@ export const AuthProvider = ({ children }) => {
       } else {
         throw new Error("Invalid token received from external provider");
       }
-    } catch (error) {
-      console.error("Failed to process external authentication:", error);
+    } catch (authErr) {
+      console.error("Failed to process external authentication:", authErr);
       clearAuth();
-      throw error;
+      throw authErr;
     }
   };
 
@@ -283,11 +283,11 @@ export const AuthProvider = ({ children }) => {
         success: response.data.success,
         message: response.data.message,
       };
-    } catch (error) {
-      console.error("Change password error:", error);
+    } catch (changeErr) {
+      console.error("Change password error:", changeErr);
       return {
         success: false,
-        message: error.response?.data?.message || "Password change failed",
+        message: changeErr.response?.data?.message || "Password change failed",
       };
     }
   };
@@ -305,11 +305,11 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: response.data.user };
       }
       return { success: false, message: response.data.message };
-    } catch (error) {
-      console.error("Get profile error:", error);
+    } catch (profileErr) {
+      console.error("Get profile error:", profileErr);
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to get profile",
+        message: profileErr.response?.data?.message || "Failed to get profile",
       };
     }
   };

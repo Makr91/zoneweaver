@@ -1,15 +1,25 @@
 import PropTypes from "prop-types";
 
 const formatBandwidth = (mbps) => {
-  if (mbps >= 1) return `${mbps.toFixed(2)} MB/s`;
-  if (mbps > 0) return `${(mbps * 1024).toFixed(0)} KB/s`;
+  if (mbps >= 1) {
+    return `${mbps.toFixed(2)} MB/s`;
+  }
+  if (mbps > 0) {
+    return `${(mbps * 1024).toFixed(0)} KB/s`;
+  }
   return "0 B/s";
 };
 
 const getTotalIOClass = (totalMBps) => {
-  if (totalMBps > 50) return "is-danger";
-  if (totalMBps > 10) return "is-warning";
-  if (totalMBps > 0) return "is-success";
+  if (totalMBps > 50) {
+    return "is-danger";
+  }
+  if (totalMBps > 10) {
+    return "is-warning";
+  }
+  if (totalMBps > 0) {
+    return "is-success";
+  }
   return "is-grey";
 };
 
@@ -106,9 +116,7 @@ const DiskIOTable = ({
                         </span>
                       </td>
                       <td>
-                        <span
-                          className={`tag ${getTotalIOClass(totalMBps)}`}
-                        >
+                        <span className={`tag ${getTotalIOClass(totalMBps)}`}>
                           {formatBandwidth(totalMBps)}
                         </span>
                       </td>

@@ -4,37 +4,67 @@ import React from "react";
 import { formatBytes } from "./StorageUtils";
 
 const getHitRatioClass = (ratio) => {
-  if (ratio > 95) return "is-success";
-  if (ratio > 90) return "is-info";
-  if (ratio > 80) return "is-warning";
+  if (ratio > 95) {
+    return "is-success";
+  }
+  if (ratio > 90) {
+    return "is-info";
+  }
+  if (ratio > 80) {
+    return "is-warning";
+  }
   return "is-danger";
 };
 
 const getDataEfficiencyClass = (efficiency) => {
-  if (efficiency > 95) return "is-success";
-  if (efficiency > 90) return "is-info";
-  if (efficiency > 80) return "is-warning";
+  if (efficiency > 95) {
+    return "is-success";
+  }
+  if (efficiency > 90) {
+    return "is-info";
+  }
+  if (efficiency > 80) {
+    return "is-warning";
+  }
   return "is-dark";
 };
 
 const getPrefetchEfficiencyClass = (efficiency) => {
-  if (efficiency > 50) return "is-success";
-  if (efficiency > 20) return "is-info";
-  if (efficiency > 5) return "is-warning";
+  if (efficiency > 50) {
+    return "is-success";
+  }
+  if (efficiency > 20) {
+    return "is-info";
+  }
+  if (efficiency > 5) {
+    return "is-warning";
+  }
   return "is-dark";
 };
 
 const getCompressionRatioClass = (ratio) => {
-  if (ratio > 2) return "is-success";
-  if (ratio > 1.5) return "is-info";
-  if (ratio > 1.1) return "is-warning";
+  if (ratio > 2) {
+    return "is-success";
+  }
+  if (ratio > 1.5) {
+    return "is-info";
+  }
+  if (ratio > 1.1) {
+    return "is-warning";
+  }
   return "is-dark";
 };
 
 const getL2HitRatioClass = (ratio) => {
-  if (ratio > 80) return "is-success";
-  if (ratio > 60) return "is-info";
-  if (ratio > 40) return "is-warning";
+  if (ratio > 80) {
+    return "is-success";
+  }
+  if (ratio > 60) {
+    return "is-info";
+  }
+  if (ratio > 40) {
+    return "is-warning";
+  }
   return "is-danger";
 };
 
@@ -211,7 +241,9 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   <table className="table is-fullwidth is-striped is-narrow">
                     <tbody>
                       {arcStats.slice(0, 1).map((arc) => (
-                        <React.Fragment key={`arc-memory-${arc.scan_timestamp}`}>
+                        <React.Fragment
+                          key={`arc-memory-${arc.scan_timestamp}`}
+                        >
                           <tr>
                             <td>
                               <strong>MRU Size</strong>
@@ -359,7 +391,9 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   <table className="table is-fullwidth is-striped is-narrow">
                     <tbody>
                       {arcStats.slice(0, 1).map((arc) => (
-                        <React.Fragment key={`arc-demand-${arc.scan_timestamp}`}>
+                        <React.Fragment
+                          key={`arc-demand-${arc.scan_timestamp}`}
+                        >
                           <tr>
                             <td>
                               <strong>Demand Data Hits</strong>

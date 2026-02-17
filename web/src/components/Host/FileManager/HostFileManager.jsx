@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { FileManager } from "@cubone/react-file-manager";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import "@cubone/react-file-manager/dist/style.css";
@@ -9,14 +10,85 @@ import { canManageHosts, canViewHosts } from "../../../utils/permissions";
 
 import ArchiveModals from "./ArchiveModals";
 import { ZoneweaverFileManagerAPI } from "./FileManagerAPI";
-import {
-  transformZoneweaverToFile,
-  isTextFile,
-  isArchiveFile,
-} from "./FileManagerTransforms";
+import { isTextFile, isArchiveFile } from "./FileManagerTransforms";
 import FilePropertiesModal from "./FilePropertiesModal";
 import TextFileEditor from "./TextFileEditor";
 import "./HostFileManager.scss";
+
+const getFileSizeDisplay = (file) => {
+  if (file.isDirectory) return "Directory";
+  if (file.size) return `${Math.round(file.size / 1024)} KB`;
+  return "Unknown size";
+};
+
+const getFilePreviewContent = (file, handlers) => {
+  if (file.isDirectory) {
+    return (
+      <div className="has-text-centered p-4">
+        <span className="icon is-large">
+          <i className="fas fa-folder fa-3x" />
+        </span>
+        <p className="mt-2">Directory</p>
+        <p className="help">Double-click to open</p>
+      </div>
+    );
+  }
+
+  if (isTextFile(file)) {
+    return (
+      <div className="has-text-centered p-4">
+        <span className="icon is-large">
+          <i className="fas fa-file-alt fa-3x" />
+        </span>
+        <p className="mt-2">Text File</p>
+        <div className="buttons is-centered mt-3">
+          <button
+            className="button is-primary is-small"
+            onClick={() => handlers.onEditText(file)}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-edit" />
+            </span>
+            <span>Edit File</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isArchiveFile(file)) {
+    return (
+      <div className="has-text-centered p-4">
+        <span className="icon is-large">
+          <i className="fas fa-file-archive fa-3x" />
+        </span>
+        <p className="mt-2">Archive File</p>
+        <div className="buttons is-centered mt-3">
+          <button
+            className="button is-success is-small"
+            onClick={() => handlers.onExtract(file)}
+            disabled={!handlers.canManage}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-expand-arrows-alt" />
+            </span>
+            <span>Extract</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="has-text-centered p-4">
+      <span className="icon is-large">
+        <i className="fas fa-file fa-3x" />
+      </span>
+      <p className="mt-2">File</p>
+      <p className="help">Double-click to download</p>
+    </div>
+  );
+};
 
 /**
  * Host File Manager Component
@@ -76,7 +148,8 @@ const HostFileManager = ({ server }) => {
             setDirectoryCache((prev) =>
               new Map(prev).set("/", cachedDirectories)
             );
-          } catch (err) {
+          } catch (rootErr) {
+            void rootErr;
             console.log("Could not load root directories for navigation");
           }
         }
@@ -96,36 +169,37 @@ const HostFileManager = ({ server }) => {
         // If we're in a subdirectory, ensure parent directories are included
         if (path !== "/") {
           const pathParts = path.split("/").filter(Boolean);
-          let currentSearchPath = "";
 
-          for (let i = 0; i < pathParts.length - 1; i++) {
-            currentSearchPath += `/${pathParts[i]}`;
+          // Load all parent directories in parallel to avoid await-in-loop
+          const parentDirPromises = pathParts.slice(0, -1).map(async (_, i) => {
+            const searchPath = `/${pathParts.slice(0, i + 1).join("/")}`;
 
             // Check cache first
-            let parentDirs = directoryCache.get(currentSearchPath);
+            let parentDirs = directoryCache.get(searchPath);
             if (!parentDirs) {
               try {
-                const parentFiles = await api.loadFiles(currentSearchPath);
+                const parentFiles = await api.loadFiles(searchPath);
                 parentDirs = parentFiles.filter((file) => file.isDirectory);
                 setDirectoryCache((prev) =>
-                  new Map(prev).set(currentSearchPath, parentDirs)
+                  new Map(prev).set(searchPath, parentDirs)
                 );
-              } catch (err) {
-                console.log(
-                  "Could not load parent directory:",
-                  currentSearchPath
-                );
-                continue;
+              } catch (parentErr) {
+                void parentErr;
+                console.log("Could not load parent directory:", searchPath);
+                return [];
               }
             }
+            return parentDirs || [];
+          });
 
-            // Add parent directories to combined files
-            parentDirs.forEach((dir) => {
-              if (!combinedFiles.some((f) => f.path === dir.path)) {
-                combinedFiles.push(dir);
-              }
-            });
-          }
+          const allParentDirs = await Promise.all(parentDirPromises);
+
+          // Add all parent directories to combined files
+          allParentDirs.flat().forEach((dir) => {
+            if (!combinedFiles.some((f) => f.path === dir.path)) {
+              combinedFiles.push(dir);
+            }
+          });
         }
 
         console.log(
@@ -134,9 +208,9 @@ const HostFileManager = ({ server }) => {
           "files"
         );
         setFiles(combinedFiles);
-      } catch (error) {
-        console.error("Error loading files:", error);
-        setError(`Failed to load files: ${error.message}`);
+      } catch (loadErr) {
+        console.error("Error loading files:", loadErr);
+        setError(`Failed to load files: ${loadErr.message}`);
         setFiles([]);
       } finally {
         setIsLoading(false);
@@ -185,7 +259,7 @@ const HostFileManager = ({ server }) => {
     const fontFamily = "Nunito Sans, sans-serif"; // Match zoneweaver
 
     return { primaryColor, fontFamily };
-  }, [theme]);
+  }, []);
 
   // Create folder handler
   const handleCreateFolder = async (name, parentFolder) => {
@@ -203,9 +277,9 @@ const HostFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to create folder");
       }
-    } catch (error) {
-      console.error("Error creating folder:", error);
-      setError(`Failed to create folder: ${error.message}`);
+    } catch (createErr) {
+      console.error("Error creating folder:", createErr);
+      setError(`Failed to create folder: ${createErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -240,8 +314,8 @@ const HostFileManager = ({ server }) => {
       const transformedFile = transformZoneweaverToFile(uploadedFile);
 
       setFiles((prevFiles) => [...prevFiles, transformedFile]);
-    } catch (error) {
-      console.error("Error processing uploaded file:", error);
+    } catch (uploadErr) {
+      console.error("Error processing uploaded file:", uploadErr);
       // Refresh files as fallback
       loadFiles();
     }
@@ -262,9 +336,9 @@ const HostFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to rename file");
       }
-    } catch (error) {
-      console.error("Error renaming file:", error);
-      setError(`Failed to rename file: ${error.message}`);
+    } catch (renameErr) {
+      console.error("Error renaming file:", renameErr);
+      setError(`Failed to rename file: ${renameErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -287,9 +361,9 @@ const HostFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to delete files");
       }
-    } catch (error) {
-      console.error("Error deleting files:", error);
-      setError(`Failed to delete files: ${error.message}`);
+    } catch (deleteErr) {
+      console.error("Error deleting files:", deleteErr);
+      setError(`Failed to delete files: ${deleteErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -321,9 +395,9 @@ const HostFileManager = ({ server }) => {
       } else {
         setError(result.message || `Failed to ${operationType} files`);
       }
-    } catch (error) {
-      console.error(`Error ${operationType} files:`, error);
-      setError(`Failed to ${operationType} files: ${error.message}`);
+    } catch (pasteErr) {
+      console.error(`Error ${operationType} files:`, pasteErr);
+      setError(`Failed to ${operationType} files: ${pasteErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -332,17 +406,18 @@ const HostFileManager = ({ server }) => {
   // Download handler with authentication
   const handleDownload = async (filesToDownload) => {
     try {
-      const server = serverContext.currentServer;
-      if (!server) {
+      const currentServer = serverContext.currentServer;
+      if (!currentServer) {
         setError("No server selected");
         return;
       }
 
-      // Download files using authenticated requests
-      for (const file of filesToDownload) {
-        if (!file.isDirectory) {
+      // Download files using authenticated requests - use Promise.all to avoid await in loop
+      const downloadPromises = filesToDownload
+        .filter((file) => !file.isDirectory)
+        .map(async (file) => {
           const path = encodeURIComponent(file.path);
-          const downloadUrl = `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/download?path=${path}`;
+          const downloadUrl = `/api/zapi/${currentServer.protocol}/${currentServer.hostname}/${currentServer.port}/filesystem/download?path=${path}`;
 
           try {
             // Use authenticated fetch to get the file
@@ -375,11 +450,12 @@ const HostFileManager = ({ server }) => {
             console.error(`Error downloading ${file.name}:`, fetchError);
             setError(`Error downloading ${file.name}: ${fetchError.message}`);
           }
-        }
-      }
-    } catch (error) {
-      console.error("Error downloading files:", error);
-      setError(`Failed to download files: ${error.message}`);
+        });
+
+      await Promise.all(downloadPromises);
+    } catch (downloadErr) {
+      console.error("Error downloading files:", downloadErr);
+      setError(`Failed to download files: ${downloadErr.message}`);
     }
   };
 
@@ -418,18 +494,18 @@ const HostFileManager = ({ server }) => {
   };
 
   // Error handler
-  const handleError = (error, file) => {
-    console.error("File manager error:", error, file);
-    setError(error.message || "An error occurred");
+  const handleError = (err, file) => {
+    console.error("File manager error:", err, file);
+    setError(err.message || "An error occurred");
   };
 
   // Cut/Copy handlers (optional callbacks)
-  const handleCut = (files) => {
-    console.log("Files cut:", files);
+  const handleCut = (cutFiles) => {
+    console.log("Files cut:", cutFiles);
   };
 
-  const handleCopy = (files) => {
-    console.log("Files copied:", files);
+  const handleCopy = (copiedFiles) => {
+    console.log("Files copied:", copiedFiles);
   };
 
   // Layout change handler
@@ -461,9 +537,9 @@ const HostFileManager = ({ server }) => {
       } else {
         setError(result.message || "Failed to save file");
       }
-    } catch (error) {
-      console.error("Error saving file:", error);
-      setError(`Failed to save file: ${error.message}`);
+    } catch (saveErr) {
+      console.error("Error saving file:", saveErr);
+      setError(`Failed to save file: ${saveErr.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -661,13 +737,7 @@ const HostFileManager = ({ server }) => {
             <div className="preview-header">
               <h4 className="title is-6">{file.name}</h4>
               <div className="preview-info">
-                <span className="tag is-light">
-                  {file.isDirectory
-                    ? "Directory"
-                    : file.size
-                      ? `${Math.round(file.size / 1024)} KB`
-                      : "Unknown size"}
-                </span>
+                <span className="tag is-light">{getFileSizeDisplay(file)}</span>
                 {file._zwMetadata?.mimeType && (
                   <span className="tag is-info is-light">
                     {file._zwMetadata.mimeType}
@@ -677,63 +747,14 @@ const HostFileManager = ({ server }) => {
             </div>
 
             <div className="preview-content">
-              {file.isDirectory ? (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-folder fa-3x" />
-                  </span>
-                  <p className="mt-2">Directory</p>
-                  <p className="help">Double-click to open</p>
-                </div>
-              ) : isTextFile(file) ? (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-file-alt fa-3x" />
-                  </span>
-                  <p className="mt-2">Text File</p>
-                  <div className="buttons is-centered mt-3">
-                    <button
-                      className="button is-primary is-small"
-                      onClick={() => {
-                        setTextEditorFile(file);
-                        setShowTextEditor(true);
-                      }}
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-edit" />
-                      </span>
-                      <span>Edit File</span>
-                    </button>
-                  </div>
-                </div>
-              ) : isArchiveFile(file) ? (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-file-archive fa-3x" />
-                  </span>
-                  <p className="mt-2">Archive File</p>
-                  <div className="buttons is-centered mt-3">
-                    <button
-                      className="button is-success is-small"
-                      onClick={() => handleExtractArchive(file)}
-                      disabled={!canManageHosts(user?.role)}
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-expand-arrows-alt" />
-                      </span>
-                      <span>Extract</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="has-text-centered p-4">
-                  <span className="icon is-large">
-                    <i className="fas fa-file fa-3x" />
-                  </span>
-                  <p className="mt-2">File</p>
-                  <p className="help">Double-click to download</p>
-                </div>
-              )}
+              {getFilePreviewContent(file, {
+                onEditText: (f) => {
+                  setTextEditorFile(f);
+                  setShowTextEditor(true);
+                },
+                onExtract: handleExtractArchive,
+                canManage: canManageHosts(user?.role),
+              })}
             </div>
 
             {/* File metadata */}
@@ -836,6 +857,14 @@ const HostFileManager = ({ server }) => {
       )}
     </div>
   );
+};
+
+HostFileManager.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.number.isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default HostFileManager;

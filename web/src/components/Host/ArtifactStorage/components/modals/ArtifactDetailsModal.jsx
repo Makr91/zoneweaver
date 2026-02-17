@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { useServers } from "../../../../../contexts/ServerContext";
 import ContentModal from "../../../../common/ContentModal";
 
@@ -408,6 +410,41 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         )}
     </ContentModal>
   );
+};
+
+ArtifactDetailsModal.propTypes = {
+  artifact: PropTypes.shape({
+    id: PropTypes.string,
+    filename: PropTypes.string,
+    file_type: PropTypes.string,
+    extension: PropTypes.string,
+  }).isRequired,
+  details: PropTypes.shape({
+    id: PropTypes.string,
+    filename: PropTypes.string,
+    file_type: PropTypes.string,
+    extension: PropTypes.string,
+    mime_type: PropTypes.string,
+    size: PropTypes.number,
+    path: PropTypes.string,
+    storage_location: PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+      path: PropTypes.string,
+      type: PropTypes.string,
+    }),
+    discovered_at: PropTypes.string,
+    source_url: PropTypes.string,
+    checksum: PropTypes.string,
+    checksum_algorithm: PropTypes.string,
+    checksum_verified: PropTypes.bool,
+  }),
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.number,
+    protocol: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default ArtifactDetailsModal;

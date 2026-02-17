@@ -40,9 +40,9 @@ const ZoneRegister = () => {
         frontendcode,
       });
       navigate("/register");
-    } catch (error) {
-      if (error.response) {
-        setMsg(error.response.data.msg);
+    } catch (registerErr) {
+      if (registerErr.response) {
+        setMsg(registerErr.response.data.msg);
       }
     }
   };

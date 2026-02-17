@@ -114,7 +114,12 @@ const AggregateCreateModal = ({
       ...prev,
       name: defaultName,
     }));
-  }, [server, existingAggregates, loadAvailableLinks, generateNextAggregateName]);
+  }, [
+    server,
+    existingAggregates,
+    loadAvailableLinks,
+    generateNextAggregateName,
+  ]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({

@@ -61,11 +61,11 @@ const Profile = () => {
       } else {
         setMsg(response.data.message);
       }
-    } catch (error) {
-      console.error("Error changing password:", error);
+    } catch (changeErr) {
+      console.error("Error changing password:", changeErr);
       setMsg(
         `Error changing password: ${
-          error.response?.data?.message || error.message
+          changeErr.response?.data?.message || changeErr.message
         }`
       );
     } finally {

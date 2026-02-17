@@ -78,8 +78,8 @@ const ServerSetup = () => {
       } else {
         setMsg(result.message);
       }
-    } catch (error) {
-      console.error("Bootstrap error:", error);
+    } catch (bootstrapErr) {
+      console.error("Bootstrap error:", bootstrapErr);
       setMsg("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -117,8 +117,8 @@ const ServerSetup = () => {
       } else {
         setMsg(`Connection test failed: ${result.message}`);
       }
-    } catch (error) {
-      console.error("Test connection error:", error);
+    } catch (testErr) {
+      console.error("Test connection error:", testErr);
       setMsg("Connection test failed. Please check your server details.");
     } finally {
       setLoading(false);

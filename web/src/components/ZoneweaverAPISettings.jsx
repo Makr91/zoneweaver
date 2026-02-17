@@ -112,11 +112,11 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to load settings: ${response.message}`);
       }
-    } catch (error) {
-      console.error("Error loading settings:", error);
+    } catch (loadErr) {
+      console.error("Error loading settings:", loadErr);
       setMsg(
         `Error loading settings: ${
-          error.response?.data?.message || error.message
+          loadErr.response?.data?.message || loadErr.message
         }`
       );
     } finally {
@@ -138,8 +138,8 @@ const ZoneweaverAPISettings = () => {
       if (response.success) {
         setBackups(response.data);
       }
-    } catch (error) {
-      console.error("Error loading backups:", error);
+    } catch (backupsErr) {
+      console.error("Error loading backups:", backupsErr);
     }
   }, [currentServer, makeZoneweaverAPIRequest]);
 
@@ -159,8 +159,8 @@ const ZoneweaverAPISettings = () => {
       if (result.success) {
         setOrchestrationStatus(result.data);
       }
-    } catch (error) {
-      console.error("Error loading orchestration status:", error);
+    } catch (statusErr) {
+      console.error("Error loading orchestration status:", statusErr);
     }
   }, [currentServer, getZoneOrchestrationStatus]);
 
@@ -179,8 +179,8 @@ const ZoneweaverAPISettings = () => {
       if (result.success) {
         setZonePriorities(result.data);
       }
-    } catch (error) {
-      console.error("Error loading zone priorities:", error);
+    } catch (prioritiesErr) {
+      console.error("Error loading zone priorities:", prioritiesErr);
     }
   }, [currentServer, getZonePriorities]);
 
@@ -234,11 +234,11 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to save settings: ${response.message}`);
       }
-    } catch (error) {
-      console.error("Error saving settings:", error);
+    } catch (saveErr) {
+      console.error("Error saving settings:", saveErr);
       setMsg(
         `Error saving settings: ${
-          error.response?.data?.message || error.message
+          saveErr.response?.data?.message || saveErr.message
         }`
       );
     } finally {
@@ -265,11 +265,11 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to restore backup: ${response.message}`);
       }
-    } catch (error) {
-      console.error("Error restoring backup:", error);
+    } catch (restoreErr) {
+      console.error("Error restoring backup:", restoreErr);
       setMsg(
         `Error restoring backup: ${
-          error.response?.data?.message || error.message
+          restoreErr.response?.data?.message || restoreErr.message
         }`
       );
     } finally {
@@ -310,11 +310,11 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to restart server: ${response.message}`);
       }
-    } catch (error) {
-      console.error("Error restarting server:", error);
+    } catch (restartErr) {
+      console.error("Error restarting server:", restartErr);
       setMsg(
         `Error restarting server: ${
-          error.response?.data?.message || error.message
+          restartErr.response?.data?.message || restartErr.message
         }`
       );
     } finally {
@@ -356,11 +356,11 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to delete backup: ${response.message}`);
       }
-    } catch (error) {
-      console.error("Error deleting backup:", error);
+    } catch (deleteErr) {
+      console.error("Error deleting backup:", deleteErr);
       setMsg(
         `Error deleting backup: ${
-          error.response?.data?.message || error.message
+          deleteErr.response?.data?.message || deleteErr.message
         }`
       );
     } finally {
@@ -392,11 +392,11 @@ const ZoneweaverAPISettings = () => {
       await saveSettings();
       await loadBackups();
       setMsg("Backup created successfully");
-    } catch (error) {
-      console.error("Error creating backup:", error);
+    } catch (backupErr) {
+      console.error("Error creating backup:", backupErr);
       setMsg(
         `Error creating backup: ${
-          error.response?.data?.message || error.message
+          backupErr.response?.data?.message || backupErr.message
         }`
       );
     } finally {
@@ -423,8 +423,8 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to enable orchestration: ${result.message}`);
       }
-    } catch (error) {
-      console.error("Error enabling orchestration:", error);
+    } catch (enableErr) {
+      console.error("Error enabling orchestration:", enableErr);
       setMsg("Error enabling zone orchestration");
     } finally {
       setOrchestrationLoading(false);
@@ -450,8 +450,8 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to disable orchestration: ${result.message}`);
       }
-    } catch (error) {
-      console.error("Error disabling orchestration:", error);
+    } catch (disableErr) {
+      console.error("Error disabling orchestration:", disableErr);
       setMsg("Error disabling zone orchestration");
     } finally {
       setOrchestrationLoading(false);
@@ -480,8 +480,8 @@ const ZoneweaverAPISettings = () => {
       } else {
         setMsg(`Failed to test orchestration: ${result.message}`);
       }
-    } catch (error) {
-      console.error("Error testing orchestration:", error);
+    } catch (testErr) {
+      console.error("Error testing orchestration:", testErr);
       setMsg("Error testing zone orchestration");
     } finally {
       setOrchestrationLoading(false);
