@@ -72,4 +72,12 @@ const StorageSummary = ({
   );
 };
 
+StorageSummary.propTypes = {
+  storagePools: PropTypes.array.isRequired,
+  storageDatasets: PropTypes.array.isRequired,
+  storageDisks: PropTypes.array.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+};
+
 export default StorageSummary;

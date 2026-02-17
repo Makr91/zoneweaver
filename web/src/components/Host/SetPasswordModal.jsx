@@ -72,6 +72,7 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
         <div className="notification is-danger mb-4">
           <button className="delete" onClick={() => setError("")} />
           <p>{error}</p>
+
         </div>
       )}
 
@@ -159,6 +160,12 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
       </div>
     </FormModal>
   );
+};
+
+SetPasswordModal.propTypes = {
+  user: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 export default SetPasswordModal;

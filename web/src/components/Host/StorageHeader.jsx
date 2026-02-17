@@ -101,4 +101,17 @@ const StorageHeader = ({
   </div>
 );
 
+StorageHeader.propTypes = {
+  loading: PropTypes.bool.isRequired,
+  autoRefresh: PropTypes.bool.isRequired,
+  setAutoRefresh: PropTypes.func.isRequired,
+  refreshInterval: PropTypes.number.isRequired,
+  setRefreshInterval: PropTypes.func.isRequired,
+  resolution: PropTypes.string.isRequired,
+  setResolution: PropTypes.func.isRequired,
+  selectedServer: PropTypes.object,
+  loadStorageData: PropTypes.func.isRequired,
+  timeWindow: PropTypes.string.isRequired,
+  setTimeWindow: PropTypes.func.isRequired,
+};
 export default StorageHeader;

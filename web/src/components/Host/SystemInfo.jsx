@@ -1,4 +1,6 @@
-import { formatUptime, bytesToSize, getCpuCount } from "./utils";
+import PropTypes from "prop-types";
+import { formatUptime } from "./utils";
+import ResourceUtilization from "./SystemInfo/ResourceUtilization.jsx";
 
 const SystemInfo = ({
   serverStats,
@@ -6,8 +8,19 @@ const SystemInfo = ({
   monitoringHealth,
   taskStats,
   swapSummaryData,
-}) => (
-  <div className="box mb-5">
+}) => {
+  const getHealthStatusClass = (status) => {
+    if (status === "healthy") {
+      return "is-success";
+    }
+    if (status === "warning") {
+      return "is-warning";
+    }
+    return "is-danger";
+  };
+
+  return (
+    <div className="box mb-5">
     <h3 className="title is-5 mb-4">
       <span className="icon-text">
         <span className="icon">
@@ -90,13 +103,7 @@ const SystemInfo = ({
                   </td>
                   <td>
                     <span
-                      className={`tag ${
-                        monitoringHealth.status === "healthy"
-                          ? "is-success"
-                          : monitoringHealth.status === "warning"
-                            ? "is-warning"
-                            : "is-danger"
-                      }`}
+                      className={`tag ${getHealthStatusClass(monitoringHealth.status)}`}
                     >
                       {monitoringHealth.status}
                     </span>
@@ -130,120 +137,40 @@ const SystemInfo = ({
       </div>
 
       {/* Resource Utilization */}
-      <div className="column is-6">
-        <div className="content">
-          <h4 className="subtitle is-6 mb-3">
-            <span className="icon-text">
-              <span className="icon has-text-warning">
-                <i className="fas fa-chart-pie" />
-              </span>
-              <span>Resource Utilization</span>
-            </span>
-          </h4>
-          {/* CPU Usage */}
-          <div className="level is-mobile mb-3">
-            <div className="level-left">
-              <span className="icon">
-                <i className="fas fa-microchip" />
-              </span>
-              <span className="ml-2">CPU Usage</span>
-            </div>
-            <div className="level-right">
-              <span>
-                {serverStats.loadavg && getCpuCount(serverStats) !== "N/A"
-                  ? `${((parseFloat(serverStats.loadavg[0]) / getCpuCount(serverStats)) * 100).toFixed(1)}%`
-                  : "0%"}
-              </span>
-            </div>
-          </div>
-          <progress
-            className="progress is-small is-info mb-4"
-            value={
-              serverStats.loadavg && getCpuCount(serverStats) !== "N/A"
-                ? Math.min(
-                    (parseFloat(serverStats.loadavg[0]) /
-                      getCpuCount(serverStats)) *
-                      100,
-                    100
-                  )
-                : 0
-            }
-            max="100"
-          />
-
-          {/* Memory Usage */}
-          <div className="level is-mobile mb-1">
-            <div className="level-left">
-              <span className="icon">
-                <i className="fas fa-memory" />
-              </span>
-              <span className="ml-2">Memory Usage</span>
-              <span className="is-size-7 has-text-grey ml-2">
-                (Total:{" "}
-                {serverStats.totalmem
-                  ? bytesToSize(serverStats.totalmem)
-                  : "N/A"}
-                )
-              </span>
-            </div>
-            <div className="level-right">
-              <span>
-                {serverStats.totalmem && serverStats.freemem
-                  ? `${(((serverStats.totalmem - serverStats.freemem) / serverStats.totalmem) * 100).toFixed(1)}%`
-                  : "N/A"}
-              </span>
-            </div>
-          </div>
-          <progress
-            className="progress is-small is-warning mb-4"
-            value={
-              serverStats.totalmem && serverStats.freemem
-                ? ((serverStats.totalmem - serverStats.freemem) /
-                    serverStats.totalmem) *
-                  100
-                : 0
-            }
-            max="100"
-          />
-
-          {/* Swap Usage */}
-          {swapSummaryData && Object.keys(swapSummaryData).length > 0 && (
-            <>
-              <div className="level is-mobile mb-1">
-                <div className="level-left">
-                  <span className="icon">
-                    <i className="fas fa-hdd" />
-                  </span>
-                  <span className="ml-2">Swap Usage</span>
-                  <span className="is-size-7 has-text-grey ml-2">
-                    (Total: {swapSummaryData.totalSwapGB || "N/A"} GB, Used:{" "}
-                    {swapSummaryData.usedSwapGB || "N/A"} GB, Free:{" "}
-                    {swapSummaryData.freeSwapGB || "N/A"} GB)
-                  </span>
-                </div>
-                <div className="level-right">
-                  <span>
-                    {typeof swapSummaryData.overallUtilization === "number"
-                      ? `${swapSummaryData.overallUtilization.toFixed(1)}%`
-                      : "N/A"}
-                  </span>
-                </div>
-              </div>
-              <progress
-                className="progress is-small is-link mb-4"
-                value={
-                  typeof swapSummaryData.overallUtilization === "number"
-                    ? swapSummaryData.overallUtilization
-                    : 0
-                }
-                max="100"
-              />
-            </>
-          )}
-        </div>
-      </div>
+      <ResourceUtilization
+        serverStats={serverStats}
+        swapSummaryData={swapSummaryData}
+      />
     </div>
   </div>
-);
+  );
+};
+
+SystemInfo.propTypes = {
+  serverStats: PropTypes.shape({
+    hostname: PropTypes.string,
+    type: PropTypes.string,
+    release: PropTypes.string,
+    arch: PropTypes.string,
+    version: PropTypes.string,
+    uptime: PropTypes.number,
+    loadavg: PropTypes.array,
+    totalmem: PropTypes.number,
+    freemem: PropTypes.number,
+  }),
+  monitoringStatus: PropTypes.shape({
+    isRunning: PropTypes.bool,
+    isInitialized: PropTypes.bool,
+  }),
+  monitoringHealth: PropTypes.shape({
+    status: PropTypes.string,
+  }),
+  taskStats: PropTypes.shape({
+    pending: PropTypes.number,
+    completed: PropTypes.number,
+    failed: PropTypes.number,
+  }),
+  swapSummaryData: PropTypes.object,
+};
 
 export default SystemInfo;

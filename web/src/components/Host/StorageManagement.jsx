@@ -21,7 +21,7 @@ const StorageManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "arc" ? "is-active" : ""}>
-            <a
+            <button
               href="#"
               role="button"
               tabIndex={0}
@@ -35,12 +35,13 @@ const StorageManagement = ({ server }) => {
                   setActiveTab("arc");
                 }
               }}
+              className="button"
             >
               <span className="icon is-small">
                 <i className="fas fa-memory" />
               </span>
               <span>ZFS ARC</span>
-            </a>
+            </button>
           </li>
           <li className={activeTab === "artifacts" ? "is-active" : ""}>
             <a
@@ -57,13 +58,13 @@ const StorageManagement = ({ server }) => {
                   setActiveTab("artifacts");
                 }
               }}
+              className="button"
             >
               <span className="icon is-small">
                 <i className="fas fa-compact-disc" />
               </span>
               <span>ISO & Artifacts</span>
             </a>
-          </li>
           <li className="is-disabled">
             <a role="button" aria-disabled="true">
               <span className="icon is-small">

@@ -247,4 +247,11 @@ const ServiceTable = ({
   );
 };
 
+ServiceTable.propTypes = {
+  services: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onAction: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
+  onViewProperties: PropTypes.func.isRequired,
+};
 export default ServiceTable;

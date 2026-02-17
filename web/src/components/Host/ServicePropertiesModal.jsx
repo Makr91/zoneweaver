@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const ServicePropertiesModal = ({ service, onClose }) => {
@@ -59,15 +61,14 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                   <strong>FMRI</strong>
                 </td>
                 <td className="is-family-monospace">{service.fmri}</td>
-              </tr>
+              </tr> 
               <tr>
                 <td>
                   <strong>Current State</strong>
                 </td>
-                <td>
-                  <span
-                    className={`tag ${
-                      service.state === "online"
+                <td>                    
+                  <span className={`tag ${
+                      service.state === "online" 
                         ? "is-success"
                         : service.state === "disabled"
                           ? "is-grey"
@@ -77,13 +78,13 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                               ? "is-info"
                               : "is-light"
                     }`}
-                  >
+                  > 
                     {service.state}
                   </span>
                 </td>
               </tr>
             </tbody>
-          </table>
+          </table> 
         </div>
       </div>
 
@@ -96,7 +97,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
               These are the service configuration properties as returned by{" "}
               <code>svccfg listprop</code>.
             </p>
-          </div>
+          </div> 
           <div className="table-container">
             <table className="table is-fullwidth is-striped">
               <thead>
@@ -106,7 +107,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {propertiesArray.map((prop, index) => (
+                {propertiesArray.map((prop, index) => ( 
                   <tr key={index}>
                     <td>
                       <code className="is-size-7">{prop.property}</code>
@@ -116,7 +117,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div> 
         </div>
       )}
 
@@ -128,6 +129,11 @@ const ServicePropertiesModal = ({ service, onClose }) => {
       )}
     </ContentModal>
   );
+}; 
+
+ServicePropertiesModal.propTypes = {
+  service: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default ServicePropertiesModal;

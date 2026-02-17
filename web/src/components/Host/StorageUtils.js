@@ -71,7 +71,7 @@ export const parseSize = (sizeStr) => {
   }
 
   // Match numbers with optional unit suffix (case insensitive)
-  const match = cleanStr.match(/^([0-9.]+)\s*([KMGTPEZB]?)/i);
+  const match = cleanStr.match(/^(?:[0-9.]+)\s*(?:[KMGTPEZB]?)/i);
   if (!match) {
     return 0;
   }
