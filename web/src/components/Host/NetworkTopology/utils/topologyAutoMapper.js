@@ -1,5 +1,5 @@
-import { createNodes } from "../mappers/nodeMapper";
 import { createEdges } from "../mappers/edgeMapper";
+import { createNodes } from "../mappers/nodeMapper";
 import { detectTopologyPatterns } from "../mappers/patternDetector";
 
 /**
@@ -94,7 +94,8 @@ export const autoMapTopology = ({
     vnics.length > 0
       ? vnics
       : interfaces.filter(
-          (iface) => iface.class === "vnic" && iface.link && iface.link !== "LINK"
+          (iface) =>
+            iface.class === "vnic" && iface.link && iface.link !== "LINK"
         );
 
   const nodes = createNodes({

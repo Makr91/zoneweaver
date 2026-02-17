@@ -3,6 +3,7 @@ import {
   useInternalNode,
   EdgeLabelRenderer,
 } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 import { getEdgeParams } from "../utils/edgeUtils";
 
@@ -206,28 +207,31 @@ const FloatingEdge = ({
       {/* Animated flow indicators - multiple particles based on bandwidth */}
       {currentMbps > 0 && (
         <g>
-          {/* Generate multiple particles based on traffic intensity */}
-          {Array.from({ length: getParticleCount() }, (_, index) => {
-            const particleSize = getParticleSize() - index * 0.5; // Decreasing size
-            const delay = (index * 0.4).toFixed(1); // Staggered timing
-            const opacity = 0.9 - index * 0.15; // Decreasing opacity
-
-            return (
-              <circle
-                key={`particle-${index}`}
-                r={Math.max(1, particleSize)}
-                fill={directionColor}
-                opacity={Math.max(0.3, opacity)}
-              >
-                <animateMotion
-                  dur={animationDuration}
-                  repeatCount="indefinite"
-                  path={edgePath}
-                  begin={`${delay}s`}
-                />
-              </circle>
-            );
-          })}
+          {(() => {
+            const particles = [];
+            const count = getParticleCount();
+            for (let i = 0; i < count; i += 1) {
+              const particleSize = getParticleSize() - i * 0.5;
+              const delay = (i * 0.4).toFixed(1);
+              const opacity = 0.9 - i * 0.15;
+              particles.push(
+                <circle
+                  key={`particle-${i}`}
+                  r={Math.max(1, particleSize)}
+                  fill={directionColor}
+                  opacity={Math.max(0.3, opacity)}
+                >
+                  <animateMotion
+                    dur={animationDuration}
+                    repeatCount="indefinite"
+                    path={edgePath}
+                    begin={`${delay}s`}
+                  />
+                </circle>
+              );
+            }
+            return particles;
+          })()}
 
           {/* Additional pulse effect for high traffic */}
           {currentMbps > 100 && (
@@ -267,6 +271,15 @@ const FloatingEdge = ({
       )}
     </>
   );
+};
+
+FloatingEdge.propTypes = {
+  id: PropTypes.string.isRequired,
+  source: PropTypes.string.isRequired,
+  target: PropTypes.string.isRequired,
+  markerEnd: PropTypes.any,
+  style: PropTypes.object,
+  data: PropTypes.object,
 };
 
 export default FloatingEdge;

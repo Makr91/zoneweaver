@@ -19,7 +19,9 @@ export const createEdges = ({
 
   // 1. Connect member NICs to aggregates
   aggregates.forEach((aggr) => {
-    const memberNics = aggr.over ? aggr.over.split(",").map((n) => n.trim()) : [];
+    const memberNics = aggr.over
+      ? aggr.over.split(",").map((n) => n.trim())
+      : [];
     memberNics.forEach((memberNic) => {
       const memberNicData = physicalNics.find((nic) => nic.link === memberNic);
       if (memberNicData) {

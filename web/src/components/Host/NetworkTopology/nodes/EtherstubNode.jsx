@@ -1,4 +1,5 @@
 import { Handle, Position } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 const EtherstubNode = ({ data }) => {
   const { label, connectedVnics, class: deviceClass, flags } = data;
@@ -37,6 +38,15 @@ ${flags && flags !== "--" ? `Flags: ${flags}` : ""}
       <div className="zw-node-label">{label}</div>
     </div>
   );
+};
+
+EtherstubNode.propTypes = {
+  data: PropTypes.shape({
+    label: PropTypes.string,
+    connectedVnics: PropTypes.arrayOf(PropTypes.string),
+    class: PropTypes.string,
+    flags: PropTypes.string,
+  }).isRequired,
 };
 
 export default EtherstubNode;

@@ -3,6 +3,7 @@ import {
   EdgeLabelRenderer,
   useInternalNode,
 } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 import { getEdgeParams } from "../utils/edgeUtils";
 
@@ -10,7 +11,6 @@ const BidirectionalEdge = ({
   id,
   source,
   target,
-  style = {},
   data = {},
   markerEnd,
   markerStart,
@@ -22,13 +22,7 @@ const BidirectionalEdge = ({
     return null;
   }
 
-  const {
-    bandwidth = {},
-    type = "direct",
-    sourceInterface,
-    targetInterface,
-    linkSpeed = 1000,
-  } = data;
+  const { bandwidth = {} } = data;
   const { rxMbps = 0, txMbps = 0, totalMbps = 0 } = bandwidth;
 
   // Get floating edge parameters for uplink (TX)
@@ -277,6 +271,15 @@ const BidirectionalEdge = ({
       </style>
     </>
   );
+};
+
+BidirectionalEdge.propTypes = {
+  id: PropTypes.string.isRequired,
+  source: PropTypes.string.isRequired,
+  target: PropTypes.string.isRequired,
+  data: PropTypes.object,
+  markerEnd: PropTypes.any,
+  markerStart: PropTypes.any,
 };
 
 export default BidirectionalEdge;

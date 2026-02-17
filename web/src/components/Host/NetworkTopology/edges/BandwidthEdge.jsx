@@ -1,6 +1,7 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from "@xyflow/react";
+import PropTypes from "prop-types";
 
-import { getBandwidthColor, getVlanColor } from "../utils/topologyAutoMapper";
+import { getVlanColor } from "../utils/topologyAutoMapper";
 
 const BandwidthEdge = ({
   id,
@@ -13,7 +14,7 @@ const BandwidthEdge = ({
   data,
   markerEnd,
 }) => {
-  const { type, bandwidth, vlanId } = data || {};
+  const { type, bandwidth, vlanId, linkSpeed: dataLinkSpeed } = data || {};
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -27,7 +28,7 @@ const BandwidthEdge = ({
   // Determine edge color based on utilization percentage with temperature gradient
   const getEdgeColor = () => {
     // Get interface speed for utilization calculation
-    const linkSpeed = data?.linkSpeed || 1000; // Default to 1Gbps
+    const linkSpeed = dataLinkSpeed || 1000; // Default to 1Gbps
     const currentMbps = bandwidth?.totalMbps || 0;
 
     // Calculate utilization percentage
@@ -88,7 +89,7 @@ const BandwidthEdge = ({
   const getEdgeThickness = () => {
     // Try to get speed from the data or estimate from interface type
     const linkSpeed =
-      data?.linkSpeed || data?.speed || bandwidth?.linkSpeed || 1000; // Default 1G
+      dataLinkSpeed || data?.speed || bandwidth?.linkSpeed || 1000; // Default 1G
 
     if (linkSpeed >= 100000) {
       return 12;
@@ -144,6 +145,21 @@ const BandwidthEdge = ({
       return `${(bw / 1000).toFixed(1)}G`;
     }
     return `${bw.toFixed(1)}M`;
+  };
+
+  const getLabelText = () => {
+    switch (type) {
+      case "vlan":
+        return `VLAN ${vlanId}`;
+      case "aggregation":
+        return "LACP Bond";
+      case "direct":
+        return "Direct";
+      case "assignment":
+        return "Interface";
+      default:
+        return "Connected";
+    }
   };
 
   const edgeStyle = getEdgeStyle();
@@ -286,17 +302,7 @@ const BandwidthEdge = ({
               </>
             ) : (
               /* Show connection type when no bandwidth */
-              <div className="is-size-5">
-                {type === "vlan" && vlanId
-                  ? `VLAN ${vlanId}`
-                  : type === "aggregation"
-                    ? "LACP Bond"
-                    : type === "direct"
-                      ? "Direct"
-                      : type === "assignment"
-                        ? "Interface"
-                        : "Connected"}
-              </div>
+              <div className="is-size-5">{getLabelText()}</div>
             )}
 
             {/* Secondary labels */}
@@ -329,6 +335,18 @@ const BandwidthEdge = ({
       </EdgeLabelRenderer>
     </>
   );
+};
+
+BandwidthEdge.propTypes = {
+  id: PropTypes.string.isRequired,
+  sourceX: PropTypes.number.isRequired,
+  sourceY: PropTypes.number.isRequired,
+  targetX: PropTypes.number.isRequired,
+  targetY: PropTypes.number.isRequired,
+  sourcePosition: PropTypes.string,
+  targetPosition: PropTypes.string,
+  data: PropTypes.object,
+  markerEnd: PropTypes.any,
 };
 
 export default BandwidthEdge;

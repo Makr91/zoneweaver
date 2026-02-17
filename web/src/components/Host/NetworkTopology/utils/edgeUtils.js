@@ -1,7 +1,7 @@
 import { Position } from "@xyflow/react";
 
 // Calculate intersection point on rectangle perimeter
-function getIntersectionPoint(centerX, centerY, width, height, angle) {
+const getIntersectionPoint = (centerX, centerY, width, height, angle) => {
   const halfWidth = width / 2;
   const halfHeight = height / 2;
 
@@ -36,17 +36,17 @@ function getIntersectionPoint(centerX, centerY, width, height, angle) {
   }
 
   return { x: intersectionX, y: intersectionY };
-}
+};
 
 // Determine React Flow position based on intersection point
-function getPositionFromIntersection(
+const getPositionFromIntersection = (
   centerX,
   centerY,
   width,
   height,
   intersectionX,
   intersectionY
-) {
+) => {
   const halfWidth = width / 2;
   const halfHeight = height / 2;
 
@@ -67,7 +67,7 @@ function getPositionFromIntersection(
     return Position.Left;
   }
   return Position.Right;
-}
+};
 
 // Calculate clean floating edge connection points
 export const getEdgeParams = (sourceNode, targetNode, flowDirection = "rx") => {

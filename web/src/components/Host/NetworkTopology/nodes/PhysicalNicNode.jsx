@@ -1,12 +1,13 @@
 import { Handle, Position } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 const PhysicalNicNode = ({ data }) => {
   const { label, state, speed, bandwidth, ipAddresses, mtu, flags } = data;
 
   const isActive = state?.toLowerCase() === "up";
 
-  const formatSpeed = (speed) => {
-    const speedNum = parseInt(speed) || 0;
+  const formatSpeed = (speedValue) => {
+    const speedNum = parseInt(speedValue) || 0;
     if (speedNum >= 1000) {
       return `${speedNum / 1000}G`;
     }
@@ -58,6 +59,22 @@ ${flags && flags !== "--" ? `Flags: ${flags}` : ""}
       <div className="zw-node-label">{label}</div>
     </div>
   );
+};
+
+PhysicalNicNode.propTypes = {
+  data: PropTypes.shape({
+    label: PropTypes.string,
+    state: PropTypes.string,
+    speed: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    bandwidth: PropTypes.shape({
+      totalMbps: PropTypes.number,
+      rxMbps: PropTypes.number,
+      txMbps: PropTypes.number,
+    }),
+    ipAddresses: PropTypes.arrayOf(PropTypes.object),
+    mtu: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    flags: PropTypes.string,
+  }).isRequired,
 };
 
 export default PhysicalNicNode;

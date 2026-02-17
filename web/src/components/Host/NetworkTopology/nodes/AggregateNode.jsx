@@ -1,4 +1,5 @@
 import { Handle, Position } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 const AggregateNode = ({ data }) => {
   const {
@@ -58,6 +59,23 @@ ${flags && flags !== "--" ? `Flags: ${flags}` : ""}
       <div className="zw-node-label">{label}</div>
     </div>
   );
+};
+
+AggregateNode.propTypes = {
+  data: PropTypes.shape({
+    label: PropTypes.string,
+    members: PropTypes.arrayOf(PropTypes.string),
+    policy: PropTypes.string,
+    lacpActivity: PropTypes.string,
+    lacpTimeout: PropTypes.string,
+    flags: PropTypes.string,
+    bandwidth: PropTypes.shape({
+      totalMbps: PropTypes.number,
+      rxMbps: PropTypes.number,
+      txMbps: PropTypes.number,
+    }),
+    ipAddresses: PropTypes.arrayOf(PropTypes.object),
+  }).isRequired,
 };
 
 export default AggregateNode;

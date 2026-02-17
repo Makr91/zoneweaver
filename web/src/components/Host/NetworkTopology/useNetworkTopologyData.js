@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../../contexts/ServerContext";
 
@@ -15,13 +15,7 @@ export const useNetworkTopologyData = (selectedServer) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  useEffect(() => {
-    if (selectedServer && makeZoneweaverAPIRequest) {
-      loadTopologyData();
-    }
-  }, [selectedServer]);
-
-  const loadTopologyData = async () => {
+  const loadTopologyData = useCallback(async () => {
     if (!selectedServer || loading) {
       return;
     }
@@ -165,7 +159,13 @@ export const useNetworkTopologyData = (selectedServer) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedServer, makeZoneweaverAPIRequest, loading]);
+
+  useEffect(() => {
+    if (selectedServer && makeZoneweaverAPIRequest) {
+      loadTopologyData();
+    }
+  }, [selectedServer, makeZoneweaverAPIRequest, loadTopologyData]);
 
   return {
     ...topologyData,

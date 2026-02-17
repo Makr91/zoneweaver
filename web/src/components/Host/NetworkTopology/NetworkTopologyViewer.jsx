@@ -1,32 +1,28 @@
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
-  Panel,
   useNodesState,
   useEdgesState,
 } from "@xyflow/react";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import PropTypes from "prop-types";
 import "@xyflow/react/dist/style.css";
 
 // Import our custom components
-import BandwidthLegend from "./BandwidthLegend";
 import BandwidthEdge from "./edges/BandwidthEdge";
 import BidirectionalEdge from "./edges/BidirectionalEdge";
 import FloatingEdge from "./edges/FloatingEdge";
 import NetworkTopologyControls from "./NetworkTopologyControls";
-
 // Import node types
 import AggregateNode from "./nodes/AggregateNode";
 import EtherstubNode from "./nodes/EtherstubNode";
 import PhysicalNicNode from "./nodes/PhysicalNicNode";
 import VnicNode from "./nodes/VnicNode";
 import ZoneNode from "./nodes/ZoneNode";
-
 // Import edge types
 import TopologyViewSwitcher from "./TopologyViewSwitcher";
-
 // Import utilities
 import { calculateLayout } from "./utils/layoutCalculator";
 import { autoMapTopology } from "./utils/topologyAutoMapper";
@@ -48,12 +44,7 @@ const edgeTypes = {
   floating: FloatingEdge,
 };
 
-const NetworkTopologyViewer = ({
-  networkData,
-  server,
-  onNodeClick,
-  onEdgeClick,
-}) => {
+const NetworkTopologyViewer = ({ networkData, onNodeClick, onEdgeClick }) => {
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -281,7 +272,7 @@ const NetworkTopologyViewer = ({
 
   // Handle node selection
   const handleNodeClick = useCallback(
-    (event, node) => {
+    (node) => {
       console.log("Node clicked:", node);
       onNodeClick?.(node);
     },
@@ -290,7 +281,7 @@ const NetworkTopologyViewer = ({
 
   // Handle edge selection - show bandwidth chart
   const handleEdgeClick = useCallback(
-    (event, edge) => {
+    (edge) => {
       console.log("Edge clicked:", edge);
 
       // Get the interface names from the edge
@@ -462,6 +453,20 @@ const NetworkTopologyViewer = ({
       </div>
     </div>
   );
+};
+
+NetworkTopologyViewer.propTypes = {
+  networkData: PropTypes.shape({
+    networkInterfaces: PropTypes.array,
+    aggregates: PropTypes.array,
+    etherstubs: PropTypes.array,
+    vnics: PropTypes.array,
+    zones: PropTypes.array,
+    networkUsage: PropTypes.array,
+    ipAddresses: PropTypes.array,
+  }).isRequired,
+  onNodeClick: PropTypes.func,
+  onEdgeClick: PropTypes.func,
 };
 
 export default NetworkTopologyViewer;

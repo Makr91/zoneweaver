@@ -1,4 +1,5 @@
 import { Handle, Position } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 const VnicNode = ({ data }) => {
   const {
@@ -25,8 +26,8 @@ const VnicNode = ({ data }) => {
     return `${bw.toFixed(1)}M`;
   };
 
-  const formatSpeed = (speed) => {
-    const speedNum = parseInt(speed) || 0;
+  const formatSpeed = (speedValue) => {
+    const speedNum = parseInt(speedValue) || 0;
     if (speedNum >= 1000) {
       return `${speedNum / 1000}G`;
     }
@@ -86,6 +87,26 @@ ${ipAddresses?.length ? `IP: ${ipAddresses.map((ip) => ip.ip_address).join(", ")
       <div className="zw-node-label">{label}</div>
     </div>
   );
+};
+
+VnicNode.propTypes = {
+  data: PropTypes.shape({
+    label: PropTypes.string,
+    over: PropTypes.string,
+    vlanId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    zone: PropTypes.string,
+    macaddress: PropTypes.string,
+    macaddrtype: PropTypes.string,
+    state: PropTypes.string,
+    speed: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    mtu: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    bandwidth: PropTypes.shape({
+      totalMbps: PropTypes.number,
+      rxMbps: PropTypes.number,
+      txMbps: PropTypes.number,
+    }),
+    ipAddresses: PropTypes.array,
+  }).isRequired,
 };
 
 export default VnicNode;

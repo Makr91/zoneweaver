@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const TopologyViewSwitcher = ({
   currentView,
   onViewChange,
@@ -69,7 +71,8 @@ const TopologyViewSwitcher = ({
                     key={view.id}
                     className={currentView === view.id ? "is-active" : ""}
                   >
-                    <a
+                    <button
+                      className="button is-text"
                       onClick={() => onViewChange(view.id)}
                       title={view.description}
                     >
@@ -77,7 +80,7 @@ const TopologyViewSwitcher = ({
                         <i className={`fas ${view.icon}`} />
                       </span>
                       <span>{view.name}</span>
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -123,6 +126,13 @@ const TopologyViewSwitcher = ({
       </div>
     </div>
   );
+};
+
+TopologyViewSwitcher.propTypes = {
+  currentView: PropTypes.string.isRequired,
+  onViewChange: PropTypes.func.isRequired,
+  layoutType: PropTypes.string.isRequired,
+  onLayoutChange: PropTypes.func.isRequired,
 };
 
 export default TopologyViewSwitcher;

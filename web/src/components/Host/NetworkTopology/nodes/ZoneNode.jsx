@@ -1,4 +1,5 @@
 import { Handle, Position } from "@xyflow/react";
+import PropTypes from "prop-types";
 
 const ZoneNode = ({ data }) => {
   const { label, status, zonename, zonepath, autoboot, brand, ipType, vnics } =
@@ -47,6 +48,19 @@ ${vnics?.length ? `Connected: ${vnics.join(", ")}` : "No VNICs connected"}
       <div className="zw-node-label">{label}</div>
     </div>
   );
+};
+
+ZoneNode.propTypes = {
+  data: PropTypes.shape({
+    label: PropTypes.string,
+    status: PropTypes.string,
+    zonename: PropTypes.string,
+    zonepath: PropTypes.string,
+    autoboot: PropTypes.string,
+    brand: PropTypes.string,
+    ipType: PropTypes.string,
+    vnics: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
 };
 
 export default ZoneNode;

@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useMemo } from "react";
 
 const LogViewer = ({
   selectedLog,
@@ -61,6 +62,12 @@ const LogViewer = ({
     URL.revokeObjectURL(url);
   };
 
+  const staticLogLines = useMemo(
+    () =>
+      (logData?.lines || []).map((line, i) => ({ line, id: `static-${i}` })),
+    [logData?.lines]
+  );
+
   const renderLogContent = () => {
     const hasContent =
       (isStreaming && streamLines.length > 0) || (logData && logData.lines);
@@ -109,14 +116,14 @@ const LogViewer = ({
                 })
               : // Display static log lines
 
-                logData.lines.map((line, idx) => {
-                  const timestamp = formatTimestamp(line);
+                staticLogLines.map((item) => {
+                  const timestamp = formatTimestamp(item.line);
                   const content = timestamp
-                    ? line.substring(timestamp.length).trim()
-                    : line;
+                    ? item.line.substring(timestamp.length).trim()
+                    : item.line;
                   return (
                     <div
-                      key={`${selectedLog.name}-${line}-${idx}`}
+                      key={`${selectedLog.name}-${item.id}`}
                       className="log-line mb-1"
                     >
                       {timestamp && (
