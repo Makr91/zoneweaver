@@ -239,8 +239,6 @@ const HostStorage = () => {
               arcStats={arcStats}
               sectionsCollapsed={sectionsCollapsed}
               toggleSection={toggleSection}
-              timeWindow={timeWindow}
-              setTimeWindow={setTimeWindow}
               loading={loading}
               chartSortBy={chartSortBy}
               setChartSortBy={setChartSortBy}

@@ -302,12 +302,7 @@ const Navbar = () => {
       role="menu"
     >
       {currentZone && (
-        <button
-          onClick={() => {
-            clearZone();
-          }}
-          className="dropdown-item"
-        >
+        <button onClick={clearZone} className="dropdown-item">
           <span className="icon has-text-warning mr-2">
             <i className="fas fa-times" />
           </span>
@@ -433,7 +428,6 @@ const Navbar = () => {
                   <i className="fa fa-angle-down" aria-hidden="true" />
                 </span>
               </button>
-
               <div
                 className="dropdown-menu dropdown-content"
                 id="host-select"
@@ -478,7 +472,6 @@ const Navbar = () => {
                 <i className="fa fa-angle-down" aria-hidden="true" />
               </span>
             </button>
-
             {zones && <ZoneList zones={zones} />}
             <div className="px-1 button is-flex is-align-items-center is-justify-content-space-between">
               <span>{currentZone}</span>
@@ -500,5 +493,4 @@ const Navbar = () => {
     </div>
   );
 };
-
 export default Navbar;
