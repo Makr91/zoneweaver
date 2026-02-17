@@ -101,3 +101,111 @@ export const parseSize = (sizeStr) => {
   // Return 0 if result is invalid
   return isNaN(result) || result < 0 ? 0 : Math.floor(result);
 };
+
+export const getMaxDataPointsForWindow = (window) => {
+  const windowConfig = {
+    "1min": { points: 12, since: "1minute", limit: 500 },
+    "5min": { points: 60, since: "5minutes", limit: 2000 },
+    "10min": { points: 120, since: "10minutes", limit: 4000 },
+    "15min": { points: 180, since: "15minutes", limit: 6000 },
+    "30min": { points: 360, since: "30minutes", limit: 12000 },
+    "1hour": { points: 720, since: "1hour", limit: 25000 },
+    "3hour": { points: 2160, since: "3hours", limit: 70000 },
+    "6hour": { points: 4320, since: "6hours", limit: 140000 },
+    "12hour": { points: 8640, since: "12hours", limit: 280000 },
+    "24hour": { points: 17280, since: "24hours", limit: 500000 },
+  };
+  return windowConfig[window] || windowConfig["1hour"];
+};
+
+export const groupByKey = (records, key) => {
+  const groups = {};
+  records.forEach((record) => {
+    const groupName = record[key];
+    if (!groupName) {
+      return;
+    }
+    if (!groups[groupName]) {
+      groups[groupName] = [];
+    }
+    groups[groupName].push(record);
+  });
+  return groups;
+};
+
+export const buildIOChartData = (groups) => {
+  const chartResult = {};
+  Object.entries(groups).forEach(([name, records]) => {
+    const sorted = records.sort(
+      (a, b) => new Date(a.scan_timestamp) - new Date(b.scan_timestamp)
+    );
+    chartResult[name] = { readData: [], writeData: [], totalData: [] };
+    sorted.forEach((io) => {
+      const timestamp = new Date(io.scan_timestamp).getTime();
+      const readMBps =
+        (parseFloat(io.read_bandwidth_bytes) || 0) / (1024 * 1024);
+      const writeMBps =
+        (parseFloat(io.write_bandwidth_bytes) || 0) / (1024 * 1024);
+      const totalMBps = readMBps + writeMBps;
+      chartResult[name].readData.push([
+        timestamp,
+        parseFloat(readMBps.toFixed(3)),
+      ]);
+      chartResult[name].writeData.push([
+        timestamp,
+        parseFloat(writeMBps.toFixed(3)),
+      ]);
+      chartResult[name].totalData.push([
+        timestamp,
+        parseFloat(totalMBps.toFixed(3)),
+      ]);
+    });
+  });
+  return chartResult;
+};
+
+export const extractLatestPerGroup = (groups) =>
+  Object.values(groups)
+    .map(
+      (records) =>
+        records.sort(
+          (a, b) => new Date(b.scan_timestamp) - new Date(a.scan_timestamp)
+        )[0]
+    )
+    .filter(Boolean);
+
+export const deduplicateRecords = (items, getKey) =>
+  items.reduce((acc, item) => {
+    const existing = acc.find((e) => getKey(e) === getKey(item));
+    if (!existing) {
+      acc.push(item);
+    } else if (
+      item.scan_timestamp &&
+      existing.scan_timestamp &&
+      new Date(item.scan_timestamp) > new Date(existing.scan_timestamp)
+    ) {
+      acc[acc.indexOf(existing)] = item;
+    }
+    return acc;
+  }, []);
+
+export const deduplicateDisksByIdentity = (disks) =>
+  disks.reduce((acc, disk) => {
+    const existing = acc.find(
+      (e) =>
+        (e.device_name === disk.device_name && disk.device_name) ||
+        (e.serial_number === disk.serial_number && disk.serial_number) ||
+        (e.device === disk.device && disk.device) ||
+        (e.name === disk.name && disk.name)
+    );
+    if (!existing) {
+      acc.push(disk);
+    } else if (
+      disk.scan_timestamp &&
+      existing.scan_timestamp &&
+      new Date(disk.scan_timestamp) > new Date(existing.scan_timestamp)
+    ) {
+      acc[acc.indexOf(existing)] = disk;
+    }
+    return acc;
+  }, []);
