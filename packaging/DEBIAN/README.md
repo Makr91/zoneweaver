@@ -12,6 +12,7 @@ sudo apt install nodejs npm dpkg-dev gdebi-core
 ## Quick Build Commands
 
 ### 1. Prepare Application
+
 ```bash
 
 # Clean any existing build artifacts
@@ -31,6 +32,7 @@ npm ci --omit=dev
 ```
 
 ### 2. Create Package Structure
+
 ```bash
 # Extract version from package.json
 export VERSION=$(node -p "require('./package.json').version")
@@ -42,6 +44,7 @@ mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc
 ```
 
 ### 3. Copy Application Files
+
 ```bash
 # Application files to /opt/zoneweaver (IMPORTANT: include utils and scripts!)
 cp -r controllers models routes middleware config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
@@ -63,6 +66,7 @@ gzip -9 -c packaging/DEBIAN/man/zoneweaver.yaml.5 > "${PACKAGE_NAME}_${VERSION}_
 ```
 
 ### 4. Generate Control File
+
 ```bash
 # Create control file with dynamic version
 cat > "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
@@ -82,6 +86,7 @@ EOF
 ```
 
 ### 5. Set Permissions
+
 ```bash
 # Set proper permissions
 find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type d -exec chmod 755 {} \;
@@ -90,6 +95,7 @@ chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"/{postinst,prerm,postrm}
 ```
 
 ### 6. Build & Install Package
+
 ```bash
 # Build .deb package
 dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
@@ -107,17 +113,21 @@ sudo systemctl status zoneweaver
 ## Critical Build Notes
 
 ### ⚠️ Required Directories
+
 **Must include these directories in the copy command or the package will fail:**
+
 - `utils/` - Contains config loading utilities
 - `scripts/` - Contains version synchronization tools
 - `web/dist/` - Must build frontend first with `npm run build`
 
 ### ✅ Single Source of Truth Versioning
+
 **Root `package.json` is the ONLY place to change version numbers.**
 
 The `npm run sync-versions` script automatically synchronizes the version to:
+
 - ✅ `web/package.json` - Frontend package version
-- ✅ `config/swagger.js` - API documentation version  
+- ✅ `config/swagger.js` - API documentation version
 - ✅ `config.yaml` - Application config version
 - ✅ `packaging/config/production-config.yaml` - Production config version
 - ✅ `.release-please-manifest.json` - Release automation tracking
@@ -126,7 +136,9 @@ The `npm run sync-versions` script automatically synchronizes the version to:
 **To change version:** Only edit the `version` field in root `package.json`, then run `npm run sync-versions`
 
 ### 🔧 Systemd Service
+
 The service includes:
+
 - **Privileged port capabilities** (`CAP_NET_BIND_SERVICE`) for ports 80/443
 - **Environment variables** (`CONFIG_PATH=/etc/zoneweaver/config.yaml`)
 - **Security restrictions** (NoNewPrivileges, ProtectSystem, etc.)
@@ -134,13 +146,16 @@ The service includes:
 ## Automated CI/CD
 
 ### Release Please Integration
+
 Every push to main triggers Release Please:
+
 1. **Creates release PR** with version bumps and changelog
 2. **Merges PR** → triggers package build
 3. **Creates GitHub release** with `.deb` package attached
 4. **Uses semantic versioning** based on conventional commits
 
 ### Manual Release Trigger
+
 ```bash
 gh workflow run release-please.yml
 ```
@@ -160,6 +175,7 @@ gh workflow run release-please.yml
 ## Troubleshooting
 
 ### Common Build Errors
+
 1. **Cannot find module '/opt/zoneweaver/utils/config.js'**
    - ❌ Missing `utils` in copy command
    - ✅ Fix: Add `utils` to the cp command
@@ -178,6 +194,7 @@ gh workflow run release-please.yml
    - 🔍 Verify: Check that `/opt/zoneweaver/web/dist/assets/` exists after installation
 
 ### Service Issues
+
 ```bash
 # Check logs
 sudo journalctl -fu zoneweaver
@@ -190,6 +207,7 @@ sudo systemctl restart zoneweaver
 ```
 
 ### Uninstall
+
 ```bash
 sudo systemctl stop zoneweaver
 
@@ -200,3 +218,4 @@ sudo apt autoremove
 ### Purge DB and Configs
 
 sudo apt purge zoneweaver
+```

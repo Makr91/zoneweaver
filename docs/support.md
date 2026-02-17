@@ -6,15 +6,17 @@ permalink: /docs/support/
 ---
 
 # Support
+
 {: .no_toc }
 
 Getting help with Zoneweaver frontend.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

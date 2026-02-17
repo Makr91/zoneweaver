@@ -2,12 +2,12 @@
 
 .host-file-manager {
   /* Ensure the file manager inherits the theme */
-  
+
   .file-explorer {
     /* Override cubone's default background and colors to match zoneweaver theme */
     background-color: var(--bulma-scheme-main) !important;
     color: var(--bulma-text) !important;
-    
+
     /* Toolbar theming */
     .toolbar {
       background-color: var(--bulma-scheme-main-bis) !important;
@@ -16,19 +16,19 @@
       min-height: 35px !important;
       max-height: 35px !important;
       padding: 0 !important;
-      
+
       .item-action {
         background-color: transparent !important;
         color: var(--bulma-text) !important;
         border: 1px solid var(--bulma-border) !important;
-        
+
         &:hover {
           background-color: var(--bulma-scheme-main-ter) !important;
           color: var(--bulma-text-strong) !important;
         }
       }
     }
-    
+
     /* Navigation pane theming */
     .navigation-pane {
       background-color: var(--bulma-scheme-main-bis) !important;
@@ -38,26 +38,26 @@
         background-color: transparent !important;
         color: var(--bulma-text) !important;
       }
-      
+
       /* Folder tree items */
       .folder-item {
         color: var(--bulma-text) !important;
-        
+
         &:hover {
           background-color: var(--bulma-scheme-main-ter) !important;
         }
-        
+
         &.active {
           background-color: var(--bulma-primary-light) !important;
           color: var(--bulma-primary-dark) !important;
         }
       }
     }
-    
+
     /* File list area theming */
     .folders-preview {
       background-color: var(--bulma-scheme-main) !important;
-      
+
       /* Breadcrumb theming */
       .breadcrumb {
         background-color: var(--bulma-scheme-main-bis) !important;
@@ -69,50 +69,50 @@
         gap: 0.5rem !important;
         padding: 6px 0 6px 15px !important;
         overflow-x: hidden !important;
-        
+
         .breadcrumb-item {
           color: var(--bulma-text) !important;
-          
+
           &:hover {
             color: var(--bulma-link) !important;
           }
-          
+
           &.active {
             color: var(--bulma-text-strong) !important;
           }
         }
       }
-      
+
       /* Files container */
       .files {
         background-color: var(--bulma-scheme-main) !important;
-        
+
         /* File items in grid view */
         &.grid .file-item {
           background-color: var(--bulma-scheme-main-bis) !important;
           border: 1px solid var(--bulma-border) !important;
           color: var(--bulma-text) !important;
-          
+
           &:hover {
             background-color: var(--bulma-scheme-main-ter) !important;
             border-color: var(--bulma-link) !important;
           }
-          
+
           &.selected {
             background-color: var(--bulma-primary-light) !important;
             border-color: var(--bulma-primary) !important;
             color: var(--bulma-primary-dark) !important;
           }
-          
+
           .file-name {
             color: var(--bulma-text) !important;
           }
-          
+
           .file-size {
             color: var(--bulma-text-weak) !important;
           }
         }
-        
+
         /* File items in list view */
         &.list {
           /* List header */
@@ -120,31 +120,31 @@
             background-color: var(--bulma-scheme-main-bis) !important;
             border-bottom: 1px solid var(--bulma-border) !important;
             color: var(--bulma-text-strong) !important;
-            
+
             .header-cell {
               border-right: 1px solid var(--bulma-border) !important;
-              
+
               &:hover {
                 background-color: var(--bulma-scheme-main-ter) !important;
               }
             }
           }
-          
+
           /* List rows */
           .file-item {
             background-color: transparent !important;
             border-bottom: 1px solid var(--bulma-border-weak) !important;
             color: var(--bulma-text) !important;
-            
+
             &:hover {
               background-color: var(--bulma-scheme-main-bis) !important;
             }
-            
+
             &.selected {
               background-color: var(--bulma-primary-light) !important;
               color: var(--bulma-primary-dark) !important;
             }
-            
+
             .file-cell {
               border-right: 1px solid var(--bulma-border-weak) !important;
             }
@@ -152,62 +152,62 @@
         }
       }
     }
-    
+
     /* Context menu theming - Enhanced for cubone */
     .fm-context-menu {
       background-color: var(--bulma-scheme-main) !important;
       border: 1px solid var(--bulma-border) !important;
       box-shadow: var(--bulma-shadow) !important;
-      
+
       .file-context-menu-list {
         background-color: transparent !important;
-        
+
         ul {
           background-color: transparent !important;
           margin: 0 !important;
           padding: 4px 0 !important;
-          
+
           li {
             color: var(--bulma-text) !important;
             background-color: transparent !important;
-            
+
             &:hover {
               background-color: var(--bulma-scheme-main-bis) !important;
               color: var(--bulma-text-strong) !important;
             }
-            
+
             &.disable-paste {
               color: var(--bulma-text-weak) !important;
               opacity: 0.5 !important;
             }
           }
         }
-        
+
         .divider {
           border-top: 1px solid var(--bulma-border) !important;
           background-color: transparent !important;
         }
-        
+
         .list-expand-icon {
           color: var(--bulma-text) !important;
         }
       }
-      
+
       /* Sub-menu theming */
       .sub-menu {
         background-color: var(--bulma-scheme-main) !important;
         border: 1px solid var(--bulma-border) !important;
-        
+
         li:hover {
           background-color: var(--bulma-scheme-main-bis) !important;
         }
-        
+
         .item-selected {
           color: var(--bulma-text) !important;
         }
       }
     }
-    
+
     /* Modal theming (for cubone's internal modals) */
     .modal,
     .fm-modal,
@@ -216,15 +216,15 @@
       background-color: var(--bulma-scheme-main) !important;
       color: var(--bulma-text) !important;
       border: 1px solid var(--bulma-border) !important;
-      
+
       &::backdrop {
         background: rgba(0, 0, 0, 0.6) !important;
       }
-      
+
       .modal-background {
         background-color: rgba(0, 0, 0, 0.6) !important;
       }
-      
+
       /* Target all possible modal containers */
       &,
       .modal-card,
@@ -236,7 +236,7 @@
         background-color: var(--bulma-scheme-main) !important;
         color: var(--bulma-text) !important;
         border: 1px solid var(--bulma-border) !important;
-        
+
         .modal-card-head,
         .modal-header,
         .fm-modal-header,
@@ -245,14 +245,19 @@
           background-color: var(--bulma-scheme-main-bis) !important;
           border-bottom: 1px solid var(--bulma-border) !important;
           color: var(--bulma-text) !important;
-          
+
           .modal-card-title,
           .modal-title,
           .fm-modal-heading,
-          h1, h2, h3, h4, h5, h6 {
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6 {
             color: var(--bulma-text-strong) !important;
           }
-          
+
           .delete,
           .close,
           .close-icon,
@@ -260,7 +265,7 @@
             background-color: transparent !important;
             color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
-            
+
             &:hover {
               background-color: var(--bulma-danger) !important;
               border-color: var(--bulma-danger) !important;
@@ -268,120 +273,141 @@
             }
           }
         }
-        
+
         .modal-card-body,
         .modal-body,
         [class*="modal-body"],
         > div:not(.fm-modal-header) {
           background-color: var(--bulma-scheme-main) !important;
           color: var(--bulma-text) !important;
-          
+
           /* Form elements inside modals */
-          input, textarea, select {
+          input,
+          textarea,
+          select {
             background-color: var(--bulma-scheme-main-bis) !important;
             color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
-            
+
             &:focus {
               border-color: var(--bulma-primary) !important;
-              box-shadow: 0 0 0 0.125em rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.25) !important;
+              box-shadow: 0 0 0 0.125em
+                rgba(
+                  var(--bulma-primary-h),
+                  var(--bulma-primary-s),
+                  var(--bulma-primary-l),
+                  0.25
+                ) !important;
             }
-            
+
             &::placeholder {
-              color: var(--zw-text-placeholder, var(--bulma-text-weak)) !important;
+              color: var(
+                --zw-text-placeholder,
+                var(--bulma-text-weak)
+              ) !important;
             }
           }
-          
+
           /* Labels and text */
-          label, .label, span, p, div {
+          label,
+          .label,
+          span,
+          p,
+          div {
             color: var(--bulma-text) !important;
           }
-          
-          h1, h2, h3, h4, h5, h6 {
+
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6 {
             color: var(--bulma-text-strong) !important;
           }
-          
+
           /* Progress bars */
           .progress {
             background-color: var(--bulma-scheme-main-ter) !important;
-            
+
             &::-webkit-progress-bar {
               background-color: var(--bulma-scheme-main-ter) !important;
             }
-            
+
             &::-webkit-progress-value {
               background-color: var(--bulma-primary) !important;
             }
           }
-          
+
           /* Buttons inside modal body */
-          button, .button {
+          button,
+          .button {
             background-color: var(--bulma-scheme-main-ter) !important;
             color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
-            
+
             &.primary,
             &[type="primary"] {
               background-color: var(--bulma-primary) !important;
               color: var(--bulma-primary-invert) !important;
               border-color: var(--bulma-primary) !important;
             }
-            
+
             &.secondary,
             &[type="secondary"] {
               background-color: var(--bulma-scheme-main-bis) !important;
               color: var(--bulma-text) !important;
             }
-            
+
             &.danger,
             &[type="danger"] {
               background-color: var(--bulma-danger) !important;
               color: var(--bulma-danger-invert) !important;
               border-color: var(--bulma-danger) !important;
             }
-            
+
             &:hover {
               opacity: 0.9 !important;
             }
           }
         }
-        
+
         .modal-card-foot,
         .modal-footer,
         [class*="modal-foot"],
         [class*="modal-footer"] {
           background-color: var(--bulma-scheme-main-bis) !important;
           border-top: 1px solid var(--bulma-border) !important;
-          
+
           .button {
             background-color: var(--bulma-scheme-main-ter) !important;
             color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
-            
+
             &.is-primary,
             &.primary {
               background-color: var(--bulma-primary) !important;
               color: var(--bulma-primary-invert) !important;
               border-color: var(--bulma-primary) !important;
             }
-            
+
             &.is-danger,
             &.danger {
               background-color: var(--bulma-danger) !important;
               color: var(--bulma-danger-invert) !important;
               border-color: var(--bulma-danger) !important;
             }
-            
+
             &:hover {
               background-color: var(--bulma-scheme-main-bis) !important;
               border-color: var(--bulma-link) !important;
             }
-            
+
             &.is-primary:hover,
             &.primary:hover {
               background-color: var(--bulma-primary-dark) !important;
             }
-            
+
             &.is-danger:hover,
             &.danger:hover {
               background-color: var(--bulma-danger-dark) !important;
@@ -390,15 +416,18 @@
         }
       }
     }
-    
+
     /* Loading spinner theming */
     .loader {
       .spinner {
-        border-color: var(--zw-loading-spinner, var(--bulma-text-weak)) !important;
+        border-color: var(
+          --zw-loading-spinner,
+          var(--bulma-text-weak)
+        ) !important;
         border-left-color: var(--bulma-primary) !important;
       }
     }
-    
+
     /* Empty states */
     .empty-folder,
     .empty-nav-pane {
@@ -406,112 +435,132 @@
       background-color: var(--bulma-scheme-main-bis) !important;
       border: 1px dashed var(--bulma-border) !important;
     }
-    
+
     /* Scrollbars for dark theme */
     * {
       scrollbar-width: thin;
       scrollbar-color: var(--bulma-border) var(--bulma-scheme-main-bis);
     }
-    
+
     *::-webkit-scrollbar {
       width: 8px;
       height: 8px;
     }
-    
+
     *::-webkit-scrollbar-track {
       background: var(--bulma-scheme-main-bis);
     }
-    
+
     *::-webkit-scrollbar-thumb {
       background-color: var(--bulma-border);
       border-radius: 4px;
-      
+
       &:hover {
         background-color: var(--bulma-border-hover, var(--bulma-text-weak));
       }
     }
-    
+
     /* Input fields theming */
-    input, textarea, select {
-      background-color: var(--bulma-input-background-color, var(--bulma-scheme-main)) !important;
+    input,
+    textarea,
+    select {
+      background-color: var(
+        --bulma-input-background-color,
+        var(--bulma-scheme-main)
+      ) !important;
       color: var(--bulma-input-color, var(--bulma-text)) !important;
-      border-color: var(--bulma-input-border-color, var(--bulma-border)) !important;
-      
+      border-color: var(
+        --bulma-input-border-color,
+        var(--bulma-border)
+      ) !important;
+
       &:focus {
-        border-color: var(--bulma-input-focus-border-color, var(--bulma-primary)) !important;
-        box-shadow: 0 0 0 0.125em var(--bulma-input-focus-shadow-color, rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.25)) !important;
+        border-color: var(
+          --bulma-input-focus-border-color,
+          var(--bulma-primary)
+        ) !important;
+        box-shadow: 0 0 0 0.125em
+          var(
+            --bulma-input-focus-shadow-color,
+            rgba(
+              var(--bulma-primary-h),
+              var(--bulma-primary-s),
+              var(--bulma-primary-l),
+              0.25
+            )
+          ) !important;
       }
-      
+
       &::placeholder {
         color: var(--zw-text-placeholder, var(--bulma-text-weak)) !important;
       }
     }
-    
+
     /* Custom file preview component theming */
     .file-preview-container {
       background-color: var(--bulma-scheme-main) !important;
       color: var(--bulma-text) !important;
       padding: 1rem !important;
-      
+
       .preview-header {
         border-bottom: 1px solid var(--bulma-border) !important;
         padding-bottom: 0.75rem !important;
         margin-bottom: 0.75rem !important;
-        
+
         .title {
           color: var(--bulma-text-strong) !important;
           margin-bottom: 0.5rem !important;
         }
-        
+
         .preview-info {
           display: flex !important;
           gap: 0.5rem !important;
           flex-wrap: wrap !important;
         }
       }
-      
+
       .preview-content {
         .icon {
           color: var(--bulma-text-weak) !important;
         }
-        
+
         p {
           color: var(--bulma-text) !important;
         }
-        
+
         .help {
           color: var(--bulma-text-weak) !important;
         }
-        
+
         .button {
           background-color: var(--bulma-primary) !important;
           color: var(--bulma-primary-invert) !important;
           border-color: var(--bulma-primary) !important;
-          
+
           &:hover {
             background-color: var(--bulma-primary-dark) !important;
             border-color: var(--bulma-primary-dark) !important;
           }
         }
       }
-      
+
       .preview-metadata {
         border-top: 1px solid var(--bulma-border) !important;
         padding-top: 0.75rem !important;
         margin-top: 0.75rem !important;
-        
+
         .tag {
           &.is-dark {
             background-color: var(--bulma-text-strong) !important;
             color: var(--bulma-scheme-main) !important;
           }
-          
+
           &.is-light {
             background-color: var(--bulma-scheme-main-bis) !important;
             color: var(--bulma-text) !important;
             border: 1px solid var(--bulma-border) !important;
           }
-          
+
           &.is-info {
             background-color: var(--bulma-info) !important;
             color: var(--bulma-info-invert) !important;
@@ -523,53 +572,53 @@
     .fm-upload-file {
       background-color: var(--bulma-scheme-main) !important;
       color: var(--bulma-text) !important;
-      
+
       .draggable-file-input {
         background-color: var(--bulma-scheme-main-bis) !important;
         color: var(--bulma-text) !important;
         border-color: var(--bulma-border) !important;
-        
+
         &:hover {
           border-color: var(--bulma-primary) !important;
         }
-        
+
         &.dragging {
           border-color: var(--bulma-primary) !important;
         }
       }
-      
+
       .files-progress {
         background-color: transparent !important;
-        
+
         h2 {
           color: var(--bulma-text-strong) !important;
         }
-        
+
         ul {
           background-color: var(--bulma-scheme-main-bis) !important;
           padding-left: 0 !important;
           padding-right: 0 !important;
           padding-bottom: 0 !important;
           padding-top: 0 !important;
-          
+
           li {
             border-bottom-color: var(--bulma-border) !important;
             color: var(--bulma-text) !important;
-            
+
             .file {
               .file-details {
                 margin-bottom: 0 !important;
               }
             }
-            
+
             .file-icon {
               height: auto !important;
             }
-            
+
             .file-name {
               color: var(--bulma-text) !important;
             }
-            
+
             .file-size {
               color: var(--bulma-text-weak) !important;
             }
@@ -577,38 +626,38 @@
         }
       }
     }
-    
+
     /* Upload progress layout fixes */
     .fm-progress {
       padding-top: 1vh !important;
     }
-    
+
     /* Cubone button theming */
     .fm-button-secondary {
       background-color: var(--bulma-scheme-main-ter) !important;
       color: var(--bulma-text) !important;
       border: 1px solid var(--bulma-border) !important;
-      
+
       &:hover {
         background-color: var(--bulma-scheme-main-bis) !important;
       }
     }
-    
+
     .fm-button-primary {
       background-color: var(--bulma-primary) !important;
       color: var(--bulma-primary-invert) !important;
     }
-    
+
     .fm-button-danger {
       background-color: var(--bulma-danger) !important;
       color: var(--bulma-danger-invert) !important;
     }
-    
+
     /* Cubone delete confirmation modal */
     .file-delete-confirm {
       background-color: var(--bulma-scheme-main) !important;
       color: var(--bulma-text) !important;
-      
+
       .file-delete-confirm-text {
         border-bottom-color: var(--bulma-border) !important;
         color: var(--bulma-text) !important;
@@ -625,16 +674,23 @@
       &:hover {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
       }
-      
+
       &.selected {
-        box-shadow: 0 2px 12px rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.4) !important;
+        box-shadow: 0 2px 12px
+          rgba(
+            var(--bulma-primary-h),
+            var(--bulma-primary-s),
+            var(--bulma-primary-l),
+            0.4
+          ) !important;
       }
     }
-    
-    .context-menu, .fm-context-menu {
+
+    .context-menu,
+    .fm-context-menu {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
     }
-    
+
     /* Enhanced upload modal dark theme */
     .fm-upload-file .draggable-file-input {
       background-color: var(--bulma-scheme-main-ter) !important;
@@ -649,13 +705,20 @@
       &:hover {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
       }
-      
+
       &.selected {
-        box-shadow: 0 2px 12px rgba(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.2) !important;
+        box-shadow: 0 2px 12px
+          rgba(
+            var(--bulma-primary-h),
+            var(--bulma-primary-s),
+            var(--bulma-primary-l),
+            0.2
+          ) !important;
       }
     }
-    
-    .context-menu, .fm-context-menu {
+
+    .context-menu,
+    .fm-context-menu {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
   }

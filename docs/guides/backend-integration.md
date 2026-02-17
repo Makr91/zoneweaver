@@ -7,15 +7,17 @@ permalink: /docs/guides/backend-integration/
 ---
 
 # Backend Integration
+
 {: .no_toc }
 
 This guide covers connecting Zoneweaver frontend to Zoneweaver-API backend servers for zone management functionality.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 
@@ -72,15 +74,18 @@ Your Zoneweaver API must be:
 ### Configuration Details
 
 **Hostname Examples:**
+
 - `zoneweaver-api.example.com` - DNS name
 - `192.168.1.100` - IP address
 - `zapi.internal.local` - Internal DNS
 
 **Port Selection:**
+
 - `5001` - HTTPS (recommended)
 - `5000` - HTTP (development only)
 
 **Protocol Choice:**
+
 - **HTTPS**: Production and secure environments
 - **HTTP**: Development and testing (not recommended for production)
 
@@ -91,6 +96,7 @@ Your Zoneweaver API must be:
 On your Zoneweaver API server:
 
 1. **Bootstrap Method** (first-time setup):
+
    ```bash
    curl -X POST http://zoneweaver-api:5000/api/bootstrap \
      -H "Content-Type: application/json" \
@@ -109,6 +115,7 @@ On your Zoneweaver API server:
 ### API Key Format
 
 Zoneweaver API API keys follow this format:
+
 ```
 wh_1234567890abcdef1234567890abcdef
 ```
@@ -133,7 +140,7 @@ Test backend connectivity manually:
 # Test HTTP connectivity
 curl -i http://backend:5000/api/
 
-# Test HTTPS connectivity  
+# Test HTTPS connectivity
 curl -i https://backend:5001/api/
 
 # Test with API key
@@ -142,6 +149,7 @@ curl -i https://backend:5001/api/zones \
 ```
 
 Expected responses:
+
 - **200 OK**: Backend is responding
 - **401 Unauthorized**: API key issue
 - **Connection refused**: Service not running
@@ -169,6 +177,7 @@ Expected responses:
 ### Server Status Monitoring
 
 Zoneweaver monitors server status:
+
 - **Green**: Server responding normally
 - **Yellow**: Connection issues or slow response
 - **Red**: Server unavailable or authentication failed
@@ -178,19 +187,22 @@ Zoneweaver monitors server status:
 ### Multi-Organization Support
 
 Each organization can have different server assignments:
+
 - **Organization A**: Access to Production servers only
-- **Organization B**: Access to Development servers only  
+- **Organization B**: Access to Development servers only
 - **Super Admin**: Access to all servers globally
 
 ### Managing Server Access
 
 **Super Admin Functions:**
+
 1. Go to Settings → Organizations
 2. Select organization to modify
 3. Assign/remove server access
 4. Save changes
 
 **Organization Isolation:**
+
 - Users only see servers assigned to their organization
 - No cross-organization server access
 - Separate zone lists per organization
@@ -200,6 +212,7 @@ Each organization can have different server assignments:
 ### Connection Issues
 
 **Cannot Connect to Backend**
+
 1. Verify backend service is running:
    ```bash
    svcs zoneweaver-api  # On OmniOS
@@ -214,12 +227,14 @@ Each organization can have different server assignments:
 4. Check backend logs for errors
 
 **Authentication Failed**
+
 1. Verify API key is correct
 2. Check API key hasn't expired
 3. Ensure API key has proper permissions
 4. Review backend authentication logs
 
 **Slow Response Times**
+
 1. Check network latency to backend
 2. Monitor backend server load
 3. Review backend performance logs
@@ -228,16 +243,19 @@ Each organization can have different server assignments:
 ### API Errors
 
 **404 Not Found**
+
 - Backend API endpoints may have changed
 - Verify API version compatibility
 - Check backend API documentation
 
 **500 Internal Server Error**
+
 - Backend server experiencing issues
 - Check backend service logs
 - Verify backend database connectivity
 
 **403 Forbidden**
+
 - API key lacks required permissions
 - Organization doesn't have access to server
 - Check user role and permissions
@@ -247,6 +265,7 @@ Each organization can have different server assignments:
 ### Load Balancing
 
 For high availability, configure multiple backend servers:
+
 1. Add multiple Zoneweaver APIs for same host
 2. Use different hostnames or IP addresses
 3. Frontend will attempt alternate servers on failure
@@ -254,6 +273,7 @@ For high availability, configure multiple backend servers:
 ### SSL Certificate Verification
 
 For HTTPS backends with custom certificates:
+
 1. Ensure certificates are properly installed
 2. Consider certificate pinning for security
 3. Update certificate validation if needed
@@ -261,6 +281,7 @@ For HTTPS backends with custom certificates:
 ### Network Optimization
 
 For better performance:
+
 - Use dedicated network connections
 - Configure appropriate MTU sizes
 - Enable TCP optimization features

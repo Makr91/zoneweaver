@@ -7,9 +7,11 @@ Production-ready OmniOS IPS package build process for Zoneweaver.
 There are two approaches for building Zoneweaver OmniOS packages:
 
 ### Method 1: OmniOS Build Framework (Recommended)
+
 If you're using the OmniOS build framework (omniosorg/omnios-build), place the Zoneweaver source in the build tree and use the provided `build.sh` script.
 
 ### Method 2: Manual Build Process
+
 Traditional manual building using direct IPS commands.
 
 ## Prerequisites
@@ -34,6 +36,7 @@ pfexec pkg install ooce/runtime/node-22 database/sqlite-3
 If you're using the OmniOS build framework, follow these steps:
 
 ### Setup in Build Tree
+
 ```bash
 # Place Zoneweaver in your build tree (example path)
 cd /path/to/omnios-build/build
@@ -45,13 +48,14 @@ cp -r /path/to/zoneweaver-source/* .
 
 # The build.sh script expects these files:
 # - build.sh (provided)
-# - local.mog (provided)  
+# - local.mog (provided)
 # - zoneweaver-smf.xml (SMF manifest)
 # - startup.sh, shutdown.sh (method scripts)
 # - All source files (controllers, models, etc.)
 ```
 
 ### Build with Framework
+
 ```bash
 # From the zoneweaver directory in build tree
 ./build.sh
@@ -64,6 +68,7 @@ cp -r /path/to/zoneweaver-source/* .
 ```
 
 ### Integration Notes
+
 - The `build.sh` script follows OmniOS build framework conventions
 - Version is automatically extracted from `package.json`
 - Dependencies are handled via `BUILD_DEPENDS_IPS` and `RUN_DEPENDS_IPS`
@@ -73,10 +78,11 @@ cp -r /path/to/zoneweaver-source/* .
 ## Method 2: Manual Build Commands
 
 ### 1. Build Application (On OmniOS)
+
 ```bash
 cd /Array-0/zoneweaver/frontend
 
-# Build the frontend first  
+# Build the frontend first
 export PATH="/opt/ooce/bin:/opt/ooce/node-22/bin:$PATH"
 npm run sync-versions
 MAKE=gmake npm ci
@@ -90,6 +96,7 @@ export VERSION=$(node -p "require('./package.json').version")
 ```
 
 ### 2. Build IPS Package
+
 ```bash
 # Set version in manifest
 sed -i "s/@VERSION@/${VERSION}/g" packaging/omnios/zoneweaver.p5m
@@ -110,6 +117,7 @@ pkgsend publish -d . -s /tmp/local-repo zoneweaver.p5m.final
 ```
 
 ### 3. Install & Test Package
+
 ```bash
 # Add your local repository
 pfexec pkg set-publisher -g file:///tmp/local-repo Makr91
@@ -138,7 +146,7 @@ The IPS package will create:
 
 ```
 /opt/zoneweaver/                    # Application files
-├── index.js                        # Main Node.js application  
+├── index.js                        # Main Node.js application
 ├── package.json                    # Package metadata
 ├── controllers/                    # API controllers
 ├── models/                         # Data models
@@ -167,6 +175,7 @@ The IPS package will create:
 ## Dependencies
 
 The package depends on:
+
 - `ooce/runtime/node-22` (Node.js runtime)
 - `database/sqlite-3` (SQLite database)
 - Standard OmniOS system packages
@@ -174,6 +183,7 @@ The package depends on:
 ## User & Service Management
 
 The package automatically:
+
 - Creates `zoneweaver` user and group
 - Installs SMF service manifest
 - Sets up proper file permissions
@@ -184,11 +194,13 @@ The package automatically:
 ### Build Errors
 
 1. **Node.js not found:**
+
    ```bash
    export PATH="/opt/ooce/bin:/opt/ooce/node-22/bin:$PATH"
    ```
 
 2. **npm install fails:**
+
    ```bash
    # Ensure you have the latest npm
    npm install -g npm@latest
@@ -248,7 +260,7 @@ chmod 755 /opt/zoneweaver/shutdown.sh
 # Start service
 svcadm enable system/virtualization/zoneweaver
 
-# Stop service  
+# Stop service
 svcadm disable system/virtualization/zoneweaver
 
 # Restart service
@@ -282,6 +294,7 @@ The package version is automatically synchronized with the main `package.json` v
 ## Default Access
 
 After installation, Zoneweaver will be available at:
+
 - **HTTPS:** `https://localhost:3443` (default)
 - **Configuration:** `/etc/zoneweaver/config.yaml`
 

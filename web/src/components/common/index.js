@@ -8,3 +8,4 @@
 // Modal Components
 export { default as ContentModal } from "./ContentModal";
 export { default as FormModal } from "./FormModal";
+export { default as ConfirmModal } from "./ConfirmModal";

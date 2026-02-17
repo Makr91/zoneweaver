@@ -9,6 +9,7 @@ Zoneweaver - NodeJS backend and Vite based frontend for managing Bhyve virtual m
 ## Platform Requirements
 
 ### OmniOS/Illumos
+
 Zoneweaver requires a C++ compiler to build native dependencies (bcrypt). Install the required packages:
 
 ```bash
@@ -20,6 +21,7 @@ MAKE=gmake npm install
 ```
 
 ### Debian/Ubuntu
+
 ```bash
 # Install build essentials
 sudo apt-get install build-essential

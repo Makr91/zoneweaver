@@ -34,50 +34,50 @@ jobs:
       # Debian Build Steps
       - name: Checkout for Debian build
         uses: actions/checkout@v5
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-          
+
       - name: Install Node.js dependencies
         run: npm ci
-          
+
       - name: Install web dependencies
         run: cd web && npm ci
-          
+
       - name: Build frontend
         run: npm run build
-        
+
       - name: Set Debian package variables
         run: |
           echo "VERSION=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}" >> $GITHUB_ENV
           echo "PACKAGE_NAME=zoneweaver" >> $GITHUB_ENV
           echo "ARCH=amd64" >> $GITHUB_ENV
-        
+
       - name: Create Debian package structure
         run: |
           mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver/web,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
-        
+
       - name: Copy application files to Debian package
         run: |
           cp -r controllers models routes middleware config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
           cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
           cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"
-        
+
       - name: Copy configuration files to Debian package
         run: |
           cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
           cp packaging/DEBIAN/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
           cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
-        
+
       - name: Install man pages
         run: |
           # Copy and compress man pages following Debian Policy
           gzip -9 -c packaging/DEBIAN/man/zoneweaver.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/zoneweaver.8.gz"
           gzip -9 -c packaging/DEBIAN/man/zoneweaver.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/zoneweaver.yaml.5.gz"
-        
+
       - name: Create Debian control file
         run: |
           cat > "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
@@ -94,13 +94,13 @@ jobs:
            through a modern React frontend and Node.js API backend.
           Homepage: https://github.com/Makr91/zoneweaver
           EOF
-        
+
       - name: Set Debian package permissions
         run: |
           find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type d -exec chmod 755 {} \;
           find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type f -exec chmod 644 {} \;
           chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"/{postinst,prerm,postrm}
-        
+
       - name: Build Debian package
         run: |
           dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
@@ -111,7 +111,7 @@ jobs:
         with:
           path: omnios-source
           clean: true
-        
+
       - name: Clean OmniOS build directory
         run: |
           ssh ghrunner@omnios.packages.startcloud.com "rm -rf /local/builds/zoneweaver/* /local/builds/zoneweaver/.*" || true
@@ -156,7 +156,7 @@ jobs:
         run: |
           gh release upload ${{ needs.release-please.outputs.tag_name }} "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
 
-      - name: Upload OmniOS package to release  
+      - name: Upload OmniOS package to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

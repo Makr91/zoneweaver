@@ -7,15 +7,17 @@ permalink: /docs/guides/authentication/
 ---
 
 # Authentication
+
 {: .no_toc }
 
 This guide covers setting up user authentication, managing organizations, and configuring security settings in Zoneweaver frontend.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 
@@ -63,16 +65,19 @@ For existing organizations:
 ### Role Hierarchy
 
 **Super Admin**
+
 - Access to all organizations
 - Can create/modify/delete any organization
 - Global system administration
 
 **Admin**
+
 - Organization-specific administration
 - Can invite users to their organization
 - Manage organization settings and users
 
 **User**
+
 - Standard access within organization
 - Can manage personal profile and preferences
 - Access to organization's servers and zones
@@ -80,6 +85,7 @@ For existing organizations:
 ### Creating Users
 
 #### Via Email Invitation
+
 ```yaml
 # Configure SMTP in config.yaml
 mail:
@@ -88,10 +94,10 @@ mail:
     port: 587
     secure: false
   smtp_auth:
-    user: "noreply@company.com"
-    password: "smtp-password"
+    user: 'noreply@company.com'
+    password: 'smtp-password'
   smtp_settings:
-    from: "Zoneweaver <noreply@company.com>"
+    from: 'Zoneweaver <noreply@company.com>'
 ```
 
 1. Go to Settings → Users
@@ -100,6 +106,7 @@ mail:
 4. System sends invitation email automatically
 
 #### Manual Invitation
+
 1. Generate invitation code in Settings → Users
 2. Share invitation code with new user
 3. User registers using the code
@@ -110,15 +117,16 @@ mail:
 
 ```yaml
 security:
-  jwt_secret: "your-secure-random-secret-here"  # Change this!
-  bcrypt_rounds: 10                             # Password hashing strength
-  sessionTimeout: 24                            # Hours
-  allow_new_organizations: false                # Disable after initial setup
+  jwt_secret: 'your-secure-random-secret-here' # Change this!
+  bcrypt_rounds: 10 # Password hashing strength
+  sessionTimeout: 24 # Hours
+  allow_new_organizations: false # Disable after initial setup
 ```
 
 ### Password Requirements
 
 Current password policy:
+
 - Minimum 8 characters
 - No complexity requirements (configurable in future versions)
 - Passwords are hashed using bcrypt with configurable rounds
@@ -134,6 +142,7 @@ Current password policy:
 ### Creating Organizations
 
 **Super Admin Only:**
+
 1. Navigate to Settings → Organizations
 2. Click "Add Organization"
 3. Enter organization name and description
@@ -142,6 +151,7 @@ Current password policy:
 ### Organization Settings
 
 Each organization can configure:
+
 - **Name and Description**: Basic organization information
 - **User Management**: Control user access and roles
 - **Server Assignments**: Which Zoneweaver API servers this organization can access
@@ -166,6 +176,7 @@ curl -X POST https://your-server:3443/api/auth/login \
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -193,14 +204,17 @@ curl -X GET https://your-server:3443/api/user/profile \
 ### Login Issues
 
 **Invalid Credentials**
+
 - Verify username/email and password
 - Check if account exists and is active
 
 **Token Expired**
+
 - Login again to get fresh token
 - Check sessionTimeout setting
 
 **Server Error**
+
 - Check JWT secret is configured
 - Verify database connectivity
 - Check server logs for details
@@ -208,15 +222,18 @@ curl -X GET https://your-server:3443/api/user/profile \
 ### Registration Problems
 
 **Organization Creation Disabled**
+
 - Set `allow_new_organizations: true` in config
 - Restart Zoneweaver service
 
 **Email Invitation Failed**
+
 - Check SMTP configuration
 - Verify email credentials
 - Test SMTP connection
 
 **Invalid Invitation Code**
+
 - Check code hasn't expired
 - Verify code was copied correctly
 - Generate new invitation if needed

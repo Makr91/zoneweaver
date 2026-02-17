@@ -7,15 +7,17 @@ permalink: /docs/api/
 ---
 
 # API Reference
+
 {: .no_toc }
 
 The Zoneweaver Frontend API provides comprehensive RESTful endpoints for user management, organization control, and server configuration. This API handles authentication, authorization, and configuration management for the Zoneweaver web interface.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 
@@ -50,30 +52,35 @@ The Zoneweaver Frontend API is fully documented using OpenAPI 3.0 specification.
 The Zoneweaver Frontend API is organized into the following categories:
 
 #### Authentication & Authorization
+
 - User registration and login
 - JWT token management
 - Session management
 - Password reset and recovery
 
 #### User Management
+
 - User profile management
 - User preferences and settings
 - Account administration
 - Role-based access control
 
-#### Organization Management  
+#### Organization Management
+
 - Organization creation and configuration
 - Multi-tenant organization support
 - User-organization relationships
 - Invitation management
 
 #### Server Configuration
+
 - Zoneweaver API server management
 - Connection configuration and testing
 - Server health monitoring
 - API endpoint management
 
 #### Settings & Configuration
+
 - Application settings management
 - Email configuration
 - Security settings
@@ -97,6 +104,7 @@ The API uses standard HTTP status codes and returns JSON error responses:
 ```
 
 Common status codes:
+
 - `200` - Success
 - `201` - Created
 - `400` - Bad Request

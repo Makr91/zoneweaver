@@ -2,10 +2,10 @@
 // Based on Just the Docs official method for wider content
 
 // Import dark theme first (official path from Just the Docs docs)
-@import "./color_schemes/dark";
+@import './color_schemes/dark';
 
 // Then override the width
-$content-width: 60rem;  // Much wider than default 50rem for Swagger UI
+$content-width: 60rem; // Much wider than default 50rem for Swagger UI
 
 // Fix double toggle icons with highest specificity to override all Swagger UI styles
 .swagger-ui .model-toggle::after,
@@ -15,7 +15,7 @@ $content-width: 60rem;  // Much wider than default 50rem for Swagger UI
   background-image: none !important;
   background-color: transparent !important;
   background-size: 0 !important;
-  content: "" !important;
+  content: '' !important;
   width: 0 !important;
   height: 0 !important;
   display: none !important;
@@ -29,7 +29,7 @@ $content-width: 60rem;  // Much wider than default 50rem for Swagger UI
 .swagger-ui .model-toggle.collapsed::before,
 .swagger-ui span.model-toggle.collapsed::before,
 .swagger-ui .model-box-control .model-toggle.collapsed::before {
-  content: "►" !important;
+  content: '►' !important;
   color: #8b949e !important;
   display: inline !important;
   font-size: 12px !important;
@@ -39,7 +39,7 @@ $content-width: 60rem;  // Much wider than default 50rem for Swagger UI
 .swagger-ui .model-toggle:not(.collapsed)::before,
 .swagger-ui span.model-toggle:not(.collapsed)::before,
 .swagger-ui .model-box-control .model-toggle:not(.collapsed)::before {
-  content: "▼" !important;
+  content: '▼' !important;
   color: #8b949e !important;
   display: inline !important;
   font-size: 12px !important;
@@ -48,7 +48,7 @@ $content-width: 60rem;  // Much wider than default 50rem for Swagger UI
 
 // Style Swagger UI tab headers with dark background
 .swagger-ui .opblock-section-header {
-  background: hsla(0, 0%, 0%, 0.8) !important;  // Semi-transparent dark background
+  background: hsla(0, 0%, 0%, 0.8) !important; // Semi-transparent dark background
 }
 
 // Style scheme container for better layout

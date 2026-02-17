@@ -7,15 +7,17 @@ permalink: /docs/guides/installation/
 ---
 
 # Installation
+
 {: .no_toc }
 
 This guide covers different methods for installing and deploying Zoneweaver frontend in various environments.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 
@@ -58,6 +60,7 @@ svcs zoneweaver
 ```
 
 Package installation includes:
+
 - Zoneweaver application files
 - Configuration templates
 - SMF service manifest
@@ -75,7 +78,7 @@ cd zoneweaver
 # Install backend dependencies
 npm install
 
-# Install frontend dependencies  
+# Install frontend dependencies
 cd web
 npm install
 cd ..
@@ -109,6 +112,7 @@ npm run dev
 ```
 
 Development mode features:
+
 - Auto-restart on file changes
 - Detailed error logging
 - Hot reload for frontend changes
@@ -118,11 +122,13 @@ Development mode features:
 ### Configuration File Location
 
 **Package Installation:**
+
 ```bash
 /etc/zoneweaver/config.yaml
 ```
 
 **Source Installation:**
+
 ```bash
 ./config/config.yaml
 ```
@@ -136,7 +142,7 @@ server:
   port: 3443
   ssl:
     enabled: true
-    generate_ssl: true  # Auto-generate for testing
+    generate_ssl: true # Auto-generate for testing
     key: /etc/zoneweaver/ssl/key.pem
     cert: /etc/zoneweaver/ssl/cert.pem
 
@@ -152,10 +158,10 @@ database:
 
 # Security settings
 security:
-  jwt_secret: "CHANGE-THIS-TO-A-SECURE-RANDOM-STRING"
+  jwt_secret: 'CHANGE-THIS-TO-A-SECURE-RANDOM-STRING'
   bcrypt_rounds: 10
   sessionTimeout: 24
-  allow_new_organizations: true  # Disable after setup
+  allow_new_organizations: true # Disable after setup
 ```
 
 ### SSL Certificate Setup
@@ -163,16 +169,18 @@ security:
 #### Auto-Generated Certificates (Development)
 
 For testing and development:
+
 ```yaml
 server:
   ssl:
     enabled: true
-    generate_ssl: true  # Zoneweaver generates self-signed cert
+    generate_ssl: true # Zoneweaver generates self-signed cert
 ```
 
 #### Production Certificates
 
 For production deployments:
+
 ```yaml
 server:
   ssl:
@@ -183,6 +191,7 @@ server:
 ```
 
 Generate certificates:
+
 ```bash
 # Create certificate directory
 mkdir -p /etc/ssl/zoneweaver
@@ -213,7 +222,7 @@ chmod 644 /etc/ssl/zoneweaver/zoneweaver.crt
 # Enable service
 svcadm enable zoneweaver
 
-# Disable service  
+# Disable service
 svcadm disable zoneweaver
 
 # Restart service
@@ -250,6 +259,7 @@ WantedBy=multi-user.target
 ```
 
 Service management:
+
 ```bash
 # Enable and start service
 systemctl enable --now zoneweaver
@@ -290,6 +300,7 @@ Zoneweaver uses SQLite for user/organization data:
 ### Automatic Setup
 
 Database is created automatically on first run with:
+
 - User tables
 - Organization tables
 - Server configuration tables
@@ -298,6 +309,7 @@ Database is created automatically on first run with:
 ### Manual Database Initialization
 
 If needed, initialize database manually:
+
 ```bash
 # Navigate to application directory
 cd /opt/zoneweaver
@@ -347,10 +359,10 @@ firewall-cmd --reload
 server {
     listen 443 ssl http2;
     server_name zoneweaver.example.com;
-    
+
     ssl_certificate /etc/ssl/certs/zoneweaver.crt;
     ssl_certificate_key /etc/ssl/private/zoneweaver.key;
-    
+
     location / {
         proxy_pass https://127.0.0.1:3443;
         proxy_http_version 1.1;
@@ -370,11 +382,11 @@ server {
 ```apache
 <VirtualHost *:443>
     ServerName zoneweaver.example.com
-    
+
     SSLEngine on
     SSLCertificateFile /etc/ssl/certs/zoneweaver.crt
     SSLCertificateKeyFile /etc/ssl/private/zoneweaver.key
-    
+
     ProxyPreserveHost On
     ProxyRequests Off
     ProxyPass / https://127.0.0.1:3443/
@@ -395,23 +407,26 @@ server {
 ### Security Hardening
 
 1. **Disable Organization Creation**:
+
    ```yaml
    security:
      allow_new_organizations: false
    ```
 
 2. **Strong JWT Secret**:
+
    ```bash
    # Generate secure random string
    openssl rand -hex 32
    ```
 
 3. **Regular Updates**:
+
    ```bash
    # Package installation
    pkg update zoneweaver
-   
-   # Source installation  
+
+   # Source installation
    git pull origin main
    npm install
    npm run build
@@ -422,6 +437,7 @@ server {
 ### Installation Issues
 
 **Package Not Found**
+
 ```bash
 # Update package repository
 pkg refresh
@@ -429,6 +445,7 @@ pkg search zoneweaver
 ```
 
 **Node.js Version Issues**
+
 ```bash
 # Check Node.js version
 node --version
@@ -438,6 +455,7 @@ pkg install nodejs-18
 ```
 
 **Permission Denied**
+
 ```bash
 # Fix file permissions
 chown -R zoneweaver:zoneweaver /opt/zoneweaver
@@ -447,6 +465,7 @@ chmod +x /opt/zoneweaver/index.js
 ### Service Issues
 
 **Service Won't Start**
+
 ```bash
 # Check service status and logs
 svcs -xv zoneweaver
@@ -454,6 +473,7 @@ tail -f /var/svc/log/application-zoneweaver:default.log
 ```
 
 **Port Already in Use**
+
 ```bash
 # Find process using port 3443
 lsof -i :3443
@@ -461,6 +481,7 @@ netstat -tulpn | grep 3443
 ```
 
 **SSL Certificate Errors**
+
 ```bash
 # Verify certificate files exist and have correct permissions
 ls -la /etc/zoneweaver/ssl/

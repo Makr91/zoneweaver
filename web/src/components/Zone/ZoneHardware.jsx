@@ -43,7 +43,9 @@ const ZoneHardware = ({ zoneDetails }) => {
       );
     }
 
-    return <span className="has-text-weight-semibold has-text-success">Auto</span>;
+    return (
+      <span className="has-text-weight-semibold has-text-success">Auto</span>
+    );
   };
 
   return (
@@ -166,9 +168,7 @@ const ZoneHardware = ({ zoneDetails }) => {
               <td className="px-3 py-2">
                 <strong>VNC Port</strong>
               </td>
-              <td className="px-3 py-2">
-                {renderVncPort()}
-              </td>
+              <td className="px-3 py-2">{renderVncPort()}</td>
             </tr>
             <tr>
               <td className="px-3 py-2">

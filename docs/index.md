@@ -2,11 +2,12 @@
 title: Home
 layout: home
 nav_order: 1
-description: "Zoneweaver Documentation - Zone Hypervisor Management Frontend"
+description: 'Zoneweaver Documentation - Zone Hypervisor Management Frontend'
 permalink: /
 ---
 
 # Zoneweaver Documentation
+
 {: .fs-9 }
 
 React-based web frontend for Zoneweaver zone hypervisor management. Provides user management, organization control, and integration with Zoneweaver API for managing Bhyve virtual machines on OmniOS/illumos.
@@ -55,7 +56,7 @@ graph TD
 The Zoneweaver frontend provides comprehensive documentation:
 
 - **[API Reference](docs/api/)** - Frontend API for user/organization management
-- **[Getting Started Guide](docs/guides/getting-started/)** - Step-by-step setup instructions  
+- **[Getting Started Guide](docs/guides/getting-started/)** - Step-by-step setup instructions
 - **[Installation Guide](docs/guides/installation/)** - Installation and deployment
 - **[User Guide](docs/user-guide/)** - Web interface usage and features
 - **[Backend Integration](docs/guides/backend-integration/)** - Connecting to Zoneweaver API API
