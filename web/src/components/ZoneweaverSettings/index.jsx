@@ -479,7 +479,8 @@ const ZoneweaverSettings = () => {
                     Some settings may require users to refresh their browsers
                   </li>
                   <li>
-                    Performance settings affect resource usage and responsiveness
+                    Performance settings affect resource usage and
+                    responsiveness
                   </li>
                   <li>
                     Security settings impact user sessions and authentication
