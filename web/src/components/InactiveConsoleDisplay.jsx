@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 
 const InactiveConsoleDisplay = ({
@@ -130,5 +131,24 @@ const InactiveConsoleDisplay = ({
     </div>
   </div>
 );
+
+InactiveConsoleDisplay.propTypes = {
+  selectedZone: PropTypes.string,
+  currentServer: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }),
+  loading: PropTypes.bool,
+  loadingVnc: PropTypes.bool,
+  setLoading: PropTypes.func,
+  setLoadingVnc: PropTypes.func,
+  setError: PropTypes.func,
+  setZoneDetails: PropTypes.func,
+  setActiveConsoleType: PropTypes.func,
+  startVncSession: PropTypes.func,
+  waitForVncSessionReady: PropTypes.func,
+  startZloginSessionExplicitly: PropTypes.func,
+};
 
 export default React.memo(InactiveConsoleDisplay);

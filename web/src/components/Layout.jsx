@@ -89,7 +89,15 @@ const LayoutContent = () => {
     }
 
     sessionStorage.setItem(sessionKey, "true");
-  }, [isAuthenticated, servers.length]);
+  }, [
+    isAuthenticated,
+    servers,
+    searchParams,
+    currentServer,
+    selectServer,
+    currentZone,
+    selectZone,
+  ]);
 
   const handleResize = (e, { size }) => {
     userSettings.setSidebarWidth(size.width);

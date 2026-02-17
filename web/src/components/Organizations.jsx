@@ -123,9 +123,7 @@ const Organizations = () => {
                   </span>
                 </td>
                 <td>
-                  <span className="tag is-warning">
-                    {org.admin_users || 0}
-                  </span>
+                  <span className="tag is-warning">{org.admin_users || 0}</span>
                 </td>
                 <td>
                   <span

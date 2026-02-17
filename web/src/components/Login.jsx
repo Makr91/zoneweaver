@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
@@ -31,16 +31,9 @@ const Login = () => {
   }, [isAuthenticated, navigate]);
 
   /**
-   * Load available authentication methods on component mount
-   */
-  useEffect(() => {
-    loadAuthMethods();
-  }, []);
-
-  /**
    * Load available authentication methods
    */
-  const loadAuthMethods = async () => {
+  const loadAuthMethods = useCallback(async () => {
     try {
       setMethodsLoading(true);
       const result = await getAuthMethods();
@@ -77,7 +70,14 @@ const Login = () => {
     } finally {
       setMethodsLoading(false);
     }
-  };
+  }, [getAuthMethods]);
+
+  /**
+   * Load available authentication methods on component mount
+   */
+  useEffect(() => {
+    loadAuthMethods();
+  }, [loadAuthMethods]);
 
   /**
    * Handle auth method selection change
@@ -149,6 +149,17 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  const getAuthMethodHelpText = () => {
+    if (authMethod === "ldap") {
+      return "Use your directory credentials";
+    }
+    if (authMethod.startsWith("oidc-")) {
+      return "Sign in through your identity provider";
+    }
+    return "Use your local account credentials";
+  };
+
   return (
     <section className="hero is-fullheight is-fullwidth">
       <Helmet>
@@ -179,13 +190,14 @@ const Login = () => {
                 {!authMethod.startsWith("oidc-") && (
                   <>
                     <div className="field mt-5">
-                      <label className="label">
+                      <label className="label" htmlFor="identifier">
                         {authMethod === "ldap"
                           ? "Username"
                           : "Email or Username"}
                       </label>
                       <div className="controls">
                         <input
+                          id="identifier"
                           type="text"
                           className="input"
                           name="identifier"
@@ -202,9 +214,12 @@ const Login = () => {
                       </div>
                     </div>
                     <div className="field mt-5">
-                      <label className="label">Password</label>
+                      <label className="label" htmlFor="password">
+                        Password
+                      </label>
                       <div className="controls">
                         <input
+                          id="password"
                           type="password"
                           name="password"
                           autoComplete="current-password"
@@ -237,10 +252,13 @@ const Login = () => {
                 {/* Authentication Method Selector - Show only if multiple methods available */}
                 {!methodsLoading && authMethods.length > 1 && (
                   <div className="field mt-5">
-                    <label className="label">Authentication Method</label>
+                    <label className="label" htmlFor="authMethod">
+                      Authentication Method
+                    </label>
                     <div className="control">
                       <div className="select is-fullwidth">
                         <select
+                          id="authMethod"
                           value={authMethod}
                           onChange={(e) =>
                             handleAuthMethodChange(e.target.value)
@@ -256,11 +274,7 @@ const Login = () => {
                       </div>
                     </div>
                     <p className="help is-size-7 has-text-grey">
-                      {authMethod === "ldap"
-                        ? "Use your directory credentials"
-                        : authMethod.startsWith("oidc-")
-                          ? "Sign in through your identity provider"
-                          : "Use your local account credentials"}
+                      {getAuthMethodHelpText()}
                     </p>
                   </div>
                 )}
@@ -278,7 +292,7 @@ const Login = () => {
                 </div>
                 <div className="has-text-centered mt-3">
                   <p>
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <a href="/register" className="has-text-link">
                       Register here
                     </a>

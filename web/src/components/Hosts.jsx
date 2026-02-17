@@ -1,7 +1,6 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useState } from "react";
 
-import { useAuth } from "../contexts/AuthContext";
 import { useServers } from "../contexts/ServerContext";
 
 import HostHeader from "./Host/HostHeader";
@@ -24,7 +23,6 @@ import ZoneManager from "./Host/ZoneManager";
  * No server selection sidebar - uses global currentServer from ServerContext.
  */
 const Hosts = () => {
-  const { user } = useAuth();
   const { currentServer, servers, startZone, stopZone, restartZone } =
     useServers();
 
@@ -170,8 +168,8 @@ const Hosts = () => {
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
-                  You haven't added any Zoneweaver API Servers yet. Add a server
-                  to start managing hosts and zones.
+                  You haven&apos;t added any Zoneweaver API Servers yet. Add a
+                  server to start managing hosts and zones.
                 </p>
                 <div className="mt-4">
                   <a
