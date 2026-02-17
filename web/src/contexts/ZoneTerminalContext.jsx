@@ -56,7 +56,10 @@ export const ZoneTerminalProvider = ({ children }) => {
         webglAddonsMap.current.set(zoneKey, new WebglAddon());
         console.log(`🔧 ZONE ADDONS: WebGL available for ${zoneKey}`);
       } catch (error) {
-        console.log(`🔧 ZONE ADDONS: WebGL not supported for ${zoneKey}`);
+        console.log(
+          `🔧 ZONE ADDONS: WebGL not supported for ${zoneKey}`,
+          error
+        );
         webglAddonsMap.current.set(zoneKey, null);
       }
     }

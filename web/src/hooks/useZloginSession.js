@@ -46,6 +46,7 @@ export const useZloginSession = (
           message: `Failed to start zlogin console: ${result.message}`,
         };
       } catch (error) {
+        console.error("ZLOGIN CONSOLE: Error starting:", error);
         return { success: false, message: "Error starting zlogin console." };
       }
     },

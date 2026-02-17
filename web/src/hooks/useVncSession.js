@@ -16,6 +16,8 @@ export const useVncSession = (
   previewVncRef,
   modalVncRef
 ) => {
+  void currentZone;
+
   const [vncSession, setVncSession] = useState(null);
   const [loadingVnc, setLoadingVnc] = useState(false);
   const [showVncConsole, setShowVncConsole] = useState(false);
@@ -90,6 +92,7 @@ export const useVncSession = (
             };
           }
         } catch (error) {
+          void error;
           // Ignore error and continue polling
         }
 
@@ -151,6 +154,7 @@ export const useVncSession = (
           errorMsg = `Failed to start VNC console for ${zoneName}: ${result.message}`;
         }
       } catch (error) {
+        console.error("VNC CONSOLE: Error starting:", error);
         errorMsg = `Error starting VNC console for ${zoneName}`;
       } finally {
         setLoadingVnc(false);
@@ -196,6 +200,7 @@ export const useVncSession = (
           result.message = `Failed to kill VNC session: ${apiResult.message}`;
         }
       } catch (error) {
+        console.error("VNC KILL: Error:", error);
         result.message = "Error killing VNC session.";
       } finally {
         setKillInProgress(false);
@@ -365,6 +370,7 @@ export const useVncSession = (
             }
           }
         } catch (error) {
+          void error;
           // Ignore error and continue polling
         }
 

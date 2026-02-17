@@ -99,52 +99,56 @@ const Hosts = () => {
     }
 
     try {
-      let result;
-      const zones = zoneName
-        ? [zoneName]
-        : action === "startAll"
-          ? serverStats.allzones?.filter(
-              (zone) => !serverStats.runningzones?.includes(zone)
-            )
-          : action === "stopAll"
-            ? serverStats.runningzones
-            : [];
+      let zonesToProcess;
+      if (zoneName) {
+        zonesToProcess = [zoneName];
+      } else if (action === "startAll") {
+        zonesToProcess =
+          serverStats.allzones?.filter(
+            (zone) => !serverStats.runningzones?.includes(zone)
+          ) || [];
+      } else if (action === "stopAll") {
+        zonesToProcess = serverStats.runningzones || [];
+      } else {
+        zonesToProcess = [];
+      }
 
-      for (const zone of zones || []) {
+      const zoneActionPromises = zonesToProcess.map((zone) => {
         switch (action) {
           case "start":
           case "startAll":
-            result = await startZone(
+            return startZone(
               currentServer.hostname,
               currentServer.port,
               currentServer.protocol,
               zone
             );
-            break;
           case "stop":
           case "stopAll":
-            result = await stopZone(
+            return stopZone(
               currentServer.hostname,
               currentServer.port,
               currentServer.protocol,
               zone
             );
-            break;
           case "restart":
-            result = await restartZone(
+            return restartZone(
               currentServer.hostname,
               currentServer.port,
               currentServer.protocol,
               zone
             );
-            break;
+          default:
+            return Promise.resolve();
         }
-      }
+      });
+
+      await Promise.all(zoneActionPromises);
 
       // Refresh data after action
       setTimeout(() => loadHostData(currentServer), 2000);
-    } catch (error) {
-      console.error(`Error performing zone action ${action}:`, error);
+    } catch (err) {
+      console.error(`Error performing zone action ${action}:`, err);
     }
   };
 

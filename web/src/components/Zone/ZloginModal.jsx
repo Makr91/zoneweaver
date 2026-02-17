@@ -127,6 +127,7 @@ const ZloginModal = ({
                     setError("Failed to get active sessions");
                   }
                 } catch (error) {
+                  console.error("ZLOGIN MODAL: Error killing session:", error);
                   setError("Error killing zlogin session");
                 } finally {
                   setLoading(false);

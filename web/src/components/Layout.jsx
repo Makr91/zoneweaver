@@ -100,6 +100,7 @@ const LayoutContent = () => {
   ]);
 
   const handleResize = (e, { size }) => {
+    void e;
     userSettings.setSidebarWidth(size.width);
     if (size.width <= 38 && !userSettings.sidebarMinimized) {
       userSettings.setSidebarMinimized(true);
