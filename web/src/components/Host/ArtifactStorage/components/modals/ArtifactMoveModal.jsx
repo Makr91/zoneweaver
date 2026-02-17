@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -76,9 +77,10 @@ const ArtifactMoveModal = ({
       )}
 
       <div className="field">
-        <label className="label">Artifact</label>
+        <label htmlFor="move-artifact-name" className="label">Artifact</label>
         <div className="control">
           <input
+            id="move-artifact-name"
             className="input"
             type="text"
             value={artifact.filename}
@@ -88,9 +90,10 @@ const ArtifactMoveModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Current Storage Location</label>
+        <label htmlFor="move-current-location" className="label">Current Storage Location</label>
         <div className="control">
           <input
+            id="move-current-location"
             className="input"
             type="text"
             value={`${artifact.storage_location.name} (${artifact.storage_location.path})`}
@@ -100,10 +103,11 @@ const ArtifactMoveModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Destination Storage Location</label>
+        <label htmlFor="move-destination-location" className="label">Destination Storage Location</label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="move-destination-location"
               value={destinationStoragePathId}
               onChange={(e) => setDestinationStoragePathId(e.target.value)}
               disabled={loading}
@@ -120,6 +124,15 @@ const ArtifactMoveModal = ({
       </div>
     </FormModal>
   );
+};
+
+ArtifactMoveModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  artifact: PropTypes.object.isRequired,
+  storagePaths: PropTypes.array.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default ArtifactMoveModal;

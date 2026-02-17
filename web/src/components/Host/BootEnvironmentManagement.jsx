@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -243,7 +243,9 @@ const BootEnvironmentManagement = ({ server }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label htmlFor="be-filter-name" className="label">Filter by Name</label>
+              <label htmlFor="be-filter-name" className="label">
+                Filter by Name
+              </label>
               <div className="control">
                 <input
                   id="be-filter-name"
@@ -258,7 +260,9 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label htmlFor="be-filter-status" className="label">Filter by Status</label>
+              <label htmlFor="be-filter-status" className="label">
+                Filter by Status
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
@@ -315,7 +319,9 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <span className="label" aria-hidden="true">&nbsp;</span>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button is-info"
@@ -332,7 +338,9 @@ const BootEnvironmentManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <span className="label" aria-hidden="true">&nbsp;</span>
+              <span className="label" aria-hidden="true">
+                &nbsp;
+              </span>
               <div className="control">
                 <button
                   className="button"

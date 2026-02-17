@@ -446,8 +446,9 @@ const Dashboard = () => {
                 </div>
 
                 <div className="column is-3">
-                  <div
-                    className={`box has-text-centered ${summary.totalIssues > 0 ? "is-clickable" : ""}`}
+                  <button
+                    type="button"
+                    className={`box has-text-centered button is-ghost p-4 ${summary.totalIssues > 0 ? "is-clickable" : ""}`}
                     onClick={() => {
                       if (summary.totalIssues > 0) {
                         setShowHealthModal(true);
@@ -456,6 +457,8 @@ const Dashboard = () => {
                     title={
                       summary.totalIssues > 0 ? "Click to view details" : ""
                     }
+                    style={{ width: "100%", border: "none" }}
+                    disabled={summary.totalIssues === 0}
                   >
                     <div className="heading">Health Status</div>
                     <div className="title is-2 has-text-success">
@@ -481,7 +484,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 </div>
               </div>
             )}

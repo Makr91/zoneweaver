@@ -1,6 +1,7 @@
 import { FileManager } from "@cubone/react-file-manager";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import "@cubone/react-file-manager/dist/style.css";
+import PropTypes from "prop-types";
 
 import { useAuth } from "../../../contexts/AuthContext";
 import { useServers } from "../../../contexts/ServerContext";
@@ -661,6 +662,10 @@ const EnhancedFileManager = ({ server }) => {
       )}
     </div>
   );
+};
+
+EnhancedFileManager.propTypes = {
+  server: PropTypes.object,
 };
 
 export default EnhancedFileManager;

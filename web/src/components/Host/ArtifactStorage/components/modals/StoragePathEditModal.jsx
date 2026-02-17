@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -109,9 +110,10 @@ const StoragePathEditModal = ({
       showCancelButton
     >
       <div className="field">
-        <label className="label">Name</label>
+        <label htmlFor="edit-storage-path-name" className="label">Name</label>
         <div className="control">
           <input
+            id="edit-storage-path-name"
             className={`input ${errors.name ? "is-danger" : ""}`}
             type="text"
             placeholder="e.g., Primary ISO Storage"
@@ -126,9 +128,10 @@ const StoragePathEditModal = ({
 
       {/* Read-only fields */}
       <div className="field">
-        <label className="label">Path</label>
+        <label htmlFor="edit-storage-path-path" className="label">Path</label>
         <div className="control">
           <input
+            id="edit-storage-path-path"
             className="input"
             type="text"
             value={storagePath.path}
@@ -140,10 +143,10 @@ const StoragePathEditModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Type</label>
+        <label htmlFor="edit-storage-path-type" className="label">Type</label>
         <div className="control">
           <div className="select is-fullwidth">
-            <select value={storagePath.type} disabled>
+            <select id="edit-storage-path-type" value={storagePath.type} disabled>
               <option value="iso">ISO Files</option>
               <option value="image">VM Images</option>
             </select>
@@ -220,6 +223,14 @@ const StoragePathEditModal = ({
       )}
     </FormModal>
   );
+};
+
+StoragePathEditModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  storagePath: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default StoragePathEditModal;

@@ -147,7 +147,11 @@ const StoragePathTable = ({
                       className="has-text-weight-bold is-clickable has-text-link button is-ghost p-0"
                       onClick={() => onNameClick(storagePath)}
                       title={`View artifacts in ${storagePath.name} (${storagePath.file_count || 0} files)`}
-                      style={{ cursor: "pointer", border: "none", background: "none" }}
+                      style={{
+                        cursor: "pointer",
+                        border: "none",
+                        background: "none",
+                      }}
                     >
                       {storagePath.name}
                       <span className="icon is-small ml-1">

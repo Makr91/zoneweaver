@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -326,10 +327,11 @@ const ArtifactUploadModal = ({
       showCancelButton
     >
       <div className="field">
-        <label className="label">Storage Location</label>
+        <label htmlFor="upload-storage-location" className="label">Storage Location</label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="upload-storage-location"
               value={formData.storage_path_id}
               onChange={(e) =>
                 handleInputChange("storage_path_id", e.target.value)
@@ -353,7 +355,7 @@ const ArtifactUploadModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Files</label>
+        <span className="label">Files</span>
         <div
           className={`file is-boxed ${dragOver ? "is-active" : ""} ${errors.files ? "has-background-danger-light" : ""}`}
           onDragOver={handleDragOver}
@@ -390,9 +392,9 @@ const ArtifactUploadModal = ({
       {/* Selected Files List */}
       {selectedFiles.length > 0 && (
         <div className="field">
-          <label className="label">
+          <span className="label">
             Selected Files ({selectedFiles.length})
-          </label>
+          </span>
           <div className="box">
             {selectedFiles.map((file, index) => {
               const progress = uploadProgress[file.name];
@@ -476,7 +478,7 @@ const ArtifactUploadModal = ({
       )}
 
       <div className="field">
-        <label className="label">Checksum (Optional)</label>
+        <span className="label">Checksum (Optional)</span>
         <div className="field has-addons">
           <div className="control is-expanded">
             <input
@@ -536,6 +538,14 @@ const ArtifactUploadModal = ({
       )}
     </FormModal>
   );
+};
+
+ArtifactUploadModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  storagePaths: PropTypes.array.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default ArtifactUploadModal;

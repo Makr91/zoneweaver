@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import FormModal from "../../../../common/FormModal";
@@ -188,9 +189,10 @@ const ArtifactDownloadModal = ({
       showCancelButton
     >
       <div className="field">
-        <label className="label">URL</label>
+        <label htmlFor="download-url" className="label">URL</label>
         <div className="control">
           <input
+            id="download-url"
             className={`input ${errors.url ? "is-danger" : ""}`}
             type="url"
             placeholder="https://example.com/file.iso"
@@ -204,10 +206,11 @@ const ArtifactDownloadModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Storage Location</label>
+        <label htmlFor="download-storage-location" className="label">Storage Location</label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="download-storage-location"
               value={formData.storage_path_id}
               onChange={(e) =>
                 handleInputChange("storage_path_id", e.target.value)
@@ -231,9 +234,10 @@ const ArtifactDownloadModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Filename (Optional)</label>
+        <label htmlFor="download-filename" className="label">Filename (Optional)</label>
         <div className="control">
           <input
+            id="download-filename"
             className="input"
             type="text"
             placeholder="Leave blank to use original filename"
@@ -246,7 +250,7 @@ const ArtifactDownloadModal = ({
       </div>
 
       <div className="field">
-        <label className="label">Checksum (Optional)</label>
+        <span className="label">Checksum (Optional)</span>
         <div className="field has-addons">
           <div className="control is-expanded">
             <input
@@ -340,6 +344,14 @@ const ArtifactDownloadModal = ({
       </div>
     </FormModal>
   );
+};
+
+ArtifactDownloadModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  storagePaths: PropTypes.array.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default ArtifactDownloadModal;

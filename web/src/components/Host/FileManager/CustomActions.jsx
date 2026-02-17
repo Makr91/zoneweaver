@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import ArchiveModals from "./ArchiveModals";
 import { isTextFile, isArchiveFile } from "./FileManagerTransforms";
@@ -414,6 +415,17 @@ const CustomActions = ({
       )}
     </>
   );
+};
+
+CustomActions.propTypes = {
+  api: PropTypes.object.isRequired,
+  currentPath: PropTypes.string.isRequired,
+  files: PropTypes.array.isRequired,
+  loadFiles: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  setIsLoading: PropTypes.func.isRequired,
+  setError: PropTypes.func.isRequired,
+  permissions: PropTypes.object.isRequired,
 };
 
 export default CustomActions;

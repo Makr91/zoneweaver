@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import FormModal from "../../common/FormModal";
 
@@ -120,9 +121,10 @@ const CreateArchiveModal = ({
 
       {/* Archive name */}
       <div className="field">
-        <label className="label">Archive Name</label>
+        <label htmlFor="archive-name" className="label">Archive Name</label>
         <div className="control">
           <input
+            id="archive-name"
             className="input"
             type="text"
             value={archiveName}
@@ -138,10 +140,11 @@ const CreateArchiveModal = ({
 
       {/* Format selection */}
       <div className="field">
-        <label className="label">Archive Format</label>
+        <label htmlFor="archive-format" className="label">Archive Format</label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="archive-format"
               value={format}
               onChange={(e) => handleFormatChange(e.target.value)}
             >
@@ -157,9 +160,10 @@ const CreateArchiveModal = ({
 
       {/* Destination path */}
       <div className="field">
-        <label className="label">Destination Directory</label>
+        <label htmlFor="archive-destination" className="label">Destination Directory</label>
         <div className="control">
           <input
+            id="archive-destination"
             className="input"
             type="text"
             value={destination}
@@ -172,6 +176,15 @@ const CreateArchiveModal = ({
       </div>
     </FormModal>
   );
+};
+
+CreateArchiveModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  selectedFiles: PropTypes.array.isRequired,
+  currentPath: PropTypes.string.isRequired,
+  api: PropTypes.object.isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 /**
@@ -269,9 +282,10 @@ const ExtractArchiveModal = ({
 
       {/* Destination path */}
       <div className="field">
-        <label className="label">Extract To Directory</label>
+        <label htmlFor="extract-destination" className="label">Extract To Directory</label>
         <div className="control">
           <input
+            id="extract-destination"
             className="input"
             type="text"
             value={destination}
@@ -287,7 +301,7 @@ const ExtractArchiveModal = ({
 
       {/* Quick destination options */}
       <div className="field">
-        <label className="label">Quick Options</label>
+        <span className="label">Quick Options</span>
         <div className="buttons">
           <button
             type="button"
@@ -314,6 +328,15 @@ const ExtractArchiveModal = ({
       </div>
     </FormModal>
   );
+};
+
+ExtractArchiveModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  archiveFile: PropTypes.object,
+  currentPath: PropTypes.string.isRequired,
+  api: PropTypes.object.isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 /**
@@ -354,5 +377,17 @@ const ArchiveModals = ({
     )}
   </>
 );
+
+ArchiveModals.propTypes = {
+  showCreateModal: PropTypes.bool.isRequired,
+  showExtractModal: PropTypes.bool.isRequired,
+  onCloseCreate: PropTypes.func.isRequired,
+  onCloseExtract: PropTypes.func.isRequired,
+  selectedFiles: PropTypes.array.isRequired,
+  archiveFile: PropTypes.object,
+  currentPath: PropTypes.string.isRequired,
+  api: PropTypes.object.isRequired,
+  onArchiveSuccess: PropTypes.func.isRequired,
+};
 
 export default ArchiveModals;

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -187,7 +187,9 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
       loading={creating}
     >
       <div className="field">
-        <label htmlFor="bridge-name" className="label">Bridge Name *</label>
+        <label htmlFor="bridge-name" className="label">
+          Bridge Name *
+        </label>
         <div className="control">
           <input
             id="bridge-name"
@@ -209,7 +211,9 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label htmlFor="bridge-protection" className="label">Protection</label>
+            <label htmlFor="bridge-protection" className="label">
+              Protection
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
@@ -230,7 +234,9 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
         <div className="column">
           <div className="field">
-            <label htmlFor="bridge-priority" className="label">Priority</label>
+            <label htmlFor="bridge-priority" className="label">
+              Priority
+            </label>
             <div className="control">
               <input
                 id="bridge-priority"
@@ -251,7 +257,9 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label htmlFor="bridge-max-age" className="label">Max Age (seconds)</label>
+            <label htmlFor="bridge-max-age" className="label">
+              Max Age (seconds)
+            </label>
             <div className="control">
               <input
                 id="bridge-max-age"
@@ -269,7 +277,9 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
         <div className="column">
           <div className="field">
-            <label htmlFor="bridge-hello-time" className="label">Hello Time (seconds)</label>
+            <label htmlFor="bridge-hello-time" className="label">
+              Hello Time (seconds)
+            </label>
             <div className="control">
               <input
                 id="bridge-hello-time"
@@ -289,7 +299,9 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
         <div className="column">
           <div className="field">
-            <label htmlFor="bridge-forward-delay" className="label">Forward Delay (seconds)</label>
+            <label htmlFor="bridge-forward-delay" className="label">
+              Forward Delay (seconds)
+            </label>
             <div className="control">
               <input
                 id="bridge-forward-delay"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import FormModal from "../../common/FormModal";
 
@@ -209,10 +210,11 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* User selection */}
           <div className="field">
-            <label className="label">User</label>
+            <label htmlFor="file-props-user" className="label">User</label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="file-props-user"
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
                 >
@@ -233,10 +235,11 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* Group selection */}
           <div className="field">
-            <label className="label">Group</label>
+            <label htmlFor="file-props-group" className="label">Group</label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="file-props-group"
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
                 >
@@ -412,7 +415,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* Octal mode display/editor */}
           <div className="field">
-            <label className="label">
+            <label htmlFor="file-props-octal" className="label">
               <input
                 type="checkbox"
                 checked={useCustomMode}
@@ -422,6 +425,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
             </label>
             <div className="control">
               <input
+                id="file-props-octal"
                 className="input"
                 type="text"
                 value={useCustomMode ? customMode : currentOctal}
@@ -439,7 +443,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
           {/* Common permission presets */}
           <div className="field">
-            <label className="label">Quick Presets</label>
+            <span className="label">Quick Presets</span>
             <div className="buttons">
               <button
                 type="button"
@@ -562,6 +566,14 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       </div>
     </FormModal>
   );
+};
+
+FilePropertiesModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  file: PropTypes.object,
+  api: PropTypes.object.isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 export default FilePropertiesModal;
