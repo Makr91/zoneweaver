@@ -7,8 +7,8 @@ import NTPConfirmActionModal from "../NTPConfirmActionModal";
 import ConfigActions from "./Config/Actions";
 import ConfigEditor from "./Config/Editor";
 import ConfigInfo from "./Config/Info";
-import ConfigTemplates from "./Config/Templates";
 import ServerManagement from "./Config/ServerManagement";
+import ConfigTemplates from "./Config/Templates";
 
 const TimeSyncConfig = ({ server, onError }) => {
   const [configInfo, setConfigInfo] = useState(null);
@@ -176,9 +176,7 @@ const TimeSyncConfig = ({ server, onError }) => {
 
   const handleRemoveServer = (serverToRemove) => {
     // Remove from visual list
-    const updatedList = serverList.filter(
-      (srv) => srv !== serverToRemove
-    );
+    const updatedList = serverList.filter((srv) => srv !== serverToRemove);
     setServerList(updatedList);
 
     // Remove from config content
@@ -201,7 +199,7 @@ const TimeSyncConfig = ({ server, onError }) => {
 
   const handleServiceRestart = async () => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false };
     }
 
     if (!statusInfo?.service_details?.fmri) {
@@ -287,6 +285,16 @@ const TimeSyncConfig = ({ server, onError }) => {
     );
   }
 
+  const getServiceDescription = () => {
+    if (configInfo?.service === "ntp") {
+      return " Using traditional NTP service.";
+    }
+    if (configInfo?.service === "chrony") {
+      return " Using Chrony time synchronization.";
+    }
+    return " Service type will be detected automatically.";
+  };
+
   return (
     <div>
       <div className="mb-4">
@@ -294,11 +302,7 @@ const TimeSyncConfig = ({ server, onError }) => {
         <p className="content">
           Configure time synchronization settings on{" "}
           <strong>{server.hostname}</strong>.
-          {configInfo?.service === "ntp"
-            ? " Using traditional NTP service."
-            : configInfo?.service === "chrony"
-              ? " Using Chrony time synchronization."
-              : " Service type will be detected automatically."}
+          {getServiceDescription()}
         </p>
       </div>
 

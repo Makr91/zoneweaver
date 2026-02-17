@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -36,7 +37,19 @@ const TimeNTPManagement = ({ server }) => {
               key={section.key}
               className={activeSection === section.key ? "is-active" : ""}
             >
-              <a onClick={() => setActiveSection(section.key)}>
+              <a
+                href={`#${section.key}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveSection(section.key);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActiveSection(section.key);
+                  }
+                }}
+              >
                 <span className="icon is-small">
                   <i className={`fas ${section.icon}`} />
                 </span>
@@ -71,6 +84,14 @@ const TimeNTPManagement = ({ server }) => {
       </div>
     </div>
   );
+};
+
+TimeNTPManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
 };
 
 export default TimeNTPManagement;
