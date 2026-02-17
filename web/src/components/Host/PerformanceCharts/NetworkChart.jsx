@@ -1,4 +1,5 @@
 import { HighchartsReact } from "highcharts-react-official";
+
 import Highcharts from "../../Highcharts";
 
 const NetworkChart = ({

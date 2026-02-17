@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import ZloginActionsDropdown from "../ZloginActionsDropdown";
 import ZoneShell from "../ZoneShell";
 
@@ -32,6 +34,14 @@ const ZloginModal = ({
       <div
         className="modal-background"
         onClick={() => setShowZloginConsole(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setShowZloginConsole(false);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal"
       />
       <div
         className={
@@ -221,6 +231,37 @@ const ZloginModal = ({
       </div>
     </div>
   );
+};
+
+ZloginModal.propTypes = {
+  showZloginConsole: PropTypes.bool.isRequired,
+  setShowZloginConsole: PropTypes.func.isRequired,
+  isZloginFullScreen: PropTypes.bool.isRequired,
+  setIsZloginFullScreen: PropTypes.func.isRequired,
+  selectedZone: PropTypes.string,
+  handleZloginConsole: PropTypes.func.isRequired,
+  handleZloginModalPaste: PropTypes.func.isRequired,
+  user: PropTypes.shape({
+    role: PropTypes.string,
+  }),
+  zoneDetails: PropTypes.shape({
+    active_vnc_session: PropTypes.bool,
+  }),
+  setShowVncConsole: PropTypes.func.isRequired,
+  handleVncConsole: PropTypes.func.isRequired,
+  loadingVnc: PropTypes.bool.isRequired,
+  setLoading: PropTypes.func.isRequired,
+  makeZoneweaverAPIRequest: PropTypes.func.isRequired,
+  currentServer: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }),
+  forceZoneSessionCleanup: PropTypes.func.isRequired,
+  refreshZloginSessionStatus: PropTypes.func.isRequired,
+  setError: PropTypes.func.isRequired,
+  modalReadOnly: PropTypes.bool.isRequired,
+  setModalReadOnly: PropTypes.func.isRequired,
 };
 
 export default ZloginModal;

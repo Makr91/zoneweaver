@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const ZoneHardware = ({ zoneDetails }) => {
   if (
     !zoneDetails?.configuration ||
@@ -7,6 +9,42 @@ const ZoneHardware = ({ zoneDetails }) => {
   }
 
   const { configuration } = zoneDetails;
+
+  const renderStatusBadge = (
+    value,
+    trueCondition,
+    onLabel = "Enabled",
+    offLabel = "Disabled"
+  ) => (
+    <span
+      className={`has-text-weight-semibold ${value === trueCondition ? "has-text-success" : "has-text-danger"}`}
+    >
+      {value === trueCondition ? onLabel : offLabel}
+    </span>
+  );
+
+  const renderVncPort = () => {
+    if (zoneDetails.vnc_session_info?.web_port) {
+      return (
+        <span className="has-text-grey is-family-monospace">
+          {zoneDetails.vnc_session_info.web_port}
+        </span>
+      );
+    }
+
+    const configPort = configuration?.vnc?.port;
+    const infoPort = zoneDetails.zone_info?.vnc_port;
+
+    if (configPort || infoPort) {
+      return (
+        <span className="has-text-grey is-family-monospace">
+          {configPort || infoPort}
+        </span>
+      );
+    }
+
+    return <span className="has-text-weight-semibold has-text-success">Auto</span>;
+  };
 
   return (
     <div className="box mb-0 pt-0 pd-0">
@@ -30,11 +68,7 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>ACPI</strong>
               </td>
               <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${configuration.acpi === "true" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {configuration.acpi === "true" ? "Enabled" : "Disabled"}
-                </span>
+                {renderStatusBadge(configuration.acpi, "true")}
               </td>
             </tr>
             <tr>
@@ -46,11 +80,7 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>Auto Boot</strong>
               </td>
               <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${configuration.autoboot === "true" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {configuration.autoboot === "true" ? "Enabled" : "Disabled"}
-                </span>
+                {renderStatusBadge(configuration.autoboot, "true")}
               </td>
             </tr>
             <tr>
@@ -66,11 +96,7 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>UEFI Vars</strong>
               </td>
               <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${configuration.uefivars === "on" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {configuration.uefivars === "on" ? "On" : "Off"}
-                </span>
+                {renderStatusBadge(configuration.uefivars, "on", "On", "Off")}
               </td>
             </tr>
             <tr>
@@ -86,11 +112,7 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>xHCI</strong>
               </td>
               <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${configuration.xhci === "on" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {configuration.xhci === "on" ? "On" : "Off"}
-                </span>
+                {renderStatusBadge(configuration.xhci, "on", "On", "Off")}
               </td>
             </tr>
             <tr>
@@ -106,11 +128,7 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>RNG</strong>
               </td>
               <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${configuration.rng === "on" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {configuration.rng === "on" ? "On" : "Off"}
-                </span>
+                {renderStatusBadge(configuration.rng, "on", "On", "Off")}
               </td>
             </tr>
             <tr>
@@ -126,11 +144,12 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>Cloud Init</strong>
               </td>
               <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${configuration["cloud-init"] === "on" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {configuration["cloud-init"] === "on" ? "On" : "Off"}
-                </span>
+                {renderStatusBadge(
+                  configuration["cloud-init"],
+                  "on",
+                  "On",
+                  "Off"
+                )}
               </td>
             </tr>
             <tr>
@@ -148,20 +167,7 @@ const ZoneHardware = ({ zoneDetails }) => {
                 <strong>VNC Port</strong>
               </td>
               <td className="px-3 py-2">
-                {zoneDetails.vnc_session_info?.web_port ? (
-                  <span className="has-text-grey is-family-monospace">
-                    {zoneDetails.vnc_session_info.web_port}
-                  </span>
-                ) : configuration?.vnc?.port ||
-                  zoneDetails.zone_info?.vnc_port ? (
-                  <span className="has-text-grey is-family-monospace">
-                    {configuration.vnc?.port || zoneDetails.zone_info?.vnc_port}
-                  </span>
-                ) : (
-                  <span className="has-text-weight-semibold has-text-success">
-                    Auto
-                  </span>
-                )}
+                {renderVncPort()}
               </td>
             </tr>
             <tr>
@@ -181,6 +187,35 @@ const ZoneHardware = ({ zoneDetails }) => {
       </div>
     </div>
   );
+};
+
+ZoneHardware.propTypes = {
+  zoneDetails: PropTypes.shape({
+    configuration: PropTypes.shape({
+      ram: PropTypes.string,
+      acpi: PropTypes.string,
+      vcpus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      autoboot: PropTypes.string,
+      bootrom: PropTypes.string,
+      uefivars: PropTypes.string,
+      hostbridge: PropTypes.string,
+      xhci: PropTypes.string,
+      brand: PropTypes.string,
+      rng: PropTypes.string,
+      type: PropTypes.string,
+      "cloud-init": PropTypes.string,
+      vnc: PropTypes.shape({
+        port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      }),
+    }),
+    vnc_session_info: PropTypes.shape({
+      web_port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    zone_info: PropTypes.shape({
+      vnc_port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    zlogin_session: PropTypes.object,
+  }),
 };
 
 export default ZoneHardware;

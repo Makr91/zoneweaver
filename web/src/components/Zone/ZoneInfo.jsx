@@ -149,9 +149,9 @@ const ZoneInfo = ({
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`has-text-weight-semibold ${
-                      getHealthClass(monitoringHealth.status)
-                    }`}
+                    className={`has-text-weight-semibold ${getHealthClass(
+                      monitoringHealth.status
+                    )}`}
                   >
                     {monitoringHealth.status
                       ? monitoringHealth.status.charAt(0).toUpperCase() +
