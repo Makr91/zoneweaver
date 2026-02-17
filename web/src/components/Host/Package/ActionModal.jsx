@@ -1,6 +1,7 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
-import { FormModal } from "../common";
+import { FormModal } from "../../common";
 
 const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
   const [options, setOptions] = useState({
@@ -64,6 +65,16 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
 
   const actionDetails = getActionDetails();
 
+  const getSubmitVariant = () => {
+    if (actionDetails.buttonClass.includes("danger")) {
+      return "is-danger";
+    }
+    if (actionDetails.buttonClass.includes("success")) {
+      return "is-success";
+    }
+    return "is-info";
+  };
+
   return (
     <FormModal
       isOpen
@@ -72,13 +83,7 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
       title={actionDetails.title}
       icon={`fas ${actionDetails.icon}`}
       submitText={loading ? "Processing..." : actionDetails.title}
-      submitVariant={
-        actionDetails.buttonClass.includes("danger")
-          ? "is-danger"
-          : actionDetails.buttonClass.includes("success")
-            ? "is-success"
-            : "is-info"
-      }
+      submitVariant={getSubmitVariant()}
       loading={loading}
     >
       {/* Package Information */}
@@ -168,9 +173,12 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
 
         {/* Boot Environment Name */}
         <div className="field">
-          <label className="label">Boot Environment Name (Optional)</label>
+          <label className="label" htmlFor="beName">
+            Boot Environment Name (Optional)
+          </label>
           <div className="control">
             <input
+              id="beName"
               className="input"
               type="text"
               placeholder="Leave empty to use default"
@@ -186,6 +194,17 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
       </div>
     </FormModal>
   );
+};
+
+PackageActionModal.propTypes = {
+  package: PropTypes.shape({
+    name: PropTypes.string,
+    publisher: PropTypes.string,
+    version: PropTypes.string,
+  }).isRequired,
+  action: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
 };
 
 export default PackageActionModal;

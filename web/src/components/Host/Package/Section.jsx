@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
-import { useServers } from "../../contexts/ServerContext";
+import { useServers } from "../../../contexts/ServerContext";
 
-import PackageActionModal from "./PackageActionModal";
-import PackageDetailsModal from "./PackageDetailsModal";
-import PackageTable from "./PackageTable";
+import PackageActionModal from "./ActionModal";
+import PackageDetailsModal from "./DetailsModal";
+import PackageFilters from "./Filters";
+import PackageTable from "./Table";
 
 const PackageSection = ({ server, onError }) => {
   const [packages, setPackages] = useState([]);
@@ -25,22 +27,7 @@ const PackageSection = ({ server, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load packages on component mount and when filters change
-  useEffect(() => {
-    if (filters.searchQuery) {
-      searchPackages();
-    } else {
-      loadPackages();
-    }
-  }, [
-    server,
-    filters.pattern,
-    filters.publisher,
-    filters.status,
-    filters.showAll,
-  ]);
-
-  const loadPackages = async () => {
+  const loadPackages = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -99,9 +86,17 @@ const PackageSection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    onError,
+    filters.pattern,
+    filters.publisher,
+    filters.status,
+    filters.showAll,
+  ]);
 
-  const searchPackages = async () => {
+  const searchPackages = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest || !filters.searchQuery.trim()) {
       return;
     }
@@ -157,11 +152,20 @@ const PackageSection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, onError, filters.searchQuery]);
+
+  // Load packages on component mount and when filters change
+  useEffect(() => {
+    if (filters.searchQuery) {
+      searchPackages();
+    } else {
+      loadPackages();
+    }
+  }, [filters.searchQuery, loadPackages, searchPackages]);
 
   const handlePackageAction = async (packageName, action, options = {}) => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false, message: "Server not available" };
     }
 
     try {
@@ -286,163 +290,15 @@ const PackageSection = ({ server, onError }) => {
       </div>
 
       {/* Package Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label">Filter by Package Name</label>
-              <div className="control">
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="Enter package name pattern..."
-                  value={filters.pattern}
-                  onChange={(e) =>
-                    handleFilterChange("pattern", e.target.value)
-                  }
-                  disabled={isSearchMode}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label">Filter by Publisher</label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    value={filters.publisher}
-                    onChange={(e) =>
-                      handleFilterChange("publisher", e.target.value)
-                    }
-                    disabled={isSearchMode}
-                  >
-                    <option value="">All Publishers</option>
-                    <option value="omnios">omnios</option>
-                    <option value="extra.omnios">extra.omnios</option>
-                    <option value="ooce">ooce</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label">Filter by Status</label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    value={filters.status}
-                    onChange={(e) =>
-                      handleFilterChange("status", e.target.value)
-                    }
-                    disabled={isSearchMode}
-                  >
-                    <option value="">All Status</option>
-                    <option value="installed">Installed</option>
-                    <option value="frozen">Frozen</option>
-                    <option value="manual">Manual</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label">Show All</label>
-              <div className="control">
-                <label className="switch is-medium">
-                  <input
-                    type="checkbox"
-                    checked={filters.showAll}
-                    onChange={(e) =>
-                      handleFilterChange("showAll", e.target.checked)
-                    }
-                    disabled={isSearchMode}
-                  />
-                  <span className="check" />
-                  <span className="control-label">All Packages</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Search Row */}
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label">Search Available Packages</label>
-              <div className="control has-icons-right">
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="Search for packages..."
-                  value={filters.searchQuery}
-                  onChange={(e) =>
-                    handleFilterChange("searchQuery", e.target.value)
-                  }
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                />
-                <span className="icon is-small is-right">
-                  <i className="fas fa-search" />
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label">&nbsp;</label>
-              <div className="control">
-                <button
-                  className="button is-info"
-                  onClick={handleSearch}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-search" />
-                  </span>
-                  <span>Search</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label">&nbsp;</label>
-              <div className="control">
-                <button
-                  className="button is-info"
-                  onClick={loadPackages}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label">&nbsp;</label>
-              <div className="control">
-                <button
-                  className="button"
-                  onClick={clearFilters}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                  <span>Clear</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PackageFilters
+        filters={filters}
+        handleFilterChange={handleFilterChange}
+        handleSearch={handleSearch}
+        clearFilters={clearFilters}
+        isSearchMode={isSearchMode}
+        loading={loading}
+        loadPackages={loadPackages}
+      />
 
       {/* Packages Table */}
       <div className="box">
@@ -496,6 +352,11 @@ const PackageSection = ({ server, onError }) => {
       )}
     </div>
   );
+};
+
+PackageSection.propTypes = {
+  server: PropTypes.object.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default PackageSection;

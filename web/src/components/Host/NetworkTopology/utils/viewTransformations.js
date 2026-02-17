@@ -1,77 +1,29 @@
 /**
- * Apply view-specific transformations to modify topology data
- * IMPORTANT: Views should ONLY change visual emphasis, NEVER hide nodes
+ * Helper function to get VLAN color (imported from main utility)
  */
-export const applyViewTransformation = (topology, viewType, filters) => {
-  const { nodes, edges } = topology;
-
-  console.log(
-    "🔍 VIEW: Applying view transformation",
-    viewType,
-    "to",
-    nodes.length,
-    "nodes"
-  );
-
-  // ONLY apply node type filters if user explicitly unchecked them
-  // Default behavior: show ALL nodes
-  let filteredNodes = nodes.filter(
-    (node) => filters.nodeTypes[node.type] !== false
-  );
-
-  // Filter out unattached nodes if showUnattachedNodes is false (default)
-  if (!filters.showUnattachedNodes) {
-    // Find nodes that have at least one edge connection
-    const connectedNodeIds = new Set();
-    edges.forEach((edge) => {
-      connectedNodeIds.add(edge.source);
-      connectedNodeIds.add(edge.target);
-    });
-
-    const beforeCount = filteredNodes.length;
-    filteredNodes = filteredNodes.filter((node) =>
-      connectedNodeIds.has(node.id)
-    );
-    const afterCount = filteredNodes.length;
-
-    console.log(
-      "🔍 VIEW: Filtered out",
-      beforeCount - afterCount,
-      "unattached nodes"
-    );
+const getVlanColor = (vlanId) => {
+  if (!vlanId || vlanId === 0) {
+    return "#48c78e";
   }
 
-  console.log("🔍 VIEW: After filtering, have", filteredNodes.length, "nodes");
+  const colors = [
+    "#3273dc",
+    "#48c78e",
+    "#ffdd57",
+    "#f14668",
+    "#00d1b2",
+    "#ff9f43",
+    "#6f42c1",
+    "#e83e8c",
+  ];
 
-  // Apply view-specific transformations (VISUAL EMPHASIS ONLY)
-  switch (viewType) {
-    case "physical":
-      return getPhysicalView(filteredNodes, edges, filters);
-
-    case "logical":
-      return getLogicalView(filteredNodes, edges, filters);
-
-    case "zone-centric":
-      return getZoneCentricView(filteredNodes, edges, filters);
-
-    case "bandwidth":
-      return getBandwidthView(filteredNodes, edges, filters);
-
-    case "vlan":
-      return getVlanView(filteredNodes, edges, filters);
-
-    case "troubleshoot":
-      return getTroubleshootView(filteredNodes, edges, filters);
-
-    default:
-      return { nodes: filteredNodes, edges };
-  }
+  return colors[vlanId % colors.length];
 };
 
 /**
  * Physical Infrastructure View - Focus on hardware components
  */
-const getPhysicalView = (nodes, edges, filters) => {
+const getPhysicalView = (nodes, edges) => {
   console.log(
     "🔍 VIEW: Physical view transformation for",
     nodes.length,
@@ -124,7 +76,7 @@ const getPhysicalView = (nodes, edges, filters) => {
 /**
  * Logical Network View - Focus on virtual networking
  */
-const getLogicalView = (nodes, edges, filters) => {
+const getLogicalView = (nodes, edges) => {
   // Keep all nodes visible but emphasize virtual components - NO TRANSFORM PROPERTY!
   const transformedNodes = nodes.map((node) => {
     if (node.type === "etherstub" || node.type === "vnic") {
@@ -174,7 +126,7 @@ const getLogicalView = (nodes, edges, filters) => {
 /**
  * Zone-Centric View - Organize around zones and their network paths
  */
-const getZoneCentricView = (nodes, edges, filters) => {
+const getZoneCentricView = (nodes, edges) => {
   // Transform all nodes with zone emphasis - NO TRANSFORM PROPERTY!
   const transformedNodes = nodes.map((node) => {
     if (node.type === "zone") {
@@ -224,7 +176,7 @@ const getZoneCentricView = (nodes, edges, filters) => {
 /**
  * Bandwidth Flow View - Emphasize traffic patterns
  */
-const getBandwidthView = (nodes, edges, filters) => {
+const getBandwidthView = (nodes, edges) => {
   // Calculate bandwidth intensity for each node
   const nodeBandwidth = new Map();
 
@@ -296,7 +248,7 @@ const getBandwidthView = (nodes, edges, filters) => {
 /**
  * VLAN Isolation View - Group by VLAN membership
  */
-const getVlanView = (nodes, edges, filters) => {
+const getVlanView = (nodes, edges) => {
   // Transform ALL nodes to highlight VLAN groupings - NEVER FILTER OUT NODES
   const transformedNodes = nodes.map((node) => {
     if (node.type === "vnic" && node.data.vlanId) {
@@ -326,10 +278,7 @@ const getVlanView = (nodes, edges, filters) => {
 /**
  * Troubleshooting View - Highlight potential issues
  */
-const getTroubleshootView = (nodes, edges, filters) => {
-  // Identify potential issues
-  const issues = [];
-
+const getTroubleshootView = (nodes, edges) => {
   // Check for high bandwidth utilization
   const highBandwidthNodes = nodes.filter((node) =>
     edges.some((edge) => {
@@ -399,22 +348,72 @@ const getTroubleshootView = (nodes, edges, filters) => {
   return { nodes: transformedNodes, edges };
 };
 
-// Helper function to get VLAN color (imported from main utility)
-const getVlanColor = (vlanId) => {
-  if (!vlanId || vlanId === 0) {
-    return "#48c78e";
+/**
+ * Apply view-specific transformations to modify topology data
+ * IMPORTANT: Views should ONLY change visual emphasis, NEVER hide nodes
+ */
+export const applyViewTransformation = (topology, viewType, filters) => {
+  const { nodes, edges } = topology;
+
+  console.log(
+    "🔍 VIEW: Applying view transformation",
+    viewType,
+    "to",
+    nodes.length,
+    "nodes"
+  );
+
+  // ONLY apply node type filters if user explicitly unchecked them
+  // Default behavior: show ALL nodes
+  let filteredNodes = nodes.filter(
+    (node) => filters.nodeTypes[node.type] !== false
+  );
+
+  // Filter out unattached nodes if showUnattachedNodes is false (default)
+  if (!filters.showUnattachedNodes) {
+    // Find nodes that have at least one edge connection
+    const connectedNodeIds = new Set();
+    edges.forEach((edge) => {
+      connectedNodeIds.add(edge.source);
+      connectedNodeIds.add(edge.target);
+    });
+
+    const beforeCount = filteredNodes.length;
+    filteredNodes = filteredNodes.filter((node) =>
+      connectedNodeIds.has(node.id)
+    );
+    const afterCount = filteredNodes.length;
+
+    console.log(
+      "🔍 VIEW: Filtered out",
+      beforeCount - afterCount,
+      "unattached nodes"
+    );
   }
 
-  const colors = [
-    "#3273dc",
-    "#48c78e",
-    "#ffdd57",
-    "#f14668",
-    "#00d1b2",
-    "#ff9f43",
-    "#6f42c1",
-    "#e83e8c",
-  ];
+  console.log("🔍 VIEW: After filtering, have", filteredNodes.length, "nodes");
 
-  return colors[vlanId % colors.length];
+  // Apply view-specific transformations (VISUAL EMPHASIS ONLY)
+  switch (viewType) {
+    case "physical":
+      return getPhysicalView(filteredNodes, edges);
+
+    case "logical":
+      return getLogicalView(filteredNodes, edges);
+
+    case "zone-centric":
+      return getZoneCentricView(filteredNodes, edges);
+
+    case "bandwidth":
+      return getBandwidthView(filteredNodes, edges);
+
+    case "vlan":
+      return getVlanView(filteredNodes, edges);
+
+    case "troubleshoot":
+      return getTroubleshootView(filteredNodes, edges);
+
+    default:
+      return { nodes: filteredNodes, edges };
+  }
 };

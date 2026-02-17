@@ -1,4 +1,6 @@
-import { ContentModal } from "../common";
+import PropTypes from "prop-types";
+
+import { ContentModal } from "../../common";
 
 const PackageDetailsModal = ({ package: pkg, onClose }) => {
   const formatDetails = (details) => {
@@ -121,8 +123,8 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
           <div className="table-container">
             <table className="table is-fullwidth">
               <tbody>
-                {statusInfo.map((info, index) => (
-                  <tr key={index}>
+                {statusInfo.map((info) => (
+                  <tr key={info.label}>
                     <td>
                       <strong>{info.label}</strong>
                     </td>
@@ -142,8 +144,8 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
           <div className="table-container">
             <table className="table is-fullwidth">
               <tbody>
-                {detailsArray.map((detail, index) => (
-                  <tr key={index}>
+                {detailsArray.map((detail) => (
+                  <tr key={detail.label}>
                     <td>
                       <strong>{detail.label}</strong>
                     </td>
@@ -174,6 +176,22 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
       )}
     </ContentModal>
   );
+};
+
+PackageDetailsModal.propTypes = {
+  package: PropTypes.shape({
+    name: PropTypes.string,
+    publisher: PropTypes.string,
+    version: PropTypes.string,
+    flags: PropTypes.string,
+    installed: PropTypes.bool,
+    frozen: PropTypes.bool,
+    manually_installed: PropTypes.bool,
+    obsolete: PropTypes.bool,
+    renamed: PropTypes.bool,
+    details: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default PackageDetailsModal;

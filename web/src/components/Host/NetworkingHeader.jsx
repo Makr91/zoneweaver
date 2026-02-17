@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const NetworkingHeader = ({
   loading,
   autoRefresh,
@@ -100,5 +102,19 @@ const NetworkingHeader = ({
     </div>
   </div>
 );
+
+NetworkingHeader.propTypes = {
+  loading: PropTypes.bool.isRequired,
+  autoRefresh: PropTypes.bool.isRequired,
+  setAutoRefresh: PropTypes.func.isRequired,
+  refreshInterval: PropTypes.number.isRequired,
+  setRefreshInterval: PropTypes.func.isRequired,
+  resolution: PropTypes.string.isRequired,
+  setResolution: PropTypes.func.isRequired,
+  selectedServer: PropTypes.object,
+  loadNetworkData: PropTypes.func.isRequired,
+  timeWindow: PropTypes.string.isRequired,
+  setTimeWindow: PropTypes.func.isRequired,
+};
 
 export default NetworkingHeader;

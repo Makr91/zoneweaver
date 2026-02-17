@@ -1,10 +1,11 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
-import { useServers } from "../../contexts/ServerContext";
+import { useServers } from "../../../contexts/ServerContext";
+import RepositorySection from "../RepositorySection";
+import SystemUpdatesSection from "../SystemUpdatesSection";
 
-import PackageSection from "./PackageSection";
-import RepositorySection from "./RepositorySection";
-import SystemUpdatesSection from "./SystemUpdatesSection";
+import PackageSection from "./Section";
 
 const PackageManagement = ({ server }) => {
   const [activeSection, setActiveSection] = useState("packages");
@@ -36,12 +37,21 @@ const PackageManagement = ({ server }) => {
               key={section.key}
               className={activeSection === section.key ? "is-active" : ""}
             >
-              <a onClick={() => setActiveSection(section.key)}>
+              <button
+                className="button is-text"
+                onClick={() => setActiveSection(section.key)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActiveSection(section.key);
+                  }
+                }}
+              >
                 <span className="icon is-small">
                   <i className={`fas ${section.icon}`} />
                 </span>
                 <span>{section.label}</span>
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -71,6 +81,14 @@ const PackageManagement = ({ server }) => {
       </div>
     </div>
   );
+};
+
+PackageManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }),
 };
 
 export default PackageManagement;

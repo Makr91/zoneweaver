@@ -9,7 +9,7 @@ import BootEnvironmentManagement from "./Host/BootEnvironmentManagement";
 import FaultManagement from "./Host/FaultManagement";
 import EnhancedFileManager from "./Host/FileManager/EnhancedFileManager";
 import NetworkHostnameManagement from "./Host/NetworkHostnameManagement";
-import PackageManagement from "./Host/PackageManagement";
+import PackageManagement from "./Host/Package/Management";
 import ProcessManagement from "./Host/ProcessManagement";
 import ServiceManagement from "./Host/ServiceManagement";
 import StorageManagement from "./Host/StorageManagement";
