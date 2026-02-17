@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 
 import ZloginActionsDropdown from "./ZloginActionsDropdown";
@@ -224,5 +225,40 @@ const ZloginConsoleDisplay = ({
     </div>
   </div>
 );
+
+ZloginConsoleDisplay.propTypes = {
+  zoneDetails: PropTypes.shape({
+    zlogin_session: PropTypes.shape({
+      id: PropTypes.string,
+      created_at: PropTypes.string,
+    }),
+  }).isRequired,
+  selectedZone: PropTypes.string,
+  currentServer: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }),
+  user: PropTypes.shape({
+    role: PropTypes.string,
+  }),
+  loading: PropTypes.bool,
+  loadingVnc: PropTypes.bool,
+  previewReadOnly: PropTypes.bool,
+  previewReconnectKey: PropTypes.number,
+  hasVnc: PropTypes.bool,
+  setLoading: PropTypes.func,
+  setLoadingVnc: PropTypes.func,
+  setError: PropTypes.func,
+  setPreviewReadOnly: PropTypes.func,
+  setZoneDetails: PropTypes.func,
+  setActiveConsoleType: PropTypes.func,
+  setShowZloginConsole: PropTypes.func,
+  startVncSession: PropTypes.func,
+  waitForVncSessionReady: PropTypes.func,
+  forceZoneSessionCleanup: PropTypes.func,
+  pasteTextToZone: PropTypes.func,
+  handleZloginConsole: PropTypes.func,
+};
 
 export default React.memo(ZloginConsoleDisplay);
