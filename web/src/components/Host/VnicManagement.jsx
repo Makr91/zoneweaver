@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { ConfirmModal } from "../common";
 
 import VnicCreateModal from "./VnicCreateModal";
 import VnicDetailsModal from "./VnicDetailsModal";
@@ -19,16 +21,12 @@ const VnicManagement = ({ server, onError }) => {
     zone: "",
     state: "",
   });
+  const [vnicToDelete, setVnicToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load VNICs on component mount and when filters change
-  useEffect(() => {
-    loadVnics();
-    loadFilterOptions();
-  }, [server, filters.over, filters.zone, filters.state]);
-
-  const loadFilterOptions = async () => {
+  const loadFilterOptions = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -73,9 +71,9 @@ const VnicManagement = ({ server, onError }) => {
     } catch (err) {
       console.error("Error loading filter options:", err);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
 
-  const loadVnics = async () => {
+  const loadVnics = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -123,20 +121,25 @@ const VnicManagement = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
+  }, [server, makeZoneweaverAPIRequest, filters, onError]);
+
+  // Load VNICs on component mount and when filters change
+  useEffect(() => {
+    loadVnics();
+    loadFilterOptions();
+  }, [loadVnics, loadFilterOptions]);
+
+  const handleDeleteVnic = (vnicName) => {
+    setVnicToDelete(vnicName);
   };
 
-  const handleDeleteVnic = async (vnicName) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    if (
-      !window.confirm(`Are you sure you want to delete VNIC "${vnicName}"?`)
-    ) {
+  const confirmDeleteVnic = async () => {
+    if (!server || !makeZoneweaverAPIRequest || !vnicToDelete) {
       return;
     }
 
     try {
-      setLoading(true);
+      setDeleting(true);
       onError("");
 
       // Use query parameters instead of request body for DELETE request
@@ -144,7 +147,7 @@ const VnicManagement = ({ server, onError }) => {
         server.hostname,
         server.port,
         server.protocol,
-        `network/vnics/${encodeURIComponent(vnicName)}`,
+        `network/vnics/${encodeURIComponent(vnicToDelete)}`,
         "DELETE",
         null, // No request body to avoid parsing issues
         {
@@ -158,12 +161,13 @@ const VnicManagement = ({ server, onError }) => {
         // Refresh VNICs list after deletion
         await loadVnics();
       } else {
-        onError(result.message || `Failed to delete VNIC "${vnicName}"`);
+        onError(result.message || `Failed to delete VNIC "${vnicToDelete}"`);
       }
     } catch (err) {
-      onError(`Error deleting VNIC "${vnicName}": ${err.message}`);
+      onError(`Error deleting VNIC "${vnicToDelete}": ${err.message}`);
     } finally {
-      setLoading(false);
+      setDeleting(false);
+      setVnicToDelete(null);
     }
   };
 
@@ -227,16 +231,19 @@ const VnicManagement = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Physical Link</label>
+              <label className="label" htmlFor="filter-over">
+                Filter by Physical Link
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-over"
                     value={filters.over}
                     onChange={(e) => handleFilterChange("over", e.target.value)}
                   >
                     <option value="">All Physical Links</option>
-                    {availableLinks.map((link, index) => (
-                      <option key={index} value={link}>
+                    {availableLinks.map((link) => (
+                      <option key={link} value={link}>
                         {link}
                       </option>
                     ))}
@@ -247,16 +254,19 @@ const VnicManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Zone</label>
+              <label className="label" htmlFor="filter-zone">
+                Filter by Zone
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-zone"
                     value={filters.zone}
                     onChange={(e) => handleFilterChange("zone", e.target.value)}
                   >
                     <option value="">All Zones</option>
-                    {availableZones.map((zone, index) => (
-                      <option key={index} value={zone}>
+                    {availableZones.map((zone) => (
+                      <option key={zone} value={zone}>
                         {zone}
                       </option>
                     ))}
@@ -267,10 +277,13 @@ const VnicManagement = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by State</label>
+              <label className="label" htmlFor="filter-state">
+                Filter by State
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="filter-state"
                     value={filters.state}
                     onChange={(e) =>
                       handleFilterChange("state", e.target.value)
@@ -287,7 +300,7 @@ const VnicManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <div className="label">&nbsp;</div>
               <div className="control">
                 <button
                   className="button is-info"
@@ -304,7 +317,7 @@ const VnicManagement = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <div className="label">&nbsp;</div>
               <div className="control">
                 <button
                   className="button"
@@ -380,8 +393,31 @@ const VnicManagement = ({ server, onError }) => {
           onError={onError}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {vnicToDelete && (
+        <ConfirmModal
+          isOpen={!!vnicToDelete}
+          onClose={() => setVnicToDelete(null)}
+          onConfirm={confirmDeleteVnic}
+          title="Delete VNIC"
+          message={`Are you sure you want to delete VNIC "${vnicToDelete}"? This action cannot be undone.`}
+          confirmText="Delete"
+          confirmVariant="is-danger"
+          loading={deleting}
+        />
+      )}
     </div>
   );
+};
+
+VnicManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default VnicManagement;

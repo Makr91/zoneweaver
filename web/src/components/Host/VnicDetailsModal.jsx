@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const VnicDetailsModal = ({ vnic, onClose }) => {
@@ -37,6 +39,16 @@ const VnicDetailsModal = ({ vnic, onClose }) => {
     return `${speed} Mbps`;
   };
 
+  const getStateTagClass = (state) => {
+    if (state === "up") {
+      return "is-success";
+    }
+    if (state === "down") {
+      return "is-danger";
+    }
+    return "is-grey";
+  };
+
   const detailsArray = formatDetails(vnic.details);
 
   return (
@@ -69,15 +81,7 @@ const VnicDetailsModal = ({ vnic, onClose }) => {
                   <strong>State</strong>
                 </td>
                 <td>
-                  <span
-                    className={`tag ${
-                      vnic.state === "up"
-                        ? "is-success"
-                        : vnic.state === "down"
-                          ? "is-danger"
-                          : "is-grey"
-                    }`}
-                  >
+                  <span className={`tag ${getStateTagClass(vnic.state)}`}>
                     {vnic.state || "Unknown"}
                   </span>
                 </td>
@@ -189,7 +193,7 @@ const VnicDetailsModal = ({ vnic, onClose }) => {
               </thead>
               <tbody>
                 {detailsArray.map((detail, index) => (
-                  <tr key={index}>
+                  <tr key={detail.label || index}>
                     <td>
                       <strong>{detail.label}</strong>
                     </td>
@@ -249,6 +253,30 @@ const VnicDetailsModal = ({ vnic, onClose }) => {
       )}
     </ContentModal>
   );
+};
+
+VnicDetailsModal.propTypes = {
+  vnic: PropTypes.shape({
+    link: PropTypes.string,
+    over: PropTypes.string,
+    state: PropTypes.string,
+    macaddress: PropTypes.string,
+    macaddrtype: PropTypes.string,
+    vid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    zone: PropTypes.string,
+    speed: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    mtu: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    media: PropTypes.string,
+    duplex: PropTypes.string,
+    device: PropTypes.string,
+    bridge: PropTypes.string,
+    pause: PropTypes.string,
+    auto: PropTypes.string,
+    details: PropTypes.object,
+    created_at: PropTypes.string,
+    updated_at: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default VnicDetailsModal;

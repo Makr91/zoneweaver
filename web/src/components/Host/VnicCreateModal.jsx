@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -83,8 +84,8 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
             disabled={creating}
           >
             <option value="">Select {propertyKey} value</option>
-            {propertyValueOptions[propertyKey].map((option, index) => (
-              <option key={index} value={option}>
+            {propertyValueOptions[propertyKey].map((option) => (
+              <option key={option} value={option}>
                 {option}
               </option>
             ))}
@@ -105,89 +106,7 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
     );
   };
 
-  // Load available links when modal opens
-  useEffect(() => {
-    loadAvailableLinks();
-  }, [server]);
-
-  // Auto-generate VNIC name when link or VLAN changes
-  useEffect(() => {
-    if (formData.link) {
-      generateVnicName();
-    }
-  }, [formData.link, formData.vlan_id]);
-
-  const generateVnicName = async () => {
-    if (!formData.link) {
-      return;
-    }
-
-    try {
-      // Get existing VNICs to check for conflicts
-      const vnicsResult = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        "network/vnics",
-        "GET"
-      );
-
-      const existingVnics = vnicsResult.success
-        ? vnicsResult.data?.vnics || []
-        : [];
-      const existingNames = new Set(
-        existingVnics.map((vnic) => vnic.link).filter(Boolean)
-      );
-
-      // Generate unique name following your convention: vnic_<random_4digit>_<sequence>
-      let attempts = 0;
-      let suggestedName = "";
-
-      do {
-        // Generate random 4-digit number (1000-9999)
-        const random4Digit = Math.floor(Math.random() * 9000) + 1000;
-
-        // Build base pattern with random 4-digit number
-        const basePattern = `vnic_${random4Digit}_`;
-
-        // Find next available sequence number for this 4-digit number
-        let sequence = 0;
-        const existingWithPattern = existingVnics.filter(
-          (vnic) => vnic.link && vnic.link.startsWith(basePattern)
-        );
-
-        if (existingWithPattern.length > 0) {
-          const sequences = existingWithPattern.map((vnic) => {
-            const parts = vnic.link.split("_");
-            const lastPart = parts[parts.length - 1];
-            return parseInt(lastPart) || 0;
-          });
-          sequence = Math.max(...sequences) + 1;
-        }
-
-        suggestedName = `${basePattern}${sequence}`;
-        attempts++;
-
-        // Safety valve to prevent infinite loop
-      } while (existingNames.has(suggestedName) && attempts < 100);
-
-      setFormData((prev) => ({
-        ...prev,
-        name: suggestedName,
-      }));
-    } catch (err) {
-      console.error("Error generating VNIC name:", err);
-      // Fallback to simple naming with random 4-digit
-      const random4Digit = Math.floor(Math.random() * 9000) + 1000;
-      const fallbackName = `vnic_${random4Digit}_0`;
-      setFormData((prev) => ({
-        ...prev,
-        name: fallbackName,
-      }));
-    }
-  };
-
-  const loadAvailableLinks = async () => {
+  const loadAvailableLinks = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -308,7 +227,89 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
     } finally {
       setLoadingLinks(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
+
+  const generateVnicName = useCallback(async () => {
+    if (!formData.link) {
+      return;
+    }
+
+    try {
+      // Get existing VNICs to check for conflicts
+      const vnicsResult = await makeZoneweaverAPIRequest(
+        server.hostname,
+        server.port,
+        server.protocol,
+        "network/vnics",
+        "GET"
+      );
+
+      const existingVnics = vnicsResult.success
+        ? vnicsResult.data?.vnics || []
+        : [];
+      const existingNames = new Set(
+        existingVnics.map((vnic) => vnic.link).filter(Boolean)
+      );
+
+      // Generate unique name following your convention: vnic_<random_4digit>_<sequence>
+      let attempts = 0;
+      let suggestedName = "";
+
+      do {
+        // Generate random 4-digit number (1000-9999)
+        const random4Digit = Math.floor(Math.random() * 9000) + 1000;
+
+        // Build base pattern with random 4-digit number
+        const basePattern = `vnic_${random4Digit}_`;
+
+        // Find next available sequence number for this 4-digit number
+        let sequence = 0;
+        const existingWithPattern = existingVnics.filter(
+          (vnic) => vnic.link && vnic.link.startsWith(basePattern)
+        );
+
+        if (existingWithPattern.length > 0) {
+          const sequences = existingWithPattern.map((vnic) => {
+            const parts = vnic.link.split("_");
+            const lastPart = parts[parts.length - 1];
+            return parseInt(lastPart) || 0;
+          });
+          sequence = Math.max(...sequences) + 1;
+        }
+
+        suggestedName = `${basePattern}${sequence}`;
+        attempts++;
+
+        // Safety valve to prevent infinite loop
+      } while (existingNames.has(suggestedName) && attempts < 100);
+
+      setFormData((prev) => ({
+        ...prev,
+        name: suggestedName,
+      }));
+    } catch (err) {
+      console.error("Error generating VNIC name:", err);
+      // Fallback to simple naming with random 4-digit
+      const random4Digit = Math.floor(Math.random() * 9000) + 1000;
+      const fallbackName = `vnic_${random4Digit}_0`;
+      setFormData((prev) => ({
+        ...prev,
+        name: fallbackName,
+      }));
+    }
+  }, [formData.link, server, makeZoneweaverAPIRequest]);
+
+  // Load available links when modal opens
+  useEffect(() => {
+    loadAvailableLinks();
+  }, [loadAvailableLinks]);
+
+  // Auto-generate VNIC name when link or VLAN changes
+  useEffect(() => {
+    if (formData.link) {
+      generateVnicName();
+    }
+  }, [formData.link, formData.vlan_id, generateVnicName]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -373,7 +374,7 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
     // Validate MAC address if provided
     if (formData.mac_address) {
-      const macRegex = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
+      const macRegex = /^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
       if (!macRegex.test(formData.mac_address)) {
         onError("Invalid MAC address format (must be XX:XX:XX:XX:XX:XX)");
         return false;
@@ -448,9 +449,12 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label className="label">VNIC Name *</label>
+            <label className="label" htmlFor="vnic-create-name">
+              VNIC Name *
+            </label>
             <div className="control">
               <input
+                id="vnic-create-name"
                 className="input"
                 type="text"
                 placeholder="Auto-generated based on link"
@@ -467,10 +471,13 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
         <div className="column">
           <div className="field">
-            <label className="label">Physical Link *</label>
+            <label className="label" htmlFor="vnic-create-link">
+              Physical Link *
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="vnic-create-link"
                   value={formData.link}
                   onChange={(e) => handleInputChange("link", e.target.value)}
                   disabled={creating || loadingLinks}
@@ -481,8 +488,8 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
                       ? "Loading available links..."
                       : "Select a link to attach VNIC to"}
                   </option>
-                  {availableLinks.map((link, index) => (
-                    <option key={index} value={link.name}>
+                  {availableLinks.map((link) => (
+                    <option key={link.name} value={link.name}>
                       {link.name} ({link.type}, {link.state}, {link.speed})
                     </option>
                   ))}
@@ -496,9 +503,12 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="columns">
         <div className="column">
           <div className="field">
-            <label className="label">VLAN ID (Optional)</label>
+            <label className="label" htmlFor="vnic-create-vlan">
+              VLAN ID (Optional)
+            </label>
             <div className="control">
               <input
+                id="vnic-create-vlan"
                 className="input"
                 type="number"
                 min="1"
@@ -514,9 +524,12 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
         <div className="column">
           <div className="field">
-            <label className="label">MAC Address (Optional)</label>
+            <label className="label" htmlFor="vnic-create-mac">
+              MAC Address (Optional)
+            </label>
             <div className="control">
               <input
+                id="vnic-create-mac"
                 className="input"
                 type="text"
                 placeholder="XX:XX:XX:XX:XX:XX"
@@ -533,11 +546,14 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Additional Properties</label>
+        <label className="label" htmlFor="vnic-create-prop-key">
+          Additional Properties
+        </label>
         <div className="field has-addons">
           <div className="control">
             <div className="select">
               <select
+                id="vnic-create-prop-key"
                 value={propertyKey}
                 onChange={(e) => setPropertyKey(e.target.value)}
                 disabled={creating}
@@ -575,8 +591,8 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
             </p>
             <div className="tags">
               {Object.entries(formData.properties).map(
-                ([key, value], index) => (
-                  <span key={index} className="tag is-info">
+                ([key, value]) => (
+                  <span key={key} className="tag is-info">
                     {key}={value}
                     <button
                       type="button"
@@ -609,6 +625,17 @@ const VnicCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+VnicCreateModal.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default VnicCreateModal;
