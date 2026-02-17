@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -131,9 +132,12 @@ const EtherstubCreateModal = ({
       loading={creating}
     >
       <div className="field">
-        <label className="label">Etherstub Name *</label>
+        <label htmlFor="etherstub-name" className="label">
+          Etherstub Name *
+        </label>
         <div className="control">
           <input
+            id="etherstub-name"
             className="input"
             type="text"
             placeholder="e.g., stub0"
@@ -181,6 +185,14 @@ const EtherstubCreateModal = ({
       </div>
     </FormModal>
   );
+};
+
+EtherstubCreateModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  existingEtherstubs: PropTypes.array,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default EtherstubCreateModal;

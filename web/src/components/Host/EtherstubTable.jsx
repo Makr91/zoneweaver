@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const EtherstubTable = ({ etherstubs, loading, onDelete, onViewDetails }) => {
@@ -115,6 +116,13 @@ const EtherstubTable = ({ etherstubs, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+EtherstubTable.propTypes = {
+  etherstubs: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default EtherstubTable;

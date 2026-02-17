@@ -1,5 +1,5 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 const BridgeTable = ({ bridges, loading, onDelete, onViewDetails }) => {
   const [deleteLoading, setDeleteLoading] = useState({});

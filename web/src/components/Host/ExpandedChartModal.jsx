@@ -1,4 +1,5 @@
 import { HighchartsReact } from "highcharts-react-official";
+import PropTypes from "prop-types";
 
 import { ContentModal } from "../common";
 import Highcharts from "../Highcharts";
@@ -669,6 +670,15 @@ const ExpandedChartModal = ({
       />
     </ContentModal>
   );
+};
+
+ExpandedChartModal.propTypes = {
+  chartId: PropTypes.string,
+  type: PropTypes.string.isRequired,
+  close: PropTypes.func.isRequired,
+  chartData: PropTypes.object,
+  poolChartData: PropTypes.object,
+  arcChartData: PropTypes.object,
 };
 
 export default ExpandedChartModal;

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { exportDeviceData } from "./DeviceUtils";
 
 const DeviceFilters = ({
@@ -57,8 +59,9 @@ const DeviceFilters = ({
               </div>
               <div className="dropdown-menu">
                 <div className="dropdown-content">
-                  <a
-                    className="dropdown-item"
+                  <button
+                    type="button"
+                    className="dropdown-item button is-ghost"
                     onClick={() =>
                       exportDeviceData("csv", devices, selectedServer)
                     }
@@ -67,9 +70,10 @@ const DeviceFilters = ({
                       <i className="fas fa-file-csv" />
                     </span>
                     <span>Export as CSV</span>
-                  </a>
-                  <a
-                    className="dropdown-item"
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item button is-ghost"
                     onClick={() =>
                       exportDeviceData("json", devices, selectedServer)
                     }
@@ -78,7 +82,7 @@ const DeviceFilters = ({
                       <i className="fas fa-file-code" />
                     </span>
                     <span>Export as JSON</span>
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -107,9 +111,12 @@ const DeviceFilters = ({
       <div className="columns">
         <div className="column is-3">
           <div className="field">
-            <label className="label is-small">Search Devices</label>
+            <label htmlFor="device-search" className="label is-small">
+              Search Devices
+            </label>
             <div className="control has-icons-left">
               <input
+                id="device-search"
                 className="input is-small"
                 type="text"
                 placeholder="Device name, vendor, PCI address..."
@@ -129,10 +136,13 @@ const DeviceFilters = ({
         </div>
         <div className="column is-3">
           <div className="field">
-            <label className="label is-small">Category</label>
+            <label htmlFor="device-category" className="label is-small">
+              Category
+            </label>
             <div className="control">
               <div className="select is-small is-fullwidth">
                 <select
+                  id="device-category"
                   value={filters.category}
                   onChange={(e) =>
                     setFilters((prev) => ({
@@ -155,10 +165,13 @@ const DeviceFilters = ({
         </div>
         <div className="column is-3">
           <div className="field">
-            <label className="label is-small">PPT Status</label>
+            <label htmlFor="device-ppt-status" className="label is-small">
+              PPT Status
+            </label>
             <div className="control">
               <div className="select is-small is-fullwidth">
                 <select
+                  id="device-ppt-status"
                   value={filters.pptStatus}
                   onChange={(e) =>
                     setFilters((prev) => ({
@@ -179,10 +192,13 @@ const DeviceFilters = ({
         </div>
         <div className="column is-3">
           <div className="field">
-            <label className="label is-small">Driver Status</label>
+            <label htmlFor="device-driver-status" className="label is-small">
+              Driver Status
+            </label>
             <div className="control">
               <div className="select is-small is-fullwidth">
                 <select
+                  id="device-driver-status"
                   value={filters.driverStatus}
                   onChange={(e) =>
                     setFilters((prev) => ({
@@ -203,5 +219,15 @@ const DeviceFilters = ({
     )}
   </div>
 );
+
+DeviceFilters.propTypes = {
+  filters: PropTypes.object.isRequired,
+  setFilters: PropTypes.func.isRequired,
+  deviceCategories: PropTypes.object.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+  devices: PropTypes.array.isRequired,
+  selectedServer: PropTypes.object,
+};
 
 export default DeviceFilters;

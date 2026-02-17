@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -208,7 +209,7 @@ const EditRepositoryModal = ({
 
         <div className="columns">
           <div className="column">
-            <label className="label">Add Origins</label>
+            <span className="label">Add Origins</span>
             {formData.originsToAdd.map((origin, index) => (
               <div key={index} className="field has-addons mb-3">
                 <div className="control is-expanded">
@@ -249,7 +250,7 @@ const EditRepositoryModal = ({
           </div>
 
           <div className="column">
-            <label className="label">Remove Origins</label>
+            <span className="label">Remove Origins</span>
             {formData.originsToRemove.map((origin, index) => (
               <div key={index} className="field has-addons mb-3">
                 <div className="control is-expanded">
@@ -301,7 +302,7 @@ const EditRepositoryModal = ({
 
         <div className="columns">
           <div className="column">
-            <label className="label">Add Mirrors</label>
+            <span className="label">Add Mirrors</span>
             {formData.mirrorsToAdd.map((mirror, index) => (
               <div key={index} className="field has-addons mb-3">
                 <div className="control is-expanded">
@@ -342,7 +343,7 @@ const EditRepositoryModal = ({
           </div>
 
           <div className="column">
-            <label className="label">Remove Mirrors</label>
+            <span className="label">Remove Mirrors</span>
             {formData.mirrorsToRemove.map((mirror, index) => (
               <div key={index} className="field has-addons mb-3">
                 <div className="control is-expanded">
@@ -468,9 +469,12 @@ const EditRepositoryModal = ({
 
           <div className="column">
             <div className="field">
-              <label className="label">Search Before</label>
+              <label htmlFor="repo-search-before" className="label">
+                Search Before
+              </label>
               <div className="control">
                 <input
+                  id="repo-search-before"
                   className="input"
                   type="text"
                   placeholder="Publisher name"
@@ -483,9 +487,12 @@ const EditRepositoryModal = ({
             </div>
 
             <div className="field">
-              <label className="label">Search After</label>
+              <label htmlFor="repo-search-after" className="label">
+                Search After
+              </label>
               <div className="control">
                 <input
+                  id="repo-search-after"
                   className="input"
                   type="text"
                   placeholder="Publisher name"
@@ -498,9 +505,12 @@ const EditRepositoryModal = ({
             </div>
 
             <div className="field">
-              <label className="label">Proxy</label>
+              <label htmlFor="repo-proxy" className="label">
+                Proxy
+              </label>
               <div className="control">
                 <input
+                  id="repo-proxy"
                   className="input"
                   type="text"
                   placeholder="http://proxy.example.com:8080"
@@ -518,9 +528,12 @@ const EditRepositoryModal = ({
         <h3 className="title is-6">SSL Configuration (Optional)</h3>
 
         <div className="field">
-          <label className="label">SSL Certificate</label>
+          <label htmlFor="repo-ssl-cert" className="label">
+            SSL Certificate
+          </label>
           <div className="control">
             <textarea
+              id="repo-ssl-cert"
               className="textarea"
               placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
               value={formData.sslCert}
@@ -531,9 +544,12 @@ const EditRepositoryModal = ({
         </div>
 
         <div className="field">
-          <label className="label">SSL Private Key</label>
+          <label htmlFor="repo-ssl-key" className="label">
+            SSL Private Key
+          </label>
           <div className="control">
             <textarea
+              id="repo-ssl-key"
               className="textarea"
               placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
               value={formData.sslKey}
@@ -545,6 +561,14 @@ const EditRepositoryModal = ({
       </div>
     </FormModal>
   );
+};
+
+EditRepositoryModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  repository: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default EditRepositoryModal;

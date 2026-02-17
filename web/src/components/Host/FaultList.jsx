@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -145,7 +146,7 @@ const FaultList = ({ server }) => {
           <div className="columns">
             <div className="column">
               <div className="field">
-                <label className="label is-small">Total Faults</label>
+                <span className="label is-small">Total Faults</span>
                 <p className="control">
                   <span className="tag is-info is-medium">
                     {summary.totalFaults}
@@ -156,7 +157,7 @@ const FaultList = ({ server }) => {
             {summary.severityLevels.length > 0 && (
               <div className="column">
                 <div className="field">
-                  <label className="label is-small">Severity Levels</label>
+                  <span className="label is-small">Severity Levels</span>
                   <div className="control">
                     <div className="tags">
                       {[
@@ -193,7 +194,7 @@ const FaultList = ({ server }) => {
             {summary.faultClasses.length > 0 && (
               <div className="column">
                 <div className="field">
-                  <label className="label is-small">Fault Classes</label>
+                  <span className="label is-small">Fault Classes</span>
                   <div className="control">
                     <div className="tags">
                       {summary.faultClasses.slice(0, 3).map((cls, index) => (
@@ -220,10 +221,11 @@ const FaultList = ({ server }) => {
         <div className="columns">
           <div className="column is-3">
             <div className="field">
-              <label className="label">Max Faults</label>
+              <label htmlFor="fault-limit" className="label">Max Faults</label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="fault-limit"
                     value={filters.limit}
                     onChange={(e) =>
                       handleFilterChange("limit", parseInt(e.target.value))
@@ -240,7 +242,7 @@ const FaultList = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Include Resolved</label>
+              <span className="label">Include Resolved</span>
               <div className="control">
                 <label className="switch is-medium">
                   <input
@@ -336,6 +338,10 @@ const FaultList = ({ server }) => {
       )}
     </div>
   );
+};
+
+FaultList.propTypes = {
+  server: PropTypes.object.isRequired,
 };
 
 export default FaultList;

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
@@ -237,6 +239,12 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
       </div>
     </ContentModal>
   );
+};
+
+EtherstubDetailsModal.propTypes = {
+  etherstub: PropTypes.object.isRequired,
+  etherstubDetails: PropTypes.object,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default EtherstubDetailsModal;

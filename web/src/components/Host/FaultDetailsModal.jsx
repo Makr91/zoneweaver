@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const FaultDetailsModal = ({ fault, onClose }) => {
@@ -208,6 +210,11 @@ const FaultDetailsModal = ({ fault, onClose }) => {
       )}
     </ContentModal>
   );
+};
+
+FaultDetailsModal.propTypes = {
+  fault: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default FaultDetailsModal;

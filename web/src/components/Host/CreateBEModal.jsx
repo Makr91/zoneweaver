@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
@@ -145,9 +146,12 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
         <h3 className="title is-6">Basic Information</h3>
 
         <div className="field">
-          <label className="label">Boot Environment Name *</label>
+          <label htmlFor="be-name" className="label">
+            Boot Environment Name *
+          </label>
           <div className="control">
             <input
+              id="be-name"
               className="input"
               type="text"
               placeholder="e.g., backup-before-update"
@@ -163,9 +167,12 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
         </div>
 
         <div className="field">
-          <label className="label">Description (Optional)</label>
+          <label htmlFor="be-description" className="label">
+            Description (Optional)
+          </label>
           <div className="control">
             <textarea
+              id="be-description"
               className="textarea"
               placeholder="Brief description of this boot environment"
               value={formData.description}
@@ -183,9 +190,12 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Source Boot Environment</label>
+              <label htmlFor="be-source" className="label">
+                Source Boot Environment
+              </label>
               <div className="control">
                 <input
+                  id="be-source"
                   className="input"
                   type="text"
                   placeholder="Leave empty to use current BE"
@@ -203,9 +213,12 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
 
           <div className="column">
             <div className="field">
-              <label className="label">Source Snapshot</label>
+              <label htmlFor="be-snapshot" className="label">
+                Source Snapshot
+              </label>
               <div className="control">
                 <input
+                  id="be-snapshot"
                   className="input"
                   type="text"
                   placeholder="Snapshot name or path"
@@ -246,9 +259,12 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
             </div>
 
             <div className="field">
-              <label className="label">ZFS Pool (Optional)</label>
+              <label htmlFor="be-zpool" className="label">
+                ZFS Pool (Optional)
+              </label>
               <div className="control">
                 <input
+                  id="be-zpool"
                   className="input"
                   type="text"
                   placeholder="e.g., rpool"
@@ -322,6 +338,13 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+CreateBEModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default CreateBEModal;

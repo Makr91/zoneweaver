@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const DeviceHeader = ({ selectedServer, loading, loadDeviceData }) => (
   <div className="titlebar box active level is-mobile mb-0 p-3">
     <div className="level-left">
@@ -17,5 +19,11 @@ const DeviceHeader = ({ selectedServer, loading, loadDeviceData }) => (
     </div>
   </div>
 );
+
+DeviceHeader.propTypes = {
+  selectedServer: PropTypes.object,
+  loading: PropTypes.bool.isRequired,
+  loadDeviceData: PropTypes.func.isRequired,
+};
 
 export default DeviceHeader;

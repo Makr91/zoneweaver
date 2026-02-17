@@ -1,5 +1,5 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 import { FormModal } from "../common";
 
@@ -214,9 +214,12 @@ const ConfirmActionModal = ({
           <h3 className="title is-6">Mount Options</h3>
 
           <div className="field">
-            <label className="label">Mountpoint</label>
+            <label className="label" htmlFor="mountpoint-input">
+              Mountpoint
+            </label>
             <div className="control">
               <input
+                id="mountpoint-input"
                 className="input"
                 type="text"
                 value={options.mountpoint}
@@ -231,10 +234,13 @@ const ConfirmActionModal = ({
           </div>
 
           <div className="field">
-            <label className="label">Shared Mode</label>
+            <label className="label" htmlFor="shared-mode-select">
+              Shared Mode
+            </label>
             <div className="control">
               <div className="select is-fullwidth">
                 <select
+                  id="shared-mode-select"
                   value={options.sharedMode}
                   onChange={(e) =>
                     handleOptionChange("sharedMode", e.target.value)
@@ -319,6 +325,19 @@ const ConfirmActionModal = ({
       )}
     </FormModal>
   );
+};
+
+ConfirmActionModal.propTypes = {
+  bootEnvironment: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    is_active_now: PropTypes.bool,
+    is_active_on_reboot: PropTypes.bool,
+    mountpoint: PropTypes.string,
+    space: PropTypes.string,
+  }).isRequired,
+  action: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
 };
 
 export default ConfirmActionModal;

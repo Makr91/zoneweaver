@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const DeviceSummary = ({
   deviceCategories,
   devicesSummary,
@@ -86,6 +88,14 @@ const DeviceSummary = ({
       )}
     </div>
   );
+};
+
+DeviceSummary.propTypes = {
+  deviceCategories: PropTypes.object.isRequired,
+  devicesSummary: PropTypes.object.isRequired,
+  pptStatus: PropTypes.object.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
 };
 
 export default DeviceSummary;

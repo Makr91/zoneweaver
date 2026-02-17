@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { formatBytes, getHealthColor } from "./StorageUtils";
 
 const DisksTable = ({
@@ -12,10 +14,11 @@ const DisksTable = ({
   <div className="box mb-4">
     <div className="level is-mobile mb-3">
       <div className="level-left">
-        <h4
-          className="title is-5 mb-0 is-clickable"
+        <button
+          className="title is-5 mb-0 is-clickable button is-ghost p-0"
           onClick={resetDiskSort}
           title="Click to reset sorting to default"
+          type="button"
         >
           <span className="icon-text">
             <span className="icon">
@@ -28,7 +31,7 @@ const DisksTable = ({
               </span>
             )}
           </span>
-        </h4>
+        </button>
       </div>
       <div className="level-right">
         <button
@@ -213,5 +216,15 @@ const DisksTable = ({
     )}
   </div>
 );
+
+DisksTable.propTypes = {
+  storageDisks: PropTypes.array.isRequired,
+  diskSort: PropTypes.array.isRequired,
+  handleDiskSort: PropTypes.func.isRequired,
+  getSortIcon: PropTypes.func.isRequired,
+  resetDiskSort: PropTypes.func.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+};
 
 export default DisksTable;

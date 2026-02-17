@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
@@ -175,6 +177,11 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
       )}
     </ContentModal>
   );
+};
+
+DeviceDetailsModal.propTypes = {
+  selectedDevice: PropTypes.object,
+  setSelectedDevice: PropTypes.func.isRequired,
 };
 
 export default DeviceDetailsModal;

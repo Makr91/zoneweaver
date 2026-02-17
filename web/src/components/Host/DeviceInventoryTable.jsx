@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import {
   getDeviceStatusColor,
   getDeviceStatusText,
@@ -19,10 +21,11 @@ const DeviceInventoryTable = ({
   <div className="box mb-4">
     <div className="level is-mobile mb-3">
       <div className="level-left">
-        <h4
-          className="title is-5 mb-0 is-clickable"
+        <button
+          className="title is-5 mb-0 is-clickable button is-ghost p-0"
           onClick={() => handleDeviceSort("device_name")}
           title="Click to reset sorting to default"
+          type="button"
         >
           <span className="icon-text">
             <span className="icon">
@@ -35,7 +38,7 @@ const DeviceInventoryTable = ({
               </span>
             )}
           </span>
-        </h4>
+        </button>
       </div>
       <div className="level-right">
         <div className="field is-grouped">
@@ -217,5 +220,17 @@ const DeviceInventoryTable = ({
       ))}
   </div>
 );
+
+DeviceInventoryTable.propTypes = {
+  devices: PropTypes.array.isRequired,
+  deviceSort: PropTypes.array.isRequired,
+  handleDeviceSort: PropTypes.func.isRequired,
+  getSortIcon: PropTypes.func.isRequired,
+  setSelectedDevice: PropTypes.func.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
+  handleDeviceRefresh: PropTypes.func.isRequired,
+};
 
 export default DeviceInventoryTable;
