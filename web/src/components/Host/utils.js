@@ -52,7 +52,7 @@ export const getCpuCount = (serverStats) => {
  */
 export const getCpuModel = (serverStats) => {
   if (Array.isArray(serverStats.cpus) && serverStats.cpus.length > 0) {
-    const firstCpu = serverStats.cpus[0];
+    const [firstCpu] = serverStats.cpus;
     if (typeof firstCpu === "object" && firstCpu.model) {
       return firstCpu.model;
     }

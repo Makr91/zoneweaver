@@ -1,5 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import DeviceDetailsModal from "./Host/DeviceDetailsModal";
 import DeviceFilters from "./Host/DeviceFilters";
@@ -33,11 +33,10 @@ const HostDevices = () => {
     handleDeviceRefresh,
     applyFilters,
     loadDeviceData,
-    servers,
   } = useHostDevicesData();
 
   // Use useMemo to prevent getServers() calls on every render
-  const serverList = useMemo(() => getServers(), [getServers, servers]);
+  const serverList = useMemo(() => getServers(), [getServers]);
 
   if (!user) {
     return (
@@ -84,8 +83,8 @@ const HostDevices = () => {
               <div className="notification is-info">
                 <h2 className="title is-4">No Zoneweaver API Servers</h2>
                 <p>
-                  You haven't added any Zoneweaver API Servers yet. Add a server
-                  to start monitoring hardware devices.
+                  You haven&apos;t added any Zoneweaver API Servers yet. Add a
+                  server to start monitoring hardware devices.
                 </p>
                 <div className="mt-4">
                   <a

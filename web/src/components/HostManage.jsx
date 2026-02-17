@@ -98,90 +98,66 @@ const HostManage = () => {
           {/* Tab Navigation */}
           <div className="tabs is-boxed mb-0">
             <ul>
-              <li className={activeTab === "services" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("services")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-cogs" />
-                  </span>
-                  <span>Services</span>
-                </a>
-              </li>
-              <li className={activeTab === "network" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("network")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-network-wired" />
-                  </span>
-                  <span>Network</span>
-                </a>
-              </li>
-              <li className={activeTab === "packages" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("packages")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-box" />
-                  </span>
-                  <span>Package Management</span>
-                </a>
-              </li>
-              <li
-                className={activeTab === "boot-environments" ? "is-active" : ""}
-              >
-                <a onClick={() => setActiveTab("boot-environments")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-layer-group" />
-                  </span>
-                  <span>Boot Environments</span>
-                </a>
-              </li>
-              <li className={activeTab === "storage" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("storage")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-database" />
-                  </span>
-                  <span>Storage</span>
-                </a>
-              </li>
-              <li className={activeTab === "time-ntp" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("time-ntp")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-clock" />
-                  </span>
-                  <span>Time</span>
-                </a>
-              </li>
-              <li className={activeTab === "processes" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("processes")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-tasks" />
-                  </span>
-                  <span>Processes</span>
-                </a>
-              </li>
-              <li
-                className={activeTab === "fault-management" ? "is-active" : ""}
-              >
-                <a onClick={() => setActiveTab("fault-management")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-exclamation-triangle" />
-                  </span>
-                  <span>Fault Management</span>
-                </a>
-              </li>
-              <li className={activeTab === "file-manager" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("file-manager")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-folder" />
-                  </span>
-                  <span>File Manager</span>
-                </a>
-              </li>
-              <li className={activeTab === "user-group" ? "is-active" : ""}>
-                <a onClick={() => setActiveTab("user-group")}>
-                  <span className="icon is-small">
-                    <i className="fas fa-users" />
-                  </span>
-                  <span>User and Groups</span>
-                </a>
-              </li>
+              {[
+                { id: "services", label: "Services", icon: "fas fa-cogs" },
+                {
+                  id: "network",
+                  label: "Network",
+                  icon: "fas fa-network-wired",
+                },
+                {
+                  id: "packages",
+                  label: "Package Management",
+                  icon: "fas fa-box",
+                },
+                {
+                  id: "boot-environments",
+                  label: "Boot Environments",
+                  icon: "fas fa-layer-group",
+                },
+                { id: "storage", label: "Storage", icon: "fas fa-database" },
+                { id: "time-ntp", label: "Time", icon: "fas fa-clock" },
+                { id: "processes", label: "Processes", icon: "fas fa-tasks" },
+                {
+                  id: "fault-management",
+                  label: "Fault Management",
+                  icon: "fas fa-exclamation-triangle",
+                },
+                {
+                  id: "file-manager",
+                  label: "File Manager",
+                  icon: "fas fa-folder",
+                },
+                {
+                  id: "user-group",
+                  label: "User and Groups",
+                  icon: "fas fa-users",
+                },
+              ].map((tab) => (
+                <li
+                  key={tab.id}
+                  className={activeTab === tab.id ? "is-active" : ""}
+                >
+                  <a
+                    href={`#${tab.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveTab(tab.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === " ") {
+                        e.preventDefault();
+                        setActiveTab(tab.id);
+                      }
+                    }}
+                  >
+                    <span className="icon is-small">
+                      <i className={tab.icon} />
+                    </span>
+                    <span>{tab.label}</span>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

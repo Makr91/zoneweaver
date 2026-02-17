@@ -154,7 +154,10 @@ export const performTyping = async (vncRef, connected, text) => {
 
   try {
     // Send each character as a key event
-    for (let i = 0; i < text.length; i++) {
+    const typeNextChar = async (i) => {
+      if (i >= text.length) {
+        return;
+      }
       const char = text[i];
       const keysym = getKeysymForChar(char);
       const keyCode = getKeyCodeForChar(char);
@@ -180,7 +183,6 @@ export const performTyping = async (vncRef, connected, text) => {
 
         // Longer delay between characters for TTY console compatibility
         if (i < text.length - 1) {
-          // eslint-disable-next-line no-await-in-loop
           await new Promise((resolve) => {
             setTimeout(resolve, 50);
           }); // 50ms delay for better TTY compatibility
@@ -188,7 +190,10 @@ export const performTyping = async (vncRef, connected, text) => {
       } catch (err) {
         console.error(`❌ VNC-VIEWER: Error typing character '${char}':`, err);
       }
-    }
+      await typeNextChar(i + 1);
+    };
+
+    await typeNextChar(0);
 
     console.log(`✅ VNC-VIEWER: Finished typing ${text.length} characters`);
     return true;

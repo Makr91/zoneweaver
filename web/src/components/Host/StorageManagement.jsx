@@ -21,7 +21,6 @@ const StorageManagement = ({ server }) => {
       <div className="tabs is-boxed mb-0">
         <ul>
           <li className={activeTab === "arc" ? "is-active" : ""}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               role="button"
@@ -44,7 +43,6 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className={activeTab === "artifacts" ? "is-active" : ""}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               role="button"
@@ -67,7 +65,6 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className="is-disabled">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a role="button" aria-disabled="true">
               <span className="icon is-small">
                 <i className="fas fa-database" />
@@ -76,7 +73,6 @@ const StorageManagement = ({ server }) => {
             </a>
           </li>
           <li className="is-disabled">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a role="button" aria-disabled="true">
               <span className="icon is-small">
                 <i className="fas fa-folder-tree" />

@@ -102,7 +102,7 @@ const processNetworkUsageForState = (networkData) => {
   networkUsageWithBandwidth.sort((a, b) => b.totalMbps - a.totalMbps);
 
   const sortedNetworkUsage = networkUsageWithBandwidth.map(
-    ({ totalMbps, ...usage }) => usage
+    ({ ...usage }) => usage
   );
   return sortedNetworkUsage;
 };
