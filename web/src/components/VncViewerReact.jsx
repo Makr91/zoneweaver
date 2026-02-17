@@ -1,11 +1,139 @@
+import PropTypes from "prop-types";
 import {
   useRef,
   useState,
   useEffect,
+  useCallback,
   useImperativeHandle,
   forwardRef,
 } from "react";
 import { VncScreen } from "react-vnc";
+
+import {
+  getStatusColorClass,
+  performTyping,
+  performSendKey,
+  performCtrlAltDel,
+} from "../utils/vncUtils";
+
+/**
+ * Error Display Component
+ */
+const VncErrorDisplay = ({ className, style, message, onRetry }) => (
+  <div className={`vnc-viewer-error ${className}`} style={style}>
+    <div className="notification is-danger">
+      <h4 className="title is-5">VNC Console Error</h4>
+      <p>{message}</p>
+      {onRetry && (
+        <div className="buttons mt-3">
+          <button className="button is-primary" onClick={onRetry}>
+            <span className="icon">
+              <i className="fas fa-redo" />
+            </span>
+            <span>Retry</span>
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+VncErrorDisplay.propTypes = {
+  className: PropTypes.string,
+  style: PropTypes.object,
+  message: PropTypes.string.isRequired,
+  onRetry: PropTypes.func,
+};
+
+/**
+ * VNC Controls Component
+ */
+const VncControls = ({
+  connected,
+  connecting,
+  zoneName,
+  onCtrlAltDel,
+  onConnect,
+  onDisconnect,
+}) => (
+  <div className="vnc-controls zw-vnc-controls">
+    <div className="vnc-status">
+      <span className="icon-text">
+        <span className="icon is-small">
+          <i
+            className={`fas fa-circle ${getStatusColorClass(connected, connecting)}`}
+          />
+        </span>
+        <span className="ml-1">
+          {connected && "Connected"}
+          {connecting && !connected && "Connecting..."}
+          {!connected && !connecting && "Disconnected"}
+          {connected && ` • ${zoneName}`}
+        </span>
+      </span>
+    </div>
+
+    <div className="vnc-actions">
+      <div className="buttons is-small m-0">
+        {/* Ctrl+Alt+Del Button */}
+        <button
+          className="button is-small is-warning"
+          onClick={onCtrlAltDel}
+          disabled={!connected}
+          title="Send Ctrl+Alt+Del to guest system"
+        >
+          <span className="icon is-small">
+            <i className="fas fa-keyboard" />
+          </span>
+          <span>Ctrl+Alt+Del</span>
+        </button>
+
+        {/* Connect/Disconnect Button */}
+        <button
+          className={`button is-small ${connected ? "is-danger" : "is-success"}`}
+          onClick={connected ? onDisconnect : onConnect}
+          disabled={connecting}
+          title={connected ? "Disconnect from VNC" : "Connect to VNC"}
+        >
+          <span className="icon is-small">
+            <i className={`fas ${connected ? "fa-plug" : "fa-play"}`} />
+          </span>
+          <span>
+            {connected && "Disconnect"}
+            {connecting && !connected && "Connecting..."}
+            {!connected && !connecting && "Connect"}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+VncControls.propTypes = {
+  connected: PropTypes.bool.isRequired,
+  connecting: PropTypes.bool.isRequired,
+  zoneName: PropTypes.string,
+  onCtrlAltDel: PropTypes.func.isRequired,
+  onConnect: PropTypes.func.isRequired,
+  onDisconnect: PropTypes.func.isRequired,
+};
+
+/**
+ * Connecting Overlay Component
+ */
+const VncConnectingOverlay = () => (
+  <div className="has-z-index-overlay zw-vnc-connecting-overlay">
+    <div className="has-text-centered">
+      <div className="icon is-large">
+        <i className="fas fa-spinner fa-pulse fa-2x zw-loading-spinner" />
+      </div>
+      <p className="mt-2">Connecting to VNC...</p>
+      <p className="is-size-7 has-text-grey-light mt-1">
+        Using react-vnc • Single WebSocket
+      </p>
+    </div>
+  </div>
+);
 
 /**
  * Enhanced VNC Viewer Component - Uses react-vnc for native React integration
@@ -17,7 +145,6 @@ const VncViewerReact = forwardRef(
     {
       serverHostname,
       serverPort,
-      serverProtocol = "https",
       zoneName,
       viewOnly = false,
       autoConnect = true,
@@ -41,64 +168,14 @@ const VncViewerReact = forwardRef(
     const [connecting, setConnecting] = useState(false);
     const [error, setError] = useState("");
 
-    // Validate required parameters
-    if (!serverHostname || !zoneName) {
-      return (
-        <div className={`vnc-viewer-error ${className}`} style={style}>
-          <div className="notification is-danger">
-            <h4 className="title is-5">VNC Console Error</h4>
-            <p>Missing required parameters: serverHostname and zoneName</p>
-          </div>
-        </div>
-      );
-    }
-
     // Build WebSocket URL using existing proxy path (maintains all security/auth)
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${wsProtocol}//${window.location.host}/api/servers/${encodeURIComponent(serverHostname)}:${serverPort}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`;
+    const wsUrl =
+      serverHostname && zoneName
+        ? `${wsProtocol}//${window.location.host}/api/servers/${encodeURIComponent(serverHostname)}:${serverPort}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`
+        : "";
 
-    console.log(`🚀 REACT-VNC: Connecting to WebSocket: ${wsUrl}`);
-
-    // Enhanced control handlers
-    const handleConnect = () => {
-      if (vncRef.current && !connected && !connecting) {
-        console.log(`🔌 REACT-VNC: Manually connecting to ${zoneName}`);
-        setConnecting(true);
-        setError("");
-        vncRef.current.connect();
-      }
-    };
-
-    const handleDisconnect = () => {
-      if (vncRef.current && connected) {
-        console.log(`🔌 REACT-VNC: Manually disconnecting from ${zoneName}`);
-        vncRef.current.disconnect();
-      }
-    };
-
-    const handleCtrlAltDel = () => {
-      if (vncRef.current && connected) {
-        console.log(`⌨️ REACT-VNC: Sending Ctrl+Alt+Del to ${zoneName}`);
-        vncRef.current.sendCtrlAltDel();
-      }
-
-      // Call parent callback if provided
-      if (onCtrlAltDel) {
-        onCtrlAltDel();
-      }
-    };
-
-    // Expose control functions to parent component
-    useEffect(() => {
-      if (onConnect && typeof onConnect === "function") {
-        onConnect.connect = handleConnect;
-        onConnect.disconnect = handleDisconnect;
-        onConnect.ctrlAltDel = handleCtrlAltDel;
-        onConnect.refresh = handleRefresh;
-      }
-    }, [connected, connecting]);
-
-    const handleRefresh = () => {
+    const handleRefresh = useCallback(() => {
       if (vncRef.current) {
         console.log(`🔄 REACT-VNC: Refreshing connection to ${zoneName}`);
         if (connected) {
@@ -110,7 +187,52 @@ const VncViewerReact = forwardRef(
           vncRef.current.connect();
         }, 1000);
       }
-    };
+    }, [connected, zoneName]);
+
+    // Enhanced control handlers
+    const handleConnect = useCallback(() => {
+      if (vncRef.current && !connected && !connecting) {
+        console.log(`🔌 REACT-VNC: Manually connecting to ${zoneName}`);
+        setConnecting(true);
+        setError("");
+        vncRef.current.connect();
+      }
+    }, [connected, connecting, zoneName]);
+
+    const handleDisconnect = useCallback(() => {
+      if (vncRef.current && connected) {
+        console.log(`🔌 REACT-VNC: Manually disconnecting from ${zoneName}`);
+        vncRef.current.disconnect();
+      }
+    }, [connected, zoneName]);
+
+    const handleCtrlAltDel = useCallback(() => {
+      if (vncRef.current && connected) {
+        console.log(`⌨️ REACT-VNC: Sending Ctrl+Alt+Del to ${zoneName}`);
+        vncRef.current.sendCtrlAltDel();
+      }
+
+      // Call parent callback if provided
+      if (onCtrlAltDel) {
+        onCtrlAltDel();
+      }
+    }, [connected, zoneName, onCtrlAltDel]);
+
+    // Expose control functions to parent component
+    useEffect(() => {
+      if (onConnect && typeof onConnect === "function") {
+        onConnect.connect = handleConnect;
+        onConnect.disconnect = handleDisconnect;
+        onConnect.ctrlAltDel = handleCtrlAltDel;
+        onConnect.refresh = handleRefresh;
+      }
+    }, [
+      handleConnect,
+      handleDisconnect,
+      handleCtrlAltDel,
+      handleRefresh,
+      onConnect,
+    ]);
 
     // Connection event handlers
     const handleVncConnect = () => {
@@ -134,9 +256,6 @@ const VncViewerReact = forwardRef(
       }
     };
 
-    // Store ref to the clipboardPaste function (keyboard listener removed to prevent interference)
-    const clipboardPasteRef = useRef(null);
-
     const handleCredentialsRequired = () => {
       console.log(`🔐 REACT-VNC: Credentials required for ${zoneName}`);
       setError(
@@ -158,313 +277,31 @@ const VncViewerReact = forwardRef(
       }
     };
 
+    // Simulate typing function extracted to reduce complexity
+    const simulateTyping = useCallback(
+      async (text) => await performTyping(vncRef, connected, text),
+      [connected]
+    );
+
     // Clipboard paste method - expose to parent via ref
-    const handleClipboardPaste = (text) => {
-      if (vncRef.current && connected && vncRef.current.clipboardPaste) {
-        console.log(`📋 REACT-VNC: Pasting clipboard text to ${zoneName}`);
-        vncRef.current.clipboardPaste(text);
-      }
-    };
+    const handleClipboardPaste = useCallback(
+      (text) => {
+        if (connected) {
+          simulateTyping(text);
+        }
+      },
+      [connected, simulateTyping]
+    );
 
     // Expose methods via useImperativeHandle for VncActionsDropdown
-    useImperativeHandle(ref, () => {
-      // Define the clipboardPaste function
-      const clipboardPasteFunc = async (text) => {
-        if (vncRef.current && connected) {
-          console.log(
-            `📋 VNC-VIEWER: Starting character-by-character typing of ${text.length} characters`
-          );
-
-          try {
-            // Character-to-keysym mapping for typing simulation
-            const getKeysymForChar = (char) => {
-              const code = char.charCodeAt(0);
-
-              // Letters (a-z, A-Z)
-              if (char >= "a" && char <= "z") {
-                return 0x61 + (code - 97);
-              } // a=0x61
-              if (char >= "A" && char <= "Z") {
-                return 0x41 + (code - 65);
-              } // A=0x41
-
-              // Numbers (0-9)
-              if (char >= "0" && char <= "9") {
-                return 0x30 + (code - 48);
-              } // 0=0x30
-
-              // Common symbols and punctuation
-              switch (char) {
-                case " ":
-                  return 0x20; // space
-                case "!":
-                  return 0x21; // exclamation
-                case '"':
-                  return 0x22; // quotation
-                case "#":
-                  return 0x23; // hash
-                case "$":
-                  return 0x24; // dollar
-                case "%":
-                  return 0x25; // percent
-                case "&":
-                  return 0x26; // ampersand
-                case "'":
-                  return 0x27; // apostrophe
-                case "(":
-                  return 0x28; // left parenthesis
-                case ")":
-                  return 0x29; // right parenthesis
-                case "*":
-                  return 0x2a; // asterisk
-                case "+":
-                  return 0x2b; // plus
-                case ",":
-                  return 0x2c; // comma
-                case "-":
-                  return 0x2d; // minus
-                case ".":
-                  return 0x2e; // period
-                case "/":
-                  return 0x2f; // slash
-                case ":":
-                  return 0x3a; // colon
-                case ";":
-                  return 0x3b; // semicolon
-                case "<":
-                  return 0x3c; // less than
-                case "=":
-                  return 0x3d; // equals
-                case ">":
-                  return 0x3e; // greater than
-                case "?":
-                  return 0x3f; // question mark
-                case "@":
-                  return 0x40; // at
-                case "[":
-                  return 0x5b; // left bracket
-                case "\\":
-                  return 0x5c; // backslash
-                case "]":
-                  return 0x5d; // right bracket
-                case "^":
-                  return 0x5e; // caret
-                case "_":
-                  return 0x5f; // underscore
-                case "`":
-                  return 0x60; // grave accent
-                case "{":
-                  return 0x7b; // left brace
-                case "|":
-                  return 0x7c; // pipe
-                case "}":
-                  return 0x7d; // right brace
-                case "~":
-                  return 0x7e; // tilde
-                case "\n":
-                  return 0xff0d; // Return/Enter
-                case "\r":
-                  return 0xff0d; // Return/Enter
-                case "\t":
-                  return 0xff09; // Tab
-                default:
-                  return code; // Use Unicode code point for other characters
-              }
-            };
-
-            // Character-to-KeyboardEvent.code mapping
-            const getKeyCodeForChar = (char) => {
-              // Letters
-              if (char >= "a" && char <= "z") {
-                return `Key${char.toUpperCase()}`;
-              }
-              if (char >= "A" && char <= "Z") {
-                return `Key${char}`;
-              }
-
-              // Numbers
-              if (char >= "0" && char <= "9") {
-                return `Digit${char}`;
-              }
-
-              // Special keys and symbols
-              switch (char) {
-                case " ":
-                  return "Space";
-                case "\n":
-                case "\r":
-                  return "Enter";
-                case "\t":
-                  return "Tab";
-                case "!":
-                  return "Digit1"; // Shift+1
-                case "@":
-                  return "Digit2"; // Shift+2
-                case "#":
-                  return "Digit3"; // Shift+3
-                case "$":
-                  return "Digit4"; // Shift+4
-                case "%":
-                  return "Digit5"; // Shift+5
-                case "^":
-                  return "Digit6"; // Shift+6
-                case "&":
-                  return "Digit7"; // Shift+7
-                case "*":
-                  return "Digit8"; // Shift+8
-                case "(":
-                  return "Digit9"; // Shift+9
-                case ")":
-                  return "Digit0"; // Shift+0
-                case "-":
-                  return "Minus";
-                case "_":
-                  return "Minus"; // Shift+Minus
-                case "=":
-                  return "Equal";
-                case "+":
-                  return "Equal"; // Shift+Equal
-                case "[":
-                  return "BracketLeft";
-                case "{":
-                  return "BracketLeft"; // Shift+BracketLeft
-                case "]":
-                  return "BracketRight";
-                case "}":
-                  return "BracketRight"; // Shift+BracketRight
-                case "\\":
-                  return "Backslash";
-                case "|":
-                  return "Backslash"; // Shift+Backslash
-                case ";":
-                  return "Semicolon";
-                case ":":
-                  return "Semicolon"; // Shift+Semicolon
-                case "'":
-                  return "Quote";
-                case '"':
-                  return "Quote"; // Shift+Quote
-                case "`":
-                  return "Backquote";
-                case "~":
-                  return "Backquote"; // Shift+Backquote
-                case ",":
-                  return "Comma";
-                case "<":
-                  return "Comma"; // Shift+Comma
-                case ".":
-                  return "Period";
-                case ">":
-                  return "Period"; // Shift+Period
-                case "/":
-                  return "Slash";
-                case "?":
-                  return "Slash"; // Shift+Slash
-                default:
-                  return null; // No specific key code
-              }
-            };
-
-            // Check if character needs shift modifier
-            const needsShift = (char) =>
-              (char >= "A" && char <= "Z") ||
-              '!@#$%^&*()_+{}|:"<>?~'.includes(char);
-
-            // Send each character as a key event
-            for (let i = 0; i < text.length; i++) {
-              const char = text[i];
-              const keysym = getKeysymForChar(char);
-              const keyCode = getKeyCodeForChar(char);
-              const requiresShift = needsShift(char);
-
-              console.log(
-                `📋 VNC-VIEWER: Typing character '${char}' (${i + 1}/${text.length}) - keysym: 0x${keysym.toString(16)}, keyCode: ${keyCode}, shift: ${requiresShift}`
-              );
-
-              try {
-                if (requiresShift && keyCode) {
-                  // Send Shift+Key for uppercase letters and symbols
-                  vncRef.current.sendKey(0xffe1, "ShiftLeft", true); // Shift down
-                  vncRef.current.sendKey(keysym, keyCode); // Character
-                  vncRef.current.sendKey(0xffe1, "ShiftLeft", false); // Shift up
-                } else if (keyCode) {
-                  // Send regular key
-                  vncRef.current.sendKey(keysym, keyCode);
-                } else {
-                  // Fallback: send keysym only
-                  vncRef.current.sendKey(keysym, null);
-                }
-
-                // Longer delay between characters for TTY console compatibility
-                if (i < text.length - 1) {
-                  await new Promise((resolve) => setTimeout(resolve, 50)); // 50ms delay for better TTY compatibility
-                }
-              } catch (error) {
-                console.error(
-                  `❌ VNC-VIEWER: Error typing character '${char}':`,
-                  error
-                );
-              }
-            }
-
-            console.log(
-              `✅ VNC-VIEWER: Finished typing ${text.length} characters`
-            );
-            return true;
-          } catch (error) {
-            console.error(
-              `❌ VNC-VIEWER: Error in character-by-character typing:`,
-              error
-            );
-            return false;
-          }
-        } else {
-          console.warn(
-            `⚠️ VNC-VIEWER: Cannot type text - connected: ${connected}, ref: ${!!vncRef.current}`
-          );
-          return false;
-        }
-      };
-
-      // Store the function in the ref for Ctrl+V access
-      clipboardPasteRef.current = clipboardPasteFunc;
-
-      return {
+    useImperativeHandle(
+      ref,
+      () => ({
         // React-VNC methods - properly forwarded from VncScreen ref
-        sendKey: (keysym, code, down) => {
-          if (vncRef.current && connected) {
-            console.log(
-              `🎹 VNC-VIEWER: Forwarding sendKey(keysym: ${keysym}, code: "${code}", down: ${down})`
-            );
-            try {
-              return vncRef.current.sendKey(keysym, code, down);
-            } catch (error) {
-              console.error(`❌ VNC-VIEWER: Error sending key:`, error);
-            }
-          } else {
-            console.warn(
-              `⚠️ VNC-VIEWER: Cannot send key - not connected or ref unavailable`
-            );
-          }
-        },
-        sendCtrlAltDel: () => {
-          if (vncRef.current && connected) {
-            console.log(`🎹 VNC-VIEWER: Forwarding sendCtrlAltDel()`);
-            try {
-              return vncRef.current.sendCtrlAltDel();
-            } catch (error) {
-              console.error(
-                `❌ VNC-VIEWER: Error sending Ctrl+Alt+Del:`,
-                error
-              );
-            }
-          } else {
-            console.warn(
-              `⚠️ VNC-VIEWER: Cannot send Ctrl+Alt+Del - not connected or ref unavailable`
-            );
-          }
-        },
-        clipboardPaste: clipboardPasteFunc,
+        sendKey: (keysym, code, down) =>
+          performSendKey(vncRef, connected, keysym, code, down),
+        sendCtrlAltDel: () => performCtrlAltDel(vncRef, connected),
+        clipboardPaste: simulateTyping,
         // Additional control methods
         connect: handleConnect,
         disconnect: handleDisconnect,
@@ -474,32 +311,43 @@ const VncViewerReact = forwardRef(
         connecting,
         // Access to underlying RFB object for advanced operations
         rfb: vncRef.current?.rfb || null,
-      };
-    }, [connected, connecting]);
+      }),
+      [
+        connected,
+        connecting,
+        handleConnect,
+        handleDisconnect,
+        handleRefresh,
+        simulateTyping,
+      ]
+    );
 
     // Legacy support - expose methods via callback props
     useEffect(() => {
       if (onConnect && typeof onConnect === "object") {
         onConnect.clipboardPaste = handleClipboardPaste;
       }
-    }, [connected]);
+    }, [connected, onConnect, handleClipboardPaste]);
+
+    // Validate required parameters (Render error if missing, but hooks are already called)
+    if (!serverHostname || !zoneName) {
+      return (
+        <VncErrorDisplay
+          className={className}
+          style={style}
+          message="Missing required parameters: serverHostname and zoneName"
+        />
+      );
+    }
 
     if (error) {
       return (
-        <div className={`vnc-viewer-error ${className}`} style={style}>
-          <div className="notification is-danger">
-            <h4 className="title is-5">VNC Console Error</h4>
-            <p>{error}</p>
-            <div className="buttons mt-3">
-              <button className="button is-primary" onClick={handleRefresh}>
-                <span className="icon">
-                  <i className="fas fa-redo" />
-                </span>
-                <span>Retry</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <VncErrorDisplay
+          className={className}
+          style={style}
+          message={error}
+          onRetry={handleRefresh}
+        />
       );
     }
 
@@ -507,61 +355,14 @@ const VncViewerReact = forwardRef(
       <div className={`vnc-viewer-react ${className}`} style={style}>
         {/* Conditional VNC Control Bar */}
         {showControls && (
-          <div className="vnc-controls zw-vnc-controls">
-            <div className="vnc-status">
-              <span className="icon-text">
-                <span className="icon is-small">
-                  <i
-                    className={`fas fa-circle ${connected ? "has-text-success" : connecting ? "has-text-warning" : "has-text-danger"}`}
-                  />
-                </span>
-                <span className="ml-1">
-                  {connected
-                    ? "Connected"
-                    : connecting
-                      ? "Connecting..."
-                      : "Disconnected"}
-                  {connected && ` • ${zoneName}`}
-                </span>
-              </span>
-            </div>
-
-            <div className="vnc-actions">
-              <div className="buttons is-small m-0">
-                {/* Ctrl+Alt+Del Button */}
-                <button
-                  className="button is-small is-warning"
-                  onClick={handleCtrlAltDel}
-                  disabled={!connected}
-                  title="Send Ctrl+Alt+Del to guest system"
-                >
-                  <span className="icon is-small">
-                    <i className="fas fa-keyboard" />
-                  </span>
-                  <span>Ctrl+Alt+Del</span>
-                </button>
-
-                {/* Connect/Disconnect Button */}
-                <button
-                  className={`button is-small ${connected ? "is-danger" : "is-success"}`}
-                  onClick={connected ? handleDisconnect : handleConnect}
-                  disabled={connecting}
-                  title={connected ? "Disconnect from VNC" : "Connect to VNC"}
-                >
-                  <span className="icon is-small">
-                    <i className={`fas ${connected ? "fa-plug" : "fa-play"}`} />
-                  </span>
-                  <span>
-                    {connected
-                      ? "Disconnect"
-                      : connecting
-                        ? "Connecting..."
-                        : "Connect"}
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <VncControls
+            connected={connected}
+            connecting={connecting}
+            zoneName={zoneName}
+            onCtrlAltDel={handleCtrlAltDel}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+          />
         )}
 
         {/* VNC Display Area */}
@@ -572,19 +373,7 @@ const VncViewerReact = forwardRef(
               : "zw-vnc-display-no-controls"
           }
         >
-          {connecting && !connected && (
-            <div className="has-z-index-overlay zw-vnc-connecting-overlay">
-              <div className="has-text-centered">
-                <div className="icon is-large">
-                  <i className="fas fa-spinner fa-pulse fa-2x zw-loading-spinner" />
-                </div>
-                <p className="mt-2">Connecting to VNC...</p>
-                <p className="is-size-7 has-text-grey-light mt-1">
-                  Using react-vnc • Single WebSocket
-                </p>
-              </div>
-            </div>
-          )}
+          {connecting && !connected && <VncConnectingOverlay />}
 
           <VncScreen
             ref={vncRef}
@@ -611,5 +400,27 @@ const VncViewerReact = forwardRef(
     );
   }
 );
+
+VncViewerReact.displayName = "VncViewerReact";
+
+VncViewerReact.propTypes = {
+  serverHostname: PropTypes.string,
+  serverPort: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  zoneName: PropTypes.string,
+  viewOnly: PropTypes.bool,
+  autoConnect: PropTypes.bool,
+  quality: PropTypes.number,
+  compression: PropTypes.number,
+  resize: PropTypes.string,
+  showDot: PropTypes.bool,
+  showControls: PropTypes.bool,
+  resizeSession: PropTypes.bool,
+  onConnect: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  onDisconnect: PropTypes.func,
+  onCtrlAltDel: PropTypes.func,
+  onClipboard: PropTypes.func,
+  style: PropTypes.object,
+  className: PropTypes.string,
+};
 
 export default VncViewerReact;

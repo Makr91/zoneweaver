@@ -63,7 +63,6 @@ const HostNetworking = () => {
     user,
     getServers,
     loadNetworkData,
-    servers,
   } = useHostNetworkingData();
   console.log(
     "🐛 DEBUG: Hook data destructured successfully, user:",
@@ -73,7 +72,7 @@ const HostNetworking = () => {
   );
 
   // Use useMemo to prevent getServers() calls on every render
-  const serverList = useMemo(() => getServers(), [getServers, servers]);
+  const serverList = useMemo(() => getServers(), [getServers]);
 
   // Network monitoring is accessible to all authenticated users
   // No permission check needed - removed the user access restriction
