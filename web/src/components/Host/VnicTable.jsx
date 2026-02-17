@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const VnicTable = ({ vnics, loading, onDelete, onViewDetails }) => {
@@ -95,6 +96,16 @@ const VnicTable = ({ vnics, loading, onDelete, onViewDetails }) => {
     return <span className={`tag ${colorClass} is-small`}>{vid}</span>;
   };
 
+  const formatZoneName = (zoneName) => {
+    if (!zoneName || zoneName === "--") {
+      return "Global";
+    }
+    if (zoneName.length > 20) {
+      return `${zoneName.substring(0, 20)}...`;
+    }
+    return zoneName;
+  };
+
   if (loading && vnics.length === 0) {
     return (
       <div className="has-text-centered p-4">
@@ -168,11 +179,7 @@ const VnicTable = ({ vnics, loading, onDelete, onViewDetails }) => {
                 <td>{getVlanTag(vnic.vid)}</td>
                 <td>
                   <span className="is-size-7" title={vnic.zone}>
-                    {vnic.zone && vnic.zone !== "--"
-                      ? vnic.zone.length > 20
-                        ? `${vnic.zone.substring(0, 20)}...`
-                        : vnic.zone
-                      : "Global"}
+                    {formatZoneName(vnic.zone)}
                   </span>
                 </td>
                 <td>
@@ -217,6 +224,13 @@ const VnicTable = ({ vnics, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+VnicTable.propTypes = {
+  vnics: PropTypes.arrayOf(PropTypes.object).isRequired,
+  loading: PropTypes.bool,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default VnicTable;

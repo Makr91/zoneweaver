@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useServers } from "../../contexts/ServerContext";
@@ -34,9 +34,6 @@ export const useHostDevicesData = () => {
   const [deviceSort, setDeviceSort] = useState([
     { column: "device_name", direction: "asc" },
   ]);
-  const [pptSort, setPptSort] = useState([
-    { column: "device_name", direction: "asc" },
-  ]);
 
   const { user } = useAuth();
   const {
@@ -48,8 +45,84 @@ export const useHostDevicesData = () => {
     getPPTStatus,
     getAvailableDevices,
     refreshDeviceDiscovery,
-    getDeviceDetails,
   } = useServers();
+
+  const loadDeviceData = useCallback(
+    async (server) => {
+      if (!server || loading) {
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+
+        // Load all device data
+        const [devicesResult, categoriesResult, pptResult, availableResult] =
+          await Promise.allSettled([
+            getHostDevices(server.hostname, server.port, server.protocol),
+            getDeviceCategories(server.hostname, server.port, server.protocol),
+            getPPTStatus(server.hostname, server.port, server.protocol),
+            getAvailableDevices(server.hostname, server.port, server.protocol),
+          ]);
+
+        // Handle devices
+        if (
+          devicesResult.status === "fulfilled" &&
+          devicesResult.value.success
+        ) {
+          const deviceList = devicesResult.value.data?.devices || [];
+          const summary = devicesResult.value.data?.summary || {};
+          setDevices(deviceList);
+          setDevicesSummary(summary);
+        } else {
+          console.error("Failed to load devices:", devicesResult);
+        }
+
+        // Handle categories
+        if (
+          categoriesResult.status === "fulfilled" &&
+          categoriesResult.value.success
+        ) {
+          const categories = categoriesResult.value.data?.categories || {};
+          setDeviceCategories(categories);
+        } else {
+          console.error("Failed to load categories:", categoriesResult);
+        }
+
+        // Handle PPT status
+        if (pptResult.status === "fulfilled" && pptResult.value.success) {
+          const pptData = pptResult.value.data || {};
+          setPptStatus(pptData);
+        } else {
+          console.error("Failed to load PPT status:", pptResult);
+        }
+
+        // Handle available devices
+        if (
+          availableResult.status === "fulfilled" &&
+          availableResult.value.success
+        ) {
+          const availableList = availableResult.value.data?.devices || [];
+          setAvailableDevices(availableList);
+        } else {
+          console.error("Failed to load available devices:", availableResult);
+        }
+      } catch (err) {
+        console.error("Error loading device data:", err);
+        setError("Error loading device data");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [
+      loading,
+      getHostDevices,
+      getDeviceCategories,
+      getPPTStatus,
+      getAvailableDevices,
+    ]
+  );
 
   useEffect(() => {
     const serverList = getServers();
@@ -58,72 +131,7 @@ export const useHostDevicesData = () => {
       setSelectedServer(server);
       loadDeviceData(server);
     }
-  }, [servers, currentServer]);
-
-  const loadDeviceData = async (server) => {
-    if (!server || loading) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-
-      // Load all device data
-      const [devicesResult, categoriesResult, pptResult, availableResult] =
-        await Promise.allSettled([
-          getHostDevices(server.hostname, server.port, server.protocol),
-          getDeviceCategories(server.hostname, server.port, server.protocol),
-          getPPTStatus(server.hostname, server.port, server.protocol),
-          getAvailableDevices(server.hostname, server.port, server.protocol),
-        ]);
-
-      // Handle devices
-      if (devicesResult.status === "fulfilled" && devicesResult.value.success) {
-        const deviceList = devicesResult.value.data?.devices || [];
-        const summary = devicesResult.value.data?.summary || {};
-        setDevices(deviceList);
-        setDevicesSummary(summary);
-      } else {
-        console.error("Failed to load devices:", devicesResult);
-      }
-
-      // Handle categories
-      if (
-        categoriesResult.status === "fulfilled" &&
-        categoriesResult.value.success
-      ) {
-        const categories = categoriesResult.value.data?.categories || {};
-        setDeviceCategories(categories);
-      } else {
-        console.error("Failed to load categories:", categoriesResult);
-      }
-
-      // Handle PPT status
-      if (pptResult.status === "fulfilled" && pptResult.value.success) {
-        const pptData = pptResult.value.data || {};
-        setPptStatus(pptData);
-      } else {
-        console.error("Failed to load PPT status:", pptResult);
-      }
-
-      // Handle available devices
-      if (
-        availableResult.status === "fulfilled" &&
-        availableResult.value.success
-      ) {
-        const availableList = availableResult.value.data?.devices || [];
-        setAvailableDevices(availableList);
-      } else {
-        console.error("Failed to load available devices:", availableResult);
-      }
-    } catch (error) {
-      console.error("Error loading device data:", error);
-      setError("Error loading device data");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [servers, currentServer, getServers, loadDeviceData]);
 
   const handleDeviceRefresh = async () => {
     if (!selectedServer) {
@@ -149,8 +157,8 @@ export const useHostDevicesData = () => {
       } else {
         setError(refreshResult.message || "Failed to refresh device discovery");
       }
-    } catch (error) {
-      console.error("Error refreshing devices:", error);
+    } catch (err) {
+      console.error("Error refreshing devices:", err);
       setError("Error refreshing device discovery");
     } finally {
       setLoading(false);

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const ZoneManager = ({ serverStats, currentServer, handleZoneAction }) => (
   <div className="box mb-5">
     <div className="level is-mobile mb-4">
@@ -55,9 +57,9 @@ const ZoneManager = ({ serverStats, currentServer, handleZoneAction }) => (
           {serverStats.allzones && serverStats.allzones.length > 0 ? (
             <>
               <div className="tags">
-                {serverStats.allzones.slice(0, 12).map((zone, index) => (
+                {serverStats.allzones.slice(0, 12).map((zone) => (
                   <span
-                    key={index}
+                    key={zone}
                     className={`tag ${serverStats.runningzones?.includes(zone) ? "is-success" : "is-light"}`}
                   >
                     <span className="icon is-small">
@@ -137,5 +139,16 @@ const ZoneManager = ({ serverStats, currentServer, handleZoneAction }) => (
     </div>
   </div>
 );
+
+ZoneManager.propTypes = {
+  serverStats: PropTypes.shape({
+    allzones: PropTypes.arrayOf(PropTypes.string),
+    runningzones: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  currentServer: PropTypes.shape({
+    hostname: PropTypes.string,
+  }).isRequired,
+  handleZoneAction: PropTypes.func.isRequired,
+};
 
 export default ZoneManager;
