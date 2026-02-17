@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -31,7 +31,7 @@ const AggregateCreateModal = ({
   const { makeZoneweaverAPIRequest } = useServers();
 
   // Generate next available aggregate name
-  const generateNextAggregateName = () => {
+  const generateNextAggregateName = useCallback(() => {
     if (!existingAggregates) {
       return "aggr0";
     }
@@ -42,8 +42,8 @@ const AggregateCreateModal = ({
       .map((agg) => agg.name || agg.link)
       .filter((name) => name && name.startsWith("aggr"))
       .map((name) => {
-        const match = name.match(/^aggr(\d+)$/);
-        return match ? parseInt(match[1], 10) : -1;
+        const match = name.match(/^aggr(?:\d+)$/);
+        return match ? parseInt(name.slice(4), 10) : -1;
       })
       .filter((num) => num >= 0)
       .sort((a, b) => a - b);
@@ -59,21 +59,9 @@ const AggregateCreateModal = ({
     }
 
     return `aggr${nextNumber}`;
-  };
+  }, [existingAggregates]);
 
-  // Load available physical links and set default name when modal opens
-  useEffect(() => {
-    loadAvailableLinks();
-
-    // Set the default aggregate name
-    const defaultName = generateNextAggregateName();
-    setFormData((prev) => ({
-      ...prev,
-      name: defaultName,
-    }));
-  }, [server, existingAggregates]);
-
-  const loadAvailableLinks = async () => {
+  const loadAvailableLinks = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -114,7 +102,19 @@ const AggregateCreateModal = ({
     } finally {
       setLoadingLinks(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
+
+  // Load available physical links and set default name when modal opens
+  useEffect(() => {
+    loadAvailableLinks();
+
+    // Set the default aggregate name
+    const defaultName = generateNextAggregateName();
+    setFormData((prev) => ({
+      ...prev,
+      name: defaultName,
+    }));
+  }, [server, existingAggregates, loadAvailableLinks, generateNextAggregateName]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -162,7 +162,7 @@ const AggregateCreateModal = ({
 
     // Validate MAC address if provided
     if (formData.unicast_address) {
-      const macRegex = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
+      const macRegex = /^(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
       if (!macRegex.test(formData.unicast_address)) {
         onError("Invalid MAC address format (must be XX:XX:XX:XX:XX:XX)");
         return false;
@@ -330,8 +330,8 @@ const AggregateCreateModal = ({
                 </option>
                 {availableLinks
                   .filter((link) => !formData.links.includes(link.link))
-                  .map((link, index) => (
-                    <option key={index} value={link.link}>
+                  .map((link) => (
+                    <option key={link.link} value={link.link}>
                       {link.link} ({link.state}, {link.speed || "Unknown speed"}
                       )
                     </option>
@@ -357,8 +357,8 @@ const AggregateCreateModal = ({
               <strong>Current Links:</strong>
             </p>
             <div className="tags">
-              {formData.links.map((link, index) => (
-                <span key={index} className="tag is-info">
+              {formData.links.map((link) => (
+                <span key={link} className="tag is-info">
                   {link}
                   <button
                     type="button"

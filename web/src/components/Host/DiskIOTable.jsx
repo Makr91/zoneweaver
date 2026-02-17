@@ -1,5 +1,18 @@
 import PropTypes from "prop-types";
 
+const formatBandwidth = (mbps) => {
+  if (mbps >= 1) return `${mbps.toFixed(2)} MB/s`;
+  if (mbps > 0) return `${(mbps * 1024).toFixed(0)} KB/s`;
+  return "0 B/s";
+};
+
+const getTotalIOClass = (totalMBps) => {
+  if (totalMBps > 50) return "is-danger";
+  if (totalMBps > 10) return "is-warning";
+  if (totalMBps > 0) return "is-success";
+  return "is-grey";
+};
+
 const DiskIOTable = ({
   diskIOStats,
   diskIOSort,
@@ -65,7 +78,7 @@ const DiskIOTable = ({
                 </tr>
               </thead>
               <tbody>
-                {diskIOStats.map((io, index) => {
+                {diskIOStats.map((io) => {
                   const readMBps =
                     (io.read_bandwidth_bytes || 0) / (1024 * 1024);
                   const writeMBps =
@@ -73,7 +86,7 @@ const DiskIOTable = ({
                   const totalMBps = readMBps + writeMBps;
 
                   return (
-                    <tr key={index}>
+                    <tr key={`diskio-${io.device_name}-${io.scan_timestamp}`}>
                       <td>
                         <strong>{io.device_name}</strong>
                       </td>
@@ -84,39 +97,19 @@ const DiskIOTable = ({
                       <td>{io.write_ops}</td>
                       <td>
                         <span className="tag is-info">
-                          {readMBps >= 1
-                            ? `${readMBps.toFixed(2)} MB/s`
-                            : readMBps > 0
-                              ? `${(readMBps * 1024).toFixed(0)} KB/s`
-                              : "0 B/s"}
+                          {formatBandwidth(readMBps)}
                         </span>
                       </td>
                       <td>
                         <span className="tag is-warning">
-                          {writeMBps >= 1
-                            ? `${writeMBps.toFixed(2)} MB/s`
-                            : writeMBps > 0
-                              ? `${(writeMBps * 1024).toFixed(0)} KB/s`
-                              : "0 B/s"}
+                          {formatBandwidth(writeMBps)}
                         </span>
                       </td>
                       <td>
                         <span
-                          className={`tag ${
-                            totalMBps > 50
-                              ? "is-danger"
-                              : totalMBps > 10
-                                ? "is-warning"
-                                : totalMBps > 0
-                                  ? "is-success"
-                                  : "is-grey"
-                          }`}
+                          className={`tag ${getTotalIOClass(totalMBps)}`}
                         >
-                          {totalMBps >= 1
-                            ? `${totalMBps.toFixed(2)} MB/s`
-                            : totalMBps > 0
-                              ? `${(totalMBps * 1024).toFixed(0)} KB/s`
-                              : "0 B/s"}
+                          {formatBandwidth(totalMBps)}
                         </span>
                       </td>
                       <td>

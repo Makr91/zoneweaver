@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -20,7 +20,7 @@ const EtherstubCreateModal = ({
   const { makeZoneweaverAPIRequest } = useServers();
 
   // Generate next available etherstub name
-  const generateNextEtherstubName = () => {
+  const generateNextEtherstubName = useCallback(() => {
     if (!existingEtherstubs) {
       return "stub0";
     }
@@ -31,8 +31,8 @@ const EtherstubCreateModal = ({
       .map((eth) => eth.name || eth.link)
       .filter((name) => name && name.startsWith("stub"))
       .map((name) => {
-        const match = name.match(/^stub(\d+)$/);
-        return match ? parseInt(match[1], 10) : -1;
+        const match = name.match(/^stub(?:\d+)$/);
+        return match ? parseInt(name.slice(4), 10) : -1;
       })
       .filter((num) => num >= 0)
       .sort((a, b) => a - b);
@@ -48,7 +48,7 @@ const EtherstubCreateModal = ({
     }
 
     return `stub${nextNumber}`;
-  };
+  }, [existingEtherstubs]);
 
   // Set default etherstub name when modal opens
   useEffect(() => {
@@ -57,7 +57,7 @@ const EtherstubCreateModal = ({
       ...prev,
       name: defaultName,
     }));
-  }, [existingEtherstubs]);
+  }, [existingEtherstubs, generateNextEtherstubName]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({

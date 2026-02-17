@@ -3,6 +3,41 @@ import React from "react";
 
 import { formatBytes } from "./StorageUtils";
 
+const getHitRatioClass = (ratio) => {
+  if (ratio > 95) return "is-success";
+  if (ratio > 90) return "is-info";
+  if (ratio > 80) return "is-warning";
+  return "is-danger";
+};
+
+const getDataEfficiencyClass = (efficiency) => {
+  if (efficiency > 95) return "is-success";
+  if (efficiency > 90) return "is-info";
+  if (efficiency > 80) return "is-warning";
+  return "is-dark";
+};
+
+const getPrefetchEfficiencyClass = (efficiency) => {
+  if (efficiency > 50) return "is-success";
+  if (efficiency > 20) return "is-info";
+  if (efficiency > 5) return "is-warning";
+  return "is-dark";
+};
+
+const getCompressionRatioClass = (ratio) => {
+  if (ratio > 2) return "is-success";
+  if (ratio > 1.5) return "is-info";
+  if (ratio > 1.1) return "is-warning";
+  return "is-dark";
+};
+
+const getL2HitRatioClass = (ratio) => {
+  if (ratio > 80) return "is-success";
+  if (ratio > 60) return "is-info";
+  if (ratio > 40) return "is-warning";
+  return "is-danger";
+};
+
 const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
   if (arcStats.length === 0) {
     return null;
@@ -65,7 +100,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {arcStats.slice(0, 1).map((arc, index) => {
+                    {arcStats.slice(0, 1).map((arc) => {
                       const arcHits = parseFloat(arc.hits || arc.arc_hits) || 0;
                       const arcMisses =
                         parseFloat(arc.misses || arc.arc_misses) || 0;
@@ -83,7 +118,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                           : "N/A";
 
                       return (
-                        <tr key={index}>
+                        <tr key={`arc-overview-${arc.scan_timestamp}`}>
                           <td>
                             <span className="tag is-info">
                               {formatBytes(parseFloat(arc.arc_size) || 0)}
@@ -114,15 +149,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                           </td>
                           <td>
                             <span
-                              className={`tag ${
-                                hitRatio > 95
-                                  ? "is-success"
-                                  : hitRatio > 90
-                                    ? "is-info"
-                                    : hitRatio > 80
-                                      ? "is-warning"
-                                      : "is-danger"
-                              }`}
+                              className={`tag ${getHitRatioClass(hitRatio)}`}
                             >
                               {typeof hitRatio === "number"
                                 ? `${hitRatio}%`
@@ -131,16 +158,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                           </td>
                           <td>
                             <span
-                              className={`tag ${
-                                parseFloat(arc.data_demand_efficiency) > 95
-                                  ? "is-success"
-                                  : parseFloat(arc.data_demand_efficiency) > 90
-                                    ? "is-info"
-                                    : parseFloat(arc.data_demand_efficiency) >
-                                        80
-                                      ? "is-warning"
-                                      : "is-dark"
-                              }`}
+                              className={`tag ${getDataEfficiencyClass(parseFloat(arc.data_demand_efficiency))}`}
                             >
                               {arc.data_demand_efficiency
                                 ? `${arc.data_demand_efficiency}%`
@@ -149,17 +167,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                           </td>
                           <td>
                             <span
-                              className={`tag ${
-                                parseFloat(arc.data_prefetch_efficiency) > 50
-                                  ? "is-success"
-                                  : parseFloat(arc.data_prefetch_efficiency) >
-                                      20
-                                    ? "is-info"
-                                    : parseFloat(arc.data_prefetch_efficiency) >
-                                        5
-                                      ? "is-warning"
-                                      : "is-dark"
-                              }`}
+                              className={`tag ${getPrefetchEfficiencyClass(parseFloat(arc.data_prefetch_efficiency))}`}
                             >
                               {arc.data_prefetch_efficiency
                                 ? `${arc.data_prefetch_efficiency}%`
@@ -168,15 +176,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                           </td>
                           <td>
                             <span
-                              className={`tag ${
-                                parseFloat(compressionRatio) > 2
-                                  ? "is-success"
-                                  : parseFloat(compressionRatio) > 1.5
-                                    ? "is-info"
-                                    : parseFloat(compressionRatio) > 1.1
-                                      ? "is-warning"
-                                      : "is-dark"
-                              }`}
+                              className={`tag ${getCompressionRatioClass(parseFloat(compressionRatio))}`}
                               title="Uncompressed / Compressed Size Ratio"
                             >
                               {compressionRatio}x
@@ -210,8 +210,8 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   </h6>
                   <table className="table is-fullwidth is-striped is-narrow">
                     <tbody>
-                      {arcStats.slice(0, 1).map((arc, index) => (
-                        <React.Fragment key={index}>
+                      {arcStats.slice(0, 1).map((arc) => (
+                        <React.Fragment key={`arc-memory-${arc.scan_timestamp}`}>
                           <tr>
                             <td>
                               <strong>MRU Size</strong>
@@ -278,8 +278,8 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   </h6>
                   <table className="table is-fullwidth is-striped is-narrow">
                     <tbody>
-                      {arcStats.slice(0, 1).map((arc, index) => (
-                        <React.Fragment key={index}>
+                      {arcStats.slice(0, 1).map((arc) => (
+                        <React.Fragment key={`arc-hits-${arc.scan_timestamp}`}>
                           <tr>
                             <td>
                               <strong>Total Hits</strong>
@@ -358,8 +358,8 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                   </h6>
                   <table className="table is-fullwidth is-striped is-narrow">
                     <tbody>
-                      {arcStats.slice(0, 1).map((arc, index) => (
-                        <React.Fragment key={index}>
+                      {arcStats.slice(0, 1).map((arc) => (
+                        <React.Fragment key={`arc-demand-${arc.scan_timestamp}`}>
                           <tr>
                             <td>
                               <strong>Demand Data Hits</strong>
@@ -462,7 +462,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {arcStats.slice(0, 1).map((arc, index) => {
+                      {arcStats.slice(0, 1).map((arc) => {
                         const l2Hits = parseFloat(arc.l2_hits) || 0;
                         const l2Misses = parseFloat(arc.l2_misses) || 0;
                         const l2HitRatio =
@@ -471,7 +471,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                             : 0;
 
                         return (
-                          <tr key={index}>
+                          <tr key={`arc-l2-${arc.scan_timestamp}`}>
                             <td>
                               <span className="tag is-info">
                                 {formatBytes(parseFloat(arc.l2_size) || 0)}
@@ -489,15 +489,7 @@ const ArcStats = ({ arcStats, sectionsCollapsed, toggleSection }) => {
                             </td>
                             <td>
                               <span
-                                className={`tag ${
-                                  l2HitRatio > 80
-                                    ? "is-success"
-                                    : l2HitRatio > 60
-                                      ? "is-info"
-                                      : l2HitRatio > 40
-                                        ? "is-warning"
-                                        : "is-danger"
-                                }`}
+                                className={`tag ${getL2HitRatioClass(l2HitRatio)}`}
                               >
                                 {l2HitRatio}%
                               </span>

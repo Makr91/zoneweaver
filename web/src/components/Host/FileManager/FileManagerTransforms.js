@@ -170,10 +170,10 @@ export const isTextFile = (file) => {
 
   // Special case: Shell/config files without extensions but with known patterns
   const textFilePatterns = [
-    /^\.(bashrc|zshrc|kshrc|profile|bash_profile|zprofile)$/,
-    /^(bashrc|zshrc|kshrc|profile)$/,
-    /^\.(vimrc|gitconfig|gitignore)$/,
-    /^(Dockerfile|Makefile|Rakefile)$/i,
+    /^\.(?:bashrc|zshrc|kshrc|profile|bash_profile|zprofile)$/,
+    /^(?:bashrc|zshrc|kshrc|profile)$/,
+    /^\.(?:vimrc|gitconfig|gitignore)$/,
+    /^(?:Dockerfile|Makefile|Rakefile)$/i,
   ];
 
   if (textFilePatterns.some((pattern) => pattern.test(file.name))) {

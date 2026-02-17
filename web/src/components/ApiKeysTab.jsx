@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../contexts/ServerContext";
 
@@ -15,11 +15,7 @@ const ApiKeysTab = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    loadApiKeys();
-  }, []);
-
-  const loadApiKeys = async () => {
+  const loadApiKeys = useCallback(async () => {
     setLoading(true);
     const result = await getApiKeys();
     if (result.success) {
@@ -28,7 +24,11 @@ const ApiKeysTab = () => {
       setError(result.message);
     }
     setLoading(false);
-  };
+  }, [getApiKeys]);
+
+  useEffect(() => {
+    loadApiKeys();
+  }, [loadApiKeys]);
 
   const handleGenerateKey = async (e) => {
     e.preventDefault();

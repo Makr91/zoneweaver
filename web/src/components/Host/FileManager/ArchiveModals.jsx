@@ -76,7 +76,7 @@ const CreateArchiveModal = ({
     setFormat(newFormat);
     // Update archive name with new extension
     const nameWithoutExt = archiveName.replace(
-      /\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i,
+      /\.(?:tar\.gz|tar\.bz2|zip|tar|gz)$/i,
       ""
     );
     setArchiveName(`${nameWithoutExt}.${newFormat}`);
@@ -101,8 +101,8 @@ const CreateArchiveModal = ({
         <div className="notification is-info">
           <strong>Creating archive from {selectedFiles.length} item(s):</strong>
           <ul className="mt-2">
-            {selectedFiles.slice(0, 5).map((file, index) => (
-              <li key={index}>📁 {file.name}</li>
+            {selectedFiles.slice(0, 5).map((file) => (
+              <li key={file.path || file.name}>📁 {file.name}</li>
             ))}
             {selectedFiles.length > 5 && (
               <li>... and {selectedFiles.length - 5} more items</li>
@@ -323,14 +323,14 @@ const ExtractArchiveModal = ({
             className="button is-small"
             onClick={() => {
               const archiveNameWithoutExt = archiveFile.name.replace(
-                /\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i,
+                /\.(?:tar\.gz|tar\.bz2|zip|tar|gz)$/i,
                 ""
               );
               setDestination(`${currentPath}/${archiveNameWithoutExt}`);
             }}
           >
             New Folder (
-            {archiveFile.name.replace(/\.(tar\.gz|tar\.bz2|zip|tar|gz)$/i, "")})
+            {archiveFile.name.replace(/\.(?:tar\.gz|tar\.bz2|zip|tar|gz)$/i, "")})
           </button>
         </div>
       </div>

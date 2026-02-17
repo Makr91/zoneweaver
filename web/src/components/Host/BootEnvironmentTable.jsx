@@ -137,9 +137,9 @@ const BootEnvironmentTable = ({
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
         // Try parsing as YYYY-MM-DD HH:MM format
-        const parts = dateStr.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/);
+        const parts = dateStr.match(/(?:\d{4})-(?:\d{2})-(?:\d{2}) (?:\d{2}):(?:\d{2})/);
         if (parts) {
-          return `${parts[1]}-${parts[2]}-${parts[3]} ${parts[4]}:${parts[5]}`;
+          return parts[0];
         }
         return dateStr; // Return as-is if we can't parse it
       }
