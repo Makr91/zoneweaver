@@ -14,11 +14,38 @@ const VncDisplaySettingsSubmenu = ({
 }) => {
   const [showDisplaySettings, setShowDisplaySettings] = useState(false);
 
+  const getSelectValue = () => {
+    if (resize === "scale") {
+      return "local";
+    }
+    if (resize === "remote") {
+      return "remote";
+    }
+    return "none";
+  };
+
+  const handleSelectChange = (e) => {
+    if (onResizeChange) {
+      const val = e.target.value;
+      let newValue = "none";
+      if (val === "local") {
+        newValue = "scale";
+      } else if (val === "remote") {
+        newValue = "remote";
+      }
+      onResizeChange(newValue);
+    }
+  };
+
   return (
     <div
       className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center"
       onMouseEnter={() => setShowDisplaySettings(true)}
       onMouseLeave={() => setShowDisplaySettings(false)}
+      role="button"
+      tabIndex={0}
+      aria-haspopup="true"
+      aria-expanded={showDisplaySettings}
     >
       <div className="is-flex is-align-items-center">
         <span className="icon mr-2">
@@ -35,28 +62,15 @@ const VncDisplaySettingsSubmenu = ({
           <div className="dropdown-content">
             <div className="dropdown-item">
               <div className="field">
-                <label className="label is-small">Scaling Mode</label>
+                <label className="label is-small" htmlFor="vnc-scaling-mode">
+                  Scaling Mode
+                </label>
                 <div className="control">
                   <div className="select is-small is-fullwidth">
                     <select
-                      value={
-                        resize === "scale"
-                          ? "local"
-                          : resize === "remote"
-                            ? "remote"
-                            : "none"
-                      }
-                      onChange={(e) => {
-                        if (onResizeChange) {
-                          const newValue =
-                            e.target.value === "local"
-                              ? "scale"
-                              : e.target.value === "remote"
-                                ? "remote"
-                                : "none";
-                          onResizeChange(newValue);
-                        }
-                      }}
+                      id="vnc-scaling-mode"
+                      value={getSelectValue()}
+                      onChange={handleSelectChange}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <option value="none">None (1:1)</option>

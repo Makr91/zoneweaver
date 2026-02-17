@@ -50,11 +50,22 @@ const VncActionsSubmenu = ({
     onClose();
   };
 
+  const handleKeyDown = (e, callback) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      callback();
+    }
+  };
+
   return (
     <div
       className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
+      role="button"
+      tabIndex={0}
+      aria-haspopup="true"
+      aria-expanded={showActions}
     >
       <div className="is-flex is-align-items-center">
         <span className="icon mr-2">
@@ -77,6 +88,14 @@ const VncActionsSubmenu = ({
                     onToggleReadOnly();
                     onClose();
                   }}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, () => {
+                      onToggleReadOnly();
+                      onClose();
+                    })
+                  }
+                  role="button"
+                  tabIndex={0}
                   title={
                     isReadOnly
                       ? "Enable interactive mode"
@@ -98,26 +117,35 @@ const VncActionsSubmenu = ({
               <>
                 <div
                   className="dropdown-item is-clickable"
-                  onClick={async () => {
-                    try {
-                      if (navigator.clipboard && navigator.clipboard.readText) {
-                        const text = await navigator.clipboard.readText();
-                        if (text) {
-                          if (vncRef?.current?.clipboardPaste) {
-                            vncRef.current.clipboardPaste(text);
-                          } else if (onClipboardPaste) {
-                            onClipboardPaste(text);
+                  onClick={() => {
+                    const handlePaste = async () => {
+                      try {
+                        if (
+                          navigator.clipboard &&
+                          navigator.clipboard.readText
+                        ) {
+                          const text = await navigator.clipboard.readText();
+                          if (text) {
+                            if (vncRef?.current?.clipboardPaste) {
+                              vncRef.current.clipboardPaste(text);
+                            } else if (onClipboardPaste) {
+                              onClipboardPaste(text);
+                            }
                           }
                         }
+                      } catch (error) {
+                        console.error(
+                          "📋 VNC DROPDOWN: Error reading clipboard:",
+                          error
+                        );
                       }
-                    } catch (error) {
-                      console.error(
-                        "📋 VNC DROPDOWN: Error reading clipboard:",
-                        error
-                      );
-                    }
-                    onClose();
+                      onClose();
+                    };
+                    handlePaste();
                   }}
+                  onKeyDown={(e) => handleKeyDown(e, () => {})} // Clipboard API might be blocked in keydown without user activation, but we add handler for consistency
+                  role="button"
+                  tabIndex={0}
                 >
                   <span className="icon mr-2">
                     <i className="fas fa-paste" />
@@ -131,6 +159,9 @@ const VncActionsSubmenu = ({
             <div
               className="dropdown-item is-clickable"
               onClick={handleScreenshot}
+              onKeyDown={(e) => handleKeyDown(e, handleScreenshot)}
+              role="button"
+              tabIndex={0}
             >
               <span className="icon mr-2">
                 <i className="fas fa-camera" />
@@ -142,6 +173,9 @@ const VncActionsSubmenu = ({
               <div
                 className="dropdown-item is-clickable"
                 onClick={handleFullScreen}
+                onKeyDown={(e) => handleKeyDown(e, handleFullScreen)}
+                role="button"
+                tabIndex={0}
               >
                 <span className="icon mr-2">
                   <i className="fas fa-expand" />
@@ -154,6 +188,9 @@ const VncActionsSubmenu = ({
               <div
                 className="dropdown-item is-clickable"
                 onClick={handleNewTab}
+                onKeyDown={(e) => handleKeyDown(e, handleNewTab)}
+                role="button"
+                tabIndex={0}
               >
                 <span className="icon mr-2">
                   <i className="fas fa-external-link-alt" />
