@@ -125,6 +125,16 @@ const ServerSetup = () => {
     }
   };
 
+  const getNotificationClass = () => {
+    if (msg.includes("successful") || msg.includes("verified")) {
+      return "is-success";
+    }
+    if (msg.includes("failed") || msg.includes("error")) {
+      return "is-danger";
+    }
+    return "is-info";
+  };
+
   return (
     <section className="hero is-fullheight is-fullwidth">
       <Helmet>
@@ -157,15 +167,7 @@ const ServerSetup = () => {
                 )}
 
                 {msg && (
-                  <div
-                    className={`notification ${
-                      msg.includes("successful") || msg.includes("verified")
-                        ? "is-success"
-                        : msg.includes("failed") || msg.includes("error")
-                          ? "is-danger"
-                          : "is-info"
-                    }`}
-                  >
+                  <div className={`notification ${getNotificationClass()}`}>
                     <p>{msg}</p>
                   </div>
                 )}
@@ -173,10 +175,13 @@ const ServerSetup = () => {
                 <div className="columns">
                   <div className="column">
                     <div className="field">
-                      <label className="label">Protocol</label>
+                      <label className="label" htmlFor="protocol">
+                        Protocol
+                      </label>
                       <div className="control">
                         <div className="select is-fullwidth">
                           <select
+                            id="protocol"
                             value={protocol}
                             onChange={(e) => setProtocol(e.target.value)}
                             disabled={loading}
@@ -190,9 +195,12 @@ const ServerSetup = () => {
                   </div>
                   <div className="column is-two-thirds">
                     <div className="field">
-                      <label className="label">Server Hostname</label>
+                      <label className="label" htmlFor="hostname">
+                        Server Hostname
+                      </label>
                       <div className="control">
                         <input
+                          id="hostname"
                           type="text"
                           className="input"
                           placeholder="zoneweaver-api.example.com"
@@ -205,9 +213,12 @@ const ServerSetup = () => {
                   </div>
                   <div className="column">
                     <div className="field">
-                      <label className="label">Port</label>
+                      <label className="label" htmlFor="port">
+                        Port
+                      </label>
                       <div className="control">
                         <input
+                          id="port"
                           type="number"
                           className="input"
                           placeholder="5001"
@@ -221,9 +232,12 @@ const ServerSetup = () => {
                 </div>
 
                 <div className="field">
-                  <label className="label">Entity Name</label>
+                  <label className="label" htmlFor="entityName">
+                    Entity Name
+                  </label>
                   <div className="control">
                     <input
+                      id="entityName"
                       type="text"
                       className="input"
                       placeholder="Zoneweaver-Production"

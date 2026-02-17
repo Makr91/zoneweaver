@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
 
 /**
@@ -34,12 +35,26 @@ const ZloginActionsDropdown = ({
     action();
   };
 
+  const itemProps = {
+    className: "dropdown-item",
+    type: "button",
+    style: {
+      border: "none",
+      background: "transparent",
+      width: "100%",
+      textAlign: "left",
+      cursor: "pointer",
+      fontSize: "inherit",
+      color: "inherit",
+    },
+  };
+
   const dropdownContent = (
     <div className="dropdown-content">
       {isAdmin && onToggleReadOnly && (
         <>
-          <a
-            className="dropdown-item"
+          <button
+            {...itemProps}
             onClick={() => handleAction(onToggleReadOnly)}
             title={
               isReadOnly ? "Enable interactive mode" : "Enable read-only mode"
@@ -49,7 +64,7 @@ const ZloginActionsDropdown = ({
               <i className={`fas ${isReadOnly ? "fa-edit" : "fa-eye"}`} />
             </span>
             <span>{isReadOnly ? "Enable Interactive" : "Set Read-Only"}</span>
-          </a>
+          </button>
           <hr className="dropdown-divider" />
         </>
       )}
@@ -63,8 +78,8 @@ const ZloginActionsDropdown = ({
       <hr className="dropdown-divider" />
 
       {onScreenshot && (
-        <a
-          className="dropdown-item"
+        <button
+          {...itemProps}
           onClick={() => handleAction(onScreenshot)}
           title="Capture terminal output as text"
         >
@@ -72,13 +87,14 @@ const ZloginActionsDropdown = ({
             <i className="fas fa-camera" />
           </span>
           <span>Capture Output</span>
-        </a>
+        </button>
       )}
 
       {onKillSession && (
         <>
           <hr className="dropdown-divider" />
-          <a
+          <button
+            {...itemProps}
             className="dropdown-item has-text-danger"
             onClick={() => handleAction(onKillSession)}
             title="Terminate zlogin session"
@@ -87,7 +103,7 @@ const ZloginActionsDropdown = ({
               <i className="fas fa-skull" />
             </span>
             <span>Kill zlogin Session</span>
-          </a>
+          </button>
         </>
       )}
     </div>
@@ -133,8 +149,15 @@ const ZloginActionsDropdown = ({
           className="has-text-link is-clickable is-size-7"
           aria-haspopup="true"
           aria-controls="zlogin-dropdown-menu"
-          onClick={() => setIsActive(!isActive)}
-          disabled={disabled}
+          onClick={() => !disabled && setIsActive(!isActive)}
+          onKeyDown={(e) => {
+            if (!disabled && (e.key === "Enter" || e.key === " ")) {
+              e.preventDefault();
+              setIsActive(!isActive);
+            }
+          }}
+          role="button"
+          tabIndex={disabled ? -1 : 0}
         >
           zlogin Actions
           <span className="icon ml-1">
@@ -147,6 +170,18 @@ const ZloginActionsDropdown = ({
       </div>
     </div>
   );
+};
+
+ZloginActionsDropdown.propTypes = {
+  variant: PropTypes.string,
+  onToggleReadOnly: PropTypes.func,
+  onKillSession: PropTypes.func,
+  onScreenshot: PropTypes.func,
+  isReadOnly: PropTypes.bool,
+  isAdmin: PropTypes.bool,
+  style: PropTypes.object,
+  disabled: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 export default ZloginActionsDropdown;

@@ -43,13 +43,23 @@ const SidebarHeader = () => {
   const isIconOnly =
     userContext.sidebarMinimized || userContext.sidebarWidth <= 38;
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
-    <nav
+    <div
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       className={`${isIconOnly ? "level button" : "level button"}`}
+      role="button"
+      tabIndex={0}
     >
       {getHeaderContent()}
-    </nav>
+    </div>
   );
 };
 export default SidebarHeader;

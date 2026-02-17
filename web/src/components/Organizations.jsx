@@ -15,13 +15,6 @@ const Organizations = () => {
   const [msg, setMsg] = useState("");
 
   /**
-   * Load all organizations on component mount
-   */
-  useEffect(() => {
-    loadOrganizations();
-  }, []);
-
-  /**
    * Load all organizations from the API
    */
   const loadOrganizations = async () => {
@@ -44,6 +37,13 @@ const Organizations = () => {
   };
 
   /**
+   * Load all organizations on component mount
+   */
+  useEffect(() => {
+    loadOrganizations();
+  }, []);
+
+  /**
    * Format date for display
    * @param {string} dateString - ISO date string
    * @returns {string} Formatted date
@@ -53,6 +53,93 @@ const Organizations = () => {
       return "Never";
     }
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const getNotificationClass = () => {
+    if (msg.includes("successfully")) {
+      return "is-success";
+    }
+    if (msg.includes("Error") || msg.includes("Failed")) {
+      return "is-danger";
+    }
+    return "is-warning";
+  };
+
+  const renderTableContent = () => {
+    if (loading) {
+      return (
+        <div className="has-text-centered p-4">
+          <div className="button is-loading is-large is-ghost" />
+          <p className="mt-2">Loading organizations...</p>
+        </div>
+      );
+    }
+
+    if (organizations.length === 0) {
+      return (
+        <div className="has-text-centered p-4">
+          <p className="has-text-grey">No organizations found.</p>
+          <p className="has-text-grey is-size-7">
+            Organizations are created when users register or are invited.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="table-container">
+        <table className="table is-fullwidth is-hoverable">
+          <thead>
+            <tr>
+              <th>Organization Name</th>
+              <th>Description</th>
+              <th>Created</th>
+              <th>Total Users</th>
+              <th>Active Users</th>
+              <th>Admin Users</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {organizations.map((org) => (
+              <tr key={org.id}>
+                <td>
+                  <strong>{org.name}</strong>
+                </td>
+                <td>
+                  {org.description || (
+                    <span className="has-text-grey is-italic">
+                      No description
+                    </span>
+                  )}
+                </td>
+                <td>{formatDate(org.created_at)}</td>
+                <td>
+                  <span className="tag">{org.total_users || 0}</span>
+                </td>
+                <td>
+                  <span className="tag is-success">
+                    {org.active_users || 0}
+                  </span>
+                </td>
+                <td>
+                  <span className="tag is-warning">
+                    {org.admin_users || 0}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`tag ${org.is_active ? "is-success" : "is-danger"}`}
+                  >
+                    {org.is_active ? "Active" : "Inactive"}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   // Check if user has permission to view organizations
@@ -95,15 +182,7 @@ const Organizations = () => {
 
           <div className="px-4">
             {msg && (
-              <div
-                className={`notification ${
-                  msg.includes("successfully")
-                    ? "is-success"
-                    : msg.includes("Error") || msg.includes("Failed")
-                      ? "is-danger"
-                      : "is-warning"
-                }`}
-              >
+              <div className={`notification ${getNotificationClass()}`}>
                 <p>{msg}</p>
               </div>
             )}
@@ -111,74 +190,7 @@ const Organizations = () => {
             {/* Organizations Table */}
             <div className="box">
               <h2 className="title is-5">All Organizations</h2>
-
-              {loading ? (
-                <div className="has-text-centered p-4">
-                  <div className="button is-loading is-large is-ghost" />
-                  <p className="mt-2">Loading organizations...</p>
-                </div>
-              ) : organizations.length === 0 ? (
-                <div className="has-text-centered p-4">
-                  <p className="has-text-grey">No organizations found.</p>
-                  <p className="has-text-grey is-size-7">
-                    Organizations are created when users register or are
-                    invited.
-                  </p>
-                </div>
-              ) : (
-                <div className="table-container">
-                  <table className="table is-fullwidth is-hoverable">
-                    <thead>
-                      <tr>
-                        <th>Organization Name</th>
-                        <th>Description</th>
-                        <th>Created</th>
-                        <th>Total Users</th>
-                        <th>Active Users</th>
-                        <th>Admin Users</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {organizations.map((org) => (
-                        <tr key={org.id}>
-                          <td>
-                            <strong>{org.name}</strong>
-                          </td>
-                          <td>
-                            {org.description || (
-                              <span className="has-text-grey is-italic">
-                                No description
-                              </span>
-                            )}
-                          </td>
-                          <td>{formatDate(org.created_at)}</td>
-                          <td>
-                            <span className="tag">{org.total_users || 0}</span>
-                          </td>
-                          <td>
-                            <span className="tag is-success">
-                              {org.active_users || 0}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="tag is-warning">
-                              {org.admin_users || 0}
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              className={`tag ${org.is_active ? "is-success" : "is-danger"}`}
-                            >
-                              {org.is_active ? "Active" : "Inactive"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              {renderTableContent()}
             </div>
 
             {/* Help Section */}

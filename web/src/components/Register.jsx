@@ -36,6 +36,27 @@ const Register = () => {
   }, [isAuthenticated, navigate]);
 
   /**
+   * Validate invitation code
+   */
+  const validateInvitation = async (code) => {
+    try {
+      const response = await axios.get(`/api/invitations/${code}/validate`);
+      if (response.data.success && response.data.valid) {
+        setInvitation(response.data.invitation);
+        setEmail(response.data.invitation.email); // Pre-fill email
+        setMsg(
+          `You've been invited to join ${response.data.invitation.organizationName}!`
+        );
+      } else {
+        setMsg(`Invalid invitation: ${response.data.reason}`);
+      }
+    } catch (error) {
+      console.error("Error validating invitation:", error);
+      setMsg("Error validating invitation code");
+    }
+  };
+
+  /**
    * Check setup status and invitation on component mount
    */
   useEffect(() => {
@@ -61,27 +82,6 @@ const Register = () => {
       validateInvitation(inviteParam);
     }
   }, [searchParams]);
-
-  /**
-   * Validate invitation code
-   */
-  const validateInvitation = async (code) => {
-    try {
-      const response = await axios.get(`/api/invitations/${code}/validate`);
-      if (response.data.success && response.data.valid) {
-        setInvitation(response.data.invitation);
-        setEmail(response.data.invitation.email); // Pre-fill email
-        setMsg(
-          `You've been invited to join ${response.data.invitation.organizationName}!`
-        );
-      } else {
-        setMsg(`Invalid invitation: ${response.data.reason}`);
-      }
-    } catch (error) {
-      console.error("Error validating invitation:", error);
-      setMsg("Error validating invitation code");
-    }
-  };
 
   /**
    * Handle registration form submission
@@ -150,6 +150,88 @@ const Register = () => {
     }
   };
 
+  const getPageTitle = () => {
+    if (needsSetup) {
+      return "Setup Super Admin Account";
+    }
+    if (invitation) {
+      return `Join ${invitation.organizationName}`;
+    }
+    return "Create Account";
+  };
+
+  const getSubmitButtonText = () => {
+    if (needsSetup) {
+      return "Create Super Admin Account";
+    }
+    if (invitation) {
+      return `Join ${invitation.organizationName}`;
+    }
+    return "Create Account & Organization";
+  };
+
+  const getNotificationClass = () => {
+    if (msg.includes("successful") || msg.includes("invited")) {
+      return "is-success";
+    }
+    if (
+      msg.includes("error") ||
+      msg.includes("failed") ||
+      msg.includes("Invalid")
+    ) {
+      return "is-danger";
+    }
+    return "is-warning";
+  };
+
+  const renderHelpContent = () => {
+    if (needsSetup) {
+      return (
+        <>
+          <p>
+            <strong>Setting up Zoneweaver:</strong>
+          </p>
+          <ul>
+            <li>This is the initial system setup</li>
+            <li>Your account will have super admin privileges</li>
+            <li>You can manage all organizations and users</li>
+            <li>Additional users will need to create or join organizations</li>
+          </ul>
+        </>
+      );
+    }
+    if (invitation) {
+      return (
+        <>
+          <p>
+            <strong>Joining an organization:</strong>
+          </p>
+          <ul>
+            <li>
+              You&apos;ve been invited to join {invitation.organizationName}
+            </li>
+            <li>Complete the form to accept the invitation</li>
+            <li>You&apos;ll become a member of the organization</li>
+            <li>Contact the person who invited you if you have questions</li>
+          </ul>
+        </>
+      );
+    }
+    return (
+      <>
+        <p>
+          <strong>Creating a new organization:</strong>
+        </p>
+        <ul>
+          <li>Enter a unique organization name</li>
+          <li>You&apos;ll become the admin of this new organization</li>
+          <li>You can invite other users to join your organization</li>
+          <li>If the organization already exists, ask for an invitation</li>
+        </ul>
+      </>
+    );
+  };
+
   if (checkingSetup) {
     return (
       <section className="hero is-fullheight is-fullwidth">
@@ -186,21 +268,15 @@ const Register = () => {
           <div className="columns is-centered">
             <div className="column is-4-desktop">
               <form onSubmit={handleRegister} className="box">
-                <h1 className="title has-text-centered">
-                  {needsSetup
-                    ? "Setup Super Admin Account"
-                    : invitation
-                      ? `Join ${invitation.organizationName}`
-                      : "Create Account"}
-                </h1>
+                <h1 className="title has-text-centered">{getPageTitle()}</h1>
 
                 {/* Invitation Info */}
                 {invitation && (
                   <div className="notification is-info mb-4">
                     <p>
-                      <strong>🎉 You're invited!</strong>
+                      <strong>🎉 You&apos;re invited!</strong>
                       <br />
-                      You've been invited to join{" "}
+                      You&apos;ve been invited to join{" "}
                       <strong>{invitation.organizationName}</strong>
                     </p>
                   </div>
@@ -212,32 +288,25 @@ const Register = () => {
                     <p>
                       <strong>⚡ System Setup</strong>
                       <br />
-                      You're creating the first user account. This will be the
-                      super admin account with full system access.
+                      You&apos;re creating the first user account. This will be
+                      the super admin account with full system access.
                     </p>
                   </div>
                 )}
 
                 {msg && (
-                  <div
-                    className={`notification ${
-                      msg.includes("successful") || msg.includes("invited")
-                        ? "is-success"
-                        : msg.includes("error") ||
-                            msg.includes("failed") ||
-                            msg.includes("Invalid")
-                          ? "is-danger"
-                          : "is-warning"
-                    }`}
-                  >
+                  <div className={`notification ${getNotificationClass()}`}>
                     <p>{msg}</p>
                   </div>
                 )}
 
                 <div className="field mt-5">
-                  <label className="label">Username</label>
+                  <label className="label" htmlFor="username">
+                    Username
+                  </label>
                   <div className="controls">
                     <input
+                      id="username"
                       type="text"
                       className="input"
                       autoComplete="username"
@@ -251,9 +320,12 @@ const Register = () => {
                 </div>
 
                 <div className="field mt-5">
-                  <label className="label">Email</label>
+                  <label className="label" htmlFor="email">
+                    Email
+                  </label>
                   <div className="controls">
                     <input
+                      id="email"
                       type="email"
                       className="input"
                       autoComplete="email"
@@ -274,9 +346,12 @@ const Register = () => {
                 {/* Organization field - only show if not first user and no invitation */}
                 {!needsSetup && !invitation && (
                   <div className="field mt-5">
-                    <label className="label">Organization Name</label>
+                    <label className="label" htmlFor="organizationName">
+                      Organization Name
+                    </label>
                     <div className="controls">
                       <input
+                        id="organizationName"
                         type="text"
                         className="input"
                         placeholder="Enter organization name"
@@ -294,9 +369,12 @@ const Register = () => {
                 )}
 
                 <div className="field mt-5">
-                  <label className="label">Password</label>
+                  <label className="label" htmlFor="password">
+                    Password
+                  </label>
                   <div className="controls">
                     <input
+                      id="password"
                       type="password"
                       autoComplete="new-password"
                       className="input"
@@ -310,9 +388,12 @@ const Register = () => {
                 </div>
 
                 <div className="field mt-5">
-                  <label className="label">Confirm Password</label>
+                  <label className="label" htmlFor="confirmPassword">
+                    Confirm Password
+                  </label>
                   <div className="controls">
                     <input
+                      id="confirmPassword"
                       type="password"
                       autoComplete="new-password"
                       className="input"
@@ -331,11 +412,7 @@ const Register = () => {
                     className={`button is-success is-fullwidth ${loading ? "is-loading" : ""}`}
                     disabled={loading}
                   >
-                    {needsSetup
-                      ? "Create Super Admin Account"
-                      : invitation
-                        ? `Join ${invitation.organizationName}`
-                        : "Create Account & Organization"}
+                    {getSubmitButtonText()}
                   </button>
                 </div>
 
@@ -355,62 +432,7 @@ const Register = () => {
                       Need help? Click here
                     </summary>
                     <div className="content is-size-7 has-text-left mt-2 p-3 ">
-                      {needsSetup ? (
-                        <>
-                          <p>
-                            <strong>Setting up Zoneweaver:</strong>
-                          </p>
-                          <ul>
-                            <li>This is the initial system setup</li>
-                            <li>
-                              Your account will have super admin privileges
-                            </li>
-                            <li>You can manage all organizations and users</li>
-                            <li>
-                              Additional users will need to create or join
-                              organizations
-                            </li>
-                          </ul>
-                        </>
-                      ) : invitation ? (
-                        <>
-                          <p>
-                            <strong>Joining an organization:</strong>
-                          </p>
-                          <ul>
-                            <li>
-                              You've been invited to join{" "}
-                              {invitation.organizationName}
-                            </li>
-                            <li>Complete the form to accept the invitation</li>
-                            <li>You'll become a member of the organization</li>
-                            <li>
-                              Contact the person who invited you if you have
-                              questions
-                            </li>
-                          </ul>
-                        </>
-                      ) : (
-                        <>
-                          <p>
-                            <strong>Creating a new organization:</strong>
-                          </p>
-                          <ul>
-                            <li>Enter a unique organization name</li>
-                            <li>
-                              You'll become the admin of this new organization
-                            </li>
-                            <li>
-                              You can invite other users to join your
-                              organization
-                            </li>
-                            <li>
-                              If the organization already exists, ask for an
-                              invitation
-                            </li>
-                          </ul>
-                        </>
-                      )}
+                      {renderHelpContent()}
                     </div>
                   </details>
                 </div>

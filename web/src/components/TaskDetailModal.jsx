@@ -103,33 +103,36 @@ const TaskDetailModal = ({ task, onClose }) => {
 
   // Connect to WebSocket for task output
   useEffect(() => {
-    if (!currentServer) {
-      return;
+    let cleanup;
+
+    if (currentServer) {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/api/servers/${currentServer.hostname}:${currentServer.port}/tasks/${task.id}/stream`;
+
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "output") {
+          msg._ui_id = Date.now() + Math.random();
+          setOutput((prev) => [...prev, msg]);
+        }
+      };
+
+      ws.onerror = (err) => {
+        console.error("Task stream WebSocket error:", err);
+      };
+
+      cleanup = () => {
+        if (wsRef.current) {
+          wsRef.current.close();
+          wsRef.current = null;
+        }
+      };
     }
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/api/servers/${currentServer.hostname}:${currentServer.port}/tasks/${task.id}/stream`;
-
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === "output") {
-        setOutput((prev) => [...prev, msg]);
-      }
-    };
-
-    ws.onerror = (err) => {
-      console.error("Task stream WebSocket error:", err);
-    };
-
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-    };
+    return cleanup;
   }, [task.id, currentServer]);
 
   // Auto-scroll output to bottom
@@ -252,9 +255,9 @@ const TaskDetailModal = ({ task, onClose }) => {
             {output.length === 0 && (
               <span className="has-text-grey-light">No output available</span>
             )}
-            {output.map((entry, idx) => (
+            {output.map((entry) => (
               <div
-                key={idx}
+                key={entry._ui_id}
                 className={
                   entry.stream === "stderr"
                     ? "has-text-danger"

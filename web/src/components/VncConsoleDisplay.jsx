@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 
 import VncActionsDropdown from "./VncActionsDropdown";
@@ -182,46 +183,56 @@ const VncConsoleDisplay = ({
 
     {/* VNC Console Content */}
     <div className="zw-console-content">
-      {zoneDetails.vnc_session_info ? (
-        <VncViewerReact
-          ref={vncRef}
-          key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
-          serverHostname={currentServer.hostname}
-          serverPort={currentServer.port}
-          serverProtocol={currentServer.protocol}
-          zoneName={selectedZone}
-          viewOnly={previewVncViewOnly}
-          autoConnect
-          showControls={false}
-          quality={vncSettings.quality}
-          compression={vncSettings.compression}
-          resize={vncSettings.resize}
-          showDot={vncSettings.showDot}
-          resizeSession={vncSettings.resize === "remote"}
-          onClipboard={(event) => {
-            console.log(
-              "📋 VNC PREVIEW: Clipboard received from server:",
-              event
-            );
-          }}
-          className="zw-vnc-container"
-        />
-      ) : zoneDetails.configuration?.zonepath ? (
-        <img
-          src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
-          alt={`Screenshot of ${selectedZone}`}
-          className="zw-console-screenshot"
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.nextElementSibling.style.display = "flex";
-          }}
-          onLoad={(e) => {
-            if (e.target.nextElementSibling) {
-              e.target.nextElementSibling.style.display = "none";
-            }
-          }}
-        />
-      ) : null}
+      {(() => {
+        if (zoneDetails.vnc_session_info) {
+          return (
+            <VncViewerReact
+              ref={vncRef}
+              key={`vnc-preview-${selectedZone}-${previewVncViewOnly}-${vncReconnectKey}`}
+              serverHostname={currentServer.hostname}
+              serverPort={currentServer.port}
+              serverProtocol={currentServer.protocol}
+              zoneName={selectedZone}
+              viewOnly={previewVncViewOnly}
+              autoConnect
+              showControls={false}
+              quality={vncSettings.quality}
+              compression={vncSettings.compression}
+              resize={vncSettings.resize}
+              showDot={vncSettings.showDot}
+              resizeSession={vncSettings.resize === "remote"}
+              onClipboard={(event) => {
+                console.log(
+                  "📋 VNC PREVIEW: Clipboard received from server:",
+                  event
+                );
+              }}
+              className="zw-vnc-container"
+            />
+          );
+        }
+        if (zoneDetails.configuration?.zonepath) {
+          return (
+            <img
+              src={`/api/servers/${encodeURIComponent(currentServer.hostname)}:${currentServer.port}/zones/${encodeURIComponent(selectedZone)}/screenshot`}
+              alt={`Screenshot of ${selectedZone}`}
+              className="zw-console-screenshot"
+              onError={(e) => {
+                e.target.style.display = "none";
+                if (e.target.nextElementSibling) {
+                  e.target.nextElementSibling.style.display = "flex";
+                }
+              }}
+              onLoad={(e) => {
+                if (e.target.nextElementSibling) {
+                  e.target.nextElementSibling.style.display = "none";
+                }
+              }}
+            />
+          );
+        }
+        return null;
+      })()}
 
       {!(
         zoneDetails.vnc_session_info?.proxy_url ||
@@ -254,5 +265,48 @@ const VncConsoleDisplay = ({
     </div>
   </div>
 );
+
+VncConsoleDisplay.propTypes = {
+  zoneDetails: PropTypes.shape({
+    vnc_session_info: PropTypes.shape({
+      web_port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      created_at: PropTypes.string,
+      proxy_url: PropTypes.string,
+      console_url: PropTypes.string,
+    }),
+    configuration: PropTypes.shape({
+      zonepath: PropTypes.string,
+    }),
+  }).isRequired,
+  selectedZone: PropTypes.string,
+  currentServer: PropTypes.shape({
+    hostname: PropTypes.string,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    protocol: PropTypes.string,
+  }),
+  user: PropTypes.shape({
+    role: PropTypes.string,
+  }),
+  loading: PropTypes.bool,
+  loadingVnc: PropTypes.bool,
+  previewVncViewOnly: PropTypes.bool,
+  vncReconnectKey: PropTypes.number,
+  vncSettings: PropTypes.object,
+  vncRef: PropTypes.object,
+  hasZlogin: PropTypes.bool,
+  setLoading: PropTypes.func,
+  setError: PropTypes.func,
+  setPreviewVncViewOnly: PropTypes.func,
+  setZoneDetails: PropTypes.func,
+  setActiveConsoleType: PropTypes.func,
+  startZloginSessionExplicitly: PropTypes.func,
+  handleVncConsole: PropTypes.func,
+  handleKillVncSession: PropTypes.func,
+  handleVncQualityChange: PropTypes.func,
+  handleVncCompressionChange: PropTypes.func,
+  handleVncResizeChange: PropTypes.func,
+  handleVncShowDotChange: PropTypes.func,
+  handleVncClipboardPaste: PropTypes.func,
+};
 
 export default React.memo(VncConsoleDisplay);

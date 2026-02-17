@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useRef, useEffect, useContext, memo, useState } from "react";
 
 import { useFooter } from "../contexts/FooterContext";
@@ -139,6 +140,21 @@ const TaskRow = memo(({ task, visibleColumns, onSelect }) => (
     ))}
   </tr>
 ));
+
+TaskRow.displayName = "TaskRow";
+
+TaskRow.propTypes = {
+  task: PropTypes.shape({
+    status: PropTypes.string,
+  }).isRequired,
+  visibleColumns: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      render: PropTypes.func.isRequired,
+    })
+  ).isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
 
 const Tasks = () => {
   const { tasks, loadingTasks, tasksError } = useFooter();

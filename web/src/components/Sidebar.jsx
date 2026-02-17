@@ -23,15 +23,15 @@ const Sidebar = () => {
     setSettingsExpanded,
   } = userSettings;
 
-  const isHostRoute =
-    location.pathname.startsWith("/ui/host") ||
-    location.pathname === "/ui/hosts";
-  const isZoneRoute =
-    location.pathname.startsWith("/ui/zone") ||
-    location.pathname === "/ui/zones";
-  const isSettingsRoute = location.pathname.startsWith("/ui/settings");
-
   useEffect(() => {
+    const isHostRoute =
+      location.pathname.startsWith("/ui/host") ||
+      location.pathname === "/ui/hosts";
+    const isZoneRoute =
+      location.pathname.startsWith("/ui/zone") ||
+      location.pathname === "/ui/zones";
+    const isSettingsRoute = location.pathname.startsWith("/ui/settings");
+
     if (isHostRoute) {
       setHostsExpanded(true);
       setZonesExpanded(false);
@@ -45,7 +45,12 @@ const Sidebar = () => {
       setHostsExpanded(false);
       setZonesExpanded(false);
     }
-  }, [location.pathname]);
+  }, [
+    location.pathname,
+    setHostsExpanded,
+    setZonesExpanded,
+    setSettingsExpanded,
+  ]);
 
   return (
     <aside className="menu is-flex-grow-1">
