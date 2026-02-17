@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-const createSortHandler = (setSortState, defaultColumn, defaultDirection) =>
-  (column, event) => {
+const createSortHandler =
+  (setSortState, defaultColumn, defaultDirection) => (column, event) => {
     setSortState((prevSort) => {
       const existingIndex = prevSort.findIndex(
         (sort) => sort.column === column
@@ -33,8 +33,8 @@ const createSortHandler = (setSortState, defaultColumn, defaultDirection) =>
     });
   };
 
-const createSortReset = (setSortState, defaultColumn, defaultDirection) =>
-  () => {
+const createSortReset =
+  (setSortState, defaultColumn, defaultDirection) => () => {
     setSortState([{ column: defaultColumn, direction: defaultDirection }]);
   };
 

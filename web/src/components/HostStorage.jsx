@@ -69,11 +69,9 @@ const HostStorage = () => {
     user,
     getServers,
     loadStorageData,
-    servers,
   } = useHostStorageData();
 
-  // Use useMemo to prevent getServers() calls on every render
-  const serverList = useMemo(() => getServers(), [getServers, servers]);
+  const serverList = useMemo(() => getServers(), [getServers]);
 
   if (!user) {
     return (

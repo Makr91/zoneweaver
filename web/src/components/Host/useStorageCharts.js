@@ -87,15 +87,12 @@ export const useStorageCharts = () => {
       const mfuSize = parseFloat(arcRecord.mfu_size) || 0;
       const dataSize = parseFloat(arcRecord.data_size) || 0;
       const metadataSize = parseFloat(arcRecord.metadata_size) || 0;
-      const arcHits =
-        parseFloat(arcRecord.hits || arcRecord.arc_hits) || 0;
+      const arcHits = parseFloat(arcRecord.hits || arcRecord.arc_hits) || 0;
       const arcMisses =
         parseFloat(arcRecord.misses || arcRecord.arc_misses) || 0;
       const hitRatio =
         arcRecord.hit_ratio ||
-        (arcHits + arcMisses > 0
-          ? (arcHits / (arcHits + arcMisses)) * 100
-          : 0);
+        (arcHits + arcMisses > 0 ? (arcHits / (arcHits + arcMisses)) * 100 : 0);
       const dataDemandEfficiency =
         parseFloat(arcRecord.data_demand_efficiency) || 0;
       const dataPrefetchEfficiency =
