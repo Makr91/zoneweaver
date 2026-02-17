@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { ConfirmModal } from "../common";
 
 import AddRepositoryModal from "./AddRepositoryModal";
 import EditRepositoryModal from "./EditRepositoryModal";
@@ -12,6 +14,7 @@ const RepositorySection = ({ server, onError }) => {
   const [selectedRepository, setSelectedRepository] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [repoToDelete, setRepoToDelete] = useState(null);
   const [filters, setFilters] = useState({
     publisher: "",
     enabledOnly: false,
@@ -20,12 +23,7 @@ const RepositorySection = ({ server, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load repositories on component mount and when filters change
-  useEffect(() => {
-    loadRepositories();
-  }, [server, filters.enabledOnly, filters.publisher]);
-
-  const loadRepositories = async () => {
+  const loadRepositories = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -72,7 +70,19 @@ const RepositorySection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    onError,
+    filters.enabledOnly,
+    filters.publisher,
+    filters.type,
+  ]);
+
+  // Load repositories on component mount and when filters change
+  useEffect(() => {
+    loadRepositories();
+  }, [loadRepositories]);
 
   const handleToggleRepository = async (publisherName, enable) => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -108,18 +118,7 @@ const RepositorySection = ({ server, onError }) => {
     }
   };
 
-  const handleDeleteRepository = async (publisherName) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to remove repository "${publisherName}"?`
-      )
-    ) {
-      return;
-    }
-
+  const performDeleteRepository = async (publisherName) => {
     try {
       setLoading(true);
       onError("");
@@ -144,6 +143,17 @@ const RepositorySection = ({ server, onError }) => {
       onError(`Error deleting repository "${publisherName}": ${err.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteRepository = (publisherName) => {
+    setRepoToDelete(publisherName);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (repoToDelete) {
+      await performDeleteRepository(repoToDelete);
+      setRepoToDelete(null);
     }
   };
 
@@ -202,9 +212,13 @@ const RepositorySection = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Publisher</label>
+              <label className="label" htmlFor="publisher-filter">
+                Filter by Publisher
+              </label>
+
               <div className="control">
                 <input
+                  id="publisher-filter"
                   className="input"
                   type="text"
                   placeholder="Enter publisher name..."
@@ -218,10 +232,14 @@ const RepositorySection = ({ server, onError }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Type</label>
+              <label className="label" htmlFor="type-filter">
+                Filter by Type
+              </label>
+
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="type-filter"
                     value={filters.type}
                     onChange={(e) => handleFilterChange("type", e.target.value)}
                   >
@@ -235,10 +253,14 @@ const RepositorySection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Enabled Only</label>
+              <label className="label" htmlFor="enabled-only-filter">
+                Enabled Only
+              </label>
+
               <div className="control">
                 <label className="switch is-medium">
                   <input
+                    id="enabled-only-filter"
                     type="checkbox"
                     checked={filters.enabledOnly}
                     onChange={(e) =>
@@ -253,7 +275,9 @@ const RepositorySection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="refresh-button">
+                Refresh
+              </label>
               <div className="control">
                 <button
                   className="button is-info"
@@ -270,7 +294,9 @@ const RepositorySection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="clear-button">
+                Clear
+              </label>
               <div className="control">
                 <button
                   className="button"
@@ -355,8 +381,27 @@ const RepositorySection = ({ server, onError }) => {
           onError={onError}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {repoToDelete && (
+        <ConfirmModal
+          isOpen={!!repoToDelete}
+          onClose={() => setRepoToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          title="Delete Repository"
+          message={`Are you sure you want to delete repository "${repoToDelete}"?`}
+          confirmText="Delete"
+          confirmVariant="is-danger"
+          loading={loading}
+        />
+      )}
     </div>
   );
+};
+
+RepositorySection.propTypes = {
+  server: PropTypes.object.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default RepositorySection;

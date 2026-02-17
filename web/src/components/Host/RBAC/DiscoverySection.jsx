@@ -1,7 +1,12 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
-import { useServers } from "../../contexts/ServerContext";
-import { useDebounce } from "../../utils/debounce";
+import { useServers } from "../../../contexts/ServerContext";
+import { useDebounce } from "../../../utils/debounce";
+
+import AuthorizationsTab from "./AuthorizationsTab";
+import ProfilesTab from "./ProfilesTab";
+import RolesTab from "./RolesTab";
 
 const RBACDiscoverySection = ({ server, onError }) => {
   const [activeTab, setActiveTab] = useState("authorizations");
@@ -21,23 +26,7 @@ const RBACDiscoverySection = ({ server, onError }) => {
   const debouncedAuthFilter = useDebounce(filters.authorizationFilter, 500);
   const debouncedProfileFilter = useDebounce(filters.profileFilter, 500);
 
-  useEffect(() => {
-    if (activeTab === "authorizations") {
-      loadAuthorizations();
-    } else if (activeTab === "profiles") {
-      loadProfiles();
-    } else if (activeTab === "roles") {
-      loadRoles();
-    }
-  }, [
-    server,
-    activeTab,
-    debouncedAuthFilter,
-    debouncedProfileFilter,
-    filters.limit,
-  ]);
-
-  const loadAuthorizations = async () => {
+  const loadAuthorizations = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -76,9 +65,15 @@ const RBACDiscoverySection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    debouncedAuthFilter,
+    filters.limit,
+    onError,
+  ]);
 
-  const loadProfiles = async () => {
+  const loadProfiles = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -117,9 +112,15 @@ const RBACDiscoverySection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    debouncedProfileFilter,
+    filters.limit,
+    onError,
+  ]);
 
-  const loadRoles = async () => {
+  const loadRoles = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -148,7 +149,17 @@ const RBACDiscoverySection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, onError]);
+
+  useEffect(() => {
+    if (activeTab === "authorizations") {
+      loadAuthorizations();
+    } else if (activeTab === "profiles") {
+      loadProfiles();
+    } else if (activeTab === "roles") {
+      loadRoles();
+    }
+  }, [activeTab, loadAuthorizations, loadProfiles, loadRoles]);
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({
@@ -172,6 +183,22 @@ const RBACDiscoverySection = ({ server, onError }) => {
     });
   };
 
+  const handleRefresh = () => {
+    if (activeTab === "authorizations") {
+      loadAuthorizations();
+    } else if (activeTab === "profiles") {
+      loadProfiles();
+    } else {
+      loadRoles();
+    }
+  };
+
+  const tabs = [
+    { key: "authorizations", label: "Authorizations", icon: "fa-shield-alt" },
+    { key: "profiles", label: "Profiles", icon: "fa-id-card" },
+    { key: "roles", label: "Roles", icon: "fa-user-shield" },
+  ];
+
   return (
     <div>
       <div className="mb-4">
@@ -186,30 +213,22 @@ const RBACDiscoverySection = ({ server, onError }) => {
       {/* Tab Navigation */}
       <div className="tabs is-boxed mb-0">
         <ul>
-          <li className={activeTab === "authorizations" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("authorizations")}>
-              <span className="icon is-small">
-                <i className="fas fa-shield-alt" />
-              </span>
-              <span>Authorizations</span>
-            </a>
-          </li>
-          <li className={activeTab === "profiles" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("profiles")}>
-              <span className="icon is-small">
-                <i className="fas fa-id-card" />
-              </span>
-              <span>Profiles</span>
-            </a>
-          </li>
-          <li className={activeTab === "roles" ? "is-active" : ""}>
-            <a onClick={() => setActiveTab("roles")}>
-              <span className="icon is-small">
-                <i className="fas fa-user-shield" />
-              </span>
-              <span>Roles</span>
-            </a>
-          </li>
+          {tabs.map((tab) => (
+            <li
+              key={tab.key}
+              className={activeTab === tab.key ? "is-active" : ""}
+            >
+              <button
+                className="button is-text"
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <span className="icon is-small">
+                  <i className={`fas ${tab.icon}`} />
+                </span>
+                <span>{tab.label}</span>
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
 
@@ -219,7 +238,7 @@ const RBACDiscoverySection = ({ server, onError }) => {
           {activeTab !== "roles" && (
             <div className="column">
               <div className="field">
-                <label className="label">
+                <label className="label" htmlFor="rbac-filter">
                   Filter{" "}
                   {activeTab === "authorizations"
                     ? "Authorizations"
@@ -227,6 +246,7 @@ const RBACDiscoverySection = ({ server, onError }) => {
                 </label>
                 <div className="control">
                   <input
+                    id="rbac-filter"
                     className="input"
                     type="text"
                     placeholder={
@@ -256,10 +276,13 @@ const RBACDiscoverySection = ({ server, onError }) => {
           {activeTab !== "roles" && (
             <div className="column is-narrow">
               <div className="field">
-                <label className="label">Limit Results</label>
+                <label className="label" htmlFor="rbac-limit">
+                  Limit Results
+                </label>
                 <div className="control">
                   <div className="select">
                     <select
+                      id="rbac-limit"
                       value={filters.limit}
                       onChange={(e) =>
                         handleFilterChange("limit", parseInt(e.target.value))
@@ -278,19 +301,14 @@ const RBACDiscoverySection = ({ server, onError }) => {
 
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="rbac-refresh">
+                Refresh
+              </label>
               <div className="control">
                 <button
+                  id="rbac-refresh"
                   className="button is-info"
-                  onClick={() => {
-                    if (activeTab === "authorizations") {
-                      loadAuthorizations();
-                    } else if (activeTab === "profiles") {
-                      loadProfiles();
-                    } else {
-                      loadRoles();
-                    }
-                  }}
+                  onClick={handleRefresh}
                   disabled={loading}
                 >
                   <span className="icon">
@@ -305,9 +323,12 @@ const RBACDiscoverySection = ({ server, onError }) => {
           {activeTab !== "roles" && (
             <div className="column is-narrow">
               <div className="field">
-                <label className="label">&nbsp;</label>
+                <label className="label" htmlFor="rbac-clear">
+                  Clear
+                </label>
                 <div className="control">
                   <button
+                    id="rbac-clear"
                     className="button"
                     onClick={clearFilters}
                     disabled={loading}
@@ -342,64 +363,11 @@ const RBACDiscoverySection = ({ server, onError }) => {
               </div>
             </div>
 
-            {loading && authorizations.length === 0 ? (
-              <div className="has-text-centered p-4">
-                <span className="icon is-large">
-                  <i className="fas fa-spinner fa-spin fa-2x" />
-                </span>
-                <p className="mt-2">Loading authorizations...</p>
-              </div>
-            ) : authorizations.length === 0 ? (
-              <div className="has-text-centered p-4">
-                <span className="icon is-large has-text-grey">
-                  <i className="fas fa-shield-alt fa-2x" />
-                </span>
-                <p className="mt-2 has-text-grey">No authorizations found</p>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table className="table is-fullwidth is-hoverable">
-                  <thead>
-                    <tr>
-                      <th>Authorization</th>
-                      <th>Short Description</th>
-                      <th>Long Description</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {authorizations.map((auth, index) => (
-                      <tr key={index}>
-                        <td>
-                          <code className="is-size-7">{auth.name}</code>
-                        </td>
-                        <td className="is-size-7">
-                          {auth.short_description || "N/A"}
-                        </td>
-                        <td className="is-size-7" title={auth.long_description}>
-                          {auth.long_description
-                            ? auth.long_description.length > 50
-                              ? `${auth.long_description.substring(0, 50)}...`
-                              : auth.long_description
-                            : "N/A"}
-                        </td>
-                        <td>
-                          <button
-                            className="button is-small"
-                            onClick={() => copyToClipboard(auth.name)}
-                            title="Copy to clipboard"
-                          >
-                            <span className="icon is-small">
-                              <i className="fas fa-copy" />
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <AuthorizationsTab
+              authorizations={authorizations}
+              loading={loading}
+              copyToClipboard={copyToClipboard}
+            />
           </div>
         )}
 
@@ -419,56 +387,11 @@ const RBACDiscoverySection = ({ server, onError }) => {
               </div>
             </div>
 
-            {loading && profiles.length === 0 ? (
-              <div className="has-text-centered p-4">
-                <span className="icon is-large">
-                  <i className="fas fa-spinner fa-spin fa-2x" />
-                </span>
-                <p className="mt-2">Loading profiles...</p>
-              </div>
-            ) : profiles.length === 0 ? (
-              <div className="has-text-centered p-4">
-                <span className="icon is-large has-text-grey">
-                  <i className="fas fa-id-card fa-2x" />
-                </span>
-                <p className="mt-2 has-text-grey">No profiles found</p>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table className="table is-fullwidth is-hoverable">
-                  <thead>
-                    <tr>
-                      <th>Profile Name</th>
-                      <th>Description</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {profiles.map((profile, index) => (
-                      <tr key={index}>
-                        <td>
-                          <strong>{profile.name}</strong>
-                        </td>
-                        <td className="is-size-7" title={profile.description}>
-                          {profile.description || "N/A"}
-                        </td>
-                        <td>
-                          <button
-                            className="button is-small"
-                            onClick={() => copyToClipboard(profile.name)}
-                            title="Copy to clipboard"
-                          >
-                            <span className="icon is-small">
-                              <i className="fas fa-copy" />
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <ProfilesTab
+              profiles={profiles}
+              loading={loading}
+              copyToClipboard={copyToClipboard}
+            />
           </div>
         )}
 
@@ -488,63 +411,11 @@ const RBACDiscoverySection = ({ server, onError }) => {
               </div>
             </div>
 
-            {loading && roles.length === 0 ? (
-              <div className="has-text-centered p-4">
-                <span className="icon is-large">
-                  <i className="fas fa-spinner fa-spin fa-2x" />
-                </span>
-                <p className="mt-2">Loading roles...</p>
-              </div>
-            ) : roles.length === 0 ? (
-              <div className="has-text-centered p-4">
-                <span className="icon is-large has-text-grey">
-                  <i className="fas fa-user-shield fa-2x" />
-                </span>
-                <p className="mt-2 has-text-grey">No roles found</p>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table className="table is-fullwidth is-hoverable">
-                  <thead>
-                    <tr>
-                      <th>Role Name</th>
-                      <th>Description</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {roles.map((role, index) => (
-                      <tr key={index}>
-                        <td>
-                          <div className="is-flex is-align-items-center">
-                            <span className="icon has-text-warning">
-                              <i className="fas fa-user-shield" />
-                            </span>
-                            <span className="ml-2">
-                              <strong>{role.name}</strong>
-                            </span>
-                          </div>
-                        </td>
-                        <td className="is-size-7" title={role.description}>
-                          {role.description || "N/A"}
-                        </td>
-                        <td>
-                          <button
-                            className="button is-small"
-                            onClick={() => copyToClipboard(role.name)}
-                            title="Copy to clipboard"
-                          >
-                            <span className="icon is-small">
-                              <i className="fas fa-copy" />
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <RolesTab
+              roles={roles}
+              loading={loading}
+              copyToClipboard={copyToClipboard}
+            />
           </div>
         )}
       </div>
@@ -559,13 +430,18 @@ const RBACDiscoverySection = ({ server, onError }) => {
         {activeTab === "authorizations" && (
           <p className="mt-2">
             <strong>Authorization Wildcards:</strong> Many authorizations
-            support wildcards (*). For example, "solaris.admin.*" grants all
-            admin-related authorizations.
+            support wildcards (*). For example, &quot;solaris.admin.*&quot;
+            grants all admin-related authorizations.
           </p>
         )}
       </div>
     </div>
   );
+};
+
+RBACDiscoverySection.propTypes = {
+  server: PropTypes.object.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default RBACDiscoverySection;

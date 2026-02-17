@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useServers } from "../../contexts/ServerContext";
 
 import GroupSection from "./GroupSection";
-import RBACDiscoverySection from "./RBACDiscoverySection";
+import RBACDiscoverySection from "./RBAC/DiscoverySection";
 import RoleSection from "./RoleSection";
 import UserSection from "./UserSection";
 

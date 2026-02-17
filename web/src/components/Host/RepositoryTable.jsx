@@ -1,15 +1,14 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const RepositoryTable = ({
   repositories,
-  repositoryGroups,
   loading,
   onToggle,
   onEdit,
   onDelete,
 }) => {
   const [actionLoading, setActionLoading] = useState({});
-
   const handleAction = async (repo, action) => {
     const key = `${repo.name}-${action}`;
     setActionLoading((prev) => ({ ...prev, [key]: true }));
@@ -28,7 +27,6 @@ const RepositoryTable = ({
       setActionLoading((prev) => ({ ...prev, [key]: false }));
     }
   };
-
   const getStatusIcon = (repo) => {
     const isEnabled = repo.enabled !== false;
     if (repo.status === "online" && isEnabled) {
@@ -62,7 +60,6 @@ const RepositoryTable = ({
     }
     return <span className="tag is-danger is-small">Offline</span>;
   };
-
   const getTypeTag = (type) => {
     switch (type?.toLowerCase()) {
       case "origin":
@@ -75,7 +72,6 @@ const RepositoryTable = ({
         );
     }
   };
-
   const getProxyTag = (proxy) => {
     if (proxy === "T" || proxy === true) {
       return <span className="tag is-warning is-small">Yes</span>;
@@ -105,7 +101,6 @@ const RepositoryTable = ({
 
     return actions;
   };
-
   const formatLocation = (location) => {
     if (!location) {
       return "N/A";
@@ -117,7 +112,6 @@ const RepositoryTable = ({
     }
     return location;
   };
-
   if (loading && repositories.length === 0) {
     return (
       <div className="has-text-centered p-4">
@@ -128,7 +122,6 @@ const RepositoryTable = ({
       </div>
     );
   }
-
   if (repositories.length === 0) {
     return (
       <div className="has-text-centered p-4">
@@ -139,7 +132,6 @@ const RepositoryTable = ({
       </div>
     );
   }
-
   return (
     <div className="table-container">
       <table className="table is-fullwidth is-hoverable is-striped">
@@ -154,11 +146,10 @@ const RepositoryTable = ({
           </tr>
         </thead>
         <tbody>
-          {repositories.map((repo, index) => {
+          {repositories.map((repo) => {
             const availableActions = getAvailableActions(repo);
-
             return (
-              <tr key={`${repo.name}-${repo.type}-${index}`}>
+              <tr key={`${repo.name}-${repo.type}`}>
                 <td>
                   <div className="is-flex is-align-items-center">
                     {getStatusIcon(repo)}
@@ -234,6 +225,14 @@ const RepositoryTable = ({
       </table>
     </div>
   );
+};
+
+RepositoryTable.propTypes = {
+  repositories: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default RepositoryTable;

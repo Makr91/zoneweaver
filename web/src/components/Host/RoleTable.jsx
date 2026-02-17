@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
@@ -62,8 +63,8 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
           </tr>
         </thead>
         <tbody>
-          {roles.map((role, index) => (
-            <tr key={role.rolename || index}>
+          {roles.map((role) => (
+            <tr key={role.rolename || role.name}>
               <td>
                 <div className="is-flex is-align-items-center">
                   <span className="icon has-text-warning">
@@ -90,8 +91,8 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
               <td>
                 {role.authorizations && role.authorizations.length > 0 ? (
                   <div className="tags">
-                    {role.authorizations.slice(0, 2).map((auth, idx) => (
-                      <span key={idx} className="tag is-info is-small">
+                    {role.authorizations.slice(0, 2).map((auth) => (
+                      <span key={auth} className="tag is-info is-small">
                         {auth}
                       </span>
                     ))}
@@ -108,9 +109,9 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
               <td>
                 {role.profiles && role.profiles.length > 0 ? (
                   <div className="tags">
-                    {role.profiles.slice(0, 2).map((profile, idx) => (
+                    {role.profiles.slice(0, 2).map((profile) => (
                       <span
-                        key={idx}
+                        key={profile}
                         className="tag is-primary is-light is-small"
                       >
                         {profile}
@@ -163,6 +164,13 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+RoleTable.propTypes = {
+  roles: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onViewDetails: PropTypes.func.isRequired,
 };
 
 export default RoleTable;

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import ContentModal from "../common/ContentModal";
 
 const RoleDetailsModal = ({ role, onClose }) => {
@@ -96,9 +98,9 @@ const RoleDetailsModal = ({ role, onClose }) => {
                   <td>
                     {role.authorizations && role.authorizations.length > 0 ? (
                       <div className="content">
-                        {role.authorizations.map((auth, index) => (
+                        {role.authorizations.map((auth) => (
                           <div
-                            key={index}
+                            key={auth}
                             className="is-family-monospace is-size-7"
                           >
                             <span className="tag is-info is-light mr-1">
@@ -120,8 +122,11 @@ const RoleDetailsModal = ({ role, onClose }) => {
                   <td>
                     {role.profiles && role.profiles.length > 0 ? (
                       <div className="tags">
-                        {role.profiles.map((profile, index) => (
-                          <span key={index} className="tag is-primary is-light">
+                        {role.profiles.map((profile) => (
+                          <span
+                            key={profile}
+                            className="tag is-primary is-light"
+                          >
                             {profile}
                           </span>
                         ))}
@@ -160,8 +165,8 @@ const RoleDetailsModal = ({ role, onClose }) => {
               <code>su</code> or <code>pfexec</code>
             </li>
             <li>
-              When a user assumes a role, they gain the role's authorizations
-              and profiles
+              When a user assumes a role, they gain the role&apos;s
+              authorizations and profiles
             </li>
             <li>
               Roles typically use the profile shell (<code>/bin/pfsh</code>) for
@@ -180,8 +185,8 @@ const RoleDetailsModal = ({ role, onClose }) => {
           </p>
           <p>
             To allow users to assume this role, edit their user account and add
-            "<strong>{role.rolename}</strong>" to their roles list in the User
-            Management section.
+            &quot;<strong>{role.rolename}</strong>&quot; to their roles list in
+            the User Management section.
           </p>
         </div>
       </div>
@@ -202,6 +207,18 @@ const RoleDetailsModal = ({ role, onClose }) => {
       )}
     </ContentModal>
   );
+};
+
+RoleDetailsModal.propTypes = {
+  role: PropTypes.shape({
+    rolename: PropTypes.string.isRequired,
+    comment: PropTypes.string,
+    shell: PropTypes.string,
+    home: PropTypes.string,
+    authorizations: PropTypes.arrayOf(PropTypes.string),
+    profiles: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default RoleDetailsModal;

@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 import { ContentModal } from "../common";
 
 const ServiceDetailsModal = ({ service, onClose }) => {
@@ -17,6 +19,23 @@ const ServiceDetailsModal = ({ service, onClose }) => {
   };
 
   const detailsArray = formatDetails(service.details);
+
+  const getStateTagClass = (state) => {
+    switch (state) {
+      case "online":
+        return "is-success";
+      case "disabled":
+        return "is-grey";
+      case "offline":
+        return "is-danger";
+      case "legacy_run":
+        return "is-info";
+      case "maintenance":
+        return "is-warning";
+      default:
+        return "is-light";
+    }
+  };
 
   return (
     <ContentModal
@@ -42,19 +61,7 @@ const ServiceDetailsModal = ({ service, onClose }) => {
                   <strong>State</strong>
                 </td>
                 <td>
-                  <span
-                    className={`tag ${
-                      service.state === "online"
-                        ? "is-success"
-                        : service.state === "disabled"
-                          ? "is-grey"
-                          : service.state === "offline"
-                            ? "is-danger"
-                            : service.state === "legacy_run"
-                              ? "is-info"
-                              : "is-light"
-                    }`}
-                  >
+                  <span className={`tag ${getStateTagClass(service.state)}`}>
                     {service.state}
                   </span>
                 </td>
@@ -77,8 +84,8 @@ const ServiceDetailsModal = ({ service, onClose }) => {
           <div className="table-container">
             <table className="table is-fullwidth">
               <tbody>
-                {detailsArray.map((detail, index) => (
-                  <tr key={index}>
+                {detailsArray.map((detail) => (
+                  <tr key={detail.label}>
                     <td>
                       <strong>{detail.label}</strong>
                     </td>
@@ -107,6 +114,16 @@ const ServiceDetailsModal = ({ service, onClose }) => {
       )}
     </ContentModal>
   );
+};
+
+ServiceDetailsModal.propTypes = {
+  service: PropTypes.shape({
+    fmri: PropTypes.string,
+    state: PropTypes.string,
+    stime: PropTypes.string,
+    details: PropTypes.object,
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default ServiceDetailsModal;

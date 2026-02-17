@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-import { bytesToSize, getCpuCount } from "../utils";
+import { bytesToSize, getCpuCount } from "./utils";
 
 const ResourceUtilization = ({ serverStats, swapSummaryData }) => (
   <div className="column is-6">

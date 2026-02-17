@@ -1,4 +1,5 @@
-import { useState } from "react";
+import PropTypes from "prop-types";
+import { useState, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import FormModal from "../common/FormModal";
@@ -33,6 +34,45 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       [field]: items,
     }));
   };
+
+  const pollTask = useCallback(
+    async (taskId) => {
+      const maxPolls = 30;
+      let polls = 0;
+
+      while (polls < maxPolls) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const taskResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `tasks/${taskId}`,
+            "GET"
+          );
+
+          if (taskResult.success) {
+            const status = taskResult.data?.status;
+            if (status === "completed" || status === "failed") {
+              if (status === "failed" && taskResult.data?.error_message) {
+                onError(taskResult.data.error_message);
+              }
+              break;
+            }
+          }
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+          polls++;
+        } catch (err) {
+          console.error("Error polling task:", err);
+          break;
+        }
+      }
+    },
+    [server, makeZoneweaverAPIRequest, onError]
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,39 +126,6 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
     }
   };
 
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
-
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
-    }
-  };
-
   const shells = ["/bin/pfsh", "/bin/bash", "/bin/sh", "/bin/zsh", "/bin/ksh"];
 
   return (
@@ -135,11 +142,12 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       aria-label="Create new RBAC role"
     >
       <div className="field">
-        <label className="label">
+        <label className="label" htmlFor="rolename">
           Role Name <span className="has-text-danger">*</span>
         </label>
         <div className="control">
           <input
+            id="rolename"
             className="input"
             type="text"
             value={formData.rolename}
@@ -155,9 +163,12 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Comment</label>
+        <label className="label" htmlFor="comment">
+          Comment
+        </label>
         <div className="control">
           <input
+            id="comment"
             className="input"
             type="text"
             value={formData.comment}
@@ -169,10 +180,13 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Shell</label>
+        <label className="label" htmlFor="shell">
+          Shell
+        </label>
         <div className="control">
           <div className="select is-fullwidth">
             <select
+              id="shell"
               value={formData.shell}
               onChange={(e) => handleInputChange("shell", e.target.value)}
               disabled={loading}
@@ -195,9 +209,12 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <h5 className="title is-6">RBAC Configuration</h5>
 
       <div className="field">
-        <label className="label">Authorizations</label>
+        <label className="label" htmlFor="authorizations">
+          Authorizations
+        </label>
         <div className="control">
           <textarea
+            id="authorizations"
             className="textarea"
             rows="3"
             value={formData.authorizations.join(", ")}
@@ -214,9 +231,12 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="field">
-        <label className="label">Profiles</label>
+        <label className="label" htmlFor="profiles">
+          Profiles
+        </label>
         <div className="control">
           <input
+            id="profiles"
             className="input"
             type="text"
             value={formData.profiles.join(", ")}
@@ -259,6 +279,13 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
     </FormModal>
   );
+};
+
+RoleCreateModal.propTypes = {
+  server: PropTypes.object.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default RoleCreateModal;

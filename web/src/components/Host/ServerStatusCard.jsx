@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const ServerStatusCard = ({ testResult, useExistingApiKey }) => {
   if (!testResult) {
     return null;
@@ -37,6 +39,11 @@ const ServerStatusCard = ({ testResult, useExistingApiKey }) => {
       </div>
     </div>
   );
+};
+
+ServerStatusCard.propTypes = {
+  testResult: PropTypes.string,
+  useExistingApiKey: PropTypes.bool.isRequired,
 };
 
 export default ServerStatusCard;

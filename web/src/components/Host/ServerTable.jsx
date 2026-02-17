@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
@@ -35,7 +36,7 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
         </div>
         <h3 className="title is-4 has-text-grey">No Servers Configured</h3>
         <p className="has-text-grey mb-4">
-          You haven't added any Zoneweaver API Servers yet. Add a server to
+          You haven&apos;t added any Zoneweaver API Servers yet. Add a server to
           start managing zones.
         </p>
       </div>
@@ -136,6 +137,13 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
       </table>
     </div>
   );
+};
+
+ServerTable.propTypes = {
+  servers: PropTypes.array.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
 };
 
 export default ServerTable;

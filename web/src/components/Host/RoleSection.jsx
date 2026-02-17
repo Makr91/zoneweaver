@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
+import { ConfirmModal } from "../common";
 
 import RoleCreateModal from "./RoleCreateModal";
 import RoleDetailsModal from "./RoleDetailsModal";
@@ -13,6 +15,7 @@ const RoleSection = ({ server, onError }) => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState(null);
   const [filters, setFilters] = useState({
     pattern: "",
     limit: 50,
@@ -23,12 +26,7 @@ const RoleSection = ({ server, onError }) => {
   // Debounce the pattern filter to avoid excessive API calls
   const debouncedPattern = useDebounce(filters.pattern, 500);
 
-  // Load roles on component mount and when filters change
-  useEffect(() => {
-    loadRoles();
-  }, [server, debouncedPattern, filters.limit]);
-
-  const loadRoles = async () => {
+  const loadRoles = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -67,11 +65,62 @@ const RoleSection = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    debouncedPattern,
+    filters.limit,
+    onError,
+  ]);
+
+  const pollTask = useCallback(
+    async (taskId) => {
+      const maxPolls = 30;
+      let polls = 0;
+
+      while (polls < maxPolls) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const taskResult = await makeZoneweaverAPIRequest(
+            server.hostname,
+            server.port,
+            server.protocol,
+            `tasks/${taskId}`,
+            "GET"
+          );
+
+          if (taskResult.success) {
+            const status = taskResult.data?.status;
+            if (status === "completed" || status === "failed") {
+              if (status === "failed" && taskResult.data?.error_message) {
+                onError(taskResult.data.error_message);
+              }
+              break;
+            }
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+          polls++;
+        } catch (err) {
+          console.error("Error polling task:", err);
+          break;
+        }
+      }
+    },
+    [server, makeZoneweaverAPIRequest, onError]
+  );
+
+  // Load roles on component mount and when filters change
+  useEffect(() => {
+    loadRoles();
+  }, [loadRoles]);
 
   const handleRoleAction = async (rolename, action, options = {}) => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false, message: "Server not available" };
     }
 
     try {
@@ -119,36 +168,16 @@ const RoleSection = ({ server, onError }) => {
     }
   };
 
-  const pollTask = async (taskId) => {
-    const maxPolls = 30;
-    let polls = 0;
+  const handleDeleteRole = (role) => {
+    setRoleToDelete(role);
+  };
 
-    while (polls < maxPolls) {
-      try {
-        const taskResult = await makeZoneweaverAPIRequest(
-          server.hostname,
-          server.port,
-          server.protocol,
-          `tasks/${taskId}`,
-          "GET"
-        );
-
-        if (taskResult.success) {
-          const status = taskResult.data?.status;
-          if (status === "completed" || status === "failed") {
-            if (status === "failed" && taskResult.data?.error_message) {
-              onError(taskResult.data.error_message);
-            }
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        polls++;
-      } catch (err) {
-        console.error("Error polling task:", err);
-        break;
-      }
+  const handleConfirmDelete = async () => {
+    if (roleToDelete) {
+      await handleRoleAction(roleToDelete.rolename, "delete", {
+        removeHome: true,
+      });
+      setRoleToDelete(null);
     }
   };
 
@@ -181,9 +210,12 @@ const RoleSection = ({ server, onError }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Role Name</label>
+              <label className="label" htmlFor="filter-pattern">
+                Filter by Role Name
+              </label>
               <div className="control">
                 <input
+                  id="filter-pattern"
                   className="input"
                   type="text"
                   placeholder="Enter role name pattern..."
@@ -197,10 +229,13 @@ const RoleSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Limit Results</label>
+              <label className="label" htmlFor="filter-limit">
+                Limit Results
+              </label>
               <div className="control">
                 <div className="select">
                   <select
+                    id="filter-limit"
                     value={filters.limit}
                     onChange={(e) =>
                       handleFilterChange("limit", parseInt(e.target.value))
@@ -216,9 +251,12 @@ const RoleSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="refresh-button">
+                Refresh
+              </label>
               <div className="control">
                 <button
+                  id="refresh-button"
                   className="button is-info"
                   onClick={loadRoles}
                   disabled={loading}
@@ -233,9 +271,12 @@ const RoleSection = ({ server, onError }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
+              <label className="label" htmlFor="clear-button">
+                Clear
+              </label>
               <div className="control">
                 <button
+                  id="clear-button"
                   className="button"
                   onClick={clearFilters}
                   disabled={loading}
@@ -281,17 +322,7 @@ const RoleSection = ({ server, onError }) => {
         <RoleTable
           roles={roles}
           loading={loading}
-          onDelete={(role) => {
-            if (
-              window.confirm(
-                `Are you sure you want to delete role "${role.rolename}"?\n\nThis will also remove any home directory if one exists.`
-              )
-            ) {
-              handleRoleAction(role.rolename, "delete", {
-                removeHome: true,
-              });
-            }
-          }}
+          onDelete={handleDeleteRole}
           onViewDetails={(role) => {
             setSelectedRole(role);
             setShowDetailsModal(true);
@@ -322,8 +353,27 @@ const RoleSection = ({ server, onError }) => {
           onError={onError}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {roleToDelete && (
+        <ConfirmModal
+          isOpen={!!roleToDelete}
+          onClose={() => setRoleToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          title="Delete Role"
+          message={`Are you sure you want to delete role "${roleToDelete.rolename}"?\n\nThis will also remove any home directory if one exists.`}
+          confirmText="Delete"
+          confirmVariant="is-danger"
+          loading={loading}
+        />
+      )}
     </div>
   );
+};
+
+RoleSection.propTypes = {
+  server: PropTypes.object.isRequired,
+  onError: PropTypes.func.isRequired,
 };
 
 export default RoleSection;

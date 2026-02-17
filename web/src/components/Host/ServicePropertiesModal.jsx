@@ -20,6 +20,23 @@ const ServicePropertiesModal = ({ service, onClose }) => {
 
   const propertiesArray = formatProperties(service.properties);
 
+  const getStateTagClass = (state) => {
+    switch (state) {
+      case "online":
+        return "is-success";
+      case "disabled":
+        return "is-grey";
+      case "offline":
+        return "is-danger";
+      case "legacy_run":
+        return "is-info";
+      case "maintenance":
+        return "is-warning";
+      default:
+        return "is-light";
+    }
+  };
+
   const renderPropertyValue = (value) => {
     // Handle different types of property values
     if (value.includes("\n") || value.length > 100) {
@@ -61,30 +78,19 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                   <strong>FMRI</strong>
                 </td>
                 <td className="is-family-monospace">{service.fmri}</td>
-              </tr> 
+              </tr>
               <tr>
                 <td>
                   <strong>Current State</strong>
                 </td>
-                <td>                    
-                  <span className={`tag ${
-                      service.state === "online" 
-                        ? "is-success"
-                        : service.state === "disabled"
-                          ? "is-grey"
-                          : service.state === "offline"
-                            ? "is-danger"
-                            : service.state === "legacy_run"
-                              ? "is-info"
-                              : "is-light"
-                    }`}
-                  > 
+                <td>
+                  <span className={`tag ${getStateTagClass(service.state)}`}>
                     {service.state}
                   </span>
                 </td>
               </tr>
             </tbody>
-          </table> 
+          </table>
         </div>
       </div>
 
@@ -97,7 +103,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
               These are the service configuration properties as returned by{" "}
               <code>svccfg listprop</code>.
             </p>
-          </div> 
+          </div>
           <div className="table-container">
             <table className="table is-fullwidth is-striped">
               <thead>
@@ -107,8 +113,8 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {propertiesArray.map((prop, index) => ( 
-                  <tr key={index}>
+                {propertiesArray.map((prop) => (
+                  <tr key={prop.property}>
                     <td>
                       <code className="is-size-7">{prop.property}</code>
                     </td>
@@ -117,7 +123,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
                 ))}
               </tbody>
             </table>
-          </div> 
+          </div>
         </div>
       )}
 
@@ -129,7 +135,7 @@ const ServicePropertiesModal = ({ service, onClose }) => {
       )}
     </ContentModal>
   );
-}; 
+};
 
 ServicePropertiesModal.propTypes = {
   service: PropTypes.object.isRequired,

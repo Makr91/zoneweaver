@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
   <div className="box mb-4">
     <div className="level is-mobile mb-3">
@@ -44,7 +46,7 @@ const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
             </thead>
             <tbody>
               {routes.map((route, index) => (
-                <tr key={index}>
+                <tr key={route.destination || index}>
                   <td>
                     <strong>{route.interface || "N/A"}</strong>
                   </td>
@@ -73,5 +75,11 @@ const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
       ))}
   </div>
 );
+
+RoutingTable.propTypes = {
+  routes: PropTypes.array.isRequired,
+  sectionsCollapsed: PropTypes.object.isRequired,
+  toggleSection: PropTypes.func.isRequired,
+};
 
 export default RoutingTable;

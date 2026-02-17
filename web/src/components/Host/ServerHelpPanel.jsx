@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const ServerHelpPanel = ({ useExistingApiKey }) => (
   <div className="box">
     <h2 className="title is-6">Setup Guide</h2>
@@ -8,10 +10,10 @@ const ServerHelpPanel = ({ useExistingApiKey }) => (
       <ol>
         <li>Enter your Zoneweaver API Server details</li>
         <li>Choose bootstrap or existing API key</li>
-        <li>Click "Test Connection" to verify connectivity</li>
+        <li>Click &quot;Test Connection&quot; to verify connectivity</li>
         <li>
-          Click "{useExistingApiKey ? "Add Server" : "Bootstrap Server"}" to
-          complete setup
+          Click &quot;{useExistingApiKey ? "Add Server" : "Bootstrap Server"}
+          &quot; to complete setup
         </li>
         <li>Start managing zones!</li>
       </ol>
@@ -39,5 +41,9 @@ const ServerHelpPanel = ({ useExistingApiKey }) => (
     </div>
   </div>
 );
+
+ServerHelpPanel.propTypes = {
+  useExistingApiKey: PropTypes.bool.isRequired,
+};
 
 export default ServerHelpPanel;

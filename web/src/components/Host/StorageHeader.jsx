@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const StorageHeader = ({
   loading,
   autoRefresh,
@@ -114,4 +116,5 @@ StorageHeader.propTypes = {
   timeWindow: PropTypes.string.isRequired,
   setTimeWindow: PropTypes.func.isRequired,
 };
+
 export default StorageHeader;

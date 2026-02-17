@@ -92,29 +92,8 @@ const LogViewer = ({
                     : item.line;
 
                   return (
-                    <div key={`${selectedLog.name}-${item.id}`} className="log-line mb-1">
-                      {timestamp && (
-                        <span className="has-text-grey-light mr-2">
-                          {timestamp}
-                        </span>
-
-
-                      )}
-                      <span className={getLogLevelClass(content)}>
-                        {content}
-                      </span>
-                    </div>
-                  );
-                })
-              : // Display static log lines
-                logData.lines.map((line, index) => {
-
-                  const timestamp = formatTimestamp(line);
-                  const content = timestamp
-                    ? line.substring(timestamp.length).trim()
-                    : line;
                     <div
-                      key={`${selectedLog.name}-${line}-${index}`}
+                      key={`${selectedLog.name}-${item.id}`}
                       className="log-line mb-1"
                     >
                       {timestamp && (
@@ -127,7 +106,29 @@ const LogViewer = ({
                       </span>
                     </div>
                   );
+                })
+              : // Display static log lines
 
+                logData.lines.map((line, idx) => {
+                  const timestamp = formatTimestamp(line);
+                  const content = timestamp
+                    ? line.substring(timestamp.length).trim()
+                    : line;
+                  return (
+                    <div
+                      key={`${selectedLog.name}-${line}-${idx}`}
+                      className="log-line mb-1"
+                    >
+                      {timestamp && (
+                        <span className="has-text-grey-light mr-2">
+                          {timestamp}
+                        </span>
+                      )}
+                      <span className={getLogLevelClass(content)}>
+                        {content}
+                      </span>
+                    </div>
+                  );
                 })}
           </pre>
         </div>

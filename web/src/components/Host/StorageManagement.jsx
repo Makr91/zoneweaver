@@ -22,8 +22,6 @@ const StorageManagement = ({ server }) => {
         <ul>
           <li className={activeTab === "arc" ? "is-active" : ""}>
             <button
-              href="#"
-              role="button"
               tabIndex={0}
               onClick={(e) => {
                 e.preventDefault();
@@ -44,9 +42,7 @@ const StorageManagement = ({ server }) => {
             </button>
           </li>
           <li className={activeTab === "artifacts" ? "is-active" : ""}>
-            <a
-              href="#"
-              role="button"
+            <button
               tabIndex={0}
               onClick={(e) => {
                 e.preventDefault();
@@ -64,22 +60,23 @@ const StorageManagement = ({ server }) => {
                 <i className="fas fa-compact-disc" />
               </span>
               <span>ISO & Artifacts</span>
-            </a>
+            </button>
+          </li>
           <li className="is-disabled">
-            <a role="button" aria-disabled="true">
+            <button className="button" disabled>
               <span className="icon is-small">
                 <i className="fas fa-database" />
               </span>
               <span>ZFS Pools</span>
-            </a>
+            </button>
           </li>
           <li className="is-disabled">
-            <a role="button" aria-disabled="true">
+            <button className="button" disabled>
               <span className="icon is-small">
                 <i className="fas fa-folder-tree" />
               </span>
               <span>ZFS Datasets</span>
-            </a>
+            </button>
           </li>
         </ul>
       </div>

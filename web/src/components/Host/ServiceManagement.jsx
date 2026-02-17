@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { useDebounce } from "../../utils/debounce";
@@ -29,13 +30,7 @@ const ServiceManagement = ({ server }) => {
   // Debounce the pattern filter to avoid excessive API calls
   const debouncedPattern = useDebounce(filters.pattern, 500);
 
-  // Load services on component mount and when filters change
-  useEffect(() => {
-    loadServices();
-    loadZones();
-  }, [server, debouncedPattern, filters.zone, filters.showDisabled]); // Use debounced pattern
-
-  const loadZones = async () => {
+  const loadZones = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -60,9 +55,9 @@ const ServiceManagement = ({ server }) => {
     } catch (err) {
       console.error("Error loading zones:", err);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
 
-  const loadServices = async () => {
+  const loadServices = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -104,7 +99,26 @@ const ServiceManagement = ({ server }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    debouncedPattern,
+    filters.zone,
+    filters.showDisabled,
+  ]);
+
+  // Load services on component mount and when filters change
+  useEffect(() => {
+    loadServices();
+    loadZones();
+  }, [
+    server,
+    debouncedPattern,
+    filters.zone,
+    filters.showDisabled,
+    loadServices,
+    loadZones,
+  ]); // Use debounced pattern
 
   const handleServiceAction = async (fmri, action) => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -235,10 +249,13 @@ const ServiceManagement = ({ server }) => {
         <div className="columns">
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Service Name</label>
+              <label className="label" htmlFor="service-name-filter">
+                Filter by Service Name
+              </label>
               <div className="control">
                 <input
                   className="input"
+                  id="service-name-filter"
                   type="text"
                   placeholder="Enter service name pattern..."
                   value={filters.pattern}
@@ -251,16 +268,19 @@ const ServiceManagement = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by Zone</label>
+              <label className="label" htmlFor="zone-filter">
+                Filter by Zone
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="zone-filter"
                     value={filters.zone}
                     onChange={(e) => handleFilterChange("zone", e.target.value)}
                   >
                     <option value="">All Zones</option>
-                    {availableZones.map((zone, index) => (
-                      <option key={index} value={zone}>
+                    {availableZones.map((zone) => (
+                      <option key={zone} value={zone}>
                         {zone}
                       </option>
                     ))}
@@ -271,10 +291,13 @@ const ServiceManagement = ({ server }) => {
           </div>
           <div className="column">
             <div className="field">
-              <label className="label">Filter by State</label>
+              <label className="label" htmlFor="state-filter">
+                Filter by State
+              </label>
               <div className="control">
                 <div className="select is-fullwidth">
                   <select
+                    id="state-filter"
                     value={filters.state}
                     onChange={(e) =>
                       handleFilterChange("state", e.target.value)
@@ -293,11 +316,17 @@ const ServiceManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">Show Disabled</label>
+              <label className="label" htmlFor="show-disabled-filter">
+                Show Disabled
+              </label>
               <div className="control">
-                <label className="switch is-medium">
+                <label
+                  className="switch is-medium"
+                  htmlFor="show-disabled-filter"
+                >
                   <input
                     type="checkbox"
+                    id="show-disabled-filter"
                     checked={filters.showDisabled}
                     onChange={(e) =>
                       handleFilterChange("showDisabled", e.target.checked)
@@ -311,7 +340,6 @@ const ServiceManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
               <div className="control">
                 <button
                   className="button is-info"
@@ -328,7 +356,6 @@ const ServiceManagement = ({ server }) => {
           </div>
           <div className="column is-narrow">
             <div className="field">
-              <label className="label">&nbsp;</label>
               <div className="control">
                 <button
                   className="button"
@@ -403,4 +430,11 @@ const ServiceManagement = ({ server }) => {
   );
 };
 
+ServiceManagement.propTypes = {
+  server: PropTypes.shape({
+    hostname: PropTypes.string.isRequired,
+    port: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    protocol: PropTypes.string.isRequired,
+  }).isRequired,
+};
 export default ServiceManagement;

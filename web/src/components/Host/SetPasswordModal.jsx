@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 import FormModal from "../common/FormModal";
@@ -72,16 +73,16 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
         <div className="notification is-danger mb-4">
           <button className="delete" onClick={() => setError("")} />
           <p>{error}</p>
-
         </div>
       )}
 
       <div className="field">
-        <label className="label">
+        <label className="label" htmlFor="new-password-input">
           New Password <span className="has-text-danger">*</span>
         </label>
         <div className="control">
           <input
+            id="new-password-input"
             className="input"
             type="password"
             value={formData.password}
@@ -96,11 +97,12 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
       </div>
 
       <div className="field">
-        <label className="label">
+        <label className="label" htmlFor="confirm-password-input">
           Confirm Password <span className="has-text-danger">*</span>
         </label>
         <div className="control">
           <input
+            id="confirm-password-input"
             className="input"
             type="password"
             value={formData.confirmPassword}
