@@ -1,7 +1,20 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+
+const getModuleTypeLabel = (moduleName) => {
+  if (moduleName.includes("retire")) {
+    return "Retire Agent";
+  }
+  if (moduleName.includes("detector")) {
+    return "Detector";
+  }
+  if (moduleName.includes("response")) {
+    return "Response";
+  }
+  return "Module";
+};
 
 const FaultManagerConfig = ({ server }) => {
   const [config, setConfig] = useState([]);
@@ -10,12 +23,7 @@ const FaultManagerConfig = ({ server }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load config on component mount
-  useEffect(() => {
-    loadConfig();
-  }, [server]);
-
-  const loadConfig = async () => {
+  const loadConfig = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -46,7 +54,11 @@ const FaultManagerConfig = ({ server }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
+
+  useEffect(() => {
+    loadConfig();
+  }, [loadConfig]);
 
   const getModuleIcon = (module) => {
     if (module.includes("cpumem")) {
@@ -143,8 +155,8 @@ const FaultManagerConfig = ({ server }) => {
                 <div className="tags">
                   {[
                     ...new Set(config.map((m) => m.module.split("-").pop())),
-                  ].map((type, index) => (
-                    <span key={index} className="tag is-light is-small">
+                  ].map((type) => (
+                    <span key={type} className="tag is-light is-small">
                       {type}
                     </span>
                   ))}
@@ -191,8 +203,8 @@ const FaultManagerConfig = ({ server }) => {
                 </tr>
               </thead>
               <tbody>
-                {config.map((module, index) => (
-                  <tr key={index}>
+                {config.map((module) => (
+                  <tr key={module.module}>
                     <td>
                       <div className="is-flex is-align-items-center">
                         <span className="icon has-text-info">
@@ -217,13 +229,7 @@ const FaultManagerConfig = ({ server }) => {
                       <span
                         className={`tag ${getModuleTypeTag(module.module)} is-small`}
                       >
-                        {module.module.includes("retire")
-                          ? "Retire Agent"
-                          : module.module.includes("detector")
-                            ? "Detector"
-                            : module.module.includes("response")
-                              ? "Response"
-                              : "Module"}
+                        {getModuleTypeLabel(module.module)}
                       </span>
                     </td>
                   </tr>

@@ -104,8 +104,8 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {etherstubDetails.vnics.map((vnic, index) => (
-                    <tr key={index}>
+                  {etherstubDetails.vnics.map((vnic) => (
+                    <tr key={vnic.link || vnic.name}>
                       <td>
                         <span className="is-family-monospace">
                           {vnic.link || vnic.name}

@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -22,12 +22,7 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load available links when modal opens
-  useEffect(() => {
-    loadAvailableLinks();
-  }, [server]);
-
-  const loadAvailableLinks = async () => {
+  const loadAvailableLinks = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -43,33 +38,30 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
         "GET"
       );
 
-      console.log("Bridge Link Loading Debug:", {
-        result: result.success ? result.data : result,
-      });
-
       if (result.success && result.data?.interfaces) {
-        // Filter for links that can be bridged (be more permissive)
         const bridgeableLinks = result.data.interfaces.filter(
           (link) =>
             link.link &&
             (link.class === "phys" || link.class === "vnic" || !link.class)
         );
 
-        // Deduplicate by link name
         const uniqueLinks = bridgeableLinks.filter(
           (link, index, self) =>
             index === self.findIndex((l) => l.link === link.link)
         );
 
-        console.log("Bridge Available Links:", uniqueLinks);
         setAvailableLinks(uniqueLinks);
       }
     } catch (err) {
-      console.error("Error loading available links:", err);
+      void err;
     } finally {
       setLoadingLinks(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
+
+  useEffect(() => {
+    loadAvailableLinks();
+  }, [loadAvailableLinks]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({

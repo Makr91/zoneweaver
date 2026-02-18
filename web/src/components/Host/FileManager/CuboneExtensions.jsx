@@ -168,10 +168,10 @@ export const useCuboneExtensions = (
               console.log("🖱️ CONTEXT: Clicked custom item:", item.text);
               item.action();
               // Hide context menu
-              const contextMenu = e.target.closest(".fm-context-menu");
-              if (contextMenu) {
-                contextMenu.classList.remove("visible");
-                contextMenu.classList.add("hidden");
+              const menu = e.target.closest(".fm-context-menu");
+              if (menu) {
+                menu.classList.remove("visible");
+                menu.classList.add("hidden");
               }
             });
 

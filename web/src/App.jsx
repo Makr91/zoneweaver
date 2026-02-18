@@ -17,38 +17,33 @@ import { ZoneTerminalProvider } from "./contexts/ZoneTerminalContext";
  * Main App component with authentication and routing
  * @returns {JSX.Element} App component
  */
-function App() {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ServerProvider>
-          <UserSettingsProvider>
-            <ZoneTerminalProvider>
-              <HelmetProvider>
-                <BrowserRouter>
-                  <Routes>
-                    <Route exact path="/" element={<Landing />} />
-                    <Route exact path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/setup" element={<ServerSetup />} />
-                    <Route
-                      path="/ui/auth/callback"
-                      element={<AuthCallback />}
-                    />
-                    <Route
-                      path="/ui/settings"
-                      element={<Navigate to="/ui/settings/zoneweaver" />}
-                    />
-                    <Route path="/ui/*" element={<Layout />} />
-                  </Routes>
-                </BrowserRouter>
-              </HelmetProvider>
-            </ZoneTerminalProvider>
-          </UserSettingsProvider>
-        </ServerProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  );
-}
+const App = () => (
+  <ThemeProvider>
+    <AuthProvider>
+      <ServerProvider>
+        <UserSettingsProvider>
+          <ZoneTerminalProvider>
+            <HelmetProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route exact path="/" element={<Landing />} />
+                  <Route exact path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/setup" element={<ServerSetup />} />
+                  <Route path="/ui/auth/callback" element={<AuthCallback />} />
+                  <Route
+                    path="/ui/settings"
+                    element={<Navigate to="/ui/settings/zoneweaver" />}
+                  />
+                  <Route path="/ui/*" element={<Layout />} />
+                </Routes>
+              </BrowserRouter>
+            </HelmetProvider>
+          </ZoneTerminalProvider>
+        </UserSettingsProvider>
+      </ServerProvider>
+    </AuthProvider>
+  </ThemeProvider>
+);
 
 export default App;

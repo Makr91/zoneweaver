@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 
 import {
+  getCategoryTagClass,
   getDeviceStatusColor,
   getDeviceStatusText,
   getPPTStatusColor,
@@ -171,15 +172,7 @@ const DeviceInventoryTable = ({
                   </td>
                   <td>
                     <span
-                      className={`tag ${
-                        device.device_category === "network"
-                          ? "is-info"
-                          : device.device_category === "storage"
-                            ? "is-primary"
-                            : device.device_category === "display"
-                              ? "is-success"
-                              : "is-dark"
-                      }`}
+                      className={`tag ${getCategoryTagClass(device.device_category)}`}
                     >
                       {device.device_category || "other"}
                     </span>

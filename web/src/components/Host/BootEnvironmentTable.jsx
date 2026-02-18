@@ -146,7 +146,7 @@ const BootEnvironmentTable = ({
         return dateStr; // Return as-is if we can't parse it
       }
       return date.toLocaleString();
-    } catch (err) {
+    } catch {
       return dateStr;
     }
   };

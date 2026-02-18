@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { ConfirmModal } from "../common";
 
 import AggregateCreateModal from "./AggregateCreateModal";
 import AggregateDetailsModal from "./AggregateDetailsModal";
@@ -15,7 +16,7 @@ const AggregateManagement = ({ server, onError }) => {
   const [selectedAggregate, setSelectedAggregate] = useState(null);
   const [aggregateDetails, setAggregateDetails] = useState(null);
   const [cdpServiceRunning, setCdpServiceRunning] = useState(false);
-  const [loadingCdpStatus, setLoadingCdpStatus] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [filters, setFilters] = useState({
     state: "",
     policy: "",
@@ -23,13 +24,7 @@ const AggregateManagement = ({ server, onError }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load aggregates and CDP status on component mount and when filters change
-  useEffect(() => {
-    loadAggregates();
-    checkCdpServiceStatus();
-  }, [server, filters.state, filters.policy]);
-
-  const loadAggregates = async () => {
+  const loadAggregates = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -45,7 +40,7 @@ const AggregateManagement = ({ server, onError }) => {
       if (filters.policy) {
         params.policy = filters.policy;
       }
-      params.extended = true; // Include detailed port information
+      params.extended = true;
 
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -69,16 +64,20 @@ const AggregateManagement = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    server,
+    makeZoneweaverAPIRequest,
+    onError,
+    filters.state,
+    filters.policy,
+  ]);
 
-  const checkCdpServiceStatus = async () => {
+  const checkCdpServiceStatus = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
 
     try {
-      setLoadingCdpStatus(true);
-
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
@@ -90,33 +89,26 @@ const AggregateManagement = ({ server, onError }) => {
       );
 
       if (result.success && result.data) {
-        // Look for CDP service in the services list
         const cdpService = result.data.find(
           (service) => service.fmri && service.fmri.includes("network/cdp")
         );
-
-        // CDP is running if the service exists and is online
         setCdpServiceRunning(cdpService && cdpService.state === "online");
       } else {
         setCdpServiceRunning(false);
       }
     } catch (err) {
-      console.error("Error checking CDP service status:", err);
+      void err;
       setCdpServiceRunning(false);
-    } finally {
-      setLoadingCdpStatus(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest]);
 
-  const handleDeleteAggregate = async (aggregateName) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to delete link aggregate "${aggregateName}"?`
-      )
-    ) {
+  useEffect(() => {
+    loadAggregates();
+    checkCdpServiceStatus();
+  }, [loadAggregates, checkCdpServiceStatus]);
+
+  const handleDeleteAggregate = async () => {
+    if (!server || !makeZoneweaverAPIRequest || !deleteTarget) {
       return;
     }
 
@@ -124,34 +116,32 @@ const AggregateManagement = ({ server, onError }) => {
       setLoading(true);
       onError("");
 
-      // Use query parameters instead of request body for DELETE request
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        `network/aggregates/${encodeURIComponent(aggregateName)}`,
+        `network/aggregates/${encodeURIComponent(deleteTarget)}`,
         "DELETE",
-        null, // No request body to avoid parsing issues
+        null,
         {
-          // Query parameters instead
           temporary: false,
           created_by: "api",
         }
       );
 
       if (result.success) {
-        // Refresh aggregates list after deletion
         await loadAggregates();
       } else {
         onError(
-          result.message || `Failed to delete link aggregate "${aggregateName}"`
+          result.message || `Failed to delete link aggregate "${deleteTarget}"`
         );
       }
     } catch (err) {
       onError(
-        `Error deleting link aggregate "${aggregateName}": ${err.message}`
+        `Error deleting link aggregate "${deleteTarget}": ${err.message}`
       );
     } finally {
+      setDeleteTarget(null);
       setLoading(false);
     }
   };
@@ -166,10 +156,6 @@ const AggregateManagement = ({ server, onError }) => {
       onError("");
 
       const aggregateName = aggregate.name || aggregate.link;
-
-      // Debug logging
-      console.log("Aggregate object:", aggregate);
-      console.log("Aggregate name resolved to:", aggregateName);
 
       if (!aggregateName) {
         onError("Unable to determine aggregate name");
@@ -220,6 +206,18 @@ const AggregateManagement = ({ server, onError }) => {
 
   return (
     <div>
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteAggregate}
+        title="Delete Link Aggregate"
+        message={`Are you sure you want to delete link aggregate "${deleteTarget}"?`}
+        confirmText="Delete"
+        confirmVariant="is-danger"
+        icon="fas fa-trash"
+        loading={loading}
+      />
+
       <div className="mb-4">
         <h2 className="title is-5">Link Aggregation Management</h2>
         <p className="content">
@@ -369,7 +367,7 @@ const AggregateManagement = ({ server, onError }) => {
         <AggregateTable
           aggregates={aggregates}
           loading={loading}
-          onDelete={handleDeleteAggregate}
+          onDelete={setDeleteTarget}
           onViewDetails={handleViewDetails}
         />
       </div>
@@ -384,7 +382,7 @@ const AggregateManagement = ({ server, onError }) => {
           onSuccess={() => {
             setShowCreateModal(false);
             loadAggregates();
-            checkCdpServiceStatus(); // Refresh CDP status after creation
+            checkCdpServiceStatus();
           }}
           onError={onError}
         />

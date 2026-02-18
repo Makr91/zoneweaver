@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { ConfirmModal } from "../common";
 
 import EtherstubCreateModal from "./EtherstubCreateModal";
 import EtherstubDetailsModal from "./EtherstubDetailsModal";
@@ -14,18 +15,14 @@ const EtherstubManagement = ({ server, onError }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedEtherstub, setSelectedEtherstub] = useState(null);
   const [etherstubDetails, setEtherstubDetails] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [filters, setFilters] = useState({
     name: "",
   });
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load etherstubs on component mount and when filters change
-  useEffect(() => {
-    loadEtherstubs();
-  }, [server, filters.name]);
-
-  const loadEtherstubs = async () => {
+  const loadEtherstubs = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -61,17 +58,14 @@ const EtherstubManagement = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, filters.name, onError]);
 
-  const handleDeleteEtherstub = async (etherstubName) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to delete etherstub "${etherstubName}"?`
-      )
-    ) {
+  useEffect(() => {
+    loadEtherstubs();
+  }, [loadEtherstubs]);
+
+  const confirmDeleteEtherstub = async () => {
+    if (!server || !makeZoneweaverAPIRequest || !deleteTarget) {
       return;
     }
 
@@ -79,16 +73,14 @@ const EtherstubManagement = ({ server, onError }) => {
       setLoading(true);
       onError("");
 
-      // Use query parameters instead of request body for DELETE request
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
-        `network/etherstubs/${encodeURIComponent(etherstubName)}`,
+        `network/etherstubs/${encodeURIComponent(deleteTarget)}`,
         "DELETE",
-        null, // No request body to avoid parsing issues
+        null,
         {
-          // Query parameters instead
           temporary: false,
           force: false,
           created_by: "api",
@@ -96,15 +88,15 @@ const EtherstubManagement = ({ server, onError }) => {
       );
 
       if (result.success) {
-        // Refresh etherstubs list after deletion
+        setDeleteTarget(null);
         await loadEtherstubs();
       } else {
         onError(
-          result.message || `Failed to delete etherstub "${etherstubName}"`
+          result.message || `Failed to delete etherstub "${deleteTarget}"`
         );
       }
     } catch (err) {
-      onError(`Error deleting etherstub "${etherstubName}": ${err.message}`);
+      onError(`Error deleting etherstub "${deleteTarget}": ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -120,10 +112,6 @@ const EtherstubManagement = ({ server, onError }) => {
       onError("");
 
       const etherstubName = etherstub.name || etherstub.link;
-
-      // Debug logging
-      console.log("Etherstub object:", etherstub);
-      console.log("Etherstub name resolved to:", etherstubName);
 
       if (!etherstubName) {
         onError("Unable to determine etherstub name");
@@ -272,7 +260,7 @@ const EtherstubManagement = ({ server, onError }) => {
         <EtherstubTable
           etherstubs={etherstubs}
           loading={loading}
-          onDelete={handleDeleteEtherstub}
+          onDelete={setDeleteTarget}
           onViewDetails={handleViewDetails}
         />
       </div>
@@ -297,6 +285,20 @@ const EtherstubManagement = ({ server, onError }) => {
           etherstub={selectedEtherstub}
           etherstubDetails={etherstubDetails}
           onClose={handleCloseDetailsModal}
+        />
+      )}
+
+      {deleteTarget !== null && (
+        <ConfirmModal
+          isOpen
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={confirmDeleteEtherstub}
+          title="Delete Etherstub"
+          message={`Are you sure you want to delete etherstub "${deleteTarget}"?`}
+          confirmText="Delete"
+          confirmVariant="is-danger"
+          icon="fas fa-trash"
+          loading={loading}
         />
       )}
     </div>

@@ -1,385 +1,31 @@
 /**
- * API integration layer for Zoneweaver File Manager
- * Handles all communication with zoneweaver-api filesystem endpoints
+ * Extended API integration layer for Zoneweaver File Manager
+ * Handles archive operations, permissions, system info, and file content
+ * Core CRUD operations are in FileManagerAPIBase.js
  */
 
+import { FileManagerAPIBase } from "./FileManagerAPIBase";
 import {
-  transformFilesToHierarchy,
   transformZoneweaverToFile,
   getPathFromFile,
 } from "./FileManagerTransforms";
 
-export class ZoneweaverFileManagerAPI {
-  constructor(serverContext) {
-    this.serverContext = serverContext;
-  }
-
-  /**
-   * Get current server from context
-   * @returns {Object} Current server object
-   */
-  getCurrentServer() {
-    return this.serverContext.currentServer;
-  }
-
-  /**
-   * Make API request through ServerContext
-   * @param {string} endpoint - API endpoint
-   * @param {string} method - HTTP method
-   * @param {Object} data - Request body data
-   * @param {Object} params - URL parameters
-   * @returns {Promise<Object>} API response
-   */
-  async makeRequest(endpoint, method = "GET", data = null, params = null) {
-    const server = this.getCurrentServer();
-    if (!server) {
-      throw new Error("No server selected");
-    }
-
-    // Debug logging for proxied requests through zoneweaver nodejs server
-    console.log("🌐 PROXY: Making zoneweaver-api request through proxy", {
-      endpoint,
-      method,
-      server: `${server.protocol}://${server.hostname}:${server.port}`,
-      proxyUrl: `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/${endpoint}`,
-      data,
-      params,
-      timestamp: new Date().toISOString(),
-    });
-
-    const startTime = performance.now();
-
-    try {
-      const { makeZoneweaverAPIRequest } = this.serverContext;
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        endpoint,
-        method,
-        data,
-        params
-      );
-
-      const endTime = performance.now();
-
-      console.log("✅ PROXY: Zoneweaver-api request completed", {
-        endpoint,
-        method,
-        success: result.success,
-        status: result.status,
-        duration: `${(endTime - startTime).toFixed(2)}ms`,
-        responseSize: JSON.stringify(result).length,
-        timestamp: new Date().toISOString(),
-      });
-
-      if (!result.success) {
-        console.warn("⚠️ PROXY: Request failed", {
-          endpoint,
-          method,
-          message: result.message,
-          status: result.status,
-          data,
-          params,
-        });
-      }
-
-      return result;
-    } catch (error) {
-      const endTime = performance.now();
-
-      console.error("❌ PROXY: Zoneweaver-api request error", {
-        endpoint,
-        method,
-        server: `${server.hostname}:${server.port}`,
-        error: error.message,
-        stack: error.stack,
-        duration: `${(endTime - startTime).toFixed(2)}ms`,
-        data,
-        params,
-        timestamp: new Date().toISOString(),
-      });
-
-      throw error;
-    }
-  }
-
-  /**
-   * Browse directory and return files in cubone format
-   * @param {string} path - Directory path to browse
-   * @param {Object} options - Browse options
-   * @returns {Promise<Array>} Array of file objects
-   */
-  async loadFiles(path = "/", options = {}) {
-    try {
-      const params = {
-        path,
-        show_hidden: options.showHidden || false,
-        sort_by: options.sortBy || "name",
-        sort_order: options.sortOrder || "asc",
-      };
-
-      const result = await this.makeRequest("filesystem", "GET", null, params);
-
-      if (result.success && result.data && result.data.items) {
-        return transformFilesToHierarchy(result.data.items);
-      }
-      console.error("Failed to load files:", result.message);
-      return [];
-    } catch (error) {
-      console.error("Error loading files:", error);
-      return [];
-    }
-  }
-
-  /**
-   * Create a new folder
-   * @param {string} name - Folder name
-   * @param {Object} parentFolder - Parent folder object (cubone format)
-   * @param {string} currentPath - Current directory path from file manager
-   * @returns {Promise<Object>} API response
-   */
-  async createFolder(name, parentFolder = null, currentPath = "/") {
-    try {
-      // Use current path if no parent folder specified, otherwise use parent folder's path
-      const parentPath = parentFolder
-        ? getPathFromFile(parentFolder)
-        : currentPath;
-
-      // Follow official API spec with proper types
-      const data = {
-        path: parentPath,
-        name,
-        mode: "755", // String octal format per API spec
-        uid: 1000, // Integer per API spec
-        gid: 1000, // Integer per API spec
-      };
-
-      console.log("Creating folder:", { name, parentPath, data });
-
-      const result = await this.makeRequest("filesystem/folder", "POST", data);
-
-      if (result.success && result.data && result.data.item) {
-        return {
-          success: true,
-          file: transformZoneweaverToFile(result.data.item),
-        };
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error creating folder:", error);
-      return { success: false, message: error.message };
-    }
-  }
-
-  /**
-   * Rename a file or folder
-   * @param {Object} file - File object (cubone format)
-   * @param {string} newName - New name
-   * @returns {Promise<Object>} API response
-   */
-  async renameFile(file, newName) {
-    try {
-      const data = {
-        path: getPathFromFile(file),
-        new_name: newName,
-      };
-
-      const result = await this.makeRequest("filesystem/rename", "PATCH", data);
-
-      if (result.success && result.data && result.data.item) {
-        return {
-          success: true,
-          file: transformZoneweaverToFile(result.data.item),
-        };
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error renaming file:", error);
-      return { success: false, message: error.message };
-    }
-  }
-
-  /**
-   * Delete files or folders
-   * @param {Array} files - Array of file objects (cubone format)
-   * @returns {Promise<Object>} API response
-   */
-  async deleteFiles(files) {
-    try {
-      const results = [];
-
-      for (const file of files) {
-        const data = {
-          path: getPathFromFile(file),
-          recursive: file.isDirectory,
-          force: false,
-        };
-
-        const result = await this.makeRequest("filesystem", "DELETE", data);
-        results.push(result);
-      }
-
-      const allSuccess = results.every((r) => r.success);
-      return {
-        success: allSuccess,
-        results,
-        message: allSuccess
-          ? "Files deleted successfully"
-          : "Some files failed to delete",
-      };
-    } catch (error) {
-      console.error("Error deleting files:", error);
-      return { success: false, message: error.message };
-    }
-  }
-
-  /**
-   * Copy files to destination
-   * @param {Array} files - Array of file objects (cubone format)
-   * @param {Object} destinationFolder - Destination folder object
-   * @returns {Promise<Object>} API response with task information
-   */
-  async copyFiles(files, destinationFolder) {
-    try {
-      const destinationPath = destinationFolder
-        ? getPathFromFile(destinationFolder)
-        : "/";
-      const results = [];
-
-      for (const file of files) {
-        const data = {
-          source: getPathFromFile(file),
-          destination: `${destinationPath}/${file.name}`,
-        };
-
-        const result = await this.makeRequest("filesystem/copy", "POST", data);
-        results.push(result);
-      }
-
-      const allSuccess = results.every((r) => r.success);
-      return {
-        success: allSuccess,
-        results,
-        message: allSuccess
-          ? "Files copied successfully"
-          : "Some files failed to copy",
-        isAsync: true,
-        // API returns 202 with task_id directly in response for async operations
-        taskIds: results
-          .filter((r) => r.success)
-          .map((r) => r.data?.task_id || r.task_id)
-          .filter(Boolean),
-      };
-    } catch (error) {
-      console.error("Error copying files:", error);
-      return { success: false, message: error.message };
-    }
-  }
-
-  /**
-   * Move files to destination
-   * @param {Array} files - Array of file objects (cubone format)
-   * @param {Object} destinationFolder - Destination folder object
-   * @returns {Promise<Object>} API response with task information
-   */
-  async moveFiles(files, destinationFolder) {
-    try {
-      const destinationPath = destinationFolder
-        ? getPathFromFile(destinationFolder)
-        : "/";
-      const results = [];
-
-      for (const file of files) {
-        const data = {
-          source: getPathFromFile(file),
-          destination: `${destinationPath}/${file.name}`,
-        };
-
-        const result = await this.makeRequest("filesystem/move", "PUT", data);
-        results.push(result);
-      }
-
-      const allSuccess = results.every((r) => r.success);
-      return {
-        success: allSuccess,
-        results,
-        message: allSuccess
-          ? "Files moved successfully"
-          : "Some files failed to move",
-        isAsync: true,
-        // API returns 202 with task_id directly in response for async operations
-        taskIds: results
-          .filter((r) => r.success)
-          .map((r) => r.data?.task_id || r.task_id)
-          .filter(Boolean),
-      };
-    } catch (error) {
-      console.error("Error moving files:", error);
-      return { success: false, message: error.message };
-    }
-  }
-
-  /**
-   * Handle copy/move operations
-   * @param {Array} files - Array of file objects
-   * @param {Object} destinationFolder - Destination folder
-   * @param {string} operationType - 'copy' or 'move'
-   * @returns {Promise<Object>} Operation result
-   */
-  async copyMoveFiles(files, destinationFolder, operationType) {
-    if (operationType === "copy") {
-      return await this.copyFiles(files, destinationFolder);
-    } else if (operationType === "move") {
-      return await this.moveFiles(files, destinationFolder);
-    }
-    return { success: false, message: "Invalid operation type" };
-  }
-
-  /**
-   * Download files (generates download URLs)
-   * @param {Array} files - Array of file objects
-   * @returns {Array} Array of download URLs
-   */
-  getDownloadUrls(files) {
-    const server = this.getCurrentServer();
-    if (!server) {
-      return [];
-    }
-
-    return files
-      .filter((file) => !file.isDirectory) // Only files can be downloaded
-      .map((file) => {
-        const path = encodeURIComponent(getPathFromFile(file));
-        return `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/download?path=${path}`;
-      });
-  }
-
+class ZoneweaverFileManagerAPI extends FileManagerAPIBase {
   /**
    * Get file content for text files
    * @param {Object} file - File object
    * @returns {Promise<Object>} File content response
    */
   async getFileContent(file) {
+    if (file.isDirectory) {
+      return { success: false, message: "Cannot read directory content" };
+    }
+
     try {
-      if (file.isDirectory) {
-        return { success: false, message: "Cannot read directory content" };
-      }
-
       const params = { path: getPathFromFile(file) };
-      const result = await this.makeRequest(
-        "filesystem/content",
-        "GET",
-        null,
-        params
-      );
-
-      return result;
-    } catch (error) {
-      console.error("Error getting file content:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("filesystem/content", "GET", null, params);
+    } catch (contentErr) {
+      return { success: false, message: contentErr.message };
     }
   }
 
@@ -390,26 +36,23 @@ export class ZoneweaverFileManagerAPI {
    * @returns {Promise<Object>} Update response
    */
   async updateFileContent(file, content) {
-    try {
-      if (file.isDirectory) {
-        return { success: false, message: "Cannot write to directory" };
-      }
+    if (file.isDirectory) {
+      return { success: false, message: "Cannot write to directory" };
+    }
 
-      // Follow official API spec with proper types
+    try {
       const data = {
         path: getPathFromFile(file),
         content,
-        backup: false, // Boolean per API spec
-        uid: 1000, // Integer per API spec
-        gid: 1000, // Integer per API spec
-        mode: "644", // String octal format per API spec
+        backup: false,
+        uid: 1000,
+        gid: 1000,
+        mode: "644",
       };
 
-      const result = await this.makeRequest("filesystem/content", "PUT", data);
-      return result;
-    } catch (error) {
-      console.error("Error updating file content:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("filesystem/content", "PUT", data);
+    } catch (updateErr) {
+      return { success: false, message: updateErr.message };
     }
   }
 
@@ -430,15 +73,9 @@ export class ZoneweaverFileManagerAPI {
         format,
       };
 
-      const result = await this.makeRequest(
-        "filesystem/archive/create",
-        "POST",
-        data
-      );
-      return result;
-    } catch (error) {
-      console.error("Error creating archive:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("filesystem/archive/create", "POST", data);
+    } catch (archiveErr) {
+      return { success: false, message: archiveErr.message };
     }
   }
 
@@ -455,36 +92,10 @@ export class ZoneweaverFileManagerAPI {
         extract_path: extractPath,
       };
 
-      const result = await this.makeRequest(
-        "filesystem/archive/extract",
-        "POST",
-        data
-      );
-      return result;
-    } catch (error) {
-      console.error("Error extracting archive:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("filesystem/archive/extract", "POST", data);
+    } catch (extractErr) {
+      return { success: false, message: extractErr.message };
     }
-  }
-
-  /**
-   * Get upload configuration for the current server
-   * @param {string} uploadPath - Upload destination path
-   * @returns {Object} Upload configuration for cubone
-   */
-  getUploadConfig(uploadPath = "/") {
-    const server = this.getCurrentServer();
-    if (!server) {
-      return null;
-    }
-
-    return {
-      url: `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/upload`,
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    };
   }
 
   /**
@@ -494,11 +105,9 @@ export class ZoneweaverFileManagerAPI {
    */
   async getTaskStatus(taskId) {
     try {
-      const result = await this.makeRequest(`tasks/${taskId}`, "GET");
-      return result;
-    } catch (error) {
-      console.error("Error getting task status:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest(`tasks/${taskId}`, "GET");
+    } catch (taskErr) {
+      return { success: false, message: taskErr.message };
     }
   }
 
@@ -510,16 +119,9 @@ export class ZoneweaverFileManagerAPI {
   async getStats(path = "/") {
     try {
       const params = { path };
-      const result = await this.makeRequest(
-        "filesystem/stats",
-        "GET",
-        null,
-        params
-      );
-      return result;
-    } catch (error) {
-      console.error("Error getting stats:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("filesystem/stats", "GET", null, params);
+    } catch (statsErr) {
+      return { success: false, message: statsErr.message };
     }
   }
 
@@ -529,11 +131,9 @@ export class ZoneweaverFileManagerAPI {
    */
   async getUserInfo() {
     try {
-      const result = await this.makeRequest("system/user-info", "GET");
-      return result;
-    } catch (error) {
-      console.error("Error getting user info:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("system/user-info", "GET");
+    } catch (userErr) {
+      return { success: false, message: userErr.message };
     }
   }
 
@@ -543,11 +143,9 @@ export class ZoneweaverFileManagerAPI {
    */
   async getSystemUsers() {
     try {
-      const result = await this.makeRequest("system/users", "GET");
-      return result;
-    } catch (error) {
-      console.error("Error getting system users:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("system/users", "GET");
+    } catch (usersErr) {
+      return { success: false, message: usersErr.message };
     }
   }
 
@@ -557,26 +155,24 @@ export class ZoneweaverFileManagerAPI {
    */
   async getSystemGroups() {
     try {
-      const result = await this.makeRequest("system/groups", "GET");
-      return result;
-    } catch (error) {
-      console.error("Error getting system groups:", error);
-      return { success: false, message: error.message };
+      return await this.makeRequest("system/groups", "GET");
+    } catch (groupsErr) {
+      return { success: false, message: groupsErr.message };
     }
   }
 
   /**
    * Update file/directory permissions and ownership
    * @param {Object} file - File object
-   * @param {Object} permissions - Permission changes
+   * @param {Object} permissionChanges - Permission changes to apply
    * @returns {Promise<Object>} Update response
    */
-  async updatePermissions(file, permissions) {
+  async updatePermissions(file, permissionChanges) {
     try {
       const data = {
         path: getPathFromFile(file),
-        ...permissions,
-        recursive: permissions.recursive || false,
+        ...permissionChanges,
+        recursive: permissionChanges.recursive || false,
       };
 
       const result = await this.makeRequest(
@@ -593,11 +189,11 @@ export class ZoneweaverFileManagerAPI {
       }
 
       return result;
-    } catch (error) {
-      console.error("Error updating permissions:", error);
-      return { success: false, message: error.message };
+    } catch (permErr) {
+      return { success: false, message: permErr.message };
     }
   }
 }
 
+export { ZoneweaverFileManagerAPI };
 export default ZoneweaverFileManagerAPI;

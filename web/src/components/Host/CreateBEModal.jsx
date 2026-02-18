@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
@@ -13,9 +13,10 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
     snapshot: "",
     activate: false,
     zpool: "",
-    properties: {},
+    properties: [],
     createdBy: "api",
   });
+  const nextPropId = useRef(0);
 
   const { makeZoneweaverAPIRequest } = useServers();
 
@@ -26,30 +27,38 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
     }));
   };
 
-  const handlePropertyChange = (key, value) => {
+  const handlePropertyKeyChange = (id, newKey) => {
     setFormData((prev) => ({
       ...prev,
-      properties: {
-        ...prev.properties,
-        [key]: value,
-      },
+      properties: prev.properties.map((prop) =>
+        prop.id === id ? { ...prop, key: newKey } : prop
+      ),
     }));
   };
 
-  const removeProperty = (key) => {
-    setFormData((prev) => {
-      const newProperties = { ...prev.properties };
-      delete newProperties[key];
-      return {
-        ...prev,
-        properties: newProperties,
-      };
-    });
+  const handlePropertyValueChange = (id, newValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      properties: prev.properties.map((prop) =>
+        prop.id === id ? { ...prop, value: newValue } : prop
+      ),
+    }));
+  };
+
+  const removeProperty = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      properties: prev.properties.filter((prop) => prop.id !== id),
+    }));
   };
 
   const addProperty = () => {
-    const key = `property_${Object.keys(formData.properties).length + 1}`;
-    handlePropertyChange(key, "");
+    const id = nextPropId.current;
+    nextPropId.current += 1;
+    setFormData((prev) => ({
+      ...prev,
+      properties: [...prev.properties, { id, key: "", value: "" }],
+    }));
   };
 
   const handleSubmit = async () => {
@@ -94,15 +103,12 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
       }
 
       // Add properties if any are defined
-      const validProperties = Object.entries(formData.properties).reduce(
-        (acc, [key, value]) => {
-          if (key.trim() && value.trim()) {
-            acc[key.trim()] = value.trim();
-          }
-          return acc;
-        },
-        {}
-      );
+      const validProperties = formData.properties.reduce((acc, prop) => {
+        if (prop.key.trim() && prop.value.trim()) {
+          acc[prop.key.trim()] = prop.value.trim();
+        }
+        return acc;
+      }, {});
 
       if (Object.keys(validProperties).length > 0) {
         requestData.properties = validProperties;
@@ -282,23 +288,17 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="box">
         <h3 className="title is-6">Custom Properties</h3>
 
-        {Object.entries(formData.properties).map(([key, value], index) => (
-          <div key={index} className="field has-addons mb-3">
+        {formData.properties.map((prop) => (
+          <div key={prop.id} className="field has-addons mb-3">
             <div className="control">
               <input
                 className="input"
                 type="text"
                 placeholder="Property name"
-                value={key}
-                onChange={(e) => {
-                  const newProperties = { ...formData.properties };
-                  delete newProperties[key];
-                  newProperties[e.target.value] = value;
-                  setFormData((prev) => ({
-                    ...prev,
-                    properties: newProperties,
-                  }));
-                }}
+                value={prop.key}
+                onChange={(e) =>
+                  handlePropertyKeyChange(prop.id, e.target.value)
+                }
               />
             </div>
             <div className="control is-expanded">
@@ -306,15 +306,17 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
                 className="input"
                 type="text"
                 placeholder="Property value"
-                value={value}
-                onChange={(e) => handlePropertyChange(key, e.target.value)}
+                value={prop.value}
+                onChange={(e) =>
+                  handlePropertyValueChange(prop.id, e.target.value)
+                }
               />
             </div>
             <div className="control">
               <button
                 type="button"
                 className="button has-background-danger-dark has-text-danger-light"
-                onClick={() => removeProperty(key)}
+                onClick={() => removeProperty(prop.id)}
               >
                 <span className="icon">
                   <i className="fas fa-trash" />

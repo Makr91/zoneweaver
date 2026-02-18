@@ -63,7 +63,7 @@ const DeviceFilters = ({
                     type="button"
                     className="dropdown-item button is-ghost"
                     onClick={() =>
-                      exportDeviceData("csv", devices, selectedServer)
+                      exportDeviceData(devices, selectedServer, "csv")
                     }
                   >
                     <span className="icon mr-2">
@@ -75,7 +75,7 @@ const DeviceFilters = ({
                     type="button"
                     className="dropdown-item button is-ghost"
                     onClick={() =>
-                      exportDeviceData("json", devices, selectedServer)
+                      exportDeviceData(devices, selectedServer, "json")
                     }
                   >
                     <span className="icon mr-2">

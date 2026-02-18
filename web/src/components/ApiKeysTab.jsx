@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../contexts/ServerContext";
 
-import { ContentModal } from "./common";
+import { ConfirmModal, ContentModal } from "./common";
 
 const ApiKeysTab = () => {
   const { getApiKeys, generateApiKey, deleteApiKey, bootstrapApiKey } =
@@ -14,6 +14,7 @@ const ApiKeysTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [deleteKeyId, setDeleteKeyId] = useState(null);
 
   const loadApiKeys = useCallback(async () => {
     setLoading(true);
@@ -71,29 +72,35 @@ const ApiKeysTab = () => {
     setLoading(false);
   };
 
-  const handleDeleteKey = async (id) => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this API key? This action cannot be undone."
-      )
-    ) {
-      setLoading(true);
-      setError("");
-      setMessage("");
+  const handleDeleteKey = async () => {
+    setLoading(true);
+    setError("");
+    setMessage("");
 
-      const result = await deleteApiKey(id);
-      if (result.success) {
-        setMessage("API Key deleted successfully.");
-        loadApiKeys();
-      } else {
-        setError(result.message);
-      }
-      setLoading(false);
+    const result = await deleteApiKey(deleteKeyId);
+    if (result.success) {
+      setMessage("API Key deleted successfully.");
+      loadApiKeys();
+    } else {
+      setError(result.message);
     }
+    setDeleteKeyId(null);
+    setLoading(false);
   };
 
   return (
     <div>
+      <ConfirmModal
+        isOpen={deleteKeyId !== null}
+        onClose={() => setDeleteKeyId(null)}
+        onConfirm={handleDeleteKey}
+        title="Delete API Key"
+        message="Are you sure you want to delete this API key? This action cannot be undone."
+        confirmText="Delete"
+        confirmVariant="is-danger"
+        icon="fas fa-trash"
+        loading={loading}
+      />
       {error && <div className="notification is-danger">{error}</div>}
       {message && <div className="notification is-success">{message}</div>}
       <ContentModal
@@ -247,7 +254,7 @@ const ApiKeysTab = () => {
                       </button>
                       <button
                         className="button is-danger is-small"
-                        onClick={() => handleDeleteKey(key.id)}
+                        onClick={() => setDeleteKeyId(key.id)}
                         disabled={loading}
                       >
                         <span className="icon is-small">

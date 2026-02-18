@@ -123,8 +123,8 @@ const DatasetsTable = ({
                 </tr>
               </thead>
               <tbody>
-                {storageDatasets.map((dataset, index) => (
-                  <tr key={index}>
+                {storageDatasets.map((dataset) => (
+                  <tr key={dataset.name || dataset.dataset}>
                     <td>
                       <code className="is-size-7">
                         {dataset.name || dataset.dataset}

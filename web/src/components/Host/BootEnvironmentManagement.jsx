@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
@@ -24,12 +24,7 @@ const BootEnvironmentManagement = ({ server }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load boot environments on component mount and when filters change
-  useEffect(() => {
-    loadBootEnvironments();
-  }, [server, filters.showDetailed, filters.showSnapshots]);
-
-  const loadBootEnvironments = async () => {
+  const loadBootEnvironments = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -61,7 +56,6 @@ const BootEnvironmentManagement = ({ server }) => {
 
       if (result.success) {
         const beList = result.data?.boot_environments || [];
-        // Filter by status on client side
         const filteredBEs = beList.filter((be) => {
           if (filters.status) {
             if (filters.status === "active" && !be.is_active_now) {
@@ -90,11 +84,15 @@ const BootEnvironmentManagement = ({ server }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, filters]);
+
+  useEffect(() => {
+    loadBootEnvironments();
+  }, [loadBootEnvironments]);
 
   const handleBEAction = async (beName, action, options = {}) => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
+      return { success: false, message: "No server connection" };
     }
 
     try {
@@ -104,6 +102,7 @@ const BootEnvironmentManagement = ({ server }) => {
       let endpoint;
       let method;
       let requestData;
+      let queryParams = null;
 
       switch (action) {
         case "activate":
@@ -135,32 +134,14 @@ const BootEnvironmentManagement = ({ server }) => {
           endpoint = `system/boot-environments/${encodeURIComponent(beName)}`;
           method = "DELETE";
           requestData = null;
-          // Use query parameters for delete
-          const deleteParams = {};
+          queryParams = {};
           if (options.force) {
-            deleteParams.force = true;
+            queryParams.force = true;
           }
           if (options.snapshots) {
-            deleteParams.snapshots = true;
+            queryParams.snapshots = true;
           }
-
-          const result = await makeZoneweaverAPIRequest(
-            server.hostname,
-            server.port,
-            server.protocol,
-            endpoint,
-            method,
-            requestData,
-            deleteParams
-          );
-
-          if (result.success) {
-            await loadBootEnvironments();
-            return { success: true, data: result.data };
-          }
-          setError(result.message || `Failed to ${action} boot environment`);
-          return { success: false, message: result.message };
-
+          break;
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -171,11 +152,11 @@ const BootEnvironmentManagement = ({ server }) => {
         server.protocol,
         endpoint,
         method,
-        requestData
+        requestData,
+        queryParams
       );
 
       if (result.success) {
-        // Refresh BE list after action
         await loadBootEnvironments();
         return { success: true, data: result.data };
       }

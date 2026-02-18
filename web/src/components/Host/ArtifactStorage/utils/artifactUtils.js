@@ -33,7 +33,7 @@ export const formatDateTime = (dateString) => {
   try {
     const date = new Date(dateString);
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-  } catch (err) {
+  } catch {
     return dateString;
   }
 };

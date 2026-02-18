@@ -26,8 +26,6 @@ const getTotalIOClass = (totalMBps) => {
 const DiskIOTable = ({
   diskIOStats,
   diskIOSort,
-  handleDiskIOSort,
-  getSortIcon,
   resetDiskIOSort,
   sectionsCollapsed,
   toggleSection,
@@ -147,8 +145,6 @@ const DiskIOTable = ({
 DiskIOTable.propTypes = {
   diskIOStats: PropTypes.array.isRequired,
   diskIOSort: PropTypes.array.isRequired,
-  handleDiskIOSort: PropTypes.func.isRequired,
-  getSortIcon: PropTypes.func.isRequired,
   resetDiskIOSort: PropTypes.func.isRequired,
   sectionsCollapsed: PropTypes.object.isRequired,
   toggleSection: PropTypes.func.isRequired,

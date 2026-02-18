@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
+import { ConfirmModal, ContentModal } from "../common";
 
 import BridgeCreateModal from "./BridgeCreateModal";
 import BridgeTable from "./BridgeTable";
@@ -10,18 +11,15 @@ const BridgeManagement = ({ server, onError }) => {
   const [bridges, setBridges] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bridgeDetails, setBridgeDetails] = useState(null);
   const [filters, setFilters] = useState({
     name: "",
   });
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load bridges on component mount and when filters change
-  useEffect(() => {
-    loadBridges();
-  }, [server, filters.name]);
-
-  const loadBridges = async () => {
+  const loadBridges = useCallback(async () => {
     if (!server || !makeZoneweaverAPIRequest) {
       return;
     }
@@ -34,7 +32,7 @@ const BridgeManagement = ({ server, onError }) => {
       if (filters.name) {
         params.name = filters.name;
       }
-      params.extended = true; // Include detailed bridge information
+      params.extended = true;
 
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -58,15 +56,14 @@ const BridgeManagement = ({ server, onError }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [server, makeZoneweaverAPIRequest, onError, filters]);
+
+  useEffect(() => {
+    loadBridges();
+  }, [loadBridges]);
 
   const handleDeleteBridge = async (bridgeName) => {
     if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
-    if (
-      !window.confirm(`Are you sure you want to delete bridge "${bridgeName}"?`)
-    ) {
       return;
     }
 
@@ -74,23 +71,20 @@ const BridgeManagement = ({ server, onError }) => {
       setLoading(true);
       onError("");
 
-      // Use query parameters instead of request body for DELETE request
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
         server.protocol,
         `network/bridges/${encodeURIComponent(bridgeName)}`,
         "DELETE",
-        null, // No request body to avoid parsing issues
+        null,
         {
-          // Query parameters instead
           force: false,
           created_by: "api",
         }
       );
 
       if (result.success) {
-        // Refresh bridges list after deletion
         await loadBridges();
       } else {
         onError(result.message || `Failed to delete bridge "${bridgeName}"`);
@@ -99,6 +93,7 @@ const BridgeManagement = ({ server, onError }) => {
       onError(`Error deleting bridge "${bridgeName}": ${err.message}`);
     } finally {
       setLoading(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -120,9 +115,7 @@ const BridgeManagement = ({ server, onError }) => {
       );
 
       if (result.success) {
-        // For now, just show an alert with the details
-        // In a full implementation, you'd create a BridgeDetailsModal
-        alert(`Bridge Details:\n${JSON.stringify(result.data, null, 2)}`);
+        setBridgeDetails(result.data);
       } else {
         onError(result.message || "Failed to load bridge details");
       }
@@ -246,12 +239,11 @@ const BridgeManagement = ({ server, onError }) => {
         <BridgeTable
           bridges={bridges}
           loading={loading}
-          onDelete={handleDeleteBridge}
+          onDelete={(bridgeName) => setDeleteTarget(bridgeName)}
           onViewDetails={handleViewDetails}
         />
       </div>
 
-      {/* Bridge Create Modal */}
       {showCreateModal && (
         <BridgeCreateModal
           server={server}
@@ -262,6 +254,30 @@ const BridgeManagement = ({ server, onError }) => {
           }}
           onError={onError}
         />
+      )}
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => handleDeleteBridge(deleteTarget)}
+        title="Delete Bridge"
+        message={`Are you sure you want to delete bridge "${deleteTarget}"?`}
+        confirmText="Delete"
+        confirmVariant="is-danger"
+        icon="fas fa-trash"
+      />
+
+      {bridgeDetails && (
+        <ContentModal
+          isOpen
+          onClose={() => setBridgeDetails(null)}
+          title="Bridge Details"
+          icon="fas fa-network-wired"
+        >
+          <pre className="is-size-7">
+            {JSON.stringify(bridgeDetails, null, 2)}
+          </pre>
+        </ContentModal>
       )}
     </div>
   );

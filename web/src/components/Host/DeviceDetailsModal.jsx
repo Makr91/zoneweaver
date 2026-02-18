@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 
 import { ContentModal } from "../common";
 
+import { getCategoryTagClass } from "./DeviceUtils";
+
 const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
   if (!selectedDevice) {
     return null;
@@ -61,15 +63,7 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
                   </td>
                   <td>
                     <span
-                      className={`tag ${
-                        selectedDevice.device_category === "network"
-                          ? "is-info"
-                          : selectedDevice.device_category === "storage"
-                            ? "is-primary"
-                            : selectedDevice.device_category === "display"
-                              ? "is-success"
-                              : "is-dark"
-                      }`}
+                      className={`tag ${getCategoryTagClass(selectedDevice.device_category)}`}
                     >
                       {selectedDevice.device_category || "other"}
                     </span>

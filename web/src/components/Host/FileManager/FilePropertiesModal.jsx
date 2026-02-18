@@ -1,9 +1,62 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import FormModal from "../../common/FormModal";
 
-import { getPathFromFile, formatFileSize } from "./FileManagerTransforms";
+import { formatFileSize } from "./FileManagerTransforms";
+import PermissionEditor from "./PermissionEditor";
+
+/**
+ * Current vs new properties comparison display
+ */
+const PropertiesComparison = ({
+  file,
+  selectedUser,
+  selectedUserObj,
+  selectedGroup,
+  selectedGroupObj,
+  currentOctal,
+}) => (
+  <div className="field">
+    <div className="notification is-info">
+      <div className="columns">
+        <div className="column">
+          <strong>Current:</strong>
+          <br />
+          User: {file._zwMetadata?.uid || "Unknown"}
+          <br />
+          Group: {file._zwMetadata?.gid || "Unknown"}
+          <br />
+          Mode: {file._zwMetadata?.permissions?.octal || "Unknown"}
+        </div>
+        <div className="column">
+          <strong>New:</strong>
+          <br />
+          User:{" "}
+          {selectedUser
+            ? `${selectedUserObj?.username} (${selectedUser})`
+            : "No change"}
+          <br />
+          Group:{" "}
+          {selectedGroup
+            ? `${selectedGroupObj?.groupname} (${selectedGroup})`
+            : "No change"}
+          <br />
+          Mode: {currentOctal}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+PropertiesComparison.propTypes = {
+  file: PropTypes.object.isRequired,
+  selectedUser: PropTypes.string.isRequired,
+  selectedUserObj: PropTypes.object,
+  selectedGroup: PropTypes.string.isRequired,
+  selectedGroupObj: PropTypes.object,
+  currentOctal: PropTypes.string.isRequired,
+};
 
 /**
  * File Properties Modal Component
@@ -27,15 +80,8 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
   const [useCustomMode, setUseCustomMode] = useState(false);
   const [applyRecursively, setApplyRecursively] = useState(false);
 
-  // Load system users and groups on mount
-  useEffect(() => {
-    if (isOpen) {
-      loadSystemData();
-      initializePermissions();
-    }
-  }, [isOpen, file]);
-
-  const loadSystemData = async () => {
+  // Define functions before useEffect
+  const loadSystemData = useCallback(async () => {
     try {
       const [usersResult, groupsResult] = await Promise.all([
         api.getSystemUsers(),
@@ -49,12 +95,12 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       if (groupsResult.success && groupsResult.data?.groups) {
         setSystemGroups(groupsResult.data.groups);
       }
-    } catch (loadErr) {
-      console.error("Error loading system data:", loadErr);
+    } catch {
+      // System data loading failed silently
     }
-  };
+  }, [api]);
 
-  const initializePermissions = () => {
+  const initializePermissions = useCallback(() => {
     if (!file?._zwMetadata?.permissions) {
       return;
     }
@@ -62,11 +108,9 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
     const perms = file._zwMetadata.permissions;
     setCustomMode(perms.octal || "644");
 
-    // Set current user and group
     setSelectedUser(file._zwMetadata.uid?.toString() || "1000");
     setSelectedGroup(file._zwMetadata.gid?.toString() || "1000");
 
-    // Parse octal permissions into checkbox states
     const octal = perms.octal || "644";
     const parseOctal = (digit) => ({
       read: (parseInt(digit) & 4) !== 0,
@@ -81,7 +125,15 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
         other: parseOctal(octal[2]),
       });
     }
-  };
+  }, [file]);
+
+  // Load system users and groups on mount
+  useEffect(() => {
+    if (isOpen) {
+      loadSystemData();
+      initializePermissions();
+    }
+  }, [isOpen, loadSystemData, initializePermissions]);
 
   const calculateOctalFromCheckboxes = () => {
     const calcDigit = (perms) =>
@@ -98,7 +150,7 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
         [permission]: value,
       },
     }));
-    setUseCustomMode(false); // Switch back to checkbox mode when user clicks checkboxes
+    setUseCustomMode(false);
   };
 
   const handleCustomModeChange = (value) => {
@@ -134,7 +186,6 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
         setError(result.message || "Failed to update permissions");
       }
     } catch (submitErr) {
-      console.error("Error updating permissions:", submitErr);
       setError(`Failed to update permissions: ${submitErr.message}`);
     } finally {
       setLoading(false);
@@ -263,239 +314,18 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
           </div>
         </div>
 
-        {/* Permissions */}
-        <div className="column">
-          <h5 className="title is-6">Permissions</h5>
-
-          {/* Permission checkboxes */}
-          <div className="field">
-            <div className="table-container">
-              <table className="table is-narrow is-fullwidth">
-                <thead>
-                  <tr>
-                    <th />
-                    <th>Read</th>
-                    <th>Write</th>
-                    <th>Execute</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <strong>Owner</strong>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.owner.read}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "owner",
-                            "read",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.owner.write}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "owner",
-                            "write",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.owner.execute}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "owner",
-                            "execute",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Group</strong>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.group.read}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "group",
-                            "read",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.group.write}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "group",
-                            "write",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.group.execute}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "group",
-                            "execute",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Other</strong>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.other.read}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "other",
-                            "read",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.other.write}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "other",
-                            "write",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={permissions.other.execute}
-                        onChange={(e) =>
-                          handlePermissionChange(
-                            "other",
-                            "execute",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Octal mode display/editor */}
-          <div className="field">
-            <label htmlFor="file-props-octal" className="label">
-              <input
-                type="checkbox"
-                checked={useCustomMode}
-                onChange={(e) => setUseCustomMode(e.target.checked)}
-              />
-              <span className="ml-2">Use custom octal mode</span>
-            </label>
-            <div className="control">
-              <input
-                id="file-props-octal"
-                className="input"
-                type="text"
-                value={useCustomMode ? customMode : currentOctal}
-                onChange={(e) => handleCustomModeChange(e.target.value)}
-                placeholder="644"
-                disabled={!useCustomMode}
-                pattern="[0-7]{3,4}"
-              />
-            </div>
-            <p className="help">
-              Current calculated: {currentOctal} | Original:{" "}
-              {file._zwMetadata?.permissions?.octal || "Unknown"}
-            </p>
-          </div>
-
-          {/* Common permission presets */}
-          <div className="field">
-            <span className="label" aria-hidden="true">
-              Quick Presets
-            </span>
-            <div className="buttons">
-              <button
-                type="button"
-                className="button is-small"
-                onClick={() => {
-                  setPermissions({
-                    owner: { read: true, write: true, execute: false },
-                    group: { read: true, write: false, execute: false },
-                    other: { read: true, write: false, execute: false },
-                  });
-                  setUseCustomMode(false);
-                }}
-              >
-                644 (rw-r--r--)
-              </button>
-              <button
-                type="button"
-                className="button is-small"
-                onClick={() => {
-                  setPermissions({
-                    owner: { read: true, write: true, execute: true },
-                    group: { read: true, write: false, execute: true },
-                    other: { read: true, write: false, execute: true },
-                  });
-                  setUseCustomMode(false);
-                }}
-              >
-                755 (rwxr-xr-x)
-              </button>
-              <button
-                type="button"
-                className="button is-small"
-                onClick={() => {
-                  setPermissions({
-                    owner: { read: true, write: true, execute: false },
-                    group: { read: false, write: false, execute: false },
-                    other: { read: false, write: false, execute: false },
-                  });
-                  setUseCustomMode(false);
-                }}
-              >
-                600 (rw-------)
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Permissions - extracted component */}
+        <PermissionEditor
+          permissions={permissions}
+          onPermissionChange={handlePermissionChange}
+          useCustomMode={useCustomMode}
+          setUseCustomMode={setUseCustomMode}
+          customMode={customMode}
+          currentOctal={currentOctal}
+          onCustomModeChange={handleCustomModeChange}
+          originalOctal={file._zwMetadata?.permissions?.octal}
+          setPermissions={setPermissions}
+        />
       </div>
 
       {/* Recursive option for directories */}
@@ -520,36 +350,14 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       )}
 
       {/* Current vs new comparison */}
-      <div className="field">
-        <div className="notification is-info">
-          <div className="columns">
-            <div className="column">
-              <strong>Current:</strong>
-              <br />
-              User: {file._zwMetadata?.uid || "Unknown"}
-              <br />
-              Group: {file._zwMetadata?.gid || "Unknown"}
-              <br />
-              Mode: {file._zwMetadata?.permissions?.octal || "Unknown"}
-            </div>
-            <div className="column">
-              <strong>New:</strong>
-              <br />
-              User:{" "}
-              {selectedUser
-                ? `${selectedUserObj?.username} (${selectedUser})`
-                : "No change"}
-              <br />
-              Group:{" "}
-              {selectedGroup
-                ? `${selectedGroupObj?.groupname} (${selectedGroup})`
-                : "No change"}
-              <br />
-              Mode: {currentOctal}
-            </div>
-          </div>
-        </div>
-      </div>
+      <PropertiesComparison
+        file={file}
+        selectedUser={selectedUser}
+        selectedUserObj={selectedUserObj}
+        selectedGroup={selectedGroup}
+        selectedGroupObj={selectedGroupObj}
+        currentOctal={currentOctal}
+      />
 
       {/* Permission explanation */}
       <div className="field">

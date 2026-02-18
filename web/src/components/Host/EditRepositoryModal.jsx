@@ -1,8 +1,10 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
+
+import UrlListEditor from "./UrlListEditor";
 
 const EditRepositoryModal = ({
   server,
@@ -12,11 +14,12 @@ const EditRepositoryModal = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false);
+  const nextEntryId = useRef(1);
   const [formData, setFormData] = useState({
-    originsToAdd: [""],
-    originsToRemove: [""],
-    mirrorsToAdd: [""],
-    mirrorsToRemove: [""],
+    originsToAdd: [{ id: 0, value: "" }],
+    originsToRemove: [{ id: 0, value: "" }],
+    mirrorsToAdd: [{ id: 0, value: "" }],
+    mirrorsToRemove: [{ id: 0, value: "" }],
     enabled: true,
     sticky: false,
     searchFirst: false,
@@ -30,7 +33,6 @@ const EditRepositoryModal = ({
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Initialize form with repository data
   useEffect(() => {
     if (repository) {
       setFormData((prev) => ({
@@ -52,38 +54,44 @@ const EditRepositoryModal = ({
     }));
   };
 
-  const handleArrayChange = (arrayName, index, value) => {
-    const newArray = [...formData[arrayName]];
-    newArray[index] = value;
+  const handleArrayChange = (arrayName, id, value) => {
     setFormData((prev) => ({
       ...prev,
-      [arrayName]: newArray,
+      [arrayName]: prev[arrayName].map((entry) =>
+        entry.id === id ? { ...entry, value } : entry
+      ),
     }));
   };
 
   const addToArray = (arrayName) => {
+    const id = nextEntryId.current;
+    nextEntryId.current += 1;
     setFormData((prev) => ({
       ...prev,
-      [arrayName]: [...prev[arrayName], ""],
+      [arrayName]: [...prev[arrayName], { id, value: "" }],
     }));
   };
 
-  const removeFromArray = (arrayName, index) => {
-    if (formData[arrayName].length > 1) {
-      const newArray = formData[arrayName].filter((_, i) => i !== index);
-      setFormData((prev) => ({
+  const removeFromArray = (arrayName, id) => {
+    setFormData((prev) => {
+      if (prev[arrayName].length <= 1) {
+        return prev;
+      }
+      return {
         ...prev,
-        [arrayName]: newArray,
-      }));
-    }
+        [arrayName]: prev[arrayName].filter((entry) => entry.id !== id),
+      };
+    });
   };
+
+  const extractValues = (entries) =>
+    entries.map((entry) => entry.value.trim()).filter(Boolean);
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
       onError("");
 
-      // Build request data with only non-empty arrays
       const requestData = {
         enabled: formData.enabled,
         sticky: formData.sticky,
@@ -92,33 +100,26 @@ const EditRepositoryModal = ({
         created_by: "api",
       };
 
-      // Add origins to add/remove if specified
-      const originsToAdd = formData.originsToAdd.filter((url) => url.trim());
+      const originsToAdd = extractValues(formData.originsToAdd);
       if (originsToAdd.length > 0) {
         requestData.origins_to_add = originsToAdd;
       }
 
-      const originsToRemove = formData.originsToRemove.filter((url) =>
-        url.trim()
-      );
+      const originsToRemove = extractValues(formData.originsToRemove);
       if (originsToRemove.length > 0) {
         requestData.origins_to_remove = originsToRemove;
       }
 
-      // Add mirrors to add/remove if specified
-      const mirrorsToAdd = formData.mirrorsToAdd.filter((url) => url.trim());
+      const mirrorsToAdd = extractValues(formData.mirrorsToAdd);
       if (mirrorsToAdd.length > 0) {
         requestData.mirrors_to_add = mirrorsToAdd;
       }
 
-      const mirrorsToRemove = formData.mirrorsToRemove.filter((url) =>
-        url.trim()
-      );
+      const mirrorsToRemove = extractValues(formData.mirrorsToRemove);
       if (mirrorsToRemove.length > 0) {
         requestData.mirrors_to_remove = mirrorsToRemove;
       }
 
-      // Add optional fields
       if (formData.searchBefore.trim()) {
         requestData.search_before = formData.searchBefore.trim();
       }
@@ -206,92 +207,36 @@ const EditRepositoryModal = ({
       {/* Origins Management */}
       <div className="box mb-4">
         <h3 className="title is-6">Origins Management</h3>
-
         <div className="columns">
           <div className="column">
-            <span className="label">Add Origins</span>
-            {formData.originsToAdd.map((origin, index) => (
-              <div key={index} className="field has-addons mb-3">
-                <div className="control is-expanded">
-                  <input
-                    className="input"
-                    type="url"
-                    placeholder="https://pkg.omnios.org/repository/"
-                    value={origin}
-                    onChange={(e) =>
-                      handleArrayChange("originsToAdd", index, e.target.value)
-                    }
-                  />
-                </div>
-                <div className="control">
-                  <button
-                    type="button"
-                    className="button has-background-danger-dark has-text-danger-light"
-                    onClick={() => removeFromArray("originsToAdd", index)}
-                    disabled={formData.originsToAdd.length === 1}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-trash" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button
-              type="button"
-              className="button is-info is-small"
-              onClick={() => addToArray("originsToAdd")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Add Origin</span>
-            </button>
+            <UrlListEditor
+              label="Add Origins"
+              entries={formData.originsToAdd}
+              placeholder="https://pkg.omnios.org/repository/"
+              onEntryChange={(id, value) =>
+                handleArrayChange("originsToAdd", id, value)
+              }
+              onAdd={() => addToArray("originsToAdd")}
+              onRemove={(id) => removeFromArray("originsToAdd", id)}
+              addButtonText="Add Origin"
+              addButtonClass="is-info"
+              addButtonIcon="fa-plus"
+            />
           </div>
-
           <div className="column">
-            <span className="label">Remove Origins</span>
-            {formData.originsToRemove.map((origin, index) => (
-              <div key={index} className="field has-addons mb-3">
-                <div className="control is-expanded">
-                  <input
-                    className="input"
-                    type="url"
-                    placeholder="URL to remove"
-                    value={origin}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "originsToRemove",
-                        index,
-                        e.target.value
-                      )
-                    }
-                  />
-                </div>
-                <div className="control">
-                  <button
-                    type="button"
-                    className="button has-background-danger-dark has-text-danger-light"
-                    onClick={() => removeFromArray("originsToRemove", index)}
-                    disabled={formData.originsToRemove.length === 1}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-trash" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button
-              type="button"
-              className="button is-warning is-small"
-              onClick={() => addToArray("originsToRemove")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-minus" />
-              </span>
-              <span>Remove Origin</span>
-            </button>
+            <UrlListEditor
+              label="Remove Origins"
+              entries={formData.originsToRemove}
+              placeholder="URL to remove"
+              onEntryChange={(id, value) =>
+                handleArrayChange("originsToRemove", id, value)
+              }
+              onAdd={() => addToArray("originsToRemove")}
+              onRemove={(id) => removeFromArray("originsToRemove", id)}
+              addButtonText="Remove Origin"
+              addButtonClass="is-warning"
+              addButtonIcon="fa-minus"
+            />
           </div>
         </div>
       </div>
@@ -299,92 +244,36 @@ const EditRepositoryModal = ({
       {/* Mirrors Management */}
       <div className="box mb-4">
         <h3 className="title is-6">Mirrors Management</h3>
-
         <div className="columns">
           <div className="column">
-            <span className="label">Add Mirrors</span>
-            {formData.mirrorsToAdd.map((mirror, index) => (
-              <div key={index} className="field has-addons mb-3">
-                <div className="control is-expanded">
-                  <input
-                    className="input"
-                    type="url"
-                    placeholder="https://mirror.example.com/repository/"
-                    value={mirror}
-                    onChange={(e) =>
-                      handleArrayChange("mirrorsToAdd", index, e.target.value)
-                    }
-                  />
-                </div>
-                <div className="control">
-                  <button
-                    type="button"
-                    className="button has-background-danger-dark has-text-danger-light"
-                    onClick={() => removeFromArray("mirrorsToAdd", index)}
-                    disabled={formData.mirrorsToAdd.length === 1}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-trash" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button
-              type="button"
-              className="button is-info is-small"
-              onClick={() => addToArray("mirrorsToAdd")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Add Mirror</span>
-            </button>
+            <UrlListEditor
+              label="Add Mirrors"
+              entries={formData.mirrorsToAdd}
+              placeholder="https://mirror.example.com/repository/"
+              onEntryChange={(id, value) =>
+                handleArrayChange("mirrorsToAdd", id, value)
+              }
+              onAdd={() => addToArray("mirrorsToAdd")}
+              onRemove={(id) => removeFromArray("mirrorsToAdd", id)}
+              addButtonText="Add Mirror"
+              addButtonClass="is-info"
+              addButtonIcon="fa-plus"
+            />
           </div>
-
           <div className="column">
-            <span className="label">Remove Mirrors</span>
-            {formData.mirrorsToRemove.map((mirror, index) => (
-              <div key={index} className="field has-addons mb-3">
-                <div className="control is-expanded">
-                  <input
-                    className="input"
-                    type="url"
-                    placeholder="URL to remove"
-                    value={mirror}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "mirrorsToRemove",
-                        index,
-                        e.target.value
-                      )
-                    }
-                  />
-                </div>
-                <div className="control">
-                  <button
-                    type="button"
-                    className="button has-background-danger-dark has-text-danger-light"
-                    onClick={() => removeFromArray("mirrorsToRemove", index)}
-                    disabled={formData.mirrorsToRemove.length === 1}
-                  >
-                    <span className="icon">
-                      <i className="fas fa-trash" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button
-              type="button"
-              className="button is-warning is-small"
-              onClick={() => addToArray("mirrorsToRemove")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-minus" />
-              </span>
-              <span>Remove Mirror</span>
-            </button>
+            <UrlListEditor
+              label="Remove Mirrors"
+              entries={formData.mirrorsToRemove}
+              placeholder="URL to remove"
+              onEntryChange={(id, value) =>
+                handleArrayChange("mirrorsToRemove", id, value)
+              }
+              onAdd={() => addToArray("mirrorsToRemove")}
+              onRemove={(id) => removeFromArray("mirrorsToRemove", id)}
+              addButtonText="Remove Mirror"
+              addButtonClass="is-warning"
+              addButtonIcon="fa-minus"
+            />
           </div>
         </div>
       </div>
@@ -392,7 +281,6 @@ const EditRepositoryModal = ({
       {/* Repository Options */}
       <div className="box mb-4">
         <h3 className="title is-6">Repository Options</h3>
-
         <div className="columns">
           <div className="column">
             <div className="field">

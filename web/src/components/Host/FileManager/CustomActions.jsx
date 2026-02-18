@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import ArchiveModals from "./ArchiveModals";
 import { isTextFile, isArchiveFile } from "./FileManagerTransforms";
@@ -15,7 +15,6 @@ const CustomActions = ({
   currentPath,
   files,
   loadFiles,
-  isLoading,
   setIsLoading,
   setError,
   permissions,
@@ -31,14 +30,17 @@ const CustomActions = ({
   const [propertiesFile, setPropertiesFile] = useState(null);
 
   // Text editor handlers
-  const handleEditFile = (file) => {
-    if (isTextFile(file)) {
-      setTextEditorFile(file);
-      setShowTextEditor(true);
-    } else {
-      setError("This file cannot be edited as text");
-    }
-  };
+  const handleEditFile = useCallback(
+    (file) => {
+      if (isTextFile(file)) {
+        setTextEditorFile(file);
+        setShowTextEditor(true);
+      } else {
+        setError("This file cannot be edited as text");
+      }
+    },
+    [setError]
+  );
 
   const handleCloseTextEditor = () => {
     setShowTextEditor(false);
@@ -376,7 +378,7 @@ const CustomActions = ({
     return () => {
       observer.disconnect();
     };
-  }, [files, permissions]);
+  }, [files, permissions, handleEditFile]);
 
   return (
     <>
@@ -422,7 +424,6 @@ CustomActions.propTypes = {
   currentPath: PropTypes.string.isRequired,
   files: PropTypes.array.isRequired,
   loadFiles: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
   setIsLoading: PropTypes.func.isRequired,
   setError: PropTypes.func.isRequired,
   permissions: PropTypes.object.isRequired,

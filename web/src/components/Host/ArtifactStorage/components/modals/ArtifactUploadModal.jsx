@@ -23,6 +23,7 @@ const ArtifactUploadModal = ({
   const [dragOver, setDragOver] = useState(false);
 
   const fileInputRef = useRef(null);
+  const nextFileId = useRef(0);
   const { makeZoneweaverAPIRequest } = useServers();
 
   const enabledStoragePaths = storagePaths.filter((path) => path.enabled);
@@ -53,8 +54,6 @@ const ArtifactUploadModal = ({
         "Checksum algorithm is required when checksum is provided";
     }
 
-    // Validate file types and sizes
-    const maxFileSize = 50 * 1024 * 1024 * 1024; // 50GB
     const validExtensions = [
       ".iso",
       ".img",
@@ -64,17 +63,12 @@ const ArtifactUploadModal = ({
       ".qcow2",
     ];
 
-    for (const file of selectedFiles) {
-      if (file.size > maxFileSize) {
-        newErrors.files = `File "${file.name}" is too large (max 50GB)`;
-        break;
-      }
-
-      const extension = file.name
+    for (const entry of selectedFiles) {
+      const extension = entry.file.name
         .toLowerCase()
-        .substring(file.name.lastIndexOf("."));
+        .substring(entry.file.name.lastIndexOf("."));
       if (!validExtensions.includes(extension)) {
-        newErrors.files = `File "${file.name}" has an unsupported file type. Supported: ${validExtensions.join(", ")}`;
+        newErrors.files = `File "${entry.file.name}" has an unsupported file type. Supported: ${validExtensions.join(", ")}`;
         break;
       }
     }
@@ -98,7 +92,11 @@ const ArtifactUploadModal = ({
   };
 
   const handleFileSelect = (files) => {
-    const fileArray = Array.from(files);
+    const fileArray = Array.from(files).map((file) => {
+      const id = nextFileId.current;
+      nextFileId.current += 1;
+      return { id, file };
+    });
     setSelectedFiles(fileArray);
 
     if (errors.files) {
@@ -129,8 +127,8 @@ const ArtifactUploadModal = ({
     handleFileSelect(e.dataTransfer.files);
   };
 
-  const removeFile = (index) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeFile = (fileId) => {
+    setSelectedFiles((prev) => prev.filter((entry) => entry.id !== fileId));
   };
 
   const formatFileSize = (bytes) => {
@@ -219,19 +217,14 @@ const ArtifactUploadModal = ({
       setLoading(true);
       setUploadProgress({});
 
-      // Upload files sequentially to avoid overwhelming the server
-      const results = [];
+      const results = await Promise.all(
+        selectedFiles.map(({ file }) => {
+          setUploadProgress((prev) => ({
+            ...prev,
+            [file.name]: { status: "uploading", progress: 0 },
+          }));
 
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-
-        setUploadProgress((prev) => ({
-          ...prev,
-          [file.name]: { status: "uploading", progress: 0 },
-        }));
-
-        try {
-          const result = await uploadFile(file, (progressEvent) => {
+          return uploadFile(file, (progressEvent) => {
             const percent = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
@@ -244,50 +237,52 @@ const ArtifactUploadModal = ({
                 total: progressEvent.total,
               },
             }));
-          });
+          })
+            .then((result) => {
+              if (result.success) {
+                setUploadProgress((prev) => ({
+                  ...prev,
+                  [file.name]: { status: "completed", progress: 100 },
+                }));
+                return {
+                  file: file.name,
+                  success: true,
+                  task_id: result.data?.task_id,
+                  data: result.data,
+                };
+              }
 
-          if (result.success) {
-            setUploadProgress((prev) => ({
-              ...prev,
-              [file.name]: { status: "completed", progress: 100 },
-            }));
-            results.push({
-              file: file.name,
-              success: true,
-              task_id: result.data?.task_id,
-              data: result.data,
-            });
-          } else {
-            setUploadProgress((prev) => ({
-              ...prev,
-              [file.name]: {
-                status: "error",
-                progress: 0,
+              setUploadProgress((prev) => ({
+                ...prev,
+                [file.name]: {
+                  status: "error",
+                  progress: 0,
+                  error: result.message,
+                },
+              }));
+              return {
+                file: file.name,
+                success: false,
                 error: result.message,
-              },
-            }));
-            results.push({
-              file: file.name,
-              success: false,
-              error: result.message,
+              };
+            })
+            .catch((fileErr) => {
+              setUploadProgress((prev) => ({
+                ...prev,
+                [file.name]: {
+                  status: "error",
+                  progress: 0,
+                  error: fileErr.message,
+                },
+              }));
+              return {
+                file: file.name,
+                success: false,
+                error: fileErr.message,
+              };
             });
-          }
-        } catch (fileErr) {
-          setUploadProgress((prev) => ({
-            ...prev,
-            [file.name]: {
-              status: "error",
-              progress: 0,
-              error: fileErr.message,
-            },
-          }));
-          results.push({
-            file: file.name,
-            success: false,
-            error: fileErr.message,
-          });
-        }
-      }
+        })
+      );
 
       // Check if any uploads succeeded
       const successfulUploads = results.filter((r) => r.success);
@@ -392,7 +387,7 @@ const ArtifactUploadModal = ({
             }
           }}
         >
-          <label className="file-label">
+          <span className="file-label">
             <input
               id="artifact-upload-file-input"
               ref={fileInputRef}
@@ -411,12 +406,11 @@ const ArtifactUploadModal = ({
                 {dragOver ? "Drop files here" : "Choose files or drag and drop"}
               </span>
             </span>
-          </label>
+          </span>
         </div>
         {errors.files && <p className="help is-danger">{errors.files}</p>}
         <p className="help">
-          Supported formats: ISO, IMG, VMDK, VHD, VHDX, QCOW2 (max 50GB per
-          file)
+          Supported formats: ISO, IMG, VMDK, VHD, VHDX, QCOW2
         </p>
       </div>
 
@@ -425,13 +419,10 @@ const ArtifactUploadModal = ({
         <div className="field">
           <span className="label">Selected Files ({selectedFiles.length})</span>
           <div className="box">
-            {selectedFiles.map((file, index) => {
+            {selectedFiles.map(({ id, file }) => {
               const progress = uploadProgress[file.name];
               return (
-                <div
-                  key={`file-${index}-${file.name}-${file.size}`}
-                  className="media"
-                >
+                <div key={id} className="media">
                   <div className="media-content">
                     <div className="content">
                       <div className="level is-mobile">
@@ -450,7 +441,7 @@ const ArtifactUploadModal = ({
                               <button
                                 type="button"
                                 className="button is-small is-danger"
-                                onClick={() => removeFile(index)}
+                                onClick={() => removeFile(id)}
                               >
                                 <span className="icon is-small">
                                   <i className="fas fa-times" />

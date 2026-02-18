@@ -1,8 +1,13 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 
+import { ConfirmModal } from "../common";
+
+import { getSeverityTagClass } from "./FaultUtils";
+
 const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
   const [actionLoading, setActionLoading] = useState({});
+  const [pendingAction, setPendingAction] = useState(null);
 
   const handleAction = async (fault, action, fmri = null) => {
     const key = `${fault.uuid}-${action}`;
@@ -22,6 +27,15 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
       return null;
     }
     return affects.split(/\s+/)[0]; // Returns "zfs://pool=Array-0"
+  };
+
+  const confirmPendingAction = () => {
+    if (!pendingAction) {
+      return;
+    }
+    const fmri = extractFmriFromAffects(pendingAction.fault.details?.affects);
+    handleAction(pendingAction.fault, pendingAction.action.key, fmri);
+    setPendingAction(null);
   };
 
   const getSeverityIcon = (severity) => {
@@ -53,18 +67,11 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
     }
   };
 
-  const getSeverityTag = (severity) => {
-    switch (severity.toLowerCase()) {
-      case "critical":
-        return <span className="tag is-danger is-small">{severity}</span>;
-      case "major":
-        return <span className="tag is-warning is-small">{severity}</span>;
-      case "minor":
-        return <span className="tag is-info is-small">{severity}</span>;
-      default:
-        return <span className="tag is-light is-small">{severity}</span>;
-    }
-  };
+  const getSeverityTag = (severity) => (
+    <span className={`tag ${getSeverityTagClass(severity)} is-small`}>
+      {severity}
+    </span>
+  );
 
   const getAvailableActions = () =>
     // Standard fault management actions
@@ -134,113 +141,118 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Severity</th>
-            <th>Class</th>
-            <th>Message ID</th>
-            <th>UUID</th>
-            <th width="280">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {faults.map((fault, index) => {
-            const availableActions = getAvailableActions();
+    <>
+      <div className="table-container">
+        <table className="table is-fullwidth is-hoverable">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Severity</th>
+              <th>Class</th>
+              <th>Message ID</th>
+              <th>UUID</th>
+              <th width="280">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {faults.map((fault, index) => {
+              const availableActions = getAvailableActions();
 
-            return (
-              <tr key={fault.uuid || index}>
-                <td>
-                  <span className="is-size-7">{fault.time || "N/A"}</span>
-                </td>
-                <td>
-                  <div className="is-flex is-align-items-center">
-                    {getSeverityIcon(fault.severity)}
-                    <span className="ml-2">
-                      {getSeverityTag(fault.severity)}
+              return (
+                <tr key={fault.uuid || index}>
+                  <td>
+                    <span className="is-size-7">{fault.time || "N/A"}</span>
+                  </td>
+                  <td>
+                    <div className="is-flex is-align-items-center">
+                      {getSeverityIcon(fault.severity)}
+                      <span className="ml-2">
+                        {getSeverityTag(fault.severity)}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="tag is-light is-small">
+                      {getFaultClass(fault.msgId)}
                     </span>
-                  </div>
-                </td>
-                <td>
-                  <span className="tag is-light is-small">
-                    {getFaultClass(fault.msgId)}
-                  </span>
-                </td>
-                <td>
-                  <span className="is-family-monospace is-size-7 has-text-weight-semibold">
-                    {fault.msgId}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className="is-family-monospace is-size-7"
-                    title={fault.uuid}
-                  >
-                    {fault.uuid ? `${fault.uuid.substring(0, 8)}...` : "N/A"}
-                  </span>
-                </td>
-                <td>
-                  <div className="buttons are-small">
-                    {/* Action Buttons */}
-                    {availableActions.map((action) => {
-                      const key = `${fault.uuid}-${action.key}`;
-                      const isLoading = actionLoading[key];
+                  </td>
+                  <td>
+                    <span className="is-family-monospace is-size-7 has-text-weight-semibold">
+                      {fault.msgId}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className="is-family-monospace is-size-7"
+                      title={fault.uuid}
+                    >
+                      {fault.uuid ? `${fault.uuid.substring(0, 8)}...` : "N/A"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="buttons are-small">
+                      {/* Action Buttons */}
+                      {availableActions.map((action) => {
+                        const key = `${fault.uuid}-${action.key}`;
+                        const isLoading = actionLoading[key];
 
-                      return (
-                        <button
-                          key={action.key}
-                          className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
-                          onClick={() => {
-                            if (action.requiresConfirm) {
-                              if (
-                                window.confirm(
-                                  `Are you sure you want to ${action.label.toLowerCase()} this fault?`
-                                )
-                              ) {
-                                // Extract real FMRI from affects field
+                        return (
+                          <button
+                            key={action.key}
+                            className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
+                            onClick={() => {
+                              if (action.requiresConfirm) {
+                                setPendingAction({ fault, action });
+                              } else {
                                 const fmri = extractFmriFromAffects(
                                   fault.details?.affects
                                 );
                                 handleAction(fault, action.key, fmri);
                               }
-                            } else {
-                              const fmri = extractFmriFromAffects(
-                                fault.details?.affects
-                              );
-                              handleAction(fault, action.key, fmri);
-                            }
-                          }}
-                          disabled={loading || isLoading}
-                          title={action.label}
-                        >
-                          <span className="icon is-small">
-                            <i className={`fas ${action.icon}`} />
-                          </span>
-                        </button>
-                      );
-                    })}
+                            }}
+                            disabled={loading || isLoading}
+                            title={action.label}
+                          >
+                            <span className="icon is-small">
+                              <i className={`fas ${action.icon}`} />
+                            </span>
+                          </button>
+                        );
+                      })}
 
-                    {/* View Details Button */}
-                    <button
-                      className="button"
-                      onClick={() => onViewDetails(fault)}
-                      disabled={loading}
-                      title="View Details"
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                      {/* View Details Button */}
+                      <button
+                        className="button"
+                        onClick={() => onViewDetails(fault)}
+                        disabled={loading}
+                        title="View Details"
+                      >
+                        <span className="icon is-small">
+                          <i className="fas fa-info-circle" />
+                        </span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {pendingAction && (
+        <ConfirmModal
+          isOpen
+          onClose={() => setPendingAction(null)}
+          onConfirm={confirmPendingAction}
+          title={`${pendingAction.action.label} Fault`}
+          message={`Are you sure you want to ${pendingAction.action.label.toLowerCase()} this fault?`}
+          confirmText={pendingAction.action.label}
+          confirmVariant="is-warning"
+          icon="fas fa-exclamation-triangle"
+        />
+      )}
+    </>
   );
 };
 

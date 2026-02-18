@@ -3,6 +3,19 @@ import { useState } from "react";
 
 import { FormModal } from "../common";
 
+const getSubmitVariant = (buttonClass) => {
+  if (buttonClass.includes("danger")) {
+    return "is-danger";
+  }
+  if (buttonClass.includes("warning")) {
+    return "is-warning";
+  }
+  if (buttonClass.includes("success")) {
+    return "is-success";
+  }
+  return "is-info";
+};
+
 const ConfirmActionModal = ({
   bootEnvironment,
   action,
@@ -25,8 +38,8 @@ const ConfirmActionModal = ({
       if (result.success) {
         onClose();
       }
-    } catch (error) {
-      console.error(`Error during ${action}:`, error);
+    } catch {
+      // error handled by parent via onConfirm return value
     } finally {
       setLoading(false);
     }
@@ -97,15 +110,7 @@ const ConfirmActionModal = ({
       title={actionDetails.title}
       icon={`fas ${actionDetails.icon}`}
       submitText={loading ? "Processing..." : actionDetails.title}
-      submitVariant={
-        actionDetails.buttonClass.includes("danger")
-          ? "is-danger"
-          : actionDetails.buttonClass.includes("warning")
-            ? "is-warning"
-            : actionDetails.buttonClass.includes("success")
-              ? "is-success"
-              : "is-info"
-      }
+      submitVariant={getSubmitVariant(actionDetails.buttonClass)}
       loading={loading}
     >
       {/* Boot Environment Information */}

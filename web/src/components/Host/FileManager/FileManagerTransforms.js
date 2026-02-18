@@ -17,25 +17,6 @@ const getParentPath = (path) => {
 };
 
 /**
- * Generate synthetic ID from path for cubone compatibility
- * @param {string} path - File path
- * @returns {string} Synthetic ID
- */
-const generateIdFromPath = (path) => btoa(path).replace(/[^a-zA-Z0-9]/g, "");
-
-/**
- * Get parent ID from path for tree building
- * @param {string} path - File path
- * @returns {string|null} Parent ID or null for root items
- */
-const getParentId = (path) => {
-  const parentPath = getParentPath(path);
-  return parentPath && parentPath !== "/"
-    ? generateIdFromPath(parentPath)
-    : null;
-};
-
-/**
  * Transform zoneweaver API file object to cubone format
  * @param {Object} zwItem - Zoneweaver API file item
  * @returns {Object} Cubone compatible file object
@@ -84,7 +65,6 @@ export const getPathFromFile = (file) => file.path || "/";
  */
 export const buildFileTree = (files) => {
   const directories = files.filter((file) => file.isDirectory);
-  const tree = [];
 
   // Group directories by parent path
   const grouped = directories.reduce((acc, dir) => {

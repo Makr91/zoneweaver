@@ -5,12 +5,12 @@ import "@cubone/react-file-manager/dist/style.css";
 
 import { useAuth } from "../../../contexts/AuthContext";
 import { useServers } from "../../../contexts/ServerContext";
-import { useTheme } from "../../../contexts/ThemeContext";
 import { canManageHosts, canViewHosts } from "../../../utils/permissions";
 
 import ArchiveModals from "./ArchiveModals";
 import { useCuboneExtensions } from "./CuboneExtensions";
 import { ZoneweaverFileManagerAPI } from "./FileManagerAPI";
+import { useCuboneHandlers } from "./FileManagerHandlers";
 import { isTextFile, isArchiveFile } from "./FileManagerTransforms";
 import FilePropertiesModal from "./FilePropertiesModal";
 import TextFileEditor from "./TextFileEditor";
@@ -38,7 +38,6 @@ const EnhancedFileManager = ({ server }) => {
   const [propertiesFile, setPropertiesFile] = useState(null);
 
   const { user } = useAuth();
-  const { theme } = useTheme();
   const serverContext = useServers();
 
   // Initialize API instance
@@ -59,8 +58,6 @@ const EnhancedFileManager = ({ server }) => {
       setError("");
 
       try {
-        console.log("Loading files for path:", path);
-
         // Load current directory files
         const currentFiles = await api.loadFiles(path);
 
@@ -74,8 +71,8 @@ const EnhancedFileManager = ({ server }) => {
             setDirectoryCache((prev) =>
               new Map(prev).set("/", cachedDirectories)
             );
-          } catch (err) {
-            console.log("Could not load root directories for navigation");
+          } catch {
+            // Root directory loading failed, continue without it
           }
         }
 
@@ -91,44 +88,60 @@ const EnhancedFileManager = ({ server }) => {
           });
         }
 
-        // Add parent directories for subdirectory navigation
+        // Load parent directories for subdirectory navigation
         if (path !== "/") {
           const pathParts = path.split("/").filter(Boolean);
-          let currentSearchPath = "";
 
-          for (let i = 0; i < pathParts.length - 1; i++) {
-            currentSearchPath += `/${pathParts[i]}`;
+          // Build parent path list
+          const parentPaths = [];
+          pathParts.slice(0, -1).reduce((accPath, part) => {
+            const fullPath = `${accPath}/${part}`;
+            parentPaths.push(fullPath);
+            return fullPath;
+          }, "");
 
-            let parentDirs = directoryCache.get(currentSearchPath);
-            if (!parentDirs) {
-              try {
-                const parentFiles = await api.loadFiles(currentSearchPath);
-                parentDirs = parentFiles.filter((file) => file.isDirectory);
-                setDirectoryCache((prev) =>
-                  new Map(prev).set(currentSearchPath, parentDirs)
-                );
-              } catch (err) {
-                continue;
+          // Load uncached parent directories in parallel
+          const parentDirResults = await Promise.all(
+            parentPaths.map(async (parentPath) => {
+              const cached = directoryCache.get(parentPath);
+              if (cached) {
+                return { path: parentPath, dirs: cached, isNew: false };
               }
-            }
+              try {
+                const parentFiles = await api.loadFiles(parentPath);
+                const dirs = parentFiles.filter((f) => f.isDirectory);
+                return { path: parentPath, dirs, isNew: true };
+              } catch {
+                return { path: parentPath, dirs: [], isNew: false };
+              }
+            })
+          );
 
-            parentDirs.forEach((dir) => {
+          // Update cache for newly loaded directories
+          const newCacheEntries = parentDirResults.filter((r) => r.isNew);
+          if (newCacheEntries.length > 0) {
+            setDirectoryCache((prev) => {
+              const next = new Map(prev);
+              newCacheEntries.forEach((entry) => {
+                next.set(entry.path, entry.dirs);
+              });
+              return next;
+            });
+          }
+
+          // Add all parent directories to combined files
+          parentDirResults.forEach((result) => {
+            result.dirs.forEach((dir) => {
               if (!combinedFiles.some((f) => f.path === dir.path)) {
                 combinedFiles.push(dir);
               }
             });
-          }
+          });
         }
 
-        console.log(
-          "Combined files for cubone:",
-          combinedFiles.length,
-          "files"
-        );
         setFiles(combinedFiles);
-      } catch (error) {
-        console.error("Error loading files:", error);
-        setError(`Failed to load files: ${error.message}`);
+      } catch (loadErr) {
+        setError(`Failed to load files: ${loadErr.message}`);
         setFiles([]);
       } finally {
         setIsLoading(false);
@@ -173,15 +186,13 @@ const EnhancedFileManager = ({ server }) => {
 
   // Theme integration
   const themeConfig = useMemo(() => {
-    const primaryColor = "#ff6600"; // Orange from Bulma theme
-    const fontFamily = "Nunito Sans, sans-serif"; // Match zoneweaver
-
+    const primaryColor = "#ff6600";
+    const fontFamily = "Nunito Sans, sans-serif";
     return { primaryColor, fontFamily };
-  }, [theme]);
+  }, []);
 
   // Custom action handlers for the config.actions system
   const handleEditFile = useCallback((file) => {
-    console.log("Edit file action:", file);
     if (isTextFile(file)) {
       setTextEditorFile(file);
       setShowTextEditor(true);
@@ -191,7 +202,6 @@ const EnhancedFileManager = ({ server }) => {
   }, []);
 
   const handleCreateArchive = useCallback((selectedFiles) => {
-    console.log("Create archive action:", selectedFiles);
     setSelectedFilesForArchive(
       Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles]
     );
@@ -199,7 +209,6 @@ const EnhancedFileManager = ({ server }) => {
   }, []);
 
   const handleExtractArchive = useCallback((file) => {
-    console.log("Extract archive action:", file);
     if (isArchiveFile(file)) {
       setArchiveFileForExtract(file);
       setShowExtractArchiveModal(true);
@@ -209,7 +218,6 @@ const EnhancedFileManager = ({ server }) => {
   }, []);
 
   const handleShowProperties = useCallback((file) => {
-    console.log("Show properties action:", file);
     setPropertiesFile(file);
     setShowPropertiesModal(true);
   }, []);
@@ -217,7 +225,6 @@ const EnhancedFileManager = ({ server }) => {
   // Custom actions configuration following the PR pattern
   const customActions = useMemo(
     () => [
-      // Default cubone actions that we override
       {
         title: "Open",
         key: "open",
@@ -226,8 +233,6 @@ const EnhancedFileManager = ({ server }) => {
             setCurrentPath(file.path);
           } else if (isTextFile(file)) {
             handleEditFile(file);
-          } else {
-            // Download file - will use cubone's default download
           }
         },
         showToolbar: false,
@@ -283,260 +288,44 @@ const EnhancedFileManager = ({ server }) => {
     ]
   );
 
-  // Standard cubone handlers
-  const handleCreateFolder = async (name, parentFolder) => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const result = await api.createFolder(name, parentFolder, currentPath);
-
-      if (result.success) {
-        setFiles((prevFiles) => [...prevFiles, result.file]);
-        setTimeout(() => loadFiles(), 500);
-      } else {
-        setError(result.message || "Failed to create folder");
-      }
-    } catch (createErr) {
-      console.error("Error creating folder:", createErr);
-      setError(`Failed to create folder: ${createErr.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFileUploading = (file, parentFolder) => {
-    const uploadPath = parentFolder?.path || currentPath || "/";
-
-    return {
-      uploadPath,
-      overwrite: false,
-      mode: "644",
-      uid: 1000,
-      gid: 1000,
-    };
-  };
-
-  const handleFileUploaded = (response) => {
-    console.log("✅ UPLOAD: Upload completed, refreshing file list");
-
-    try {
-      const uploadedFile = JSON.parse(response);
-      console.log("✅ UPLOAD: File uploaded successfully:", uploadedFile.name);
-      loadFiles(); // Refresh entire file list
-    } catch (uploadErr) {
-      console.error(
-        "❌ UPLOAD: Error processing uploaded file response:",
-        uploadErr
-      );
-      loadFiles(); // Refresh as fallback
-    }
-  };
-
-  const handleRename = async (file, newName) => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const result = await api.renameFile(file, newName);
-
-      if (result.success) {
-        await loadFiles();
-      } else {
-        setError(result.message || "Failed to rename file");
-      }
-    } catch (renameErr) {
-      console.error("Error renaming file:", renameErr);
-      setError(`Failed to rename file: ${renameErr.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDelete = async (filesToDelete) => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const result = await api.deleteFiles(filesToDelete);
-
-      if (result.success) {
-        console.log(
-          "✅ DELETE: Files deleted successfully, refreshing file list"
-        );
-        await loadFiles();
-      } else {
-        setError(result.message || "Failed to delete files");
-      }
-    } catch (deleteErr) {
-      console.error("Error deleting files:", deleteErr);
-      setError(`Failed to delete files: ${deleteErr.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePaste = async (copiedItems, destinationFolder, operationType) => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const result = await api.copyMoveFiles(
-        copiedItems,
-        destinationFolder,
-        operationType
-      );
-
-      if (result.success) {
-        await loadFiles();
-
-        if (result.isAsync && result.taskIds && result.taskIds.length > 0) {
-          console.log(
-            `${operationType} operation started. Task IDs:`,
-            result.taskIds
-          );
-        }
-      } else {
-        setError(result.message || `Failed to ${operationType} files`);
-      }
-    } catch (pasteErr) {
-      console.error(`Error ${operationType} files:`, pasteErr);
-      setError(`Failed to ${operationType} files: ${pasteErr.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDownload = async (filesToDownload) => {
-    try {
-      const server = serverContext.currentServer;
-      if (!server) {
-        setError("No server selected");
-        return;
-      }
-
-      for (const file of filesToDownload) {
-        if (!file.isDirectory) {
-          const path = encodeURIComponent(file.path);
-          const downloadUrl = `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/filesystem/download?path=${path}`;
-
-          try {
-            const response = await fetch(downloadUrl, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-            });
-
-            if (response.ok) {
-              const blob = await response.blob();
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = file.name;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              window.URL.revokeObjectURL(url);
-            } else {
-              setError(
-                `Failed to download ${file.name}: ${response.statusText}`
-              );
-            }
-          } catch (fetchError) {
-            setError(`Error downloading ${file.name}: ${fetchError.message}`);
-          }
-        }
-      }
-    } catch (downloadErr) {
-      setError(`Failed to download files: ${downloadErr.message}`);
-    }
-  };
-
-  const handleFolderChange = (path) => {
-    const safePath = path || "/";
-    console.log("Folder change:", path, "->", safePath);
-    setCurrentPath(safePath);
-  };
-
-  const handleRefresh = () => {
-    loadFiles();
-  };
-
-  const handleSelect = (selectedFiles) => {
-    console.log("Selected files:", selectedFiles);
-  };
-
-  const handleError = (error, file) => {
-    console.error("File manager error:", error, file);
-    setError(error.message || "An error occurred");
-  };
-
-  const handleCut = (files) => {
-    console.log("Files cut:", files);
-  };
-
-  const handleCopy = (files) => {
-    console.log("Files copied:", files);
-  };
-
-  const handleLayoutChange = (layout) => {
-    console.log("Layout changed to:", layout);
-  };
-
-  // Modal close handlers
-  const handleCloseTextEditor = () => {
-    setShowTextEditor(false);
-    setTextEditorFile(null);
-  };
-
-  const handleSaveTextFile = async (content) => {
-    if (!textEditorFile) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await api.updateFileContent(textEditorFile, content);
-
-      if (result.success) {
-        setShowTextEditor(false);
-        setTextEditorFile(null);
-        await loadFiles();
-      } else {
-        setError(result.message || "Failed to save file");
-      }
-    } catch (saveErr) {
-      console.error("Error saving file:", saveErr);
-      setError(`Failed to save file: ${saveErr.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleArchiveSuccess = async (result) => {
-    console.log("Archive operation successful:", result);
-    await loadFiles();
-  };
-
-  const handleCloseCreateArchive = () => {
-    setShowCreateArchiveModal(false);
-    setSelectedFilesForArchive([]);
-  };
-
-  const handleCloseExtractArchive = () => {
-    setShowExtractArchiveModal(false);
-    setArchiveFileForExtract(null);
-  };
-
-  const handleCloseProperties = () => {
-    setShowPropertiesModal(false);
-    setPropertiesFile(null);
-  };
-
-  const handlePropertiesSuccess = async (result) => {
-    console.log("Properties updated successfully:", result);
-    await loadFiles();
-  };
+  // Get all handlers from custom hook
+  const {
+    handleCreateFolder,
+    handleFileUploading,
+    handleFileUploaded,
+    handleRename,
+    handleDelete,
+    handlePaste,
+    handleDownload,
+    handleFolderChange,
+    handleRefresh,
+    handleError,
+    handleCloseTextEditor,
+    handleSaveTextFile,
+    handleArchiveSuccess,
+    handleCloseCreateArchive,
+    handleCloseExtractArchive,
+    handleCloseProperties,
+    handlePropertiesSuccess,
+  } = useCuboneHandlers({
+    api,
+    currentPath,
+    setCurrentPath,
+    setFiles,
+    setIsLoading,
+    setError,
+    loadFiles,
+    serverContext,
+    textEditorFile,
+    setShowTextEditor,
+    setTextEditorFile,
+    setShowCreateArchiveModal,
+    setSelectedFilesForArchive,
+    setShowExtractArchiveModal,
+    setArchiveFileForExtract,
+    setShowPropertiesModal,
+    setPropertiesFile,
+  });
 
   // Custom action handlers for cubone extensions
   const customActionHandlers = useMemo(
@@ -600,16 +389,12 @@ const EnhancedFileManager = ({ server }) => {
         onCreateFolder={handleCreateFolder}
         onFileUploading={handleFileUploading}
         onFileUploaded={handleFileUploaded}
-        onCut={handleCut}
-        onCopy={handleCopy}
         onPaste={handlePaste}
         onRename={handleRename}
         onDownload={handleDownload}
         onDelete={handleDelete}
-        onLayoutChange={handleLayoutChange}
         onRefresh={handleRefresh}
         onFolderChange={handleFolderChange}
-        onSelect={handleSelect}
         onError={handleError}
         layout="grid"
         enableFilePreview

@@ -2,6 +2,38 @@ import PropTypes from "prop-types";
 
 import { formatBytes, getHealthColor } from "./StorageUtils";
 
+const getTemperatureTagClass = (temperature) => {
+  if (temperature > 60) {
+    return "is-danger";
+  }
+  if (temperature > 45) {
+    return "is-warning";
+  }
+  return "is-success";
+};
+
+const getDiskKey = (disk) =>
+  disk.serial_number ||
+  disk.serial ||
+  disk.serialNumber ||
+  disk.device_name ||
+  disk.device ||
+  disk.name;
+
+const getPoolDisplay = (disk) => {
+  if (disk.pool_assignment) {
+    return <strong>{disk.pool_assignment}</strong>;
+  }
+  if (disk.pool) {
+    return <strong>{disk.pool}</strong>;
+  }
+  return (
+    <span className="has-text-grey">
+      {disk.is_available ? "Available" : "Unassigned"}
+    </span>
+  );
+};
+
 const DisksTable = ({
   storageDisks,
   diskSort,
@@ -135,8 +167,8 @@ const DisksTable = ({
                 </tr>
               </thead>
               <tbody>
-                {storageDisks.map((disk, index) => (
-                  <tr key={index}>
+                {storageDisks.map((disk) => (
+                  <tr key={getDiskKey(disk)}>
                     <td>
                       <strong>
                         {disk.device_name || disk.device || disk.name}
@@ -174,13 +206,7 @@ const DisksTable = ({
                     <td>
                       {disk.temperature ? (
                         <span
-                          className={`tag ${
-                            disk.temperature > 60
-                              ? "is-danger"
-                              : disk.temperature > 45
-                                ? "is-warning"
-                                : "is-success"
-                          }`}
+                          className={`tag ${getTemperatureTagClass(disk.temperature)}`}
                         >
                           {disk.temperature}°C
                         </span>
@@ -188,17 +214,7 @@ const DisksTable = ({
                         <span className="tag is-info">N/A</span>
                       )}
                     </td>
-                    <td>
-                      {disk.pool_assignment && disk.pool_assignment !== null ? (
-                        <strong>{disk.pool_assignment}</strong>
-                      ) : disk.pool ? (
-                        <strong>{disk.pool}</strong>
-                      ) : (
-                        <span className="has-text-grey">
-                          {disk.is_available ? "Available" : "Unassigned"}
-                        </span>
-                      )}
-                    </td>
+                    <td>{getPoolDisplay(disk)}</td>
                   </tr>
                 ))}
               </tbody>

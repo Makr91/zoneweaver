@@ -1,3 +1,16 @@
+export const getCategoryTagClass = (category) => {
+  if (category === "network") {
+    return "is-info";
+  }
+  if (category === "storage") {
+    return "is-primary";
+  }
+  if (category === "display") {
+    return "is-success";
+  }
+  return "is-dark";
+};
+
 // Device status helper functions
 export const getDeviceStatusColor = (device) => {
   if (!device.driver_attached) {
@@ -46,7 +59,7 @@ export const getPPTStatusText = (device) => {
 };
 
 // Export functionality
-export const exportDeviceData = (format = "csv", devices, server) => {
+export const exportDeviceData = (devices, server, format = "csv") => {
   if (format === "csv") {
     const headers = [
       "Device Name",

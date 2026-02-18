@@ -1,10 +1,12 @@
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 import { useServers } from "../../../../../contexts/ServerContext";
 import ContentModal from "../../../../common/ContentModal";
 
 const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
   const { makeZoneweaverAPIRequest } = useServers();
+  const [downloadError, setDownloadError] = useState("");
 
   const formatSize = (bytes) => {
     if (!bytes) {
@@ -25,6 +27,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       const date = new Date(dateString);
       return date.toLocaleString();
     } catch (err) {
+      void err;
       return dateString;
     }
   };
@@ -85,7 +88,8 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
   const handleDownloadFile = async () => {
     try {
-      // Use ZAPI proxy to download the file
+      setDownloadError("");
+
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
         server.port,
@@ -100,7 +104,6 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       );
 
       if (result.success) {
-        // Create download link from blob
         const blob = result.data;
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -110,15 +113,12 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         link.click();
         document.body.removeChild(link);
 
-        // Clean up the blob URL
         window.URL.revokeObjectURL(url);
       } else {
-        console.error("Download failed:", result.message);
-        alert(`Download failed: ${result.message}`);
+        setDownloadError(`Download failed: ${result.message}`);
       }
     } catch (err) {
-      console.error("Error downloading file:", err);
-      alert(`Error downloading file: ${err.message}`);
+      setDownloadError(`Error downloading file: ${err.message}`);
     }
   };
 
@@ -338,6 +338,18 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       {/* Actions Section */}
       <div className="content">
         <h4 className="title is-5">Actions</h4>
+
+        {downloadError && (
+          <div className="notification is-danger">
+            <button
+              type="button"
+              className="delete"
+              onClick={() => setDownloadError("")}
+            />
+            {downloadError}
+          </div>
+        )}
+
         <div className="field is-grouped">
           <p className="control">
             <button className="button is-primary" onClick={handleDownloadFile}>

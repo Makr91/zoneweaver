@@ -1,15 +1,16 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 import { FormModal } from "../common";
 
 const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
+  const mirrorIdCounter = useRef(1);
   const [formData, setFormData] = useState({
     name: "",
     origin: "",
-    mirrors: [""],
+    mirrors: [{ id: 0, url: "" }],
     enabled: true,
     sticky: false,
     searchFirst: false,
@@ -29,28 +30,29 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
     }));
   };
 
-  const handleMirrorChange = (index, value) => {
-    const newMirrors = [...formData.mirrors];
-    newMirrors[index] = value;
+  const handleMirrorChange = (id, value) => {
     setFormData((prev) => ({
       ...prev,
-      mirrors: newMirrors,
+      mirrors: prev.mirrors.map((m) =>
+        m.id === id ? { ...m, url: value } : m
+      ),
     }));
   };
 
   const addMirror = () => {
+    const nextId = mirrorIdCounter.current;
+    mirrorIdCounter.current += 1;
     setFormData((prev) => ({
       ...prev,
-      mirrors: [...prev.mirrors, ""],
+      mirrors: [...prev.mirrors, { id: nextId, url: "" }],
     }));
   };
 
-  const removeMirror = (index) => {
+  const removeMirror = (id) => {
     if (formData.mirrors.length > 1) {
-      const newMirrors = formData.mirrors.filter((_, i) => i !== index);
       setFormData((prev) => ({
         ...prev,
-        mirrors: newMirrors,
+        mirrors: prev.mirrors.filter((m) => m.id !== id),
       }));
     }
   };
@@ -66,7 +68,9 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
       onError("");
 
       // Filter out empty mirrors
-      const validMirrors = formData.mirrors.filter((mirror) => mirror.trim());
+      const validMirrors = formData.mirrors
+        .map((m) => m.url.trim())
+        .filter(Boolean);
 
       const requestData = {
         name: formData.name.trim(),
@@ -173,25 +177,22 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
       <div className="box mb-4">
         <h3 className="title is-6">Mirror URLs (Optional)</h3>
 
-        {formData.mirrors.map((mirror, index) => (
-          <div
-            key={`mirror-${index}-${mirror || "empty"}`}
-            className="field has-addons mb-3"
-          >
+        {formData.mirrors.map((mirror) => (
+          <div key={mirror.id} className="field has-addons mb-3">
             <div className="control is-expanded">
               <input
                 className="input"
                 type="url"
                 placeholder="https://mirror.example.com/repository/"
-                value={mirror}
-                onChange={(e) => handleMirrorChange(index, e.target.value)}
+                value={mirror.url}
+                onChange={(e) => handleMirrorChange(mirror.id, e.target.value)}
               />
             </div>
             <div className="control">
               <button
                 type="button"
                 className="button has-background-danger-dark has-text-danger-light"
-                onClick={() => removeMirror(index)}
+                onClick={() => removeMirror(mirror.id)}
                 disabled={formData.mirrors.length === 1}
               >
                 <span className="icon">

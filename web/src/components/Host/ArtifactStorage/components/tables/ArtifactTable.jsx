@@ -1,6 +1,9 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 
+import ArtifactDownloadRow from "./ArtifactDownloadRow";
+import ArtifactRow from "./ArtifactRow";
+
 const ArtifactTable = ({
   artifacts,
   activeDownloads,
@@ -17,86 +20,6 @@ const ArtifactTable = ({
   const [selectedArtifacts, setSelectedArtifacts] = useState(new Set());
   const [sortBy, setSortBy] = useState("filename");
   const [sortOrder, setSortOrder] = useState("asc");
-
-  const formatSize = (bytes) => {
-    if (!bytes) {
-      return "0 B";
-    }
-
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) {
-      return "N/A";
-    }
-
-    try {
-      const date = new Date(dateString);
-      return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-    } catch {
-      return dateString;
-    }
-  };
-
-  const getTypeIcon = (fileType, extension) => {
-    const type = fileType?.toLowerCase() || extension?.toLowerCase();
-
-    if (type === "iso" || extension?.toLowerCase() === ".iso") {
-      return <i className="fas fa-compact-disc has-text-info" />;
-    } else if (
-      type === "image" ||
-      [".vmdk", ".vhd", ".vhdx", ".qcow2", ".img"].includes(
-        extension?.toLowerCase()
-      )
-    ) {
-      return <i className="fas fa-hdd has-text-warning" />;
-    }
-    return <i className="fas fa-file has-text-grey" />;
-  };
-
-  const getTypeTag = (fileType, extension) => {
-    const type = fileType?.toLowerCase();
-
-    if (type === "iso") {
-      return <span className="tag is-info is-small">ISO</span>;
-    } else if (type === "image") {
-      return <span className="tag is-warning is-small">Image</span>;
-    }
-    return <span className="tag is-light is-small">{extension || "File"}</span>;
-  };
-
-  const getChecksumStatus = (artifact) => {
-    if (artifact.checksum_verified === true) {
-      return (
-        <span className="icon has-text-success" title="Checksum verified">
-          <i className="fas fa-check-circle" />
-        </span>
-      );
-    } else if (artifact.checksum_verified === false) {
-      return (
-        <span className="icon has-text-danger" title="Checksum mismatch">
-          <i className="fas fa-times-circle" />
-        </span>
-      );
-    } else if (
-      artifact.calculated_checksum &&
-      !artifact.user_provided_checksum
-    ) {
-      return (
-        <span className="icon has-text-info" title="Checksum calculated">
-          <i className="fas fa-info-circle" />
-        </span>
-      );
-    }
-    return (
-      <span className="icon has-text-grey" title="No checksum">
-        <i className="fas fa-minus-circle" />
-      </span>
-    );
-  };
 
   const handleSort = (field) => {
     let newOrder = "asc";
@@ -146,65 +69,6 @@ const ArtifactTable = ({
     }
   };
 
-  const getDownloadStatusIcon = (status) => {
-    switch (status) {
-      case "queued":
-        return <i className="fas fa-clock has-text-info" />;
-      case "running":
-        return <i className="fas fa-spinner fa-spin has-text-primary" />;
-      case "completed":
-        return <i className="fas fa-check-circle has-text-success" />;
-      case "failed":
-        return <i className="fas fa-times-circle has-text-danger" />;
-      default:
-        return <i className="fas fa-question-circle has-text-grey" />;
-    }
-  };
-
-  const getDownloadStatusText = (status) => {
-    switch (status) {
-      case "queued":
-        return "Queued";
-      case "running":
-        return "Downloading...";
-      case "completed":
-        return "Completed";
-      case "failed":
-        return "Failed";
-      default:
-        return status;
-    }
-  };
-
-  const getDownloadStatusTag = (status) => {
-    switch (status) {
-      case "queued":
-        return <span className="tag is-info is-small">Queued</span>;
-      case "running":
-        return <span className="tag is-primary is-small">Downloading</span>;
-      case "completed":
-        return <span className="tag is-success is-small">Completed</span>;
-      case "failed":
-        return <span className="tag is-danger is-small">Failed</span>;
-      default:
-        return <span className="tag is-light is-small">{status}</span>;
-    }
-  };
-
-  const getDownloadTagClass = (status) => {
-    if (status === "running") {
-      return "is-primary";
-    }
-    if (status === "queued") {
-      return "is-info";
-    }
-    if (status === "failed") {
-      return "is-danger";
-    }
-    return "is-light";
-  };
-
-  // Convert activeDownloads Map to array for rendering
   const activeDownloadsList = activeDownloads
     ? Array.from(activeDownloads.values())
     : [];
@@ -325,6 +189,7 @@ const ArtifactTable = ({
                     }
                     onChange={handleSelectAll}
                   />
+                  <span className="is-sr-only">Select all artifacts</span>
                 </label>
               </th>
               <th
@@ -370,275 +235,31 @@ const ArtifactTable = ({
             </tr>
           </thead>
           <tbody>
-            {/* Active Downloads - Placeholder Rows */}
             {activeDownloadsList.map((download) => (
-              <tr key={download.taskId} className="has-background-light">
-                <td>
-                  <span className="icon has-text-grey">
-                    <i className="fas fa-clock" />
-                  </span>
-                </td>
-                <td>
-                  <div className="is-flex is-align-items-center">
-                    <span className="icon mr-2">
-                      {getDownloadStatusIcon(download.status)}
-                    </span>
-                    <div>
-                      <div className="has-text-weight-semibold has-text-grey">
-                        {download.filename || "Downloading..."}
-                      </div>
-                      <div className="is-size-7 has-text-grey">
-                        <i className="fas fa-download mr-1" />
-                        {download.url && (
-                          <span title={download.url}>
-                            {download.url.length > 50
-                              ? `${download.url.substring(0, 47)}...`
-                              : download.url}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td>{getDownloadStatusTag(download.status)}</td>
-                <td>
-                  {download.progress_info && download.progress_info.total_mb ? (
-                    <div>
-                      <div className="has-text-weight-semibold">
-                        {formatSize(
-                          download.progress_info.downloaded_mb * 1024 * 1024
-                        )}{" "}
-                        /{" "}
-                        {formatSize(
-                          download.progress_info.total_mb * 1024 * 1024
-                        )}
-                      </div>
-                      {download.progress_info.speed_kbps && (
-                        <div className="is-size-7 has-text-grey">
-                          {Math.round(download.progress_info.speed_kbps / 1024)}{" "}
-                          MB/s
-                        </div>
-                      )}
-                    </div>
-                  ) : download.progress_info &&
-                    download.progress_info.file_size_mb ? (
-                    <div className="has-text-weight-semibold">
-                      {formatSize(
-                        download.progress_info.file_size_mb * 1024 * 1024
-                      )}
-                    </div>
-                  ) : (
-                    <span className="has-text-grey">
-                      {download.status === "running"
-                        ? "Processing..."
-                        : "Pending"}
-                    </span>
-                  )}
-                </td>
-                <td>
-                  <span
-                    className="icon has-text-grey"
-                    title="Download in progress"
-                  >
-                    <i className="fas fa-clock" />
-                  </span>
-                </td>
-                <td>
-                  {download.storage_location && (
-                    <div>
-                      <div className="has-text-weight-semibold is-size-7 has-text-grey">
-                        {download.storage_location.name}
-                      </div>
-                      <div className="is-size-7 has-text-grey">
-                        {download.storage_location.path}
-                      </div>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  <span className="is-size-7 has-text-grey">
-                    {formatDate(download.created_at)}
-                  </span>
-                </td>
-                <td>
-                  <div className="buttons are-small">
-                    {download.status === "failed" && download.error_message && (
-                      <button
-                        className="button is-danger is-small"
-                        title={`Download failed: ${download.error_message}`}
-                        disabled
-                      >
-                        <span className="icon is-small">
-                          <i className="fas fa-exclamation-circle" />
-                        </span>
-                      </button>
-                    )}
-
-                    {["queued", "running"].includes(download.status) &&
-                      onCancelDownload && (
-                        <button
-                          className="button is-warning is-small"
-                          onClick={() => onCancelDownload(download.taskId)}
-                          title="Cancel download"
-                        >
-                          <span className="icon is-small">
-                            <i className="fas fa-times" />
-                          </span>
-                        </button>
-                      )}
-
-                    <span className="tag is-small has-text-grey">
-                      {getDownloadStatusText(download.status)}
-                    </span>
-                  </div>
-                </td>
-              </tr>
+              <ArtifactDownloadRow
+                key={download.taskId}
+                download={download}
+                onCancelDownload={onCancelDownload}
+              />
             ))}
 
-            {/* Regular Artifacts */}
             {artifacts.map((artifact) => (
-              <tr key={artifact.id}>
-                <td>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedArtifacts.has(artifact.id)}
-                      onChange={() => handleSelectArtifact(artifact.id)}
-                    />
-                  </label>
-                </td>
-                <td>
-                  <div className="is-flex is-align-items-center">
-                    <span className="icon mr-2">
-                      {getTypeIcon(artifact.file_type, artifact.extension)}
-                    </span>
-                    <div>
-                      <div className="has-text-weight-semibold">
-                        {artifact.filename}
-                      </div>
-                      {artifact.source_url && (
-                        <div className="is-size-7 has-text-grey">
-                          <i className="fas fa-download mr-1" />
-                          Downloaded from URL
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td>{getTypeTag(artifact.file_type, artifact.extension)}</td>
-                <td>
-                  <span className="has-text-weight-semibold">
-                    {formatSize(artifact.size)}
-                  </span>
-                </td>
-                <td>
-                  <div className="is-flex is-align-items-center">
-                    {getChecksumStatus(artifact)}
-                    {artifact.checksum_algorithm && (
-                      <span className="tag is-small is-light ml-1">
-                        {artifact.checksum_algorithm.toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td>
-                  {artifact.storage_location && (
-                    <div>
-                      <div className="has-text-weight-semibold is-size-7">
-                        {artifact.storage_location.name}
-                      </div>
-                      <div className="is-size-7 has-text-grey">
-                        {artifact.storage_location.path}
-                      </div>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  <span className="is-size-7">
-                    {formatDate(artifact.discovered_at)}
-                  </span>
-                </td>
-                <td>
-                  <div className="buttons are-small">
-                    <button
-                      className="button"
-                      onClick={() => onDetails(artifact)}
-                      disabled={loading}
-                      title="View details"
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
-                    </button>
-
-                    <button
-                      className="button is-danger"
-                      onClick={() => onDelete([artifact.id])}
-                      disabled={loading}
-                      title="Delete artifact"
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-trash" />
-                      </span>
-                    </button>
-
-                    <div className="dropdown is-hoverable is-right">
-                      <div className="dropdown-trigger">
-                        <button
-                          className="button"
-                          aria-haspopup="true"
-                          aria-controls="dropdown-menu"
-                        >
-                          <span className="icon is-small">
-                            <i
-                              className="fas fa-ellipsis-h"
-                              aria-hidden="true"
-                            />
-                          </span>
-                        </button>
-                      </div>
-                      <div
-                        className="dropdown-menu"
-                        id="dropdown-menu"
-                        role="menu"
-                      >
-                        <div className="dropdown-content">
-                          <button
-                            type="button"
-                            className="dropdown-item button is-ghost"
-                            onClick={() => onMove(artifact)}
-                          >
-                            <span className="icon-text">
-                              <span className="icon">
-                                <i className="fas fa-truck" />
-                              </span>
-                              <span>Move</span>
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            className="dropdown-item button is-ghost"
-                            onClick={() => onCopy(artifact)}
-                          >
-                            <span className="icon-text">
-                              <span className="icon">
-                                <i className="fas fa-copy" />
-                              </span>
-                              <span>Copy</span>
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
+              <ArtifactRow
+                key={artifact.id}
+                artifact={artifact}
+                selected={selectedArtifacts.has(artifact.id)}
+                loading={loading}
+                onSelect={handleSelectArtifact}
+                onDetails={onDetails}
+                onDelete={onDelete}
+                onMove={onMove}
+                onCopy={onCopy}
+              />
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
       {renderPagination()}
     </div>
   );

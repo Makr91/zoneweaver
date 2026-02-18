@@ -1,10 +1,11 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { useServers } from "../../contexts/ServerContext";
 
 import FaultDetailsModal from "./FaultDetailsModal";
 import FaultTable from "./FaultTable";
+import { getSeverityTagClass } from "./FaultUtils";
 
 const FaultList = ({ server }) => {
   const [faults, setFaults] = useState([]);
@@ -24,53 +25,61 @@ const FaultList = ({ server }) => {
 
   const { makeZoneweaverAPIRequest } = useServers();
 
-  // Load faults on component mount and when filters change
-  useEffect(() => {
-    loadFaults();
-  }, [server, filters.all, filters.limit]);
+  const loadFaults = useCallback(
+    async (forceRefresh = false) => {
+      if (!server || !makeZoneweaverAPIRequest) {
+        return;
+      }
 
-  const loadFaults = async (forceRefresh = false) => {
-    if (!server || !makeZoneweaverAPIRequest) {
-      return;
-    }
+      try {
+        setLoading(true);
+        setError("");
 
-    try {
-      setLoading(true);
-      setError("");
+        const params = {
+          all: filters.all,
+          summary: filters.summary,
+          limit: filters.limit,
+          force_refresh: forceRefresh,
+        };
 
-      const params = {
-        all: filters.all,
-        summary: filters.summary,
-        limit: filters.limit,
-        force_refresh: forceRefresh,
-      };
+        const result = await makeZoneweaverAPIRequest(
+          server.hostname,
+          server.port,
+          server.protocol,
+          "system/fault-management/faults",
+          "GET",
+          null,
+          params
+        );
 
-      const result = await makeZoneweaverAPIRequest(
-        server.hostname,
-        server.port,
-        server.protocol,
-        "system/fault-management/faults",
-        "GET",
-        null,
-        params
-      );
-
-      if (result.success) {
-        setFaults(result.data?.faults || []);
-        setSummary(result.data?.summary || null);
-      } else {
-        setError(result.message || "Failed to load faults");
+        if (result.success) {
+          setFaults(result.data?.faults || []);
+          setSummary(result.data?.summary || null);
+        } else {
+          setError(result.message || "Failed to load faults");
+          setFaults([]);
+          setSummary(null);
+        }
+      } catch (err) {
+        setError(`Error loading faults: ${err.message}`);
         setFaults([]);
         setSummary(null);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(`Error loading faults: ${err.message}`);
-      setFaults([]);
-      setSummary(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [
+      server,
+      makeZoneweaverAPIRequest,
+      filters.all,
+      filters.summary,
+      filters.limit,
+    ]
+  );
+
+  useEffect(() => {
+    loadFaults();
+  }, [loadFaults]);
 
   const handleFaultAction = async (uuid, action, fmri = null) => {
     if (!server || !makeZoneweaverAPIRequest) {
@@ -166,26 +175,14 @@ const FaultList = ({ server }) => {
                             level.toLowerCase()
                           )
                         ),
-                      ].map((level, index) => {
-                        const displayLevel =
-                          level.charAt(0).toUpperCase() + level.slice(1);
-                        return (
-                          <span
-                            key={index}
-                            className={`tag ${
-                              level === "critical"
-                                ? "is-danger"
-                                : level === "major"
-                                  ? "is-warning"
-                                  : level === "minor"
-                                    ? "is-info"
-                                    : "is-light"
-                            }`}
-                          >
-                            {displayLevel}
-                          </span>
-                        );
-                      })}
+                      ].map((level) => (
+                        <span
+                          key={level}
+                          className={`tag ${getSeverityTagClass(level)}`}
+                        >
+                          {level.charAt(0).toUpperCase() + level.slice(1)}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -197,8 +194,8 @@ const FaultList = ({ server }) => {
                   <span className="label is-small">Fault Classes</span>
                   <div className="control">
                     <div className="tags">
-                      {summary.faultClasses.slice(0, 3).map((cls, index) => (
-                        <span key={index} className="tag is-light is-small">
+                      {summary.faultClasses.slice(0, 3).map((cls) => (
+                        <span key={cls} className="tag is-light is-small">
                           {cls.split(".").pop()}
                         </span>
                       ))}
