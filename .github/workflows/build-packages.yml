@@ -83,7 +83,7 @@ jobs:
       - name: Copy application files
         run: |
           # Core application files
-          cp -r controllers models routes middleware config index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
+          cp -r controllers models routes auth config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
           cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
 
           if [ "${{ matrix.package-type }}" = "production" ]; then
