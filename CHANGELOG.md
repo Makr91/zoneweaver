@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/Makr91/zoneweaver/compare/v0.8.0...v0.8.1) (2026-04-15)
+
+
+### Bug Fixes
+
+* middleware ([d1a154d](https://github.com/Makr91/zoneweaver/commit/d1a154d91c6afe65d3fda7a0290d12d6bb1d43f7))
+
 ## [0.8.0](https://github.com/Makr91/zoneweaver/compare/v0.7.7...v0.8.0) (2026-02-18)
 
 
