@@ -7,15 +7,17 @@ permalink: /guides/authentication/
 ---
 
 # Authentication
+
 {: .no_toc }
 
 This guide covers setting up user authentication, managing organizations, and configuring security settings in Zoneweaver frontend.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

@@ -7,15 +7,17 @@ permalink: /guides/getting-started/
 ---
 
 # Getting Started
+
 {: .no_toc }
 
 This guide will walk you through setting up Zoneweaver frontend for the first time, from initial installation to configuring your first Zoneweaver API connection.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

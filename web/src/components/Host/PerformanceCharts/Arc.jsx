@@ -1,6 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../Chart";
 import Highcharts from "../../Highcharts";
 
 const ZfsArcChart = ({ arcChartData, expandChart }) => (
@@ -37,8 +37,7 @@ const ZfsArcChart = ({ arcChartData, expandChart }) => (
           arcChartData.targetData.length > 0 ||
           arcChartData.hitRateData.length > 0) ? (
           <div>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={{
                 chart: {
                   type: "spline",

@@ -9,6 +9,7 @@ import React, {
   useRef,
 } from "react";
 
+import { randomId } from "../utils/randomId";
 import { buildWsUrl } from "../utils/websocket";
 
 import { useServers } from "./ServerContext";
@@ -246,7 +247,7 @@ export const FooterProvider = ({ children }) => {
       );
       axios
         .delete(
-          `/api/servers/${currentServer.hostname}/terminal/sessions/${persistentSession.current.id}/stop`
+          `/api/servers/${currentServer.hostname}:${currentServer.port}/terminal/sessions/${persistentSession.current.id}/stop`
         )
         .catch(console.error);
       persistentSession.current = null;
@@ -280,9 +281,9 @@ export const FooterProvider = ({ children }) => {
 
     try {
       // Create backend session
-      const terminalCookie = `terminal_${currentServer.hostname}_${currentServer.port}_${crypto.randomUUID()}_${Date.now()}`;
+      const terminalCookie = `terminal_${currentServer.hostname}_${currentServer.port}_${randomId()}_${Date.now()}`;
       const res = await axios.post(
-        `/api/servers/${currentServer.hostname}/terminal/start`,
+        `/api/servers/${currentServer.hostname}:${currentServer.port}/terminal/start`,
         {
           terminal_cookie: terminalCookie,
         }
@@ -296,7 +297,11 @@ export const FooterProvider = ({ children }) => {
       });
 
       // Create WebSocket for react-xtermjs
-      const ws = new WebSocket(buildWsUrl(sessionData.websocket_url));
+      const ws = new WebSocket(
+        buildWsUrl(
+          `/api/servers/${currentServer.hostname}:${currentServer.port}${sessionData.websocket_url}`
+        )
+      );
 
       ws.onopen = () => {
         console.log(
@@ -372,7 +377,7 @@ export const FooterProvider = ({ children }) => {
       if (persistentSession.current) {
         await axios
           .delete(
-            `/api/servers/${currentServer.hostname}/terminal/sessions/${persistentSession.current.id}/stop`
+            `/api/servers/${currentServer.hostname}:${currentServer.port}/terminal/sessions/${persistentSession.current.id}/stop`
           )
           .catch(console.error);
         persistentSession.current = null;

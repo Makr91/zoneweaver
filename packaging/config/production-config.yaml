@@ -488,7 +488,7 @@ limits:
       order: 1
     max:
       type: integer
-      value: 100
+      value: 2000
       description: 'Maximum API proxy requests allowed per time window'
       section: 'Performance'
       subsection: 'API Proxy Rate Limits'

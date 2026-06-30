@@ -1,6 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../Chart";
 import Highcharts from "../../Highcharts";
 
 import { createChartOptions } from "./chartDefaults";
@@ -50,9 +50,8 @@ const DeviceCharts = ({
                     <i className="fas fa-expand" />
                   </span>
                 </button>
-                <HighchartsReact
+                <Chart
                   key={`chart-${deviceName}`}
-                  highcharts={Highcharts}
                   ref={(ref) => {
                     if (ref) {
                       chartRefs.current[deviceName] = ref;

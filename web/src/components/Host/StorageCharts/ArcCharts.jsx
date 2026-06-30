@@ -1,7 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
-import Highcharts from "../../Highcharts";
+import Chart from "../../Chart";
 
 import { createChartOptions } from "./chartDefaults";
 
@@ -34,8 +33,7 @@ const ArcCharts = ({ arcChartData, arcStats, expandChart }) => {
                 <i className="fas fa-expand" />
               </span>
             </button>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={createChartOptions({
                 title: "Memory Allocation",
                 yAxisTitle: "Memory (GB)",
@@ -84,8 +82,7 @@ const ArcCharts = ({ arcChartData, arcStats, expandChart }) => {
                 <i className="fas fa-expand" />
               </span>
             </button>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={createChartOptions({
                 title: "Cache Efficiency",
                 yAxisTitle: "Efficiency (%)",
@@ -128,8 +125,7 @@ const ArcCharts = ({ arcChartData, arcStats, expandChart }) => {
                 <i className="fas fa-expand" />
               </span>
             </button>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={createChartOptions({
                 title: "Compression Effectiveness",
                 yAxisTitle: "Compression Ratio (x)",

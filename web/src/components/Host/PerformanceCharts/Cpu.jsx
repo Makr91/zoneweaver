@@ -1,7 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
-import Highcharts from "../../Highcharts";
+import Chart from "../../Chart";
 
 const CpuChart = ({
   cpuChartData,
@@ -81,8 +80,7 @@ const CpuChart = ({
       <div className="card-content p-2">
         {cpuChartData.overall.length > 0 ? (
           <div>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={{
                 chart: {
                   type: "spline",

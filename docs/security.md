@@ -6,15 +6,17 @@ permalink: /security/
 ---
 
 # Security
+
 {: .no_toc }
 
 Security policies and vulnerability reporting for Zoneweaver frontend.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

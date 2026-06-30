@@ -206,9 +206,11 @@ export const useZloginSession = (
 
   const handleZloginPreviewPaste = async () => {
     try {
-      const text = await navigator.clipboard.readText();
-      if (text && currentServer && currentZone) {
-        await pasteTextToZone(currentServer, currentZone, text);
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && currentServer && currentZone) {
+          await pasteTextToZone(currentServer, currentZone, text);
+        }
       }
     } catch (error) {
       console.error("Clipboard access error:", error);
@@ -217,9 +219,11 @@ export const useZloginSession = (
 
   const handleZloginModalPaste = async () => {
     try {
-      const text = await navigator.clipboard.readText();
-      if (text && currentServer && currentZone) {
-        await pasteTextToZone(currentServer, currentZone, text);
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && currentServer && currentZone) {
+          await pasteTextToZone(currentServer, currentZone, text);
+        }
       }
     } catch (error) {
       console.error("Clipboard access error:", error);

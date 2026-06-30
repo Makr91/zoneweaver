@@ -129,12 +129,14 @@ export const useVncSession = (
           if (readinessResult.ready) {
             setVncSession(result.data);
             if (openInNewTab) {
-              // This logic might need adjustment depending on proxy setup
-              const proxyUrl = `/vnc-proxy/${currentServer.hostname}/${readinessResult.sessionInfo.web_port}/`;
+              // Open the standalone full-window console route in a new tab. It
+              // reuses the same websockify-backed viewer as the embedded console
+              // and connects to the session we just started above.
+              const consoleUrl = `/ui/console/${currentServer.hostname}:${currentServer.port}/${encodeURIComponent(zoneName)}`;
               window.open(
-                proxyUrl,
+                consoleUrl,
                 "_blank",
-                "width=1024,height=768,scrollbars=yes,resizable=yes"
+                "width=1280,height=800,scrollbars=no,resizable=yes"
               );
             } else {
               setShowVncConsole(true);
@@ -447,9 +449,11 @@ export const useVncSession = (
 
   const handleVncPreviewPaste = async () => {
     try {
-      const text = await navigator.clipboard.readText();
-      if (text && previewVncRef?.current?.clipboardPaste) {
-        previewVncRef.current.clipboardPaste(text);
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && previewVncRef?.current?.clipboardPaste) {
+          previewVncRef.current.clipboardPaste(text);
+        }
       }
     } catch (error) {
       console.error("VNC PREVIEW PASTE: Clipboard access error:", error);
@@ -458,9 +462,11 @@ export const useVncSession = (
 
   const handleVncModalPaste = async () => {
     try {
-      const text = await navigator.clipboard.readText();
-      if (text && modalVncRef?.current?.clipboardPaste) {
-        modalVncRef.current.clipboardPaste(text);
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && modalVncRef?.current?.clipboardPaste) {
+          modalVncRef.current.clipboardPaste(text);
+        }
       }
     } catch (error) {
       console.error("VNC MODAL PASTE: Clipboard access error:", error);

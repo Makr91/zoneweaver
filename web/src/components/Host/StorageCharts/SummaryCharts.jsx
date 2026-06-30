@@ -1,7 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
-import Highcharts from "../../Highcharts";
+import Chart from "../../Chart";
 
 import { createChartOptions } from "./chartDefaults";
 
@@ -35,8 +34,7 @@ const SummaryChart = ({
           <i className="fas fa-expand" />
         </span>
       </button>
-      <HighchartsReact
-        highcharts={Highcharts}
+      <Chart
         ref={(ref) => {
           if (ref) {
             summaryChartRefs.current[chartId] = ref;

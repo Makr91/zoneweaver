@@ -102,12 +102,14 @@ const ZloginConsoleDisplay = ({
             className="button is-small is-info has-box-shadow"
             onClick={async () => {
               try {
-                const text = await navigator.clipboard.readText();
-                if (text && currentServer && selectedZone) {
-                  console.log(
-                    `📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`
-                  );
-                  await pasteTextToZone(currentServer, selectedZone, text);
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                  const text = await navigator.clipboard.readText();
+                  if (text && currentServer && selectedZone) {
+                    console.log(
+                      `📋 ZLOGIN PREVIEW PASTE: Pasting ${text.length} characters`
+                    );
+                    await pasteTextToZone(currentServer, selectedZone, text);
+                  }
                 }
               } catch (error) {
                 console.error("📋 ZLOGIN PREVIEW PASTE: Error:", error);

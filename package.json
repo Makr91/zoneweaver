@@ -39,17 +39,16 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "express-rate-limit": "^7.4.1",
+    "express-rate-limit": "^8.5.2",
     "express-session": "^1.17.3",
-    "http-proxy-middleware": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
+    "ldapts": "^8.1.8",
     "multer": "^2.1.1",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^9.0.2",
     "nodemon": "^3.1.9",
     "openid-client": "^6.7.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "passport-ldapauth": "^3.0.1",
     "passport-local": "^1.0.0",
     "passport-oauth2": "^1.8.0",
     "swagger-jsdoc": "^6.2.8",
@@ -60,18 +59,15 @@
     "yaml": "^2.8.3"
   },
   "overrides": {
-    "rollup": "@rollup/wasm-node",
     "tar": "^7.4.3",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "@rollup/wasm-node": "^4.46.3",
-    "concurrently": "^9.2.0",
-    "eslint": "^9.35.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "globals": "^16.4.0",
+    "globals": "^17.7.0",
     "prettier": "^3.6.2"
   }
 }

@@ -18,22 +18,23 @@ const CACHE_TTL = 30000; // 30 seconds
  */
 class ServerController {
   /**
-   * Get server with caching to improve performance
+   * Get server with caching to improve performance. Resolves by host+port and
+   * uses whatever protocol is stored on the row — the dedicated console/terminal/
+   * zlogin/VNC routes only know hostname:port, not the protocol.
    * @param {string} hostname - Server hostname
    * @param {number} port - Server port
-   * @param {string} protocol - Server protocol
    * @returns {Object|null} - Cached server object or null
    */
-  static async getCachedServer(hostname, port, protocol) {
-    const cacheKey = `${hostname}:${port}:${protocol}`;
+  static async getCachedServer(hostname, port) {
+    const cacheKey = `${hostname}:${port}`;
     const cached = serverCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return cached.server;
     }
 
-    // Fetch from database
-    const server = await ServerModel.getServer(hostname, port, protocol);
+    // Resolve by host+port (protocol comes from the stored row; one server per host:port)
+    const server = await ServerModel.getServerByHostPort(hostname, port);
 
     // Cache the result
     serverCache.set(cacheKey, {
@@ -433,11 +434,7 @@ class ServerController {
     const serverUrl = `${protocol}://${hostname}:${port}`;
     const targetUrl = `${serverUrl}/${path}`;
 
-    const server = await ServerController.getCachedServer(
-      hostname,
-      parseInt(port || 5001),
-      protocol
-    );
+    const server = await ServerController.getCachedServer(hostname, parseInt(port));
     if (!server || !server.api_key) {
       return res.status(500).json({
         success: false,
@@ -978,6 +975,20 @@ class ServerController {
         return streamResult;
       }
 
+      // VNC screenshot - binary PNG, must stream (JSON parsing would corrupt it)
+      if (path.endsWith('vnc/screenshot') && req.method === 'GET') {
+        const screenshotResult = await ServerController.proxyStreamingRequest(
+          req,
+          res,
+          proxyConfig,
+          {
+            timeout: 20000,
+            label: 'VNC screenshot',
+          }
+        );
+        return screenshotResult;
+      }
+
       // Multipart uploads - streaming
       if (req.headers['content-type']?.includes('multipart/form-data')) {
         log.proxy.info('STREAM: Using pure streaming for multipart upload', {
@@ -1170,11 +1181,7 @@ class ServerController {
 
       // Use same validation pattern as other methods in this file
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         log.security.error('Server not found', { serverAddress });
@@ -1506,11 +1513,7 @@ class ServerController {
       }
 
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         log.terminal.error('TERMINAL START: Server not found', { serverAddress, hostname, port });
@@ -1645,11 +1648,7 @@ class ServerController {
     try {
       const { serverAddress } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1727,11 +1726,7 @@ class ServerController {
     try {
       const { serverAddress, terminalCookie } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1821,11 +1816,7 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -1898,11 +1889,7 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -2022,11 +2009,7 @@ class ServerController {
       });
 
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         log.zlogin.error('ZLOGIN START: Server not found', { serverAddress, hostname, port });
@@ -2222,11 +2205,7 @@ class ServerController {
     try {
       const { serverAddress } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -2354,11 +2333,7 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });
@@ -2456,11 +2431,7 @@ class ServerController {
     try {
       const { serverAddress, sessionId } = req.params;
       const [hostname, port] = serverAddress.split(':');
-      const server = await ServerController.getCachedServer(
-        hostname,
-        parseInt(port || 5001),
-        'https'
-      );
+      const server = await ServerController.getCachedServer(hostname, parseInt(port));
 
       if (!server) {
         return res.status(404).json({ success: false, message: 'Server not found' });

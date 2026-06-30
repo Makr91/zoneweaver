@@ -1,6 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../Chart";
 import Highcharts from "../../Highcharts";
 
 const NetworkChart = ({
@@ -96,8 +96,7 @@ const NetworkChart = ({
       <div className="card-content p-2">
         {networkChartData && Object.keys(networkChartData).length > 0 ? (
           <div>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={{
                 chart: {
                   type: "spline",

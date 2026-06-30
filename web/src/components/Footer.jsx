@@ -334,10 +334,14 @@ const Footer = () => {
     </nav>
   );
 
-  // Footer handle that positions itself to overlay the header
-  const FooterHandle = () => (
+  // Footer handle that positions itself to overlay the header.
+  // react-resizable v4 calls `handle` as (handleAxis, ref); the ref must reach the
+  // DOM node — v4 dropped the findDOMNode fallback that React 19 removed. This
+  // function form is also valid on v3, so it works before/after the upgrade.
+  const FooterHandle = (handleAxis, ref) => (
     <div
-      className="is-small is-dark react-resizable-handle react-resizable-handle-n"
+      ref={ref}
+      className={`is-small is-dark react-resizable-handle react-resizable-handle-${handleAxis}`}
       style={{
         position: "absolute",
         top: "-30px",
@@ -366,7 +370,7 @@ const Footer = () => {
         axis="y"
         maxConstraints={[Infinity, Math.floor(window.innerHeight * 0.9)]}
         minConstraints={[Infinity, 0]}
-        handle={FooterHandle()}
+        handle={FooterHandle}
       >
         <div className="log-console has-text-white is-fullheight">
           {footerActiveView === "shell" ? <HostShell /> : <Tasks />}

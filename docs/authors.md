@@ -6,15 +6,17 @@ permalink: /authors/
 ---
 
 # Authors
+
 {: .no_toc }
 
 Contributors and authors of Zoneweaver frontend.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

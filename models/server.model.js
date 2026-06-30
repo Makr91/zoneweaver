@@ -552,17 +552,19 @@ export default sequelize => {
           errorMessage.includes('Bootstrap endpoint auto-disabled')
         ) {
           throw new Error(
-            'Bootstrap endpoint has been auto-disabled after first use for security. Please use the "I have an existing API key" option instead.'
+            'Bootstrap endpoint has been auto-disabled after first use for security. Please use the "I have an existing API key" option instead.',
+            { cause: error }
           );
         }
 
-        throw new Error(`Zoneweaver API Server error: ${errorMessage}`);
+        throw new Error(`Zoneweaver API Server error: ${errorMessage}`, { cause: error });
       } else if (error.code === 'ECONNREFUSED') {
         throw new Error(
-          'Cannot connect to Zoneweaver API Server. Please check if the server is running.'
+          'Cannot connect to Zoneweaver API Server. Please check if the server is running.',
+          { cause: error }
         );
       } else {
-        throw new Error(`Bootstrap failed: ${error.message}`);
+        throw new Error(`Bootstrap failed: ${error.message}`, { cause: error });
       }
     }
   };
@@ -588,6 +590,21 @@ export default sequelize => {
    */
   Server.getServer = function (hostname, port, protocol) {
     return this.findByHostPortProtocol(hostname, port, protocol);
+  };
+
+  /**
+   * Get the registered server for a hostname+port, regardless of protocol.
+   * The dedicated console/terminal/zlogin/VNC routes only receive hostname:port
+   * (no protocol), so they resolve the row here and use its stored protocol.
+   * Mirrors findByHostPortProtocol's scope so api_key is present.
+   * @param {string} hostname - Server hostname
+   * @param {number} port - Server port
+   * @returns {Promise<Object|null>} Server record (with api_key) or null
+   */
+  Server.getServerByHostPort = function (hostname, port) {
+    return this.withScope('withApiKey').findOne({
+      where: { hostname, port },
+    });
   };
 
   /**

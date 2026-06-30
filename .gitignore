@@ -60,3 +60,9 @@ vendor/
 logs/
 /config.yaml
 /data/
+
+# Generated API docs (created by scripts/generate-docs.js; CI regenerates them on build).
+# openapi.json carries Jekyll front matter so it is not valid JSON — never commit/format.
+docs/api/openapi.json
+docs/api/swagger-ui.html
+docs/api/reference.md

@@ -6,15 +6,17 @@ permalink: /configuration/
 ---
 
 # Configuration Reference
+
 {: .no_toc }
 
 Complete reference for configuring the Zoneweaver frontend using the configuration file.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

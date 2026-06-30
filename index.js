@@ -32,7 +32,7 @@ const config = loadConfig();
 // Create rate limiter for static file serving endpoints
 const staticFileLimiter = rateLimit({
   windowMs: config.limits?.staticFiles?.windowMs?.value || 15 * 60 * 1000,
-  max: config.limits?.staticFiles?.max?.value || 5000,
+  limit: config.limits?.staticFiles?.max?.value || 5000,
   message: {
     error:
       config.limits?.staticFiles?.message?.value ||
@@ -244,33 +244,11 @@ app.get('*splat', staticFileLimiter, (req, res) => {
 });
 
 /**
- * Resolve server address from request referer/origin headers, with fallback to most recent server
- */
-const resolveServerFromRequest = async request => {
-  const referer = request.headers.referer || request.headers.origin;
-  if (referer) {
-    const urlParams = new URLSearchParams(referer.split('?')[1]);
-    const host = urlParams.get('host');
-    if (host) {
-      const server = await ServerModel.getServerByHostname(host);
-      if (server) {
-        return `${server.hostname}:${server.port}`;
-      }
-    }
-  }
-  const servers = await ServerModel.getAllServers();
-  if (servers.length > 0) {
-    return `${servers[0].hostname}:${servers[0].port}`;
-  }
-  return null;
-};
-
-/**
  * Get authenticated server credentials from "hostname:port" address string
  */
 const getAuthenticatedServer = address => {
   const [hostname, serverPort] = address.split(':');
-  return ServerModel.getServer(hostname, parseInt(serverPort || 5001), 'https');
+  return ServerModel.getServerByHostPort(hostname, parseInt(serverPort));
 };
 
 /**
@@ -308,25 +286,26 @@ const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, lo
 /**
  * Handle terminal/zlogin WebSocket upgrade by resolving server from referer
  */
-const handleSessionUpgrade = async (sessionType, sessionId, request, socket, head) => {
+const handleSessionUpgrade = async (
+  sessionType,
+  sessionId,
+  serverAddress,
+  request,
+  socket,
+  head
+) => {
   if (!serverModelReady || !ServerModel) {
     log.websocket.error(`WebSocket ${sessionType}: ServerModel not initialized`, { sessionId });
     socket.destroy();
     return;
   }
 
-  const serverAddress = await resolveServerFromRequest(request);
-  if (!serverAddress) {
-    log.websocket.error(`WebSocket ${sessionType}: Could not determine target server`, {
-      sessionId,
-    });
-    socket.destroy();
-    return;
-  }
-
   const server = await getAuthenticatedServer(serverAddress);
   if (!server || !server.api_key) {
-    log.websocket.error(`WebSocket ${sessionType}: No server or API key`, { sessionId });
+    log.websocket.error(`WebSocket ${sessionType}: No server or API key`, {
+      sessionId,
+      serverAddress,
+    });
     socket.destroy();
     return;
   }
@@ -386,20 +365,8 @@ const resolveVncTarget = (url, request) => {
     origin: request.headers.origin,
   });
 
-  const referer = request.headers.referer || request.headers.origin;
-  if (referer) {
-    const urlMatch = referer.match(/\/zones\/(?<zone>[^/?#]+)/);
-    if (urlMatch) {
-      log.websocket.debug('WebSocket fallback: found zone in URL', {
-        zoneName: urlMatch.groups.zone,
-      });
-      return {
-        serverAddress: 'hv-04-backend.home.m4kr.net:5001',
-        zoneName: urlMatch.groups.zone,
-      };
-    }
-  }
-
+  // A bare /websockify upgrade carries no server address in the path; recover the
+  // target from the VNC session tracked for this client when the console was opened.
   const clientId = request.connection.remoteAddress || request.socket.remoteAddress;
   const storedSession = activeVncSessions.get(clientId);
   if (storedSession) {
@@ -426,7 +393,7 @@ const createVncWsProxy = async (vncTarget, request, socket, head) => {
     return;
   }
 
-  const server = await ServerModel.getServer(hostname, parseInt(serverPort || 5001), 'https');
+  const server = await ServerModel.getServerByHostPort(hostname, parseInt(serverPort));
   if (!server || !server.api_key) {
     log.websocket.error('WebSocket VNC: No server or API key', { hostname, serverPort });
     socket.destroy();
@@ -524,15 +491,33 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
   try {
     const url = new URL(request.url, `https://${request.headers.host}`);
 
-    const zloginMatch = url.pathname.match(/^\/zlogin\/(?<sessionId>[^/]+)/);
+    const zloginMatch = url.pathname.match(
+      /^\/api\/servers\/(?<addr>[^/]+)\/zlogin\/(?<sessionId>[^/]+)/
+    );
     if (zloginMatch) {
-      await handleSessionUpgrade('zlogin', zloginMatch.groups.sessionId, request, socket, head);
+      await handleSessionUpgrade(
+        'zlogin',
+        zloginMatch.groups.sessionId,
+        zloginMatch.groups.addr,
+        request,
+        socket,
+        head
+      );
       return;
     }
 
-    const termMatch = url.pathname.match(/^\/term\/(?<sessionId>[^/]+)/);
+    const termMatch = url.pathname.match(
+      /^\/api\/servers\/(?<addr>[^/]+)\/term\/(?<sessionId>[^/]+)/
+    );
     if (termMatch) {
-      await handleSessionUpgrade('term', termMatch.groups.sessionId, request, socket, head);
+      await handleSessionUpgrade(
+        'term',
+        termMatch.groups.sessionId,
+        termMatch.groups.addr,
+        request,
+        socket,
+        head
+      );
       return;
     }
 

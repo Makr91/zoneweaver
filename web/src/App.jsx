@@ -7,6 +7,7 @@ import Layout from "./components/Layout";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ServerSetup from "./components/ServerSetup";
+import StandaloneConsole from "./components/StandaloneConsole";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ServerProvider } from "./contexts/ServerContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -31,6 +32,10 @@ const App = () => (
                   <Route path="/register" element={<Register />} />
                   <Route path="/setup" element={<ServerSetup />} />
                   <Route path="/ui/auth/callback" element={<AuthCallback />} />
+                  <Route
+                    path="/ui/console/:serverAddress/:zoneName"
+                    element={<StandaloneConsole />}
+                  />
                   <Route
                     path="/ui/settings"
                     element={<Navigate to="/ui/settings/zoneweaver" />}

@@ -165,7 +165,7 @@ export const ZoneTerminalProvider = ({ children }) => {
       try {
         console.log(`🚀 ZLOGIN SESSION: Starting new session for ${zoneKey}`);
         const response = await axios.post(
-          `/api/servers/${server.hostname}/zones/${zoneName}/zlogin/start`
+          `/api/servers/${server.hostname}:${server.port}/zones/${zoneName}/zlogin/start`
         );
 
         if (!response.data.success || !response.data.session) {
@@ -184,7 +184,9 @@ export const ZoneTerminalProvider = ({ children }) => {
           return null;
         }
 
-        const wsUrl = buildWsUrl(sessionData.websocket_url);
+        const wsUrl = buildWsUrl(
+          `/api/servers/${server.hostname}:${server.port}${sessionData.websocket_url}`
+        );
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () =>
@@ -353,7 +355,9 @@ export const ZoneTerminalProvider = ({ children }) => {
         }
       );
 
-      const wsUrl = buildWsUrl(websocketUrl);
+      const wsUrl = buildWsUrl(
+        `/api/servers/${server.hostname}:${server.port}${websocketUrl}`
+      );
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () =>

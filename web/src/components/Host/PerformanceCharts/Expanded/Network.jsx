@@ -1,14 +1,13 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../../Chart";
 import Highcharts from "../../../Highcharts";
 
 const ExpandedNetworkChart = ({
   networkChartData,
   networkSeriesVisibility,
 }) => (
-  <HighchartsReact
-    highcharts={Highcharts}
+  <Chart
     options={{
       chart: {
         type: "spline",

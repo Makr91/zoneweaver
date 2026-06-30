@@ -64,7 +64,6 @@ export default defineConfig({
       defaultIsModuleExports: true, // Fix for Vite 4.0.3+ CommonJS handling changes
     },
     rollupOptions: {
-      external: ["rollup"],
       output: {
         entryFileNames: `assets/[name].js`,
         chunkFileNames: `assets/[name].js`,
@@ -129,6 +128,5 @@ export default defineConfig({
       "@xterm/addon-search",
       "@xterm/addon-webgl",
     ],
-    exclude: ["rollup"],
   },
 });

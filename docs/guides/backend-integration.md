@@ -7,15 +7,17 @@ permalink: /guides/backend-integration/
 ---
 
 # Backend Integration
+
 {: .no_toc }
 
 This guide covers connecting Zoneweaver frontend to Zoneweaver-API backend servers for zone management functionality.
 
 ## Table of contents
+
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+   {:toc}
 
 ---
 

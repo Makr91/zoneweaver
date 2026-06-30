@@ -1,11 +1,10 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../../Chart";
 import Highcharts from "../../../Highcharts";
 
 const ExpandedStorageIOChart = ({ chartData, storageSeriesVisibility }) => (
-  <HighchartsReact
-    highcharts={Highcharts}
+  <Chart
     options={{
       chart: {
         type: "spline",

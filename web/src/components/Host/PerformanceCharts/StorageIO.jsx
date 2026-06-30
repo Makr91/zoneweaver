@@ -1,6 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../Chart";
 import Highcharts from "../../Highcharts";
 
 const StorageIOChart = ({
@@ -96,8 +96,7 @@ const StorageIOChart = ({
       <div className="card-content p-2">
         {chartData && Object.keys(chartData).length > 0 ? (
           <div>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={{
                 chart: {
                   type: "spline",

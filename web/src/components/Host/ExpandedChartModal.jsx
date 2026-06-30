@@ -1,8 +1,7 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../Chart";
 import { ContentModal } from "../common";
-import Highcharts from "../Highcharts";
 
 import { getChartTitle, getExpandedChartOptions } from "./ExpandedChartOptions";
 
@@ -25,8 +24,7 @@ const ExpandedChartModal = ({
       title={getChartTitle(chartId, type)}
       icon="fas fa-chart-line"
     >
-      <HighchartsReact
-        highcharts={Highcharts}
+      <Chart
         options={getExpandedChartOptions(
           chartId,
           type,

@@ -1,11 +1,9 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
-import Highcharts from "../../../Highcharts";
+import Chart from "../../../Chart";
 
 const ExpandedMemoryChart = ({ memoryChartData, memorySeriesVisibility }) => (
-  <HighchartsReact
-    highcharts={Highcharts}
+  <Chart
     options={{
       chart: {
         type: "spline",

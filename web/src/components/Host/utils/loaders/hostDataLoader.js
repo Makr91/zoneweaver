@@ -81,7 +81,7 @@ const processStorageResults = (poolsResult, datasetsResult) => {
  */
 export const loadHostData = async ({
   server,
-  loading,
+  isLoadingRef,
   makeZoneweaverAPIRequest,
   getMonitoringHealth,
   getMonitoringStatus,
@@ -97,11 +97,12 @@ export const loadHostData = async ({
   setTaskStats,
   setSwapSummaryData,
 }) => {
-  if (!server || loading) {
+  if (!server || isLoadingRef?.current) {
     return;
   }
 
   try {
+    isLoadingRef.current = true;
     setLoading(true);
     setError("");
 
@@ -196,6 +197,7 @@ export const loadHostData = async ({
     console.error("Error fetching host data:", error);
     setError(`Error connecting to ${server.hostname}`);
   } finally {
+    isLoadingRef.current = false;
     setLoading(false);
   }
 };

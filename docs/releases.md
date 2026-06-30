@@ -6,6 +6,7 @@ permalink: /releases/
 ---
 
 # Releases
+
 {: .no_toc }
 
 Download the latest version of Zoneweaver frontend.

@@ -62,6 +62,12 @@ export const useHostData = (currentServer) => {
   const initialLoadDone = useRef(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
+  // In-flight guard for loadHostData. Kept in a ref (not the `loading` state) so the
+  // loadHostData callback identity stays stable. If the guard lived in `loading`, every
+  // fetch toggling that state would give loadHostData a new identity, re-fire the data
+  // load effect, and poll in a tight loop instead of honoring refreshInterval.
+  const isLoadingRef = useRef(false);
+
   // Track latest timestamps for incremental chart updates
   const [lastChartTimestamps, setLastChartTimestamps] = useState({
     poolIO: null,
@@ -193,7 +199,7 @@ export const useHostData = (currentServer) => {
     async (server) => {
       await loadHostDataUtil({
         server,
-        loading,
+        isLoadingRef,
         makeZoneweaverAPIRequest,
         getMonitoringHealth,
         getMonitoringStatus,
@@ -216,7 +222,6 @@ export const useHostData = (currentServer) => {
       getMonitoringStatus,
       getStoragePools,
       getStorageDatasets,
-      loading,
     ]
   );
 

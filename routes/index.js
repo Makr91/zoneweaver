@@ -22,7 +22,7 @@ const config = loadConfig();
 // Authentication - Strict (prevent brute force attacks)
 const authLimiter = rateLimit({
   windowMs: config.limits?.authentication?.windowMs?.value || 15 * 60 * 1000,
-  max: config.limits?.authentication?.max?.value || 25,
+  limit: config.limits?.authentication?.max?.value || 25,
   message: {
     error:
       config.limits?.authentication?.message?.value ||
@@ -35,7 +35,7 @@ const authLimiter = rateLimit({
 // Admin operations - Moderate (protect admin functions)
 const adminLimiter = rateLimit({
   windowMs: config.limits?.admin?.windowMs?.value || 15 * 60 * 1000,
-  max: config.limits?.admin?.max?.value || 500,
+  limit: config.limits?.admin?.max?.value || 500,
   message: {
     error:
       config.limits?.admin?.message?.value || 'Too many admin requests, please try again later',
@@ -47,7 +47,7 @@ const adminLimiter = rateLimit({
 // External API proxy - Restrictive (protect downstream Zoneweaver servers)
 const apiProxyLimiter = rateLimit({
   windowMs: config.limits?.apiProxy?.windowMs?.value || 60 * 1000,
-  max: config.limits?.apiProxy?.max?.value || 2000,
+  limit: config.limits?.apiProxy?.max?.value || 2000,
   message: {
     error:
       config.limits?.apiProxy?.message?.value ||
@@ -60,7 +60,7 @@ const apiProxyLimiter = rateLimit({
 // Real-time operations - Lenient (maintain VNC/terminal functionality)
 const realtimeLimiter = rateLimit({
   windowMs: config.limits?.realtime?.windowMs?.value || 60 * 1000,
-  max: config.limits?.realtime?.max?.value || 250,
+  limit: config.limits?.realtime?.max?.value || 250,
   message: {
     error:
       config.limits?.realtime?.message?.value ||
@@ -73,7 +73,7 @@ const realtimeLimiter = rateLimit({
 // Standard operations - Normal (general purpose)
 const standardLimiter = rateLimit({
   windowMs: config.limits?.standard?.windowMs?.value || 15 * 60 * 1000,
-  max: config.limits?.standard?.max?.value || 1000,
+  limit: config.limits?.standard?.max?.value || 1000,
   message: {
     error: config.limits?.standard?.message?.value || 'Too many requests, please try again later',
   },
@@ -84,7 +84,7 @@ const standardLimiter = rateLimit({
 // Static file serving - High limit (prevent file system abuse, CodeQL flagged endpoints)
 const staticFileLimiter = rateLimit({
   windowMs: config.limits?.staticFiles?.windowMs?.value || 15 * 60 * 1000,
-  max: config.limits?.staticFiles?.max?.value || 5000,
+  limit: config.limits?.staticFiles?.max?.value || 5000,
   message: {
     error:
       config.limits?.staticFiles?.message?.value ||

@@ -1,6 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../Chart";
 import Highcharts from "../Highcharts";
 
 const BandwidthCharts = ({
@@ -94,8 +94,7 @@ const BandwidthCharts = ({
                       <i className="fas fa-expand" />
                     </span>
                   </button>
-                  <HighchartsReact
-                    highcharts={Highcharts}
+                  <Chart
                     ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-rx"] = ref;
@@ -216,8 +215,7 @@ const BandwidthCharts = ({
                       <i className="fas fa-expand" />
                     </span>
                   </button>
-                  <HighchartsReact
-                    highcharts={Highcharts}
+                  <Chart
                     ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-tx"] = ref;
@@ -340,8 +338,7 @@ const BandwidthCharts = ({
                       <i className="fas fa-expand" />
                     </span>
                   </button>
-                  <HighchartsReact
-                    highcharts={Highcharts}
+                  <Chart
                     ref={(ref) => {
                       if (ref) {
                         summaryChartRefs.current["summary-total"] = ref;
@@ -585,9 +582,8 @@ const BandwidthCharts = ({
                           <i className="fas fa-expand" />
                         </span>
                       </button>
-                      <HighchartsReact
+                      <Chart
                         key={`chart-${interfaceName}`}
-                        highcharts={Highcharts}
                         options={chartOptions}
                         ref={(ref) => {
                           if (ref) {

@@ -1051,6 +1051,30 @@ $beige-lighter: #eff0eb;
   filter: brightness(0.9) !important;
 }
 
+// Standalone full-window console (opened via "Open in New Tab")
+.zw-standalone-console {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.zw-standalone-console-viewer {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.zw-standalone-console-error {
+  align-items: center !important;
+  justify-content: center !important;
+  color: #ecf0f1 !important;
+}
+
 // Combined typography helpers for edge labels
 .zw-edge-label-secondary {
   color: #3273dc !important;

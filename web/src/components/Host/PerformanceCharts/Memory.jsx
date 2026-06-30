@@ -1,7 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
-import Highcharts from "../../Highcharts";
+import Chart from "../../Chart";
 
 const MemoryChart = ({
   memoryChartData,
@@ -38,8 +37,7 @@ const MemoryChart = ({
       <div className="card-content p-2">
         {memoryChartData.used.length > 0 ? (
           <div>
-            <HighchartsReact
-              highcharts={Highcharts}
+            <Chart
               options={{
                 chart: {
                   type: "spline",

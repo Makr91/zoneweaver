@@ -26,4 +26,4 @@ permalink: /api/reference/
 
 ---
 
-*The interactive API documentation above allows you to explore all available endpoints, view request/response schemas, and test API calls directly from your browser.*
+_The interactive API documentation above allows you to explore all available endpoints, view request/response schemas, and test API calls directly from your browser._

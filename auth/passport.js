@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { Strategy as LdapStrategy } from 'passport-ldapauth';
+import { authenticateLdapUser } from './ldapClient.js';
 import * as client from 'openid-client';
 import { Strategy as OidcStrategy } from 'openid-client/passport';
 import { Op } from '@sequelize/core';
@@ -414,6 +414,51 @@ const handleExternalUser = async (provider, profile) => {
 };
 
 /**
+ * LDAP passport strategy backed by ldapts (search-then-bind).
+ *
+ * Replaces passport-ldapauth, whose underlying ldapjs is decommissioned. Reads
+ * `username`/`password` from the request body (the shape ldapLogin sends),
+ * verifies them via ldapClient.authenticateLdapUser, then provisions the user
+ * through the shared handleExternalUser flow. Implements just the surface
+ * passport needs (`name` + `authenticate`, using the success/fail/error helpers
+ * passport injects onto the strategy per request).
+ */
+class LdapStrategy {
+  constructor() {
+    this.name = 'ldap';
+  }
+
+  authenticate(req) {
+    const username = req.body?.username;
+    const password = req.body?.password;
+
+    if (!username || !password) {
+      this.fail({ message: 'Missing LDAP credentials' }, 400);
+      return;
+    }
+
+    authenticateLdapUser(username, password)
+      .then(async ldapUser => {
+        log.auth.info('LDAP authentication successful for user', {
+          user: ldapUser.uid || ldapUser.cn || username,
+        });
+        const result = await handleExternalUser('ldap', ldapUser);
+        log.auth.info('LDAP user processing complete', { username: result.username });
+        this.success(result);
+      })
+      .catch(error => {
+        if (error.ldapAuthFailure) {
+          log.auth.info('LDAP authentication failed', { user: username });
+          this.fail({ message: 'LDAP authentication failed' });
+        } else {
+          log.auth.error('LDAP Strategy error', { error: error.message, stack: error.stack });
+          this.error(error);
+        }
+      });
+  }
+}
+
+/**
  * LDAP Strategy - External authentication via LDAP
  */
 const setupLdapStrategy = async () => {
@@ -436,63 +481,8 @@ const setupLdapStrategy = async () => {
     return;
   }
 
-  log.auth.info('Setting up LDAP authentication strategy');
-  log.auth.debug('LDAP Configuration', {
-    url: config.authentication.ldap_url.value,
-    bindDn: config.authentication.ldap_bind_dn.value,
-    searchBase: config.authentication.ldap_search_base.value,
-    searchFilter: config.authentication.ldap_search_filter.value,
-    searchAttributes: config.authentication.ldap_search_attributes.value,
-    tlsRejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value,
-  });
-
-  passport.use(
-    'ldap',
-    new LdapStrategy(
-      {
-        server: {
-          url: config.authentication.ldap_url.value,
-          bindDN: config.authentication.ldap_bind_dn.value,
-          bindCredentials: config.authentication.ldap_bind_credentials.value,
-          searchBase: config.authentication.ldap_search_base.value,
-          searchFilter: config.authentication.ldap_search_filter.value,
-          searchAttributes: config.authentication.ldap_search_attributes.value
-            .split(',')
-            .map(s => s.trim()) || ['displayName', 'mail', 'memberOf'],
-          tlsOptions: {
-            rejectUnauthorized: config.authentication.ldap_tls_reject_unauthorized?.value || false,
-          },
-        },
-      },
-      async (ldapUser, done) => {
-        try {
-          log.auth.info('LDAP authentication successful for user', {
-            user: ldapUser.uid || ldapUser.cn || 'unknown',
-          });
-          log.auth.debug('LDAP User Profile', {
-            uid: ldapUser.uid,
-            cn: ldapUser.cn,
-            displayName: ldapUser.displayName,
-            mail: ldapUser.mail,
-            memberOf: ldapUser.memberOf,
-            profileKeys: Object.keys(ldapUser),
-          });
-
-          // Handle external user authentication and provisioning
-          const result = await handleExternalUser('ldap', ldapUser);
-          log.auth.info('LDAP user processing complete', { username: result.username });
-          return done(null, result);
-        } catch (error) {
-          log.auth.error('LDAP Strategy error during user processing', {
-            error: error.message,
-            stack: error.stack,
-          });
-          return done(error, false);
-        }
-      }
-    )
-  );
-
+  log.auth.info('Setting up LDAP authentication strategy (ldapts)');
+  passport.use('ldap', new LdapStrategy());
   log.auth.info('LDAP authentication strategy configured successfully');
 };
 

@@ -1,6 +1,6 @@
-import { HighchartsReact } from "highcharts-react-official";
 import PropTypes from "prop-types";
 
+import Chart from "../../Chart";
 import Highcharts from "../../Highcharts";
 
 import { createChartOptions } from "./chartDefaults";
@@ -49,9 +49,8 @@ const PoolCharts = ({
                     <i className="fas fa-expand" />
                   </span>
                 </button>
-                <HighchartsReact
+                <Chart
                   key={`pool-chart-${poolName}`}
-                  highcharts={Highcharts}
                   ref={(ref) => {
                     if (ref) {
                       poolChartRefs.current[poolName] = ref;
