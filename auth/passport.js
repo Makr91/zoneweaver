@@ -3,6 +3,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as LdapStrategy } from 'passport-ldapauth';
 import * as client from 'openid-client';
 import { Strategy as OidcStrategy } from 'openid-client/passport';
+import { Op } from '@sequelize/core';
 import { loadConfig } from '../utils/config.js';
 import db from '../models/index.js';
 import { log } from '../utils/Logger.js';
@@ -87,7 +88,7 @@ const determineUserOrganization = async email => {
       email,
       used_at: null,
       expires_at: {
-        [db.Sequelize.Op.gt]: new Date(),
+        [Op.gt]: new Date(),
       },
     },
     attributes: [
@@ -272,7 +273,7 @@ const ensureUserOrganization = async (user, email, extraFields = {}) => {
  * @returns {Promise<Object>} User object for authentication
  */
 const handleExternalUser = async (provider, profile) => {
-  const { user: UserModel, credential: CredentialModel, organization: OrganizationModel } = db;
+  const { user: UserModel, credential: CredentialModel } = db;
 
   try {
     log.auth.debug('Processing external user', { provider, profile });
@@ -382,8 +383,7 @@ const handleExternalUser = async (provider, profile) => {
     const dbUser = await UserModel.findByPk(user.id, {
       include: [
         {
-          model: OrganizationModel,
-          as: 'organization',
+          association: 'organization',
         },
       ],
     });

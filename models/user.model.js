@@ -1,14 +1,16 @@
-export default (sequelize, Sequelize) => {
+import { DataTypes, Op } from '@sequelize/core';
+
+export default sequelize => {
   const User = sequelize.define(
     'users',
     {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
       username: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: true,
         validate: {
@@ -17,7 +19,7 @@ export default (sequelize, Sequelize) => {
         },
       },
       email: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: true,
         validate: {
@@ -26,12 +28,12 @@ export default (sequelize, Sequelize) => {
         },
       },
       password_hash: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
-        field: 'password_hash',
+        columnName: 'password_hash',
       },
       role: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'user',
         validate: {
@@ -39,45 +41,42 @@ export default (sequelize, Sequelize) => {
         },
       },
       organization_id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: true,
-        field: 'organization_id',
+        columnName: 'organization_id',
         references: {
-          model: 'organizations',
+          table: 'organizations',
           key: 'id',
         },
       },
       last_login: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: true,
-        field: 'last_login',
+        columnName: 'last_login',
       },
       is_active: {
-        type: Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         defaultValue: true,
-        field: 'is_active',
+        columnName: 'is_active',
       },
       auth_provider: {
-        type: Sequelize.STRING(50),
+        type: DataTypes.STRING(50),
         allowNull: true,
         defaultValue: 'local',
-        field: 'auth_provider',
+        columnName: 'auth_provider',
         validate: {
           isIn: [['local', 'ldap', 'oidc', 'oauth2', 'saml']],
         },
-        comment: 'Authentication provider: local, ldap, oidc, etc.',
       },
       external_id: {
-        type: Sequelize.STRING(255),
+        type: DataTypes.STRING(255),
         allowNull: true,
-        field: 'external_id',
-        comment: 'External provider user ID',
+        columnName: 'external_id',
       },
       linked_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: true,
-        field: 'linked_at',
-        comment: 'Timestamp when external account was linked',
+        columnName: 'linked_at',
       },
     },
     {
@@ -89,14 +88,6 @@ export default (sequelize, Sequelize) => {
 
       // Indexes
       indexes: [
-        {
-          unique: true,
-          fields: ['username'],
-        },
-        {
-          unique: true,
-          fields: ['email'],
-        },
         {
           fields: ['organization_id'],
         },
@@ -137,8 +128,7 @@ export default (sequelize, Sequelize) => {
         withOrganization: {
           include: [
             {
-              model: sequelize.models.organizations,
-              as: 'organization',
+              association: 'organization',
               attributes: ['id', 'name'],
             },
           ],
@@ -159,68 +149,63 @@ export default (sequelize, Sequelize) => {
   User.associate = function (models) {
     // User belongs to Organization
     User.belongsTo(models.organization, {
-      foreignKey: 'organization_id',
+      foreignKey: { name: 'organization_id', onDelete: 'CASCADE' },
       as: 'organization',
-      onDelete: 'SET NULL',
     });
 
     // User can have many Invitations (as the inviter)
     User.hasMany(models.invitation, {
-      foreignKey: 'invited_by',
+      foreignKey: { name: 'invited_by_user_id', onDelete: 'CASCADE' },
       as: 'sentInvitations',
-      onDelete: 'SET NULL',
     });
 
     // User can have many Servers (if servers are user-specific)
     if (models.server) {
       User.hasMany(models.server, {
-        foreignKey: 'created_by',
+        foreignKey: { name: 'created_by', onDelete: 'SET NULL' },
         as: 'servers',
-        onDelete: 'SET NULL',
       });
     }
 
     // User can have many Credentials (external auth providers)
     User.hasMany(models.credential, {
-      foreignKey: 'user_id',
+      foreignKey: { name: 'user_id', onDelete: 'CASCADE' },
       as: 'credentials',
-      onDelete: 'CASCADE',
     });
   };
 
   // Class methods for common queries
   User.findByEmail = function (email) {
-    return this.scope('active').findOne({
+    return this.withScope('active').findOne({
       where: { email },
     });
   };
 
   User.findByUsername = function (username) {
-    return this.scope('active').findOne({
+    return this.withScope('active').findOne({
       where: { username },
     });
   };
 
   User.findByIdentifier = function (identifier) {
-    return this.scope('active').findOne({
+    return this.withScope('active').findOne({
       where: {
-        [Sequelize.Op.or]: [{ username: identifier }, { email: identifier }],
+        [Op.or]: [{ username: identifier }, { email: identifier }],
       },
     });
   };
 
   User.findActiveById = function (id) {
-    return this.scope('active').findByPk(id);
+    return this.withScope('active').findByPk(id);
   };
 
   User.findByOrganization = function (organizationId, includeInactive = false) {
     const scope = includeInactive ? null : 'active';
-    return this.scope(scope).findAll({
+    return this.withScope(scope).findAll({
       where: { organization_id: organizationId },
       include: [
         {
-          model: sequelize.models.organizations,
-          as: 'organization',
+          association: 'organization',
           attributes: ['id', 'name'],
         },
       ],
@@ -229,7 +214,7 @@ export default (sequelize, Sequelize) => {
   };
 
   User.findByRole = function (role) {
-    return this.scope('active').findAll({
+    return this.withScope('active').findAll({
       where: { role },
       order: [['created_at', 'DESC']],
     });
@@ -244,7 +229,7 @@ export default (sequelize, Sequelize) => {
 
   // External authentication methods
   User.findByExternalId = function (provider, externalId) {
-    return this.scope('active').findOne({
+    return this.withScope('active').findOne({
       where: {
         auth_provider: provider,
         external_id: externalId,
@@ -253,11 +238,10 @@ export default (sequelize, Sequelize) => {
   };
 
   User.findWithCredentials = function (userId) {
-    return this.scope('active').findByPk(userId, {
+    return this.withScope('active').findByPk(userId, {
       include: [
         {
-          model: sequelize.models.credential,
-          as: 'credentials',
+          association: 'credentials',
         },
       ],
     });

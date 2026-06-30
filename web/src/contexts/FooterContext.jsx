@@ -9,6 +9,8 @@ import React, {
   useRef,
 } from "react";
 
+import { buildWsUrl } from "../utils/websocket";
+
 import { useServers } from "./ServerContext";
 import { UserSettings } from "./UserSettingsContext";
 
@@ -294,9 +296,7 @@ export const FooterProvider = ({ children }) => {
       });
 
       // Create WebSocket for react-xtermjs
-      const ws = new WebSocket(
-        `wss://${window.location.host}${sessionData.websocket_url}`
-      );
+      const ws = new WebSocket(buildWsUrl(sessionData.websocket_url));
 
       ws.onopen = () => {
         console.log(

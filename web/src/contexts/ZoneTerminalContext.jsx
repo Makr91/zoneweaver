@@ -9,6 +9,8 @@ import axios from "axios";
 import PropTypes from "prop-types";
 import React, { createContext, useContext, useCallback, useRef } from "react";
 
+import { buildWsUrl } from "../utils/websocket";
+
 import { useServers } from "./ServerContext";
 
 const ZoneTerminalContext = createContext();
@@ -182,7 +184,7 @@ export const ZoneTerminalProvider = ({ children }) => {
           return null;
         }
 
-        const wsUrl = `wss://${window.location.host}${sessionData.websocket_url}`;
+        const wsUrl = buildWsUrl(sessionData.websocket_url);
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () =>
@@ -351,7 +353,7 @@ export const ZoneTerminalProvider = ({ children }) => {
         }
       );
 
-      const wsUrl = `wss://${window.location.host}${websocketUrl}`;
+      const wsUrl = buildWsUrl(websocketUrl);
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () =>

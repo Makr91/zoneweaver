@@ -34,7 +34,10 @@ try {
   // 4. Update production config (if exists)
   if (fs.existsSync(productionConfigPath)) {
     let productionConfig = fs.readFileSync(productionConfigPath, 'utf8');
-    productionConfig = productionConfig.replace(/version:\s*[^\n]*/g, `version: ${rootVersion}`);
+    productionConfig = productionConfig.replace(
+      /(?<prefix>version:[^\S\n]*\n[^\S\n]+value:[^\S\n]*)[^\n]*/,
+      `$<prefix>${rootVersion}`
+    );
     fs.writeFileSync(productionConfigPath, productionConfig);
   }
 

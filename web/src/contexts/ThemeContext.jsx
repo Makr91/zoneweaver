@@ -33,10 +33,12 @@ export const ThemeProvider = ({ children }) => {
       ).matches;
       const activeTheme = prefersDark ? "dark" : "light";
       html.setAttribute("data-theme", activeTheme);
+      html.setAttribute("data-bs-theme", activeTheme);
       html.classList.add(`theme-${activeTheme}`);
     } else {
       // Apply specific theme
       html.setAttribute("data-theme", theme);
+      html.setAttribute("data-bs-theme", theme);
       html.classList.add(`theme-${theme}`);
     }
 
@@ -49,6 +51,7 @@ export const ThemeProvider = ({ children }) => {
       const handleChange = (e) => {
         const activeTheme = e.matches ? "dark" : "light";
         html.setAttribute("data-theme", activeTheme);
+        html.setAttribute("data-bs-theme", activeTheme);
         html.classList.remove("theme-light", "theme-dark");
         html.classList.add(`theme-${activeTheme}`);
       };

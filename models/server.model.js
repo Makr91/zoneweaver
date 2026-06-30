@@ -1,26 +1,27 @@
 import axios from 'axios';
 import https from 'https';
+import { DataTypes } from '@sequelize/core';
 import { log } from '../utils/Logger.js';
 import { loadConfig } from '../utils/config.js';
 
-export default (sequelize, Sequelize) => {
+export default sequelize => {
   const Server = sequelize.define(
     'servers',
     {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
       hostname: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notEmpty: true,
         },
       },
       port: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
           min: 1,
@@ -28,7 +29,7 @@ export default (sequelize, Sequelize) => {
         },
       },
       protocol: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'https',
         validate: {
@@ -36,36 +37,36 @@ export default (sequelize, Sequelize) => {
         },
       },
       entity_name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
-        field: 'entity_name',
+        columnName: 'entity_name',
         validate: {
           notEmpty: true,
         },
       },
       description: {
-        type: Sequelize.TEXT,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       api_key: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
-        field: 'api_key',
+        columnName: 'api_key',
       },
       is_active: {
-        type: Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         defaultValue: true,
-        field: 'is_active',
+        columnName: 'is_active',
       },
       last_used: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: true,
-        field: 'last_used',
+        columnName: 'last_used',
       },
       allow_insecure: {
-        type: Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         defaultValue: false,
-        field: 'allow_insecure',
+        columnName: 'allow_insecure',
       },
     },
     {
@@ -132,9 +133,8 @@ export default (sequelize, Sequelize) => {
     // If we want to track who created servers
     if (models.user) {
       Server.belongsTo(models.user, {
-        foreignKey: 'created_by',
+        foreignKey: { name: 'created_by', onDelete: 'SET NULL' },
         as: 'creator',
-        onDelete: 'SET NULL',
       });
     }
   };
@@ -384,11 +384,11 @@ export default (sequelize, Sequelize) => {
     apiKey,
     allowInsecure = false,
   }) {
-    const transaction = await sequelize.transaction();
+    const transaction = await sequelize.startUnmanagedTransaction();
 
     try {
       // Check if server already exists
-      const existingServer = await this.scope('withInactive').findOne({
+      const existingServer = await this.withScope('withInactive').findOne({
         where: { hostname, port, protocol },
       });
 
@@ -464,13 +464,13 @@ export default (sequelize, Sequelize) => {
   };
 
   Server.findByHostPortProtocol = function (hostname, port, protocol) {
-    return this.scope('withApiKey').findOne({
+    return this.withScope('withApiKey').findOne({
       where: { hostname, port, protocol },
     });
   };
 
   Server.getAllServers = function () {
-    return this.scope('byLastUsed').findAll();
+    return this.withScope('byLastUsed').findAll();
   };
 
   Server.testServerWithApiKey = async function (

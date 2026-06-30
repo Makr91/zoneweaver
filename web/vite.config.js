@@ -5,39 +5,28 @@ import { NodePackageImporter } from "sass";
 import { defineConfig } from "vite";
 import YAML from "yaml";
 
-const pkg = JSON.parse(fs.readFileSync("../package.json", "utf8"));
+// Version/name come from THIS package's own package.json (no reach-up into the
+// server repo), so the UI builds standalone.
+const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
 
-// Load configuration from YAML file
-// For vite.config.js, we need to handle the config path manually since we're in web/ directory
-const loadViteConfig = () => {
-  // Check environment variable first (set by systemd)
-  if (process.env.CONFIG_PATH) {
-    return YAML.parse(fs.readFileSync(process.env.CONFIG_PATH, "utf8"));
+// Dev-server settings come from this package's own config.yaml (not a dotfile,
+// not hardcoded). They only affect the local dev server; the built SPA talks to
+// whatever backend serves it at runtime.
+const loadDevConfig = () => {
+  const configPath = "./config.yaml";
+  if (fs.existsSync(configPath)) {
+    return YAML.parse(fs.readFileSync(configPath, "utf8"));
   }
-
-  // Fallback to local config for development
-  const localConfigPath = "../config.yaml";
-  if (fs.existsSync(localConfigPath)) {
-    return YAML.parse(fs.readFileSync(localConfigPath, "utf8"));
-  }
-
-  // Final fallback: return default configuration for build
-  return {
-    frontend: {
-      port: 3000,
-    },
-    server: {
-      hostname: "localhost",
-      port: 3443,
-    },
-  };
+  return {};
 };
 
-const config = loadViteConfig();
+const devConfig = loadDevConfig();
+const devPort = devConfig.server?.port || 3000;
+const apiTarget = devConfig.server?.api_target || "http://localhost:3443";
 
 export default defineConfig({
   define: {
-    // Define global constants that get replaced at build time from root package.json
+    // Replaced at build time from this package's own package.json
     __APP_VERSION__: JSON.stringify(pkg.version),
     __APP_NAME__: JSON.stringify(pkg.name),
   },
@@ -53,16 +42,16 @@ export default defineConfig({
   base: "/ui/",
   publicDir: "public",
   server: {
-    port: config.frontend?.port?.value || 3000,
+    port: devPort,
     host: "0.0.0.0",
     https: false, // Disable HTTPS for dev server during build
     hmr: {
-      port: config.frontend?.port?.value || 3000,
-      host: config.server?.hostname?.value || "localhost",
+      port: devPort,
+      host: "localhost",
     },
     proxy: {
       "/api": {
-        target: `http://${config.server?.hostname?.value || "localhost"}:${config.server?.port?.value || 3443}`,
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
       },

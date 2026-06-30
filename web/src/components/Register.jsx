@@ -40,7 +40,7 @@ const Register = () => {
    */
   const validateInvitation = async (code) => {
     try {
-      const response = await axios.get(`/api/invitations/${code}/validate`);
+      const response = await axios.get(`/api/invitations/validate/${code}`);
       if (response.data.success && response.data.valid) {
         setInvitation(response.data.invitation);
         setEmail(response.data.invitation.email); // Pre-fill email

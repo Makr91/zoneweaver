@@ -2,21 +2,19 @@
 title: Acknowledgments
 layout: default
 nav_order: 12
-permalink: /docs/acknowledgments/
+permalink: /acknowledgments/
 ---
 
 # Acknowledgments
-
 {: .no_toc }
 
 Acknowledgments and credits for Zoneweaver frontend.
 
 ## Table of contents
-
 {: .no_toc .text-delta }
 
 1. TOC
-   {:toc}
+{:toc}
 
 ---
 

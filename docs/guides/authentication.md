@@ -3,21 +3,19 @@ title: Authentication
 layout: default
 nav_order: 3
 parent: Guides
-permalink: /docs/guides/authentication/
+permalink: /guides/authentication/
 ---
 
 # Authentication
-
 {: .no_toc }
 
 This guide covers setting up user authentication, managing organizations, and configuring security settings in Zoneweaver frontend.
 
 ## Table of contents
-
 {: .no_toc .text-delta }
 
 1. TOC
-   {:toc}
+{:toc}
 
 ---
 

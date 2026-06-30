@@ -3,21 +3,19 @@ title: Installation
 layout: default
 nav_order: 2
 parent: Guides
-permalink: /docs/guides/installation/
+permalink: /guides/installation/
 ---
 
 # Installation
-
 {: .no_toc }
 
 This guide covers different methods for installing and deploying Zoneweaver frontend in various environments.
 
 ## Table of contents
-
 {: .no_toc .text-delta }
 
 1. TOC
-   {:toc}
+{:toc}
 
 ---
 

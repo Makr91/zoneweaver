@@ -3,11 +3,10 @@ title: Guides
 layout: default
 nav_order: 3
 has_children: true
-permalink: /docs/guides/
+permalink: /guides/
 ---
 
 # Guides
-
 {: .no_toc }
 
 Step-by-step guides for setting up and using the Zoneweaver frontend web interface.

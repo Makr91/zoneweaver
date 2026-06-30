@@ -298,14 +298,18 @@ class AuthController {
         }
       }
 
-      // Send welcome email (optional - don't fail registration if email fails)
+      // Send welcome email (optional - don't fail registration if email fails).
+      // sendWelcomeEmail logs its own success/failure and returns a result object instead
+      // of throwing, so inspect the result rather than assuming success.
       try {
         if (organization) {
-          await MailController.sendWelcomeEmail(newUser, organization.name);
-          log.mail.info('Welcome email sent successfully', {
-            email: newUser.email,
-            organization: organization.name,
-          });
+          const emailResult = await MailController.sendWelcomeEmail(newUser, organization.name);
+          if (!emailResult.success) {
+            log.mail.error('Failed to send welcome email', {
+              error: emailResult.error,
+              email: newUser.email,
+            });
+          }
         }
       } catch (emailError) {
         log.mail.error('Failed to send welcome email', {
@@ -433,7 +437,7 @@ class AuthController {
       }
 
       // Authenticate user - find user with password hash
-      const user = await UserModel.scope('withPassword').findByIdentifier(identifier);
+      const user = await UserModel.withScope('withPassword').findByIdentifier(identifier);
 
       if (!user) {
         return res.status(401).json({
@@ -1161,7 +1165,7 @@ class AuthController {
       }
 
       // Get user with password hash
-      const user = await UserModel.scope('withPassword').findByPk(userId);
+      const user = await UserModel.withScope('withPassword').findByPk(userId);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -1383,8 +1387,7 @@ class AuthController {
         users = await UserModel.findAll({
           include: [
             {
-              model: OrganizationModel,
-              as: 'organization',
+              association: 'organization',
               attributes: ['id', 'name'],
             },
           ],
@@ -2273,8 +2276,6 @@ class AuthController {
         });
       }
 
-      const MailCtrl = (await import('./MailController.js')).default;
-
       // Determine target organization
       let targetOrgId = organizationId;
 
@@ -2302,7 +2303,7 @@ class AuthController {
       }
 
       // Check for existing active invitation
-      const existingInvitation = await InvitationModel.scope('pending').findOne({
+      const existingInvitation = await InvitationModel.withScope('pending').findOne({
         where: { email },
       });
       if (existingInvitation) {
@@ -2328,12 +2329,7 @@ class AuthController {
       }
 
       // Send invitation email
-      await MailCtrl.sendInvitationMail(
-        email,
-        invitation.invite_code,
-        organizationName,
-        invitation.expires_at
-      );
+      await MailController.sendInvitationEmail(invitation);
 
       return res.json({
         success: true,
@@ -2453,8 +2449,8 @@ class AuthController {
         success: true,
         invitation: {
           email: invitation.email,
-          organizationId: invitation.organization_id,
-          organizationName: invitation.organization_name,
+          organizationId: invitation.organizationId,
+          organizationName: invitation.organizationName,
         },
       });
     } catch (error) {
@@ -2517,8 +2513,7 @@ class AuthController {
         where: { is_active: true },
         include: [
           {
-            model: UserModel,
-            as: 'users',
+            association: 'users',
             attributes: ['id', 'role', 'is_active'],
             required: false,
           },
@@ -3220,7 +3215,7 @@ class AuthController {
       }
 
       const stats = await OrganizationModel.getStats(parseInt(id));
-      const inviteStats = await InvitationModel.getInvitationStats(parseInt(id));
+      const inviteStats = await InvitationModel.getStats(parseInt(id));
 
       return res.json({
         success: true,
@@ -3415,9 +3410,9 @@ class AuthController {
         invitation: {
           id: invitation.id,
           email: invitation.email,
-          organizationName: invitation.organization_name,
+          organizationName: invitation.organization?.name || null,
           expiresAt: invitation.expires_at,
-          invitedBy: invitation.invited_by_username,
+          invitedBy: invitation.invitedBy?.username || null,
         },
       });
     } catch (error) {
@@ -3534,12 +3529,11 @@ class AuthController {
 
       const organizationId = user.organization_id;
 
-      const invitations = await InvitationModel.getOrganizationInvitations(
-        organizationId,
-        includePending === 'true',
-        includeUsed === 'true',
-        includeExpired === 'true'
-      );
+      const invitations = await InvitationModel.findByOrganization(organizationId, {
+        includePending: includePending === 'true',
+        includeUsed: includeUsed === 'true',
+        includeExpired: includeExpired === 'true',
+      });
 
       return res.json({
         success: true,
@@ -3672,23 +3666,31 @@ class AuthController {
 
       const organizationId = user.organization_id;
 
-      // Resend invitation
-      const invitation = await InvitationModel.resendInvitation(
-        parseInt(id),
-        organizationId,
-        parseInt(expirationDays)
-      );
+      // Find the invitation (scoped to the admin's organization; super-admins may resend any)
+      const where = { id: parseInt(id) };
+      if (currentUser.role !== 'super-admin') {
+        where.organization_id = organizationId;
+      }
+      const invitation = await InvitationModel.withScope('all').findOne({ where });
 
-      if (!invitation) {
+      if (!invitation || invitation.used_at) {
         return res.status(404).json({
           success: false,
           message: 'Invitation not found or already used',
         });
       }
 
+      // Issue a fresh invite code and expiry
+      await invitation.resend(parseInt(expirationDays));
+
+      // Reload with organization + inviter details for the email and response
+      const detailed = await InvitationModel.withScope(['all', 'withDetails']).findByPk(
+        invitation.id
+      );
+
       // Send invitation email
       try {
-        const emailResult = await MailController.sendInvitationEmail(invitation);
+        const emailResult = await MailController.sendInvitationEmail(detailed);
         if (!emailResult.success) {
           log.mail.error('Failed to send invitation email', { error: emailResult.error });
         }
@@ -3701,11 +3703,11 @@ class AuthController {
         success: true,
         message: 'Invitation resent successfully',
         invitation: {
-          id: invitation.id,
-          email: invitation.email,
-          organizationName: invitation.organization_name,
-          expiresAt: invitation.expires_at,
-          invitedBy: invitation.invited_by_username,
+          id: detailed.id,
+          email: detailed.email,
+          organizationName: detailed.organization?.name || null,
+          expiresAt: detailed.expires_at,
+          invitedBy: detailed.invitedBy?.username || null,
         },
       });
     } catch (error) {
@@ -3797,14 +3799,21 @@ class AuthController {
 
       const organizationId = user.organization_id;
 
-      const success = await InvitationModel.revokeInvitation(parseInt(id), organizationId);
+      // Find the invitation (scoped to the admin's organization; super-admins may revoke any)
+      const where = { id: parseInt(id) };
+      if (currentUser.role !== 'super-admin') {
+        where.organization_id = organizationId;
+      }
+      const invitation = await InvitationModel.withScope('all').findOne({ where });
 
-      if (!success) {
+      if (!invitation || invitation.used_at) {
         return res.status(404).json({
           success: false,
           message: 'Invitation not found or already used',
         });
       }
+
+      await invitation.revoke();
 
       return res.json({
         success: true,
@@ -4018,8 +4027,8 @@ class AuthController {
         });
       }
 
-      // Verify password
-      const user = await UserModel.findByPk(userId);
+      // Verify password (defaultScope hides password_hash, so load it explicitly)
+      const user = await UserModel.withScope('withPassword').findByPk(userId);
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -4028,7 +4037,8 @@ class AuthController {
       }
 
       // Authenticate with current password
-      const isValidPassword = await UserModel.verifyPassword(userId, password);
+      const bcrypt = (await import('bcrypt')).default;
+      const isValidPassword = await bcrypt.compare(password, user.password_hash);
       if (!isValidPassword) {
         return res.status(400).json({
           success: false,
@@ -4057,22 +4067,29 @@ class AuthController {
       }
 
       // Delete the user
-      const success = await UserModel.deleteUser(userId);
+      const deletedCount = await UserModel.destroy({ where: { id: userId } });
 
-      if (!success) {
+      if (!deletedCount) {
         return res.status(500).json({
           success: false,
           message: 'Failed to delete account',
         });
       }
 
-      // Delete organization if user was the last member
+      // Delete organization if user was the last member.
+      // Use an instance destroy (not a bulk destroy) so the model's beforeDestroy hook
+      // fires and cascades to the organization's remaining users and invitations.
       if (shouldDeleteOrganization) {
         try {
-          await OrganizationModel.deleteOrganization(user.organization_id);
-          log.auth.info('Organization deleted as user was the last member', {
-            organizationId: user.organization_id,
-          });
+          const organization = await OrganizationModel.withScope('withInactive').findByPk(
+            user.organization_id
+          );
+          if (organization) {
+            await organization.destroy();
+            log.auth.info('Organization deleted as user was the last member', {
+              organizationId: user.organization_id,
+            });
+          }
         } catch (orgError) {
           log.auth.error('Error deleting organization after user deletion', {
             error: orgError.message,

@@ -150,8 +150,10 @@ const Footer = () => {
       <div className="level-item is-justify-content-flex-start">
         <div className="pl-1">
           <a
-            href="https://zoneweaver.startcloud.com/"
+            href="/docs"
             className="has-text-primary"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Zoneweaver
           </a>{" "}

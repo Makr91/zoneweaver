@@ -2,21 +2,19 @@
 title: Support
 layout: default
 nav_order: 9
-permalink: /docs/support/
+permalink: /support/
 ---
 
 # Support
-
 {: .no_toc }
 
 Getting help with Zoneweaver frontend.
 
 ## Table of contents
-
 {: .no_toc .text-delta }
 
 1. TOC
-   {:toc}
+{:toc}
 
 ---
 

@@ -3,7 +3,7 @@
  * @description Handles database schema migrations and updates for authentication features
  */
 
-import { Sequelize } from 'sequelize';
+import { DataTypes } from '@sequelize/core';
 import { log } from '../utils/Logger.js';
 
 /**
@@ -13,7 +13,7 @@ import { log } from '../utils/Logger.js';
 class DatabaseMigrations {
   constructor(sequelize) {
     this.sequelize = sequelize;
-    this.queryInterface = sequelize.getQueryInterface();
+    this.queryInterface = sequelize.queryInterface;
   }
 
   /**
@@ -24,7 +24,7 @@ class DatabaseMigrations {
    */
   async columnExists(tableName, columnName) {
     try {
-      if (this.sequelize.getDialect() === 'sqlite') {
+      if (this.sequelize.dialect.name.startsWith('sqlite')) {
         const [results] = await this.sequelize.query(`PRAGMA table_info(${tableName})`);
         return results.some(col => col.name === columnName);
       }
@@ -52,7 +52,7 @@ class DatabaseMigrations {
    */
   async tableExists(tableName) {
     try {
-      if (this.sequelize.getDialect() === 'sqlite') {
+      if (this.sequelize.dialect.name.startsWith('sqlite')) {
         const [results] = await this.sequelize.query(`
                     SELECT name FROM sqlite_master 
                     WHERE type='table' AND name='${tableName}'
@@ -170,26 +170,23 @@ class DatabaseMigrations {
       {
         name: 'auth_provider',
         definition: {
-          type: Sequelize.STRING(50),
+          type: DataTypes.STRING(50),
           allowNull: true,
           defaultValue: 'local',
-          comment: 'Authentication provider: local, ldap, oidc, etc.',
         },
       },
       {
         name: 'external_id',
         definition: {
-          type: Sequelize.STRING(255),
+          type: DataTypes.STRING(255),
           allowNull: true,
-          comment: 'External provider user ID',
         },
       },
       {
         name: 'linked_at',
         definition: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: true,
-          comment: 'Timestamp when external account was linked',
         },
       },
     ];
@@ -235,9 +232,8 @@ class DatabaseMigrations {
 
     // SQLite doesn't allow adding UNIQUE columns directly, so add column first
     const columnDefinition = {
-      type: Sequelize.STRING(20),
+      type: DataTypes.STRING(20),
       allowNull: true,
-      comment: 'Organization code for domain mapping (hexcode format)',
     };
 
     const success = await this.addColumnIfNotExists(
@@ -285,7 +281,7 @@ class DatabaseMigrations {
    */
   async indexExists(tableName, indexName) {
     try {
-      if (this.sequelize.getDialect() === 'sqlite') {
+      if (this.sequelize.dialect.name.startsWith('sqlite')) {
         const [results] = await this.sequelize.query(`
                     SELECT name FROM sqlite_master 
                     WHERE type='index' AND name='${indexName}' AND tbl_name='${tableName}'
@@ -320,57 +316,50 @@ class DatabaseMigrations {
     const tableName = 'federated_credentials';
     const tableDefinition = {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        comment: 'Unique credential identifier',
       },
       user_id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'users',
+          table: 'users',
           key: 'id',
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
-        comment: 'Reference to users table',
       },
       provider: {
-        type: Sequelize.STRING(50),
+        type: DataTypes.STRING(50),
         allowNull: false,
-        comment: 'Authentication provider: ldap, oidc, oauth2, etc.',
       },
       subject: {
-        type: Sequelize.STRING(255),
+        type: DataTypes.STRING(255),
         allowNull: false,
-        comment: 'Provider-specific user identifier (sub claim)',
       },
       external_id: {
-        type: Sequelize.STRING(255),
+        type: DataTypes.STRING(255),
         allowNull: true,
-        comment: 'Additional provider user ID if different from subject',
       },
       external_email: {
-        type: Sequelize.STRING(255),
+        type: DataTypes.STRING(255),
         allowNull: true,
-        comment: 'Email from external provider',
       },
       linked_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
-        comment: 'When this credential was linked to the user',
+        defaultValue: DataTypes.NOW,
       },
       created_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: DataTypes.NOW,
       },
       updated_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        defaultValue: DataTypes.NOW,
       },
     };
 
@@ -426,17 +415,15 @@ class DatabaseMigrations {
       log.database.debug('Checking table for timestamp columns', { tableName });
 
       const createdAtSuccess = await this.addColumnIfNotExists(tableName, 'created_at', {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: true,
-        defaultValue: Sequelize.NOW,
-        comment: 'Record creation timestamp',
+        defaultValue: DataTypes.NOW,
       });
 
       const updatedAtSuccess = await this.addColumnIfNotExists(tableName, 'updated_at', {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: true,
-        defaultValue: Sequelize.NOW,
-        comment: 'Record last update timestamp',
+        defaultValue: DataTypes.NOW,
       });
 
       if (createdAtSuccess || updatedAtSuccess) {
@@ -495,18 +482,16 @@ class DatabaseMigrations {
       {
         name: 'allow_insecure',
         definition: {
-          type: Sequelize.BOOLEAN,
+          type: DataTypes.BOOLEAN,
           allowNull: false,
           defaultValue: false,
-          comment: 'Allow insecure TLS connections to this server',
         },
       },
       {
         name: 'created_by',
         definition: {
-          type: Sequelize.INTEGER,
+          type: DataTypes.INTEGER,
           allowNull: true,
-          comment: 'User ID who created this server entry',
         },
       },
     ];

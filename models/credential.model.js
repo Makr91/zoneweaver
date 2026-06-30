@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes } from '@sequelize/core';
 
 /**
  * Credential Model
@@ -12,24 +12,21 @@ export default function (sequelize) {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        comment: 'Unique credential identifier',
       },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'users',
+          table: 'users',
           key: 'id',
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
-        comment: 'Reference to users table',
-        field: 'user_id',
+        columnName: 'user_id',
       },
       provider: {
         type: DataTypes.STRING(50),
         allowNull: false,
-        comment: 'Authentication provider: ldap, oidc, oauth2, etc.',
         validate: {
           isIn: {
             args: [['ldap', 'oidc', 'oauth2', 'saml']],
@@ -40,19 +37,16 @@ export default function (sequelize) {
       subject: {
         type: DataTypes.STRING(255),
         allowNull: false,
-        comment: 'Provider-specific user identifier (sub claim)',
       },
       external_id: {
         type: DataTypes.STRING(255),
         allowNull: true,
-        comment: 'Additional provider user ID if different from subject',
-        field: 'external_id',
+        columnName: 'external_id',
       },
       external_email: {
         type: DataTypes.STRING(255),
         allowNull: true,
-        comment: 'Email from external provider',
-        field: 'external_email',
+        columnName: 'external_email',
         validate: {
           isEmail: {
             msg: 'External email must be a valid email address',
@@ -63,20 +57,7 @@ export default function (sequelize) {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
-        comment: 'When this credential was linked to the user',
-        field: 'linked_at',
-      },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-        field: 'created_at',
-      },
-      updated_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-        field: 'updated_at',
+        columnName: 'linked_at',
       },
     },
     {
@@ -104,9 +85,16 @@ export default function (sequelize) {
           name: 'idx_federated_credentials_external_email',
         },
       ],
-      comment: 'Stores external authentication provider credentials linked to users',
     }
   );
+
+  // Associations
+  Credential.associate = function (models) {
+    Credential.belongsTo(models.user, {
+      foreignKey: { name: 'user_id', onDelete: 'CASCADE' },
+      as: 'user',
+    });
+  };
 
   /**
    * Class methods
@@ -146,8 +134,7 @@ export default function (sequelize) {
       where: { external_email: email },
       include: [
         {
-          model: sequelize.models.User,
-          as: 'user',
+          association: 'user',
         },
       ],
     });

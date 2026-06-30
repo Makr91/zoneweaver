@@ -1,8 +1,8 @@
 # Basic Jekyll settings
 title: Zoneweaver Documentation
 description: Documentation for Zoneweaver - Zone Hypervisor Management Frontend
-baseurl: '' # Custom domain serves from root
-url: 'http://zoneweaver.startcloud.com' # Custom domain
+baseurl: '/docs' # Served in-app at /docs (built into web/dist/docs)
+url: '' # Served in-app under baseurl; no fixed public domain
 repository: Makr91/zoneweaver # for github-metadata
 
 permalink: pretty
@@ -60,6 +60,27 @@ exclude:
   - SETUP.md
   - CHANGELOG.md
   - index.js
+  # App runtime/source dirs — not documentation; keep Jekyll out of them
+  - web/
+  - logs/
+  - auth/
+  - utils/
+  - .github/
+  - database/
+  - '*.log'
+  - '*.db'
+  # Root-level project files that are NOT docs (were leaking into _site/).
+  # NOTE: these are still {% include %}-d into docs/*.md pages — excluding a file
+  # only stops it being published standalone; the include still resolves.
+  - config.yaml
+  - AUTHORS.md
+  - ACKNOWLEDGMENTS.md
+  - CONTRIBUTING.md
+  - LICENSE.md
+  - SECURITY.md
+  - SUPPORT.md
+  - nodemon.json
+  - release-please-config.json
 
 # Theme settings
 theme: just-the-docs

@@ -2,21 +2,19 @@
 title: Changelog
 layout: default
 nav_order: 6
-permalink: /docs/changelog/
+permalink: /changelog/
 ---
 
 # Changelog
-
 {: .no_toc }
 
 Release history and changes for Zoneweaver frontend.
 
 ## Table of contents
-
 {: .no_toc .text-delta }
 
 1. TOC
-   {:toc}
+{:toc}
 
 ---
 

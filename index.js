@@ -5,7 +5,7 @@ import fs from 'fs';
 import { setTimeout as delay } from 'timers/promises';
 import cors from 'cors';
 import session from 'express-session';
-import SequelizeStore from 'connect-session-sequelize';
+import SequelizeStore from './utils/SequelizeSessionStore.js';
 import rateLimit from 'express-rate-limit';
 import router from './routes/index.js';
 import db from './models/index.js';

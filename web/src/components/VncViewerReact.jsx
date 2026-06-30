@@ -15,6 +15,7 @@ import {
   performSendKey,
   performCtrlAltDel,
 } from "../utils/vncUtils";
+import { buildWsUrl } from "../utils/websocket";
 
 /**
  * Error Display Component
@@ -169,10 +170,11 @@ const VncViewerReact = forwardRef(
     const [error, setError] = useState("");
 
     // Build WebSocket URL using existing proxy path (maintains all security/auth)
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl =
       serverHostname && zoneName
-        ? `${wsProtocol}//${window.location.host}/api/servers/${encodeURIComponent(serverHostname)}:${serverPort}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`
+        ? buildWsUrl(
+            `/api/servers/${encodeURIComponent(serverHostname)}:${serverPort}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`
+          )
         : "";
 
     const handleRefresh = useCallback(() => {

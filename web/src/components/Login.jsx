@@ -300,8 +300,10 @@ const Login = () => {
                 </div>
                 <div className="has-text-centered mt-3">
                   <a
-                    href="https://zoneweaver.startcloud.com"
+                    href="/docs"
                     className="has-text-grey"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Documentation
                   </a>

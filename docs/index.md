@@ -14,7 +14,7 @@ React-based web frontend for Zoneweaver zone hypervisor management. Provides use
 {: .fs-6 .fw-300 }
 
 [Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View API Reference](docs/api/){: .btn .fs-5 .mb-4 .mb-md-0 }
+[View API Reference](api/){: .btn .fs-5 .mb-4 .mb-md-0 }
 [View on GitHub](https://github.com/Makr91/zoneweaver){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
@@ -55,11 +55,11 @@ graph TD
 
 The Zoneweaver frontend provides comprehensive documentation:
 
-- **[API Reference](docs/api/)** - Frontend API for user/organization management
-- **[Getting Started Guide](docs/guides/getting-started/)** - Step-by-step setup instructions
-- **[Installation Guide](docs/guides/installation/)** - Installation and deployment
-- **[User Guide](docs/user-guide/)** - Web interface usage and features
-- **[Backend Integration](docs/guides/backend-integration/)** - Connecting to Zoneweaver API API
+- **[API Reference](api/)** - Frontend API for user/organization management
+- **[Getting Started Guide](guides/getting-started/)** - Step-by-step setup instructions
+- **[Installation Guide](guides/installation/)** - Installation and deployment
+- **[User Guide](user-guide/)** - Web interface usage and features
+- **[Backend Integration](guides/backend-integration/)** - Connecting to Zoneweaver API API
 
 ---
 

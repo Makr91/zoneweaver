@@ -24,13 +24,14 @@
           .then(function (data) {
             releaseDiv.innerHTML =
               '<p><strong>Version v' + data.version + '</strong> - Current Build</p>';
-            var p5pLink = document.querySelector('a[href*="zoneweaver.p5p"]');
-            if (p5pLink) {
-              p5pLink.href =
-                'https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver-' +
-                data.version +
-                '.p5p';
-            }
+            // OmniOS .p5p download link — PARKED (re-enable alongside OmniOS builds)
+            // var p5pLink = document.querySelector('a[href*="zoneweaver.p5p"]');
+            // if (p5pLink) {
+            //   p5pLink.href =
+            //     'https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver-' +
+            //     data.version +
+            //     '.p5p';
+            // }
             var debLink = document.querySelector('a[href*="zoneweaver.deb"]');
             if (debLink) {
               debLink.href =

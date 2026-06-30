@@ -3,21 +3,19 @@ title: API Reference
 layout: default
 nav_order: 2
 has_children: false
-permalink: /docs/api/
+permalink: /api/
 ---
 
 # API Reference
-
 {: .no_toc }
 
 The Zoneweaver Frontend API provides comprehensive RESTful endpoints for user management, organization control, and server configuration. This API handles authentication, authorization, and configuration management for the Zoneweaver web interface.
 
 ## Table of contents
-
 {: .no_toc .text-delta }
 
 1. TOC
-   {:toc}
+{:toc}
 
 ---
 

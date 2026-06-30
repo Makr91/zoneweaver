@@ -131,9 +131,7 @@ const FilePreviewPanel = ({ file, userRole }) => (
       </div>
     </div>
 
-    <div className="preview-content">
-      {getPreviewContent(file, userRole)}
-    </div>
+    <div className="preview-content">{getPreviewContent(file, userRole)}</div>
 
     {/* Action buttons for all files */}
     {canManageHosts(userRole) && (
@@ -143,10 +141,9 @@ const FilePreviewPanel = ({ file, userRole }) => (
             className="button is-link is-small is-outlined"
             onClick={(e) => {
               e.stopPropagation();
-              const propsEvent = new CustomEvent(
-                "zoneweaver-show-properties",
-                { detail: file }
-              );
+              const propsEvent = new CustomEvent("zoneweaver-show-properties", {
+                detail: file,
+              });
               document.dispatchEvent(propsEvent);
             }}
           >

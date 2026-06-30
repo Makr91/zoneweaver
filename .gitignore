@@ -46,3 +46,17 @@ BULMADOCS.md
 docs/passport-integration-plan.md
 modal_close_button_scratchpad.md
 modal_conversion_scratchpad.md
+.claude/
+
+# Jekyll docs build output + Ruby gems (docs are built into web/dist/docs in CI)
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+vendor/
+.bundle/
+
+# Runtime artifacts + local dev config + SQLite DB (created when the app runs — never commit)
+logs/
+/config.yaml
+/data/

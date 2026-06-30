@@ -268,9 +268,7 @@ const useExtendedHandlers = ({
       }
 
       try {
-        const downloadableFiles = filesToDownload.filter(
-          (f) => !f.isDirectory
-        );
+        const downloadableFiles = filesToDownload.filter((f) => !f.isDirectory);
         await Promise.all(
           downloadableFiles.map(async (dlFile) => {
             const filePath = encodeURIComponent(dlFile.path);
@@ -299,9 +297,7 @@ const useExtendedHandlers = ({
                 );
               }
             } catch (fetchErr) {
-              setError(
-                `Error downloading ${dlFile.name}: ${fetchErr.message}`
-              );
+              setError(`Error downloading ${dlFile.name}: ${fetchErr.message}`);
             }
           })
         );

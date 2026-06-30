@@ -78,19 +78,22 @@ class MailController {
 
   /**
    * Send organization invitation email
-   * @param {Object} invitation - Invitation object
+   * @param {Object} invitation - Invitation model instance (loaded with the `withDetails` scope)
    * @param {string} invitation.email - Recipient email
    * @param {string} invitation.invite_code - Invitation code
-   * @param {string} invitation.organization_name - Organization name
    * @param {string} invitation.expires_at - Expiration date
-   * @param {string} invitation.invited_by_username - Inviter username
+   * @param {Object} [invitation.organization] - Associated organization (provides `.name`)
+   * @param {Object} [invitation.invitedBy] - Associated inviter user (provides `.username`)
    * @returns {Promise<Object>} Email send result
    */
   static async sendInvitationEmail(invitation) {
     try {
+      const organizationName = invitation.organization?.name || 'your organization';
+      const inviterName = invitation.invitedBy?.username || 'An administrator';
+
       log.mail.info('Attempting to send invitation email', {
         recipient: invitation.email,
-        organization: invitation.organization_name,
+        organization: organizationName,
       });
 
       const mailConfig = this.getConfig();
@@ -112,7 +115,7 @@ class MailController {
       const mailOptions = {
         from: mailConfig.smtp_from.value,
         to: invitation.email,
-        subject: `Zoneweaver Organization Invitation - ${invitation.organization_name}`,
+        subject: `Zoneweaver Organization Invitation - ${organizationName}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -138,12 +141,12 @@ class MailController {
               </div>
               <div class="content">
                 <h2>Hello!</h2>
-                <p><strong>${invitation.invited_by_username}</strong> has invited you to join the <strong>${invitation.organization_name}</strong> organization on Zoneweaver.</p>
+                <p><strong>${inviterName}</strong> has invited you to join the <strong>${organizationName}</strong> organization on Zoneweaver.</p>
                 
                 <div class="org-info">
                   <h3>📋 Organization Details</h3>
-                  <p><strong>Organization:</strong> ${invitation.organization_name}</p>
-                  <p><strong>Invited by:</strong> ${invitation.invited_by_username}</p>
+                  <p><strong>Organization:</strong> ${organizationName}</p>
+                  <p><strong>Invited by:</strong> ${inviterName}</p>
                   <p><strong>Invitation expires:</strong> ${expirationDate}</p>
                 </div>
 
@@ -168,7 +171,7 @@ class MailController {
 
                 <div class="footer">
                   <p><strong>Security Note:</strong> This invitation is unique to your email address and will expire on ${expirationDate}. If you didn't expect this invitation, you can safely ignore this email.</p>
-                  <p>If you have any questions, please contact ${invitation.invited_by_username} or your system administrator.</p>
+                  <p>If you have any questions, please contact ${inviterName} or your system administrator.</p>
                   <p>This email was sent by Zoneweaver. For more information, visit our documentation.</p>
                 </div>
               </div>
@@ -181,10 +184,10 @@ Zoneweaver Organization Invitation
 
 Hello!
 
-${invitation.invited_by_username} has invited you to join the ${invitation.organization_name} organization on Zoneweaver.
+${inviterName} has invited you to join the ${organizationName} organization on Zoneweaver.
 
-Organization: ${invitation.organization_name}
-Invited by: ${invitation.invited_by_username}
+Organization: ${organizationName}
+Invited by: ${inviterName}
 Invitation expires: ${expirationDate}
 
 To accept this invitation and create your account, please visit:
@@ -199,7 +202,7 @@ What happens next?
 
 Security Note: This invitation is unique to your email address and will expire on ${expirationDate}. If you didn't expect this invitation, you can safely ignore this email.
 
-If you have any questions, please contact ${invitation.invited_by_username} or your system administrator.
+If you have any questions, please contact ${inviterName} or your system administrator.
         `,
       };
 

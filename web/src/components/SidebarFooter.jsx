@@ -76,14 +76,25 @@ const SidebarFooter = () => {
             <div className="dropdown-content">
               <a
                 className="dropdown-item is-flex is-justify-content-flex-start"
-                href="https://zoneweaver.startcloud.com"
+                href="/docs"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <span className="icon mr-2">
-                  <i className="fas fa-info-circle" />
+                  <i className="fas fa-book" />
                 </span>
-                <span>Help and Docs</span>
+                <span>Documentation</span>
+              </a>
+              <a
+                className="dropdown-item is-flex is-justify-content-flex-start"
+                href="/api-docs"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="icon mr-2">
+                  <i className="fas fa-code" />
+                </span>
+                <span>API Reference</span>
               </a>
               <button
                 onClick={toggleTheme}
@@ -151,14 +162,25 @@ const SidebarFooter = () => {
             <div className="dropdown-content">
               <a
                 className="dropdown-item is-flex is-justify-content-flex-start"
-                href="https://zoneweaver.startcloud.com"
+                href="/docs"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <span className="icon mr-2">
-                  <i className="fas fa-info-circle" />
+                  <i className="fas fa-book" />
                 </span>
-                <span>Help and Docs</span>
+                <span>Documentation</span>
+              </a>
+              <a
+                className="dropdown-item is-flex is-justify-content-flex-start"
+                href="/api-docs"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="icon mr-2">
+                  <i className="fas fa-code" />
+                </span>
+                <span>API Reference</span>
               </a>
               <button
                 onClick={toggleTheme}

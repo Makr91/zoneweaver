@@ -6,6 +6,9 @@ import { register } from "register-service-worker";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "./scss/styles.scss";
 import "./sass/zoneweaver.scss";
 import "@fortawesome/fontawesome-free/css/fontawesome.css";
 import "@fortawesome/fontawesome-free/css/brands.css";

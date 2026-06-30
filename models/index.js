@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@sequelize/core';
+import { SqliteDialect } from '@sequelize/sqlite3';
+import { PostgresDialect } from '@sequelize/postgres';
+import { MySqlDialect } from '@sequelize/mysql';
+import { MariaDbDialect } from '@sequelize/mariadb';
 import { loadConfig } from '../utils/config.js';
 import { createMigrationHelper } from '../config/DatabaseMigrations.js';
 import { log, createTimer } from '../utils/Logger.js';
@@ -35,6 +39,21 @@ const dbConfig = {
 const dialect = dbConfig.dialect?.value || dbConfig.dialect || 'sqlite';
 const loggingEnabled = dbConfig.logging?.value || dbConfig.logging || false;
 
+// Sequelize 7 requires the dialect CLASS (not the v6 string). Map the
+// config dialect string to its corresponding @sequelize dialect class.
+const dialectClasses = {
+  sqlite: SqliteDialect,
+  postgresql: PostgresDialect,
+  mysql: MySqlDialect,
+  mariadb: MariaDbDialect,
+};
+
+const dialectClass = dialectClasses[dialect];
+if (!dialectClass) {
+  log.database.error('Unsupported database dialect', { dialect });
+  throw new Error(`Unsupported database dialect: ${dialect}`);
+}
+
 // Custom logging function for Sequelize
 const sequelizeLogging = loggingEnabled
   ? (msg, timing) => {
@@ -53,7 +72,7 @@ const sequelizeLogging = loggingEnabled
 
 const sequelizeConfig = {
   logging: sequelizeLogging,
-  dialect,
+  dialect: dialectClass,
   benchmark: true, // Enable timing for all queries
 };
 
@@ -87,15 +106,17 @@ if (dialect === 'sqlite') {
   }
 }
 
-const databaseName =
-  dialect === 'sqlite'
-    ? null
-    : dbConfig.database_name?.value || dbConfig.database_name || 'zoneweaver';
-const username =
-  dialect === 'sqlite' ? null : dbConfig.user?.value || dbConfig.user || 'zoneweaver';
-const password = dialect === 'sqlite' ? null : dbConfig.password?.value || dbConfig.password || '';
+// Sequelize 7 takes a single config object. Credentials/database live as
+// `user`/`password`/`database` keys (note v7 uses `user`, not `username`).
+// SQLite needs none of these (it uses `storage`, set above).
+if (dialect !== 'sqlite') {
+  sequelizeConfig.database =
+    dbConfig.database_name?.value || dbConfig.database_name || 'zoneweaver';
+  sequelizeConfig.user = dbConfig.user?.value || dbConfig.user || 'zoneweaver';
+  sequelizeConfig.password = dbConfig.password?.value || dbConfig.password || '';
+}
 
-const sequelize = new Sequelize(databaseName, username, password, sequelizeConfig);
+const sequelize = new Sequelize(sequelizeConfig);
 
 const db = {};
 
@@ -133,7 +154,7 @@ const loadedModels = await Promise.all(modelPromises);
 loadedModels.forEach(result => {
   if (result) {
     const { modelName, modelDefiner } = result;
-    db[modelName] = modelDefiner(sequelize, Sequelize);
+    db[modelName] = modelDefiner(sequelize);
   }
 });
 
@@ -151,7 +172,7 @@ try {
   const connectionTime = connectionTimer.end();
 
   log.database.info('Database connection established successfully', {
-    dialect: sequelizeConfig.dialect,
+    dialect,
     duration_ms: connectionTime,
   });
 
@@ -167,7 +188,7 @@ try {
 } catch (error) {
   log.database.error('Unable to connect to database', {
     error: error.message,
-    dialect: sequelizeConfig.dialect,
+    dialect,
   });
   throw error;
 }

@@ -1,26 +1,27 @@
 import crypto from 'crypto';
+import { DataTypes, Op } from '@sequelize/core';
 import { log } from '../utils/Logger.js';
 
-export default (sequelize, Sequelize) => {
+export default sequelize => {
   const Invitation = sequelize.define(
     'invitations',
     {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
       organization_id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'organization_id',
+        columnName: 'organization_id',
         references: {
-          model: 'organizations',
+          table: 'organizations',
           key: 'id',
         },
       },
       email: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         validate: {
           isEmail: true,
@@ -28,29 +29,29 @@ export default (sequelize, Sequelize) => {
         },
       },
       invite_code: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        field: 'invite_code',
+        columnName: 'invite_code',
       },
       invited_by_user_id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'invited_by_user_id',
+        columnName: 'invited_by_user_id',
         references: {
-          model: 'users',
+          table: 'users',
           key: 'id',
         },
       },
       expires_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        field: 'expires_at',
+        columnName: 'expires_at',
       },
       used_at: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: true,
-        field: 'used_at',
+        columnName: 'used_at',
       },
     },
     {
@@ -62,10 +63,6 @@ export default (sequelize, Sequelize) => {
 
       // Indexes
       indexes: [
-        {
-          unique: true,
-          fields: ['invite_code'],
-        },
         {
           fields: ['organization_id'],
         },
@@ -89,7 +86,7 @@ export default (sequelize, Sequelize) => {
         where: {
           used_at: null,
           expires_at: {
-            [Sequelize.Op.gt]: new Date(),
+            [Op.gt]: new Date(),
           },
         },
       },
@@ -105,7 +102,7 @@ export default (sequelize, Sequelize) => {
           where: {
             used_at: null,
             expires_at: {
-              [Sequelize.Op.gt]: new Date(),
+              [Op.gt]: new Date(),
             },
           },
         },
@@ -113,7 +110,7 @@ export default (sequelize, Sequelize) => {
         used: {
           where: {
             used_at: {
-              [Sequelize.Op.ne]: null,
+              [Op.ne]: null,
             },
           },
         },
@@ -122,7 +119,7 @@ export default (sequelize, Sequelize) => {
           where: {
             used_at: null,
             expires_at: {
-              [Sequelize.Op.lte]: new Date(),
+              [Op.lte]: new Date(),
             },
           },
         },
@@ -130,13 +127,11 @@ export default (sequelize, Sequelize) => {
         withDetails: {
           include: [
             {
-              model: sequelize.models.organization,
-              as: 'organization',
+              association: 'organization',
               attributes: ['id', 'name', 'description'],
             },
             {
-              model: sequelize.models.user,
-              as: 'invitedBy',
+              association: 'invitedBy',
               attributes: ['id', 'username', 'email'],
             },
           ],
@@ -160,16 +155,14 @@ export default (sequelize, Sequelize) => {
   Invitation.associate = function (models) {
     // Invitation belongs to Organization
     Invitation.belongsTo(models.organization, {
-      foreignKey: 'organization_id',
+      foreignKey: { name: 'organization_id', onDelete: 'CASCADE' },
       as: 'organization',
-      onDelete: 'CASCADE',
     });
 
     // Invitation belongs to User (who sent it)
     Invitation.belongsTo(models.user, {
-      foreignKey: 'invited_by_user_id',
+      foreignKey: { name: 'invited_by_user_id', onDelete: 'CASCADE' },
       as: 'invitedBy',
-      onDelete: 'SET NULL',
     });
   };
 
@@ -180,11 +173,11 @@ export default (sequelize, Sequelize) => {
     invitedByUserId,
     expirationDays = 7,
   }) {
-    const transaction = await sequelize.transaction();
+    const transaction = await sequelize.startUnmanagedTransaction();
 
     try {
       // Check if user already exists with this email
-      const existingUser = await sequelize.models.user.scope('active').findOne({
+      const existingUser = await sequelize.models.user.withScope('active').findOne({
         where: { email },
       });
 
@@ -197,7 +190,7 @@ export default (sequelize, Sequelize) => {
       }
 
       // Check for existing pending invitation
-      const existingInvitation = await this.scope('pending').findOne({
+      const existingInvitation = await this.withScope('pending').findOne({
         where: {
           organization_id: organizationId,
           email,
@@ -230,7 +223,7 @@ export default (sequelize, Sequelize) => {
       await transaction.commit();
 
       // Return invitation with details
-      return await this.scope('withDetails').findByPk(invitation.id);
+      return await this.withScope('withDetails').findByPk(invitation.id);
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -238,7 +231,7 @@ export default (sequelize, Sequelize) => {
   };
 
   Invitation.findByCode = function (inviteCode) {
-    return this.scope(['all', 'withDetails']).findOne({
+    return this.withScope(['all', 'withDetails']).findOne({
       where: { invite_code: inviteCode },
     });
   };
@@ -293,68 +286,57 @@ export default (sequelize, Sequelize) => {
     if (includePending) {
       statusFilters.push({
         used_at: null,
-        expires_at: { [Sequelize.Op.gt]: new Date() },
+        expires_at: { [Op.gt]: new Date() },
       });
     }
 
     if (includeUsed) {
       statusFilters.push({
-        used_at: { [Sequelize.Op.ne]: null },
+        used_at: { [Op.ne]: null },
       });
     }
 
     if (includeExpired) {
       statusFilters.push({
         used_at: null,
-        expires_at: { [Sequelize.Op.lte]: new Date() },
+        expires_at: { [Op.lte]: new Date() },
       });
     }
 
     if (statusFilters.length > 0) {
-      whereConditions[Sequelize.Op.or] = statusFilters;
+      whereConditions[Op.or] = statusFilters;
     }
 
-    return this.scope(scopes).findAll({
+    return this.withScope(scopes).findAll({
       where: whereConditions,
       order: [['created_at', 'DESC']],
     });
   };
 
   Invitation.getStats = async function (organizationId) {
-    const result = await this.scope('all').findOne({
-      where: { organization_id: organizationId },
-      attributes: [
-        [sequelize.fn('COUNT', sequelize.col('id')), 'total_invitations'],
-        [
-          sequelize.fn('COUNT', sequelize.literal('CASE WHEN used_at IS NOT NULL THEN 1 END')),
-          'used_invitations',
-        ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal('CASE WHEN used_at IS NULL AND expires_at > NOW() THEN 1 END')
-          ),
-          'pending_invitations',
-        ],
-        [
-          sequelize.fn(
-            'COUNT',
-            sequelize.literal('CASE WHEN used_at IS NULL AND expires_at <= NOW() THEN 1 END')
-          ),
-          'expired_invitations',
-        ],
-      ],
-      raw: true,
-    });
+    const baseWhere = { organization_id: organizationId };
+    const now = new Date();
 
-    return (
-      result || {
-        total_invitations: 0,
-        used_invitations: 0,
-        pending_invitations: 0,
-        expired_invitations: 0,
-      }
-    );
+    const [totalInvitations, usedInvitations, pendingInvitations, expiredInvitations] =
+      await Promise.all([
+        this.withScope('all').count({ where: baseWhere }),
+        this.withScope('all').count({
+          where: { ...baseWhere, used_at: { [Op.ne]: null } },
+        }),
+        this.withScope('all').count({
+          where: { ...baseWhere, used_at: null, expires_at: { [Op.gt]: now } },
+        }),
+        this.withScope('all').count({
+          where: { ...baseWhere, used_at: null, expires_at: { [Op.lte]: now } },
+        }),
+      ]);
+
+    return {
+      total_invitations: totalInvitations,
+      used_invitations: usedInvitations,
+      pending_invitations: pendingInvitations,
+      expired_invitations: expiredInvitations,
+    };
   };
 
   Invitation.cleanupExpired = async function (olderThanDays = 30) {
@@ -363,7 +345,7 @@ export default (sequelize, Sequelize) => {
 
     const result = await this.destroy({
       where: {
-        expires_at: { [Sequelize.Op.lt]: cutoffDate },
+        expires_at: { [Op.lt]: cutoffDate },
         used_at: null,
       },
     });

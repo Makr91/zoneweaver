@@ -2,11 +2,10 @@
 title: Releases
 layout: default
 nav_order: 5
-permalink: /docs/releases/
+permalink: /releases/
 ---
 
 # Releases
-
 {: .no_toc }
 
 Download the latest version of Zoneweaver frontend.
@@ -24,8 +23,11 @@ Download the latest version of Zoneweaver frontend.
 | Package Type       | Platform | Download                                                                                                               |
 | :----------------- | :------- | :--------------------------------------------------------------------------------------------------------------------- |
 | **Debian Package** | x86_64   | [📦 Download .deb](https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver.deb){: .btn .btn-primary } |
-| **OmniOS Package** | x86_64   | [📦 Download .p5p](https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver.p5p){: .btn .btn-primary } |
 | **Source Code**    | All      | [📁 Download Source](https://github.com/Makr91/zoneweaver/archive/refs/heads/main.tar.gz){: .btn .btn-outline }        |
+
+<!-- OmniOS .p5p package — PARKED; re-add this row when OmniOS builds resume:
+| **OmniOS Package** | x86_64   | [📦 Download .p5p](https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver.p5p){: .btn .btn-primary } |
+-->
 
 ---
 
