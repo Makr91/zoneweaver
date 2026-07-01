@@ -182,7 +182,7 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       <div className="alert alert-info">
-        <div className="content">
+        <div>
           <p>
             <strong>Important:</strong>
           </p>

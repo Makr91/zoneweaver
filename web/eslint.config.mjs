@@ -82,7 +82,7 @@ export default [
       "no-var": "error",
       "no-undef": "error",
       "no-unused-vars": [
-        "warn", // Warn for declared but unused variables
+        "error",
         {
           vars: "all",
           args: "all",
@@ -122,7 +122,7 @@ export default [
 
       // === COMPARISON & CONDITIONALS ===
       eqeqeq: ["error", "always"],
-      "no-nested-ternary": "warn",
+      "no-nested-ternary": "error",
       "no-unneeded-ternary": "error",
       "no-else-return": "error",
       "consistent-return": "error",
@@ -133,7 +133,7 @@ export default [
 
       // === ASYNC/AWAIT & PROMISES ===
       "require-await": "error",
-      "no-await-in-loop": "warn",
+      "no-await-in-loop": "error",
       "no-async-promise-executor": "error",
       "no-promise-executor-return": "error",
 
@@ -152,7 +152,7 @@ export default [
       "no-global-assign": "error",
 
       // === BROWSER SPECIFIC ===
-      "no-alert": "warn", // Allow alerts but warn in browser code
+      "no-alert": "error",
       "no-console": "off", // Allow console statements in frontend development (build tools strip them)
 
       // === CODE QUALITY ===
@@ -194,10 +194,10 @@ export default [
 
       // === REACT SPECIFIC RULES (Enhanced) ===
       "react/react-in-jsx-scope": "off", // Not needed in React 17+
-      "react/prop-types": "warn", // Warn instead of error
-      "react/display-name": "warn",
-      "react/no-unused-prop-types": "warn",
-      "react/no-unused-state": "warn",
+      "react/prop-types": "error",
+      "react/display-name": "error",
+      "react/no-unused-prop-types": "error",
+      "react/no-unused-state": "error",
       "react/prefer-stateless-function": "warn",
       "react/self-closing-comp": "error",
       "react/jsx-boolean-value": ["error", "never"],
@@ -228,8 +228,8 @@ export default [
           prop: "parens-new-line",
         },
       ],
-      "react/no-array-index-key": "warn",
-      "react/no-danger": "warn",
+      "react/no-array-index-key": "error",
+      "react/no-danger": "error",
       "react/no-did-mount-set-state": "error",
       "react/no-did-update-set-state": "error",
       "react/no-direct-mutation-state": "error",
@@ -241,22 +241,22 @@ export default [
 
       // === REACT HOOKS RULES ===
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "error",
 
-      // === ACCESSIBILITY RULES (jsx-a11y) - Practical for Bulma CSS ===
-      "jsx-a11y/alt-text": "warn",
+      // === ACCESSIBILITY RULES (jsx-a11y) ===
+      "jsx-a11y/alt-text": "error",
       "jsx-a11y/aria-props": "error",
       "jsx-a11y/aria-proptypes": "error",
       "jsx-a11y/aria-unsupported-elements": "error",
       "jsx-a11y/role-has-required-aria-props": "error",
       "jsx-a11y/role-supports-aria-props": "error",
-      "jsx-a11y/img-redundant-alt": "warn",
-      "jsx-a11y/no-access-key": "warn",
+      "jsx-a11y/img-redundant-alt": "error",
+      "jsx-a11y/no-access-key": "error",
       "jsx-a11y/no-onchange": "off", // Can be overly restrictive
       "jsx-a11y/click-events-have-key-events": "warn",
       "jsx-a11y/no-static-element-interactions": "warn",
-      "jsx-a11y/anchor-is-valid": "warn",
-      "jsx-a11y/label-has-associated-control": "warn", // Warn instead of error for Bulma patterns
+      "jsx-a11y/anchor-is-valid": "error",
+      "jsx-a11y/label-has-associated-control": "error",
 
       // === IMPORT/EXPORT RULES ===
       "import/order": [

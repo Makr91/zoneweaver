@@ -105,9 +105,9 @@ export default defineConfig({
             return "flow-diagrams";
           }
 
-          // React-Bootstrap UI framework + its runtime deps. Used app-wide via the
-          // shared modals (and growing as components migrate off Bulma), so split it out
-          // of vendor to keep that chunk under the size limit.
+          // React-Bootstrap UI framework + its runtime deps. Used app-wide (shared modals,
+          // dropdowns, forms, tabs, etc.), so split it out of vendor to keep that chunk
+          // under the size limit.
           if (
             id.includes("node_modules/react-bootstrap") ||
             id.includes("node_modules/@restart") ||

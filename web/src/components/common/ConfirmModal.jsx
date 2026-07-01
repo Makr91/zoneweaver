@@ -3,8 +3,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
 
-import { toBsVariant } from "./bulmaVariant";
-
 /**
  * ConfirmModal - Reusable confirmation dialog (react-bootstrap Modal).
  * Replaces window.confirm() with a styled, accessible dialog. react-bootstrap handles
@@ -17,7 +15,7 @@ const ConfirmModal = ({
   title = "Confirm Action",
   message,
   confirmText = "Confirm",
-  confirmVariant = "is-danger",
+  confirmVariant = "danger",
   cancelText = "Cancel",
   icon = "fas fa-exclamation-triangle",
   loading = false,
@@ -49,7 +47,7 @@ const ConfirmModal = ({
         {cancelText}
       </Button>
       <Button
-        variant={toBsVariant(confirmVariant, "danger")}
+        variant={confirmVariant.replace(/^is-/, "")}
         onClick={onConfirm}
         disabled={loading}
       >

@@ -157,7 +157,7 @@ export const useCuboneExtensions = (
               gap: 9px;
               border-radius: 4px;
               cursor: pointer;
-              color: var(--bulma-text);
+              color: var(--bs-body-color);
             `;
 
             li.innerHTML = `<span>${item.icon}</span><span>${item.text}</span>`;
@@ -176,7 +176,7 @@ export const useCuboneExtensions = (
             });
 
             li.addEventListener("mouseenter", () => {
-              li.style.backgroundColor = "var(--bulma-scheme-main-bis)";
+              li.style.backgroundColor = "var(--bs-tertiary-bg)";
             });
 
             li.addEventListener("mouseleave", () => {
@@ -260,8 +260,8 @@ export const useCuboneExtensions = (
               align-items: center;
               gap: 5px;
               padding: 0.4rem 0.8rem;
-              background: var(--bulma-primary);
-              color: var(--bulma-primary-invert);
+              background: var(--bs-primary);
+              color: #fff;
               border: none;
               border-radius: 4px;
               cursor: pointer;
@@ -294,8 +294,8 @@ export const useCuboneExtensions = (
               align-items: center;
               gap: 5px;
               padding: 0.4rem 0.8rem;
-              background: var(--bulma-success);
-              color: var(--bulma-success-invert);
+              background: var(--bs-success);
+              color: #fff;
               border: none;
               border-radius: 4px;
               cursor: pointer;
@@ -328,8 +328,8 @@ export const useCuboneExtensions = (
               align-items: center;
               gap: 5px;
               padding: 0.4rem 0.8rem;
-              background: var(--bulma-link);
-              color: var(--bulma-link-invert);
+              background: var(--bs-link-color);
+              color: #fff;
               border: none;
               border-radius: 4px;
               cursor: pointer;
@@ -362,8 +362,8 @@ export const useCuboneExtensions = (
               align-items: center;
               gap: 5px;
               padding: 0.4rem 0.8rem;
-              background: var(--bulma-info);
-              color: var(--bulma-info-invert);
+              background: var(--bs-info);
+              color: #000;
               border: none;
               border-radius: 4px;
               cursor: pointer;

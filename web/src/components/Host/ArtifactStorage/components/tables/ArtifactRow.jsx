@@ -41,7 +41,7 @@ const ArtifactRow = ({
     </td>
     <td>
       <div className="d-flex align-items-center">
-        <span className="icon me-2">
+        <span className="me-2">
           {getTypeIcon(artifact.file_type, artifact.extension)}
         </span>
         <div>
@@ -92,7 +92,7 @@ const ArtifactRow = ({
           disabled={loading}
           title="View details"
         >
-          <span className="icon">
+          <span>
             <i className="fas fa-info-circle" />
           </span>
         </button>
@@ -103,7 +103,7 @@ const ArtifactRow = ({
           disabled={loading}
           title="Delete artifact"
         >
-          <span className="icon">
+          <span>
             <i className="fas fa-trash" />
           </span>
         </button>
@@ -115,7 +115,7 @@ const ArtifactRow = ({
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <span className="icon">
+            <span>
               <i className="fas fa-ellipsis-h" aria-hidden="true" />
             </span>
           </button>
@@ -127,7 +127,7 @@ const ArtifactRow = ({
                 onClick={() => onMove(artifact)}
               >
                 <span className="d-inline-flex align-items-center">
-                  <span className="icon me-1">
+                  <span className="me-1">
                     <i className="fas fa-truck" />
                   </span>
                   <span>Move</span>
@@ -141,7 +141,7 @@ const ArtifactRow = ({
                 onClick={() => onCopy(artifact)}
               >
                 <span className="d-inline-flex align-items-center">
-                  <span className="icon me-1">
+                  <span className="me-1">
                     <i className="fas fa-copy" />
                   </span>
                   <span>Copy</span>

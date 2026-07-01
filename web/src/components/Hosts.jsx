@@ -284,7 +284,7 @@ const Hosts = () => {
                   <span>Performance Monitoring</span>
                 </h5>
 
-                <div className="columns is-multiline">
+                <div className="row g-3">
                   <StorageIOChart
                     chartData={chartData}
                     storageSeriesVisibility={storageSeriesVisibility}

@@ -30,8 +30,8 @@ const HostManage = () => {
           <meta charSet="utf-8" />
           <title>Access Denied - Zoneweaver</title>
         </Helmet>
-        <div className="container is-fluid m-2">
-          <div className="notification is-danger">
+        <div className="container-fluid m-2">
+          <div className="alert alert-danger">
             Admin privileges are required to manage servers.
           </div>
         </div>
@@ -47,18 +47,15 @@ const HostManage = () => {
           <meta charSet="utf-8" />
           <title>No Server Selected - Zoneweaver</title>
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="titlebar card-header active d-flex justify-content-between align-items-center mb-0 p-3">
+              <div>
                 <strong>Host Management</strong>
               </div>
-              <div className="level-right">
-                <button
-                  className="button"
-                  onClick={() => navigate("/ui/hosts")}
-                >
-                  <span className="icon">
+              <div>
+                <button className="btn" onClick={() => navigate("/ui/hosts")}>
+                  <span className="me-1">
                     <i className="fas fa-arrow-left" />
                   </span>
                   <span>Back to Hosts</span>
@@ -66,7 +63,7 @@ const HostManage = () => {
               </div>
             </div>
             <div className="px-4">
-              <div className="notification is-info">
+              <div className="alert alert-info">
                 <p>
                   Please select a server from the navbar to manage its services.
                 </p>
@@ -84,11 +81,11 @@ const HostManage = () => {
         <meta charSet="utf-8" />
         <title>{`Manage ${currentServer.hostname} - Zoneweaver`}</title>
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
+      <div className="container-fluid p-0">
+        <div className="card">
           {/* Server Header */}
-          <div className="titlebar box active level is-mobile mb-0 p-3">
-            <div className="level-left">
+          <div className="titlebar card-header active d-flex justify-content-between align-items-center mb-0 p-3">
+            <div>
               <div>
                 <strong>Host Management: {currentServer.hostname}</strong>
               </div>
@@ -96,8 +93,8 @@ const HostManage = () => {
           </div>
 
           {/* Tab Navigation */}
-          <div className="tabs is-boxed mb-0">
-            <ul>
+          <div className="mb-0">
+            <ul className="nav nav-tabs">
               {[
                 { id: "services", label: "Services", icon: "fas fa-cogs" },
                 {
@@ -134,11 +131,11 @@ const HostManage = () => {
                   icon: "fas fa-users",
                 },
               ].map((tab) => (
-                <li
-                  key={tab.id}
-                  className={activeTab === tab.id ? "is-active" : ""}
-                >
+                <li key={tab.id} className="nav-item">
                   <a
+                    className={
+                      activeTab === tab.id ? "nav-link active" : "nav-link"
+                    }
                     href={`#${tab.id}`}
                     onClick={(e) => {
                       e.preventDefault();
@@ -151,7 +148,7 @@ const HostManage = () => {
                       }
                     }}
                   >
-                    <span className="icon is-small">
+                    <span className="me-1">
                       <i className={tab.icon} />
                     </span>
                     <span>{tab.label}</span>
@@ -166,8 +163,8 @@ const HostManage = () => {
             {activeTab === "services" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Service Management</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Service Management</h2>
+                  <p>
                     Manage OmniOS services on{" "}
                     <strong>{currentServer.hostname}</strong>. You can view,
                     start, stop, restart, and refresh services running on this
@@ -183,8 +180,8 @@ const HostManage = () => {
             {activeTab === "network" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Network</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Network</h2>
+                  <p>
                     Manage network configuration and hostname settings on{" "}
                     <strong>{currentServer.hostname}</strong>. Configure VNICs,
                     IP addresses, link aggregates, and system hostname.
@@ -199,8 +196,8 @@ const HostManage = () => {
             {activeTab === "packages" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Package Management</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Package Management</h2>
+                  <p>
                     Manage packages, repositories, and system updates on{" "}
                     <strong>{currentServer.hostname}</strong>. Install,
                     uninstall, and search for packages, manage publishers and
@@ -216,8 +213,8 @@ const HostManage = () => {
             {activeTab === "boot-environments" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Boot Environment Management</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Boot Environment Management</h2>
+                  <p>
                     Manage boot environments on{" "}
                     <strong>{currentServer.hostname}</strong>. Create, activate,
                     mount, and delete boot environments for system
@@ -233,8 +230,8 @@ const HostManage = () => {
             {activeTab === "storage" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Storage</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Storage</h2>
+                  <p>
                     Manage ZFS storage configuration on{" "}
                     <strong>{currentServer.hostname}</strong>. Configure ZFS ARC
                     settings, manage pools, datasets, and storage resources.
@@ -249,8 +246,8 @@ const HostManage = () => {
             {activeTab === "time-ntp" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Time</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Time</h2>
+                  <p>
                     Manage time synchronization services, NTP configuration, and
                     timezone settings on{" "}
                     <strong>{currentServer.hostname}</strong>. Monitor time
@@ -267,8 +264,8 @@ const HostManage = () => {
             {activeTab === "processes" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Process Management</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Process Management</h2>
+                  <p>
                     Monitor and manage system processes on{" "}
                     <strong>{currentServer.hostname}</strong>. View running
                     processes, send signals, terminate processes, and analyze
@@ -284,8 +281,8 @@ const HostManage = () => {
             {activeTab === "fault-management" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">Fault Management</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">Fault Management</h2>
+                  <p>
                     Monitor and manage system faults on{" "}
                     <strong>{currentServer.hostname}</strong>. View active
                     faults, review system logs, manage fault resolution, and
@@ -301,8 +298,8 @@ const HostManage = () => {
             {activeTab === "file-manager" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">File Manager</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">File Manager</h2>
+                  <p>
                     Browse and manage files on{" "}
                     <strong>{currentServer.hostname}</strong>. Upload, download,
                     create folders, edit text files, and perform file operations
@@ -319,8 +316,8 @@ const HostManage = () => {
             {activeTab === "user-group" && (
               <div>
                 <div className="mb-4">
-                  <h2 className="title is-5">User and Groups</h2>
-                  <p className="content">
+                  <h2 className="fs-5 fw-bold">User and Groups</h2>
+                  <p>
                     Manage system users, groups, and roles on{" "}
                     <strong>{currentServer.hostname}</strong>. Create, modify,
                     and delete user accounts, manage group memberships,

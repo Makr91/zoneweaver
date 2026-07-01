@@ -132,7 +132,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       icon={getTypeIcon(artifact.file_type, artifact.extension)}
     >
       {/* Main Info Section */}
-      <div className="content">
+      <div>
         <div className="row">
           <div className="col">
             <h4 className="fs-5 fw-bold">File Information</h4>
@@ -266,7 +266,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       </div>
 
       {/* Checksum Section */}
-      <div className="content">
+      <div>
         <h4 className="fs-5 fw-bold">
           <span className="d-inline-flex align-items-center">
             <span className="me-1">
@@ -336,7 +336,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       </div>
 
       {/* Actions Section */}
-      <div className="content">
+      <div>
         <h4 className="fs-5 fw-bold">Actions</h4>
 
         {downloadError && (
@@ -361,17 +361,21 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       </div>
 
       {/* Technical Details */}
-      <div className="content">
+      <div>
         <h4 className="fs-5 fw-bold">Technical Details</h4>
         <div className="alert alert-secondary">
           <div className="row">
             <div className="col">
-              <p className="heading">Artifact ID</p>
+              <p className="text-uppercase small fw-semibold text-muted">
+                Artifact ID
+              </p>
               <p className="font-monospace small">{artifactData.id}</p>
             </div>
             {artifactData.storage_location && (
               <div className="col">
-                <p className="heading">Storage Location ID</p>
+                <p className="text-uppercase small fw-semibold text-muted">
+                  Storage Location ID
+                </p>
                 <p className="font-monospace small">
                   {artifactData.storage_location.id}
                 </p>
@@ -384,7 +388,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       {/* File Type Specific Information */}
       {(artifactData.file_type === "iso" ||
         artifactData.extension === ".iso") && (
-        <div className="content">
+        <div>
           <h4 className="fs-5 fw-bold">
             <span className="d-inline-flex align-items-center">
               <span className="me-1">
@@ -408,7 +412,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         [".vmdk", ".vhd", ".vhdx", ".qcow2"].includes(
           artifactData.extension
         ) && (
-          <div className="content">
+          <div>
             <h4 className="fs-5 fw-bold">
               <span className="d-inline-flex align-items-center">
                 <span className="me-1">

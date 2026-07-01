@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 
 import { isFieldVisible } from "../../utils/settingsUtils";
-import { toBsVariant } from "../common/bulmaVariant";
 
 const FieldRenderer = ({
   field,
@@ -32,7 +31,7 @@ const FieldRenderer = ({
         return {
           type: "Private Key",
           icon: "fas fa-key",
-          color: "is-danger",
+          color: "danger",
           accept: ".key,.pem",
           description: "Private key file (.key or .pem format)",
         };
@@ -40,7 +39,7 @@ const FieldRenderer = ({
         return {
           type: "Certificate",
           icon: "fas fa-certificate",
-          color: "is-success",
+          color: "success",
           accept: ".crt,.pem,.cer",
           description: "SSL certificate file (.crt, .pem, or .cer format)",
         };
@@ -52,7 +51,7 @@ const FieldRenderer = ({
         return {
           type: "CA Certificate",
           icon: "fas fa-shield-alt",
-          color: "is-info",
+          color: "info",
           accept: ".ca,.crt,.pem,.cer",
           description:
             "Certificate Authority file (.ca, .crt, .pem, or .cer format)",
@@ -61,7 +60,7 @@ const FieldRenderer = ({
       return {
         type: "SSL File",
         icon: "fas fa-file",
-        color: "is-primary",
+        color: "primary",
         accept: ".pem,.crt,.key,.cer,.ca",
         description: "SSL certificate file",
       };
@@ -79,9 +78,7 @@ const FieldRenderer = ({
     return (
       <div className="mb-4" key={sslField.path}>
         <label className="form-label" htmlFor={sslField.path}>
-          <i
-            className={`${config.icon} text-${toBsVariant(config.color)} me-2`}
-          />
+          <i className={`${config.icon} text-${config.color} me-2`} />
           {sslField.label}
         </label>
 

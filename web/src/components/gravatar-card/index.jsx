@@ -26,8 +26,8 @@ export default function GravatarCard({ gravatarData, hasError, isLoading }) {
         backgroundImage: `url(${gravatarData.header_image})`,
       }}
     >
-      <div className="columns">
-        <div className="column is-one-quarter">
+      <div className="row">
+        <div className="col-3">
           <img
             src={`${gravatarData.avatar_url}?size=256`}
             className="gravatar-card__avatar"
@@ -39,7 +39,7 @@ export default function GravatarCard({ gravatarData, hasError, isLoading }) {
             alt="QR Code"
           />
         </div>
-        <div className="column">
+        <div className="col">
           <h1 className="gravatar-card__name">{gravatarData.display_name}</h1>
           <div className="gravatar-card__meta">
             <div>

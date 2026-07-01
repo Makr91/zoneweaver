@@ -50,8 +50,8 @@ export const getFileTypeInfo = (extension) => {
     return {
       type: "iso",
       icon: "fas fa-compact-disc",
-      color: "has-text-info",
-      tag: "is-info",
+      color: "text-info",
+      tag: "text-bg-info",
       description: "ISO disc image",
     };
   }
@@ -60,8 +60,8 @@ export const getFileTypeInfo = (extension) => {
     return {
       type: "image",
       icon: "fas fa-hdd",
-      color: "has-text-warning",
-      tag: "is-warning",
+      color: "text-warning",
+      tag: "text-bg-warning",
       description: "Virtual machine disk image",
     };
   }
@@ -69,8 +69,8 @@ export const getFileTypeInfo = (extension) => {
   return {
     type: "unknown",
     icon: "fas fa-file",
-    color: "has-text-grey",
-    tag: "is-light",
+    color: "text-muted",
+    tag: "text-bg-light",
     description: "Unknown file type",
   };
 };
@@ -122,16 +122,16 @@ export const parseUsagePercentage = (usageString) => {
 /**
  * Get color class for disk usage percentage
  * @param {number} percentage - Usage percentage
- * @returns {string} Bulma color class
+ * @returns {string} Bootstrap background color class
  */
 export const getDiskUsageColor = (percentage) => {
   if (percentage >= 90) {
-    return "is-danger";
+    return "bg-danger";
   }
   if (percentage >= 75) {
-    return "is-warning";
+    return "bg-warning";
   }
-  return "is-success";
+  return "bg-success";
 };
 
 /**
@@ -189,26 +189,26 @@ export const getChecksumStatus = (verified) => {
   if (verified === true) {
     return {
       icon: "fas fa-check-circle",
-      color: "has-text-success",
+      color: "text-success",
       text: "Verified",
-      tag: "is-success",
+      tag: "text-bg-success",
     };
   }
 
   if (verified === false) {
     return {
       icon: "fas fa-times-circle",
-      color: "has-text-danger",
+      color: "text-danger",
       text: "Mismatch",
-      tag: "is-danger",
+      tag: "text-bg-danger",
     };
   }
 
   return {
     icon: "fas fa-question-circle",
-    color: "has-text-grey",
+    color: "text-muted",
     text: "Not verified",
-    tag: "is-light",
+    tag: "text-bg-light",
   };
 };
 

@@ -119,7 +119,7 @@ const ArtifactTable = ({
   if (loading && artifacts.length === 0 && activeDownloadsList.length === 0) {
     return (
       <div className="text-center p-4">
-        <span className="icon">
+        <span>
           <i className="fas fa-spinner fa-spin fa-2x" />
         </span>
         <p className="mt-2">Loading artifacts...</p>
@@ -130,7 +130,7 @@ const ArtifactTable = ({
   if (artifacts.length === 0 && activeDownloadsList.length === 0) {
     return (
       <div className="text-center p-4">
-        <span className="icon text-muted">
+        <span className="text-muted">
           <i className="fas fa-compact-disc fa-2x" />
         </span>
         <p className="mt-2 text-muted">No artifacts found</p>
@@ -159,7 +159,7 @@ const ArtifactTable = ({
                   onClick={handleBulkDelete}
                   disabled={loading}
                 >
-                  <span className="icon">
+                  <span className="me-1">
                     <i className="fas fa-trash" />
                   </span>
                   <span>Delete Selected</span>
@@ -202,7 +202,7 @@ const ArtifactTable = ({
               >
                 <span className="d-inline-flex align-items-center">
                   <span>Filename</span>
-                  <span className="icon ms-1">{getSortIcon("filename")}</span>
+                  <span className="ms-1">{getSortIcon("filename")}</span>
                 </span>
               </th>
               <th>Type</th>
@@ -213,7 +213,7 @@ const ArtifactTable = ({
               >
                 <span className="d-inline-flex align-items-center">
                   <span>Size</span>
-                  <span className="icon ms-1">{getSortIcon("size")}</span>
+                  <span className="ms-1">{getSortIcon("size")}</span>
                 </span>
               </th>
               <th>Checksum</th>
@@ -225,9 +225,7 @@ const ArtifactTable = ({
               >
                 <span className="d-inline-flex align-items-center">
                   <span>Added</span>
-                  <span className="icon ms-1">
-                    {getSortIcon("discovered_at")}
-                  </span>
+                  <span className="ms-1">{getSortIcon("discovered_at")}</span>
                 </span>
               </th>
               <th width="150">Actions</th>

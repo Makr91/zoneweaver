@@ -128,8 +128,8 @@ const HostnameSettings = ({ server, onError }) => {
 
   if (loading && !hostnameInfo) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-spinner fa-spin fa-2x" />
         </span>
         <p className="mt-2">Loading hostname information...</p>
@@ -140,8 +140,8 @@ const HostnameSettings = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Hostname Configuration</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Hostname Configuration</h2>
+        <p>
           View and modify the system hostname for{" "}
           <strong>{server.hostname}</strong>.
         </p>
@@ -149,148 +149,146 @@ const HostnameSettings = ({ server, onError }) => {
 
       {/* Current Hostname Information */}
       {hostnameInfo && (
-        <div className="box mb-4">
-          <h3 className="title is-6">Current Hostname Information</h3>
-          <div className="table-container">
-            <table className="table is-fullwidth">
-              <tbody>
-                <tr>
-                  <td>
-                    <strong>Current Hostname</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {hostnameInfo.hostname}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Nodename File</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {hostnameInfo.nodename_file}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>System Hostname</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {hostnameInfo.system_hostname}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Configuration Match</strong>
-                  </td>
-                  <td>
-                    <span
-                      className={`tag ${hostnameInfo.matches ? "is-success" : "is-warning"}`}
-                    >
-                      {hostnameInfo.matches ? "Yes" : "No"}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {!hostnameInfo.matches && (
-            <div className="notification is-warning">
-              <p>
-                <strong>Warning:</strong> The system hostname does not match the
-                configuration file. This may indicate a pending hostname change
-                that requires a reboot.
-              </p>
+        <div className="card mb-4">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Current Hostname Information</h3>
+            <div className="table-responsive">
+              <table className="table">
+                <tbody>
+                  <tr>
+                    <td>
+                      <strong>Current Hostname</strong>
+                    </td>
+                    <td className="font-monospace">{hostnameInfo.hostname}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Nodename File</strong>
+                    </td>
+                    <td className="font-monospace">
+                      {hostnameInfo.nodename_file}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>System Hostname</strong>
+                    </td>
+                    <td className="font-monospace">
+                      {hostnameInfo.system_hostname}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Configuration Match</strong>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${hostnameInfo.matches ? "text-bg-success" : "text-bg-warning"}`}
+                      >
+                        {hostnameInfo.matches ? "Yes" : "No"}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          )}
+
+            {!hostnameInfo.matches && (
+              <div className="alert alert-warning">
+                <p>
+                  <strong>Warning:</strong> The system hostname does not match
+                  the configuration file. This may indicate a pending hostname
+                  change that requires a reboot.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Change Hostname Form */}
-      <div className="box">
-        <h3 className="title is-6">Change Hostname</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Change Hostname</h3>
 
-        <form onSubmit={handleChangeHostname}>
-          <div className="field">
-            <label className="label" htmlFor="new-hostname-input">
-              New Hostname
-            </label>
-            <div className="control">
+          <form onSubmit={handleChangeHostname}>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="new-hostname-input">
+                New Hostname
+              </label>
               <input
                 id="new-hostname-input"
-                className={`input ${newHostname && !isHostnameValid(newHostname) ? "is-danger" : ""}`}
+                className={`form-control ${newHostname && !isHostnameValid(newHostname) ? "is-invalid" : ""}`}
                 type="text"
                 placeholder="Enter new hostname"
                 value={newHostname}
                 onChange={(e) => setNewHostname(e.target.value)}
                 disabled={changing}
               />
+              {newHostname && !isHostnameValid(newHostname) && (
+                <p className="form-text text-danger">
+                  Invalid hostname. Must be a valid hostname or FQDN
+                </p>
+              )}
             </div>
-            {newHostname && !isHostnameValid(newHostname) && (
-              <p className="help is-danger">
-                Invalid hostname. Must be a valid hostname or FQDN
-              </p>
-            )}
-          </div>
 
-          <div className="field">
-            <div className="control">
-              <label className="checkbox">
+            <div className="mb-3">
+              <label className="form-check-label">
                 <input
                   type="checkbox"
                   checked={applyImmediately}
                   onChange={(e) => setApplyImmediately(e.target.checked)}
                   disabled={changing}
                 />
-                <span className="ml-2">
+                <span className="ms-2">
                   Apply immediately (no reboot required)
                 </span>
               </label>
+              <p className="form-text text-muted">
+                {applyImmediately
+                  ? "The hostname will be changed immediately without requiring a reboot."
+                  : "The hostname will be changed in configuration files and applied after next reboot."}
+              </p>
             </div>
-            <p className="help">
-              {applyImmediately
-                ? "The hostname will be changed immediately without requiring a reboot."
-                : "The hostname will be changed in configuration files and applied after next reboot."}
-            </p>
-          </div>
 
-          <div className="field is-grouped">
-            <div className="control">
+            <div className="d-flex gap-2">
               <button
                 type="submit"
-                className={`button is-primary ${changing ? "is-loading" : ""}`}
+                className="btn btn-primary"
                 disabled={
                   !hasChanges || !isHostnameValid(newHostname) || changing
                 }
               >
+                {changing && (
+                  <span className="spinner-border spinner-border-sm" />
+                )}
                 Change Hostname
               </button>
-            </div>
-            <div className="control">
               <button
                 type="button"
-                className="button"
+                className="btn"
                 onClick={() => setNewHostname(hostnameInfo?.hostname || "")}
                 disabled={!hasChanges || changing}
               >
                 Reset
               </button>
-            </div>
-            <div className="control">
               <button
                 type="button"
-                className={`button is-info ${loading ? "is-loading" : ""}`}
+                className="btn btn-info"
                 onClick={loadHostnameInfo}
                 disabled={loading || changing}
               >
-                <span className="icon">
+                {loading && (
+                  <span className="spinner-border spinner-border-sm" />
+                )}
+                <span className="me-1">
                   <i className="fas fa-sync-alt" />
                 </span>
                 <span>Refresh</span>
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

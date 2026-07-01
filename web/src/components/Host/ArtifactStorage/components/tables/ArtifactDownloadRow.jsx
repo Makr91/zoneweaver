@@ -53,15 +53,13 @@ DownloadSizeCell.propTypes = {
 const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
   <tr className="table-light">
     <td>
-      <span className="icon text-muted">
+      <span className="text-muted">
         <i className="fas fa-clock" />
       </span>
     </td>
     <td>
       <div className="d-flex align-items-center">
-        <span className="icon me-2">
-          {getDownloadStatusIcon(download.status)}
-        </span>
+        <span className="me-2">{getDownloadStatusIcon(download.status)}</span>
         <div>
           <div className="fw-semibold text-muted">
             {download.filename || "Downloading..."}
@@ -84,7 +82,7 @@ const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
       <DownloadSizeCell download={download} />
     </td>
     <td>
-      <span className="icon text-muted" title="Download in progress">
+      <span className="text-muted" title="Download in progress">
         <i className="fas fa-clock" />
       </span>
     </td>
@@ -113,7 +111,7 @@ const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
             title={`Download failed: ${download.error_message}`}
             disabled
           >
-            <span className="icon">
+            <span>
               <i className="fas fa-exclamation-circle" />
             </span>
           </button>
@@ -126,7 +124,7 @@ const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
               onClick={() => onCancelDownload(download.taskId)}
               title="Cancel download"
             >
-              <span className="icon">
+              <span>
                 <i className="fas fa-times" />
               </span>
             </button>

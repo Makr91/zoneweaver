@@ -26,8 +26,8 @@ const ContentModal = ({
     <Modal.Header closeButton>
       <Modal.Title>
         {icon ? (
-          <span className="icon-text">
-            <span className="icon">
+          <span className="d-inline-flex align-items-center">
+            <span className="me-2">
               <i className={icon} />
             </span>
             <span>{title}</span>

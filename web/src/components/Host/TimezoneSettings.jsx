@@ -214,8 +214,8 @@ const TimezoneSettings = ({ server, onError }) => {
 
   if (loading && !timezoneInfo) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-spinner fa-spin fa-2x" />
         </span>
         <p className="mt-2">Loading timezone information...</p>
@@ -226,8 +226,8 @@ const TimezoneSettings = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Timezone Configuration</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Timezone Configuration</h2>
+        <p>
           View and modify the system timezone for{" "}
           <strong>{server.hostname}</strong>. Timezone changes may require a
           system reboot for full effect.
@@ -236,234 +236,228 @@ const TimezoneSettings = ({ server, onError }) => {
 
       {/* Current Timezone Information */}
       {timezoneInfo && (
-        <div className="box mb-4">
-          <h3 className="title is-6">Current Timezone Information</h3>
-          <div className="table-container">
-            <table className="table is-fullwidth">
-              <tbody>
-                <tr>
-                  <td>
-                    <strong>Current Timezone</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {timezoneInfo.timezone}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Display Name</strong>
-                  </td>
-                  <td>{formatTimezoneDisplay(timezoneInfo.timezone)}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Description</strong>
-                  </td>
-                  <td>
-                    {getTimezoneDescription(timezoneInfo.timezone) ||
-                      "System timezone setting"}
-                  </td>
-                </tr>
-                {timezoneInfo.local_time && (
+        <div className="card mb-4">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Current Timezone Information</h3>
+            <div className="table-responsive">
+              <table className="table">
+                <tbody>
                   <tr>
                     <td>
-                      <strong>Current Local Time</strong>
+                      <strong>Current Timezone</strong>
                     </td>
-                    <td>
-                      {new Date(timezoneInfo.local_time).toLocaleString()}
-                    </td>
+                    <td className="font-monospace">{timezoneInfo.timezone}</td>
                   </tr>
-                )}
-                {timezoneInfo.utc_offset && (
                   <tr>
                     <td>
-                      <strong>UTC Offset</strong>
+                      <strong>Display Name</strong>
                     </td>
-                    <td className="is-family-monospace">
-                      {timezoneInfo.utc_offset}
+                    <td>{formatTimezoneDisplay(timezoneInfo.timezone)}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Description</strong>
+                    </td>
+                    <td>
+                      {getTimezoneDescription(timezoneInfo.timezone) ||
+                        "System timezone setting"}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                  {timezoneInfo.local_time && (
+                    <tr>
+                      <td>
+                        <strong>Current Local Time</strong>
+                      </td>
+                      <td>
+                        {new Date(timezoneInfo.local_time).toLocaleString()}
+                      </td>
+                    </tr>
+                  )}
+                  {timezoneInfo.utc_offset && (
+                    <tr>
+                      <td>
+                        <strong>UTC Offset</strong>
+                      </td>
+                      <td className="font-monospace">
+                        {timezoneInfo.utc_offset}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Timezone Selection */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Change Timezone</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Change Timezone</h3>
 
-        {/* Filter Controls */}
-        <div className="columns mb-4">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="timezone-search">
-                Search Timezones
-              </label>
-              <div className="control has-icons-left">
-                <input
-                  id="timezone-search"
-                  className="input"
-                  type="text"
-                  placeholder="Search timezones..."
-                  value={searchFilter}
-                  onChange={(e) => setSearchFilter(e.target.value)}
-                />
-                <span className="icon is-left">
-                  <i className="fas fa-search" />
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="timezone-region">
-                Filter by Region
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="timezone-region"
-                    value={regionFilter}
-                    onChange={(e) => setRegionFilter(e.target.value)}
-                  >
-                    <option value="">All Regions</option>
-                    {regions.map((region) => (
-                      <option key={region} value={region}>
-                        {region} ({getTimezoneDescription(`${region}/`)})
-                      </option>
-                    ))}
-                  </select>
+          {/* Filter Controls */}
+          <div className="row mb-4">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="timezone-search">
+                  Search Timezones
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-search" />
+                  </span>
+                  <input
+                    id="timezone-search"
+                    className="form-control"
+                    type="text"
+                    placeholder="Search timezones..."
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Timezone Selection */}
-        <div className="field">
-          <label className="label" htmlFor="timezone-select">
-            Select New Timezone
-            {filteredTimezones.length > 0 && (
-              <span className="is-size-7 has-text-grey ml-2">
-                ({filteredTimezones.length} available)
-              </span>
-            )}
-          </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="timezone-select"
-                value={selectedTimezone}
-                onChange={(e) => setSelectedTimezone(e.target.value)}
-                disabled={changing || filteredTimezones.length === 0}
-              >
-                <option value="">Choose a timezone...</option>
-                {filteredTimezones.map((tz) => (
-                  <option key={tz} value={tz}>
-                    {tz} {tz === timezoneInfo?.timezone ? "(current)" : ""}
-                  </option>
-                ))}
-              </select>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="timezone-region">
+                  Filter by Region
+                </label>
+                <select
+                  id="timezone-region"
+                  className="form-select"
+                  value={regionFilter}
+                  onChange={(e) => setRegionFilter(e.target.value)}
+                >
+                  <option value="">All Regions</option>
+                  {regions.map((region) => (
+                    <option key={region} value={region}>
+                      {region} ({getTimezoneDescription(`${region}/`)})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
-          {availableTimezones.length === 0 && (
-            <p className="help is-warning">
-              Unable to load available timezones. You may need to manually enter
-              a valid timezone.
-            </p>
-          )}
-        </div>
 
-        {/* Manual Entry Fallback */}
-        {availableTimezones.length === 0 && (
-          <div className="field">
-            <label className="label" htmlFor="timezone-manual">
-              Manual Timezone Entry
+          {/* Timezone Selection */}
+          <div className="mb-3">
+            <label className="form-label" htmlFor="timezone-select">
+              Select New Timezone
+              {filteredTimezones.length > 0 && (
+                <span className="small text-muted ms-2">
+                  ({filteredTimezones.length} available)
+                </span>
+              )}
             </label>
-            <div className="control">
+            <select
+              id="timezone-select"
+              className="form-select"
+              value={selectedTimezone}
+              onChange={(e) => setSelectedTimezone(e.target.value)}
+              disabled={changing || filteredTimezones.length === 0}
+            >
+              <option value="">Choose a timezone...</option>
+              {filteredTimezones.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz} {tz === timezoneInfo?.timezone ? "(current)" : ""}
+                </option>
+              ))}
+            </select>
+            {availableTimezones.length === 0 && (
+              <p className="form-text text-muted">
+                Unable to load available timezones. You may need to manually
+                enter a valid timezone.
+              </p>
+            )}
+          </div>
+
+          {/* Manual Entry Fallback */}
+          {availableTimezones.length === 0 && (
+            <div className="mb-3">
+              <label className="form-label" htmlFor="timezone-manual">
+                Manual Timezone Entry
+              </label>
               <input
                 id="timezone-manual"
-                className="input is-family-monospace"
+                className="form-control font-monospace"
                 type="text"
                 placeholder="e.g., America/Chicago, Europe/London, Asia/Tokyo"
                 value={selectedTimezone}
                 onChange={(e) => setSelectedTimezone(e.target.value)}
                 disabled={changing}
               />
+              <p className="form-text text-muted">
+                Enter a valid timezone identifier (e.g., America/New_York,
+                Europe/London, Asia/Tokyo).
+              </p>
             </div>
-            <p className="help">
-              Enter a valid timezone identifier (e.g., America/New_York,
-              Europe/London, Asia/Tokyo).
-            </p>
-          </div>
-        )}
+          )}
 
-        {/* Selection Info */}
-        {selectedTimezone && selectedTimezone !== timezoneInfo?.timezone && (
-          <div className="notification is-info is-light">
-            <p>
-              <strong>Selected:</strong>{" "}
-              {formatTimezoneDisplay(selectedTimezone)}
-              <br />
-              <strong>Description:</strong>{" "}
-              {getTimezoneDescription(selectedTimezone) || "Timezone setting"}
-            </p>
-          </div>
-        )}
+          {/* Selection Info */}
+          {selectedTimezone && selectedTimezone !== timezoneInfo?.timezone && (
+            <div className="alert alert-info">
+              <p>
+                <strong>Selected:</strong>{" "}
+                {formatTimezoneDisplay(selectedTimezone)}
+                <br />
+                <strong>Description:</strong>{" "}
+                {getTimezoneDescription(selectedTimezone) || "Timezone setting"}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Change Actions */}
-      <div className="box">
-        <h3 className="title is-6">Timezone Actions</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Timezone Actions</h3>
 
-        <div className="field is-grouped">
-          <div className="control">
+          <div className="d-flex gap-2">
             <button
-              className={`button is-primary ${changing ? "is-loading" : ""}`}
+              className="btn btn-primary"
               onClick={() => setShowActionModal(true)}
               disabled={!hasChanges || !selectedTimezone || changing}
             >
-              <span className="icon">
+              {changing && (
+                <span className="spinner-border spinner-border-sm" />
+              )}
+              <span className="me-1">
                 <i className="fas fa-clock" />
               </span>
               <span>Change Timezone</span>
             </button>
-          </div>
-          <div className="control">
             <button
-              className="button"
+              className="btn"
               onClick={() => setSelectedTimezone(timezoneInfo?.timezone || "")}
               disabled={!hasChanges || changing}
             >
-              <span className="icon">
+              <span className="me-1">
                 <i className="fas fa-undo" />
               </span>
               <span>Reset</span>
             </button>
-          </div>
-          <div className="control">
             <button
-              className={`button is-info ${loading ? "is-loading" : ""}`}
+              className="btn btn-info"
               onClick={loadTimezoneInfo}
               disabled={loading || changing}
             >
-              <span className="icon">
+              {loading && <span className="spinner-border spinner-border-sm" />}
+              <span className="me-1">
                 <i className="fas fa-sync-alt" />
               </span>
               <span>Refresh</span>
             </button>
           </div>
-        </div>
 
-        {/* Reboot Warning */}
-        <div className="notification is-warning is-light mt-4">
-          <p>
-            <strong>Important:</strong> Timezone changes may require a system
-            reboot to take full effect. Some services and applications may
-            continue using the old timezone until restarted.
-          </p>
+          {/* Reboot Warning */}
+          <div className="alert alert-warning mt-4">
+            <p>
+              <strong>Important:</strong> Timezone changes may require a system
+              reboot to take full effect. Some services and applications may
+              continue using the old timezone until restarted.
+            </p>
+          </div>
         </div>
       </div>
 

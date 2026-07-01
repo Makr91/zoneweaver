@@ -43,7 +43,7 @@ const SubsectionRenderer = ({
     <div className="card mb-4">
       <div className="card-body">
         <div
-          className="is-clickable pb-2"
+          className="cursor-pointer pb-2"
           onClick={handleToggle}
           onKeyDown={handleKeyDown}
           role="button"

@@ -304,7 +304,7 @@ const ArtifactDownloadModal = ({
 
       {selectedStoragePath && (
         <div className="alert alert-info">
-          <div className="content">
+          <div>
             <p>
               <strong>Selected Storage Location:</strong>
             </p>
@@ -328,7 +328,7 @@ const ArtifactDownloadModal = ({
       )}
 
       <div className="alert alert-secondary">
-        <div className="content">
+        <div>
           <p>
             <strong>Download Process:</strong>
           </p>

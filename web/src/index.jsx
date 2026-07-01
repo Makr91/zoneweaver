@@ -6,9 +6,11 @@ import { register } from "register-service-worker";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-// Bootstrap CSS now compiles from Sass (brand-themed) inside ./scss/styles.scss,
-// so the precompiled bootstrap.min.css import is gone. The JS bundle stays.
+// Bootstrap: precompiled CSS + JS bundle. We consume the prebuilt CSS so Bootstrap's own
+// (deprecated) Sass never compiles; ./scss/styles.scss re-applies the brand theme on top
+// via CSS-variable overrides. Bootstrap CSS must load BEFORE styles.scss so our overrides win.
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./scss/styles.scss";
 import "./sass/zoneweaver.scss";
 import "@fortawesome/fontawesome-free/css/fontawesome.css";

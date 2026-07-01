@@ -23,23 +23,14 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const html = document.documentElement;
 
-    // Always clear existing theme classes first
-    html.classList.remove("theme-light", "theme-dark");
-
     if (theme === "auto") {
-      // For auto mode, check system preference and apply appropriate data-theme
+      // For auto mode, follow the system preference
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)"
       ).matches;
-      const activeTheme = prefersDark ? "dark" : "light";
-      html.setAttribute("data-theme", activeTheme);
-      html.setAttribute("data-bs-theme", activeTheme);
-      html.classList.add(`theme-${activeTheme}`);
+      html.setAttribute("data-bs-theme", prefersDark ? "dark" : "light");
     } else {
-      // Apply specific theme
-      html.setAttribute("data-theme", theme);
       html.setAttribute("data-bs-theme", theme);
-      html.classList.add(`theme-${theme}`);
     }
 
     // Save preference
@@ -49,11 +40,7 @@ export const ThemeProvider = ({ children }) => {
     if (theme === "auto") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = (e) => {
-        const activeTheme = e.matches ? "dark" : "light";
-        html.setAttribute("data-theme", activeTheme);
-        html.setAttribute("data-bs-theme", activeTheme);
-        html.classList.remove("theme-light", "theme-dark");
-        html.classList.add(`theme-${activeTheme}`);
+        html.setAttribute("data-bs-theme", e.matches ? "dark" : "light");
       };
 
       mediaQuery.addListener(handleChange);

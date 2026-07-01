@@ -1,81 +1,27 @@
 @charset "utf-8";
 
-// Rules for  AIs
-// Try NOT to make custom CSS classes
-// Try to use the Bulma CSS Classes
-// You can find Bulma CSS Classes here:
-// https://bulma.io/documentation/
-// https://bulma.io/documentation/helpers/other-helpers/
-// https://bulma.io/documentation/helpers/flexbox-helpers/
-// https://bulma.io/documentation/helpers/visibility-helpers/
-// https://bulma.io/documentation/helpers/typography-helpers/
-// https://bulma.io/documentation/helpers/spacing-helpers/
-// https://bulma.io/documentation/helpers/palette-helpers/
-// https://bulma.io/documentation/helpers/color-helpers/
+// Rules for AIs / contributors
+// This project uses BOOTSTRAP 5.3 (+ react-bootstrap) as its only CSS framework.
+// Prefer Bootstrap utility/component classes and its `--bs-*` variables:
+//   https://getbootstrap.com/docs/5.3/
 //
-// There are many other components and classes as well in other parts of the documentation
+// Prefer built-in Bootstrap classes/utilities over new custom CSS. The `.zw-*` classes below
+// are the app's intentional custom layer (topology nodes, consoles, VNC, terminal, etc.) —
+// extend those rather than adding ad-hoc one-off classes.
 
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
+// Bootstrap is compiled in scss/styles.scss and supplies every --bs-* variable,
+// with dark values applied automatically under [data-bs-theme="dark"] (ThemeContext
+// sets that attribute). The app layers its own --zw-* custom properties on top,
+// per theme, in the :root / [data-bs-theme="dark"] blocks below.
 
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-
-// Set your brand colors
-$orange: #ff6600;
-$yellow: #ffe600;
-$purple: #8a4d76;
-$pink: #fa7c91;
-$brown: #757763;
-$beige-light: #d0d1cd;
-$beige-lighter: #eff0eb;
-
-@use "bulma/sass" with (
-  $primary: $orange,
-  $warning: $yellow,
-  $light: hsl(221, 14%, 35%),
-  $grey-lighter: hsl(221, 14%, 40%),
-  $button-border-width: 0px,
-  $box-shadow: none,
-  $dropdown-content-shadow: none,
-  $dropdown-content-z: 4,
-  $control-radius: none,
-  $card-shadow: none,
-  $body-overflow-y: auto,
-  $button-focus-box-shadow-size: 0,
-  $input-focus-shadow-size: 0,
-  $navbar-box-shadow-size: 0,
-  $navbar-bottom-box-shadow-size: 0,
-  $panel-shadow: 0,
-  $modal-content-width: 70vw
-);
-
-// Import theme utilities for dark mode implementation
-@use "bulma/sass/utilities/css-variables" as cv;
-@use "bulma/sass/themes/light";
-@use "bulma/sass/themes/dark";
-
-// Import Bulma Switch Control using @use
-@use "bulma-switch-control";
-
-// Create shadow-disabling mixins following official Bulma pattern
+// App --zw-* custom-property theme layers (light + dark).
 @mixin zw-light-theme {
   --zw-text-placeholder: #6c757d; // Medium gray for placeholders
   --zw-loading-spinner: #6c757d; // Medium gray for loading spinners
 
-  // Status colors (inherit from Bulma variables)
-  --zw-status-success: var(--bulma-success);
-  --zw-status-warning: var(--bulma-warning);
+  // Status colors (inherit from Bootstrap theme variables)
+  --zw-status-success: var(--bs-success);
+  --zw-status-warning: var(--bs-warning);
 
   // Chart colors - Light theme
   --zw-chart-background: #ffffff;
@@ -94,7 +40,6 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Light theme
   --zw-border-light: #dbdbdb; // Component borders
   --zw-controls-bg: #363636; // VNC controls background
-  --bulma-shadow: none;
 }
 
 @mixin zw-dark-theme {
@@ -118,67 +63,29 @@ $beige-lighter: #eff0eb;
   // UI chrome colors - Dark theme
   --zw-border-light: #4a5568; // Darker borders for dark theme
   --zw-controls-bg: #2d3748; // Darker VNC controls background
-  --bulma-shadow: none;
 }
 
-@include cv.system-theme($name: "light") {
-  @include light.light-theme;
+:root {
   @include zw-light-theme;
 }
 
-@include cv.system-theme($name: "dark") {
-  @include dark.dark-theme;
-  @include zw-dark-theme;
-}
-
-@include cv.bulma-theme($name: "light") {
-  @include light.light-theme;
-  @include zw-light-theme;
-}
-
-@include cv.bulma-theme($name: "dark") {
-  @include dark.dark-theme;
+[data-bs-theme="dark"] {
   @include zw-dark-theme;
 }
 
 .dropdown-content {
-  border-width: var(--bulma-control-border-width);
+  border-width: var(--bs-border-width);
 }
 
-.button {
-  box-shadow: none;
-}
-
-// --- Bulma → Bootstrap transition shims (removed in Phase 13 with Bulma) ---
-// Both frameworks define `.modal`, and Bulma loads after Bootstrap here, so Bulma's base
-// `.modal` rules (z-index: 40, flex centering, display: none) bleed onto react-bootstrap
-// modals. Bulma's own modals use `.modal.is-active`; react-bootstrap renders a
-// `.modal-dialog`, so scope by that and re-assert Bootstrap's modal layering for Bootstrap
-// modals only — without touching the still-Bulma console modals.
-.modal:has(.modal-dialog) {
-  z-index: 1055;
-  display: block;
-  align-items: stretch;
-  justify-content: flex-start;
-}
-
-// FormModal/ContentModal were 70vw under Bulma's $modal-content-width; keep that width.
+// FormModal/ContentModal keep a 70vw max width.
 .zw-modal-wide {
   max-width: 70vw;
 }
 
-// react-bootstrap dropdowns collide with Bulma on `.dropdown-menu` (Bulma loads last).
-// react-bootstrap adds `.show` + inline popper positioning; Bulma never adds `.show`, so
-// scope by it to re-assert Bootstrap's dropdown layering without touching Bulma dropdowns.
-// Bulma also styles `.dropdown-item` (font-size 0.875rem + its own colors/padding) and
-// `.dropdown-divider` (its own bg/height, no border), which bleed into react-bootstrap
-// menu internals and make items the wrong size, edge colors inconsistent, and the divider
-// invisible. Re-assert Bootstrap's values via the menu's own `--bs-dropdown-*` custom
-// properties so react-bootstrap menus render correctly (and adapt to data-bs-theme).
+// Dropdown menu chrome: re-assert Bootstrap's `--bs-dropdown-*` values on `.dropdown-menu.show`
+// so items and the divider render consistently and adapt to data-bs-theme.
 .dropdown-menu.show {
-  // Keep Bootstrap's palette — this is the "lighter correct gray" the user likes, the same look
-  // the sidebar drop-up has. We only upgrade the divider from Bootstrap's faint translucent line
-  // to a solid, clearly-visible border here. Removed in Phase 13 with Bulma.
+  // Upgrade the divider to a solid, clearly-visible border (Bootstrap's default is faint).
   --bs-dropdown-divider-bg: var(--bs-border-color);
 
   display: block;
@@ -186,12 +93,7 @@ $beige-lighter: #eff0eb;
   padding: var(--bs-dropdown-padding-y, 0.5rem) var(--bs-dropdown-padding-x, 0);
 
   .dropdown-item {
-    // Bulma sets background-color on `a.dropdown-item`/`button.dropdown-item` (0,1,1) using vars
-    // it registers on `.dropdown`. So react-bootstrap menus inside a `.dropdown` (the navbar
-    // control + Host/Zone menus) get a Bulma item background that doesn't match the Bootstrap
-    // menu background — dark item rows over the lighter menu. Force transparent so items inherit
-    // the menu background uniformly. (The `.dropup` drop-up never hit this: `.dropup` doesn't
-    // register those vars, so its items already fell back to transparent — hence it looked right.)
+    // Force transparent item backgrounds so items inherit the menu background uniformly.
     background-color: transparent;
     font-size: var(--bs-dropdown-font-size, 1rem);
     color: var(--bs-dropdown-link-color);
@@ -229,47 +131,19 @@ $beige-lighter: #eff0eb;
 // Hand-rolled console dropdowns (VncActionsDropdown / ZloginActionsDropdown) are NOT
 // react-bootstrap, so they have no Popper and never receive Bootstrap's
 // [data-bs-popper]-gated top/left offsets — a bare `.dropdown-menu.show` would render
-// on top of its trigger. Re-create the Bulma placement for the TOP-LEVEL menus only:
-// drop below the trigger and align to its right edge (the old Bulma `is-right`). The
-// nested submenus position themselves via `.zw-dropdown-submenu-*` /
-// `.zw-dropdown-function-keys` (which use `!important`), so they are unaffected, and they
-// don't carry `.dropdown-menu-end` so this rule never matches them. react-bootstrap menus
-// carry `[data-bs-popper]`, so `:not()` excludes them. Removed in Phase 13 with Bulma.
+// on top of its trigger. Position the TOP-LEVEL menus below the trigger, aligned to its right
+// edge. The nested submenus self-position via `.zw-dropdown-submenu-*` /
+// `.zw-dropdown-function-keys` (`!important`) and don't carry `.dropdown-menu-end`, so this rule
+// never matches them; react-bootstrap menus carry `[data-bs-popper]`, so `:not()` excludes them.
 .dropdown-menu.show.dropdown-menu-end:not([data-bs-popper]) {
   top: 100%;
   right: 0;
   left: auto;
 }
 
-// Bulma and Bootstrap both define `.card` / `.card-header`, and Bulma loads last — so Bulma
-// rounds the corners (`border-radius: .75rem`) and gives `.card-header` a transparent bg + a drop
-// shadow. That bleeds onto Bootstrap cards, which is most obvious on the wide page header bars
-// (rounded + shadowed in an otherwise square, shadowless design). Bootstrap cards are identified
-// by a direct `.card-body` child; Bulma's own cards (chart panels using `.card-content` — Phase 10)
-// have no `.card-body`, so they're left untouched. Re-assert Bootstrap's square, shadowless card
-// chrome. Removed in Phase 13 with Bulma.
-.card:has(> .card-body) {
-  border-radius: 0;
-
-  > .card-header {
-    background-color: var(--bs-card-cap-bg);
-    box-shadow: none;
-    border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color);
-  }
-}
-
 // Need a size smaller than 7
 .is-size-8 {
   font-size: 0.5rem !important;
-}
-
-// Override nested hero layout with CSS Grid for reliable fullheight behavior
-.column.hero.is-fullheight {
-  display: grid !important;
-  grid-template-rows: auto 1fr auto;
-  height: 100vh !important;
-  max-height: 100vh !important;
-  justify-content: stretch;
 }
 
 // Main content scrollable area for CSS Grid layout
@@ -338,7 +212,7 @@ $beige-lighter: #eff0eb;
 
 .is-submenu-collapsed {
   .icon {
-    color: var(--bulma-text-weak) !important;
+    color: var(--bs-secondary-color) !important;
   }
 }
 
@@ -365,7 +239,7 @@ $beige-lighter: #eff0eb;
 
   &:hover {
     opacity: 1;
-    background: var(--bulma-scheme-main-ter);
+    background: var(--bs-secondary-bg);
   }
 
   // Add grip lines using CSS
@@ -376,7 +250,7 @@ $beige-lighter: #eff0eb;
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 14px;
-    color: var(--bulma-text);
+    color: var(--bs-body-color);
     opacity: 0.6;
     letter-spacing: 1px;
   }
@@ -387,11 +261,11 @@ $beige-lighter: #eff0eb;
 }
 
 // Dark theme adjustments for resize handle
-[data-theme="dark"] .react-resizable .react-resizable-handle-e {
+[data-bs-theme="dark"] .react-resizable .react-resizable-handle-e {
   background: transparent;
 
   &:hover {
-    background: var(--bulma-scheme-main-ter);
+    background: var(--bs-secondary-bg);
   }
 }
 
@@ -508,21 +382,11 @@ $beige-lighter: #eff0eb;
 
 // Task status row styling
 .task-failed {
-  background-color: rgba(
-    var(--bulma-danger-h),
-    var(--bulma-danger-s),
-    var(--bulma-danger-l),
-    0.1
-  ) !important;
+  background-color: rgba(var(--bs-danger-rgb), 0.1) !important;
 }
 
 .task-running {
-  background-color: rgba(
-    var(--bulma-warning-h),
-    var(--bulma-warning-s),
-    var(--bulma-warning-l),
-    0.1
-  ) !important;
+  background-color: rgba(var(--bs-warning-rgb), 0.1) !important;
 }
 
 // Color utility classes using our CSS variables
@@ -634,8 +498,8 @@ $beige-lighter: #eff0eb;
 }
 
 .zw-console-header {
-  background-color: var(--bulma-dark) !important;
-  color: var(--bulma-white) !important;
+  background-color: var(--bs-dark) !important;
+  color: #fff !important;
   padding: 1rem !important;
   display: flex !important;
   justify-content: space-between !important;
@@ -689,7 +553,6 @@ $beige-lighter: #eff0eb;
   padding: 0.75rem 1rem !important;
   min-height: auto !important;
   flex-shrink: 0 !important;
-  --bulma-modal-card-head-radius: 0 !important;
   border-radius: 0 !important;
 }
 
@@ -697,7 +560,6 @@ $beige-lighter: #eff0eb;
   padding: 0.25rem 0.5rem !important;
   min-height: auto !important;
   flex-shrink: 0 !important;
-  --bulma-modal-card-head-radius: 0 !important;
   border-radius: 0 !important;
 }
 
@@ -1226,13 +1088,5 @@ $beige-lighter: #eff0eb;
   background-color: var(--zw-zone-active) !important;
 }
 
-// AI!! DO NOT ADD ANY CUSTOM CSS CLASSES, WE MUST USE BULMA CLASSES, NOT CUSTOM CSS CLASSES, THERE ARE TOO MANY HERE ALREADY!
-// WE CAN DO OVERRIDES, BUT THEY MUST BE DONE AT THE TOP OF THE FILE IN THE APPROPRIATE SECTION. IF YOU DON'T KNOW WHAT THE FUCK YOU AREDOING. THE FUCKING STOP MAKING CUSTOM CSS CLASSES!
-
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
-// CRITICAL! CRITICAL! DO NOT EVER MAKE CUSTOM CSS CLASSES!
+// NOTE: prefer Bootstrap utilities/components over new custom CSS. The `.zw-*` classes above
+// are the app's intentional custom layer — extend those rather than adding one-off classes.

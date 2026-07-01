@@ -186,30 +186,30 @@ const CustomActions = ({
         align-items: center;
         padding: 8px 12px;
         cursor: pointer;
-        color: var(--bulma-text);
+        color: var(--bs-body-color);
         gap: 8px;
-        border-bottom: 1px solid var(--bulma-border-weak);
+        border-bottom: 1px solid var(--bs-border-color-translucent);
       }
       
       .fm-custom-menu-item:hover {
-        background-color: var(--bulma-scheme-main-bis);
-        color: var(--bulma-text-strong);
+        background-color: var(--bs-tertiary-bg);
+        color: var(--bs-emphasis-color);
       }
       
       .fm-custom-menu-item.disabled {
         opacity: 0.5;
         cursor: not-allowed;
-        color: var(--bulma-text-weak);
+        color: var(--bs-secondary-color);
       }
       
       /* Fix for cubone's context menu dark mode */
       .fm-context-menu {
-        background-color: var(--bulma-scheme-main) !important;
-        border: 1px solid var(--bulma-border) !important;
+        background-color: var(--bs-body-bg) !important;
+        border: 1px solid var(--bs-border-color) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
       }
       
-      [data-theme="dark"] .fm-context-menu {
+      [data-bs-theme="dark"] .fm-context-menu {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
       }
       
@@ -223,18 +223,18 @@ const CustomActions = ({
       }
       
       .fm-context-menu .file-context-menu-list li {
-        color: var(--bulma-text) !important;
+        color: var(--bs-body-color) !important;
         background-color: transparent !important;
         padding: 8px 12px !important;
       }
       
       .fm-context-menu .file-context-menu-list li:hover {
-        background-color: var(--bulma-scheme-main-bis) !important;
-        color: var(--bulma-text-strong) !important;
+        background-color: var(--bs-tertiary-bg) !important;
+        color: var(--bs-emphasis-color) !important;
       }
       
       .fm-context-menu .divider {
-        border-top: 1px solid var(--bulma-border) !important;
+        border-top: 1px solid var(--bs-border-color) !important;
         margin: 4px 0 !important;
       }
     `;

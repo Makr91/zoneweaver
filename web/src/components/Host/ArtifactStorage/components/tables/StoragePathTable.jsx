@@ -98,7 +98,7 @@ const StoragePathTable = ({
   if (loading && storagePaths.length === 0) {
     return (
       <div className="text-center p-4">
-        <span className="icon">
+        <span>
           <i className="fas fa-spinner fa-spin fa-2x" />
         </span>
         <p className="mt-2">Loading storage paths...</p>
@@ -109,7 +109,7 @@ const StoragePathTable = ({
   if (storagePaths.length === 0) {
     return (
       <div className="text-center p-4">
-        <span className="icon text-muted">
+        <span className="text-muted">
           <i className="fas fa-folder fa-2x" />
         </span>
         <p className="mt-2 text-muted">No storage paths configured</p>
@@ -141,9 +141,7 @@ const StoragePathTable = ({
             <tr key={storagePath.id}>
               <td>
                 <div className="d-flex align-items-center">
-                  <span className="icon me-2">
-                    {getTypeIcon(storagePath.type)}
-                  </span>
+                  <span className="me-2">{getTypeIcon(storagePath.type)}</span>
                   {onNameClick ? (
                     <button
                       type="button"
@@ -157,7 +155,7 @@ const StoragePathTable = ({
                       }}
                     >
                       {storagePath.name}
-                      <span className="icon ms-1">
+                      <span className="ms-1">
                         <i className="fas fa-external-link-alt small" />
                       </span>
                     </button>
@@ -201,7 +199,7 @@ const StoragePathTable = ({
                     disabled={loading}
                     title="Edit storage path"
                   >
-                    <span className="icon">
+                    <span>
                       <i className="fas fa-edit" />
                     </span>
                   </button>
@@ -216,7 +214,7 @@ const StoragePathTable = ({
                         : "Enable storage path"
                     }
                   >
-                    <span className="icon">
+                    <span>
                       <i
                         className={`fas ${storagePath.enabled ? "fa-pause" : "fa-play"}`}
                       />
@@ -229,7 +227,7 @@ const StoragePathTable = ({
                     disabled={loading}
                     title="Delete storage path"
                   >
-                    <span className="icon">
+                    <span>
                       <i className="fas fa-trash" />
                     </span>
                   </button>

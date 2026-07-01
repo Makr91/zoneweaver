@@ -42,7 +42,6 @@ web/node_modules/.vite
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-BULMADOCS.md
 docs/passport-integration-plan.md
 modal_close_button_scratchpad.md
 modal_conversion_scratchpad.md
@@ -66,4 +65,3 @@ logs/
 docs/api/openapi.json
 docs/api/swagger-ui.html
 docs/api/reference.md
-BULMA_TO_BOOTSTRAP_MIGRATION.md

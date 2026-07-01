@@ -55,25 +55,25 @@ const getTypeTag = (fileType, extension) => {
 const getChecksumStatus = (artifact) => {
   if (artifact.checksum_verified === true) {
     return (
-      <span className="icon text-success" title="Checksum verified">
+      <span className="text-success" title="Checksum verified">
         <i className="fas fa-check-circle" />
       </span>
     );
   } else if (artifact.checksum_verified === false) {
     return (
-      <span className="icon text-danger" title="Checksum mismatch">
+      <span className="text-danger" title="Checksum mismatch">
         <i className="fas fa-times-circle" />
       </span>
     );
   } else if (artifact.calculated_checksum && !artifact.user_provided_checksum) {
     return (
-      <span className="icon text-info" title="Checksum calculated">
+      <span className="text-info" title="Checksum calculated">
         <i className="fas fa-info-circle" />
       </span>
     );
   }
   return (
-    <span className="icon text-muted" title="No checksum">
+    <span className="text-muted" title="No checksum">
       <i className="fas fa-minus-circle" />
     </span>
   );

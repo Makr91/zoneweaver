@@ -190,20 +190,24 @@ const StoragePathEditModal = ({
 
       {/* Storage location statistics */}
       <div className="alert alert-secondary">
-        <div className="content">
+        <div>
           <p>
             <strong>Storage Statistics:</strong>
           </p>
           <div className="row">
             <div className="col">
               <div className="text-center">
-                <p className="heading">Files</p>
+                <p className="text-uppercase small fw-semibold text-muted">
+                  Files
+                </p>
                 <p className="fs-6 fw-bold">{storagePath.file_count || 0}</p>
               </div>
             </div>
             <div className="col">
               <div className="text-center">
-                <p className="heading">Total Size</p>
+                <p className="text-uppercase small fw-semibold text-muted">
+                  Total Size
+                </p>
                 <p className="fs-6 fw-bold">
                   {storagePath.total_size
                     ? `${(storagePath.total_size / (1024 * 1024 * 1024)).toFixed(1)} GB`
@@ -214,7 +218,9 @@ const StoragePathEditModal = ({
             {storagePath.disk_usage && (
               <div className="col">
                 <div className="text-center">
-                  <p className="heading">Disk Usage</p>
+                  <p className="text-uppercase small fw-semibold text-muted">
+                    Disk Usage
+                  </p>
                   <p className="fs-6 fw-bold">
                     {storagePath.disk_usage.use_percent}
                   </p>

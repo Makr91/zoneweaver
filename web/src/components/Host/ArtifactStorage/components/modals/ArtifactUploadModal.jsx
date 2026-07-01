@@ -420,7 +420,7 @@ const ArtifactUploadModal = ({
                 const progress = uploadProgress[file.name];
                 return (
                   <div key={id}>
-                    <div className="content">
+                    <div>
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
                           <div>
@@ -524,7 +524,7 @@ const ArtifactUploadModal = ({
 
       {selectedStoragePath && (
         <div className="alert alert-info">
-          <div className="content">
+          <div>
             <p>
               <strong>Upload Destination:</strong>
             </p>

@@ -8,56 +8,51 @@ const VnicBasicFields = ({
   onChange,
   disabled,
 }) => (
-  <div className="columns">
-    <div className="column">
-      <div className="field">
-        <label className="label" htmlFor="vnic-create-name">
+  <div className="row">
+    <div className="col">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="vnic-create-name">
           VNIC Name *
         </label>
-        <div className="control">
-          <input
-            id="vnic-create-name"
-            className="input"
-            type="text"
-            placeholder="Auto-generated based on link"
-            value={name}
-            onChange={(e) => onChange("name", e.target.value)}
-            disabled={disabled}
-            required
-          />
-        </div>
-        <p className="help">
+        <input
+          id="vnic-create-name"
+          className="form-control"
+          type="text"
+          placeholder="Auto-generated based on link"
+          value={name}
+          onChange={(e) => onChange("name", e.target.value)}
+          disabled={disabled}
+          required
+        />
+        <p className="form-text text-muted">
           Auto-generated when you select a link. Must start with a letter.
         </p>
       </div>
     </div>
-    <div className="column">
-      <div className="field">
-        <label className="label" htmlFor="vnic-create-link">
+    <div className="col">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="vnic-create-link">
           Physical Link *
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="vnic-create-link"
-              value={link}
-              onChange={(e) => onChange("link", e.target.value)}
-              disabled={disabled || loadingLinks}
-              required
-            >
-              <option value="">
-                {loadingLinks
-                  ? "Loading available links..."
-                  : "Select a link to attach VNIC to"}
-              </option>
-              {availableLinks.map((l) => (
-                <option key={l.name} value={l.name}>
-                  {l.name} ({l.type}, {l.state}, {l.speed})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <select
+          id="vnic-create-link"
+          className="form-select"
+          value={link}
+          onChange={(e) => onChange("link", e.target.value)}
+          disabled={disabled || loadingLinks}
+          required
+        >
+          <option value="">
+            {loadingLinks
+              ? "Loading available links..."
+              : "Select a link to attach VNIC to"}
+          </option>
+          {availableLinks.map((l) => (
+            <option key={l.name} value={l.name}>
+              {l.name} ({l.type}, {l.state}, {l.speed})
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   </div>

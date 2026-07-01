@@ -4,8 +4,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
 
-import { toBsVariant } from "./bulmaVariant";
-
 /**
  * FormModal - Reusable modal for forms and interactive content (react-bootstrap Modal).
  * Perfect for create/edit forms, configuration wizards, etc. react-bootstrap handles
@@ -25,7 +23,7 @@ const FormModal = ({
   className = "",
   children,
   submitText = "Submit",
-  submitVariant = "is-primary",
+  submitVariant = "primary",
   submitIcon = null,
   loading = false,
   disabled = false,
@@ -56,8 +54,8 @@ const FormModal = ({
       <Modal.Header closeButton={!loading}>
         <Modal.Title>
           {icon ? (
-            <span className="icon-text">
-              <span className="icon">
+            <span className="d-inline-flex align-items-center">
+              <span className="me-2">
                 <i className={icon} />
               </span>
               <span>{title}</span>
@@ -76,7 +74,7 @@ const FormModal = ({
         <Button
           type="submit"
           form={formId}
-          variant={toBsVariant(submitVariant, "primary")}
+          variant={submitVariant.replace(/^is-/, "")}
           disabled={loading || disabled}
         >
           {loading && (
@@ -90,7 +88,7 @@ const FormModal = ({
             />
           )}
           {submitIcon && !loading && (
-            <span className="icon is-small">
+            <span className="me-2">
               <i className={submitIcon} />
             </span>
           )}

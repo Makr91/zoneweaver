@@ -117,7 +117,7 @@ const ArtifactFilters = ({
                   disabled={loading}
                   title="Refresh artifact list"
                 >
-                  <span className="icon">
+                  <span className="me-1">
                     <i className="fas fa-sync-alt" />
                   </span>
                   <span>Refresh</span>
@@ -137,7 +137,7 @@ const ArtifactFilters = ({
                   disabled={loading || !hasActiveFilters}
                   title="Clear all filters"
                 >
-                  <span className="icon">
+                  <span className="me-1">
                     <i className="fas fa-times" />
                   </span>
                   <span>Clear</span>
@@ -161,7 +161,7 @@ const ArtifactFilters = ({
                     : "Upload files from your computer"
                 }
               >
-                <span className="icon">
+                <span className="me-1">
                   <i className="fas fa-upload" />
                 </span>
                 <span>Upload Files</span>
@@ -176,7 +176,7 @@ const ArtifactFilters = ({
                     : "Download files from URLs"
                 }
               >
-                <span className="icon">
+                <span className="me-1">
                   <i className="fas fa-download" />
                 </span>
                 <span>Download from URL</span>
@@ -187,7 +187,7 @@ const ArtifactFilters = ({
                 disabled={loading}
                 title="Scan storage locations for new or changed files"
               >
-                <span className="icon">
+                <span className="me-1">
                   <i className="fas fa-search" />
                 </span>
                 <span>Scan Storage</span>
@@ -200,7 +200,7 @@ const ArtifactFilters = ({
             <div className="mb-3">
               <div className="d-flex flex-wrap gap-1">
                 <span className="badge text-bg-light d-inline-flex align-items-center gap-1">
-                  <span className="icon">
+                  <span className="me-1">
                     <i className="fas fa-folder" />
                   </span>
                   <span>
@@ -210,7 +210,7 @@ const ArtifactFilters = ({
                 </span>
                 {storagePaths.length > 0 && (
                   <span className="badge text-bg-light d-inline-flex align-items-center gap-1">
-                    <span className="icon">
+                    <span className="me-1">
                       <i className="fas fa-check" />
                     </span>
                     <span>

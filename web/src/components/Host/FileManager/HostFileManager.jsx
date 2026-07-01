@@ -265,7 +265,7 @@ const HostFileManager = ({ server }) => {
 
   // Theme integration
   const themeConfig = useMemo(() => {
-    const primaryColor = "#ff6600"; // Orange from Bulma theme
+    const primaryColor = "#ff6600"; // Brand orange
     const fontFamily = "Nunito Sans, sans-serif"; // Match zoneweaver
 
     return { primaryColor, fontFamily };

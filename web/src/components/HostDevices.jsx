@@ -46,15 +46,15 @@ const HostDevices = () => {
           <title>Device Monitoring - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="titlebar card-header active d-flex justify-content-between align-items-center mb-0 p-3">
+              <div>
                 <strong>Access Denied</strong>
               </div>
             </div>
             <div className="px-4">
-              <div className="notification is-danger">
+              <div className="alert alert-danger">
                 <p>Please log in to access device monitoring.</p>
               </div>
             </div>
@@ -72,16 +72,16 @@ const HostDevices = () => {
           <title>Device Monitoring - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="titlebar card-header active d-flex justify-content-between align-items-center mb-0 p-3">
+              <div>
                 <strong>Device Monitoring</strong>
               </div>
             </div>
             <div className="px-4">
-              <div className="notification is-info">
-                <h2 className="title is-4">No Zoneweaver API Servers</h2>
+              <div className="alert alert-info">
+                <h2 className="fs-4 fw-bold">No Zoneweaver API Servers</h2>
                 <p>
                   You haven&apos;t added any Zoneweaver API Servers yet. Add a
                   server to start monitoring hardware devices.
@@ -89,9 +89,9 @@ const HostDevices = () => {
                 <div className="mt-4">
                   <a
                     href="/ui/settings/zoneweaver?tab=servers"
-                    className="button is-primary"
+                    className="btn btn-primary"
                   >
-                    <span className="icon">
+                    <span className="me-1">
                       <i className="fas fa-plus" />
                     </span>
                     <span>Add Zoneweaver API Server</span>
@@ -114,8 +114,8 @@ const HostDevices = () => {
         <title>Device Monitoring - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
+      <div className="container-fluid p-0">
+        <div className="card">
           <DeviceHeader
             selectedServer={selectedServer}
             loading={loading}
@@ -124,7 +124,7 @@ const HostDevices = () => {
 
           <div className="px-4">
             {error && (
-              <div className="notification is-danger mb-4">
+              <div className="alert alert-danger mb-4">
                 <p>{error}</p>
               </div>
             )}

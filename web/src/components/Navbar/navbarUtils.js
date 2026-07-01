@@ -27,23 +27,23 @@ export const getZoneStatus = (zones, zoneName) => {
 export const getStatusDotColor = (status) => {
   switch (status?.toLowerCase()) {
     case "running":
-      return "has-text-success";
+      return "text-success";
     case "ready":
-      return "has-text-info";
+      return "text-info";
     case "installed":
-      return "has-text-link";
+      return "text-primary";
     case "configured":
-      return "has-text-warning";
+      return "text-warning";
     case "shutting_down":
     case "shutting-down":
-      return "has-text-warning";
+      return "text-warning";
     case "incomplete":
-      return "has-text-danger";
+      return "text-danger";
     case "down":
     case "stopped":
-      return "has-text-grey-dark";
+      return "text-secondary";
     default:
-      return "has-text-grey";
+      return "text-muted";
   }
 };
 
