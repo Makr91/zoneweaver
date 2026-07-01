@@ -14,12 +14,12 @@ const ZoneInfo = ({
 
   const getHealthClass = (status) => {
     if (status === "healthy") {
-      return "has-text-success";
+      return "text-success";
     }
     if (status === "warning") {
-      return "has-text-warning";
+      return "text-warning";
     }
-    return "has-text-danger";
+    return "text-danger";
   };
 
   const renderConfigurationRows = () => {
@@ -34,7 +34,7 @@ const ZoneInfo = ({
             <strong>Zone Name</strong>
           </td>
           <td className="px-3 py-2">
-            <code className="is-size-7">{configuration.zonename}</code>
+            <code className="small">{configuration.zonename}</code>
           </td>
         </tr>
         <tr>
@@ -42,7 +42,7 @@ const ZoneInfo = ({
             <strong>Zone Path</strong>
           </td>
           <td className="px-3 py-2">
-            <code className="is-size-7">{configuration.zonepath}</code>
+            <code className="small">{configuration.zonepath}</code>
           </td>
         </tr>
         {configuration.bootargs && (
@@ -51,9 +51,7 @@ const ZoneInfo = ({
               <strong>Boot Args</strong>
             </td>
             <td className="px-3 py-2">
-              <code className="is-size-7">
-                {configuration.bootargs || "None"}
-              </code>
+              <code className="small">{configuration.bootargs || "None"}</code>
             </td>
           </tr>
         )}
@@ -63,7 +61,9 @@ const ZoneInfo = ({
               <strong>Host ID</strong>
             </td>
             <td className="px-3 py-2">
-              <span className="tag">{configuration.hostid || "None"}</span>
+              <span className="badge text-bg-secondary">
+                {configuration.hostid || "None"}
+              </span>
             </td>
           </tr>
         )}
@@ -73,7 +73,9 @@ const ZoneInfo = ({
               <strong>Pool</strong>
             </td>
             <td className="px-3 py-2">
-              <span className="tag">{configuration.pool || "None"}</span>
+              <span className="badge text-bg-secondary">
+                {configuration.pool || "None"}
+              </span>
             </td>
           </tr>
         )}
@@ -83,7 +85,7 @@ const ZoneInfo = ({
               <strong>Scheduling Class</strong>
             </td>
             <td className="px-3 py-2">
-              <span className="tag">
+              <span className="badge text-bg-secondary">
                 {configuration["scheduling-class"] || "None"}
               </span>
             </td>
@@ -95,7 +97,9 @@ const ZoneInfo = ({
               <strong>Limit Privileges</strong>
             </td>
             <td className="px-3 py-2">
-              <span className="tag">{configuration.limitpriv || "None"}</span>
+              <span className="badge text-bg-secondary">
+                {configuration.limitpriv || "None"}
+              </span>
             </td>
           </tr>
         )}
@@ -105,7 +109,7 @@ const ZoneInfo = ({
               <strong>FS Allowed</strong>
             </td>
             <td className="px-3 py-2">
-              <span className="tag">
+              <span className="badge text-bg-secondary">
                 {configuration["fs-allowed"] || "None"}
               </span>
             </td>
@@ -116,98 +120,98 @@ const ZoneInfo = ({
   };
 
   return (
-    <div className="box mb-0 pt-0 pd-0">
-      <h4 className="title is-6 mb-3">
-        <span className="icon-text">
-          <span className="icon">
-            <i className="fas fa-info-circle" />
-          </span>
-          <span>Zone Information</span>
-        </span>
-      </h4>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped is-size-7">
-          <tbody>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>System Status</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${getZoneStatus(selectedZone) === "running" ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {getZoneStatus(selectedZone) === "running"
-                    ? "Running"
-                    : "Stopped"}
-                </span>
-              </td>
-            </tr>
-            {Object.keys(monitoringHealth).length > 0 && (
+    <div className="card mb-0 pt-0">
+      <div className="card-body">
+        <h4 className="fs-6 fw-bold mb-3">
+          <i className="fas fa-info-circle me-2" />
+          Zone Information
+        </h4>
+        <div className="table-responsive">
+          <table className="table table-striped small">
+            <tbody>
               <tr>
                 <td className="px-3 py-2">
-                  <strong>Host Health</strong>
+                  <strong>System Status</strong>
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`has-text-weight-semibold ${getHealthClass(
-                      monitoringHealth.status
-                    )}`}
+                    className={`fw-semibold ${getZoneStatus(selectedZone) === "running" ? "text-success" : "text-danger"}`}
                   >
-                    {monitoringHealth.status
-                      ? monitoringHealth.status.charAt(0).toUpperCase() +
-                        monitoringHealth.status.slice(1)
-                      : "Unknown"}
+                    {getZoneStatus(selectedZone) === "running"
+                      ? "Running"
+                      : "Stopped"}
                   </span>
-                  {(monitoringHealth.networkErrors > 0 ||
-                    monitoringHealth.storageErrors > 0) && (
-                    <div className="tags mt-1">
-                      {monitoringHealth.networkErrors > 0 && (
-                        <span className="tag is-warning is-small">
-                          Net Errors: {monitoringHealth.networkErrors}
-                        </span>
+                </td>
+              </tr>
+              {Object.keys(monitoringHealth).length > 0 && (
+                <tr>
+                  <td className="px-3 py-2">
+                    <strong>Host Health</strong>
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`fw-semibold ${getHealthClass(
+                        monitoringHealth.status
+                      )}`}
+                    >
+                      {monitoringHealth.status
+                        ? monitoringHealth.status.charAt(0).toUpperCase() +
+                          monitoringHealth.status.slice(1)
+                        : "Unknown"}
+                    </span>
+                    {(monitoringHealth.networkErrors > 0 ||
+                      monitoringHealth.storageErrors > 0) && (
+                      <div className="d-flex flex-wrap gap-1 mt-1">
+                        {monitoringHealth.networkErrors > 0 && (
+                          <span className="badge text-bg-warning">
+                            Net Errors: {monitoringHealth.networkErrors}
+                          </span>
+                        )}
+                        {monitoringHealth.storageErrors > 0 && (
+                          <span className="badge text-bg-warning">
+                            Storage Errors: {monitoringHealth.storageErrors}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>Last Seen</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-muted">
+                    {zone_info.last_seen
+                      ? new Date(zone_info.last_seen).toLocaleString()
+                      : "N/A"}
+                  </span>
+                </td>
+              </tr>
+              {(zone_info.is_orphaned || zone_info.auto_discovered) && (
+                <tr>
+                  <td className="px-3 py-2">
+                    <strong>Flags</strong>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="d-flex flex-wrap gap-1">
+                      {zone_info.is_orphaned && (
+                        <span className="badge text-bg-warning">Orphaned</span>
                       )}
-                      {monitoringHealth.storageErrors > 0 && (
-                        <span className="tag is-warning is-small">
-                          Storage Errors: {monitoringHealth.storageErrors}
+                      {zone_info.auto_discovered && (
+                        <span className="badge text-bg-info">
+                          Auto-discovered
                         </span>
                       )}
                     </div>
-                  )}
-                </td>
-              </tr>
-            )}
-            <tr>
-              <td className="px-3 py-2">
-                <strong>Last Seen</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span className="has-text-grey">
-                  {zone_info.last_seen
-                    ? new Date(zone_info.last_seen).toLocaleString()
-                    : "N/A"}
-                </span>
-              </td>
-            </tr>
-            {(zone_info.is_orphaned || zone_info.auto_discovered) && (
-              <tr>
-                <td className="px-3 py-2">
-                  <strong>Flags</strong>
-                </td>
-                <td className="px-3 py-2">
-                  <div className="tags">
-                    {zone_info.is_orphaned && (
-                      <span className="tag is-warning">Orphaned</span>
-                    )}
-                    {zone_info.auto_discovered && (
-                      <span className="tag is-info">Auto-discovered</span>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )}
-            {renderConfigurationRows()}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              )}
+              {renderConfigurationRows()}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

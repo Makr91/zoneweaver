@@ -109,75 +109,79 @@ const StoragePathEditModal = ({
       loading={loading}
       showCancelButton
     >
-      <div className="field">
-        <label htmlFor="edit-storage-path-name" className="label">
+      <div className="mb-3">
+        <label htmlFor="edit-storage-path-name" className="form-label">
           Name
         </label>
-        <div className="control">
-          <input
-            id="edit-storage-path-name"
-            className={`input ${errors.name ? "is-danger" : ""}`}
-            type="text"
-            placeholder="e.g., Primary ISO Storage"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            disabled={loading}
-          />
-        </div>
-        {errors.name && <p className="help is-danger">{errors.name}</p>}
-        <p className="help">A descriptive name for this storage location</p>
+        <input
+          id="edit-storage-path-name"
+          className={`form-control ${errors.name ? "is-invalid" : ""}`}
+          type="text"
+          placeholder="e.g., Primary ISO Storage"
+          value={formData.name}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          disabled={loading}
+        />
+        {errors.name && <p className="form-text text-danger">{errors.name}</p>}
+        <p className="form-text text-muted">
+          A descriptive name for this storage location
+        </p>
       </div>
 
       {/* Read-only fields */}
-      <div className="field">
-        <label htmlFor="edit-storage-path-path" className="label">
+      <div className="mb-3">
+        <label htmlFor="edit-storage-path-path" className="form-label">
           Path
         </label>
-        <div className="control">
-          <input
-            id="edit-storage-path-path"
-            className="input"
-            type="text"
-            value={storagePath.path}
-            disabled
-            readOnly
-          />
-        </div>
-        <p className="help">Path cannot be changed after creation</p>
+        <input
+          id="edit-storage-path-path"
+          className="form-control"
+          type="text"
+          value={storagePath.path}
+          disabled
+          readOnly
+        />
+        <p className="form-text text-muted">
+          Path cannot be changed after creation
+        </p>
       </div>
 
-      <div className="field">
-        <label htmlFor="edit-storage-path-type" className="label">
+      <div className="mb-3">
+        <label htmlFor="edit-storage-path-type" className="form-label">
           Type
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="edit-storage-path-type"
-              value={storagePath.type}
-              disabled
-            >
-              <option value="iso">ISO Files</option>
-              <option value="image">VM Images</option>
-            </select>
-          </div>
-        </div>
-        <p className="help">Type cannot be changed after creation</p>
+        <select
+          id="edit-storage-path-type"
+          className="form-select"
+          value={storagePath.type}
+          disabled
+        >
+          <option value="iso">ISO Files</option>
+          <option value="image">VM Images</option>
+        </select>
+        <p className="form-text text-muted">
+          Type cannot be changed after creation
+        </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.enabled}
-              onChange={(e) => handleInputChange("enabled", e.target.checked)}
-              disabled={loading}
-            />
-            <span className="ml-2">Enable storage location</span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="edit-storage-path-enabled"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.enabled}
+            onChange={(e) => handleInputChange("enabled", e.target.checked)}
+            disabled={loading}
+          />
+          <label
+            className="form-check-label"
+            htmlFor="edit-storage-path-enabled"
+          >
+            Enable storage location
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           {formData.enabled
             ? "This storage location can be used for uploads and downloads"
             : "This storage location is read-only when disabled"}
@@ -185,22 +189,22 @@ const StoragePathEditModal = ({
       </div>
 
       {/* Storage location statistics */}
-      <div className="notification is-light">
+      <div className="alert alert-secondary">
         <div className="content">
           <p>
             <strong>Storage Statistics:</strong>
           </p>
-          <div className="columns is-mobile">
-            <div className="column">
-              <div className="has-text-centered">
+          <div className="row">
+            <div className="col">
+              <div className="text-center">
                 <p className="heading">Files</p>
-                <p className="title is-6">{storagePath.file_count || 0}</p>
+                <p className="fs-6 fw-bold">{storagePath.file_count || 0}</p>
               </div>
             </div>
-            <div className="column">
-              <div className="has-text-centered">
+            <div className="col">
+              <div className="text-center">
                 <p className="heading">Total Size</p>
-                <p className="title is-6">
+                <p className="fs-6 fw-bold">
                   {storagePath.total_size
                     ? `${(storagePath.total_size / (1024 * 1024 * 1024)).toFixed(1)} GB`
                     : "0 GB"}
@@ -208,10 +212,10 @@ const StoragePathEditModal = ({
               </div>
             </div>
             {storagePath.disk_usage && (
-              <div className="column">
-                <div className="has-text-centered">
+              <div className="col">
+                <div className="text-center">
                   <p className="heading">Disk Usage</p>
-                  <p className="title is-6">
+                  <p className="fs-6 fw-bold">
                     {storagePath.disk_usage.use_percent}
                   </p>
                 </div>
@@ -222,7 +226,7 @@ const StoragePathEditModal = ({
       </div>
 
       {!formData.enabled && storagePath.file_count > 0 && (
-        <div className="notification is-warning">
+        <div className="alert alert-warning">
           <p>
             <strong>Warning:</strong> This storage location contains{" "}
             {storagePath.file_count} file(s). Disabling it will make these

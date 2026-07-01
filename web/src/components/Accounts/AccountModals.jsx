@@ -71,7 +71,7 @@ const AccountModals = ({
       loading={loading}
       disabled={deleteConfirmText !== "DELETE"}
     >
-      <div className="notification is-danger">
+      <div className="alert alert-danger">
         <p>
           <strong>WARNING: This action cannot be undone!</strong>
         </p>
@@ -79,40 +79,41 @@ const AccountModals = ({
       </div>
 
       {deleteModalUser && (
-        <div className="box">
-          <p>
-            <strong>Username:</strong> {deleteModalUser.username}
-          </p>
-          <p>
-            <strong>Email:</strong> {deleteModalUser.email}
-          </p>
-          <p>
-            <strong>Role:</strong> {deleteModalUser.role}
-          </p>
-          {deleteModalUser.organization_name && (
+        <div className="card">
+          <div className="card-body">
             <p>
-              <strong>Organization:</strong> {deleteModalUser.organization_name}
+              <strong>Username:</strong> {deleteModalUser.username}
             </p>
-          )}
+            <p>
+              <strong>Email:</strong> {deleteModalUser.email}
+            </p>
+            <p>
+              <strong>Role:</strong> {deleteModalUser.role}
+            </p>
+            {deleteModalUser.organization_name && (
+              <p>
+                <strong>Organization:</strong>{" "}
+                {deleteModalUser.organization_name}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="field">
-        <label className="label" htmlFor="delete-user-confirm">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="delete-user-confirm">
           Type &quot;DELETE&quot; to confirm permanent deletion:
         </label>
-        <div className="control">
-          <input
-            id="delete-user-confirm"
-            className="input"
-            type="text"
-            value={deleteConfirmText}
-            onChange={(e) => setDeleteConfirmText(e.target.value)}
-            placeholder="Type DELETE to confirm"
-            autoComplete="off"
-          />
-        </div>
-        <p className="help">
+        <input
+          id="delete-user-confirm"
+          className="form-control"
+          type="text"
+          value={deleteConfirmText}
+          onChange={(e) => setDeleteConfirmText(e.target.value)}
+          placeholder="Type DELETE to confirm"
+          autoComplete="off"
+        />
+        <p className="form-text text-muted">
           This will permanently remove the user and all associated data.
         </p>
       </div>
@@ -132,7 +133,7 @@ const AccountModals = ({
       loading={orgLoading}
       disabled={deleteOrgConfirmText !== "DELETE"}
     >
-      <div className="notification is-danger">
+      <div className="alert alert-danger">
         <p>
           <strong>WARNING: This action cannot be undone!</strong>
         </p>
@@ -140,29 +141,31 @@ const AccountModals = ({
       </div>
 
       {deleteModalOrg && (
-        <div className="box">
-          <p>
-            <strong>Organization Name:</strong> {deleteModalOrg.name}
-          </p>
-          <p>
-            <strong>Description:</strong>{" "}
-            {deleteModalOrg.description || "No description"}
-          </p>
-          <p>
-            <strong>Total Users:</strong> {deleteModalOrg.total_users || 0}
-          </p>
-          <p>
-            <strong>Active Users:</strong> {deleteModalOrg.active_users || 0}
-          </p>
-          <p>
-            <strong>Created:</strong>{" "}
-            {new Date(deleteModalOrg.created_at).toLocaleDateString()}
-          </p>
+        <div className="card">
+          <div className="card-body">
+            <p>
+              <strong>Organization Name:</strong> {deleteModalOrg.name}
+            </p>
+            <p>
+              <strong>Description:</strong>{" "}
+              {deleteModalOrg.description || "No description"}
+            </p>
+            <p>
+              <strong>Total Users:</strong> {deleteModalOrg.total_users || 0}
+            </p>
+            <p>
+              <strong>Active Users:</strong> {deleteModalOrg.active_users || 0}
+            </p>
+            <p>
+              <strong>Created:</strong>{" "}
+              {new Date(deleteModalOrg.created_at).toLocaleDateString()}
+            </p>
+          </div>
         </div>
       )}
 
       {deleteModalOrg && deleteModalOrg.active_users > 0 && (
-        <div className="notification is-warning">
+        <div className="alert alert-warning">
           <p>
             <strong>Note:</strong> This organization has{" "}
             {deleteModalOrg.active_users} active users. All users in this
@@ -172,22 +175,20 @@ const AccountModals = ({
         </div>
       )}
 
-      <div className="field">
-        <label className="label" htmlFor="delete-org-confirm">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="delete-org-confirm">
           Type &quot;DELETE&quot; to confirm permanent deletion:
         </label>
-        <div className="control">
-          <input
-            id="delete-org-confirm"
-            className="input"
-            type="text"
-            value={deleteOrgConfirmText}
-            onChange={(e) => setDeleteOrgConfirmText(e.target.value)}
-            placeholder="Type DELETE to confirm"
-            autoComplete="off"
-          />
-        </div>
-        <p className="help">
+        <input
+          id="delete-org-confirm"
+          className="form-control"
+          type="text"
+          value={deleteOrgConfirmText}
+          onChange={(e) => setDeleteOrgConfirmText(e.target.value)}
+          placeholder="Type DELETE to confirm"
+          autoComplete="off"
+        />
+        <p className="form-text text-muted">
           This will permanently remove the organization and all associated data.
         </p>
       </div>
@@ -213,14 +214,17 @@ const AccountModals = ({
         . The invitation will be valid for 7 days and can only be used once.
       </p>
 
-      <div className="field">
-        <label className="label" htmlFor="invite-email">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="invite-email">
           Email Address
         </label>
-        <div className="control has-icons-left">
+        <div className="input-group">
+          <span className="input-group-text">
+            <i className="fas fa-envelope" />
+          </span>
           <input
             id="invite-email"
-            className="input"
+            className="form-control"
             type="email"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
@@ -228,39 +232,33 @@ const AccountModals = ({
             autoComplete="off"
             disabled={inviteLoading}
           />
-          <span className="icon is-small is-left">
-            <i className="fas fa-envelope" />
-          </span>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           The user will receive an email with a registration link that expires
           in 7 days.
         </p>
       </div>
 
       {user?.role === "super-admin" && (
-        <div className="field">
-          <label className="label" htmlFor="invite-org">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="invite-org">
             Organization (Optional)
           </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="invite-org"
-                value={inviteOrganizationId}
-                onChange={(e) => setInviteOrganizationId(e.target.value)}
-                disabled={inviteLoading}
-              >
-                <option value="">Select Organization</option>
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name} ({org.active_users} active users)
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <p className="help">
+          <select
+            id="invite-org"
+            className="form-select"
+            value={inviteOrganizationId}
+            onChange={(e) => setInviteOrganizationId(e.target.value)}
+            disabled={inviteLoading}
+          >
+            <option value="">Select Organization</option>
+            {organizations.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name} ({org.active_users} active users)
+              </option>
+            ))}
+          </select>
+          <p className="form-text text-muted">
             Choose an organization for the user to join, or leave blank for a
             system-level invitation.
           </p>
@@ -268,7 +266,7 @@ const AccountModals = ({
       )}
 
       {user?.role === "admin" && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>
             <strong>Organization Admin:</strong> This invitation will allow the
             user to join your organization with a &apos;user&apos; role by
@@ -278,7 +276,7 @@ const AccountModals = ({
       )}
 
       {inviteMsg && (
-        <div className={`notification ${getNotificationClass(inviteMsg)}`}>
+        <div className={`alert ${getNotificationClass(inviteMsg)}`}>
           <p>{inviteMsg}</p>
         </div>
       )}
@@ -324,7 +322,7 @@ const AccountModals = ({
             Are you sure you want to deactivate{" "}
             <strong>{confirmModalOrg.name}</strong>?
           </p>
-          <p className="mt-3 has-text-grey">
+          <p className="mt-3 text-muted">
             This will prevent new users from joining this organization.
           </p>
         </div>

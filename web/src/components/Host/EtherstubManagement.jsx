@@ -162,25 +162,25 @@ const EtherstubManagement = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Etherstub Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Etherstub Management</h2>
+        <p>
           Manage etherstubs on <strong>{server.hostname}</strong>. Etherstubs
           provide a virtual Layer 2 switch for connecting VNICs.
         </p>
       </div>
 
       {/* Etherstub Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label htmlFor="etherstub-filter-name" className="label">
-                Filter by Name
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="etherstub-filter-name" className="form-label">
+                  Filter by Name
+                </label>
                 <input
                   id="etherstub-filter-name"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Etherstub name"
                   value={filters.name}
@@ -188,40 +188,34 @@ const EtherstubManagement = ({ server, onError }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button is-info"
+                  type="button"
+                  className="btn btn-info"
                   onClick={loadEtherstubs}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
+                  <i className="fas fa-sync-alt me-2" />
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button"
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
+                  <i className="fas fa-times me-2" />
                   <span>Clear</span>
                 </button>
               </div>
@@ -231,38 +225,39 @@ const EtherstubManagement = ({ server, onError }) => {
       </div>
 
       {/* Etherstubs Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              Etherstubs ({etherstubs.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold">
+                Etherstubs ({etherstubs.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Create Etherstub</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create Etherstub</span>
-            </button>
-          </div>
-        </div>
 
-        <EtherstubTable
-          etherstubs={etherstubs}
-          loading={loading}
-          onDelete={setDeleteTarget}
-          onViewDetails={handleViewDetails}
-        />
+          <EtherstubTable
+            etherstubs={etherstubs}
+            loading={loading}
+            onDelete={setDeleteTarget}
+            onViewDetails={handleViewDetails}
+          />
+        </div>
       </div>
 
       {/* Etherstub Create Modal */}

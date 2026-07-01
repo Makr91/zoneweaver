@@ -15,12 +15,12 @@ const DownloadSizeCell = ({ download }) => {
   if (download.progress_info?.total_mb) {
     return (
       <div>
-        <div className="has-text-weight-semibold">
+        <div className="fw-semibold">
           {formatSize(download.progress_info.downloaded_mb * 1024 * 1024)} /{" "}
           {formatSize(download.progress_info.total_mb * 1024 * 1024)}
         </div>
         {download.progress_info.speed_kbps && (
-          <div className="is-size-7 has-text-grey">
+          <div className="small text-muted">
             {Math.round(download.progress_info.speed_kbps / 1024)} MB/s
           </div>
         )}
@@ -30,14 +30,14 @@ const DownloadSizeCell = ({ download }) => {
 
   if (download.progress_info?.file_size_mb) {
     return (
-      <div className="has-text-weight-semibold">
+      <div className="fw-semibold">
         {formatSize(download.progress_info.file_size_mb * 1024 * 1024)}
       </div>
     );
   }
 
   return (
-    <span className="has-text-grey">
+    <span className="text-muted">
       {download.status === "running" ? "Processing..." : "Pending"}
     </span>
   );
@@ -51,23 +51,23 @@ DownloadSizeCell.propTypes = {
  * A single active download placeholder row in the artifact table.
  */
 const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
-  <tr className="has-background-light">
+  <tr className="table-light">
     <td>
-      <span className="icon has-text-grey">
+      <span className="icon text-muted">
         <i className="fas fa-clock" />
       </span>
     </td>
     <td>
-      <div className="is-flex is-align-items-center">
-        <span className="icon mr-2">
+      <div className="d-flex align-items-center">
+        <span className="icon me-2">
           {getDownloadStatusIcon(download.status)}
         </span>
         <div>
-          <div className="has-text-weight-semibold has-text-grey">
+          <div className="fw-semibold text-muted">
             {download.filename || "Downloading..."}
           </div>
-          <div className="is-size-7 has-text-grey">
-            <i className="fas fa-download mr-1" />
+          <div className="small text-muted">
+            <i className="fas fa-download me-1" />
             {download.url && (
               <span title={download.url}>
                 {download.url.length > 50
@@ -84,36 +84,36 @@ const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
       <DownloadSizeCell download={download} />
     </td>
     <td>
-      <span className="icon has-text-grey" title="Download in progress">
+      <span className="icon text-muted" title="Download in progress">
         <i className="fas fa-clock" />
       </span>
     </td>
     <td>
       {download.storage_location && (
         <div>
-          <div className="has-text-weight-semibold is-size-7 has-text-grey">
+          <div className="fw-semibold small text-muted">
             {download.storage_location.name}
           </div>
-          <div className="is-size-7 has-text-grey">
+          <div className="small text-muted">
             {download.storage_location.path}
           </div>
         </div>
       )}
     </td>
     <td>
-      <span className="is-size-7 has-text-grey">
+      <span className="small text-muted">
         {formatDate(download.created_at)}
       </span>
     </td>
     <td>
-      <div className="buttons are-small">
+      <div className="d-flex gap-2">
         {download.status === "failed" && download.error_message && (
           <button
-            className="button is-danger is-small"
+            className="btn btn-danger btn-sm"
             title={`Download failed: ${download.error_message}`}
             disabled
           >
-            <span className="icon is-small">
+            <span className="icon">
               <i className="fas fa-exclamation-circle" />
             </span>
           </button>
@@ -122,17 +122,17 @@ const ArtifactDownloadRow = ({ download, onCancelDownload }) => (
         {["queued", "running"].includes(download.status) &&
           onCancelDownload && (
             <button
-              className="button is-warning is-small"
+              className="btn btn-warning btn-sm"
               onClick={() => onCancelDownload(download.taskId)}
               title="Cancel download"
             >
-              <span className="icon is-small">
+              <span className="icon">
                 <i className="fas fa-times" />
               </span>
             </button>
           )}
 
-        <span className="tag is-small has-text-grey">
+        <span className="badge text-bg-light text-muted">
           {getDownloadStatusText(download.status)}
         </span>
       </div>

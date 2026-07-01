@@ -68,136 +68,136 @@ const SmtpTestPanel = ({
   const isMailSuccess = testResults.mail?.success;
 
   return (
-    <div className="box mt-4 has-background-light">
-      <h3 className="title is-6">
-        <span className="icon is-small mr-2">
-          <i className="fas fa-paper-plane" />
-        </span>
-        Test Email Configuration
-      </h3>
+    <div className="card mt-4 bg-body-tertiary">
+      <div className="card-body">
+        <h3 className="fs-6 fw-bold">
+          <i className="fas fa-paper-plane me-2" />
+          Test Email Configuration
+        </h3>
 
-      <div className="field">
-        <label className="label" htmlFor="test-email-address">
-          Test Email Address
-        </label>
-        <div className="control has-icons-right">
-          <input
-            id="test-email-address"
-            className="input"
-            type="email"
-            placeholder="test@example.com"
-            value={testEmail}
-            onChange={(e) => setTestEmail(e.target.value)}
-            disabled={testLoading.mail || loading}
-          />
-          <span className="icon is-small is-right">
-            <i className="fas fa-envelope" />
-          </span>
+        <div className="mb-3">
+          <label className="form-label" htmlFor="test-email-address">
+            Test Email Address
+          </label>
+          <div className="input-group">
+            <input
+              id="test-email-address"
+              className="form-control"
+              type="email"
+              placeholder="test@example.com"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              disabled={testLoading.mail || loading}
+            />
+            <span className="input-group-text">
+              <i className="fas fa-envelope" />
+            </span>
+          </div>
+          <p className="form-text text-muted">
+            Send a test email to verify SMTP configuration
+          </p>
         </div>
-        <p className="help has-text-grey">
-          Send a test email to verify SMTP configuration
-        </p>
-      </div>
 
-      <div className="field">
-        <div className="control">
+        <div className="mb-3">
           <button
-            className={`button is-info ${testLoading.mail ? "is-loading" : ""}`}
+            type="button"
+            className="btn btn-info"
             onClick={testMailConnection}
             disabled={testLoading.mail || loading || !testEmail}
           >
-            <span className="icon">
-              <i className="fas fa-paper-plane" />
-            </span>
+            {testLoading.mail && (
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              />
+            )}
+            <i className="fas fa-paper-plane me-2" />
             <span>Send Test Email</span>
           </button>
+          <p className="form-text text-muted">
+            Tests SMTP server connection and sends a test email
+          </p>
         </div>
-        <p className="help has-text-grey">
-          Tests SMTP server connection and sends a test email
-        </p>
-      </div>
 
-      {testResults.mail && (
-        <div
-          className={`notification mt-3 ${isMailSuccess ? "is-success" : "is-danger"}`}
-        >
-          <div className="media">
-            <div className="media-left">
-              <span className="icon is-large">
+        {testResults.mail && (
+          <div
+            className={`alert mt-3 ${isMailSuccess ? "alert-success" : "alert-danger"}`}
+          >
+            <div className="d-flex">
+              <div className="flex-shrink-0 me-3">
                 <i
                   className={`fas fa-2x ${isMailSuccess ? "fa-check-circle" : "fa-times-circle"}`}
                 />
-              </span>
-            </div>
-            <div className="media-content">
-              <p className="is-size-6 has-text-weight-semibold">
-                {testResults.mail.message}
-              </p>
-              {testResults.mail.details && (
-                <div className="content mt-2">
-                  <p className="is-size-7">
-                    <strong>Host:</strong> {testResults.mail.details.host}{" "}
-                    <br />
-                    <strong>Port:</strong> {testResults.mail.details.port}{" "}
-                    <br />
-                    <strong>Secure:</strong>{" "}
-                    {testResults.mail.details.secure ? "Yes" : "No"}
+              </div>
+              <div className="flex-grow-1">
+                <p className="fw-semibold">{testResults.mail.message}</p>
+                {testResults.mail.details && (
+                  <div className="mt-2">
+                    <p className="small">
+                      <strong>Host:</strong> {testResults.mail.details.host}{" "}
+                      <br />
+                      <strong>Port:</strong> {testResults.mail.details.port}{" "}
+                      <br />
+                      <strong>Secure:</strong>{" "}
+                      {testResults.mail.details.secure ? "Yes" : "No"}
+                    </p>
+                  </div>
+                )}
+                {testResults.mail.error && (
+                  <p className="small text-muted mt-1">
+                    <strong>Error:</strong> {testResults.mail.error}
                   </p>
-                </div>
-              )}
-              {testResults.mail.error && (
-                <p className="is-size-7 has-text-grey mt-1">
-                  <strong>Error:</strong> {testResults.mail.error}
-                </p>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Configuration Help */}
-      <div className="content mt-4">
-        <h4 className="title is-6">Configuration Help</h4>
-        <div className="columns">
-          <div className="column">
-            <p>
-              <strong>Gmail:</strong>
-            </p>
-            <ul className="is-size-7">
-              <li>Host: smtp.gmail.com</li>
-              <li>Port: 587 (TLS) or 465 (SSL)</li>
-              <li>Use App Password (not regular password)</li>
-            </ul>
-            <p>
-              <strong>Outlook/Hotmail:</strong>
-            </p>
-            <ul className="is-size-7">
-              <li>Host: smtp-mail.outlook.com</li>
-              <li>Port: 587</li>
-            </ul>
+        {/* Configuration Help */}
+        <div className="mt-4">
+          <h4 className="fs-6 fw-bold">Configuration Help</h4>
+          <div className="row g-3">
+            <div className="col">
+              <p>
+                <strong>Gmail:</strong>
+              </p>
+              <ul className="small">
+                <li>Host: smtp.gmail.com</li>
+                <li>Port: 587 (TLS) or 465 (SSL)</li>
+                <li>Use App Password (not regular password)</li>
+              </ul>
+              <p>
+                <strong>Outlook/Hotmail:</strong>
+              </p>
+              <ul className="small">
+                <li>Host: smtp-mail.outlook.com</li>
+                <li>Port: 587</li>
+              </ul>
+            </div>
+            <div className="col">
+              <p>
+                <strong>Yahoo:</strong>
+              </p>
+              <ul className="small">
+                <li>Host: smtp.mail.yahoo.com</li>
+                <li>Port: 587 or 465</li>
+              </ul>
+              <p>
+                <strong>Custom SMTP:</strong>
+              </p>
+              <ul className="small">
+                <li>Contact your hosting provider</li>
+                <li>Check documentation for settings</li>
+              </ul>
+            </div>
           </div>
-          <div className="column">
-            <p>
-              <strong>Yahoo:</strong>
+          <div className="alert alert-info">
+            <p className="small">
+              <strong>Note:</strong> Save settings first, then use the test
+              button to verify configuration.
             </p>
-            <ul className="is-size-7">
-              <li>Host: smtp.mail.yahoo.com</li>
-              <li>Port: 587 or 465</li>
-            </ul>
-            <p>
-              <strong>Custom SMTP:</strong>
-            </p>
-            <ul className="is-size-7">
-              <li>Contact your hosting provider</li>
-              <li>Check documentation for settings</li>
-            </ul>
           </div>
-        </div>
-        <div className="notification is-info is-light">
-          <p className="is-size-7">
-            <strong>Note:</strong> Save settings first, then use the test button
-            to verify configuration.
-          </p>
         </div>
       </div>
     </div>

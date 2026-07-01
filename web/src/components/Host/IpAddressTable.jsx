@@ -1,87 +1,85 @@
 import PropTypes from "prop-types";
 
 const IpAddressTable = ({ ipAddresses, sectionsCollapsed, toggleSection }) => (
-  <div className="box mb-4">
-    <div className="level is-mobile mb-3">
-      <div className="level-left">
-        <h4 className="title is-5 mb-0">
-          <span className="icon-text">
-            <span className="icon">
-              <i className="fas fa-globe" />
-            </span>
-            <span>IP Addresses</span>
-          </span>
-        </h4>
-      </div>
-      <div className="level-right">
-        <button
-          className="button is-small is-ghost"
-          onClick={() => toggleSection("ipAddresses")}
-          title={
-            sectionsCollapsed.ipAddresses
-              ? "Expand section"
-              : "Collapse section"
-          }
-        >
-          <span className="icon">
+  <div className="card mb-4">
+    <div className="card-body">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <h4 className="fs-5 fw-bold mb-0">
+            <i className="fas fa-globe me-2" />
+            IP Addresses
+          </h4>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-link"
+            onClick={() => toggleSection("ipAddresses")}
+            title={
+              sectionsCollapsed.ipAddresses
+                ? "Expand section"
+                : "Collapse section"
+            }
+          >
             <i
               className={`fas ${sectionsCollapsed.ipAddresses ? "fa-chevron-down" : "fa-chevron-up"}`}
             />
-          </span>
-        </button>
+          </button>
+        </div>
       </div>
-    </div>
-    {!sectionsCollapsed.ipAddresses &&
-      (ipAddresses.length > 0 ? (
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Interface</th>
-                <th>IP Address</th>
-                <th>Netmask/Prefix</th>
-                <th>Type</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ipAddresses.map((ip) => (
-                <tr key={`${ip.interface}-${ip.ip_address}`}>
-                  <td>
-                    <strong>{ip.interface}</strong>
-                  </td>
-                  <td>
-                    <code>{ip.ip_address}</code>
-                  </td>
-                  <td>
-                    <code>
-                      {ip.prefix_length ? `/${ip.prefix_length}` : "N/A"}
-                    </code>
-                  </td>
-                  <td>
-                    <span className="tag is-info">
-                      {ip.ip_version || "IPv4"}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`tag ${ip.state === "ok" || ip.state === "up" ? "is-success" : "is-warning"}`}
-                    >
-                      {ip.state || "Active"}
-                    </span>
-                  </td>
+      {!sectionsCollapsed.ipAddresses &&
+        (ipAddresses.length > 0 ? (
+          <div className="table-responsive">
+            <table className="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>Interface</th>
+                  <th>IP Address</th>
+                  <th>Netmask/Prefix</th>
+                  <th>Type</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="notification is-info">
-          <p>
-            No IP address data available or monitoring endpoint not configured.
-          </p>
-        </div>
-      ))}
+              </thead>
+              <tbody>
+                {ipAddresses.map((ip) => (
+                  <tr key={`${ip.interface}-${ip.ip_address}`}>
+                    <td>
+                      <strong>{ip.interface}</strong>
+                    </td>
+                    <td>
+                      <code>{ip.ip_address}</code>
+                    </td>
+                    <td>
+                      <code>
+                        {ip.prefix_length ? `/${ip.prefix_length}` : "N/A"}
+                      </code>
+                    </td>
+                    <td>
+                      <span className="badge text-bg-info">
+                        {ip.ip_version || "IPv4"}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${ip.state === "ok" || ip.state === "up" ? "text-bg-success" : "text-bg-warning"}`}
+                      >
+                        {ip.state || "Active"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="alert alert-info">
+            <p>
+              No IP address data available or monitoring endpoint not
+              configured.
+            </p>
+          </div>
+        ))}
+    </div>
   </div>
 );
 

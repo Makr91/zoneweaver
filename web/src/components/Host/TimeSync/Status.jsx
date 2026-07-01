@@ -241,10 +241,8 @@ const TimeSyncStatus = ({ server, onError }) => {
 
   if (loading && !statusInfo) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading time synchronization status...</p>
       </div>
     );
@@ -253,8 +251,8 @@ const TimeSyncStatus = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Time Synchronization Status</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Time Synchronization Status</h2>
+        <p>
           Monitor time synchronization service and peer status on{" "}
           <strong>{server.hostname}</strong>.
         </p>

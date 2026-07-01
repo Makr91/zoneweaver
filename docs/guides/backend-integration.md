@@ -214,15 +214,19 @@ Each organization can have different server assignments:
 **Cannot Connect to Backend**
 
 1. Verify backend service is running:
+
    ```bash
    svcs zoneweaver-api  # On OmniOS
    systemctl status zoneweaver-api  # On Linux
    ```
+
 2. Check network connectivity:
+
    ```bash
    ping backend-hostname
    telnet backend-hostname 5001
    ```
+
 3. Verify firewall rules allow connection
 4. Check backend logs for errors
 

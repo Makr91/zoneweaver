@@ -5,26 +5,22 @@ import { computeSliderBackground } from "./arcUtils";
 const PerformanceSection = ({ formData, loading, handleFormChange }) => (
   <>
     <hr />
-    <h5 className="title is-6 mb-3 has-text-info">
-      <span className="icon-text">
-        <span className="icon">
-          <i className="fas fa-tachometer-alt" />
-        </span>
-        <span>Performance Parameters</span>
-      </span>
+    <h5 className="fs-6 fw-bold mb-3 text-info">
+      <i className="fas fa-tachometer-alt me-2" />
+      <span>Performance Parameters</span>
     </h5>
 
-    <div className="columns">
-      <div className="column is-6">
-        <div className="field mb-4">
-          <label className="label">
+    <div className="row g-3">
+      <div className="col-12 col-lg-6">
+        <div className="mb-4">
+          <label className="form-label">
             VDev Max Pending:{" "}
             {formData.vdev_max_pending ? formData.vdev_max_pending : "Auto"}
-            <span className="tag is-success is-small ml-2">Dynamic</span>
+            <span className="badge text-bg-success ms-2">Dynamic</span>
           </label>
-          <div className="control mt-4 mb-4">
+          <div className="mt-4 mb-4">
             <input
-              className="zw-range-slider-primary"
+              className="form-range zw-range-slider-primary"
               type="range"
               min="1"
               max="100"
@@ -45,51 +41,50 @@ const PerformanceSection = ({ formData, loading, handleFormChange }) => (
               }}
             />
           </div>
-          <div className="help is-size-7">
+          <div className="form-text text-muted">
             Max concurrent I/Os per device (1-100). Higher values for storage
             arrays.
             <br />
             Typical: 10 (default), 35-50 (high-performance storage).
           </div>
-          <div className="field mt-3">
-            <div className="control">
-              <button
-                className="button is-small is-light"
-                onClick={() => handleFormChange("vdev_max_pending", "")}
-                disabled={loading}
-                title="Reset to default (10)"
-              >
-                <span className="icon is-small">
-                  <i className="fas fa-undo" />
-                </span>
-                <span>Default</span>
-              </button>
-            </div>
+          <div className="mt-3">
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => handleFormChange("vdev_max_pending", "")}
+              disabled={loading}
+              title="Reset to default (10)"
+            >
+              <i className="fas fa-undo me-2" />
+              <span>Default</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="column is-6">
-        <div className="field">
-          <p className="label">
+      <div className="col-12 col-lg-6">
+        <div className="mb-3">
+          <p className="form-label">
             ZFS Prefetching
-            <span className="tag is-success is-small ml-2">Dynamic</span>
+            <span className="badge text-bg-success ms-2">Dynamic</span>
           </p>
-          <div className="control">
-            <label className="checkbox">
-              <input
-                type="checkbox"
-                checked={!formData.prefetch_disable}
-                onChange={(e) =>
-                  handleFormChange("prefetch_disable", !e.target.checked)
-                }
-                disabled={loading}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <span className="ml-2">Enable ZFS file-level prefetching</span>
+          <div className="form-check">
+            <input
+              id="prefetch-enable"
+              className="form-check-input"
+              type="checkbox"
+              checked={!formData.prefetch_disable}
+              onChange={(e) =>
+                handleFormChange("prefetch_disable", !e.target.checked)
+              }
+              disabled={loading}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <label className="form-check-label" htmlFor="prefetch-enable">
+              Enable ZFS file-level prefetching
             </label>
           </div>
-          <div className="help is-size-7 mt-2">
+          <div className="form-text text-muted mt-2">
             Prefetching improves sequential read performance by predicting
             future reads.
             <br />
@@ -100,34 +95,33 @@ const PerformanceSection = ({ formData, loading, handleFormChange }) => (
       </div>
     </div>
 
-    <div className="columns">
-      <div className="column is-6">
-        <div className="field">
-          <label className="label" htmlFor="apply-method">
+    <div className="row g-3">
+      <div className="col-12 col-lg-6">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="apply-method">
             Apply Method
           </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="apply-method"
-                value={formData.apply_method}
-                onChange={(e) =>
-                  handleFormChange("apply_method", e.target.value)
-                }
-                disabled={loading}
-              >
-                <option value="runtime">Runtime Only (Temporary)</option>
-                <option value="persistent">
-                  Persistent Only (Reboot Required)
-                </option>
-                <option value="both">Both Runtime + Persistent</option>
-              </select>
-            </div>
-          </div>
-          <p className="help">Choose how to apply the changes.</p>
+          <select
+            id="apply-method"
+            className="form-select"
+            value={formData.apply_method}
+            onChange={(e) => handleFormChange("apply_method", e.target.value)}
+            disabled={loading}
+          >
+            <option value="runtime">Runtime Only (Temporary)</option>
+            <option value="persistent">
+              Persistent Only (Reboot Required)
+            </option>
+            <option value="both">Both Runtime + Persistent</option>
+          </select>
+          <p className="form-text text-muted">
+            Choose how to apply the changes.
+          </p>
         </div>
       </div>
-      <div className="column is-6">{/* Empty column for layout balance */}</div>
+      <div className="col-12 col-lg-6">
+        {/* Empty column for layout balance */}
+      </div>
     </div>
   </>
 );

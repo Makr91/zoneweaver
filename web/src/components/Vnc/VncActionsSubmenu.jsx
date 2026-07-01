@@ -59,7 +59,7 @@ const VncActionsSubmenu = ({
 
   return (
     <div
-      className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center"
+      className="dropdown-item position-relative d-flex justify-content-between align-items-center"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
       role="button"
@@ -67,23 +67,19 @@ const VncActionsSubmenu = ({
       aria-haspopup="true"
       aria-expanded={showActions}
     >
-      <div className="is-flex is-align-items-center">
-        <span className="icon mr-2">
-          <i className="fas fa-tools" />
-        </span>
+      <div className="d-flex align-items-center">
+        <i className="fas fa-tools me-2" />
         <span>Actions</span>
       </div>
-      <span className="icon">
-        <i className="fas fa-chevron-right" />
-      </span>
+      <i className="fas fa-chevron-right" />
 
       {showActions && (
-        <div className={`dropdown-menu ${calculateSubmenuPosition(300)}`}>
-          <div className="dropdown-content">
+        <div className={`dropdown-menu show ${calculateSubmenuPosition(300)}`}>
+          <div>
             {isAdmin && onToggleReadOnly && (
               <>
                 <div
-                  className="dropdown-item is-clickable"
+                  className="dropdown-item"
                   onClick={() => {
                     onToggleReadOnly();
                     onClose();
@@ -102,9 +98,9 @@ const VncActionsSubmenu = ({
                       : "Enable read-only mode"
                   }
                 >
-                  <span className="icon mr-2">
-                    <i className={`fas ${isReadOnly ? "fa-edit" : "fa-eye"}`} />
-                  </span>
+                  <i
+                    className={`fas ${isReadOnly ? "fa-edit" : "fa-eye"} me-2`}
+                  />
                   <span>
                     {isReadOnly ? "Enable Interactive" : "Set Read-Only"}
                   </span>
@@ -116,7 +112,7 @@ const VncActionsSubmenu = ({
             {(onClipboardPaste || vncRef?.current?.clipboardPaste) && (
               <>
                 <div
-                  className="dropdown-item is-clickable"
+                  className="dropdown-item"
                   onClick={() => {
                     const handlePaste = async () => {
                       try {
@@ -147,9 +143,7 @@ const VncActionsSubmenu = ({
                   role="button"
                   tabIndex={0}
                 >
-                  <span className="icon mr-2">
-                    <i className="fas fa-paste" />
-                  </span>
+                  <i className="fas fa-paste me-2" />
                   <span>Paste from Browser Clipboard</span>
                 </div>
                 <hr className="dropdown-divider" />
@@ -157,44 +151,38 @@ const VncActionsSubmenu = ({
             )}
 
             <div
-              className="dropdown-item is-clickable"
+              className="dropdown-item"
               onClick={handleScreenshot}
               onKeyDown={(e) => handleKeyDown(e, handleScreenshot)}
               role="button"
               tabIndex={0}
             >
-              <span className="icon mr-2">
-                <i className="fas fa-camera" />
-              </span>
+              <i className="fas fa-camera me-2" />
               <span>Take Screenshot</span>
             </div>
 
             {onFullScreen && (
               <div
-                className="dropdown-item is-clickable"
+                className="dropdown-item"
                 onClick={handleFullScreen}
                 onKeyDown={(e) => handleKeyDown(e, handleFullScreen)}
                 role="button"
                 tabIndex={0}
               >
-                <span className="icon mr-2">
-                  <i className="fas fa-expand" />
-                </span>
+                <i className="fas fa-expand me-2" />
                 <span>Full Screen</span>
               </div>
             )}
 
             {onNewTab && (
               <div
-                className="dropdown-item is-clickable"
+                className="dropdown-item"
                 onClick={handleNewTab}
                 onKeyDown={(e) => handleKeyDown(e, handleNewTab)}
                 role="button"
                 tabIndex={0}
               >
-                <span className="icon mr-2">
-                  <i className="fas fa-external-link-alt" />
-                </span>
+                <i className="fas fa-external-link-alt me-2" />
                 <span>Open in New Tab</span>
               </div>
             )}

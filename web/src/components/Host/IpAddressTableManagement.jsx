@@ -22,51 +22,31 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
   const getStateIcon = (state) => {
     switch (state?.toLowerCase()) {
       case "ok":
-        return (
-          <span className="icon has-text-success">
-            <i className="fas fa-check-circle" />
-          </span>
-        );
+        return <i className="fas fa-check-circle text-success me-2" />;
       case "disabled":
-        return (
-          <span className="icon has-text-warning">
-            <i className="fas fa-pause-circle" />
-          </span>
-        );
+        return <i className="fas fa-pause-circle text-warning me-2" />;
       case "down":
-        return (
-          <span className="icon has-text-danger">
-            <i className="fas fa-times-circle" />
-          </span>
-        );
+        return <i className="fas fa-times-circle text-danger me-2" />;
       case "duplicate":
-        return (
-          <span className="icon has-text-danger">
-            <i className="fas fa-exclamation-triangle" />
-          </span>
-        );
+        return <i className="fas fa-exclamation-triangle text-danger me-2" />;
       default:
-        return (
-          <span className="icon has-text-grey">
-            <i className="fas fa-question-circle" />
-          </span>
-        );
+        return <i className="fas fa-question-circle text-muted me-2" />;
     }
   };
 
   const getStateTag = (state) => {
     switch (state?.toLowerCase()) {
       case "ok":
-        return <span className="tag is-success is-small">{state}</span>;
+        return <span className="badge text-bg-success">{state}</span>;
       case "disabled":
-        return <span className="tag is-warning is-small">{state}</span>;
+        return <span className="badge text-bg-warning">{state}</span>;
       case "down":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       case "duplicate":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{state || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{state || "Unknown"}</span>
         );
     }
   };
@@ -74,14 +54,14 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
   const getTypeTag = (type) => {
     switch (type?.toLowerCase()) {
       case "static":
-        return <span className="tag is-info is-small">{type}</span>;
+        return <span className="badge text-bg-info">{type}</span>;
       case "dhcp":
-        return <span className="tag is-link is-small">{type}</span>;
+        return <span className="badge text-bg-primary">{type}</span>;
       case "addrconf":
-        return <span className="tag is-primary is-small">auto</span>;
+        return <span className="badge text-bg-primary">auto</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{type || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{type || "Unknown"}</span>
         );
     }
   };
@@ -89,12 +69,14 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
   const getVersionTag = (version) => {
     switch (version?.toLowerCase()) {
       case "v4":
-        return <span className="tag is-info is-small">IPv4</span>;
+        return <span className="badge text-bg-info">IPv4</span>;
       case "v6":
-        return <span className="tag is-dark is-small">IPv6</span>;
+        return <span className="badge text-bg-dark">IPv6</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{version || "Unknown"}</span>
+          <span className="badge text-bg-secondary">
+            {version || "Unknown"}
+          </span>
         );
     }
   };
@@ -115,10 +97,8 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
 
   if (loading && addresses.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading IP addresses...</p>
       </div>
     );
@@ -126,18 +106,16 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
 
   if (addresses.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-globe fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No IP addresses found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-globe fa-2x text-muted" />
+        <p className="mt-2 text-muted">No IP addresses found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover table-sm">
         <thead>
           <tr>
             <th>Interface</th>
@@ -158,23 +136,23 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
             return (
               <tr key={address.addrobj}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getStateIcon(address.state)}
-                    <span className="ml-2">
-                      <strong className="is-family-monospace">
+                    <span>
+                      <strong className="font-monospace">
                         {address.interface}
                       </strong>
                     </span>
                   </div>
                 </td>
                 <td>
-                  <span className="is-family-monospace is-size-7">
+                  <span className="font-monospace small">
                     {address.addrobj}
                   </span>
                 </td>
                 <td>
                   <div>
-                    <span className="is-family-monospace">
+                    <span className="font-monospace">
                       {formatAddress(
                         address.addr,
                         address.ip_address,
@@ -187,11 +165,12 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
                 <td>{getVersionTag(address.ip_version)}</td>
                 <td>{getStateTag(address.state)}</td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* Enable Button */}
                     {canEnable(address) && (
                       <button
-                        className={`button is-success ${enableLoading ? "is-loading" : ""}`}
+                        type="button"
+                        className="btn btn-sm btn-success"
                         onClick={() => handleAction(address, "enable")}
                         disabled={
                           loading ||
@@ -201,16 +180,22 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
                         }
                         title="Enable Address"
                       >
-                        <span className="icon is-small">
-                          <i className="fas fa-play" />
-                        </span>
+                        {enableLoading && (
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true"
+                          />
+                        )}
+                        <i className="fas fa-play" />
                       </button>
                     )}
 
                     {/* Disable Button */}
                     {canDisable(address) && (
                       <button
-                        className={`button is-warning ${disableLoading ? "is-loading" : ""}`}
+                        type="button"
+                        className="btn btn-sm btn-warning"
                         onClick={() => handleAction(address, "disable")}
                         disabled={
                           loading ||
@@ -220,15 +205,21 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
                         }
                         title="Disable Address"
                       >
-                        <span className="icon is-small">
-                          <i className="fas fa-pause" />
-                        </span>
+                        {disableLoading && (
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true"
+                          />
+                        )}
+                        <i className="fas fa-pause" />
                       </button>
                     )}
 
                     {/* Delete Button */}
                     <button
-                      className={`button is-danger ${deleteLoading ? "is-loading" : ""}`}
+                      type="button"
+                      className="btn btn-sm btn-danger"
                       onClick={() => handleAction(address, "delete")}
                       disabled={
                         loading ||
@@ -238,9 +229,14 @@ const IpAddressTable = ({ addresses, loading, onDelete, onToggle }) => {
                       }
                       title="Delete Address"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-trash" />
-                      </span>
+                      {deleteLoading && (
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <i className="fas fa-trash" />
                     </button>
                   </div>
                 </td>

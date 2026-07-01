@@ -133,153 +133,150 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
       loading={loading}
     >
       {/* Basic Information */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Basic Information</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Basic Information</h3>
 
-        <div className="field">
-          <label htmlFor="repo-publisher-name" className="label">
-            Publisher Name *
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="repo-publisher-name" className="form-label">
+              Publisher Name *
+            </label>
             <input
               id="repo-publisher-name"
-              className="input"
+              className="form-control"
               type="text"
               placeholder="e.g., omnios, extra.omnios"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               required
             />
+            <p className="form-text text-muted">
+              The name of the package publisher
+            </p>
           </div>
-          <p className="help">The name of the package publisher</p>
-        </div>
 
-        <div className="field">
-          <label htmlFor="repo-origin-url" className="label">
-            Origin URL *
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="repo-origin-url" className="form-label">
+              Origin URL *
+            </label>
             <input
               id="repo-origin-url"
-              className="input"
+              className="form-control"
               type="url"
               placeholder="https://pkg.omnios.org/r151050/core/"
               value={formData.origin}
               onChange={(e) => handleInputChange("origin", e.target.value)}
               required
             />
+            <p className="form-text text-muted">The primary repository URL</p>
           </div>
-          <p className="help">The primary repository URL</p>
         </div>
       </div>
 
       {/* Mirror URLs */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Mirror URLs (Optional)</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Mirror URLs (Optional)</h3>
 
-        {formData.mirrors.map((mirror) => (
-          <div key={mirror.id} className="field has-addons mb-3">
-            <div className="control is-expanded">
+          {formData.mirrors.map((mirror) => (
+            <div key={mirror.id} className="input-group mb-3">
               <input
-                className="input"
+                className="form-control"
                 type="url"
                 placeholder="https://mirror.example.com/repository/"
                 value={mirror.url}
                 onChange={(e) => handleMirrorChange(mirror.id, e.target.value)}
               />
-            </div>
-            <div className="control">
               <button
                 type="button"
-                className="button has-background-danger-dark has-text-danger-light"
+                className="btn btn-danger"
                 onClick={() => removeMirror(mirror.id)}
                 disabled={formData.mirrors.length === 1}
               >
-                <span className="icon">
-                  <i className="fas fa-trash" />
-                </span>
+                <i className="fas fa-trash" />
               </button>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <button type="button" className="button is-info" onClick={addMirror}>
-          <span className="icon">
-            <i className="fas fa-plus" />
-          </span>
-          <span>Add Mirror</span>
-        </button>
+          <button type="button" className="btn btn-info" onClick={addMirror}>
+            <i className="fas fa-plus me-2" />
+            <span>Add Mirror</span>
+          </button>
+        </div>
       </div>
 
       {/* Repository Options */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Repository Options</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Repository Options</h3>
 
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-enabled"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.enabled}
                     onChange={(e) =>
                       handleInputChange("enabled", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label className="form-check-label" htmlFor="repo-enabled">
                     <strong>Enabled</strong> - Repository is active for package
                     operations
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-sticky"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.sticky}
                     onChange={(e) =>
                       handleInputChange("sticky", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label className="form-check-label" htmlFor="repo-sticky">
                     <strong>Sticky</strong> - Prefer packages from this
                     publisher
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-search-first"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.searchFirst}
                     onChange={(e) =>
                       handleInputChange("searchFirst", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label
+                    className="form-check-label"
+                    htmlFor="repo-search-first"
+                  >
                     <strong>Search First</strong> - Search this repository first
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="column">
-            <div className="field">
-              <label htmlFor="repo-search-before" className="label">
-                Search Before
-              </label>
-              <div className="control">
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="repo-search-before" className="form-label">
+                  Search Before
+                </label>
                 <input
                   id="repo-search-before"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Publisher name"
                   value={formData.searchBefore}
@@ -288,16 +285,14 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
                   }
                 />
               </div>
-            </div>
 
-            <div className="field">
-              <label htmlFor="repo-search-after" className="label">
-                Search After
-              </label>
-              <div className="control">
+              <div className="mb-3">
+                <label htmlFor="repo-search-after" className="form-label">
+                  Search After
+                </label>
                 <input
                   id="repo-search-after"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Publisher name"
                   value={formData.searchAfter}
@@ -306,16 +301,14 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
                   }
                 />
               </div>
-            </div>
 
-            <div className="field">
-              <label htmlFor="repo-proxy" className="label">
-                Proxy
-              </label>
-              <div className="control">
+              <div className="mb-3">
+                <label htmlFor="repo-proxy" className="form-label">
+                  Proxy
+                </label>
                 <input
                   id="repo-proxy"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="http://proxy.example.com:8080"
                   value={formData.proxy}
@@ -328,33 +321,31 @@ const AddRepositoryModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       {/* SSL Configuration */}
-      <div className="box">
-        <h3 className="title is-6">SSL Configuration (Optional)</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">SSL Configuration (Optional)</h3>
 
-        <div className="field">
-          <label htmlFor="repo-ssl-cert" className="label">
-            SSL Certificate
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="repo-ssl-cert" className="form-label">
+              SSL Certificate
+            </label>
             <textarea
               id="repo-ssl-cert"
-              className="textarea"
+              className="form-control"
               placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
               value={formData.sslCert}
               onChange={(e) => handleInputChange("sslCert", e.target.value)}
               rows="3"
             />
           </div>
-        </div>
 
-        <div className="field">
-          <label htmlFor="repo-ssl-key" className="label">
-            SSL Private Key
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="repo-ssl-key" className="form-label">
+              SSL Private Key
+            </label>
             <textarea
               id="repo-ssl-key"
-              className="textarea"
+              className="form-control"
               placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
               value={formData.sslKey}
               onChange={(e) => handleInputChange("sslKey", e.target.value)}

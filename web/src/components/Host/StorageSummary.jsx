@@ -16,60 +16,65 @@ const StorageSummary = ({
   }
 
   return (
-    <div className="box mb-4">
-      <div className="level is-mobile mb-3">
-        <div className="level-left">
-          <h4 className="title is-5 mb-0">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-chart-pie" />
-              </span>
-              <span>Storage Summary</span>
-            </span>
-          </h4>
-        </div>
-        <div className="level-right">
-          <button
-            className="button is-small is-ghost"
-            onClick={() => toggleSection("summary")}
-            title={
-              sectionsCollapsed.summary ? "Expand section" : "Collapse section"
-            }
-          >
-            <span className="icon">
+    <div className="card mb-4">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center gap-2">
+            <h4 className="fs-5 fw-bold mb-0">
+              <i className="fas fa-chart-pie me-2" />
+              Storage Summary
+            </h4>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <button
+              type="button"
+              className="btn btn-sm btn-link"
+              onClick={() => toggleSection("summary")}
+              title={
+                sectionsCollapsed.summary
+                  ? "Expand section"
+                  : "Collapse section"
+              }
+            >
               <i
                 className={`fas ${sectionsCollapsed.summary ? "fa-chevron-down" : "fa-chevron-up"}`}
               />
-            </span>
-          </button>
+            </button>
+          </div>
         </div>
-      </div>
-      {!sectionsCollapsed.summary && (
-        <div className="columns">
-          <div className="column">
-            <div className="field is-grouped is-grouped-multiline">
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag">Total Pools</span>
-                  <span className="tag is-info">{storagePools.length}</span>
+        {!sectionsCollapsed.summary && (
+          <div className="row g-3">
+            <div className="col">
+              <div className="d-flex flex-wrap gap-2">
+                <div className="d-inline-flex">
+                  <span className="badge text-bg-secondary rounded-end-0">
+                    Total Pools
+                  </span>
+                  <span className="badge text-bg-info rounded-start-0">
+                    {storagePools.length}
+                  </span>
                 </div>
-              </div>
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag">Total Datasets</span>
-                  <span className="tag is-info">{storageDatasets.length}</span>
+                <div className="d-inline-flex">
+                  <span className="badge text-bg-secondary rounded-end-0">
+                    Total Datasets
+                  </span>
+                  <span className="badge text-bg-info rounded-start-0">
+                    {storageDatasets.length}
+                  </span>
                 </div>
-              </div>
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag">Physical Disks</span>
-                  <span className="tag is-info">{storageDisks.length}</span>
+                <div className="d-inline-flex">
+                  <span className="badge text-bg-secondary rounded-end-0">
+                    Physical Disks
+                  </span>
+                  <span className="badge text-bg-info rounded-start-0">
+                    {storageDisks.length}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

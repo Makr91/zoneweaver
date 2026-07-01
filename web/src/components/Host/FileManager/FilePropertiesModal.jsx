@@ -17,10 +17,10 @@ const PropertiesComparison = ({
   selectedGroupObj,
   currentOctal,
 }) => (
-  <div className="field">
-    <div className="notification is-info">
-      <div className="columns">
-        <div className="column">
+  <div className="mb-3">
+    <div className="alert alert-info">
+      <div className="row">
+        <div className="col">
           <strong>Current:</strong>
           <br />
           User: {file._zwMetadata?.uid || "Unknown"}
@@ -29,7 +29,7 @@ const PropertiesComparison = ({
           <br />
           Mode: {file._zwMetadata?.permissions?.octal || "Unknown"}
         </div>
-        <div className="column">
+        <div className="col">
           <strong>New:</strong>
           <br />
           User:{" "}
@@ -218,20 +218,19 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       submitIcon="fas fa-save"
       loading={loading}
       showCancelButton
-      className="is-large"
     >
       {/* File info */}
-      <div className="field">
-        <div className="notification is-dark">
-          <div className="columns">
-            <div className="column">
+      <div className="mb-3">
+        <div className="alert alert-dark">
+          <div className="row">
+            <div className="col">
               <strong>Name:</strong> {file.name}
               <br />
               <strong>Path:</strong> {file.path}
               <br />
               <strong>Type:</strong> {file.isDirectory ? "Directory" : "File"}
             </div>
-            <div className="column">
+            <div className="col">
               <strong>Size:</strong> {formatFileSize(file.size)}
               <br />
               <strong>Modified:</strong>{" "}
@@ -248,66 +247,68 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
       {/* Error display */}
       {error && (
-        <div className="notification is-danger">
-          <button className="delete is-small" onClick={() => setError("")} />
+        <div className="alert alert-danger">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           {error}
         </div>
       )}
 
-      <div className="columns">
+      <div className="row">
         {/* Ownership */}
-        <div className="column">
-          <h5 className="title is-6">Ownership</h5>
+        <div className="col">
+          <h5 className="h6">Ownership</h5>
 
           {/* User selection */}
-          <div className="field">
-            <label htmlFor="file-props-user" className="label">
+          <div className="mb-3">
+            <label htmlFor="file-props-user" className="form-label">
               User
             </label>
-            <div className="control">
-              <div className="select is-fullwidth">
-                <select
-                  id="file-props-user"
-                  value={selectedUser}
-                  onChange={(e) => setSelectedUser(e.target.value)}
-                >
-                  <option value="">Keep current</option>
-                  {systemUsers.map((user) => (
-                    <option key={user.uid} value={user.uid.toString()}>
-                      {user.username} ({user.uid})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <select
+                id="file-props-user"
+                className="form-select"
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value)}
+              >
+                <option value="">Keep current</option>
+                {systemUsers.map((user) => (
+                  <option key={user.uid} value={user.uid.toString()}>
+                    {user.username} ({user.uid})
+                  </option>
+                ))}
+              </select>
             </div>
-            <p className="help">
+            <p className="form-text text-muted">
               Current: {selectedUserObj?.username || "Unknown"} (
               {selectedUser || file._zwMetadata?.uid || "Unknown"})
             </p>
           </div>
 
           {/* Group selection */}
-          <div className="field">
-            <label htmlFor="file-props-group" className="label">
+          <div className="mb-3">
+            <label htmlFor="file-props-group" className="form-label">
               Group
             </label>
-            <div className="control">
-              <div className="select is-fullwidth">
-                <select
-                  id="file-props-group"
-                  value={selectedGroup}
-                  onChange={(e) => setSelectedGroup(e.target.value)}
-                >
-                  <option value="">Keep current</option>
-                  {systemGroups.map((group) => (
-                    <option key={group.gid} value={group.gid.toString()}>
-                      {group.groupname} ({group.gid})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <select
+                id="file-props-group"
+                className="form-select"
+                value={selectedGroup}
+                onChange={(e) => setSelectedGroup(e.target.value)}
+              >
+                <option value="">Keep current</option>
+                {systemGroups.map((group) => (
+                  <option key={group.gid} value={group.gid.toString()}>
+                    {group.groupname} ({group.gid})
+                  </option>
+                ))}
+              </select>
             </div>
-            <p className="help">
+            <p className="form-text text-muted">
               Current: {selectedGroupObj?.groupname || "Unknown"} (
               {selectedGroup || file._zwMetadata?.gid || "Unknown"})
             </p>
@@ -330,20 +331,20 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
 
       {/* Recursive option for directories */}
       {file.isDirectory && (
-        <div className="field">
-          <div className="control">
-            <label className="checkbox">
-              <input
-                type="checkbox"
-                checked={applyRecursively}
-                onChange={(e) => setApplyRecursively(e.target.checked)}
-              />
-              <span className="ml-2">
-                Apply changes recursively to all contents
-              </span>
+        <div className="mb-3">
+          <div className="form-check">
+            <input
+              id="file-props-recursive"
+              type="checkbox"
+              className="form-check-input"
+              checked={applyRecursively}
+              onChange={(e) => setApplyRecursively(e.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="file-props-recursive">
+              Apply changes recursively to all contents
             </label>
           </div>
-          <p className="help has-text-warning">
+          <p className="form-text text-warning">
             Warning: Recursive changes will affect all files and subdirectories
           </p>
         </div>
@@ -360,9 +361,9 @@ const FilePropertiesModal = ({ isOpen, onClose, file, api, onSuccess }) => {
       />
 
       {/* Permission explanation */}
-      <div className="field">
-        <div className="notification is-dark is-small">
-          <div className="content is-small">
+      <div className="mb-3">
+        <div className="alert alert-dark small">
+          <div className="small">
             <strong>Permission Guide:</strong>
             <br />
             <strong>Read (r)</strong> - View file contents or list directory

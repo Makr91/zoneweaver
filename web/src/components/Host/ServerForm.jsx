@@ -15,154 +15,146 @@ const ServerForm = ({
   setUseExistingApiKey,
   loading,
 }) => (
-  <div className="box">
-    <h2 className="title is-5 mb-4">Server Configuration</h2>
+  <>
+    <h3 className="fs-6 fw-bold mb-3">Server Configuration</h3>
 
-    <div className="columns">
-      <div className="column is-3">
-        <div className="field">
-          <label className="label" htmlFor="server-protocol">
+    <div className="row g-3">
+      <div className="col-12 col-lg-3">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="server-protocol">
             Protocol
           </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="server-protocol"
-                value={protocol}
-                onChange={(e) => setProtocol(e.target.value)}
-                disabled={loading}
-              >
-                <option value="https">HTTPS</option>
-                <option value="http">HTTP</option>
-              </select>
-            </div>
-          </div>
+          <select
+            id="server-protocol"
+            className="form-select"
+            value={protocol}
+            onChange={(e) => setProtocol(e.target.value)}
+            disabled={loading}
+          >
+            <option value="https">HTTPS</option>
+            <option value="http">HTTP</option>
+          </select>
         </div>
       </div>
-      <div className="column is-6">
-        <div className="field">
-          <label className="label" htmlFor="server-hostname">
+      <div className="col-12 col-lg-6">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="server-hostname">
             Server Hostname
           </label>
-          <div className="control">
-            <input
-              type="text"
-              id="server-hostname"
-              className="input"
-              placeholder="zoneweaver-api.example.com"
-              value={hostname}
-              onChange={(e) => setHostname(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
+          <input
+            type="text"
+            id="server-hostname"
+            className="form-control"
+            placeholder="zoneweaver-api.example.com"
+            value={hostname}
+            onChange={(e) => setHostname(e.target.value)}
+            disabled={loading}
+            required
+          />
         </div>
       </div>
-      <div className="column is-3">
-        <div className="field">
-          <label className="label" htmlFor="server-port">
+      <div className="col-12 col-lg-3">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="server-port">
             Port
           </label>
-          <div className="control">
-            <input
-              type="number"
-              id="server-port"
-              className="input"
-              placeholder="5001"
-              value={port}
-              onChange={(e) => setPort(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </div>
+          <input
+            type="number"
+            id="server-port"
+            className="form-control"
+            placeholder="5001"
+            value={port}
+            onChange={(e) => setPort(e.target.value)}
+            disabled={loading}
+            required
+          />
         </div>
       </div>
     </div>
 
-    <div className="field">
-      <div className="control">
-        <label className="checkbox" htmlFor="use-existing-api-key-checkbox">
-          <input
-            type="checkbox"
-            checked={useExistingApiKey}
-            onChange={(e) => setUseExistingApiKey(e.target.checked)}
-            disabled={loading}
-          />
-          <span className="ml-2">I have an existing API key</span>
+    <div className="mb-3">
+      <div className="form-check">
+        <input
+          type="checkbox"
+          id="use-existing-api-key-checkbox"
+          className="form-check-input"
+          checked={useExistingApiKey}
+          onChange={(e) => setUseExistingApiKey(e.target.checked)}
+          disabled={loading}
+        />
+        <label
+          className="form-check-label"
+          htmlFor="use-existing-api-key-checkbox"
+        >
+          I have an existing API key
         </label>
       </div>
-      <p className="help has-text-grey">
+      <p className="form-text text-muted">
         Check this if you already have an API key and don&apos;t need to
         bootstrap
       </p>
     </div>
 
     {useExistingApiKey && (
-      <div className="field">
-        <label className="label" htmlFor="api-key-input">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="api-key-input">
           API Key
         </label>
-        <div className="control">
-          <input
-            type="password"
-            id="api-key-input"
-            className="input"
-            placeholder="Enter your existing API key"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            disabled={loading}
-            required
-          />
-        </div>
-        <p className="help has-text-grey">
+        <input
+          type="password"
+          id="api-key-input"
+          className="form-control"
+          placeholder="Enter your existing API key"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          disabled={loading}
+          required
+        />
+        <p className="form-text text-muted">
           Enter the API key you received from your Zoneweaver API Server
         </p>
       </div>
     )}
 
     {!useExistingApiKey && (
-      <div className="field">
-        <label className="label" htmlFor="entity-name-input">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="entity-name-input">
           Entity Name
         </label>
-        <div className="control">
-          <input
-            type="text"
-            id="entity-name-input"
-            className="input"
-            placeholder="Zoneweaver-Production"
-            value={entityName}
-            onChange={(e) => setEntityName(e.target.value)}
-            disabled={loading}
-            required
-          />
-        </div>
-        <p className="help has-text-grey">
+        <input
+          type="text"
+          id="entity-name-input"
+          className="form-control"
+          placeholder="Zoneweaver-Production"
+          value={entityName}
+          onChange={(e) => setEntityName(e.target.value)}
+          disabled={loading}
+          required
+        />
+        <p className="form-text text-muted">
           This name will identify this Zoneweaver instance on the Zoneweaver API
           Server
         </p>
       </div>
     )}
 
-    <div className="field">
-      <label className="label" htmlFor="connection-url-display">
+    <div className="mb-3">
+      <label className="form-label" htmlFor="connection-url-display">
         Connection URL
       </label>
-      <div className="control">
-        <input
-          id="connection-url-display"
-          type="text"
-          className="input is-static"
-          value={
-            hostname
-              ? `${protocol}://${hostname}:${port}`
-              : "Enter hostname to see URL"
-          }
-          readOnly
-        />
-      </div>
+      <input
+        id="connection-url-display"
+        type="text"
+        className="form-control-plaintext"
+        value={
+          hostname
+            ? `${protocol}://${hostname}:${port}`
+            : "Enter hostname to see URL"
+        }
+        readOnly
+      />
     </div>
-  </div>
+  </>
 );
 
 ServerForm.propTypes = {

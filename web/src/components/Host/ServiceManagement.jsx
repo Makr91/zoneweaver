@@ -245,16 +245,16 @@ const ServiceManagement = ({ server }) => {
   return (
     <div>
       {/* Service Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="service-name-filter">
-                Filter by Service Name
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="service-name-filter">
+                  Filter by Service Name
+                </label>
                 <input
-                  className="input"
+                  className="form-control"
                   id="service-name-filter"
                   type="text"
                   placeholder="Enter service name pattern..."
@@ -265,106 +265,93 @@ const ServiceManagement = ({ server }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="zone-filter">
-                Filter by Zone
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="zone-filter"
-                    value={filters.zone}
-                    onChange={(e) => handleFilterChange("zone", e.target.value)}
-                  >
-                    <option value="">All Zones</option>
-                    {availableZones.map((zone) => (
-                      <option key={zone} value={zone}>
-                        {zone}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="state-filter">
-                Filter by State
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="state-filter"
-                    value={filters.state}
-                    onChange={(e) =>
-                      handleFilterChange("state", e.target.value)
-                    }
-                  >
-                    <option value="">All States</option>
-                    <option value="online">Online</option>
-                    <option value="disabled">Disabled</option>
-                    <option value="offline">Offline</option>
-                    <option value="legacy_run">Legacy Run</option>
-                    <option value="maintenance">Maintenance</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="show-disabled-filter">
-                Show Disabled
-              </label>
-              <div className="control">
-                <label
-                  className="switch is-medium"
-                  htmlFor="show-disabled-filter"
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="zone-filter">
+                  Filter by Zone
+                </label>
+                <select
+                  className="form-select"
+                  id="zone-filter"
+                  value={filters.zone}
+                  onChange={(e) => handleFilterChange("zone", e.target.value)}
                 >
+                  <option value="">All Zones</option>
+                  {availableZones.map((zone) => (
+                    <option key={zone} value={zone}>
+                      {zone}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="state-filter">
+                  Filter by State
+                </label>
+                <select
+                  className="form-select"
+                  id="state-filter"
+                  value={filters.state}
+                  onChange={(e) => handleFilterChange("state", e.target.value)}
+                >
+                  <option value="">All States</option>
+                  <option value="online">Online</option>
+                  <option value="disabled">Disabled</option>
+                  <option value="offline">Offline</option>
+                  <option value="legacy_run">Legacy Run</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="show-disabled-filter">
+                  Show Disabled
+                </label>
+                <div className="form-check form-switch">
                   <input
-                    type="checkbox"
                     id="show-disabled-filter"
+                    className="form-check-input"
+                    type="checkbox"
+                    role="switch"
                     checked={filters.showDisabled}
                     onChange={(e) =>
                       handleFilterChange("showDisabled", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Include All</span>
-                </label>
+                  <label
+                    className="form-check-label"
+                    htmlFor="show-disabled-filter"
+                  >
+                    Include All
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
                 <button
-                  className="button is-info"
+                  type="button"
+                  className="btn btn-info"
                   onClick={loadServices}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
+                  <i className="fas fa-sync-alt me-2" />
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
                 <button
-                  className="button"
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
+                  <i className="fas fa-times me-2" />
                   <span>Clear</span>
                 </button>
               </div>
@@ -375,34 +362,38 @@ const ServiceManagement = ({ server }) => {
 
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger alert-dismissible mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
       {/* Services Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h3 className="fs-6 fw-bold">
               Services ({filteredServices.length})
               {loading && (
-                <span className="ml-2">
+                <span className="ms-2">
                   <i className="fas fa-spinner fa-spin" />
                 </span>
               )}
             </h3>
           </div>
-        </div>
 
-        <ServiceTable
-          services={filteredServices}
-          loading={loading}
-          onAction={handleServiceAction}
-          onViewDetails={handleViewDetails}
-          onViewProperties={handleViewProperties}
-        />
+          <ServiceTable
+            services={filteredServices}
+            loading={loading}
+            onAction={handleServiceAction}
+            onViewDetails={handleViewDetails}
+            onViewProperties={handleViewProperties}
+          />
+        </div>
       </div>
 
       {/* Service Details Modal */}

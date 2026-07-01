@@ -19,12 +19,12 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
   const getStateTag = (state) => {
     switch (state?.toLowerCase()) {
       case "up":
-        return <span className="tag is-success is-small">{state}</span>;
+        return <span className="badge text-bg-success">{state}</span>;
       case "down":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{state || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{state || "Unknown"}</span>
         );
     }
   };
@@ -38,16 +38,16 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
       title="Etherstub Details"
       icon="fas fa-network-wired"
     >
-      <h5 className="title is-6">Basic Information</h5>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
+      <h5 className="fs-6 fw-bold">Basic Information</h5>
+      <div className="table-responsive">
+        <table className="table table-striped">
           <tbody>
             <tr>
               <td>
                 <strong>Name</strong>
               </td>
               <td>
-                <span className="is-family-monospace">{etherstubName}</span>
+                <span className="font-monospace">{etherstubName}</span>
               </td>
             </tr>
             <tr>
@@ -55,7 +55,7 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
                 <strong>Class</strong>
               </td>
               <td>
-                <span className="tag is-info is-small">
+                <span className="badge text-bg-info">
                   {etherstub.class || "etherstub"}
                 </span>
               </td>
@@ -92,9 +92,9 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
         etherstubDetails.vnics &&
         etherstubDetails.vnics.length > 0 && (
           <>
-            <h5 className="title is-6 mt-5">Associated VNICs</h5>
-            <div className="table-container">
-              <table className="table is-fullwidth is-striped">
+            <h5 className="fs-6 fw-bold mt-5">Associated VNICs</h5>
+            <div className="table-responsive">
+              <table className="table table-striped">
                 <thead>
                   <tr>
                     <th>VNIC Name</th>
@@ -107,7 +107,7 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
                   {etherstubDetails.vnics.map((vnic) => (
                     <tr key={vnic.link || vnic.name}>
                       <td>
-                        <span className="is-family-monospace">
+                        <span className="font-monospace">
                           {vnic.link || vnic.name}
                         </span>
                       </td>
@@ -122,16 +122,16 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
           </>
         )}
 
-      <h5 className="title is-6 mt-5">Technical Details</h5>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
+      <h5 className="fs-6 fw-bold mt-5">Technical Details</h5>
+      <div className="table-responsive">
+        <table className="table table-striped">
           <tbody>
             <tr>
               <td>
                 <strong>MAC Address</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {formatValue(etherstub.macaddress)}
                 </span>
               </td>
@@ -194,16 +194,16 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
         </table>
       </div>
 
-      <h5 className="title is-6 mt-5">Timestamps</h5>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
+      <h5 className="fs-6 fw-bold mt-5">Timestamps</h5>
+      <div className="table-responsive">
+        <table className="table table-striped">
           <tbody>
             <tr>
               <td>
                 <strong>Last Scan</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {etherstub.scan_timestamp
                     ? new Date(etherstub.scan_timestamp).toLocaleString()
                     : "N/A"}
@@ -215,7 +215,7 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
                 <strong>Created</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {etherstub.createdAt
                     ? new Date(etherstub.createdAt).toLocaleString()
                     : "N/A"}
@@ -227,7 +227,7 @@ const EtherstubDetailsModal = ({ etherstub, etherstubDetails, onClose }) => {
                 <strong>Updated</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {etherstub.updatedAt
                     ? new Date(etherstub.updatedAt).toLocaleString()
                     : "N/A"}

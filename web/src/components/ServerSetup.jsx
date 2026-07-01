@@ -127,39 +127,39 @@ const ServerSetup = () => {
 
   const getNotificationClass = () => {
     if (msg.includes("successful") || msg.includes("verified")) {
-      return "is-success";
+      return "alert-success";
     }
     if (msg.includes("failed") || msg.includes("error")) {
-      return "is-danger";
+      return "alert-danger";
     }
-    return "is-info";
+    return "alert-info";
   };
 
   return (
-    <section className="hero is-fullheight is-fullwidth">
+    <section className="min-vh-100 d-flex align-items-center py-4">
       <Helmet>
         <meta charSet="utf-8" />
         <title>Server Setup - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-centered">
-            <div className="column is-6-desktop">
-              <form onSubmit={handleBootstrap} className="box">
-                <h1 className="title has-text-centered">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-6">
+            <form onSubmit={handleBootstrap} className="card">
+              <div className="card-body p-4">
+                <h1 className="h3 text-center mb-1">
                   Zoneweaver API Server Setup
                 </h1>
-                <p className="subtitle has-text-centered">
+                <p className="text-muted text-center mb-4">
                   Bootstrap a new Zoneweaver API Server for zone management
                 </p>
 
                 {user && (
-                  <div className="notification is-info">
-                    <p>
+                  <div className="alert alert-info">
+                    <p className="mb-1">
                       <strong>Welcome, {user.username}!</strong>
                     </p>
-                    <p>
+                    <p className="mb-0">
                       You can now add Zoneweaver API Servers to manage your
                       zones.
                     </p>
@@ -167,127 +167,128 @@ const ServerSetup = () => {
                 )}
 
                 {msg && (
-                  <div className={`notification ${getNotificationClass()}`}>
-                    <p>{msg}</p>
+                  <div className={`alert ${getNotificationClass()}`}>
+                    <p className="mb-0">{msg}</p>
                   </div>
                 )}
 
-                <div className="columns">
-                  <div className="column">
-                    <div className="field">
-                      <label className="label" htmlFor="protocol">
+                <div className="row">
+                  <div className="col-12 col-md-3">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="protocol">
                         Protocol
                       </label>
-                      <div className="control">
-                        <div className="select is-fullwidth">
-                          <select
-                            id="protocol"
-                            value={protocol}
-                            onChange={(e) => setProtocol(e.target.value)}
-                            disabled={loading}
-                          >
-                            <option value="https">HTTPS</option>
-                            <option value="http">HTTP</option>
-                          </select>
-                        </div>
-                      </div>
+                      <select
+                        id="protocol"
+                        className="form-select"
+                        value={protocol}
+                        onChange={(e) => setProtocol(e.target.value)}
+                        disabled={loading}
+                      >
+                        <option value="https">HTTPS</option>
+                        <option value="http">HTTP</option>
+                      </select>
                     </div>
                   </div>
-                  <div className="column is-two-thirds">
-                    <div className="field">
-                      <label className="label" htmlFor="hostname">
+                  <div className="col-12 col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="hostname">
                         Server Hostname
                       </label>
-                      <div className="control">
-                        <input
-                          id="hostname"
-                          type="text"
-                          className="input"
-                          placeholder="zoneweaver-api.example.com"
-                          value={hostname}
-                          onChange={(e) => setHostname(e.target.value)}
-                          disabled={loading}
-                        />
-                      </div>
+                      <input
+                        id="hostname"
+                        type="text"
+                        className="form-control"
+                        placeholder="zoneweaver-api.example.com"
+                        value={hostname}
+                        onChange={(e) => setHostname(e.target.value)}
+                        disabled={loading}
+                      />
                     </div>
                   </div>
-                  <div className="column">
-                    <div className="field">
-                      <label className="label" htmlFor="port">
+                  <div className="col-12 col-md-3">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="port">
                         Port
                       </label>
-                      <div className="control">
-                        <input
-                          id="port"
-                          type="number"
-                          className="input"
-                          placeholder="5001"
-                          value={port}
-                          onChange={(e) => setPort(e.target.value)}
-                          disabled={loading}
-                        />
-                      </div>
+                      <input
+                        id="port"
+                        type="number"
+                        className="form-control"
+                        placeholder="5001"
+                        value={port}
+                        onChange={(e) => setPort(e.target.value)}
+                        disabled={loading}
+                      />
                     </div>
                   </div>
                 </div>
 
-                <div className="field">
-                  <label className="label" htmlFor="entityName">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="entityName">
                     Entity Name
                   </label>
-                  <div className="control">
-                    <input
-                      id="entityName"
-                      type="text"
-                      className="input"
-                      placeholder="Zoneweaver-Production"
-                      value={entityName}
-                      onChange={(e) => setEntityName(e.target.value)}
-                      disabled={loading}
-                    />
-                  </div>
-                  <p className="help">
+                  <input
+                    id="entityName"
+                    type="text"
+                    className="form-control"
+                    placeholder="Zoneweaver-Production"
+                    value={entityName}
+                    onChange={(e) => setEntityName(e.target.value)}
+                    disabled={loading}
+                  />
+                  <div className="form-text text-muted">
                     This name will identify this Zoneweaver instance on the
                     Zoneweaver API Server
-                  </p>
-                </div>
-
-                <div className="field is-grouped">
-                  <div className="control is-expanded">
-                    <button
-                      type="button"
-                      className={`button is-info is-fullwidth ${loading ? "is-loading" : ""}`}
-                      onClick={handleTestConnection}
-                      disabled={loading}
-                    >
-                      Test Connection
-                    </button>
-                  </div>
-                  <div className="control is-expanded">
-                    <button
-                      type="submit"
-                      className={`button is-primary is-fullwidth ${loading ? "is-loading" : ""}`}
-                      disabled={loading}
-                    >
-                      Bootstrap Server
-                    </button>
                   </div>
                 </div>
 
-                <div className="has-text-centered mt-4">
-                  <p className="help">
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-info flex-fill"
+                    onClick={handleTestConnection}
+                    disabled={loading}
+                  >
+                    {loading && (
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}
+                    Test Connection
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary flex-fill"
+                    disabled={loading}
+                  >
+                    {loading && (
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}
+                    Bootstrap Server
+                  </button>
+                </div>
+
+                <div className="text-center mt-4">
+                  <p className="form-text text-muted">
                     <strong>Note:</strong> The bootstrap endpoint will be
                     automatically disabled after first use for security.
                   </p>
                 </div>
 
-                <div className="has-text-centered mt-3">
-                  <a href="/ui" className="button is-text">
+                <div className="text-center mt-3">
+                  <a href="/ui" className="btn btn-link">
                     Skip Setup (Go to Dashboard)
                   </a>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

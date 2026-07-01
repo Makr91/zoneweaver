@@ -1,8 +1,12 @@
+import { useCallback } from "react";
+
 import { useServers } from "../contexts/ServerContext";
 
 /**
  * Custom hook for host system management operations
- * Provides access to advanced system control, status monitoring, and orchestration functions
+ * Provides access to advanced system control, status monitoring, and orchestration functions.
+ * Every function is memoized on `makeZoneweaverAPIRequest` (itself stable) so consumers can
+ * safely use them in useEffect/useCallback dependency arrays without re-render loops.
  * @returns {object} An object containing all host system management functions
  */
 export const useHostSystemManagement = () => {
@@ -19,13 +23,16 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} System status with uptime, memory, runlevel, reboot info
    */
-  const getHostSystemStatus = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/status"
-    );
+  const getHostSystemStatus = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/status"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Get host uptime information
@@ -34,13 +41,16 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Uptime and load average information
    */
-  const getHostUptime = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/uptime"
-    );
+  const getHostUptime = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/uptime"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Get current host reboot status
@@ -49,13 +59,16 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Reboot requirement status and reasons
    */
-  const getHostRebootStatus = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/reboot-status"
-    );
+  const getHostRebootStatus = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/reboot-status"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Clear reboot required flags
@@ -65,22 +78,20 @@ export const useHostSystemManagement = () => {
    * @param {string} [reason] - Optional reason for clearing flags
    * @returns {Promise<Object>} Clear operation result
    */
-  const clearHostRebootStatus = async (
-    hostname,
-    port,
-    protocol,
-    reason = null
-  ) => {
-    const data = reason ? { reason } : {};
-    return await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/reboot-status",
-      "DELETE",
-      data
-    );
-  };
+  const clearHostRebootStatus = useCallback(
+    async (hostname, port, protocol, reason = null) => {
+      const data = reason ? { reason } : {};
+      return await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/reboot-status",
+        "DELETE",
+        data
+      );
+    },
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Get current runlevel information
@@ -89,13 +100,16 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Current runlevel and available runlevels
    */
-  const getHostRunlevel = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/runlevel"
-    );
+  const getHostRunlevel = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/runlevel"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   // ========================================
   // ADVANCED POWER MANAGEMENT FUNCTIONS (Task Queue - HTTP 202)
@@ -110,19 +124,22 @@ export const useHostSystemManagement = () => {
    * @param {string} [options.bootEnvironment] - Boot environment to use
    * @returns {Promise<Object>} Task creation result
    */
-  const hostFastReboot = async (hostname, port, protocol, options = {}) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/reboot/fast",
-      "POST",
-      {
-        confirm: true,
-        boot_environment: options.bootEnvironment,
-        ...options,
-      }
-    );
+  const hostFastReboot = useCallback(
+    async (hostname, port, protocol, options = {}) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/reboot/fast",
+        "POST",
+        {
+          confirm: true,
+          boot_environment: options.bootEnvironment,
+          ...options,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Power off the host system completely
@@ -134,20 +151,23 @@ export const useHostSystemManagement = () => {
    * @param {string} [options.message] - Optional message for the shutdown
    * @returns {Promise<Object>} Task creation result
    */
-  const hostPoweroff = async (hostname, port, protocol, options = {}) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/poweroff",
-      "POST",
-      {
-        confirm: true,
-        grace_period: options.gracePeriod || 60,
-        message: options.message || "System poweroff via Zoneweaver UI",
-        ...options,
-      }
-    );
+  const hostPoweroff = useCallback(
+    async (hostname, port, protocol, options = {}) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/poweroff",
+        "POST",
+        {
+          confirm: true,
+          grace_period: options.gracePeriod || 60,
+          message: options.message || "System poweroff via Zoneweaver UI",
+          ...options,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Emergency halt the host system (immediate)
@@ -156,18 +176,21 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Task creation result
    */
-  const hostHalt = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/halt",
-      "POST",
-      {
-        confirm: true,
-        emergency: true,
-      }
-    );
+  const hostHalt = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/halt",
+        "POST",
+        {
+          confirm: true,
+          emergency: true,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   // ========================================
   // RUNLEVEL MANAGEMENT FUNCTIONS
@@ -181,18 +204,21 @@ export const useHostSystemManagement = () => {
    * @param {string} runlevel - Target runlevel (0-6, s, S)
    * @returns {Promise<Object>} Task creation result
    */
-  const changeHostRunlevel = async (hostname, port, protocol, runlevel) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/runlevel",
-      "POST",
-      {
-        confirm: true,
-        runlevel,
-      }
-    );
+  const changeHostRunlevel = useCallback(
+    async (hostname, port, protocol, runlevel) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/runlevel",
+        "POST",
+        {
+          confirm: true,
+          runlevel,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Switch to single-user mode
@@ -201,17 +227,20 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Task creation result
    */
-  const setHostSingleUser = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/single-user",
-      "POST",
-      {
-        confirm: true,
-      }
-    );
+  const setHostSingleUser = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/single-user",
+        "POST",
+        {
+          confirm: true,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Switch to multi-user mode
@@ -221,22 +250,20 @@ export const useHostSystemManagement = () => {
    * @param {boolean} [networkServices] - Enable network services (runlevel 3 vs 2)
    * @returns {Promise<Object>} Task creation result
    */
-  const setHostMultiUser = async (
-    hostname,
-    port,
-    protocol,
-    networkServices = true
-  ) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "system/host/multi-user",
-      "POST",
-      {
-        network_services: networkServices,
-      }
-    );
+  const setHostMultiUser = useCallback(
+    async (hostname, port, protocol, networkServices = true) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "system/host/multi-user",
+        "POST",
+        {
+          network_services: networkServices,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   // ========================================
   // ZONE ORCHESTRATION FUNCTIONS
@@ -249,13 +276,16 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Orchestration status and controller info
    */
-  const getZoneOrchestrationStatus = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "zones/orchestration/status"
-    );
+  const getZoneOrchestrationStatus = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "zones/orchestration/status"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Enable zone orchestration
@@ -264,17 +294,20 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Enable operation result
    */
-  const enableZoneOrchestration = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "zones/orchestration/enable",
-      "POST",
-      {
-        confirm: true,
-      }
-    );
+  const enableZoneOrchestration = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "zones/orchestration/enable",
+        "POST",
+        {
+          confirm: true,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Disable zone orchestration
@@ -283,14 +316,17 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Disable operation result
    */
-  const disableZoneOrchestration = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "zones/orchestration/disable",
-      "POST"
-    );
+  const disableZoneOrchestration = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "zones/orchestration/disable",
+        "POST"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Get zone priorities for orchestration
@@ -299,13 +335,16 @@ export const useHostSystemManagement = () => {
    * @param {string} protocol - Server protocol
    * @returns {Promise<Object>} Zone priorities and groupings
    */
-  const getZonePriorities = async (hostname, port, protocol) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "zones/priorities"
-    );
+  const getZonePriorities = useCallback(
+    async (hostname, port, protocol) =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "zones/priorities"
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   /**
    * Test zone orchestration with specified strategy
@@ -315,22 +354,20 @@ export const useHostSystemManagement = () => {
    * @param {string} [strategy] - Orchestration strategy to test
    * @returns {Promise<Object>} Test execution plan and duration estimate
    */
-  const testZoneOrchestration = async (
-    hostname,
-    port,
-    protocol,
-    strategy = "parallel_by_priority"
-  ) =>
-    await makeZoneweaverAPIRequest(
-      hostname,
-      port,
-      protocol,
-      "zones/orchestration/test",
-      "POST",
-      {
-        strategy,
-      }
-    );
+  const testZoneOrchestration = useCallback(
+    async (hostname, port, protocol, strategy = "parallel_by_priority") =>
+      await makeZoneweaverAPIRequest(
+        hostname,
+        port,
+        protocol,
+        "zones/orchestration/test",
+        "POST",
+        {
+          strategy,
+        }
+      ),
+    [makeZoneweaverAPIRequest]
+  );
 
   return {
     // System Status Functions

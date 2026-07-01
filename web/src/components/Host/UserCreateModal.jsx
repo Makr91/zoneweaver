@@ -229,19 +229,19 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       aria-label="Create new user account"
     >
       {/* Mode Toggle */}
-      <div className="field">
-        <div className="control">
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={isAdvanced}
-              onChange={(e) => setIsAdvanced(e.target.checked)}
-              disabled={loading}
-            />
-            <span className="check" />
-            <span className="control-label">
-              Advanced Mode (RBAC Configuration)
-            </span>
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            id="user-create-advanced"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={isAdvanced}
+            onChange={(e) => setIsAdvanced(e.target.checked)}
+            disabled={loading}
+          />
+          <label className="form-check-label" htmlFor="user-create-advanced">
+            Advanced Mode (RBAC Configuration)
           </label>
         </div>
       </div>
@@ -249,211 +249,184 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <hr />
 
       {/* Basic Fields */}
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="user-create-username">
-              Username <span className="has-text-danger">*</span>
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-username">
+              Username <span className="text-danger">*</span>
             </label>
-            <div className="control">
-              <input
-                id="user-create-username"
-                className="input"
-                type="text"
-                value={formData.username}
-                onChange={(e) => handleInputChange("username", e.target.value)}
-                required
-                disabled={loading}
-                placeholder="Enter username"
-              />
-            </div>
+            <input
+              id="user-create-username"
+              className="form-control"
+              type="text"
+              value={formData.username}
+              onChange={(e) => handleInputChange("username", e.target.value)}
+              required
+              disabled={loading}
+              placeholder="Enter username"
+            />
           </div>
         </div>
         {isAdvanced && (
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="user-create-uid">
+          <div className="col">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="user-create-uid">
                 User ID (UID)
               </label>
-              <div className="control">
-                <input
-                  id="user-create-uid"
-                  className="input"
-                  type="number"
-                  value={formData.uid}
-                  onChange={(e) => handleInputChange("uid", e.target.value)}
-                  disabled={loading}
-                  placeholder="Auto-assign if empty"
-                />
-              </div>
+              <input
+                id="user-create-uid"
+                className="form-control"
+                type="number"
+                value={formData.uid}
+                onChange={(e) => handleInputChange("uid", e.target.value)}
+                disabled={loading}
+                placeholder="Auto-assign if empty"
+              />
             </div>
           </div>
         )}
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="user-create-comment">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-create-comment">
           Comment
         </label>
-        <div className="control">
-          <input
-            id="user-create-comment"
-            className="input"
-            type="text"
-            value={formData.comment}
-            onChange={(e) => handleInputChange("comment", e.target.value)}
-            disabled={loading}
-            placeholder="User description or full name"
-          />
-        </div>
+        <input
+          id="user-create-comment"
+          className="form-control"
+          type="text"
+          value={formData.comment}
+          onChange={(e) => handleInputChange("comment", e.target.value)}
+          disabled={loading}
+          placeholder="User description or full name"
+        />
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="user-create-shell">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-create-shell">
           Shell
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="user-create-shell"
-              value={formData.shell}
-              onChange={(e) => handleInputChange("shell", e.target.value)}
-              disabled={loading}
-            >
-              {shells.map((shell) => (
-                <option key={shell} value={shell}>
-                  {shell}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <select
+          id="user-create-shell"
+          className="form-select"
+          value={formData.shell}
+          onChange={(e) => handleInputChange("shell", e.target.value)}
+          disabled={loading}
+        >
+          {shells.map((shell) => (
+            <option key={shell} value={shell}>
+              {shell}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Advanced Fields */}
       {isAdvanced && (
         <>
           <hr />
-          <h5 className="title is-6">RBAC Configuration</h5>
+          <h5 className="fs-6 fw-bold">RBAC Configuration</h5>
 
-          <div className="field">
-            <label className="label" htmlFor="user-create-groups">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-groups">
               Groups
             </label>
-            <div className="control">
-              <input
-                id="user-create-groups"
-                className="input"
-                type="text"
-                value={formData.groups.join(", ")}
-                onChange={(e) =>
-                  handleArrayInputChange("groups", e.target.value)
-                }
-                disabled={loading}
-                placeholder="staff, admin, developers (comma-separated)"
-              />
-            </div>
-            <p className="help">
+            <input
+              id="user-create-groups"
+              className="form-control"
+              type="text"
+              value={formData.groups.join(", ")}
+              onChange={(e) => handleArrayInputChange("groups", e.target.value)}
+              disabled={loading}
+              placeholder="staff, admin, developers (comma-separated)"
+            />
+            <p className="form-text text-muted">
               Available groups:{" "}
               {availableGroups.map((g) => g.groupname).join(", ")}
             </p>
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="user-create-authorizations">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-authorizations">
               Authorizations
             </label>
-            <div className="control">
-              <textarea
-                id="user-create-authorizations"
-                className="textarea"
-                rows="2"
-                value={formData.authorizations.join(", ")}
-                onChange={(e) =>
-                  handleArrayInputChange("authorizations", e.target.value)
-                }
-                disabled={loading}
-                placeholder="solaris.admin.usermgr.*, solaris.network.* (comma-separated)"
-              />
-            </div>
+            <textarea
+              id="user-create-authorizations"
+              className="form-control"
+              rows="2"
+              value={formData.authorizations.join(", ")}
+              onChange={(e) =>
+                handleArrayInputChange("authorizations", e.target.value)
+              }
+              disabled={loading}
+              placeholder="solaris.admin.usermgr.*, solaris.network.* (comma-separated)"
+            />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="user-create-profiles">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-profiles">
               Profiles
             </label>
-            <div className="control">
-              <input
-                id="user-create-profiles"
-                className="input"
-                type="text"
-                value={formData.profiles.join(", ")}
-                onChange={(e) =>
-                  handleArrayInputChange("profiles", e.target.value)
-                }
-                disabled={loading}
-                placeholder="System Administrator, Network Management (comma-separated)"
-              />
-            </div>
+            <input
+              id="user-create-profiles"
+              className="form-control"
+              type="text"
+              value={formData.profiles.join(", ")}
+              onChange={(e) =>
+                handleArrayInputChange("profiles", e.target.value)
+              }
+              disabled={loading}
+              placeholder="System Administrator, Network Management (comma-separated)"
+            />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="user-create-roles">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-roles">
               Roles
             </label>
-            <div className="control">
-              <input
-                id="user-create-roles"
-                className="input"
-                type="text"
-                value={formData.roles.join(", ")}
-                onChange={(e) =>
-                  handleArrayInputChange("roles", e.target.value)
-                }
-                disabled={loading}
-                placeholder="admin_role, backup_role (comma-separated)"
-              />
-            </div>
-            <p className="help">
+            <input
+              id="user-create-roles"
+              className="form-control"
+              type="text"
+              value={formData.roles.join(", ")}
+              onChange={(e) => handleArrayInputChange("roles", e.target.value)}
+              disabled={loading}
+              placeholder="admin_role, backup_role (comma-separated)"
+            />
+            <p className="form-text text-muted">
               Available roles:{" "}
               {availableRoles.map((r) => r.rolename).join(", ")}
             </p>
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="user-create-project">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-project">
               Project
             </label>
-            <div className="control">
-              <input
-                id="user-create-project"
-                className="input"
-                type="text"
-                value={formData.project}
-                onChange={(e) => handleInputChange("project", e.target.value)}
-                disabled={loading}
-                placeholder="admin_project"
-              />
-            </div>
+            <input
+              id="user-create-project"
+              className="form-control"
+              type="text"
+              value={formData.project}
+              onChange={(e) => handleInputChange("project", e.target.value)}
+              disabled={loading}
+              placeholder="admin_project"
+            />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="user-create-created-by">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="user-create-created-by">
               Created By
             </label>
-            <div className="control">
-              <input
-                id="user-create-created-by"
-                className="input"
-                type="text"
-                value={formData.created_by}
-                onChange={(e) =>
-                  handleInputChange("created_by", e.target.value)
-                }
-                disabled={loading}
-                placeholder="api_admin"
-              />
-            </div>
+            <input
+              id="user-create-created-by"
+              className="form-control"
+              type="text"
+              value={formData.created_by}
+              onChange={(e) => handleInputChange("created_by", e.target.value)}
+              disabled={loading}
+              placeholder="api_admin"
+            />
           </div>
         </>
       )}
@@ -461,57 +434,59 @@ const UserCreateModal = ({ server, onClose, onSuccess, onError }) => {
       <hr />
 
       {/* Options */}
-      <div className="field">
-        <div className="control">
-          <label className="switch">
-            <input
-              id="user-create-home"
-              type="checkbox"
-              checked={formData.create_home}
-              onChange={(e) =>
-                handleInputChange("create_home", e.target.checked)
-              }
-              disabled={loading}
-            />
-            <span className="check" />
-            <span className="control-label">Create Home Directory</span>
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            id="user-create-home"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={formData.create_home}
+            onChange={(e) => handleInputChange("create_home", e.target.checked)}
+            disabled={loading}
+          />
+          <label className="form-check-label" htmlFor="user-create-home">
+            Create Home Directory
           </label>
         </div>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="switch">
-            <input
-              id="user-create-personal-group"
-              type="checkbox"
-              checked={formData.create_personal_group}
-              onChange={(e) =>
-                handleInputChange("create_personal_group", e.target.checked)
-              }
-              disabled={loading}
-            />
-            <span className="check" />
-            <span className="control-label">Create Personal Group</span>
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            id="user-create-personal-group"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={formData.create_personal_group}
+            onChange={(e) =>
+              handleInputChange("create_personal_group", e.target.checked)
+            }
+            disabled={loading}
+          />
+          <label
+            className="form-check-label"
+            htmlFor="user-create-personal-group"
+          >
+            Create Personal Group
           </label>
         </div>
       </div>
 
       {isAdvanced && (
-        <div className="field">
-          <div className="control">
-            <label className="switch">
-              <input
-                id="user-create-force-zfs"
-                type="checkbox"
-                checked={formData.force_zfs}
-                onChange={(e) =>
-                  handleInputChange("force_zfs", e.target.checked)
-                }
-                disabled={loading}
-              />
-              <span className="check" />
-              <span className="control-label">Force ZFS Home Directory</span>
+        <div className="mb-3">
+          <div className="form-check form-switch">
+            <input
+              id="user-create-force-zfs"
+              className="form-check-input"
+              type="checkbox"
+              role="switch"
+              checked={formData.force_zfs}
+              onChange={(e) => handleInputChange("force_zfs", e.target.checked)}
+              disabled={loading}
+            />
+            <label className="form-check-label" htmlFor="user-create-force-zfs">
+              Force ZFS Home Directory
             </label>
           </div>
         </div>

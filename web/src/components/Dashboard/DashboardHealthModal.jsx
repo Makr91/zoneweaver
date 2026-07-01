@@ -9,7 +9,7 @@ import { getServerHealthStatus } from "./dashboardUtils";
  */
 const HealthIssueCard = ({ serverResult }) => {
   const status = getServerHealthStatus(serverResult);
-  const statusColor = status === "offline" ? "is-danger" : "is-warning";
+  const statusColor = status === "offline" ? "alert-danger" : "alert-warning";
   const issues = [];
   const rebootInfo = serverResult.healthData?.reboot_info;
 
@@ -53,24 +53,18 @@ const HealthIssueCard = ({ serverResult }) => {
 
   return (
     <div
-      className={`notification ${serverResult.healthData?.reboot_required ? "is-warning" : statusColor} mb-3`}
+      className={`alert ${serverResult.healthData?.reboot_required ? "alert-warning" : statusColor} mb-3`}
     >
-      <div className="level is-mobile">
-        <div className="level-left">
-          <strong>{serverResult.server.hostname}</strong>
-        </div>
-        <div className="level-right">
-          {serverResult.healthData?.reboot_required && (
-            <span className="tag is-warning">
-              <span className="icon is-small">
-                <i className="fas fa-redo" />
-              </span>
-              <span>Reboot Required</span>
-            </span>
-          )}
-        </div>
+      <div className="d-flex justify-content-between align-items-center">
+        <strong>{serverResult.server.hostname}</strong>
+        {serverResult.healthData?.reboot_required && (
+          <span className="badge text-bg-warning d-inline-flex align-items-center gap-1">
+            <i className="fas fa-redo" />
+            <span>Reboot Required</span>
+          </span>
+        )}
       </div>
-      <ul className="mt-2">
+      <ul className="mt-2 mb-0">
         {issues.map((issue) => (
           <li key={issue}>{issue}</li>
         ))}

@@ -29,26 +29,26 @@ const getFileSizeLabel = (file) => {
 const getPreviewContent = (file, userRole) => {
   if (file.isDirectory) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-folder fa-3x" />
         </span>
         <p className="mt-2">Directory</p>
-        <p className="help">Double-click to open</p>
+        <p className="form-text text-muted">Double-click to open</p>
       </div>
     );
   }
 
   if (isTextFile(file)) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-file-alt fa-3x" />
         </span>
         <p className="mt-2">Text File</p>
-        <div className="buttons is-centered mt-3">
+        <div className="d-flex gap-2 justify-content-center mt-3">
           <button
-            className="button is-primary is-small"
+            className="btn btn-primary btn-sm"
             onClick={(e) => {
               e.stopPropagation();
               const editEvent = new CustomEvent("zoneweaver-edit-file", {
@@ -57,7 +57,7 @@ const getPreviewContent = (file, userRole) => {
               document.dispatchEvent(editEvent);
             }}
           >
-            <span className="icon is-small">
+            <span className="me-1">
               <i className="fas fa-edit" />
             </span>
             <span>Edit File</span>
@@ -69,14 +69,14 @@ const getPreviewContent = (file, userRole) => {
 
   if (isArchiveFile(file)) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-file-archive fa-3x" />
         </span>
         <p className="mt-2">Archive File</p>
-        <div className="buttons is-centered mt-3">
+        <div className="d-flex gap-2 justify-content-center mt-3">
           <button
-            className="button is-success is-small"
+            className="btn btn-success btn-sm"
             onClick={(e) => {
               e.stopPropagation();
               const extractEvent = new CustomEvent(
@@ -87,7 +87,7 @@ const getPreviewContent = (file, userRole) => {
             }}
             disabled={!canManageHosts(userRole)}
           >
-            <span className="icon is-small">
+            <span className="me-1">
               <i className="fas fa-expand-arrows-alt" />
             </span>
             <span>Extract</span>
@@ -98,12 +98,12 @@ const getPreviewContent = (file, userRole) => {
   }
 
   return (
-    <div className="has-text-centered p-4">
-      <span className="icon is-large">
+    <div className="text-center p-4">
+      <span>
         <i className="fas fa-file fa-3x" />
       </span>
       <p className="mt-2">File</p>
-      <p className="help">Double-click to download</p>
+      <p className="form-text text-muted">Double-click to download</p>
     </div>
   );
 };
@@ -115,16 +115,18 @@ const getPreviewContent = (file, userRole) => {
 const FilePreviewPanel = ({ file, userRole }) => (
   <div className="zoneweaver-file-preview">
     <div className="preview-header">
-      <h4 className="title is-6">{file.name}</h4>
+      <h4 className="fs-6 fw-bold">{file.name}</h4>
       <div className="preview-info">
-        <span className="tag is-light">{getFileSizeLabel(file)}</span>
+        <span className="badge text-bg-secondary">
+          {getFileSizeLabel(file)}
+        </span>
         {file._zwMetadata?.mimeType && (
-          <span className="tag is-info is-light">
+          <span className="badge text-bg-info">
             {file._zwMetadata.mimeType}
           </span>
         )}
         {file._zwMetadata?.permissions && (
-          <span className="tag is-dark">
+          <span className="badge text-bg-dark">
             {file._zwMetadata.permissions.octal || "Unknown"}
           </span>
         )}
@@ -136,9 +138,9 @@ const FilePreviewPanel = ({ file, userRole }) => (
     {/* Action buttons for all files */}
     {canManageHosts(userRole) && (
       <div className="preview-actions">
-        <div className="buttons is-centered">
+        <div className="d-flex gap-2 justify-content-center">
           <button
-            className="button is-link is-small is-outlined"
+            className="btn btn-outline-primary btn-sm"
             onClick={(e) => {
               e.stopPropagation();
               const propsEvent = new CustomEvent("zoneweaver-show-properties", {
@@ -147,7 +149,7 @@ const FilePreviewPanel = ({ file, userRole }) => (
               document.dispatchEvent(propsEvent);
             }}
           >
-            <span className="icon is-small">
+            <span className="me-1">
               <i className="fas fa-cog" />
             </span>
             <span>Properties</span>
@@ -158,11 +160,11 @@ const FilePreviewPanel = ({ file, userRole }) => (
 
     {/* File metadata */}
     <div className="preview-metadata">
-      <div className="field is-grouped is-grouped-multiline">
-        <div className="control">
-          <div className="tags has-addons">
-            <span className="tag is-dark">Modified</span>
-            <span className="tag is-light">
+      <div className="d-flex flex-wrap gap-2">
+        <div>
+          <div className="d-inline-flex">
+            <span className="badge text-bg-dark rounded-end-0">Modified</span>
+            <span className="badge text-bg-secondary rounded-start-0">
               {file.updatedAt
                 ? new Date(file.updatedAt).toLocaleDateString()
                 : "Unknown"}
@@ -170,10 +172,10 @@ const FilePreviewPanel = ({ file, userRole }) => (
           </div>
         </div>
         {file._zwMetadata && (
-          <div className="control">
-            <div className="tags has-addons">
-              <span className="tag is-dark">Owner</span>
-              <span className="tag is-light">
+          <div>
+            <div className="d-inline-flex">
+              <span className="badge text-bg-dark rounded-end-0">Owner</span>
+              <span className="badge text-bg-secondary rounded-start-0">
                 {file._zwMetadata.uid || "Unknown"}:
                 {file._zwMetadata.gid || "Unknown"}
               </span>

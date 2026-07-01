@@ -103,88 +103,85 @@ const StoragePathCreateModal = ({ server, onClose, onSuccess, onError }) => {
       loading={loading}
       showCancelButton
     >
-      <div className="field">
-        <label htmlFor="storage-path-name" className="label">
+      <div className="mb-3">
+        <label htmlFor="storage-path-name" className="form-label">
           Name
         </label>
-        <div className="control">
-          <input
-            id="storage-path-name"
-            className={`input ${errors.name ? "is-danger" : ""}`}
-            type="text"
-            placeholder="e.g., Primary ISO Storage"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            disabled={loading}
-          />
-        </div>
-        {errors.name && <p className="help is-danger">{errors.name}</p>}
-        <p className="help">A descriptive name for this storage location</p>
+        <input
+          id="storage-path-name"
+          className={`form-control ${errors.name ? "is-invalid" : ""}`}
+          type="text"
+          placeholder="e.g., Primary ISO Storage"
+          value={formData.name}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          disabled={loading}
+        />
+        {errors.name && <p className="form-text text-danger">{errors.name}</p>}
+        <p className="form-text text-muted">
+          A descriptive name for this storage location
+        </p>
       </div>
 
-      <div className="field">
-        <label htmlFor="storage-path-path" className="label">
+      <div className="mb-3">
+        <label htmlFor="storage-path-path" className="form-label">
           Path
         </label>
-        <div className="control">
-          <input
-            id="storage-path-path"
-            className={`input ${errors.path ? "is-danger" : ""}`}
-            type="text"
-            placeholder="e.g., /data/isos"
-            value={formData.path}
-            onChange={(e) => handleInputChange("path", e.target.value)}
-            disabled={loading}
-          />
-        </div>
-        {errors.path && <p className="help is-danger">{errors.path}</p>}
-        <p className="help">
+        <input
+          id="storage-path-path"
+          className={`form-control ${errors.path ? "is-invalid" : ""}`}
+          type="text"
+          placeholder="e.g., /data/isos"
+          value={formData.path}
+          onChange={(e) => handleInputChange("path", e.target.value)}
+          disabled={loading}
+        />
+        {errors.path && <p className="form-text text-danger">{errors.path}</p>}
+        <p className="form-text text-muted">
           Absolute path to the storage directory on the host system
         </p>
       </div>
 
-      <div className="field">
-        <label htmlFor="storage-path-type" className="label">
+      <div className="mb-3">
+        <label htmlFor="storage-path-type" className="form-label">
           Type
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="storage-path-type"
-              value={formData.type}
-              onChange={(e) => handleInputChange("type", e.target.value)}
-              disabled={loading}
-            >
-              <option value="iso">ISO Files</option>
-              <option value="image">VM Images</option>
-            </select>
-          </div>
-        </div>
-        {errors.type && <p className="help is-danger">{errors.type}</p>}
-        <p className="help">
+        <select
+          id="storage-path-type"
+          className="form-select"
+          value={formData.type}
+          onChange={(e) => handleInputChange("type", e.target.value)}
+          disabled={loading}
+        >
+          <option value="iso">ISO Files</option>
+          <option value="image">VM Images</option>
+        </select>
+        {errors.type && <p className="form-text text-danger">{errors.type}</p>}
+        <p className="form-text text-muted">
           Type of artifacts this storage location will contain
         </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.enabled}
-              onChange={(e) => handleInputChange("enabled", e.target.checked)}
-              disabled={loading}
-            />
-            <span className="ml-2">Enable storage location</span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="storage-path-enabled"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.enabled}
+            onChange={(e) => handleInputChange("enabled", e.target.checked)}
+            disabled={loading}
+          />
+          <label className="form-check-label" htmlFor="storage-path-enabled">
+            Enable storage location
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           Enabled storage locations can be used for uploads and downloads.
           Disabled locations are read-only.
         </p>
       </div>
 
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <div className="content">
           <p>
             <strong>Important:</strong>

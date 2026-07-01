@@ -272,112 +272,105 @@ const VlanCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitVariant="is-primary"
       loading={creating}
     >
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="vlan-create-vid">
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="vlan-create-vid">
               VLAN ID *
             </label>
-            <div className="control">
-              <input
-                id="vlan-create-vid"
-                className="input"
-                type="number"
-                min="1"
-                max="4094"
-                placeholder="e.g., 100"
-                value={formData.vid}
-                onChange={(e) => handleInputChange("vid", e.target.value)}
-                disabled={creating}
-                required
-              />
-            </div>
-            <p className="help">Valid range: 1-4094</p>
+            <input
+              id="vlan-create-vid"
+              className="form-control"
+              type="number"
+              min="1"
+              max="4094"
+              placeholder="e.g., 100"
+              value={formData.vid}
+              onChange={(e) => handleInputChange("vid", e.target.value)}
+              disabled={creating}
+              required
+            />
+            <p className="form-text text-muted">Valid range: 1-4094</p>
           </div>
         </div>
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="vlan-create-link">
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="vlan-create-link">
               Physical Link *
             </label>
-            <div className="control">
-              <div className="select is-fullwidth">
-                <select
-                  id="vlan-create-link"
-                  value={formData.link}
-                  onChange={(e) => handleInputChange("link", e.target.value)}
-                  disabled={creating || loadingLinks}
-                  required
-                >
-                  <option value="">
-                    {loadingLinks
-                      ? "Loading available links..."
-                      : "Select physical interface"}
-                  </option>
-                  {availableLinks.map((link) => (
-                    <option key={link.name} value={link.name}>
-                      {link.name} ({link.state}, {link.speed})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <select
+              id="vlan-create-link"
+              className="form-select"
+              value={formData.link}
+              onChange={(e) => handleInputChange("link", e.target.value)}
+              disabled={creating || loadingLinks}
+              required
+            >
+              <option value="">
+                {loadingLinks
+                  ? "Loading available links..."
+                  : "Select physical interface"}
+              </option>
+              {availableLinks.map((link) => (
+                <option key={link.name} value={link.name}>
+                  {link.name} ({link.state}, {link.speed})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="vlan-create-name">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="vlan-create-name">
           VLAN Name (Optional)
         </label>
-        <div className="control">
-          <input
-            id="vlan-create-name"
-            className="input"
-            type="text"
-            placeholder="Auto-generated using dladm formula"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            disabled={creating}
-          />
-        </div>
-        <p className="help">
+        <input
+          id="vlan-create-name"
+          className="form-control"
+          type="text"
+          placeholder="Auto-generated using dladm formula"
+          value={formData.name}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          disabled={creating}
+        />
+        <p className="form-text text-muted">
           Shows auto-generated name preview. Leave empty or use the generated
           name to let dladm auto-generate.
         </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.force}
-              onChange={(e) => handleInputChange("force", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">
-              Force creation (override compatibility checks)
-            </span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="vlan-create-force"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.force}
+            onChange={(e) => handleInputChange("force", e.target.checked)}
+            disabled={creating}
+          />
+          <label className="form-check-label" htmlFor="vlan-create-force">
+            Force creation (override compatibility checks)
           </label>
         </div>
-        <p className="help is-size-7">
+        <p className="form-text text-muted small">
           Use with caution - forces VLAN creation even on incompatible devices
         </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.temporary}
-              onChange={(e) => handleInputChange("temporary", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">
-              Temporary (not persistent across reboots)
-            </span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="vlan-create-temporary"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.temporary}
+            onChange={(e) => handleInputChange("temporary", e.target.checked)}
+            disabled={creating}
+          />
+          <label className="form-check-label" htmlFor="vlan-create-temporary">
+            Temporary (not persistent across reboots)
           </label>
         </div>
       </div>

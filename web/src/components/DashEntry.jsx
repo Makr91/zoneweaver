@@ -10,24 +10,20 @@ const DashEntry = ({ link, title, icon, isSubmenu }) => {
   if (!userContext.sidebarMinimized) {
     return (
       <NavLink
-        className={`button is-fullwidth is-justify-content-start ${isSubmenu ? "pl-5" : ""}`}
+        className={`btn w-100 d-flex align-items-center justify-content-start gap-2 ${isSubmenu ? "ps-5" : ""}`}
         to={link}
       >
-        <span className="icon">
-          <i className={icon} />
-        </span>
+        <i className={icon} />
         <span>{title}</span>
       </NavLink>
     );
   }
   return (
     <NavLink
-      className={`button ${isSubmenu ? "is-submenu-collapsed" : ""}`}
+      className={`btn w-100 d-flex justify-content-center ${isSubmenu ? "is-submenu-collapsed" : ""}`}
       to={link}
     >
-      <span className="icon">
-        <i className={icon} />
-      </span>
+      <i className={icon} />
     </NavLink>
   );
 };

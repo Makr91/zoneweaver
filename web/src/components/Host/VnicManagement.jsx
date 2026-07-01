@@ -219,114 +219,99 @@ const VnicManagement = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">VNIC Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">VNIC Management</h2>
+        <p>
           Manage Virtual Network Interface Cards (VNICs) on{" "}
           <strong>{server.hostname}</strong>.
         </p>
       </div>
 
       {/* VNIC Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-over">
-                Filter by Physical Link
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="filter-over"
-                    value={filters.over}
-                    onChange={(e) => handleFilterChange("over", e.target.value)}
-                  >
-                    <option value="">All Physical Links</option>
-                    {availableLinks.map((link) => (
-                      <option key={link} value={link}>
-                        {link}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-over">
+                  Filter by Physical Link
+                </label>
+                <select
+                  id="filter-over"
+                  className="form-select"
+                  value={filters.over}
+                  onChange={(e) => handleFilterChange("over", e.target.value)}
+                >
+                  <option value="">All Physical Links</option>
+                  {availableLinks.map((link) => (
+                    <option key={link} value={link}>
+                      {link}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-zone">
-                Filter by Zone
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="filter-zone"
-                    value={filters.zone}
-                    onChange={(e) => handleFilterChange("zone", e.target.value)}
-                  >
-                    <option value="">All Zones</option>
-                    {availableZones.map((zone) => (
-                      <option key={zone} value={zone}>
-                        {zone}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-zone">
+                  Filter by Zone
+                </label>
+                <select
+                  id="filter-zone"
+                  className="form-select"
+                  value={filters.zone}
+                  onChange={(e) => handleFilterChange("zone", e.target.value)}
+                >
+                  <option value="">All Zones</option>
+                  {availableZones.map((zone) => (
+                    <option key={zone} value={zone}>
+                      {zone}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-state">
-                Filter by State
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="filter-state"
-                    value={filters.state}
-                    onChange={(e) =>
-                      handleFilterChange("state", e.target.value)
-                    }
-                  >
-                    <option value="">All States</option>
-                    <option value="up">Up</option>
-                    <option value="down">Down</option>
-                    <option value="unknown">Unknown</option>
-                  </select>
-                </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-state">
+                  Filter by State
+                </label>
+                <select
+                  id="filter-state"
+                  className="form-select"
+                  value={filters.state}
+                  onChange={(e) => handleFilterChange("state", e.target.value)}
+                >
+                  <option value="">All States</option>
+                  <option value="up">Up</option>
+                  <option value="down">Down</option>
+                  <option value="unknown">Unknown</option>
+                </select>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <div className="label">&nbsp;</div>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <div className="form-label">&nbsp;</div>
                 <button
-                  className="button is-info"
+                  type="button"
+                  className="btn btn-info"
                   onClick={loadVnics}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
+                  <i className="fas fa-sync-alt me-2" />
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <div className="label">&nbsp;</div>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <div className="form-label">&nbsp;</div>
                 <button
-                  className="button"
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
+                  <i className="fas fa-times me-2" />
                   <span>Clear</span>
                 </button>
               </div>
@@ -336,38 +321,39 @@ const VnicManagement = ({ server, onError }) => {
       </div>
 
       {/* VNICs Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              VNICs ({vnics.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                VNICs ({vnics.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Create VNIC</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create VNIC</span>
-            </button>
-          </div>
-        </div>
 
-        <VnicTable
-          vnics={vnics}
-          loading={loading}
-          onDelete={handleDeleteVnic}
-          onViewDetails={handleViewDetails}
-        />
+          <VnicTable
+            vnics={vnics}
+            loading={loading}
+            onDelete={handleDeleteVnic}
+            onViewDetails={handleViewDetails}
+          />
+        </div>
       </div>
 
       {/* VNIC Details Modal */}

@@ -90,11 +90,10 @@ const CreateArchiveModal = ({
       submitIcon="fas fa-plus"
       loading={loading}
       showCancelButton
-      className="is-medium"
     >
       {/* Selected files info */}
-      <div className="field">
-        <div className="notification is-info">
+      <div className="mb-3">
+        <div className="alert alert-info">
           <strong>Creating archive from {selectedFiles.length} item(s):</strong>
           <ul className="mt-2">
             {selectedFiles.slice(0, 5).map((file) => (
@@ -109,72 +108,71 @@ const CreateArchiveModal = ({
 
       {/* Error display */}
       {error && (
-        <div className="notification is-danger">
-          <button className="delete is-small" onClick={() => setError("")} />
+        <div className="alert alert-danger">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           {error}
         </div>
       )}
 
       {/* Archive name */}
-      <div className="field">
-        <label htmlFor="archive-name" className="label">
+      <div className="mb-3">
+        <label htmlFor="archive-name" className="form-label">
           Archive Name
         </label>
-        <div className="control">
-          <input
-            id="archive-name"
-            className="input"
-            type="text"
-            value={archiveName}
-            onChange={(e) => setArchiveName(e.target.value)}
-            placeholder="Enter archive name..."
-            required
-          />
-        </div>
-        <p className="help">
+        <input
+          id="archive-name"
+          className="form-control"
+          type="text"
+          value={archiveName}
+          onChange={(e) => setArchiveName(e.target.value)}
+          placeholder="Enter archive name..."
+          required
+        />
+        <p className="form-text text-muted">
           The archive will be created in the current directory
         </p>
       </div>
 
       {/* Format selection */}
-      <div className="field">
-        <label htmlFor="archive-format" className="label">
+      <div className="mb-3">
+        <label htmlFor="archive-format" className="form-label">
           Archive Format
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="archive-format"
-              value={format}
-              onChange={(e) => handleFormatChange(e.target.value)}
-            >
-              <option value="tar.gz">tar.gz (Compressed tar archive)</option>
-              <option value="tar.bz2">tar.bz2 (BZip2 compressed tar)</option>
-              <option value="tar">tar (Uncompressed tar archive)</option>
-              <option value="zip">zip (ZIP archive)</option>
-              <option value="gz">gz (GZip compressed)</option>
-            </select>
-          </div>
-        </div>
+        <select
+          id="archive-format"
+          className="form-select"
+          value={format}
+          onChange={(e) => handleFormatChange(e.target.value)}
+        >
+          <option value="tar.gz">tar.gz (Compressed tar archive)</option>
+          <option value="tar.bz2">tar.bz2 (BZip2 compressed tar)</option>
+          <option value="tar">tar (Uncompressed tar archive)</option>
+          <option value="zip">zip (ZIP archive)</option>
+          <option value="gz">gz (GZip compressed)</option>
+        </select>
       </div>
 
       {/* Destination path */}
-      <div className="field">
-        <label htmlFor="archive-destination" className="label">
+      <div className="mb-3">
+        <label htmlFor="archive-destination" className="form-label">
           Destination Directory
         </label>
-        <div className="control">
-          <input
-            id="archive-destination"
-            className="input"
-            type="text"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="/path/to/destination"
-            required
-          />
-        </div>
-        <p className="help">Directory where the archive will be created</p>
+        <input
+          id="archive-destination"
+          className="form-control"
+          type="text"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+          placeholder="/path/to/destination"
+          required
+        />
+        <p className="form-text text-muted">
+          Directory where the archive will be created
+        </p>
       </div>
     </FormModal>
   );
@@ -252,22 +250,21 @@ const ExtractArchiveModal = ({
       submitIcon="fas fa-expand-arrows-alt"
       loading={loading}
       showCancelButton
-      className="is-medium"
     >
       {/* Archive info */}
-      <div className="field">
-        <div className="notification">
-          <div className="columns is-mobile is-vcentered">
-            <div className="column">
+      <div className="mb-3">
+        <div className="alert alert-secondary">
+          <div className="row align-items-center">
+            <div className="col">
               <strong>Archive:</strong> {archiveFile.name}
             </div>
-            <div className="column">
+            <div className="col">
               <strong>Size:</strong>{" "}
               {archiveFile.size
                 ? `${Math.round(archiveFile.size / 1024)} KB`
                 : "Unknown"}
             </div>
-            <div className="column">
+            <div className="col">
               <strong>Format:</strong> {getArchiveFormat(archiveFile.name)}
             </div>
           </div>
@@ -276,49 +273,51 @@ const ExtractArchiveModal = ({
 
       {/* Error display */}
       {error && (
-        <div className="notification is-danger">
-          <button className="delete is-small" onClick={() => setError("")} />
+        <div className="alert alert-danger">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           {error}
         </div>
       )}
 
       {/* Destination path */}
-      <div className="field">
-        <label htmlFor="extract-destination" className="label">
+      <div className="mb-3">
+        <label htmlFor="extract-destination" className="form-label">
           Extract To Directory
         </label>
-        <div className="control">
-          <input
-            id="extract-destination"
-            className="input"
-            type="text"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="/path/to/extraction/directory"
-            required
-          />
-        </div>
-        <p className="help">
+        <input
+          id="extract-destination"
+          className="form-control"
+          type="text"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+          placeholder="/path/to/extraction/directory"
+          required
+        />
+        <p className="form-text text-muted">
           Directory where the archive contents will be extracted
         </p>
       </div>
 
       {/* Quick destination options */}
-      <div className="field">
-        <span className="label" aria-hidden="true">
+      <div className="mb-3">
+        <span className="form-label" aria-hidden="true">
           Quick Options
         </span>
-        <div className="buttons">
+        <div className="d-flex gap-2">
           <button
             type="button"
-            className="button is-small"
+            className="btn btn-sm"
             onClick={() => setDestination(currentPath)}
           >
             Current Directory ({currentPath})
           </button>
           <button
             type="button"
-            className="button is-small"
+            className="btn btn-sm"
             onClick={() => {
               const archiveNameWithoutExt = archiveFile.name.replace(
                 /\.(?:tar\.gz|tar\.bz2|zip|tar|gz)$/i,

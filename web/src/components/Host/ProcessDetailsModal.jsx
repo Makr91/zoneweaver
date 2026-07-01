@@ -106,30 +106,34 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
 
     return (
       <div>
-        <div className="box mb-4">
-          <h4 className="title is-6">Process Information</h4>
-          <div className="table-container">
-            <table className="table is-fullwidth">
-              <tbody>
-                {basicDetails.map((detail) => (
-                  <tr key={detail.label}>
-                    <td>
-                      <strong>{detail.label}</strong>
-                    </td>
-                    <td className="is-family-monospace">{detail.value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="card mb-4">
+          <div className="card-body">
+            <h4 className="fs-6 fw-bold">Process Information</h4>
+            <div className="table-responsive">
+              <table className="table">
+                <tbody>
+                  {basicDetails.map((detail) => (
+                    <tr key={detail.label}>
+                      <td>
+                        <strong>{detail.label}</strong>
+                      </td>
+                      <td className="font-monospace">{detail.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         {process.details?.open_files_sample && (
-          <div className="box">
-            <h4 className="title is-6">Open Files Sample</h4>
-            <pre className="is-size-7 p-3 has-background-light">
-              {process.details.open_files_sample}
-            </pre>
+          <div className="card">
+            <div className="card-body">
+              <h4 className="fs-6 fw-bold">Open Files Sample</h4>
+              <pre className="small p-3 bg-body-tertiary">
+                {process.details.open_files_sample}
+              </pre>
+            </div>
           </div>
         )}
       </div>
@@ -139,10 +143,8 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
   const renderFilesTab = () => {
     if (loading && !additionalData.files) {
       return (
-        <div className="has-text-centered p-4">
-          <span className="icon is-large">
-            <i className="fas fa-spinner fa-spin fa-2x" />
-          </span>
+        <div className="text-center p-4">
+          <i className="fas fa-spinner fa-spin fa-2x" />
           <p className="mt-2">Loading open files...</p>
         </div>
       );
@@ -150,38 +152,36 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
 
     if (!additionalData.files || additionalData.files.length === 0) {
       return (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No open files information available or no files found.</p>
         </div>
       );
     }
 
     return (
-      <div className="box">
-        <h4 className="title is-6">Open File Descriptors</h4>
-        <div className="table-container">
-          <table className="table is-fullwidth is-hoverable">
-            <thead>
-              <tr>
-                <th>FD</th>
-                <th>Description</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {additionalData.files.map((file) => (
-                <tr key={file.fd}>
-                  <td className="is-family-monospace">{file.fd}</td>
-                  <td className="is-family-monospace is-size-7">
-                    {file.description}
-                  </td>
-                  <td className="is-family-monospace is-size-7">
-                    {file.details}
-                  </td>
+      <div className="card">
+        <div className="card-body">
+          <h4 className="fs-6 fw-bold">Open File Descriptors</h4>
+          <div className="table-responsive">
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th>FD</th>
+                  <th>Description</th>
+                  <th>Details</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {additionalData.files.map((file) => (
+                  <tr key={file.fd}>
+                    <td className="font-monospace">{file.fd}</td>
+                    <td className="font-monospace small">{file.description}</td>
+                    <td className="font-monospace small">{file.details}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );
@@ -190,10 +190,8 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
   const renderLimitsTab = () => {
     if (loading && !additionalData.limits) {
       return (
-        <div className="has-text-centered p-4">
-          <span className="icon is-large">
-            <i className="fas fa-spinner fa-spin fa-2x" />
-          </span>
+        <div className="text-center p-4">
+          <i className="fas fa-spinner fa-spin fa-2x" />
           <p className="mt-2">Loading resource limits...</p>
         </div>
       );
@@ -201,36 +199,38 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
 
     if (!additionalData.limits) {
       return (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No resource limits information available.</p>
         </div>
       );
     }
 
     return (
-      <div className="box">
-        <h4 className="title is-6">Resource Limits</h4>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <thead>
-              <tr>
-                <th>Resource</th>
-                <th>Limit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(additionalData.limits).map(
-                ([resource, limit]) => (
-                  <tr key={resource}>
-                    <td>
-                      <strong>{resource}</strong>
-                    </td>
-                    <td className="is-family-monospace">{limit}</td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
+      <div className="card">
+        <div className="card-body">
+          <h4 className="fs-6 fw-bold">Resource Limits</h4>
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Resource</th>
+                  <th>Limit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(additionalData.limits).map(
+                  ([resource, limit]) => (
+                    <tr key={resource}>
+                      <td>
+                        <strong>{resource}</strong>
+                      </td>
+                      <td className="font-monospace">{limit}</td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );
@@ -239,10 +239,8 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
   const renderStackTab = () => {
     if (loading && !additionalData.stack) {
       return (
-        <div className="has-text-centered p-4">
-          <span className="icon is-large">
-            <i className="fas fa-spinner fa-spin fa-2x" />
-          </span>
+        <div className="text-center p-4">
+          <i className="fas fa-spinner fa-spin fa-2x" />
           <p className="mt-2">Loading stack trace...</p>
         </div>
       );
@@ -250,23 +248,25 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
 
     if (!additionalData.stack) {
       return (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No stack trace information available.</p>
         </div>
       );
     }
 
     return (
-      <div className="box">
-        <h4 className="title is-6">Process Stack Trace</h4>
-        <pre
-          className="is-size-7 p-3 has-background-light"
-          style={{ maxHeight: "400px", overflow: "auto" }}
-        >
-          {typeof additionalData.stack === "string"
-            ? additionalData.stack
-            : JSON.stringify(additionalData.stack, null, 2)}
-        </pre>
+      <div className="card">
+        <div className="card-body">
+          <h4 className="fs-6 fw-bold">Process Stack Trace</h4>
+          <pre
+            className="small p-3 bg-body-tertiary"
+            style={{ maxHeight: "400px", overflow: "auto" }}
+          >
+            {typeof additionalData.stack === "string"
+              ? additionalData.stack
+              : JSON.stringify(additionalData.stack, null, 2)}
+          </pre>
+        </div>
       </div>
     );
   };
@@ -284,37 +284,34 @@ const ProcessDetailsModal = ({ process, server, onClose }) => {
       onClose={onClose}
       title={`Process Details - PID ${process.pid}`}
       icon="fas fa-tasks"
-      className="is-large"
     >
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger alert-dismissible mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
       {/* Tab Navigation */}
-      <div className="tabs is-boxed mb-0">
-        <ul>
-          {tabs.map((tab) => (
-            <li
-              key={tab.key}
-              className={activeTab === tab.key ? "is-active" : ""}
+      <ul className="nav nav-tabs mb-0">
+        {tabs.map((tab) => (
+          <li key={tab.key} className="nav-item">
+            <button
+              type="button"
+              className={`nav-link ${activeTab === tab.key ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.key)}
             >
-              <button
-                className="button is-text"
-                onClick={() => setActiveTab(tab.key)}
-              >
-                <span className="icon is-small">
-                  <i className={`fas ${tab.icon}`} />
-                </span>
-                <span>{tab.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+              <i className={`fas ${tab.icon} me-2`} />
+              <span>{tab.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
 
       {/* Tab Content */}
       <div className="tab-content">

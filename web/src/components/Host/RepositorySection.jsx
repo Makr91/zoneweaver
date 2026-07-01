@@ -199,8 +199,8 @@ const RepositorySection = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Repository Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Repository Management</h2>
+        <p>
           Manage package repositories (publishers) on{" "}
           <strong>{server.hostname}</strong>. Add, remove, enable, and disable
           package repositories.
@@ -208,18 +208,18 @@ const RepositorySection = ({ server, onError }) => {
       </div>
 
       {/* Repository Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="publisher-filter">
-                Filter by Publisher
-              </label>
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="publisher-filter">
+                  Filter by Publisher
+                </label>
 
-              <div className="control">
                 <input
                   id="publisher-filter"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Enter publisher name..."
                   value={filters.publisher}
@@ -229,85 +229,84 @@ const RepositorySection = ({ server, onError }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="type-filter">
-                Filter by Type
-              </label>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="type-filter">
+                  Filter by Type
+                </label>
 
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="type-filter"
-                    value={filters.type}
-                    onChange={(e) => handleFilterChange("type", e.target.value)}
-                  >
-                    <option value="">All Types</option>
-                    <option value="origin">Origin</option>
-                    <option value="mirror">Mirror</option>
-                  </select>
-                </div>
+                <select
+                  id="type-filter"
+                  className="form-select"
+                  value={filters.type}
+                  onChange={(e) => handleFilterChange("type", e.target.value)}
+                >
+                  <option value="">All Types</option>
+                  <option value="origin">Origin</option>
+                  <option value="mirror">Mirror</option>
+                </select>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="enabled-only-filter">
-                Enabled Only
-              </label>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="enabled-only-filter">
+                  Enabled Only
+                </label>
 
-              <div className="control">
-                <label className="switch is-medium">
+                <div className="form-check form-switch">
                   <input
                     id="enabled-only-filter"
+                    className="form-check-input"
                     type="checkbox"
+                    role="switch"
                     checked={filters.enabledOnly}
                     onChange={(e) =>
                       handleFilterChange("enabledOnly", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Enabled</span>
+                  <label
+                    className="form-check-label"
+                    htmlFor="enabled-only-filter"
+                  >
+                    Enabled
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="refresh-button">
+                  Refresh
                 </label>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={loadRepositories}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-sync-alt me-2" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="refresh-button">
-                Refresh
-              </label>
-              <div className="control">
-                <button
-                  className="button is-info"
-                  onClick={loadRepositories}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="clear-button">
-                Clear
-              </label>
-              <div className="control">
-                <button
-                  className="button"
-                  onClick={clearFilters}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                  <span>Clear</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="clear-button">
+                  Clear
+                </label>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={clearFilters}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times me-2" />
+                    <span>Clear</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -315,40 +314,41 @@ const RepositorySection = ({ server, onError }) => {
       </div>
 
       {/* Repositories Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              Repositories ({repositories.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                Repositories ({repositories.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowAddModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Add Repository</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowAddModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Add Repository</span>
-            </button>
-          </div>
-        </div>
 
-        <RepositoryTable
-          repositories={repositories}
-          repositoryGroups={repositoryGroups}
-          loading={loading}
-          onToggle={handleToggleRepository}
-          onEdit={handleEditRepository}
-          onDelete={handleDeleteRepository}
-        />
+          <RepositoryTable
+            repositories={repositories}
+            repositoryGroups={repositoryGroups}
+            loading={loading}
+            onToggle={handleToggleRepository}
+            onEdit={handleEditRepository}
+            onDelete={handleDeleteRepository}
+          />
+        </div>
       </div>
 
       {/* Add Repository Modal */}

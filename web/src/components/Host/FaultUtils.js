@@ -1,15 +1,15 @@
 const getSeverityTagClass = (severity) => {
   const level = severity?.toLowerCase();
   if (level === "critical") {
-    return "is-danger";
+    return "text-bg-danger";
   }
   if (level === "major") {
-    return "is-warning";
+    return "text-bg-warning";
   }
   if (level === "minor") {
-    return "is-info";
+    return "text-bg-info";
   }
-  return "is-light";
+  return "text-bg-secondary";
 };
 
 export { getSeverityTagClass };

@@ -1,28 +1,28 @@
 export const getCategoryTagClass = (category) => {
   if (category === "network") {
-    return "is-info";
+    return "text-bg-info";
   }
   if (category === "storage") {
-    return "is-primary";
+    return "text-bg-primary";
   }
   if (category === "display") {
-    return "is-success";
+    return "text-bg-success";
   }
-  return "is-dark";
+  return "text-bg-dark";
 };
 
 // Device status helper functions
 export const getDeviceStatusColor = (device) => {
   if (!device.driver_attached) {
-    return "is-warning";
+    return "text-bg-warning";
   }
   if (device.ppt_enabled && device.assigned_to_zones?.length) {
-    return "is-info";
+    return "text-bg-info";
   }
   if (device.ppt_enabled) {
-    return "is-success";
+    return "text-bg-success";
   }
-  return "is-dark";
+  return "text-bg-dark";
 };
 
 export const getDeviceStatusText = (device) => {
@@ -40,12 +40,12 @@ export const getDeviceStatusText = (device) => {
 
 export const getPPTStatusColor = (device) => {
   if (!device.ppt_capable) {
-    return "is-dark";
+    return "text-bg-dark";
   }
   if (device.assigned_to_zones?.length) {
-    return "is-warning";
+    return "text-bg-warning";
   }
-  return "is-success";
+  return "text-bg-success";
 };
 
 export const getPPTStatusText = (device) => {

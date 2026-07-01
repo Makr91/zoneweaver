@@ -285,7 +285,7 @@ const BandwidthEdge = ({
             border: `1px solid ${getEdgeColor()}`,
             color: getEdgeColor(),
           }}
-          className="nodrag nopan zw-edge-label has-text-centered"
+          className="nodrag nopan zw-edge-label text-center"
         >
           {/* Primary Label Based on Type */}
           <div>
@@ -302,7 +302,7 @@ const BandwidthEdge = ({
               </>
             ) : (
               /* Show connection type when no bandwidth */
-              <div className="is-size-5">{getLabelText()}</div>
+              <div className="fs-5">{getLabelText()}</div>
             )}
 
             {/* Secondary labels */}
@@ -321,7 +321,10 @@ const BandwidthEdge = ({
               )}
 
             {type === "aggregation" && bandwidth && bandwidth.totalMbps > 0 && (
-              <div className="zw-edge-label-secondary has-text-color-blue-3273dc">
+              <div
+                className="zw-edge-label-secondary"
+                style={{ color: "#3273dc" }}
+              >
                 LACP
               </div>
             )}

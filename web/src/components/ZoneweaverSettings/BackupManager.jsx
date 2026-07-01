@@ -54,7 +54,7 @@ const BackupManager = ({
       setMsg(`Restoring settings from backup ${backupFilename}...`);
 
       const response = await axios.post(
-        `/api/settings/backups/${backupFilename}/restore`
+        `/api/settings/restore/${backupFilename}`
       );
 
       if (response.data.success) {
@@ -141,28 +141,29 @@ const BackupManager = ({
           icon="fas fa-history"
         >
           {backups.length === 0 ? (
-            <p className="has-text-grey">No backups available</p>
+            <p className="text-muted">No backups available</p>
           ) : (
-            <table className="table is-fullwidth is-striped">
-              <thead>
-                <tr>
-                  <th>Filename</th>
-                  <th>Created</th>
-                  <th className="has-text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {backups.map((backup) => (
-                  <tr key={backup.filename}>
-                    <td>
-                      <code className="is-size-7">{backup.filename}</code>
-                    </td>
-                    <td>{new Date(backup.created).toLocaleString()}</td>
-                    <td className="has-text-right">
-                      <div className="field is-grouped is-grouped-right">
-                        <p className="control is-expanded">
+            <div className="table-responsive">
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Created</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {backups.map((backup) => (
+                    <tr key={backup.filename}>
+                      <td>
+                        <code className="small">{backup.filename}</code>
+                      </td>
+                      <td>{new Date(backup.created).toLocaleString()}</td>
+                      <td className="text-end">
+                        <div className="d-flex justify-content-end gap-2">
                           <button
-                            className="button is-small is-warning is-fullwidth"
+                            type="button"
+                            className="btn btn-warning btn-sm w-100"
                             onClick={() => {
                               restoreFromBackup(backup.filename);
                               setShowBackupModal(false);
@@ -171,22 +172,21 @@ const BackupManager = ({
                           >
                             Restore
                           </button>
-                        </p>
-                        <p className="control is-expanded">
                           <button
-                            className="button is-small is-danger is-fullwidth"
+                            type="button"
+                            className="btn btn-danger btn-sm w-100"
                             onClick={() => deleteBackup(backup.filename)}
                             disabled={loading}
                           >
                             Delete
                           </button>
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </ContentModal>
       )}
@@ -199,19 +199,21 @@ const BackupManager = ({
           title="Confirm Action"
           icon="fas fa-exclamation-triangle"
         >
-          <div className="content">
+          <div>
             <p>{confirmDialog.message}</p>
-            <div className="buttons is-right mt-4">
+            <div className="d-flex justify-content-end gap-2 mt-4">
               <button
-                className="button is-light"
+                type="button"
+                className="btn btn-secondary"
                 onClick={handleCancelConfirm}
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
-                className={`button ${
-                  confirmDialog.type === "delete" ? "is-danger" : "is-warning"
+                type="button"
+                className={`btn ${
+                  confirmDialog.type === "delete" ? "btn-danger" : "btn-warning"
                 }`}
                 onClick={handleConfirm}
                 disabled={loading}

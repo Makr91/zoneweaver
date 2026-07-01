@@ -28,47 +28,31 @@ const PackageTable = ({
 
   const getStatusIcon = (pkg) => {
     if (pkg.installed && pkg.manually_installed) {
-      return (
-        <span className="icon has-text-warning">
-          <i className="fas fa-star" />
-        </span>
-      );
+      return <i className="fas fa-star text-warning" />;
     }
     if (pkg.installed) {
-      return (
-        <span className="icon has-text-success">
-          <i className="fas fa-check-circle" />
-        </span>
-      );
+      return <i className="fas fa-check-circle text-success" />;
     }
     if (pkg.frozen) {
-      return (
-        <span className="icon has-text-info">
-          <i className="fas fa-snowflake" />
-        </span>
-      );
+      return <i className="fas fa-snowflake text-info" />;
     }
-    return (
-      <span className="icon has-text-grey">
-        <i className="fas fa-circle" />
-      </span>
-    );
+    return <i className="fas fa-circle text-muted" />;
   };
 
   const getStatusTag = (pkg) => {
     if (pkg.installed && pkg.manually_installed) {
-      return <span className="tag is-warning is-small">Manual</span>;
+      return <span className="badge text-bg-warning">Manual</span>;
     }
     if (pkg.installed) {
-      return <span className="tag is-success is-small">Installed</span>;
+      return <span className="badge text-bg-success">Installed</span>;
     }
     if (pkg.frozen) {
-      return <span className="tag is-info is-small">Frozen</span>;
+      return <span className="badge text-bg-info">Frozen</span>;
     }
     if (isSearchMode) {
-      return <span className="tag is-grey is-small">Available</span>;
+      return <span className="badge text-bg-secondary">Available</span>;
     }
-    return <span className="tag is-grey is-small">Not Installed</span>;
+    return <span className="badge text-bg-secondary">Not Installed</span>;
   };
 
   const getAvailableActions = (pkg) => {
@@ -81,7 +65,7 @@ const PackageTable = ({
           key: "uninstall",
           label: "Uninstall",
           icon: "fa-trash",
-          class: "has-background-danger-dark has-text-danger-light",
+          class: "btn-danger",
         });
       }
     } else {
@@ -90,7 +74,7 @@ const PackageTable = ({
         key: "install",
         label: "Install",
         icon: "fa-download",
-        class: "has-background-success-dark has-text-success-light",
+        class: "btn-success",
       });
     }
 
@@ -134,10 +118,8 @@ const PackageTable = ({
 
   if (loading && packages.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading packages...</p>
       </div>
     );
@@ -145,11 +127,9 @@ const PackageTable = ({
 
   if (packages.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-cube fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">
+      <div className="text-center p-4">
+        <i className="fas fa-cube fa-2x text-muted" />
+        <p className="mt-2 text-muted">
           {isSearchMode
             ? "No packages found for your search"
             : "No packages found"}
@@ -159,8 +139,8 @@ const PackageTable = ({
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover">
         <thead>
           <tr>
             <th>Package</th>
@@ -178,31 +158,29 @@ const PackageTable = ({
             return (
               <tr key={pkg.name || index}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getStatusIcon(pkg)}
-                    <span className="ml-2">
-                      <strong className="is-family-monospace">
-                        {pkg.name}
-                      </strong>
+                    <span className="ms-2">
+                      <strong className="font-monospace">{pkg.name}</strong>
                     </span>
                   </div>
                 </td>
                 <td>
-                  <span className="tag is-info is-small">
+                  <span className="badge text-bg-info">
                     {pkg.publisher || "Unknown"}
                   </span>
                 </td>
                 <td>
-                  <span className="is-family-monospace is-size-7">
+                  <span className="font-monospace small">
                     {pkg.version || "N/A"}
                   </span>
                 </td>
                 <td>{getStatusTag(pkg)}</td>
                 <td>
-                  <span className="is-size-7">{formatSize(pkg.size)}</span>
+                  <span className="small">{formatSize(pkg.size)}</span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* Action Buttons */}
                     {availableActions.map((action) => {
                       const key = `${pkg.name}-${action.key}`;
@@ -211,28 +189,34 @@ const PackageTable = ({
                       return (
                         <button
                           key={action.key}
-                          className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
+                          type="button"
+                          className={`btn btn-sm ${action.class}`}
                           onClick={() => handleAction(pkg, action.key)}
                           disabled={loading || isLoading}
                           title={action.label}
                         >
-                          <span className="icon is-small">
+                          {isLoading ? (
+                            <span
+                              className="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          ) : (
                             <i className={`fas ${action.icon}`} />
-                          </span>
+                          )}
                         </button>
                       );
                     })}
 
                     {/* View Details Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-sm btn-secondary"
                       onClick={() => onViewDetails(pkg)}
                       disabled={loading}
                       title="View Details"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
+                      <i className="fas fa-info-circle" />
                     </button>
                   </div>
                 </td>

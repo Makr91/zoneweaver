@@ -149,9 +149,113 @@ $beige-lighter: #eff0eb;
   box-shadow: none;
 }
 
+// --- Bulma → Bootstrap transition shims (removed in Phase 13 with Bulma) ---
+// Both frameworks define `.modal`, and Bulma loads after Bootstrap here, so Bulma's base
+// `.modal` rules (z-index: 40, flex centering, display: none) bleed onto react-bootstrap
+// modals. Bulma's own modals use `.modal.is-active`; react-bootstrap renders a
+// `.modal-dialog`, so scope by that and re-assert Bootstrap's modal layering for Bootstrap
+// modals only — without touching the still-Bulma console modals.
+.modal:has(.modal-dialog) {
+  z-index: 1055;
+  display: block;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+// FormModal/ContentModal were 70vw under Bulma's $modal-content-width; keep that width.
+.zw-modal-wide {
+  max-width: 70vw;
+}
+
+// react-bootstrap dropdowns collide with Bulma on `.dropdown-menu` (Bulma loads last).
+// react-bootstrap adds `.show` + inline popper positioning; Bulma never adds `.show`, so
+// scope by it to re-assert Bootstrap's dropdown layering without touching Bulma dropdowns.
+// Bulma also styles `.dropdown-item` (font-size 0.875rem + its own colors/padding) and
+// `.dropdown-divider` (its own bg/height, no border), which bleed into react-bootstrap
+// menu internals and make items the wrong size, edge colors inconsistent, and the divider
+// invisible. Re-assert Bootstrap's values via the menu's own `--bs-dropdown-*` custom
+// properties so react-bootstrap menus render correctly (and adapt to data-bs-theme).
+.dropdown-menu.show {
+  // Keep Bootstrap's palette — this is the "lighter correct gray" the user likes, the same look
+  // the sidebar drop-up has. We only upgrade the divider from Bootstrap's faint translucent line
+  // to a solid, clearly-visible border here. Removed in Phase 13 with Bulma.
+  --bs-dropdown-divider-bg: var(--bs-border-color);
+
+  display: block;
+  z-index: 1000;
+  padding: var(--bs-dropdown-padding-y, 0.5rem) var(--bs-dropdown-padding-x, 0);
+
+  .dropdown-item {
+    // Bulma sets background-color on `a.dropdown-item`/`button.dropdown-item` (0,1,1) using vars
+    // it registers on `.dropdown`. So react-bootstrap menus inside a `.dropdown` (the navbar
+    // control + Host/Zone menus) get a Bulma item background that doesn't match the Bootstrap
+    // menu background — dark item rows over the lighter menu. Force transparent so items inherit
+    // the menu background uniformly. (The `.dropup` drop-up never hit this: `.dropup` doesn't
+    // register those vars, so its items already fell back to transparent — hence it looked right.)
+    background-color: transparent;
+    font-size: var(--bs-dropdown-font-size, 1rem);
+    color: var(--bs-dropdown-link-color);
+    padding: var(--bs-dropdown-item-padding-y, 0.25rem)
+      var(--bs-dropdown-item-padding-x, 1rem);
+
+    &:hover,
+    &:focus {
+      color: var(--bs-dropdown-link-hover-color);
+      background-color: var(--bs-dropdown-link-hover-bg);
+    }
+
+    &.active,
+    &:active {
+      color: var(--bs-dropdown-link-active-color);
+      background-color: var(--bs-dropdown-link-active-bg);
+    }
+  }
+
+  .dropdown-divider {
+    height: 0;
+    margin: var(--bs-dropdown-divider-margin-y, 0.5rem) 0;
+    border-top: var(--bs-dropdown-border-width, 1px) solid
+      var(--bs-dropdown-divider-bg);
+    background-color: transparent;
+    opacity: 1;
+  }
+}
+
 .dropdown.is-center .dropdown-menu {
   left: 0;
   right: 0;
+}
+
+// Hand-rolled console dropdowns (VncActionsDropdown / ZloginActionsDropdown) are NOT
+// react-bootstrap, so they have no Popper and never receive Bootstrap's
+// [data-bs-popper]-gated top/left offsets — a bare `.dropdown-menu.show` would render
+// on top of its trigger. Re-create the Bulma placement for the TOP-LEVEL menus only:
+// drop below the trigger and align to its right edge (the old Bulma `is-right`). The
+// nested submenus position themselves via `.zw-dropdown-submenu-*` /
+// `.zw-dropdown-function-keys` (which use `!important`), so they are unaffected, and they
+// don't carry `.dropdown-menu-end` so this rule never matches them. react-bootstrap menus
+// carry `[data-bs-popper]`, so `:not()` excludes them. Removed in Phase 13 with Bulma.
+.dropdown-menu.show.dropdown-menu-end:not([data-bs-popper]) {
+  top: 100%;
+  right: 0;
+  left: auto;
+}
+
+// Bulma and Bootstrap both define `.card` / `.card-header`, and Bulma loads last — so Bulma
+// rounds the corners (`border-radius: .75rem`) and gives `.card-header` a transparent bg + a drop
+// shadow. That bleeds onto Bootstrap cards, which is most obvious on the wide page header bars
+// (rounded + shadowed in an otherwise square, shadowless design). Bootstrap cards are identified
+// by a direct `.card-body` child; Bulma's own cards (chart panels using `.card-content` — Phase 10)
+// have no `.card-body`, so they're left untouched. Re-assert Bootstrap's square, shadowless card
+// chrome. Removed in Phase 13 with Bulma.
+.card:has(> .card-body) {
+  border-radius: 0;
+
+  > .card-header {
+    background-color: var(--bs-card-cap-bg);
+    box-shadow: none;
+    border-bottom: var(--bs-card-border-width) solid var(--bs-card-border-color);
+  }
 }
 
 // Need a size smaller than 7
@@ -252,7 +356,7 @@ $beige-lighter: #eff0eb;
   height: 100%;
   cursor: ew-resize;
   z-index: 5;
-  background: var(--bulma-scheme-main-bis);
+  background: transparent;
   border-left: none !important;
   opacity: 0.8;
   transition: all 0.2s ease;
@@ -284,7 +388,7 @@ $beige-lighter: #eff0eb;
 
 // Dark theme adjustments for resize handle
 [data-theme="dark"] .react-resizable .react-resizable-handle-e {
-  background: var(--bulma-scheme-main);
+  background: transparent;
 
   &:hover {
     background: var(--bulma-scheme-main-ter);

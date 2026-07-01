@@ -172,16 +172,16 @@ const Register = () => {
 
   const getNotificationClass = () => {
     if (msg.includes("successful") || msg.includes("invited")) {
-      return "is-success";
+      return "alert-success";
     }
     if (
       msg.includes("error") ||
       msg.includes("failed") ||
       msg.includes("Invalid")
     ) {
-      return "is-danger";
+      return "alert-danger";
     }
-    return "is-warning";
+    return "alert-warning";
   };
 
   const renderHelpContent = () => {
@@ -234,19 +234,21 @@ const Register = () => {
 
   if (checkingSetup) {
     return (
-      <section className="hero is-fullheight is-fullwidth">
+      <section className="min-vh-100 d-flex align-items-center py-4">
         <Helmet>
           <meta charSet="utf-8" />
           <title>Register - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="hero-body">
-          <div className="container">
-            <div className="columns is-centered">
-              <div className="column is-4-desktop">
-                <div className="box has-text-centered">
-                  <div className="button is-loading is-large is-ghost" />
-                  <p className="mt-2">Checking system status...</p>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 col-lg-4">
+              <div className="card">
+                <div className="card-body text-center p-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-3 mb-0">Checking system status...</p>
                 </div>
               </div>
             </div>
@@ -257,23 +259,23 @@ const Register = () => {
   }
 
   return (
-    <section className="hero is-fullheight is-fullwidth">
+    <section className="min-vh-100 d-flex align-items-center py-4">
       <Helmet>
         <meta charSet="utf-8" />
         <title>Register - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-centered">
-            <div className="column is-4-desktop">
-              <form onSubmit={handleRegister} className="box">
-                <h1 className="title has-text-centered">{getPageTitle()}</h1>
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-4">
+            <form onSubmit={handleRegister} className="card">
+              <div className="card-body p-4">
+                <h1 className="h3 text-center mb-4">{getPageTitle()}</h1>
 
                 {/* Invitation Info */}
                 {invitation && (
-                  <div className="notification is-info mb-4">
-                    <p>
+                  <div className="alert alert-info">
+                    <p className="mb-0">
                       <strong>🎉 You&apos;re invited!</strong>
                       <br />
                       You&apos;ve been invited to join{" "}
@@ -284,8 +286,8 @@ const Register = () => {
 
                 {/* Super Admin Notice */}
                 {needsSetup && (
-                  <div className="notification is-warning mb-4">
-                    <p>
+                  <div className="alert alert-warning">
+                    <p className="mb-0">
                       <strong>⚡ System Setup</strong>
                       <br />
                       You&apos;re creating the first user account. This will be
@@ -295,149 +297,143 @@ const Register = () => {
                 )}
 
                 {msg && (
-                  <div className={`notification ${getNotificationClass()}`}>
-                    <p>{msg}</p>
+                  <div className={`alert ${getNotificationClass()}`}>
+                    <p className="mb-0">{msg}</p>
                   </div>
                 )}
 
-                <div className="field mt-5">
-                  <label className="label" htmlFor="username">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="username">
                     Username
                   </label>
-                  <div className="controls">
-                    <input
-                      id="username"
-                      type="text"
-                      className="input"
-                      autoComplete="username"
-                      placeholder="Username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      disabled={loading}
-                      required
-                    />
-                  </div>
+                  <input
+                    id="username"
+                    type="text"
+                    className="form-control"
+                    autoComplete="username"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
                 </div>
 
-                <div className="field mt-5">
-                  <label className="label" htmlFor="email">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="email">
                     Email
                   </label>
-                  <div className="controls">
-                    <input
-                      id="email"
-                      type="email"
-                      className="input"
-                      autoComplete="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={loading || !!invitation}
-                      required
-                    />
-                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    className="form-control"
+                    autoComplete="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading || !!invitation}
+                    required
+                  />
                   {invitation && (
-                    <p className="help">
+                    <div className="form-text text-muted">
                       Email is pre-filled from your invitation
-                    </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Organization field - only show if not first user and no invitation */}
                 {!needsSetup && !invitation && (
-                  <div className="field mt-5">
-                    <label className="label" htmlFor="organizationName">
+                  <div className="mb-3">
+                    <label className="form-label" htmlFor="organizationName">
                       Organization Name
                     </label>
-                    <div className="controls">
-                      <input
-                        id="organizationName"
-                        type="text"
-                        className="input"
-                        placeholder="Enter organization name"
-                        value={organizationName}
-                        onChange={(e) => setOrganizationName(e.target.value)}
-                        disabled={loading}
-                        required
-                      />
-                    </div>
-                    <p className="help">
+                    <input
+                      id="organizationName"
+                      type="text"
+                      className="form-control"
+                      placeholder="Enter organization name"
+                      value={organizationName}
+                      onChange={(e) => setOrganizationName(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+                    <div className="form-text text-muted">
                       Enter a new organization name to create, or get an
                       invitation to join an existing one.
-                    </p>
+                    </div>
                   </div>
                 )}
 
-                <div className="field mt-5">
-                  <label className="label" htmlFor="password">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="password">
                     Password
                   </label>
-                  <div className="controls">
-                    <input
-                      id="password"
-                      type="password"
-                      autoComplete="new-password"
-                      className="input"
-                      placeholder="Password (min 8 characters)"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                    />
-                  </div>
+                  <input
+                    id="password"
+                    type="password"
+                    autoComplete="new-password"
+                    className="form-control"
+                    placeholder="Password (min 8 characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
                 </div>
 
-                <div className="field mt-5">
-                  <label className="label" htmlFor="confirmPassword">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="confirmPassword">
                     Confirm Password
                   </label>
-                  <div className="controls">
-                    <input
-                      id="confirmPassword"
-                      type="password"
-                      autoComplete="new-password"
-                      className="input"
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                    />
-                  </div>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    className="form-control"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
                 </div>
 
-                <div className="field mt-5">
+                <div className="mb-3">
                   <button
                     type="submit"
-                    className={`button is-success is-fullwidth ${loading ? "is-loading" : ""}`}
+                    className="btn btn-success w-100"
                     disabled={loading}
                   >
+                    {loading && (
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}
                     {getSubmitButtonText()}
                   </button>
                 </div>
 
-                <div className="has-text-centered mt-3">
-                  <p>
-                    Already have an account?{" "}
-                    <a href="/login" className="has-text-link">
-                      Login here
-                    </a>
+                <div className="text-center mt-3">
+                  <p className="mb-0">
+                    Already have an account? <a href="/login">Login here</a>
                   </p>
                 </div>
 
                 {/* Help section */}
-                <div className="has-text-centered mt-4">
-                  <details className="details">
-                    <summary className="has-text-grey is-size-7 is-clickable">
+                <div className="text-center mt-4">
+                  <details>
+                    <summary className="text-muted small cursor-pointer">
                       Need help? Click here
                     </summary>
-                    <div className="content is-size-7 has-text-left mt-2 p-3 ">
+                    <div className="small text-start mt-2 p-3">
                       {renderHelpContent()}
                     </div>
                   </details>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

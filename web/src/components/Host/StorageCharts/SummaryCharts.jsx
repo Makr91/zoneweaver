@@ -23,14 +23,14 @@ const SummaryChart = ({
   expandChart,
   summaryChartRefs,
 }) => (
-  <div className="column is-4">
-    <div className="is-chart-container is-relative">
+  <div className="col-4">
+    <div className="is-chart-container position-relative">
       <button
-        className="button is-small is-light is-chart-expand-button"
+        className="btn btn-sm btn-light is-chart-expand-button"
         onClick={() => expandChart(chartId, chartId)}
         title="Expand chart to full size"
       >
-        <span className="icon">
+        <span className="me-1">
           <i className="fas fa-expand" />
         </span>
       </button>
@@ -67,15 +67,15 @@ SummaryChart.propTypes = {
 
 const SummaryCharts = ({ chartData, expandChart, summaryChartRefs }) => (
   <div className="mb-5">
-    <h5 className="title is-6 mb-3">
-      <span className="icon-text">
-        <span className="icon">
+    <h5 className="fs-6 fw-bold mb-3">
+      <span className="d-inline-flex align-items-center gap-1">
+        <span className="me-1">
           <i className="fas fa-layer-group" />
         </span>
         <span>All Devices Summary</span>
       </span>
     </h5>
-    <div className="columns">
+    <div className="row">
       <SummaryChart
         chartId="summary-read"
         title="Read Bandwidth (All Devices)"

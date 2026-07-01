@@ -1,5 +1,7 @@
-import { useState, useEffect, useContext, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import PropTypes from "prop-types";
+import { forwardRef, useContext } from "react";
+import Dropdown from "react-bootstrap/Dropdown";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -7,13 +9,43 @@ import { UserSettings } from "../contexts/UserSettingsContext";
 
 import GravatarImage from "./GravatarImage.jsx";
 
+// Custom dropdown toggle: the profile avatar (plus username when expanded) opens the menu,
+// with no Bootstrap caret/button chrome. react-bootstrap supplies onClick + ref.
+const ProfileToggle = forwardRef(({ children, onClick }, ref) => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick(e);
+    }
+  };
+
+  return (
+    <div
+      ref={ref}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-haspopup="true"
+      className="btn d-flex align-items-center gap-2"
+    >
+      {children}
+    </div>
+  );
+});
+
+ProfileToggle.displayName = "ProfileToggle";
+
+ProfileToggle.propTypes = {
+  children: PropTypes.node,
+  onClick: PropTypes.func,
+};
+
 const SidebarFooter = () => {
   const navigate = useNavigate();
   const userContext = useContext(UserSettings);
   const { user, logout } = useAuth();
   const { toggleTheme, getThemeDisplay } = useTheme();
-  const [isDropdownActive, setIsDropdownActive] = useState(false);
-  const dropdownRef = useRef(null);
 
   const handleLogout = async () => {
     try {
@@ -25,208 +57,75 @@ const SidebarFooter = () => {
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownActive(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
-
-  const buttonStyle = {
-    border: "none",
-    background: "transparent",
-    width: "100%",
-    textAlign: "left",
-    cursor: "pointer",
-    fontSize: "inherit",
-    color: "inherit",
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setIsDropdownActive(!isDropdownActive);
-    }
-  };
+  const isMinimized = userContext.sidebarMinimized;
 
   return (
-    <div className="hero-foot has-z-index-sidebar">
-      {userContext.sidebarMinimized ? (
-        <div
-          className={`level button dropdown is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}
-          ref={dropdownRef}
-          onClick={() => setIsDropdownActive(!isDropdownActive)}
-          onKeyDown={handleKeyDown}
-          role="button"
-          tabIndex={0}
-          aria-haspopup="true"
-        >
-          <div className="level-item icon is-flex-grow-0">
-            <figure className="image is-32x32">
-              <GravatarImage />
-            </figure>
-          </div>
-          <div id="profile-management" className="dropdown-menu" role="menu">
-            <div className="dropdown-content">
-              <a
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                href="/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-book" />
-                </span>
-                <span>Documentation</span>
-              </a>
-              <a
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                href="/api-docs"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-code" />
-                </span>
-                <span>API Reference</span>
-              </a>
-              <button
-                onClick={toggleTheme}
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                style={buttonStyle}
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-palette" />
-                </span>
-                <span>
-                  Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}
-                </span>
-              </button>
-              <Link
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                to="/ui/notifications"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-bell" />
-                </span>
-                <span>Notifications</span>
-              </Link>
-              <Link
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                to="/ui/profile"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-user" />
-                </span>
-                <span>Profile</span>
-              </Link>
-              <hr className="dropdown-divider" />
-              <button
-                onClick={handleLogout}
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                style={buttonStyle}
-              >
-                <span className="icon has-text-danger mr-2">
-                  <i className="fas fa-sign-out-alt" />
-                </span>
-                <span>Log Out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          className={`level button dropdown is-center is-up dropdown-trigger ${isDropdownActive ? "is-active" : ""}`}
-          ref={dropdownRef}
-          onClick={() => setIsDropdownActive(!isDropdownActive)}
-          onKeyDown={handleKeyDown}
-          role="button"
-          tabIndex={0}
-          aria-haspopup="true"
-        >
-          <div className="level-item icon is-flex-grow-0">
-            <figure className="image is-32x32">
-              <GravatarImage />
-            </figure>
-          </div>
-          <div className="level-item">
-            <span>{user?.username || "User"}</span>
-          </div>
-          <div id="profile-management" className="dropdown-menu" role="menu">
-            <div className="dropdown-content">
-              <a
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                href="/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-book" />
-                </span>
-                <span>Documentation</span>
-              </a>
-              <a
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                href="/api-docs"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-code" />
-                </span>
-                <span>API Reference</span>
-              </a>
-              <button
-                onClick={toggleTheme}
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                style={buttonStyle}
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-palette" />
-                </span>
-                <span>
-                  Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}
-                </span>
-              </button>
-              <Link
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                to="/ui/notifications"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-bell" />
-                </span>
-                <span>Notifications</span>
-              </Link>
-              <Link
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                to="/ui/profile"
-              >
-                <span className="icon mr-2">
-                  <i className="fas fa-user" />
-                </span>
-                <span>Profile</span>
-              </Link>
-              <hr className="dropdown-divider" />
-              <button
-                onClick={handleLogout}
-                className="dropdown-item is-flex is-justify-content-flex-start"
-                style={buttonStyle}
-              >
-                <span className="icon has-text-danger mr-2">
-                  <i className="fas fa-sign-out-alt" />
-                </span>
-                <span>Log Out</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="has-z-index-sidebar">
+      <Dropdown drop="up">
+        <Dropdown.Toggle as={ProfileToggle}>
+          <GravatarImage />
+          {!isMinimized && (
+            <span className="fw-semibold text-truncate ms-1">
+              {user?.username || "User"}
+            </span>
+          )}
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Item
+            href="/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="fas fa-book" />
+            <span>Documentation</span>
+          </Dropdown.Item>
+          <Dropdown.Item
+            href="/api-docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="fas fa-code" />
+            <span>API Reference</span>
+          </Dropdown.Item>
+          <Dropdown.Item
+            as="button"
+            type="button"
+            onClick={toggleTheme}
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="fas fa-palette" />
+            <span>Theme: {getThemeDisplay().replace(/\s*\([^)]*\)/g, "")}</span>
+          </Dropdown.Item>
+          <Dropdown.Item
+            as={Link}
+            to="/ui/notifications"
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="fas fa-bell" />
+            <span>Notifications</span>
+          </Dropdown.Item>
+          <Dropdown.Item
+            as={Link}
+            to="/ui/profile"
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="fas fa-user" />
+            <span>Profile</span>
+          </Dropdown.Item>
+          <Dropdown.Divider />
+          <Dropdown.Item
+            as="button"
+            type="button"
+            onClick={handleLogout}
+            className="d-flex align-items-center gap-2"
+          >
+            <i className="fas fa-sign-out-alt text-danger" />
+            <span>Log Out</span>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import { useCallback } from "react";
 
+import { isFieldVisible } from "../../utils/settingsUtils";
+
 import LoggingSectionRenderer from "./renderers/LoggingSectionRenderer";
 import ServerSectionRenderer from "./renderers/ServerSectionRenderer";
 import StandardSectionRenderer from "./renderers/StandardSectionRenderer";
@@ -17,8 +19,8 @@ const SettingsContent = ({
   loading,
   onFieldChange,
   onSslFileUpload,
-  resetOidcProviderForm,
-  setShowOidcProviderModal,
+  setMsg,
+  setRequiresRestart,
 }) => {
   const toggleSubsection = useCallback(
     (sectionName, subsectionName) => {
@@ -41,9 +43,10 @@ const SettingsContent = ({
 
   const shouldShowSubsection = useCallback(
     (subsection) =>
-      // Show subsection if it has any fields
-      subsection.fields && subsection.fields.length > 0,
-    []
+      // Show a subsection only if at least one of its fields applies to the
+      // current configuration (the rest are conditionally hidden).
+      (subsection.fields || []).some((field) => isFieldVisible(field, values)),
+    [values]
   );
 
   const renderSectionFields = useCallback(
@@ -68,6 +71,8 @@ const SettingsContent = ({
             loading={loading}
             onFieldChange={onFieldChange}
             onSslFileUpload={onSslFileUpload}
+            setMsg={setMsg}
+            setRequiresRestart={setRequiresRestart}
           />
         );
       }
@@ -81,10 +86,21 @@ const SettingsContent = ({
           loading={loading}
           onFieldChange={onFieldChange}
           onSslFileUpload={onSslFileUpload}
+          setMsg={setMsg}
+          setRequiresRestart={setRequiresRestart}
         />
       );
     },
-    [values, sslFiles, uploadingFiles, onFieldChange, onSslFileUpload, loading]
+    [
+      values,
+      sslFiles,
+      uploadingFiles,
+      onFieldChange,
+      onSslFileUpload,
+      loading,
+      setMsg,
+      setRequiresRestart,
+    ]
   );
 
   return (
@@ -96,33 +112,33 @@ const SettingsContent = ({
             <div key={sectionName}>
               {/* Main Section Fields */}
               {section.fields.length > 0 && (
-                <div className="box mb-4">
-                  <h2 className="title is-5">
-                    <span className="icon is-small mr-2">
-                      <i className={section.icon} />
-                    </span>
-                    {section.title} Settings
-                    <span className="tag is-light is-small ml-2">
-                      {section.fields.length} setting
-                      {section.fields.length !== 1 ? "s" : ""}
-                    </span>
-                  </h2>
+                <div className="card mb-4">
+                  <div className="card-body">
+                    <h2 className="fs-5 fw-bold">
+                      <i className={`${section.icon} me-2`} />
+                      {section.title} Settings
+                      <span className="badge text-bg-light ms-2">
+                        {section.fields.length} setting
+                        {section.fields.length !== 1 ? "s" : ""}
+                      </span>
+                    </h2>
 
-                  {/* Section description from config */}
-                  {section.description && (
-                    <p className="subtitle is-6 has-text-grey mt-2 mb-4">
-                      {section.description}
-                    </p>
-                  )}
+                    {/* Section description from config */}
+                    {section.description && (
+                      <p className="text-muted mt-2 mb-4">
+                        {section.description}
+                      </p>
+                    )}
 
-                  {renderSectionFields(sectionName, section)}
+                    {renderSectionFields(sectionName, section)}
+                  </div>
                 </div>
               )}
 
               {/* Subsections with Collapsible Cards */}
               {Object.entries(section.subsections || {}).map(
                 ([subsectionName, subsection]) => {
-                  // Skip subsection if none of its fields should be shown
+                  // Skip subsection if none of its fields apply right now
                   if (!shouldShowSubsection(subsection)) {
                     return null;
                   }
@@ -146,8 +162,8 @@ const SettingsContent = ({
                       uploadingFiles={uploadingFiles}
                       onFieldChange={onFieldChange}
                       onSslFileUpload={onSslFileUpload}
-                      resetOidcProviderForm={resetOidcProviderForm}
-                      setShowOidcProviderModal={setShowOidcProviderModal}
+                      setMsg={setMsg}
+                      setRequiresRestart={setRequiresRestart}
                       loading={loading}
                     />
                   );
@@ -157,22 +173,20 @@ const SettingsContent = ({
               {/* Show default message if section has no fields or subsections */}
               {section.fields.length === 0 &&
                 Object.keys(section.subsections || {}).length === 0 && (
-                  <div className="box mb-4">
-                    <h2 className="title is-5">
-                      <span className="icon is-small mr-2">
-                        <i className={section.icon} />
-                      </span>
-                      {section.title} Settings
-                    </h2>
+                  <div className="card mb-4">
+                    <div className="card-body">
+                      <h2 className="fs-5 fw-bold">
+                        <i className={`${section.icon} me-2`} />
+                        {section.title} Settings
+                      </h2>
 
-                    {section.description && (
-                      <p className="subtitle is-6 has-text-grey mb-4">
-                        {section.description}
-                      </p>
-                    )}
+                      {section.description && (
+                        <p className="text-muted mb-4">{section.description}</p>
+                      )}
 
-                    <div className="notification is-info">
-                      <p>No settings available in this section yet.</p>
+                      <div className="alert alert-info">
+                        <p>No settings available in this section yet.</p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -194,8 +208,8 @@ SettingsContent.propTypes = {
   loading: PropTypes.bool.isRequired,
   onFieldChange: PropTypes.func.isRequired,
   onSslFileUpload: PropTypes.func.isRequired,
-  resetOidcProviderForm: PropTypes.func.isRequired,
-  setShowOidcProviderModal: PropTypes.func.isRequired,
+  setMsg: PropTypes.func.isRequired,
+  setRequiresRestart: PropTypes.func.isRequired,
 };
 
 export default SettingsContent;

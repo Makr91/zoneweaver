@@ -1,10 +1,14 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
-import { createPortal } from "react-dom";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Spinner from "react-bootstrap/Spinner";
+
+import { toBsVariant } from "./bulmaVariant";
 
 /**
- * ConfirmModal - Reusable confirmation dialog
- * Replaces window.confirm() with a styled, accessible modal dialog
+ * ConfirmModal - Reusable confirmation dialog (react-bootstrap Modal).
+ * Replaces window.confirm() with a styled, accessible dialog. react-bootstrap handles
+ * ESC/backdrop close, focus trapping, body scroll lock and portaling.
  */
 const ConfirmModal = ({
   isOpen,
@@ -17,110 +21,53 @@ const ConfirmModal = ({
   cancelText = "Cancel",
   icon = "fas fa-exclamation-triangle",
   loading = false,
-}) => {
-  // Handle ESC key to close modal
-  useEffect(() => {
-    const handleEscKey = (event) => {
-      if (event.key === "Escape" && isOpen && !loading) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscKey);
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscKey);
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen, onClose, loading]);
-
-  if (!isOpen) {
-    return null;
-  }
-
-  const handleConfirm = () => {
-    if (!loading) {
-      onConfirm();
-    }
-  };
-
-  const handleBackgroundClick = () => {
-    if (!loading) {
-      onClose();
-    }
-  };
-
-  const handleBackgroundKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      handleBackgroundClick();
-    }
-  };
-
-  return createPortal(
-    <div className="modal is-active">
-      <div
-        className="modal-background"
-        onClick={handleBackgroundClick}
-        onKeyDown={handleBackgroundKeyDown}
-        role="button"
-        tabIndex={0}
-        aria-label="Close modal"
-      />
-
-      <div className="modal-card" style={{ maxWidth: "500px" }}>
-        <header className="modal-card-head">
-          <p className="modal-card-title">
-            {icon && (
-              <span className="icon-text">
-                <span className="icon has-text-warning">
-                  <i className={icon} />
-                </span>
-                <span>{title}</span>
-              </span>
-            )}
-            {!icon && title}
-          </p>
-          <button
-            className="delete"
-            aria-label="close"
-            onClick={onClose}
-            disabled={loading}
-            type="button"
+}) => (
+  <Modal
+    show={isOpen}
+    onHide={onClose}
+    backdrop={loading ? "static" : true}
+    keyboard={!loading}
+    centered
+  >
+    <Modal.Header closeButton={!loading}>
+      <Modal.Title>
+        {icon ? (
+          <span className="d-inline-flex align-items-center">
+            <span className="text-warning me-2">
+              <i className={icon} />
+            </span>
+            <span>{title}</span>
+          </span>
+        ) : (
+          title
+        )}
+      </Modal.Title>
+    </Modal.Header>
+    <Modal.Body>{message}</Modal.Body>
+    <Modal.Footer>
+      <Button variant="secondary" onClick={onClose} disabled={loading}>
+        {cancelText}
+      </Button>
+      <Button
+        variant={toBsVariant(confirmVariant, "danger")}
+        onClick={onConfirm}
+        disabled={loading}
+      >
+        {loading && (
+          <Spinner
+            as="span"
+            size="sm"
+            animation="border"
+            role="status"
+            aria-hidden="true"
+            className="me-2"
           />
-        </header>
-
-        <section className="modal-card-body">
-          <div className="content">
-            <p>{message}</p>
-          </div>
-        </section>
-
-        <footer className="modal-card-foot">
-          <button
-            type="button"
-            className={`button ${confirmVariant} ${loading ? "is-loading" : ""}`}
-            onClick={handleConfirm}
-            disabled={loading}
-          >
-            {confirmText}
-          </button>
-          <button
-            type="button"
-            className="button"
-            onClick={onClose}
-            disabled={loading}
-          >
-            {cancelText}
-          </button>
-        </footer>
-      </div>
-    </div>,
-    document.body
-  );
-};
+        )}
+        {confirmText}
+      </Button>
+    </Modal.Footer>
+  </Modal>
+);
 
 ConfirmModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,

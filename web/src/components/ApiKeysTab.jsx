@@ -101,64 +101,59 @@ const ApiKeysTab = () => {
         icon="fas fa-trash"
         loading={loading}
       />
-      {error && <div className="notification is-danger">{error}</div>}
-      {message && <div className="notification is-success">{message}</div>}
+      {error && <div className="alert alert-danger">{error}</div>}
+      {message && <div className="alert alert-success">{message}</div>}
       <ContentModal
         isOpen={!!generatedKey}
         onClose={() => setGeneratedKey(null)}
         title="API Key Generated"
         icon="fas fa-key"
       >
-        <div className="notification is-warning">
+        <div className="alert alert-warning">
           <p>
             <strong>Important:</strong> Please copy this API key now. You will
             not be able to see it again after closing this dialog.
           </p>
         </div>
-        <div className="field">
-          <label htmlFor="generated-api-key" className="label">
+        <div className="mb-3">
+          <label htmlFor="generated-api-key" className="form-label">
             Your API Key:
           </label>
-          <div className="control">
-            <textarea
-              id="generated-api-key"
-              className="textarea is-family-monospace"
-              value={generatedKey || ""}
-              readOnly
-              rows="3"
-              onClick={(e) => e.target.select()}
-            />
-          </div>
+          <textarea
+            id="generated-api-key"
+            className="form-control font-monospace"
+            value={generatedKey || ""}
+            readOnly
+            rows="3"
+            onClick={(e) => e.target.select()}
+          />
         </div>
-        <div className="field">
-          <div className="control">
-            <button
-              className="button is-primary"
-              onClick={() => {
-                navigator.clipboard.writeText(generatedKey);
-                setMessage("API key copied to clipboard!");
-              }}
-            >
-              <span className="icon">
-                <i className="fas fa-copy" />
-              </span>
-              <span>Copy to Clipboard</span>
-            </button>
-          </div>
+        <div className="mb-3">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              navigator.clipboard.writeText(generatedKey);
+              setMessage("API key copied to clipboard!");
+            }}
+          >
+            <i className="fas fa-copy me-2" />
+            Copy to Clipboard
+          </button>
         </div>
       </ContentModal>
 
-      <div className="box">
-        <h4 className="title is-4">Generate New API Key</h4>
-        <form onSubmit={handleGenerateKey}>
-          <div className="field">
-            <label htmlFor="api-key-name" className="label">
-              Name
-            </label>
-            <div className="control">
+      <div className="card">
+        <div className="card-body">
+          <h4 className="fs-4 fw-bold">Generate New API Key</h4>
+          <form onSubmit={handleGenerateKey}>
+            <div className="mb-3">
+              <label htmlFor="api-key-name" className="form-label">
+                Name
+              </label>
               <input
                 id="api-key-name"
-                className="input"
+                className="form-control"
                 type="text"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
@@ -166,108 +161,102 @@ const ApiKeysTab = () => {
                 required
               />
             </div>
-          </div>
-          <div className="field">
-            <label htmlFor="api-key-description" className="label">
-              Description
-            </label>
-            <div className="control">
+            <div className="mb-3">
+              <label htmlFor="api-key-description" className="form-label">
+                Description
+              </label>
               <input
                 id="api-key-description"
-                className="input"
+                className="form-control"
                 type="text"
                 value={newKeyDescription}
                 onChange={(e) => setNewKeyDescription(e.target.value)}
                 placeholder="e.g., API access for my application"
               />
             </div>
-          </div>
-          <div className="field is-grouped">
-            <div className="control">
+            <div className="d-flex gap-2">
               <button
                 type="submit"
-                className="button is-primary"
+                className="btn btn-primary"
                 disabled={loading}
               >
                 {loading ? "Generating..." : "Generate Key"}
               </button>
-            </div>
-            <div className="control">
               <button
                 type="button"
-                className="button is-warning"
+                className="btn btn-warning"
                 onClick={handleBootstrapKey}
                 disabled={loading}
               >
                 Generate Bootstrap Key
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
 
-      <div className="box">
-        <h4 className="title is-4">Existing API Keys</h4>
-        {loading && <p>Loading keys...</p>}
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Active</th>
-                <th>Last Used</th>
-                <th>Created At</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {apiKeys.map((key) => (
-                <tr key={key.id}>
-                  <td>{key.name}</td>
-                  <td>{key.description}</td>
-                  <td>
-                    <span
-                      className={`tag ${key.is_active ? "is-success" : "is-danger"}`}
-                    >
-                      {key.is_active ? "Yes" : "No"}
-                    </span>
-                  </td>
-                  <td>
-                    {key.last_used
-                      ? new Date(key.last_used).toLocaleString()
-                      : "Never"}
-                  </td>
-                  <td>{new Date(key.created_at).toLocaleString()}</td>
-                  <td>
-                    <div className="buttons">
-                      <button
-                        className="button is-primary is-small"
-                        onClick={() => {
-                          setGeneratedKey(key.api_key);
-                        }}
-                      >
-                        <span className="icon is-small">
-                          <i className="fas fa-eye" />
-                        </span>
-                        <span>View</span>
-                      </button>
-                      <button
-                        className="button is-danger is-small"
-                        onClick={() => setDeleteKeyId(key.id)}
-                        disabled={loading}
-                      >
-                        <span className="icon is-small">
-                          <i className="fas fa-trash" />
-                        </span>
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </td>
+      <div className="card">
+        <div className="card-body">
+          <h4 className="fs-4 fw-bold">Existing API Keys</h4>
+          {loading && <p>Loading keys...</p>}
+          <div className="table-responsive">
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Active</th>
+                  <th>Last Used</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {apiKeys.map((key) => (
+                  <tr key={key.id}>
+                    <td>{key.name}</td>
+                    <td>{key.description}</td>
+                    <td>
+                      <span
+                        className={`badge ${key.is_active ? "text-bg-success" : "text-bg-danger"}`}
+                      >
+                        {key.is_active ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td>
+                      {key.last_used
+                        ? new Date(key.last_used).toLocaleString()
+                        : "Never"}
+                    </td>
+                    <td>{new Date(key.created_at).toLocaleString()}</td>
+                    <td>
+                      <div className="d-flex gap-1">
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          onClick={() => {
+                            setGeneratedKey(key.api_key);
+                          }}
+                        >
+                          <i className="fas fa-eye me-2" />
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => setDeleteKeyId(key.id)}
+                          disabled={loading}
+                        >
+                          <i className="fas fa-trash me-2" />
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

@@ -144,42 +144,40 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
       icon="fas fa-plus-circle"
       submitText="Create Boot Environment"
       submitIcon="fas fa-plus"
-      submitVariant="is-success"
+      submitVariant="success"
       loading={loading}
     >
       {/* Basic Information */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Basic Information</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Basic Information</h3>
 
-        <div className="field">
-          <label htmlFor="be-name" className="label">
-            Boot Environment Name *
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="be-name" className="form-label">
+              Boot Environment Name *
+            </label>
             <input
               id="be-name"
-              className="input"
+              className="form-control"
               type="text"
               placeholder="e.g., backup-before-update"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               required
             />
+            <p className="form-text text-muted">
+              Must start with alphanumeric character. Can contain letters,
+              numbers, dots, underscores, and hyphens.
+            </p>
           </div>
-          <p className="help">
-            Must start with alphanumeric character. Can contain letters,
-            numbers, dots, underscores, and hyphens.
-          </p>
-        </div>
 
-        <div className="field">
-          <label htmlFor="be-description" className="label">
-            Description (Optional)
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="be-description" className="form-label">
+              Description (Optional)
+            </label>
             <textarea
               id="be-description"
-              className="textarea"
+              className="form-control"
               placeholder="Brief description of this boot environment"
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
@@ -190,19 +188,19 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
       </div>
 
       {/* Source Configuration */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Source Configuration</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Source Configuration</h3>
 
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label htmlFor="be-source" className="label">
-                Source Boot Environment
-              </label>
-              <div className="control">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="be-source" className="form-label">
+                  Source Boot Environment
+                </label>
                 <input
                   id="be-source"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Leave empty to use current BE"
                   value={formData.sourceBE}
@@ -210,22 +208,20 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
                     handleInputChange("sourceBE", e.target.value)
                   }
                 />
+                <p className="form-text text-muted">
+                  Source BE to clone from (default: current active BE)
+                </p>
               </div>
-              <p className="help">
-                Source BE to clone from (default: current active BE)
-              </p>
             </div>
-          </div>
 
-          <div className="column">
-            <div className="field">
-              <label htmlFor="be-snapshot" className="label">
-                Source Snapshot
-              </label>
-              <div className="control">
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="be-snapshot" className="form-label">
+                  Source Snapshot
+                </label>
                 <input
                   id="be-snapshot"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Snapshot name or path"
                   value={formData.snapshot}
@@ -233,66 +229,70 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
                     handleInputChange("snapshot", e.target.value)
                   }
                 />
+                <p className="form-text text-muted">
+                  Create BE from specific snapshot
+                </p>
               </div>
-              <p className="help">Create BE from specific snapshot</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Advanced Options */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Advanced Options</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Advanced Options</h3>
 
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="be-activate"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.activate}
                     onChange={(e) =>
                       handleInputChange("activate", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label className="form-check-label" htmlFor="be-activate">
                     <strong>Activate on Creation</strong> - Set as active boot
                     environment for next reboot
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="field">
-              <label htmlFor="be-zpool" className="label">
-                ZFS Pool (Optional)
-              </label>
-              <div className="control">
+              <div className="mb-3">
+                <label htmlFor="be-zpool" className="form-label">
+                  ZFS Pool (Optional)
+                </label>
                 <input
                   id="be-zpool"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="e.g., rpool"
                   value={formData.zpool}
                   onChange={(e) => handleInputChange("zpool", e.target.value)}
                 />
+                <p className="form-text text-muted">
+                  Specify ZFS pool (default: system pool)
+                </p>
               </div>
-              <p className="help">Specify ZFS pool (default: system pool)</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Custom Properties */}
-      <div className="box">
-        <h3 className="title is-6">Custom Properties</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Custom Properties</h3>
 
-        {formData.properties.map((prop) => (
-          <div key={prop.id} className="field has-addons mb-3">
-            <div className="control">
+          {formData.properties.map((prop) => (
+            <div key={prop.id} className="input-group mb-3">
               <input
-                className="input"
+                className="form-control"
                 type="text"
                 placeholder="Property name"
                 value={prop.key}
@@ -300,10 +300,8 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
                   handlePropertyKeyChange(prop.id, e.target.value)
                 }
               />
-            </div>
-            <div className="control is-expanded">
               <input
-                className="input"
+                className="form-control"
                 type="text"
                 placeholder="Property value"
                 value={prop.value}
@@ -311,32 +309,26 @@ const CreateBEModal = ({ server, onClose, onSuccess, onError }) => {
                   handlePropertyValueChange(prop.id, e.target.value)
                 }
               />
-            </div>
-            <div className="control">
               <button
                 type="button"
-                className="button has-background-danger-dark has-text-danger-light"
+                className="btn btn-danger"
                 onClick={() => removeProperty(prop.id)}
               >
-                <span className="icon">
-                  <i className="fas fa-trash" />
-                </span>
+                <i className="fas fa-trash" />
               </button>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <button type="button" className="button is-info" onClick={addProperty}>
-          <span className="icon">
-            <i className="fas fa-plus" />
-          </span>
-          <span>Add Property</span>
-        </button>
+          <button type="button" className="btn btn-info" onClick={addProperty}>
+            <i className="fas fa-plus me-2" />
+            <span>Add Property</span>
+          </button>
 
-        <p className="help mt-2">
-          Add custom ZFS properties to the boot environment (e.g., compression,
-          mountpoint)
-        </p>
+          <p className="form-text text-muted mt-2">
+            Add custom ZFS properties to the boot environment (e.g.,
+            compression, mountpoint)
+          </p>
+        </div>
       </div>
     </FormModal>
   );

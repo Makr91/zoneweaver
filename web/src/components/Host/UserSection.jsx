@@ -236,8 +236,8 @@ const UserSection = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">User Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">User Management</h2>
+        <p>
           Manage system users on <strong>{server.hostname}</strong>. Create,
           modify, and delete user accounts, set passwords, and manage user
           permissions.
@@ -245,17 +245,17 @@ const UserSection = ({ server, onError }) => {
       </div>
 
       {/* User Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-username">
-                Filter by Username
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-username">
+                  Filter by Username
+                </label>
                 <input
                   id="filter-username"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Enter username pattern..."
                   value={filters.pattern}
@@ -265,84 +265,79 @@ const UserSection = ({ server, onError }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="filter-include-system">
-                Include System Users
-              </label>
-              <div className="control">
-                <label className="switch is-medium">
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-include-system">
+                  Include System Users
+                </label>
+                <div className="form-check form-switch">
                   <input
                     id="filter-include-system"
+                    className="form-check-input"
                     type="checkbox"
+                    role="switch"
                     checked={filters.includeSystem}
                     onChange={(e) =>
                       handleFilterChange("includeSystem", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Show All</span>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="filter-limit">
-                Limit Results
-              </label>
-              <div className="control">
-                <div className="select">
-                  <select
-                    id="filter-limit"
-                    value={filters.limit}
-                    onChange={(e) =>
-                      handleFilterChange("limit", parseInt(e.target.value))
-                    }
+                  <label
+                    className="form-check-label"
+                    htmlFor="filter-include-system"
                   >
-                    <option value={25}>25 Users</option>
-                    <option value={50}>50 Users</option>
-                    <option value={100}>100 Users</option>
-                    <option value={200}>200 Users</option>
-                  </select>
+                    Show All
+                  </label>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-limit">
+                  Limit Results
+                </label>
+                <select
+                  id="filter-limit"
+                  className="form-select w-auto"
+                  value={filters.limit}
+                  onChange={(e) =>
+                    handleFilterChange("limit", parseInt(e.target.value))
+                  }
+                >
+                  <option value={25}>25 Users</option>
+                  <option value={50}>50 Users</option>
+                  <option value={100}>100 Users</option>
+                  <option value={200}>200 Users</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button is-info"
+                  type="button"
+                  className="btn btn-info"
                   onClick={loadUsers}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
+                  <i className="fas fa-sync-alt me-2" />
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button"
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
+                  <i className="fas fa-times me-2" />
                   <span>Clear</span>
                 </button>
               </div>
@@ -352,53 +347,54 @@ const UserSection = ({ server, onError }) => {
       </div>
 
       {/* Users Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              Users ({users.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                Users ({users.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Create User</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create User</span>
-            </button>
-          </div>
-        </div>
 
-        <UserTable
-          users={users}
-          loading={loading}
-          onEdit={(user) => {
-            setSelectedUser(user);
-            setShowEditModal(true);
-          }}
-          onDelete={(user) =>
-            handleUserAction(user.username, "delete", {
-              removeHome: true,
-              deletePersonalGroup: true,
-            })
-          }
-          onLock={(user) => handleUserAction(user.username, "lock")}
-          onUnlock={(user) => handleUserAction(user.username, "unlock")}
-          onSetPassword={(user) => {
-            setSelectedUser(user);
-            setShowPasswordModal(true);
-          }}
-          onViewDetails={handleViewDetails}
-        />
+          <UserTable
+            users={users}
+            loading={loading}
+            onEdit={(user) => {
+              setSelectedUser(user);
+              setShowEditModal(true);
+            }}
+            onDelete={(user) =>
+              handleUserAction(user.username, "delete", {
+                removeHome: true,
+                deletePersonalGroup: true,
+              })
+            }
+            onLock={(user) => handleUserAction(user.username, "lock")}
+            onUnlock={(user) => handleUserAction(user.username, "unlock")}
+            onSetPassword={(user) => {
+              setSelectedUser(user);
+              setShowPasswordModal(true);
+            }}
+            onViewDetails={handleViewDetails}
+          />
+        </div>
       </div>
 
       {/* User Details Modal */}

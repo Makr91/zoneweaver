@@ -93,7 +93,7 @@ const VncActionsDropdown = ({
   const actualToggleHandler = onToggleReadOnly || onToggleViewOnly;
 
   const dropdownContent = (
-    <div className="dropdown-content zw-dropdown-content">
+    <div className="zw-dropdown-content">
       <VncKeyboardSubmenu
         vncRef={vncRef}
         modifierKeys={modifierKeys}
@@ -132,7 +132,7 @@ const VncActionsDropdown = ({
         <>
           <hr className="dropdown-divider" />
           <div
-            className="dropdown-item has-text-danger is-clickable"
+            className="dropdown-item text-danger"
             onClick={handleKillSession}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -142,9 +142,7 @@ const VncActionsDropdown = ({
             role="button"
             tabIndex={0}
           >
-            <span className="icon mr-2">
-              <i className="fas fa-skull" />
-            </span>
+            <i className="fas fa-skull me-2" />
             <span>Kill VNC Session</span>
           </div>
         </>
@@ -154,23 +152,21 @@ const VncActionsDropdown = ({
 
   if (variant === "button") {
     return (
-      <div
-        className={`dropdown is-right ${isActive ? "is-active" : ""} ${className}`}
-        ref={dropdownRef}
-      >
-        <div className="dropdown-trigger">
-          <button
-            className="button is-small"
-            aria-haspopup="true"
-            aria-controls="vnc-dropdown-menu"
-            onClick={() => setIsActive(!isActive)}
-          >
-            <span className="icon is-small">
-              <i className="fas fa-ellipsis-v" />
-            </span>
-          </button>
-        </div>
-        <div className="dropdown-menu " id="vnc-dropdown-menu" role="menu">
+      <div className={`dropdown ${className}`} ref={dropdownRef}>
+        <button
+          type="button"
+          className="btn btn-sm btn-light"
+          aria-haspopup="true"
+          aria-controls="vnc-dropdown-menu"
+          onClick={() => setIsActive(!isActive)}
+        >
+          <i className="fas fa-ellipsis-v" />
+        </button>
+        <div
+          className={`dropdown-menu dropdown-menu-end ${isActive ? "show" : ""}`}
+          id="vnc-dropdown-menu"
+          role="menu"
+        >
           {dropdownContent}
         </div>
       </div>
@@ -179,31 +175,29 @@ const VncActionsDropdown = ({
 
   // Default variant (text with arrow)
   return (
-    <div
-      className={`dropdown is-right ${isActive ? "is-active" : ""} ${className}`}
-      ref={dropdownRef}
-    >
-      <div className="dropdown-trigger">
-        <span
-          className="has-text-link is-clickable is-size-7"
-          aria-haspopup="true"
-          aria-controls="vnc-dropdown-menu"
-          onClick={() => setIsActive(!isActive)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              setIsActive(!isActive);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-        >
-          VNC Actions
-          <span className="icon is-small ml-1">
-            <i className="fas fa-angle-down" aria-hidden="true" />
-          </span>
-        </span>
-      </div>
-      <div className="dropdown-menu " id="vnc-dropdown-menu" role="menu">
+    <div className={`dropdown ${className}`} ref={dropdownRef}>
+      <span
+        className="text-primary small"
+        style={{ cursor: "pointer" }}
+        aria-haspopup="true"
+        aria-controls="vnc-dropdown-menu"
+        onClick={() => setIsActive(!isActive)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setIsActive(!isActive);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        VNC Actions
+        <i className="fas fa-angle-down ms-1" aria-hidden="true" />
+      </span>
+      <div
+        className={`dropdown-menu dropdown-menu-end ${isActive ? "show" : ""}`}
+        id="vnc-dropdown-menu"
+        role="menu"
+      >
         {dropdownContent}
       </div>
     </div>

@@ -13,91 +13,81 @@ const StorageHeader = ({
   timeWindow,
   setTimeWindow,
 }) => (
-  <div className="titlebar box active level is-mobile mb-0 p-3">
-    <div className="level-left">
+  <div className="titlebar active card-header d-flex justify-content-between align-items-center flex-wrap gap-2 p-3">
+    <div className="d-flex align-items-center gap-2">
       <strong>Storage Monitoring</strong>
     </div>
-    <div className="level-right">
-      <div className="field is-grouped">
-        <div className="control">
-          <div className="select is-small">
-            <select
-              value={timeWindow}
-              onChange={(e) => setTimeWindow(e.target.value)}
-              disabled={loading}
-              title="Select time window for charts"
-            >
-              <option value="1min">1 Minute</option>
-              <option value="5min">5 Minutes</option>
-              <option value="10min">10 Minutes</option>
-              <option value="15min">15 Minutes</option>
-              <option value="30min">30 Minutes</option>
-              <option value="1hour">1 Hour</option>
-              <option value="3hour">3 Hours</option>
-              <option value="6hour">6 Hours</option>
-              <option value="12hour">12 Hours</option>
-              <option value="24hour">24 Hours</option>
-            </select>
-          </div>
-        </div>
-        <div className="control">
-          <div className="select is-small">
-            <select
-              value={resolution}
-              onChange={(e) => setResolution(e.target.value)}
-              disabled={loading}
-              title="Chart resolution - controls the number of data points"
-            >
-              <option value="realtime">Real-time (125 points)</option>
-              <option value="high">High (38 points)</option>
-              <option value="medium">Medium (13 points)</option>
-              <option value="low">Low (5 points)</option>
-            </select>
-          </div>
-        </div>
-        <div className="control">
-          <div className="select is-small">
-            <select
-              value={refreshInterval}
-              onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
-              disabled={loading || !autoRefresh}
-            >
-              <option value={1}>1s</option>
-              <option value={2}>2s</option>
-              <option value={5}>5s</option>
-              <option value={10}>10s</option>
-              <option value={30}>30s</option>
-              <option value={60}>1m</option>
-              <option value={300}>5m</option>
-            </select>
-          </div>
-        </div>
-        <div className="control">
-          <button
-            className={`button is-small ${autoRefresh ? "is-success" : "is-warning"}`}
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            title={
-              autoRefresh ? "Auto-refresh enabled" : "Auto-refresh disabled"
-            }
-          >
-            <span className="icon">
-              <i className={`fas ${autoRefresh ? "fa-pause" : "fa-play"}`} />
-            </span>
-            <span>{autoRefresh ? "Auto" : "Manual"}</span>
-          </button>
-        </div>
-        <div className="control">
-          <button
-            className={`button is-small is-info ${loading ? "is-loading" : ""}`}
-            onClick={() => selectedServer && loadStorageData(selectedServer)}
-            disabled={loading}
-          >
-            <span className="icon">
-              <i className="fas fa-sync" />
-            </span>
-            <span>Refresh</span>
-          </button>
-        </div>
+    <div className="d-flex align-items-center gap-2">
+      <div className="d-flex gap-2 flex-wrap">
+        <select
+          className="form-select form-select-sm w-auto"
+          value={timeWindow}
+          onChange={(e) => setTimeWindow(e.target.value)}
+          disabled={loading}
+          title="Select time window for charts"
+        >
+          <option value="1min">1 Minute</option>
+          <option value="5min">5 Minutes</option>
+          <option value="10min">10 Minutes</option>
+          <option value="15min">15 Minutes</option>
+          <option value="30min">30 Minutes</option>
+          <option value="1hour">1 Hour</option>
+          <option value="3hour">3 Hours</option>
+          <option value="6hour">6 Hours</option>
+          <option value="12hour">12 Hours</option>
+          <option value="24hour">24 Hours</option>
+        </select>
+        <select
+          className="form-select form-select-sm w-auto"
+          value={resolution}
+          onChange={(e) => setResolution(e.target.value)}
+          disabled={loading}
+          title="Chart resolution - controls the number of data points"
+        >
+          <option value="realtime">Real-time (125 points)</option>
+          <option value="high">High (38 points)</option>
+          <option value="medium">Medium (13 points)</option>
+          <option value="low">Low (5 points)</option>
+        </select>
+        <select
+          className="form-select form-select-sm w-auto"
+          value={refreshInterval}
+          onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
+          disabled={loading || !autoRefresh}
+        >
+          <option value={1}>1s</option>
+          <option value={2}>2s</option>
+          <option value={5}>5s</option>
+          <option value={10}>10s</option>
+          <option value={30}>30s</option>
+          <option value={60}>1m</option>
+          <option value={300}>5m</option>
+        </select>
+        <button
+          type="button"
+          className={`btn btn-sm ${autoRefresh ? "btn-success" : "btn-warning"}`}
+          onClick={() => setAutoRefresh(!autoRefresh)}
+          title={autoRefresh ? "Auto-refresh enabled" : "Auto-refresh disabled"}
+        >
+          <i className={`fas ${autoRefresh ? "fa-pause" : "fa-play"} me-2`} />
+          {autoRefresh ? "Auto" : "Manual"}
+        </button>
+        <button
+          type="button"
+          className="btn btn-sm btn-info"
+          onClick={() => selectedServer && loadStorageData(selectedServer)}
+          disabled={loading}
+        >
+          {loading && (
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            />
+          )}
+          <i className="fas fa-sync me-2" />
+          Refresh
+        </button>
       </div>
     </div>
   </div>

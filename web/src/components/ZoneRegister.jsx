@@ -48,20 +48,20 @@ const ZoneRegister = () => {
   };
 
   return (
-    <section className="hero-body p-0  is-align-items-stretch has-background-gray">
-      <div className="hero-body">
-        <div className="container">
-          <form onSubmit={Register} className="box" autoComplete="off">
-            <div className="container">
-              <div className="container">
-                <div className="columns is-centered">
-                  <div className="column is-4-desktop">
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="backendproto">
+    <section className="min-vh-100 d-flex align-items-center py-4">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-8">
+            <form onSubmit={Register} className="card" autoComplete="off">
+              <div className="card-body p-4">
+                <div className="row">
+                  <div className="col-12 col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="backendproto">
                         Backend Host Protocol
                       </label>
                       <select
-                        className="controls"
+                        className="form-select"
                         id="backendproto"
                         value={backendproto}
                         onChange={(e) => setBackendProto(e.target.value)}
@@ -70,131 +70,115 @@ const ZoneRegister = () => {
                         <option value="https">https</option>
                       </select>
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="backendhost">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="backendhost">
                         Backend Host Address
                       </label>
-                      <div className="controls">
-                        <input
-                          id="backendhost"
-                          type="text"
-                          className="input"
-                          placeholder="Backend Host"
-                          value={backendhost}
-                          onChange={(e) => setBackendHost(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="backendhost"
+                        type="text"
+                        className="form-control"
+                        placeholder="Backend Host"
+                        value={backendhost}
+                        onChange={(e) => setBackendHost(e.target.value)}
+                      />
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="backendport">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="backendport">
                         Port
                       </label>
-                      <div className="controls">
-                        <input
-                          id="backendport"
-                          type="text"
-                          className="input"
-                          autoComplete="off"
-                          placeholder="Port"
-                          value={backendport}
-                          onChange={(e) => setBackendPort(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="backendport"
+                        type="text"
+                        className="form-control"
+                        autoComplete="off"
+                        placeholder="Port"
+                        value={backendport}
+                        onChange={(e) => setBackendPort(e.target.value)}
+                      />
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="backendcode">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="backendcode">
                         Backend Node Security Code
                       </label>
-                      <div className="controls">
-                        <input
-                          id="backendcode"
-                          autoComplete="new-password"
-                          className="input"
-                          type="password"
-                          placeholder="******"
-                          value={backendcode}
-                          onChange={(e) => setBackendCode(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="backendcode"
+                        autoComplete="new-password"
+                        className="form-control"
+                        type="password"
+                        placeholder="******"
+                        value={backendcode}
+                        onChange={(e) => setBackendCode(e.target.value)}
+                      />
                     </div>
                   </div>
 
-                  <div className="column is-4-desktop">
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="frontendproto">
+                  <div className="col-12 col-md-6">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="frontendproto">
                         Frontend Host Protocol
                       </label>
-                      <div className="controls">
-                        <input
-                          id="frontendproto"
-                          type="text"
-                          className="input"
-                          placeholder="Frontend Host Protocol"
-                          value={frontendproto}
-                          onChange={(e) => setFrontendProto(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="frontendproto"
+                        type="text"
+                        className="form-control"
+                        placeholder="Frontend Host Protocol"
+                        value={frontendproto}
+                        onChange={(e) => setFrontendProto(e.target.value)}
+                      />
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="frontendhost">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="frontendhost">
                         Frontend Host Address
                       </label>
-                      <div className="controls">
-                        <input
-                          id="frontendhost"
-                          type="text"
-                          className="input"
-                          placeholder="Frontend Host"
-                          value={frontendhost}
-                          onChange={(e) => setFrontendHost(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="frontendhost"
+                        type="text"
+                        className="form-control"
+                        placeholder="Frontend Host"
+                        value={frontendhost}
+                        onChange={(e) => setFrontendHost(e.target.value)}
+                      />
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="frontendport">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="frontendport">
                         Port
                       </label>
-                      <div className="controls">
-                        <input
-                          id="frontendport"
-                          type="text"
-                          className="input"
-                          autoComplete="off"
-                          placeholder="Port"
-                          value={frontendport}
-                          onChange={(e) => setFrontendPort(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="frontendport"
+                        type="text"
+                        className="form-control"
+                        autoComplete="off"
+                        placeholder="Port"
+                        value={frontendport}
+                        onChange={(e) => setFrontendPort(e.target.value)}
+                      />
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="frontendcode">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="frontendcode">
                         Frontend Node Security Code
                       </label>
-                      <div className="controls">
-                        <input
-                          id="frontendcode"
-                          autoComplete="new-password"
-                          className="input"
-                          type="password"
-                          placeholder="******"
-                          onChange={(e) => setFrontendCode(e.target.value)}
-                        />
-                      </div>
+                      <input
+                        id="frontendcode"
+                        autoComplete="new-password"
+                        className="form-control"
+                        type="password"
+                        placeholder="******"
+                        onChange={(e) => setFrontendCode(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="container">
-                <div className="columns container is-centered">
-                  <div className="column has-text-centered field mt-5">
-                    <p className="has-text-centered">{msg}</p>
-                    <button className="button is-primary">Register</button>
-                  </div>
+                <div className="text-center mt-3">
+                  {msg && <p className="mb-2">{msg}</p>}
+                  <button type="submit" className="btn btn-primary">
+                    Register
+                  </button>
                 </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </section>

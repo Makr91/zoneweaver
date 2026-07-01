@@ -195,7 +195,7 @@ const BootEnvironmentManagement = ({ server }) => {
 
   if (!server || !makeZoneweaverAPIRequest) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>Please select a server to manage boot environments.</p>
       </div>
     );
@@ -204,8 +204,8 @@ const BootEnvironmentManagement = ({ server }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Boot Environment Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Boot Environment Management</h2>
+        <p>
           Manage boot environments on <strong>{server.hostname}</strong>.
           Create, activate, mount, and delete boot environments.
         </p>
@@ -213,24 +213,28 @@ const BootEnvironmentManagement = ({ server }) => {
 
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
       {/* Boot Environment Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label htmlFor="be-filter-name" className="label">
-                Filter by Name
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="be-filter-name" className="form-label">
+                  Filter by Name
+                </label>
                 <input
                   id="be-filter-name"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Enter boot environment name..."
                   value={filters.name}
@@ -238,99 +242,98 @@ const BootEnvironmentManagement = ({ server }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label htmlFor="be-filter-status" className="label">
-                Filter by Status
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="be-filter-status"
-                    value={filters.status}
-                    onChange={(e) =>
-                      handleFilterChange("status", e.target.value)
-                    }
-                  >
-                    <option value="">All Status</option>
-                    <option value="active">Active Now</option>
-                    <option value="reboot">Active on Reboot</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="be-filter-status" className="form-label">
+                  Filter by Status
+                </label>
+                <select
+                  id="be-filter-status"
+                  className="form-select"
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange("status", e.target.value)}
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active Now</option>
+                  <option value="reboot">Active on Reboot</option>
+                  <option value="inactive">Inactive</option>
+                </select>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label">Show Detailed</span>
-              <div className="control">
-                <label className="switch is-medium">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block">Show Detailed</span>
+                <div className="form-check form-switch">
                   <input
+                    id="be-filter-detailed"
+                    className="form-check-input"
                     type="checkbox"
+                    role="switch"
                     checked={filters.showDetailed}
                     onChange={(e) =>
                       handleFilterChange("showDetailed", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Details</span>
-                </label>
+                  <label
+                    className="form-check-label"
+                    htmlFor="be-filter-detailed"
+                  >
+                    Details
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label">Show Snapshots</span>
-              <div className="control">
-                <label className="switch is-medium">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block">Show Snapshots</span>
+                <div className="form-check form-switch">
                   <input
+                    id="be-filter-snapshots"
+                    className="form-check-input"
                     type="checkbox"
+                    role="switch"
                     checked={filters.showSnapshots}
                     onChange={(e) =>
                       handleFilterChange("showSnapshots", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Snapshots</span>
-                </label>
+                  <label
+                    className="form-check-label"
+                    htmlFor="be-filter-snapshots"
+                  >
+                    Snapshots
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button is-info"
+                  type="button"
+                  className="btn btn-info"
                   onClick={loadBootEnvironments}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
+                  <i className="fas fa-sync-alt me-2" />
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button"
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
+                  <i className="fas fa-times me-2" />
                   <span>Clear</span>
                 </button>
               </div>
@@ -340,40 +343,41 @@ const BootEnvironmentManagement = ({ server }) => {
       </div>
 
       {/* Boot Environments Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              Boot Environments ({bootEnvironments.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                Boot Environments ({bootEnvironments.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Create Boot Environment</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create Boot Environment</span>
-            </button>
-          </div>
-        </div>
 
-        <BootEnvironmentTable
-          bootEnvironments={bootEnvironments}
-          loading={loading}
-          onActivate={(be) => handleShowActionModal(be, "activate")}
-          onMount={(be) => handleShowActionModal(be, "mount")}
-          onUnmount={(be) => handleShowActionModal(be, "unmount")}
-          onDelete={(be) => handleShowActionModal(be, "delete")}
-        />
+          <BootEnvironmentTable
+            bootEnvironments={bootEnvironments}
+            loading={loading}
+            onActivate={(be) => handleShowActionModal(be, "activate")}
+            onMount={(be) => handleShowActionModal(be, "mount")}
+            onUnmount={(be) => handleShowActionModal(be, "unmount")}
+            onDelete={(be) => handleShowActionModal(be, "delete")}
+          />
+        </div>
       </div>
 
       {/* Create Boot Environment Modal */}

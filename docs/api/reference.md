@@ -9,11 +9,11 @@ permalink: /api/reference/
 # Interactive API Reference
 
 <div style="width: 100%; height: 800px; border: none; margin: 0; padding: 0;">
-  <iframe 
-    src="swagger-ui.html" 
-    style="width: 100%; height: 100%; border: none; background: white;" 
+  <iframe
+    src="swagger-ui.html"
+    style="width: 100%; height: 100%; border: none; background: white;"
     title="Zoneweaver Frontend API Reference">
-    <p>Your browser does not support iframes. 
+    <p>Your browser does not support iframes.
        <a href="swagger-ui.html">Click here to view the API documentation</a>
     </p>
   </iframe>

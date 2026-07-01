@@ -18,68 +18,52 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
   const getStateIcon = (state) => {
     switch (state?.toLowerCase()) {
       case "up":
-        return (
-          <span className="icon has-text-success">
-            <i className="fas fa-check-circle" />
-          </span>
-        );
+        return <i className="fas fa-check-circle text-success me-2" />;
       case "down":
-        return (
-          <span className="icon has-text-danger">
-            <i className="fas fa-times-circle" />
-          </span>
-        );
+        return <i className="fas fa-times-circle text-danger me-2" />;
       default:
-        return (
-          <span className="icon has-text-grey">
-            <i className="fas fa-question-circle" />
-          </span>
-        );
+        return <i className="fas fa-question-circle text-muted me-2" />;
     }
   };
 
   const getStateTag = (state) => {
     switch (state?.toLowerCase()) {
       case "up":
-        return <span className="tag is-success is-small">{state}</span>;
+        return <span className="badge text-bg-success">{state}</span>;
       case "down":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{state || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{state || "Unknown"}</span>
         );
     }
   };
 
   const getPolicyTag = (policy) => {
     const policyColors = {
-      L2: "is-info",
-      L3: "is-primary",
-      L4: "is-link",
-      L2L3: "is-success",
-      L2L4: "is-warning",
-      L3L4: "is-danger",
-      L2L3L4: "is-dark",
+      L2: "text-bg-info",
+      L3: "text-bg-primary",
+      L4: "text-bg-primary",
+      L2L3: "text-bg-success",
+      L2L4: "text-bg-warning",
+      L3L4: "text-bg-danger",
+      L2L3L4: "text-bg-dark",
     };
 
-    const colorClass = policyColors[policy] || "";
-    return (
-      <span className={`tag ${colorClass} is-small`}>
-        {policy || "Unknown"}
-      </span>
-    );
+    const colorClass = policyColors[policy] || "text-bg-secondary";
+    return <span className={`badge ${colorClass}`}>{policy || "Unknown"}</span>;
   };
 
   const getLacpModeTag = (mode) => {
     switch (mode?.toLowerCase()) {
       case "active":
-        return <span className="tag is-success is-small">{mode}</span>;
+        return <span className="badge text-bg-success">{mode}</span>;
       case "passive":
-        return <span className="tag is-info is-small">{mode}</span>;
+        return <span className="badge text-bg-info">{mode}</span>;
       case "off":
-        return <span className="tag is-grey is-small">{mode}</span>;
+        return <span className="badge text-bg-secondary">{mode}</span>;
       default:
-        return <span className="tag is-grey is-small">{mode || "N/A"}</span>;
+        return <span className="badge text-bg-secondary">{mode || "N/A"}</span>;
     }
   };
 
@@ -114,10 +98,8 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
 
   if (loading && aggregates.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading link aggregates...</p>
       </div>
     );
@@ -125,18 +107,16 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
 
   if (aggregates.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-link fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No link aggregates found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-link fa-2x text-muted" />
+        <p className="mt-2 text-muted">No link aggregates found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover table-sm">
         <thead>
           <tr>
             <th>Aggregate</th>
@@ -157,10 +137,10 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
             return (
               <tr key={aggregateName || index}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getStateIcon(aggregate.state)}
-                    <span className="ml-2">
-                      <strong className="is-family-monospace">
+                    <span className="ms-2">
+                      <strong className="font-monospace">
                         {aggregateName}
                       </strong>
                     </span>
@@ -169,13 +149,13 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
                 <td>{getPolicyTag(aggregate.policy)}</td>
                 <td>
                   <span
-                    className="is-family-monospace is-size-7"
+                    className="font-monospace small"
                     title={getLinksArray(memberLinks).join(", ")}
                   >
                     {formatLinks(memberLinks)}
                   </span>
                   {getLinksArray(memberLinks).length > 0 && (
-                    <div className="is-size-7 has-text-grey">
+                    <div className="small text-muted">
                       {getLinksArray(memberLinks).length} link
                       {getLinksArray(memberLinks).length !== 1 ? "s" : ""}
                     </div>
@@ -184,34 +164,37 @@ const AggregateTable = ({ aggregates, loading, onDelete, onViewDetails }) => {
                 <td>{getStateTag(aggregate.state)}</td>
                 <td>{getLacpModeTag(aggregate.lacp_mode)}</td>
                 <td>
-                  <span className="is-size-7">
-                    {aggregate.lacp_timer || "N/A"}
-                  </span>
+                  <span className="small">{aggregate.lacp_timer || "N/A"}</span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* View Details Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-sm btn-secondary"
                       onClick={() => onViewDetails(aggregate)}
                       disabled={loading || isDeleting}
                       title="View Details"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
+                      <i className="fas fa-info-circle" />
                     </button>
 
                     {/* Delete Button */}
                     <button
-                      className={`button is-danger ${isDeleting ? "is-loading" : ""}`}
+                      type="button"
+                      className="btn btn-sm btn-danger"
                       onClick={() => handleDelete(aggregate)}
                       disabled={loading || isDeleting}
                       title="Delete Aggregate"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-trash" />
-                      </span>
+                      {isDeleting && (
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <i className="fas fa-trash" />
                     </button>
                   </div>
                 </td>

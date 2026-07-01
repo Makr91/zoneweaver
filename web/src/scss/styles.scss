@@ -1,3 +1,15 @@
+// Bootstrap — compiled from Sass and themed to match the existing Zoneweaver look
+// (orange primary, yellow warning, square corners, no shadows). Replaces the
+// precompiled bootstrap.min.css import, which couldn't be themed. Bulma still loads
+// afterwards (sass/zoneweaver.scss) and styles every not-yet-migrated component;
+// the two frameworks coexist until the Phase 13 teardown.
+@use "bootstrap/scss/bootstrap" with (
+  $primary: #ff6600,
+  $warning: #ffe600,
+  $enable-rounded: false,
+  $enable-shadows: false
+);
+
 // Prevent FOUC
 html {
   visibility: visible;

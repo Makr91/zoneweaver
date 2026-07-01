@@ -22,15 +22,15 @@ const PoolCharts = ({
 
   return (
     <div className="mb-5">
-      <h5 className="title is-6 mb-3">
-        <span className="icon-text">
-          <span className="icon">
+      <h5 className="fs-6 fw-bold mb-3">
+        <span className="d-inline-flex align-items-center gap-1">
+          <span className="me-1">
             <i className="fas fa-database" />
           </span>
           <span>ZFS Pool I/O Performance Charts</span>
         </span>
       </h5>
-      <div className="columns is-multiline">
+      <div className="row">
         {poolEntries.map(([poolName, poolData]) => {
           const poolIO = poolIOStats.find((pool) => pool.pool === poolName);
           if (!poolIO || !poolData) {
@@ -38,14 +38,14 @@ const PoolCharts = ({
           }
 
           return (
-            <div key={poolName} className="column is-6">
-              <div className="is-chart-container is-relative">
+            <div key={poolName} className="col-6">
+              <div className="is-chart-container position-relative">
                 <button
-                  className="button is-small is-ghost is-chart-expand-button"
+                  className="btn btn-sm btn-link is-chart-expand-button"
                   onClick={() => expandChart(poolName, "pool")}
                   title="Expand chart to full size"
                 >
-                  <span className="icon has-text-white">
+                  <span className="me-1 text-white">
                     <i className="fas fa-expand" />
                   </span>
                 </button>
@@ -92,8 +92,8 @@ const PoolCharts = ({
       </div>
 
       {poolEntries.length > 0 && (
-        <div className="has-text-centered mt-3">
-          <p className="is-size-7 has-text-grey">
+        <div className="text-center mt-3">
+          <p className="small text-muted">
             Showing {poolEntries.length} ZFS pools with I/O activity.
           </p>
         </div>

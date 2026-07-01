@@ -54,14 +54,6 @@ const ZoneweaverSettings = () => {
       ldapTestCredentials,
       setLdapTestCredentials,
     },
-    oidc: {
-      showOidcProviderModal,
-      setShowOidcProviderModal,
-      oidcProviderForm,
-      setOidcProviderForm,
-      oidcProviderLoading,
-      setOidcProviderLoading,
-    },
     server: {
       servers,
       setServers,
@@ -134,20 +126,6 @@ const ZoneweaverSettings = () => {
     }
   }, [serverContext.servers, user, loadServers]);
 
-  // Reset OIDC Provider Form
-  const resetOidcProviderForm = useCallback(() => {
-    setOidcProviderForm({
-      name: "",
-      displayName: "",
-      issuer: "",
-      clientId: "",
-      clientSecret: "",
-      scope: "openid profile email",
-      responseType: "code",
-      enabled: true,
-    });
-  }, [setOidcProviderForm]);
-
   // Show restart confirmation dialog
   const handleRestartServer = useCallback(() => {
     setShowRestartConfirm(true);
@@ -189,23 +167,21 @@ const ZoneweaverSettings = () => {
           <title>System Settings - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
-                <strong>Access Denied</strong>
-              </div>
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <strong>Access Denied</strong>
             </div>
-            <div className="px-4">
-              <div className="notification is-danger">
-                <h2 className="title is-4">Super Admin Access Required</h2>
+            <div className="card-body">
+              <div className="alert alert-danger mb-0">
+                <h2 className="fs-4 fw-bold">Super Admin Access Required</h2>
                 <p>
                   Only super administrators can modify Zoneweaver system
                   settings.
                 </p>
                 <p className="mt-2">
                   Your current role:{" "}
-                  <span className="tag is-warning">
+                  <span className="badge text-bg-warning">
                     {user?.role || "Unknown"}
                   </span>
                 </p>
@@ -224,131 +200,96 @@ const ZoneweaverSettings = () => {
         <title>Zoneweaver Settings - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
+      <div className="container-fluid p-0">
+        <div className="card">
           {/* Title bar with action buttons */}
-          <div className="titlebar box active level is-mobile mb-0 p-3">
-            <div className="level-left">
-              <strong>Zoneweaver System Settings</strong>
-            </div>
-            <div className="level-right">
-              {activeTab !== "servers" && Object.keys(sections).length > 0 && (
-                <>
-                  <button
-                    className="button is-small is-primary mr-2"
-                    onClick={handleSaveSettings}
-                    disabled={loading || !Object.keys(values).length}
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-save" />
-                    </span>
-                    <span>Save</span>
-                  </button>
-                  <button
-                    className="button is-small is-info mr-2"
-                    onClick={createBackup}
-                    disabled={loading}
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-download" />
-                    </span>
-                    <span>Backup</span>
-                  </button>
-                  <button
-                    className="button is-small is-warning mr-2"
-                    onClick={handleOpenBackupModal}
-                    disabled={loading}
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-history" />
-                    </span>
-                    <span>Restore</span>
-                  </button>
-                  <button
-                    className="button is-small is-danger mr-2"
-                    onClick={handleRestartServer}
-                    disabled={loading}
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-redo" />
-                    </span>
-                    <span>Restart</span>
-                  </button>
-                </>
-              )}
-            </div>
+          <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <strong>Zoneweaver System Settings</strong>
+            {activeTab !== "servers" && Object.keys(sections).length > 0 && (
+              <div className="d-flex gap-2 flex-wrap">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary"
+                  onClick={handleSaveSettings}
+                  disabled={loading || !Object.keys(values).length}
+                >
+                  <i className="fas fa-save me-2" />
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-info"
+                  onClick={createBackup}
+                  disabled={loading}
+                >
+                  <i className="fas fa-download me-2" />
+                  Backup
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-warning"
+                  onClick={handleOpenBackupModal}
+                  disabled={loading}
+                >
+                  <i className="fas fa-history me-2" />
+                  Restore
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-danger"
+                  onClick={handleRestartServer}
+                  disabled={loading}
+                >
+                  <i className="fas fa-redo me-2" />
+                  Restart
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Tab navigation */}
-          <div className="tabs is-boxed mb-0">
-            <ul>
-              <li className={activeTab === "servers" ? "is-active" : ""}>
-                <a
-                  href="#servers"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveTab("servers");
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveTab("servers");
-                    }
-                  }}
+          <ul className="nav nav-tabs px-3 pt-2 mb-0">
+            <li className="nav-item">
+              <button
+                type="button"
+                className={`nav-link ${activeTab === "servers" ? "active" : ""}`}
+                onClick={() => setActiveTab("servers")}
+                role="tab"
+                aria-selected={activeTab === "servers"}
+              >
+                <i className="fas fa-server me-2" />
+                API Servers
+              </button>
+            </li>
+            {Object.entries(sections).map(([sectionName, section]) => (
+              <li key={sectionName} className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link ${activeTab === sectionName ? "active" : ""}`}
+                  onClick={() => setActiveTab(sectionName)}
                   role="tab"
-                  aria-selected={activeTab === "servers"}
+                  aria-selected={activeTab === sectionName}
                 >
-                  <span className="icon is-small">
-                    <i className="fas fa-server" />
-                  </span>
-                  <span>API Servers</span>
-                </a>
+                  <i className={`${section.icon} me-2`} />
+                  {section.title}
+                </button>
               </li>
-              {Object.entries(sections).map(([sectionName, section]) => (
-                <li
-                  key={sectionName}
-                  className={activeTab === sectionName ? "is-active" : ""}
-                >
-                  <a
-                    href={`#${sectionName}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveTab(sectionName);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setActiveTab(sectionName);
-                      }
-                    }}
-                    role="tab"
-                    aria-selected={activeTab === sectionName}
-                  >
-                    <span className="icon is-small">
-                      <i className={section.icon} />
-                    </span>
-                    <span>{section.title}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+            ))}
+          </ul>
 
           {/* Message banner */}
-          <div className="p-0">
+          <div className="p-4">
             {msg &&
               (() => {
-                let messageClass = "is-warning";
+                let messageClass = "alert-warning";
                 if (msg.includes("successfully")) {
-                  messageClass = "is-success";
+                  messageClass = "alert-success";
                 } else if (msg.includes("Error")) {
-                  messageClass = "is-danger";
+                  messageClass = "alert-danger";
                 }
                 return (
-                  <div
-                    className={`notification ${messageClass} mb-4 mx-4 mt-4`}
-                  >
-                    <p>{msg}</p>
+                  <div className={`alert ${messageClass} mb-4`}>
+                    <p className="mb-0">{msg}</p>
                   </div>
                 );
               })()}
@@ -382,7 +323,7 @@ const ZoneweaverSettings = () => {
             {Object.entries(sections).map(
               ([sectionName, section]) =>
                 activeTab === sectionName && (
-                  <div key={sectionName} className="px-4">
+                  <div key={sectionName}>
                     <SettingsContent
                       activeTab={sectionName}
                       sections={{ [sectionName]: section }}
@@ -394,8 +335,8 @@ const ZoneweaverSettings = () => {
                       loading={loading}
                       onFieldChange={handleFieldChange}
                       onSslFileUpload={handleSslFileUpload}
-                      resetOidcProviderForm={resetOidcProviderForm}
-                      setShowOidcProviderModal={setShowOidcProviderModal}
+                      setMsg={setMsg}
+                      setRequiresRestart={setRequiresRestart}
                     />
 
                     {/* Testing Panel for Authentication and Mail */}
@@ -411,16 +352,8 @@ const ZoneweaverSettings = () => {
                         setTestEmail={setTestEmail}
                         ldapTestCredentials={ldapTestCredentials}
                         setLdapTestCredentials={setLdapTestCredentials}
-                        showOidcProviderModal={showOidcProviderModal}
-                        setShowOidcProviderModal={setShowOidcProviderModal}
-                        oidcProviderForm={oidcProviderForm}
-                        setOidcProviderForm={setOidcProviderForm}
-                        oidcProviderLoading={oidcProviderLoading}
-                        setOidcProviderLoading={setOidcProviderLoading}
-                        resetOidcProviderForm={resetOidcProviderForm}
                         setMsg={setMsg}
                         loading={loading}
-                        section={section}
                         sectionName={sectionName}
                       />
                     )}
@@ -430,21 +363,20 @@ const ZoneweaverSettings = () => {
 
             {/* Restart Warning */}
             {requiresRestart && activeTab !== "servers" && (
-              <div className="notification is-warning mx-4 mt-4">
-                <h3 className="title is-6">Server Restart Required</h3>
+              <div className="alert alert-warning mt-4">
+                <h3 className="h6">Server Restart Required</h3>
                 <p>
                   Some of your changes require a server restart to take effect.
                 </p>
                 <div className="mt-3">
                   <button
-                    className="button is-danger"
+                    type="button"
+                    className="btn btn-danger"
                     onClick={handleRestartServer}
                     disabled={loading}
                   >
-                    <span className="icon">
-                      <i className="fas fa-power-off" />
-                    </span>
-                    <span>Restart Server Now</span>
+                    <i className="fas fa-power-off me-2" />
+                    Restart Server Now
                   </button>
                 </div>
               </div>
@@ -463,33 +395,35 @@ const ZoneweaverSettings = () => {
 
           {/* Help Section */}
           {activeTab !== "servers" && Object.keys(sections).length > 0 && (
-            <div className="box mx-4 mb-4">
-              <h2 className="title is-6">Settings Information</h2>
-              <div className="content is-size-7">
-                <p>
-                  <strong>Important:</strong> These settings affect the entire
-                  Zoneweaver application for all users.
-                </p>
-                <ul>
-                  <li>
-                    Changes require super-admin privileges and take effect
-                    immediately
-                  </li>
-                  <li>
-                    Some settings may require users to refresh their browsers
-                  </li>
-                  <li>
-                    Performance settings affect resource usage and
-                    responsiveness
-                  </li>
-                  <li>
-                    Security settings impact user sessions and authentication
-                  </li>
-                </ul>
-                <p className="mt-3">
-                  <strong>Current User:</strong> {user.username}{" "}
-                  <span className="tag is-danger is-small">Super Admin</span>
-                </p>
+            <div className="card mx-4 mb-4">
+              <div className="card-body">
+                <h2 className="h6">Settings Information</h2>
+                <div className="small">
+                  <p>
+                    <strong>Important:</strong> These settings affect the entire
+                    Zoneweaver application for all users.
+                  </p>
+                  <ul>
+                    <li>
+                      Changes require super-admin privileges and take effect
+                      immediately
+                    </li>
+                    <li>
+                      Some settings may require users to refresh their browsers
+                    </li>
+                    <li>
+                      Performance settings affect resource usage and
+                      responsiveness
+                    </li>
+                    <li>
+                      Security settings impact user sessions and authentication
+                    </li>
+                  </ul>
+                  <p className="mt-3">
+                    <strong>Current User:</strong> {user.username}{" "}
+                    <span className="badge text-bg-danger">Super Admin</span>
+                  </p>
+                </div>
               </div>
             </div>
           )}

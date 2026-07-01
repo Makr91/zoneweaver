@@ -21,17 +21,15 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
 
   const getGroupType = (group) => {
     if (group.gid < 100) {
-      return { type: "System", class: "is-info" };
+      return { type: "System", class: "text-bg-info" };
     }
-    return { type: "Regular", class: "is-success" };
+    return { type: "Regular", class: "text-bg-success" };
   };
 
   if (loading && groups.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading groups...</p>
       </div>
     );
@@ -39,18 +37,16 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
 
   if (groups.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-users fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No groups found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-users fa-2x text-muted" />
+        <p className="mt-2 text-muted">No groups found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Group Name</th>
@@ -67,70 +63,71 @@ const GroupTable = ({ groups, loading, onDelete, onViewDetails }) => {
             return (
               <tr key={`${group.gid}-${group.groupname}`}>
                 <td>
-                  <div className="is-flex is-align-items-center">
-                    <span className="icon has-text-primary">
-                      <i className="fas fa-users" />
-                    </span>
-                    <span className="ml-2">
+                  <div className="d-flex align-items-center">
+                    <i className="fas fa-users text-primary me-2" />
+                    <span>
                       <strong>{group.groupname}</strong>
                     </span>
                   </div>
                 </td>
                 <td>
-                  <span className="is-family-monospace">{group.gid}</span>
+                  <span className="font-monospace">{group.gid}</span>
                 </td>
                 <td>
                   {group.members && group.members.length > 0 ? (
-                    <div className="tags">
+                    <div className="d-flex flex-wrap gap-1">
                       {group.members.slice(0, 3).map((member) => (
-                        <span key={member} className="tag is-light is-small">
+                        <span key={member} className="badge text-bg-secondary">
                           {member}
                         </span>
                       ))}
                       {group.members.length > 3 && (
-                        <span className="tag is-light is-small">
+                        <span className="badge text-bg-secondary">
                           +{group.members.length - 3} more
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="has-text-grey is-italic">No members</span>
+                    <span className="text-muted fst-italic">No members</span>
                   )}
                 </td>
                 <td>
-                  <span className={`tag ${groupType.class} is-small`}>
+                  <span className={`badge ${groupType.class}`}>
                     {groupType.type}
                   </span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* View Details Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-secondary btn-sm"
                       onClick={() => handleAction(group, "viewDetails")}
                       disabled={loading}
                       title="View Details"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
+                      <i className="fas fa-info-circle" />
                     </button>
 
                     {/* Delete Button - only for non-system groups */}
                     {group.gid >= 100 && (
                       <button
-                        className={`button is-danger ${
-                          actionLoading[`${group.groupname}-delete`]
-                            ? "is-loading"
-                            : ""
-                        }`}
+                        type="button"
+                        className="btn btn-danger btn-sm"
                         onClick={() => handleAction(group, "delete")}
-                        disabled={loading}
+                        disabled={
+                          loading || actionLoading[`${group.groupname}-delete`]
+                        }
                         title="Delete Group"
                       >
-                        <span className="icon is-small">
-                          <i className="fas fa-trash" />
-                        </span>
+                        {actionLoading[`${group.groupname}-delete`] && (
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true"
+                          />
+                        )}
+                        <i className="fas fa-trash" />
                       </button>
                     )}
                   </div>

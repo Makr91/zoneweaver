@@ -112,24 +112,16 @@ const ProcessTable = ({
 
   const getUserIcon = (username) => {
     if (username === "root") {
-      return (
-        <span className="icon has-text-danger">
-          <i className="fas fa-user-shield" />
-        </span>
-      );
+      return <i className="fas fa-user-shield text-danger me-2" />;
     }
-    return (
-      <span className="icon has-text-info">
-        <i className="fas fa-user" />
-      </span>
-    );
+    return <i className="fas fa-user text-info me-2" />;
   };
 
   const getZoneTag = (zone) => {
     if (zone === "global") {
-      return <span className="tag is-primary is-small">{zone}</span>;
+      return <span className="badge text-bg-primary">{zone}</span>;
     }
-    return <span className="tag is-info is-small">{zone}</span>;
+    return <span className="badge text-bg-info">{zone}</span>;
   };
 
   const getSortIcon = (field) => {
@@ -154,10 +146,8 @@ const ProcessTable = ({
 
   if (loading && processes.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading processes...</p>
       </div>
     );
@@ -165,11 +155,9 @@ const ProcessTable = ({
 
   if (processes.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-tasks fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No processes found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-tasks fa-2x text-muted" />
+        <p className="mt-2 text-muted">No processes found</p>
       </div>
     );
   }
@@ -177,61 +165,60 @@ const ProcessTable = ({
   const sortedProcesses = getSortedProcesses();
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
-            <th className="is-clickable" onClick={() => handleSort("pid")}>
-              <span className="is-flex is-align-items-center">
+            <th className="cursor-pointer" onClick={() => handleSort("pid")}>
+              <span className="d-flex align-items-center">
                 PID
-                <span className="icon is-small ml-1">{getSortIcon("pid")}</span>
+                <span className="ms-1">{getSortIcon("pid")}</span>
               </span>
             </th>
-            <th className="is-clickable" onClick={() => handleSort("username")}>
-              <span className="is-flex is-align-items-center">
+            <th
+              className="cursor-pointer"
+              onClick={() => handleSort("username")}
+            >
+              <span className="d-flex align-items-center">
                 User
-                <span className="icon is-small ml-1">
-                  {getSortIcon("username")}
-                </span>
+                <span className="ms-1">{getSortIcon("username")}</span>
               </span>
             </th>
-            <th className="is-clickable" onClick={() => handleSort("zone")}>
-              <span className="is-flex is-align-items-center">
+            <th className="cursor-pointer" onClick={() => handleSort("zone")}>
+              <span className="d-flex align-items-center">
                 Zone
-                <span className="icon is-small ml-1">
-                  {getSortIcon("zone")}
-                </span>
+                <span className="ms-1">{getSortIcon("zone")}</span>
               </span>
             </th>
             {showDetailedView && (
               <>
                 <th
-                  className="is-clickable"
+                  className="cursor-pointer"
                   onClick={() => handleSort("cpu_percent")}
                 >
-                  <span className="is-flex is-align-items-center">
+                  <span className="d-flex align-items-center">
                     CPU %
-                    <span className="icon is-small ml-1">
-                      {getSortIcon("cpu_percent")}
-                    </span>
+                    <span className="ms-1">{getSortIcon("cpu_percent")}</span>
                   </span>
                 </th>
-                <th className="is-clickable" onClick={() => handleSort("rss")}>
-                  <span className="is-flex is-align-items-center">
+                <th
+                  className="cursor-pointer"
+                  onClick={() => handleSort("rss")}
+                >
+                  <span className="d-flex align-items-center">
                     Memory
-                    <span className="icon is-small ml-1">
-                      {getSortIcon("rss")}
-                    </span>
+                    <span className="ms-1">{getSortIcon("rss")}</span>
                   </span>
                 </th>
               </>
             )}
-            <th className="is-clickable" onClick={() => handleSort("command")}>
-              <span className="is-flex is-align-items-center">
+            <th
+              className="cursor-pointer"
+              onClick={() => handleSort("command")}
+            >
+              <span className="d-flex align-items-center">
                 Command
-                <span className="icon is-small ml-1">
-                  {getSortIcon("command")}
-                </span>
+                <span className="ms-1">{getSortIcon("command")}</span>
               </span>
             </th>
             <th width="200">Actions</th>
@@ -241,80 +228,70 @@ const ProcessTable = ({
           {sortedProcesses.map((process, index) => (
             <tr key={process.pid || index}>
               <td>
-                <span className="is-family-monospace has-text-weight-bold">
-                  {process.pid}
-                </span>
+                <span className="font-monospace fw-bold">{process.pid}</span>
                 {process.ppid && (
-                  <div className="is-size-7 has-text-grey">
-                    PPID: {process.ppid}
-                  </div>
+                  <div className="small text-muted">PPID: {process.ppid}</div>
                 )}
               </td>
               <td>
-                <div className="is-flex is-align-items-center">
+                <div className="d-flex align-items-center">
                   {getUserIcon(process.username)}
-                  <span className="ml-2">{process.username || "N/A"}</span>
+                  <span>{process.username || "N/A"}</span>
                 </div>
               </td>
               <td>{getZoneTag(process.zone || "N/A")}</td>
               {showDetailedView && (
                 <>
                   <td>
-                    <span className="is-family-monospace">
+                    <span className="font-monospace">
                       {formatCPU(process.cpu_percent)}
                     </span>
                   </td>
                   <td>
-                    <span className="is-family-monospace">
+                    <span className="font-monospace">
                       {formatMemory(process.rss)}
                     </span>
                   </td>
                 </>
               )}
               <td>
-                <span
-                  className="is-family-monospace is-size-7"
-                  title={process.command}
-                >
+                <span className="font-monospace small" title={process.command}>
                   {truncateCommand(process.command)}
                 </span>
               </td>
               <td>
-                <div className="buttons are-small">
+                <div className="d-flex gap-1">
                   {/* View Details Button */}
                   <button
-                    className="button is-info"
+                    type="button"
+                    className="btn btn-info btn-sm"
                     onClick={() => onViewDetails(process)}
                     disabled={loading}
                     title="View Process Details"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-info-circle" />
-                    </span>
+                    <i className="fas fa-info-circle" />
                   </button>
 
                   {/* Send Signal Button */}
                   <button
-                    className="button is-warning"
+                    type="button"
+                    className="btn btn-warning btn-sm"
                     onClick={() => onSendSignal(process)}
                     disabled={loading}
                     title="Send Signal"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-bolt" />
-                    </span>
+                    <i className="fas fa-bolt" />
                   </button>
 
                   {/* Kill Process Button */}
                   <button
-                    className="button is-danger"
+                    type="button"
+                    className="btn btn-danger btn-sm"
                     onClick={() => onKillProcess(process)}
                     disabled={loading}
                     title="Kill Process"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-times" />
-                    </span>
+                    <i className="fas fa-times" />
                   </button>
                 </div>
               </td>

@@ -53,7 +53,7 @@ const Sidebar = () => {
   ]);
 
   return (
-    <aside className="menu is-flex-grow-1">
+    <aside className="flex-grow-1 w-100">
       <DashEntry
         title={"Dashboard"}
         link={"/ui/dashboard"}

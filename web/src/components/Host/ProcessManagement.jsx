@@ -265,17 +265,17 @@ const ProcessManagement = ({ server }) => {
   return (
     <div>
       {/* Process Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="command-filter">
-                Filter by Command
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="command-filter">
+                  Filter by Command
+                </label>
                 <input
                   id="command-filter"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Enter command pattern..."
                   value={filters.pattern}
@@ -285,134 +285,126 @@ const ProcessManagement = ({ server }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="zone-filter">
-                Filter by Zone
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="zone-filter"
-                    value={filters.zone}
-                    onChange={(e) => handleFilterChange("zone", e.target.value)}
-                  >
-                    <option value="">All Zones</option>
-                    {availableZones.map((zone) => (
-                      <option key={zone} value={zone}>
-                        {zone}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="user-filter">
-                Filter by User
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="user-filter"
-                    value={filters.user}
-                    onChange={(e) => handleFilterChange("user", e.target.value)}
-                  >
-                    <option value="">All Users</option>
-                    {availableUsers.map((user) => (
-                      <option key={user} value={user}>
-                        {user}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="detailed-view-toggle">
-                Detailed View
-              </label>
-              <div className="control">
-                <label
-                  className="switch is-medium"
-                  htmlFor="detailed-view-toggle"
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="zone-filter">
+                  Filter by Zone
+                </label>
+                <select
+                  id="zone-filter"
+                  className="form-select"
+                  value={filters.zone}
+                  onChange={(e) => handleFilterChange("zone", e.target.value)}
                 >
+                  <option value="">All Zones</option>
+                  {availableZones.map((zone) => (
+                    <option key={zone} value={zone}>
+                      {zone}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="user-filter">
+                  Filter by User
+                </label>
+                <select
+                  id="user-filter"
+                  className="form-select"
+                  value={filters.user}
+                  onChange={(e) => handleFilterChange("user", e.target.value)}
+                >
+                  <option value="">All Users</option>
+                  {availableUsers.map((user) => (
+                    <option key={user} value={user}>
+                      {user}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="detailed-view-toggle">
+                  Detailed View
+                </label>
+                <div className="form-check form-switch">
                   <input
                     id="detailed-view-toggle"
+                    className="form-check-input"
                     type="checkbox"
+                    role="switch"
                     checked={filters.detailed}
                     onChange={(e) =>
                       handleFilterChange("detailed", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Show CPU/Memory</span>
+                  <label
+                    className="form-check-label"
+                    htmlFor="detailed-view-toggle"
+                  >
+                    Show CPU/Memory
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="refresh-button">
+                  Refresh
                 </label>
+                <div>
+                  <button
+                    id="refresh-button"
+                    type="button"
+                    className="btn btn-info"
+                    onClick={loadProcesses}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-sync-alt me-2" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="refresh-button">
-                Refresh
-              </label>
-              <div className="control">
-                <button
-                  id="refresh-button"
-                  className="button is-info"
-                  onClick={loadProcesses}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="clear-filters-button">
+                  Clear
+                </label>
+                <div>
+                  <button
+                    id="clear-filters-button"
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={clearFilters}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times me-2" />
+                    <span>Clear</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="clear-filters-button">
-                Clear
-              </label>
-              <div className="control">
-                <button
-                  id="clear-filters-button"
-                  className="button"
-                  onClick={clearFilters}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                  <span>Clear</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="batch-kill-button">
-                Actions
-              </label>
-              <div className="control">
-                <button
-                  id="batch-kill-button"
-                  className="button is-warning"
-                  onClick={() => setShowBatchKillModal(true)}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-stop-circle" />
-                  </span>
-                  <span>Batch Kill</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="batch-kill-button">
+                  Actions
+                </label>
+                <div>
+                  <button
+                    id="batch-kill-button"
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={() => setShowBatchKillModal(true)}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-stop-circle me-2" />
+                    <span>Batch Kill</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -421,17 +413,21 @@ const ProcessManagement = ({ server }) => {
 
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger alert-dismissible mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
       {/* Processes Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h3 className="fs-6 fw-bold">
               Processes ({processes.length})
               {loading && (
                 <span className="ml-2">
@@ -440,22 +436,22 @@ const ProcessManagement = ({ server }) => {
               )}
             </h3>
           </div>
-        </div>
 
-        <ProcessTable
-          processes={processes}
-          loading={loading}
-          onViewDetails={handleViewDetails}
-          onKillProcess={(process) => {
-            setSelectedProcess(process);
-            setShowKillModal(true);
-          }}
-          onSendSignal={(process) => {
-            setSelectedProcess(process);
-            setShowSignalModal(true);
-          }}
-          showDetailedView={filters.detailed}
-        />
+          <ProcessTable
+            processes={processes}
+            loading={loading}
+            onViewDetails={handleViewDetails}
+            onKillProcess={(process) => {
+              setSelectedProcess(process);
+              setShowKillModal(true);
+            }}
+            onSendSignal={(process) => {
+              setSelectedProcess(process);
+              setShowSignalModal(true);
+            }}
+            showDetailedView={filters.detailed}
+          />
+        </div>
       </div>
 
       {/* Process Details Modal */}

@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
  * Quick action buttons and zone distribution sidebar.
  */
 const ZoneDistribution = ({ servers, summary }) => (
-  <div className="content">
+  <div>
     {servers && servers.length > 0 ? (
       <>
         {servers
@@ -22,28 +22,30 @@ const ZoneDistribution = ({ servers, summary }) => (
                 key={`${serverResult.server.hostname}-${serverResult.server.port}`}
                 className="mb-3"
               >
-                <div className="level is-mobile mb-1">
-                  <div className="level-left">
-                    <div className="level-item">
-                      <strong className="is-size-7">
-                        {serverResult.server.hostname}
-                      </strong>
-                    </div>
-                  </div>
-                  <div className="level-right">
-                    <div className="level-item">
-                      <span className="is-size-7">
-                        {zoneCount} zones ({percentage}%)
-                      </span>
-                    </div>
-                  </div>
+                <div className="d-flex justify-content-between mb-1">
+                  <strong className="small">
+                    {serverResult.server.hostname}
+                  </strong>
+                  <span className="small">
+                    {zoneCount} zones ({percentage}%)
+                  </span>
                 </div>
-                <progress
-                  className="progress is-small is-primary"
-                  value={zoneCount}
-                  max={summary.totalZones || 1}
-                />
-                <p className="is-size-7 has-text-grey">
+                <div
+                  className="progress"
+                  style={{ height: "0.5rem" }}
+                  role="progressbar"
+                  aria-valuenow={zoneCount}
+                  aria-valuemin={0}
+                  aria-valuemax={summary.totalZones || 1}
+                >
+                  <div
+                    className="progress-bar bg-primary"
+                    style={{
+                      width: `${(zoneCount / (summary.totalZones || 1)) * 100}%`,
+                    }}
+                  />
+                </div>
+                <p className="small text-muted mb-0">
                   {runningCount} running, {zoneCount - runningCount} stopped
                 </p>
               </div>
@@ -52,17 +54,19 @@ const ZoneDistribution = ({ servers, summary }) => (
 
         <hr className="my-3" />
 
-        <div className="has-text-centered">
-          <p className="heading">Total Infrastructure</p>
-          <p className="title is-5">{summary?.totalZones || 0} Zones</p>
-          <p className="subtitle is-7 has-text-grey">
+        <div className="text-center">
+          <p className="text-uppercase small fw-semibold text-muted mb-1">
+            Total Infrastructure
+          </p>
+          <p className="h5 mb-1">{summary?.totalZones || 0} Zones</p>
+          <p className="small text-muted mb-0">
             Across {summary?.onlineServers || 0} active hosts
           </p>
         </div>
       </>
     ) : (
-      <div className="has-text-centered has-text-grey">
-        <p>No zone data available</p>
+      <div className="text-center text-muted">
+        <p className="mb-0">No zone data available</p>
       </div>
     )}
   </div>
@@ -84,78 +88,70 @@ const DashboardQuickActions = ({
   onNavigateServerRegister,
   onNavigateSettings,
 }) => (
-  <div className="columns mb-3">
-    <div className="column is-8">
-      <div className="box">
-        <h2 className="title is-4 mb-4">
-          <span className="icon-text">
-            <span className="icon">
-              <i className="fas fa-bolt" />
-            </span>
+  <div className="row g-3 mb-3">
+    <div className="col-12 col-lg-8">
+      <div className="card h-100">
+        <div className="card-body">
+          <h2 className="h4 mb-4 d-flex align-items-center gap-2">
+            <i className="fas fa-bolt" />
             <span>Quick Actions</span>
-          </span>
-        </h2>
+          </h2>
 
-        <div className="columns is-multiline">
-          <div className="column is-6">
-            <button
-              className="button is-fullwidth is-primary is-medium"
-              onClick={onNavigateZoneRegister}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create New Zone</span>
-            </button>
-          </div>
-          <div className="column is-6">
-            <button
-              className="button is-fullwidth is-info is-medium"
-              onClick={onNavigateZones}
-            >
-              <span className="icon">
-                <i className="fas fa-list" />
-              </span>
-              <span>Manage Zones</span>
-            </button>
-          </div>
-          <div className="column is-6">
-            <button
-              className="button is-fullwidth is-success is-medium"
-              onClick={onNavigateServerRegister}
-            >
-              <span className="icon">
-                <i className="fas fa-server" />
-              </span>
-              <span>Add New Host</span>
-            </button>
-          </div>
-          <div className="column is-6">
-            <button
-              className="button is-fullwidth is-link is-medium"
-              onClick={onNavigateSettings}
-            >
-              <span className="icon">
-                <i className="fas fa-cog" />
-              </span>
-              <span>Settings</span>
-            </button>
+          <div className="row g-3">
+            <div className="col-12 col-sm-6">
+              <button
+                type="button"
+                className="btn btn-primary w-100"
+                onClick={onNavigateZoneRegister}
+              >
+                <i className="fas fa-plus me-2" />
+                Create New Zone
+              </button>
+            </div>
+            <div className="col-12 col-sm-6">
+              <button
+                type="button"
+                className="btn btn-info w-100"
+                onClick={onNavigateZones}
+              >
+                <i className="fas fa-list me-2" />
+                Manage Zones
+              </button>
+            </div>
+            <div className="col-12 col-sm-6">
+              <button
+                type="button"
+                className="btn btn-success w-100"
+                onClick={onNavigateServerRegister}
+              >
+                <i className="fas fa-server me-2" />
+                Add New Host
+              </button>
+            </div>
+            <div className="col-12 col-sm-6">
+              <button
+                type="button"
+                className="btn btn-secondary w-100"
+                onClick={onNavigateSettings}
+              >
+                <i className="fas fa-cog me-2" />
+                Settings
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div className="column is-4">
-      <div className="box">
-        <h2 className="title is-4 mb-4">
-          <span className="icon-text">
-            <span className="icon">
-              <i className="fas fa-chart-pie" />
-            </span>
+    <div className="col-12 col-lg-4">
+      <div className="card h-100">
+        <div className="card-body">
+          <h2 className="h4 mb-4 d-flex align-items-center gap-2">
+            <i className="fas fa-chart-pie" />
             <span>Zone Distribution</span>
-          </span>
-        </h2>
-        <ZoneDistribution servers={servers} summary={summary} />
+          </h2>
+          <ZoneDistribution servers={servers} summary={summary} />
+        </div>
       </div>
     </div>
   </div>

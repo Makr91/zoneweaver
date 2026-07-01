@@ -23,41 +23,37 @@ const ServicePropertiesModal = ({ service, onClose }) => {
   const getStateTagClass = (state) => {
     switch (state) {
       case "online":
-        return "is-success";
+        return "text-bg-success";
       case "disabled":
-        return "is-grey";
+        return "text-bg-secondary";
       case "offline":
-        return "is-danger";
+        return "text-bg-danger";
       case "legacy_run":
-        return "is-info";
+        return "text-bg-info";
       case "maintenance":
-        return "is-warning";
+        return "text-bg-warning";
       default:
-        return "is-light";
+        return "text-bg-light";
     }
   };
 
   const renderPropertyValue = (value) => {
     // Handle different types of property values
     if (value.includes("\n") || value.length > 100) {
-      return (
-        <pre className="is-size-7 has-background-dark has-text-light p-2">
-          {value}
-        </pre>
-      );
+      return <pre className="small bg-body-tertiary p-2">{value}</pre>;
     } else if (value.startsWith("http://") || value.startsWith("https://")) {
       return (
         <a
           href={value}
           target="_blank"
           rel="noopener noreferrer"
-          className="is-size-7"
+          className="small"
         >
           {value}
         </a>
       );
     }
-    return <span className="is-family-monospace is-size-7">{value}</span>;
+    return <span className="font-monospace small">{value}</span>;
   };
 
   return (
@@ -68,68 +64,74 @@ const ServicePropertiesModal = ({ service, onClose }) => {
       icon="fas fa-cog"
     >
       {/* Service Basic Info */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Service Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>FMRI</strong>
-                </td>
-                <td className="is-family-monospace">{service.fmri}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Current State</strong>
-                </td>
-                <td>
-                  <span className={`tag ${getStateTagClass(service.state)}`}>
-                    {service.state}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Service Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>FMRI</strong>
+                  </td>
+                  <td className="font-monospace">{service.fmri}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Current State</strong>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${getStateTagClass(service.state)}`}
+                    >
+                      {service.state}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Properties */}
       {propertiesArray.length > 0 && (
-        <div className="box">
-          <h3 className="title is-6">Configuration Properties</h3>
-          <div className="field mb-3">
-            <p className="help">
-              These are the service configuration properties as returned by{" "}
-              <code>svccfg listprop</code>.
-            </p>
-          </div>
-          <div className="table-container">
-            <table className="table is-fullwidth is-striped">
-              <thead>
-                <tr>
-                  <th>Property</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {propertiesArray.map((prop) => (
-                  <tr key={prop.property}>
-                    <td>
-                      <code className="is-size-7">{prop.property}</code>
-                    </td>
-                    <td>{renderPropertyValue(prop.value)}</td>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Configuration Properties</h3>
+            <div className="mb-3">
+              <p className="form-text text-muted">
+                These are the service configuration properties as returned by{" "}
+                <code>svccfg listprop</code>.
+              </p>
+            </div>
+            <div className="table-responsive">
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th>Value</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {propertiesArray.map((prop) => (
+                    <tr key={prop.property}>
+                      <td>
+                        <code className="small">{prop.property}</code>
+                      </td>
+                      <td>{renderPropertyValue(prop.value)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Show message if no properties available */}
       {propertiesArray.length === 0 && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No configuration properties available for this service.</p>
         </div>
       )}

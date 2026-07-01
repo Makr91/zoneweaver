@@ -25,18 +25,18 @@ const LogViewer = ({
   const getLogLevelClass = (line) => {
     const lower = line.toLowerCase();
     if (lower.includes("error") || lower.includes("fail")) {
-      return "has-text-danger";
+      return "text-danger";
     }
     if (lower.includes("warning") || lower.includes("warn")) {
-      return "has-text-warning";
+      return "text-warning";
     }
     if (lower.includes("info")) {
-      return "has-text-info";
+      return "text-info";
     }
     if (lower.includes("debug")) {
-      return "has-text-grey";
+      return "text-muted";
     }
-    return "has-text-white";
+    return "text-white";
   };
 
   const formatTimestamp = (line) => {
@@ -74,13 +74,12 @@ const LogViewer = ({
 
     if (hasContent) {
       return (
-        <div className="content">
+        <div>
           <pre
-            className="box has-background-black has-text-light p-4 log-viewer"
+            className="card card-body bg-dark text-light small log-viewer"
             style={{
               height: "500px",
               overflowY: "auto",
-              fontSize: "0.8rem",
               lineHeight: "1.2",
             }}
             ref={(el) => {
@@ -104,9 +103,7 @@ const LogViewer = ({
                       className="log-line mb-1"
                     >
                       {timestamp && (
-                        <span className="has-text-grey-light mr-2">
-                          {timestamp}
-                        </span>
+                        <span className="text-secondary me-2">{timestamp}</span>
                       )}
                       <span className={getLogLevelClass(content)}>
                         {content}
@@ -127,9 +124,7 @@ const LogViewer = ({
                       className="log-line mb-1"
                     >
                       {timestamp && (
-                        <span className="has-text-grey-light mr-2">
-                          {timestamp}
-                        </span>
+                        <span className="text-secondary me-2">{timestamp}</span>
                       )}
                       <span className={getLogLevelClass(content)}>
                         {content}
@@ -144,10 +139,8 @@ const LogViewer = ({
 
     if (loading) {
       return (
-        <div className="has-text-centered p-6">
-          <span className="icon is-large">
-            <i className="fas fa-spinner fa-spin fa-2x" />
-          </span>
+        <div className="text-center p-6">
+          <i className="fas fa-spinner fa-spin fa-2x" />
           <p className="mt-2">
             {isStreaming
               ? "Connecting to log stream..."
@@ -159,26 +152,20 @@ const LogViewer = ({
 
     if (isStreaming) {
       return (
-        <div className="has-text-centered p-6">
-          <span className="icon is-large has-text-success">
-            <i className="fas fa-satellite-dish fa-2x" />
-          </span>
-          <p className="mt-2 has-text-success">
+        <div className="text-center p-6">
+          <i className="fas fa-satellite-dish fa-2x text-success" />
+          <p className="mt-2 text-success">
             <strong>Live stream active</strong>
           </p>
-          <p className="is-size-7 has-text-grey">
-            Waiting for new log entries...
-          </p>
+          <p className="small text-muted">Waiting for new log entries...</p>
         </div>
       );
     }
 
     return (
-      <div className="has-text-centered p-6">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-file-alt fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">
+      <div className="text-center p-6">
+        <i className="fas fa-file-alt fa-2x text-muted" />
+        <p className="mt-2 text-muted">
           {selectedLog
             ? "Click Refresh to load log content"
             : "Select a log file to view content"}
@@ -188,103 +175,87 @@ const LogViewer = ({
   };
 
   return (
-    <div className="box">
-      <div className="level is-mobile mb-3">
-        <div className="level-left">
-          <h4 className="title is-6">
-            <span className="icon-text">
-              <span className="icon">
-                <i className={getLogIcon(selectedLog.type)} />
-              </span>
+    <div className="card">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center gap-2">
+            <h4 className="fs-6 fw-bold mb-0">
+              <i className={`${getLogIcon(selectedLog.type)} me-2`} />
               <span>{selectedLog.displayName || selectedLog.name}</span>
-            </span>
-            {loading && (
-              <span className="ml-2">
-                <i className="fas fa-spinner fa-spin" />
-              </span>
-            )}
-            {isStreaming && (
-              <span className="tag is-primary is-small ml-2">
-                <span className="icon is-small">
-                  <i className="fas fa-satellite-dish" />
+              {loading && (
+                <span className="ms-2">
+                  <i className="fas fa-spinner fa-spin" />
                 </span>
-                <span>Live Stream</span>
-              </span>
-            )}
-          </h4>
-        </div>
-        <div className="level-right">
-          <div className="field has-addons">
+              )}
+              {isStreaming && (
+                <span className="badge text-bg-primary ms-2">
+                  <i className="fas fa-satellite-dish me-2" />
+                  <span>Live Stream</span>
+                </span>
+              )}
+            </h4>
+          </div>
+          <div className="d-flex align-items-center gap-2">
             {isStreaming && streamLines.length > 0 && (
-              <div className="control">
-                <button
-                  className="button is-small"
-                  onClick={onClearStream}
-                  title="Clear stream buffer"
-                >
-                  <span className="icon">
-                    <i className="fas fa-eraser" />
-                  </span>
-                  <span>Clear</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-secondary"
+                onClick={onClearStream}
+                title="Clear stream buffer"
+              >
+                <i className="fas fa-eraser me-2" />
+                <span>Clear</span>
+              </button>
             )}
-            <div className="control">
-              <div className="tags">
-                {isStreaming && (
-                  <span className="tag is-primary is-small">
-                    {streamLines.length} stream lines
-                  </span>
-                )}
-                {!isStreaming && logData && (
-                  <span className="tag is-info is-small">
-                    {logData.totalLines} lines
-                  </span>
-                )}
-              </div>
+            <div className="d-flex gap-2">
+              {isStreaming && (
+                <span className="badge text-bg-primary">
+                  {streamLines.length} stream lines
+                </span>
+              )}
+              {!isStreaming && logData && (
+                <span className="badge text-bg-info">
+                  {logData.totalLines} lines
+                </span>
+              )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Log Display */}
-      {renderLogContent()}
+        {/* Log Display */}
+        {renderLogContent()}
 
-      {/* Log File Info */}
-      {logData && logData.fileInfo && (
-        <div className="notification is-light mt-3 is-small">
-          <div className="level is-mobile">
-            <div className="level-left">
+        {/* Log File Info */}
+        {logData && logData.fileInfo && (
+          <div className="alert alert-secondary mt-3 small">
+            <div className="d-flex justify-content-between align-items-center">
               <div>
-                <p className="is-size-7">
+                <p className="small mb-0">
                   <strong>File:</strong> {logData.path}
-                  <span className="ml-3">
+                  <span className="ms-3">
                     <strong>Size:</strong> {logData.fileInfo.sizeFormatted}
                   </span>
-                  <span className="ml-3">
+                  <span className="ms-3">
                     <strong>Modified:</strong>{" "}
                     {new Date(logData.fileInfo.modified).toLocaleString()}
                   </span>
                 </p>
               </div>
-            </div>
-            <div className="level-right">
-              <div className="buttons are-small">
+              <div className="d-flex gap-2">
                 <button
-                  className="button is-small"
+                  type="button"
+                  className="btn btn-sm btn-secondary"
                   onClick={handleDownload}
                   title="Download Log"
                 >
-                  <span className="icon">
-                    <i className="fas fa-download" />
-                  </span>
+                  <i className="fas fa-download me-2" />
                   <span>Download</span>
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

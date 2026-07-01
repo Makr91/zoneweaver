@@ -267,11 +267,9 @@ const AggregateCreateModal = ({
       loading={creating}
       additionalActions={
         currentStep && (
-          <div className="level-item">
-            <p className="has-text-info">
-              <span className="icon mr-1">
-                <i className="fas fa-spinner fa-spin" />
-              </span>
+          <div>
+            <p className="text-info">
+              <i className="fas fa-spinner fa-spin me-1" />
               {currentStep}
             </p>
           </div>

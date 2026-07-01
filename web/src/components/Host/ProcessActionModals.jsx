@@ -36,44 +36,44 @@ const KillProcessModal = ({ process, onClose, onConfirm }) => {
       showCancelButton
     >
       {/* Process Information */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Process Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>PID</strong>
-                </td>
-                <td className="is-family-monospace">{process.pid}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>User</strong>
-                </td>
-                <td>{process.username}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Zone</strong>
-                </td>
-                <td>{process.zone}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Command</strong>
-                </td>
-                <td className="is-family-monospace is-size-7">
-                  {process.command}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Process Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>PID</strong>
+                  </td>
+                  <td className="font-monospace">{process.pid}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>User</strong>
+                  </td>
+                  <td>{process.username}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Zone</strong>
+                  </td>
+                  <td>{process.zone}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Command</strong>
+                  </td>
+                  <td className="font-monospace small">{process.command}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Warning */}
-      <div className="notification is-danger">
+      <div className="alert alert-danger">
         <p>
           <strong>Warning:</strong> This will terminate the process.
         </p>
@@ -84,27 +84,29 @@ const KillProcessModal = ({ process, onClose, onConfirm }) => {
       </div>
 
       {/* Options */}
-      <div className="box">
-        <h3 className="title is-6">Kill Options</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Kill Options</h3>
 
-        <div className="field">
-          <div className="control">
-            <label className="checkbox">
+          <div className="mb-3">
+            <div className="form-check">
               <input
+                id="kill-force"
+                className="form-check-input"
                 type="checkbox"
                 checked={force}
                 onChange={(e) => setForce(e.target.checked)}
               />
-              <span className="ml-2">
+              <label className="form-check-label" htmlFor="kill-force">
                 <strong>Force Kill</strong> - Send SIGKILL immediately (not
                 recommended)
-              </span>
-            </label>
+              </label>
+            </div>
+            <p className="form-text text-muted">
+              If unchecked, the process will first receive SIGTERM for graceful
+              shutdown.
+            </p>
           </div>
-          <p className="help">
-            If unchecked, the process will first receive SIGTERM for graceful
-            shutdown.
-          </p>
         </div>
       </div>
     </FormModal>
@@ -167,73 +169,72 @@ const SendSignalModal = ({ process, onClose, onConfirm }) => {
       showCancelButton
     >
       {/* Process Information */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Process Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>PID</strong>
-                </td>
-                <td className="is-family-monospace">{process.pid}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>User</strong>
-                </td>
-                <td>{process.username}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Zone</strong>
-                </td>
-                <td>{process.zone}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Command</strong>
-                </td>
-                <td className="is-family-monospace is-size-7">
-                  {process.command}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Process Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>PID</strong>
+                  </td>
+                  <td className="font-monospace">{process.pid}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>User</strong>
+                  </td>
+                  <td>{process.username}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Zone</strong>
+                  </td>
+                  <td>{process.zone}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Command</strong>
+                  </td>
+                  <td className="font-monospace small">{process.command}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Signal Selection */}
-      <div className="box">
-        <h3 className="title is-6">Signal Selection</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Signal Selection</h3>
 
-        <div className="field">
-          <label className="label" htmlFor="signal-select">
-            Signal to Send
-          </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="signal-select"
-                value={signal}
-                onChange={(e) => setSignal(e.target.value)}
-              >
-                {signals.map((sig) => (
-                  <option key={sig.value} value={sig.value}>
-                    {sig.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="signal-select">
+              Signal to Send
+            </label>
+            <select
+              id="signal-select"
+              className="form-select"
+              value={signal}
+              onChange={(e) => setSignal(e.target.value)}
+            >
+              {signals.map((sig) => (
+                <option key={sig.value} value={sig.value}>
+                  {sig.label}
+                </option>
+              ))}
+            </select>
+            <p className="form-text text-muted">
+              Choose the appropriate signal based on your intent.
+            </p>
           </div>
-          <p className="help">
-            Choose the appropriate signal based on your intent.
-          </p>
         </div>
       </div>
 
       {/* Signal Information */}
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>
           <strong>Note:</strong> Different signals have different effects on
           processes.
@@ -313,7 +314,7 @@ const BatchKillModal = ({ onClose, onConfirm, availableZones }) => {
       showCancelButton
     >
       {/* Warning */}
-      <div className="notification is-danger mb-4">
+      <div className="alert alert-danger mb-4">
         <p>
           <strong>Warning:</strong> This will affect multiple processes matching
           the pattern.
@@ -324,89 +325,85 @@ const BatchKillModal = ({ onClose, onConfirm, availableZones }) => {
       </div>
 
       {/* Pattern Selection */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Process Selection</h3>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Process Selection</h3>
 
-        <div className="field">
-          <label className="label" htmlFor="batch-kill-pattern">
-            Command Pattern <span className="has-text-danger">*</span>
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="batch-kill-pattern">
+              Command Pattern <span className="text-danger">*</span>
+            </label>
             <input
               id="batch-kill-pattern"
-              className="input"
+              className="form-control"
               type="text"
               placeholder="e.g., apache, bhyve, nginx..."
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
               required
             />
+            <p className="form-text text-muted">
+              Enter a command name pattern to match processes. This will match
+              processes whose command contains this text.
+            </p>
           </div>
-          <p className="help">
-            Enter a command name pattern to match processes. This will match
-            processes whose command contains this text.
-          </p>
-        </div>
 
-        <div className="field">
-          <label className="label" htmlFor="batch-kill-zone-filter">
-            Zone Filter (Optional)
-          </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="batch-kill-zone-filter"
-                value={zone}
-                onChange={(e) => setZone(e.target.value)}
-              >
-                <option value="">All Zones</option>
-                {availableZones.map((zoneName) => (
-                  <option key={zoneName} value={zoneName}>
-                    {zoneName}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="batch-kill-zone-filter">
+              Zone Filter (Optional)
+            </label>
+            <select
+              id="batch-kill-zone-filter"
+              className="form-select"
+              value={zone}
+              onChange={(e) => setZone(e.target.value)}
+            >
+              <option value="">All Zones</option>
+              {availableZones.map((zoneName) => (
+                <option key={zoneName} value={zoneName}>
+                  {zoneName}
+                </option>
+              ))}
+            </select>
+            <p className="form-text text-muted">
+              Optionally limit the operation to processes in a specific zone.
+            </p>
           </div>
-          <p className="help">
-            Optionally limit the operation to processes in a specific zone.
-          </p>
         </div>
       </div>
 
       {/* Signal Selection */}
-      <div className="box">
-        <h3 className="title is-6">Signal Options</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Signal Options</h3>
 
-        <div className="field">
-          <label className="label" htmlFor="batch-kill-signal">
-            Signal to Send
-          </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="batch-kill-signal"
-                value={signal}
-                onChange={(e) => setSignal(e.target.value)}
-              >
-                {signals.map((sig) => (
-                  <option key={sig} value={sig}>
-                    SIG{sig} {sig === "TERM" && "(Graceful)"}
-                    {sig === "KILL" && "(Force)"}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="batch-kill-signal">
+              Signal to Send
+            </label>
+            <select
+              id="batch-kill-signal"
+              className="form-select"
+              value={signal}
+              onChange={(e) => setSignal(e.target.value)}
+            >
+              {signals.map((sig) => (
+                <option key={sig} value={sig}>
+                  SIG{sig} {sig === "TERM" && "(Graceful)"}
+                  {sig === "KILL" && "(Force)"}
+                </option>
+              ))}
+            </select>
+            <p className="form-text text-muted">
+              SIGTERM is recommended for graceful shutdown. SIGKILL for force
+              termination.
+            </p>
           </div>
-          <p className="help">
-            SIGTERM is recommended for graceful shutdown. SIGKILL for force
-            termination.
-          </p>
         </div>
       </div>
 
       {/* Examples */}
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>
           <strong>Pattern Examples:</strong>
         </p>

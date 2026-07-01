@@ -25,102 +25,98 @@ const ServerCard = ({ serverResult, onNavigateToServer }) => {
   }
 
   return (
-    <div className="column is-6">
-      <div className="box">
-        <h2 className="title is-5 mb-3">
-          <span className="icon-text">
-            <span className={`icon ${statusColor}`} title={statusTooltip}>
-              <i className="fas fa-circle is-size-7" />
+    <div className="col-12 col-xl-6">
+      <div className="card h-100">
+        <div className="card-body">
+          <h2 className="h5 mb-3 d-flex align-items-center gap-2">
+            <span className={statusColor} title={statusTooltip}>
+              <i className="fas fa-circle small" />
             </span>
             <span>{server.hostname}</span>
-          </span>
-        </h2>
+          </h2>
 
-        {success && data ? (
-          <>
-            <p className="subtitle is-6 has-text-grey mb-3">
-              {data?.type || "Unknown"} {data?.release || ""}
-            </p>
+          {success && data ? (
+            <>
+              <p className="text-muted mb-3">
+                {data?.type || "Unknown"} {data?.release || ""}
+              </p>
 
-            <div className="columns is-mobile mb-3">
-              <div className="column">
-                <div className="has-text-centered">
-                  <div className="heading">Zones</div>
-                  <div className="title is-4">
+              <div className="row mb-3">
+                <div className="col text-center">
+                  <div className="text-uppercase small fw-semibold text-muted">
+                    Zones
+                  </div>
+                  <div className="fs-4 fw-bold">
                     {data.runningzones?.length || 0} /{" "}
                     {data.allzones?.length || 0}
                   </div>
                 </div>
-              </div>
-              <div className="column">
-                <div className="has-text-centered">
-                  <div className="heading">CPU Load</div>
-                  <div className="title is-4">
+                <div className="col text-center">
+                  <div className="text-uppercase small fw-semibold text-muted">
+                    CPU Load
+                  </div>
+                  <div className="fs-4 fw-bold">
                     {data.loadavg ? data.loadavg[0].toFixed(2) : "N/A"}
                   </div>
                 </div>
-              </div>
-              <div className="column">
-                <div className="has-text-centered">
-                  <div className="heading">Memory</div>
-                  <div className="title is-4">
+                <div className="col text-center">
+                  <div className="text-uppercase small fw-semibold text-muted">
+                    Memory
+                  </div>
+                  <div className="fs-4 fw-bold">
                     {data.totalmem && data.freemem
                       ? `${Math.round(((data.totalmem - data.freemem) / data.totalmem) * 100)}%`
                       : "N/A"}
                   </div>
                 </div>
               </div>
-            </div>
 
-            <button
-              className="button is-fullwidth is-primary"
-              onClick={() => onNavigateToServer(server)}
-            >
-              <span className="icon">
-                <i className="fas fa-arrow-right" />
-              </span>
-              <span>View Details</span>
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="subtitle is-6 has-text-grey mb-3">
-              Connection Failed
-            </p>
+              <button
+                type="button"
+                className="btn btn-primary w-100"
+                onClick={() => onNavigateToServer(server)}
+              >
+                <i className="fas fa-arrow-right me-2" />
+                View Details
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-muted mb-3">Connection Failed</p>
 
-            <div className="columns is-mobile mb-3">
-              <div className="column">
-                <div className="has-text-centered">
-                  <div className="heading">Zones</div>
-                  <div className="title is-4 has-text-grey">-</div>
+              <div className="row mb-3">
+                <div className="col text-center">
+                  <div className="text-uppercase small fw-semibold text-muted">
+                    Zones
+                  </div>
+                  <div className="fs-4 fw-bold text-muted">-</div>
+                </div>
+                <div className="col text-center">
+                  <div className="text-uppercase small fw-semibold text-muted">
+                    CPU Load
+                  </div>
+                  <div className="fs-4 fw-bold text-muted">-</div>
+                </div>
+                <div className="col text-center">
+                  <div className="text-uppercase small fw-semibold text-muted">
+                    Memory
+                  </div>
+                  <div className="fs-4 fw-bold text-muted">-</div>
                 </div>
               </div>
-              <div className="column">
-                <div className="has-text-centered">
-                  <div className="heading">CPU Load</div>
-                  <div className="title is-4 has-text-grey">-</div>
-                </div>
-              </div>
-              <div className="column">
-                <div className="has-text-centered">
-                  <div className="heading">Memory</div>
-                  <div className="title is-4 has-text-grey">-</div>
-                </div>
-              </div>
-            </div>
 
-            <button
-              className="button is-fullwidth is-primary"
-              onClick={() => onNavigateToServer(server)}
-              disabled
-            >
-              <span className="icon">
-                <i className="fas fa-arrow-right" />
-              </span>
-              <span>View Details</span>
-            </button>
-          </>
-        )}
+              <button
+                type="button"
+                className="btn btn-primary w-100"
+                onClick={() => onNavigateToServer(server)}
+                disabled
+              >
+                <i className="fas fa-arrow-right me-2" />
+                View Details
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -137,7 +133,7 @@ ServerCard.propTypes = {
 };
 
 const DashboardServerCards = ({ servers, onNavigateToServer }) => (
-  <div className="columns is-multiline is-variable is-2 mb-0">
+  <div className="row g-2 mb-0">
     {servers?.map((serverResult) => (
       <ServerCard
         key={`${serverResult.server.hostname}-${serverResult.server.port}-card`}

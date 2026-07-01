@@ -4,12 +4,12 @@ import { formatSpeed } from "./NetworkingUtils";
 
 const getClassTagColor = (ifaceClass) => {
   if (ifaceClass === "phys") {
-    return "is-primary";
+    return "text-bg-primary";
   }
   if (ifaceClass === "vnic") {
-    return "is-info";
+    return "text-bg-info";
   }
-  return "is-dark";
+  return "text-bg-dark";
 };
 
 const InterfacesTable = ({
@@ -21,176 +21,181 @@ const InterfacesTable = ({
   sectionsCollapsed,
   toggleSection,
 }) => (
-  <div className="box mb-4">
-    <div className="level is-mobile mb-3">
-      <div className="level-left">
-        <button
-          className="button is-ghost title is-5 mb-0 p-0"
-          onClick={resetInterfaceSort}
-          title="Click to reset sorting to default"
-        >
-          <span className="icon-text">
-            <span className="icon">
-              <i className="fas fa-ethernet" />
-            </span>
-            <span>
-              Network Interfaces ({networkInterfaces.length} interfaces)
-            </span>
+  <div className="card mb-4">
+    <div className="card-body">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-link fs-5 fw-bold mb-0 p-0"
+            onClick={resetInterfaceSort}
+            title="Click to reset sorting to default"
+          >
+            <i className="fas fa-ethernet me-2" />
+            Network Interfaces ({networkInterfaces.length} interfaces)
             {interfaceSort.length > 1 && (
-              <span className="icon has-text-info ml-2">
-                <i className="fas fa-sort-amount-down" />
-              </span>
+              <i className="fas fa-sort-amount-down text-info ms-2" />
             )}
-          </span>
-        </button>
-      </div>
-      <div className="level-right">
-        <button
-          className="button is-small is-ghost"
-          onClick={() => toggleSection("interfaces")}
-          title={
-            sectionsCollapsed.interfaces ? "Expand section" : "Collapse section"
-          }
-        >
-          <span className="icon">
+          </button>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-link"
+            onClick={() => toggleSection("interfaces")}
+            title={
+              sectionsCollapsed.interfaces
+                ? "Expand section"
+                : "Collapse section"
+            }
+          >
             <i
               className={`fas ${sectionsCollapsed.interfaces ? "fa-chevron-down" : "fa-chevron-up"}`}
             />
-          </span>
-        </button>
+          </button>
+        </div>
       </div>
-    </div>
-    {!sectionsCollapsed.interfaces &&
-      (networkInterfaces.length > 0 ? (
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("link")}
-                  title="Click to sort by interface name"
-                >
-                  Link{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "link")}`} />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("class")}
-                  title="Click to sort by interface class"
-                >
-                  Class{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "class")}`} />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("state")}
-                  title="Click to sort by interface state"
-                >
-                  State{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "state")}`} />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("speed")}
-                  title="Click to sort by interface speed"
-                >
-                  Speed{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "speed")}`} />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("mtu")}
-                  title="Click to sort by MTU"
-                >
-                  MTU{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "mtu")}`} />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("macaddress")}
-                  title="Click to sort by MAC address"
-                >
-                  MAC Address{" "}
-                  <i
-                    className={`fas ${getSortIcon(interfaceSort, "macaddress")}`}
-                  />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("vid")}
-                  title="Click to sort by VLAN ID"
-                >
-                  VLAN{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "vid")}`} />
-                </th>
-                <th
-                  className="is-clickable"
-                  onClick={() => handleInterfaceSort("zone")}
-                  title="Click to sort by zone"
-                >
-                  Zone{" "}
-                  <i className={`fas ${getSortIcon(interfaceSort, "zone")}`} />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {networkInterfaces.map((iface) => (
-                <tr key={iface.link}>
-                  <td>
-                    <strong>{iface.link}</strong>
-                  </td>
-                  <td>
-                    <span className={`tag ${getClassTagColor(iface.class)}`}>
-                      {iface.class}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`tag ${iface.state === "up" ? "is-success" : "is-danger"}`}
-                    >
-                      {iface.state}
-                    </span>
-                  </td>
-                  <td>{formatSpeed(iface.speed)}</td>
-                  <td>{iface.mtu || "N/A"}</td>
-                  <td>
-                    <code>{iface.macaddress || "N/A"}</code>
-                  </td>
-                  <td>{iface.vid || "N/A"}</td>
-                  <td>
-                    {iface.zone && iface.zone !== "--" ? (
-                      <button
-                        className="button is-small is-warning py-1 px-2 is-size-7"
-                        onClick={() =>
-                          (window.location.href = `/ui/zones?zone=${encodeURIComponent(iface.zone)}`)
-                        }
-                        title={`Go to zone: ${iface.zone}`}
-                      >
-                        <span className="icon-text">
-                          <span className="icon is-small">
-                            <i className="fas fa-external-link-alt" />
-                          </span>
-                          <span>{iface.zone}</span>
-                        </span>
-                      </button>
-                    ) : (
-                      <span className="has-text-grey">Global</span>
-                    )}
-                  </td>
+      {!sectionsCollapsed.interfaces &&
+        (networkInterfaces.length > 0 ? (
+          <div className="table-responsive">
+            <table className="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("link")}
+                    title="Click to sort by interface name"
+                  >
+                    Link{" "}
+                    <i
+                      className={`fas ${getSortIcon(interfaceSort, "link")}`}
+                    />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("class")}
+                    title="Click to sort by interface class"
+                  >
+                    Class{" "}
+                    <i
+                      className={`fas ${getSortIcon(interfaceSort, "class")}`}
+                    />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("state")}
+                    title="Click to sort by interface state"
+                  >
+                    State{" "}
+                    <i
+                      className={`fas ${getSortIcon(interfaceSort, "state")}`}
+                    />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("speed")}
+                    title="Click to sort by interface speed"
+                  >
+                    Speed{" "}
+                    <i
+                      className={`fas ${getSortIcon(interfaceSort, "speed")}`}
+                    />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("mtu")}
+                    title="Click to sort by MTU"
+                  >
+                    MTU{" "}
+                    <i className={`fas ${getSortIcon(interfaceSort, "mtu")}`} />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("macaddress")}
+                    title="Click to sort by MAC address"
+                  >
+                    MAC Address{" "}
+                    <i
+                      className={`fas ${getSortIcon(interfaceSort, "macaddress")}`}
+                    />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("vid")}
+                    title="Click to sort by VLAN ID"
+                  >
+                    VLAN{" "}
+                    <i className={`fas ${getSortIcon(interfaceSort, "vid")}`} />
+                  </th>
+                  <th
+                    className="cursor-pointer"
+                    onClick={() => handleInterfaceSort("zone")}
+                    title="Click to sort by zone"
+                  >
+                    Zone{" "}
+                    <i
+                      className={`fas ${getSortIcon(interfaceSort, "zone")}`}
+                    />
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="notification is-info">
-          <p>
-            No network interface data available or monitoring endpoint not
-            configured.
-          </p>
-        </div>
-      ))}
+              </thead>
+              <tbody>
+                {networkInterfaces.map((iface) => (
+                  <tr key={iface.link}>
+                    <td>
+                      <strong>{iface.link}</strong>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${getClassTagColor(iface.class)}`}
+                      >
+                        {iface.class}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${iface.state === "up" ? "text-bg-success" : "text-bg-danger"}`}
+                      >
+                        {iface.state}
+                      </span>
+                    </td>
+                    <td>{formatSpeed(iface.speed)}</td>
+                    <td>{iface.mtu || "N/A"}</td>
+                    <td>
+                      <code>{iface.macaddress || "N/A"}</code>
+                    </td>
+                    <td>{iface.vid || "N/A"}</td>
+                    <td>
+                      {iface.zone && iface.zone !== "--" ? (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-warning py-1 px-2 small"
+                          onClick={() =>
+                            (window.location.href = `/ui/zones?zone=${encodeURIComponent(iface.zone)}`)
+                          }
+                          title={`Go to zone: ${iface.zone}`}
+                        >
+                          <i className="fas fa-external-link-alt me-2" />
+                          {iface.zone}
+                        </button>
+                      ) : (
+                        <span className="text-muted">Global</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="alert alert-info">
+            <p>
+              No network interface data available or monitoring endpoint not
+              configured.
+            </p>
+          </div>
+        ))}
+    </div>
   </div>
 );
 

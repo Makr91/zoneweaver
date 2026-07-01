@@ -12,52 +12,51 @@ const DeviceSummary = ({
   }
 
   return (
-    <div className="box mb-4">
-      <div className="level is-mobile mb-3">
-        <div className="level-left">
-          <h4 className="title is-5 mb-0">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-chart-pie" />
-              </span>
-              <span>Device Categories Summary</span>
-            </span>
-          </h4>
-        </div>
-        <div className="level-right">
-          <button
-            className="button is-small is-ghost"
-            onClick={() => toggleSection("summary")}
-            title={
-              sectionsCollapsed.summary ? "Expand section" : "Collapse section"
-            }
-          >
-            <span className="icon">
+    <div className="card mb-4">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center gap-2">
+            <h4 className="fs-5 fw-bold mb-0">
+              <i className="fas fa-chart-pie me-2" />
+              Device Categories Summary
+            </h4>
+          </div>
+          <div className="d-flex align-items-center gap-2">
+            <button
+              type="button"
+              className="btn btn-sm btn-link"
+              onClick={() => toggleSection("summary")}
+              title={
+                sectionsCollapsed.summary
+                  ? "Expand section"
+                  : "Collapse section"
+              }
+            >
               <i
                 className={`fas ${sectionsCollapsed.summary ? "fa-chevron-down" : "fa-chevron-up"}`}
               />
-            </span>
-          </button>
+            </button>
+          </div>
         </div>
-      </div>
-      {!sectionsCollapsed.summary && (
-        <div className="columns">
-          <div className="column">
-            <div className="field is-grouped is-grouped-multiline">
-              {Object.entries(deviceCategories).map(([category, stats]) => (
-                <div key={category} className="control">
-                  <div className="tags has-addons">
-                    <span className="tag">
+        {!sectionsCollapsed.summary && (
+          <div className="row g-3">
+            <div className="col">
+              <div className="d-flex flex-wrap gap-2">
+                {Object.entries(deviceCategories).map(([category, stats]) => (
+                  <div key={category} className="d-inline-flex">
+                    <span className="badge text-bg-secondary rounded-end-0">
                       {category.charAt(0).toUpperCase() + category.slice(1)}
                     </span>
-                    <span className="tag is-info">{stats.total || 0}</span>
+                    <span className="badge text-bg-info rounded-start-0">
+                      {stats.total || 0}
+                    </span>
                   </div>
-                </div>
-              ))}
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag">PPT Capable</span>
-                  <span className="tag is-success">
+                ))}
+                <div className="d-inline-flex">
+                  <span className="badge text-bg-secondary rounded-end-0">
+                    PPT Capable
+                  </span>
+                  <span className="badge text-bg-success rounded-start-0">
                     {devicesSummary.ppt_capable ||
                       Object.values(deviceCategories).reduce(
                         (total, cat) => total + (cat.ppt_capable || 0),
@@ -65,27 +64,27 @@ const DeviceSummary = ({
                       )}
                   </span>
                 </div>
-              </div>
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag">PPT Available</span>
-                  <span className="tag is-warning">
+                <div className="d-inline-flex">
+                  <span className="badge text-bg-secondary rounded-end-0">
+                    PPT Available
+                  </span>
+                  <span className="badge text-bg-warning rounded-start-0">
                     {pptStatus.summary?.available || 0}
                   </span>
                 </div>
-              </div>
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag">PPT Assigned</span>
-                  <span className="tag is-danger">
+                <div className="d-inline-flex">
+                  <span className="badge text-bg-secondary rounded-end-0">
+                    PPT Assigned
+                  </span>
+                  <span className="badge text-bg-danger rounded-start-0">
                     {devicesSummary.ppt_assigned || 0}
                   </span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

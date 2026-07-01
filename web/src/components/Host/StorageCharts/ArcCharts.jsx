@@ -11,25 +11,25 @@ const ArcCharts = ({ arcChartData, arcStats, expandChart }) => {
 
   return (
     <div className="mb-4">
-      <h5 className="title is-6 mb-3">
-        <span className="icon-text">
-          <span className="icon">
+      <h5 className="fs-6 fw-bold mb-3">
+        <span className="d-inline-flex align-items-center gap-1">
+          <span className="me-1">
             <i className="fas fa-memory" />
           </span>
           <span>ZFS ARC Performance & Efficiency Metrics</span>
         </span>
       </h5>
 
-      <div className="columns">
+      <div className="row">
         {/* Memory Allocation Chart */}
-        <div className="column is-4">
-          <div className="is-chart-container is-relative">
+        <div className="col-4">
+          <div className="is-chart-container position-relative">
             <button
-              className="button is-small is-ghost is-chart-expand-button"
+              className="btn btn-sm btn-link is-chart-expand-button"
               onClick={() => expandChart("arc-memory", "arc-memory")}
               title="Expand chart to full size"
             >
-              <span className="icon has-text-white">
+              <span className="me-1 text-white">
                 <i className="fas fa-expand" />
               </span>
             </button>
@@ -71,14 +71,14 @@ const ArcCharts = ({ arcChartData, arcStats, expandChart }) => {
         </div>
 
         {/* Performance Efficiency Chart */}
-        <div className="column is-4">
-          <div className="is-chart-container is-relative">
+        <div className="col-4">
+          <div className="is-chart-container position-relative">
             <button
-              className="button is-small is-ghost is-chart-expand-button"
+              className="btn btn-sm btn-link is-chart-expand-button"
               onClick={() => expandChart("arc-efficiency", "arc-efficiency")}
               title="Expand chart to full size"
             >
-              <span className="icon has-text-white">
+              <span className="me-1 text-white">
                 <i className="fas fa-expand" />
               </span>
             </button>
@@ -114,14 +114,14 @@ const ArcCharts = ({ arcChartData, arcStats, expandChart }) => {
         </div>
 
         {/* Compression Chart */}
-        <div className="column is-4">
-          <div className="is-chart-container is-relative">
+        <div className="col-4">
+          <div className="is-chart-container position-relative">
             <button
-              className="button is-small is-ghost is-chart-expand-button"
+              className="btn btn-sm btn-link is-chart-expand-button"
               onClick={() => expandChart("arc-compression", "arc-compression")}
               title="Expand chart to full size"
             >
-              <span className="icon has-text-white">
+              <span className="me-1 text-white">
                 <i className="fas fa-expand" />
               </span>
             </button>

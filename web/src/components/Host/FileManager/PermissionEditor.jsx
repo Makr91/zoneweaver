@@ -53,13 +53,13 @@ const PermissionEditor = ({
   originalOctal,
   setPermissions,
 }) => (
-  <div className="column">
-    <h5 className="title is-6">Permissions</h5>
+  <div className="col">
+    <h5 className="h6">Permissions</h5>
 
     {/* Permission checkboxes */}
-    <div className="field">
-      <div className="table-container">
-        <table className="table is-narrow is-fullwidth">
+    <div className="mb-3">
+      <div className="table-responsive">
+        <table className="table table-sm">
           <thead>
             <tr>
               <th />
@@ -78,6 +78,7 @@ const PermissionEditor = ({
                   <td key={perm}>
                     <input
                       type="checkbox"
+                      className="form-check-input"
                       checked={permissions[key][perm]}
                       onChange={(e) =>
                         onPermissionChange(key, perm, e.target.checked)
@@ -93,19 +94,26 @@ const PermissionEditor = ({
     </div>
 
     {/* Octal mode display/editor */}
-    <div className="field">
-      <label htmlFor="file-props-octal" className="label">
+    <div className="mb-3">
+      <div className="form-check mb-2">
         <input
+          id="file-props-use-custom-mode"
           type="checkbox"
+          className="form-check-input"
           checked={useCustomMode}
           onChange={(e) => setUseCustomMode(e.target.checked)}
         />
-        <span className="ml-2">Use custom octal mode</span>
-      </label>
-      <div className="control">
+        <label
+          className="form-check-label"
+          htmlFor="file-props-use-custom-mode"
+        >
+          Use custom octal mode
+        </label>
+      </div>
+      <div>
         <input
           id="file-props-octal"
-          className="input"
+          className="form-control"
           type="text"
           value={useCustomMode ? customMode : currentOctal}
           onChange={(e) => onCustomModeChange(e.target.value)}
@@ -114,23 +122,23 @@ const PermissionEditor = ({
           pattern="[0-7]{3,4}"
         />
       </div>
-      <p className="help">
+      <p className="form-text text-muted">
         Current calculated: {currentOctal} | Original:{" "}
         {originalOctal || "Unknown"}
       </p>
     </div>
 
     {/* Common permission presets */}
-    <div className="field">
-      <span className="label" aria-hidden="true">
+    <div className="mb-3">
+      <span className="form-label" aria-hidden="true">
         Quick Presets
       </span>
-      <div className="buttons">
+      <div className="d-flex gap-2">
         {PERMISSION_PRESETS.map((preset) => (
           <button
             key={preset.mode}
             type="button"
-            className="button is-small"
+            className="btn btn-sm"
             onClick={() => {
               setPermissions(preset.permissions);
               setUseCustomMode(false);

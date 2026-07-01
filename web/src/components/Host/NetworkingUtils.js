@@ -64,16 +64,16 @@ export const formatBandwidth = (mbps) => {
 // Get bandwidth color based on total Mbps
 export const getBandwidthColor = (totalMbps) => {
   if (totalMbps > 100) {
-    return "is-danger";
+    return "text-bg-danger";
   }
   if (totalMbps > 50) {
-    return "is-warning";
+    return "text-bg-warning";
   }
   if (totalMbps > 1) {
-    return "is-success";
+    return "text-bg-success";
   }
   if (totalMbps > 0) {
-    return "is-info";
+    return "text-bg-info";
   }
-  return "is-dark";
+  return "text-bg-dark";
 };

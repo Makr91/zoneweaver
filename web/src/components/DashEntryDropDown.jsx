@@ -73,43 +73,31 @@ const DashEntryDropDown = ({ title, icon }) => {
 
   if (!userContext.sidebarMinimized) {
     return (
-      <div className="field has-addons mb-0">
-        <p className="control is-expanded">
-          <button
-            type="button"
-            className="button is-fullwidth is-justify-content-start is-ghost"
-            onClick={handleNavigate}
-          >
-            <span>
-              <span className="icon">
-                <i className={icon} />
-              </span>
-              <span>{title}</span>
-            </span>
-          </button>
-        </p>
-        <p className="control pr-2">
-          <button
-            type="button"
-            className="button is-ghost"
-            onClick={handleToggle}
-          >
-            <span className="icon">
-              <i
-                className={`fas fa-angle-${isExpanded ? "up" : "down"}`}
-                aria-hidden="true"
-              />
-            </span>
-          </button>
-        </p>
+      <div className="d-flex w-100 mb-0">
+        <button
+          type="button"
+          className="btn flex-grow-1 d-flex align-items-center justify-content-start gap-2"
+          onClick={handleNavigate}
+        >
+          <i className={icon} />
+          <span>{title}</span>
+        </button>
+        <button type="button" className="btn pe-2" onClick={handleToggle}>
+          <i
+            className={`fas fa-angle-${isExpanded ? "up" : "down"}`}
+            aria-hidden="true"
+          />
+        </button>
       </div>
     );
   }
   return (
-    <button className="button" onClick={handleToggle}>
-      <span className="icon">
-        <i className={icon} />
-      </span>
+    <button
+      type="button"
+      className="btn w-100 d-flex justify-content-center"
+      onClick={handleToggle}
+    >
+      <i className={icon} />
     </button>
   );
 };

@@ -18,69 +18,55 @@ const VlanTable = ({ vlans, loading, onDelete, onViewDetails }) => {
   const getStateIcon = (state) => {
     switch (state?.toLowerCase()) {
       case "up":
-        return (
-          <span className="icon has-text-success">
-            <i className="fas fa-check-circle" />
-          </span>
-        );
+        return <i className="fas fa-check-circle text-success me-2" />;
       case "down":
-        return (
-          <span className="icon has-text-danger">
-            <i className="fas fa-times-circle" />
-          </span>
-        );
+        return <i className="fas fa-times-circle text-danger me-2" />;
       default:
-        return (
-          <span className="icon has-text-grey">
-            <i className="fas fa-question-circle" />
-          </span>
-        );
+        return <i className="fas fa-question-circle text-muted me-2" />;
     }
   };
 
   const getStateTag = (state) => {
     switch (state?.toLowerCase()) {
       case "up":
-        return <span className="tag is-success is-small">{state}</span>;
+        return <span className="badge text-bg-success">{state}</span>;
       case "down":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{state || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{state || "Unknown"}</span>
         );
     }
   };
 
   const getVlanTag = (vid) => {
     if (vid === undefined || vid === null || vid === "") {
-      return <span className="tag is-dark is-small">No VID</span>;
+      return <span className="badge text-bg-dark">No VID</span>;
     }
 
     // Assign colors based on VLAN ID to make each VLAN visually distinct
     const colors = [
-      "is-primary", // Blue
-      "is-info", // Cyan
-      "is-success", // Green
-      "is-warning", // Yellow
-      "is-danger", // Red
-      "is-link", // Blue-ish
-      "is-primary", // Repeat for more VLANs
-      "is-info",
-      "is-success",
+      "text-bg-primary", // Blue
+      "text-bg-info", // Cyan
+      "text-bg-success", // Green
+      "text-bg-warning", // Yellow
+      "text-bg-danger", // Red
+      "text-bg-primary", // Blue-ish
+      "text-bg-primary", // Repeat for more VLANs
+      "text-bg-info",
+      "text-bg-success",
     ];
 
     const colorIndex = parseInt(vid) % colors.length;
     const colorClass = colors[colorIndex];
 
-    return <span className={`tag ${colorClass} is-small`}>{vid}</span>;
+    return <span className={`badge ${colorClass}`}>{vid}</span>;
   };
 
   if (loading && vlans.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading VLANs...</p>
       </div>
     );
@@ -88,18 +74,16 @@ const VlanTable = ({ vlans, loading, onDelete, onViewDetails }) => {
 
   if (vlans.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-tags fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No VLANs found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-tags fa-2x text-muted" />
+        <p className="mt-2 text-muted">No VLANs found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover table-sm">
         <thead>
           <tr>
             <th>VLAN Name</th>
@@ -118,54 +102,53 @@ const VlanTable = ({ vlans, loading, onDelete, onViewDetails }) => {
             return (
               <tr key={vlan.link || index}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getStateIcon(vlan.state)}
-                    <span className="ml-2">
-                      <strong className="is-family-monospace">
-                        {vlan.link}
-                      </strong>
+                    <span className="ms-2">
+                      <strong className="font-monospace">{vlan.link}</strong>
                     </span>
                   </div>
                 </td>
                 <td>{getVlanTag(vlan.vid)}</td>
                 <td>
-                  <span className="is-family-monospace">
-                    {vlan.over || "N/A"}
-                  </span>
+                  <span className="font-monospace">{vlan.over || "N/A"}</span>
                 </td>
                 <td>{getStateTag(vlan.state)}</td>
                 <td>
-                  <span className="is-size-7">{vlan.mtu || "1500"}</span>
+                  <span className="small">{vlan.mtu || "1500"}</span>
                 </td>
                 <td>
-                  <span className="is-size-7 has-text-grey">
-                    {vlan.flags || "-"}
-                  </span>
+                  <span className="small text-muted">{vlan.flags || "-"}</span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* View Details Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-sm btn-secondary"
                       onClick={() => onViewDetails(vlan)}
                       disabled={loading || isDeleting}
                       title="View Details"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
+                      <i className="fas fa-info-circle" />
                     </button>
 
                     {/* Delete Button */}
                     <button
-                      className={`button is-danger ${isDeleting ? "is-loading" : ""}`}
+                      type="button"
+                      className="btn btn-sm btn-danger"
                       onClick={() => handleDelete(vlan)}
                       disabled={loading || isDeleting}
                       title="Delete VLAN"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-trash" />
-                      </span>
+                      {isDeleting && (
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <i className="fas fa-trash" />
                     </button>
                   </div>
                 </td>

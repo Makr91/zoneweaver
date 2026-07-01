@@ -170,200 +170,209 @@ const EditRepositoryModal = ({
       loading={loading}
     >
       {/* Current Repository Info */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Current Repository Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>Publisher</strong>
-                </td>
-                <td className="is-family-monospace">{repository.name}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Type</strong>
-                </td>
-                <td>
-                  <span className="tag is-info is-small">
-                    {repository.type}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Current Location</strong>
-                </td>
-                <td className="is-family-monospace is-size-7">
-                  {repository.location}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Current Repository Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Publisher</strong>
+                  </td>
+                  <td className="font-monospace">{repository.name}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Type</strong>
+                  </td>
+                  <td>
+                    <span className="badge text-bg-info">
+                      {repository.type}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Current Location</strong>
+                  </td>
+                  <td className="font-monospace small">
+                    {repository.location}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Origins Management */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Origins Management</h3>
-        <div className="columns">
-          <div className="column">
-            <UrlListEditor
-              label="Add Origins"
-              entries={formData.originsToAdd}
-              placeholder="https://pkg.omnios.org/repository/"
-              onEntryChange={(id, value) =>
-                handleArrayChange("originsToAdd", id, value)
-              }
-              onAdd={() => addToArray("originsToAdd")}
-              onRemove={(id) => removeFromArray("originsToAdd", id)}
-              addButtonText="Add Origin"
-              addButtonClass="is-info"
-              addButtonIcon="fa-plus"
-            />
-          </div>
-          <div className="column">
-            <UrlListEditor
-              label="Remove Origins"
-              entries={formData.originsToRemove}
-              placeholder="URL to remove"
-              onEntryChange={(id, value) =>
-                handleArrayChange("originsToRemove", id, value)
-              }
-              onAdd={() => addToArray("originsToRemove")}
-              onRemove={(id) => removeFromArray("originsToRemove", id)}
-              addButtonText="Remove Origin"
-              addButtonClass="is-warning"
-              addButtonIcon="fa-minus"
-            />
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Origins Management</h3>
+          <div className="row g-3">
+            <div className="col">
+              <UrlListEditor
+                label="Add Origins"
+                entries={formData.originsToAdd}
+                placeholder="https://pkg.omnios.org/repository/"
+                onEntryChange={(id, value) =>
+                  handleArrayChange("originsToAdd", id, value)
+                }
+                onAdd={() => addToArray("originsToAdd")}
+                onRemove={(id) => removeFromArray("originsToAdd", id)}
+                addButtonText="Add Origin"
+                addButtonClass="btn-info"
+                addButtonIcon="fa-plus"
+              />
+            </div>
+            <div className="col">
+              <UrlListEditor
+                label="Remove Origins"
+                entries={formData.originsToRemove}
+                placeholder="URL to remove"
+                onEntryChange={(id, value) =>
+                  handleArrayChange("originsToRemove", id, value)
+                }
+                onAdd={() => addToArray("originsToRemove")}
+                onRemove={(id) => removeFromArray("originsToRemove", id)}
+                addButtonText="Remove Origin"
+                addButtonClass="btn-warning"
+                addButtonIcon="fa-minus"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Mirrors Management */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Mirrors Management</h3>
-        <div className="columns">
-          <div className="column">
-            <UrlListEditor
-              label="Add Mirrors"
-              entries={formData.mirrorsToAdd}
-              placeholder="https://mirror.example.com/repository/"
-              onEntryChange={(id, value) =>
-                handleArrayChange("mirrorsToAdd", id, value)
-              }
-              onAdd={() => addToArray("mirrorsToAdd")}
-              onRemove={(id) => removeFromArray("mirrorsToAdd", id)}
-              addButtonText="Add Mirror"
-              addButtonClass="is-info"
-              addButtonIcon="fa-plus"
-            />
-          </div>
-          <div className="column">
-            <UrlListEditor
-              label="Remove Mirrors"
-              entries={formData.mirrorsToRemove}
-              placeholder="URL to remove"
-              onEntryChange={(id, value) =>
-                handleArrayChange("mirrorsToRemove", id, value)
-              }
-              onAdd={() => addToArray("mirrorsToRemove")}
-              onRemove={(id) => removeFromArray("mirrorsToRemove", id)}
-              addButtonText="Remove Mirror"
-              addButtonClass="is-warning"
-              addButtonIcon="fa-minus"
-            />
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Mirrors Management</h3>
+          <div className="row g-3">
+            <div className="col">
+              <UrlListEditor
+                label="Add Mirrors"
+                entries={formData.mirrorsToAdd}
+                placeholder="https://mirror.example.com/repository/"
+                onEntryChange={(id, value) =>
+                  handleArrayChange("mirrorsToAdd", id, value)
+                }
+                onAdd={() => addToArray("mirrorsToAdd")}
+                onRemove={(id) => removeFromArray("mirrorsToAdd", id)}
+                addButtonText="Add Mirror"
+                addButtonClass="btn-info"
+                addButtonIcon="fa-plus"
+              />
+            </div>
+            <div className="col">
+              <UrlListEditor
+                label="Remove Mirrors"
+                entries={formData.mirrorsToRemove}
+                placeholder="URL to remove"
+                onEntryChange={(id, value) =>
+                  handleArrayChange("mirrorsToRemove", id, value)
+                }
+                onAdd={() => addToArray("mirrorsToRemove")}
+                onRemove={(id) => removeFromArray("mirrorsToRemove", id)}
+                addButtonText="Remove Mirror"
+                addButtonClass="btn-warning"
+                addButtonIcon="fa-minus"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Repository Options */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Repository Options</h3>
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Repository Options</h3>
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-enabled"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.enabled}
                     onChange={(e) =>
                       handleInputChange("enabled", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label className="form-check-label" htmlFor="repo-enabled">
                     <strong>Enabled</strong> - Repository is active for package
                     operations
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-sticky"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.sticky}
                     onChange={(e) =>
                       handleInputChange("sticky", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label className="form-check-label" htmlFor="repo-sticky">
                     <strong>Sticky</strong> - Prefer packages from this
                     publisher
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-search-first"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.searchFirst}
                     onChange={(e) =>
                       handleInputChange("searchFirst", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label
+                    className="form-check-label"
+                    htmlFor="repo-search-first"
+                  >
                     <strong>Search First</strong> - Search this repository first
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
+              <div className="mb-3">
+                <div className="form-check">
                   <input
+                    id="repo-refresh"
+                    className="form-check-input"
                     type="checkbox"
                     checked={formData.refresh}
                     onChange={(e) =>
                       handleInputChange("refresh", e.target.checked)
                     }
                   />
-                  <span className="ml-2">
+                  <label className="form-check-label" htmlFor="repo-refresh">
                     <strong>Refresh</strong> - Refresh repository metadata after
                     update
-                  </span>
-                </label>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="column">
-            <div className="field">
-              <label htmlFor="repo-search-before" className="label">
-                Search Before
-              </label>
-              <div className="control">
+            <div className="col">
+              <div className="mb-3">
+                <label htmlFor="repo-search-before" className="form-label">
+                  Search Before
+                </label>
                 <input
                   id="repo-search-before"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Publisher name"
                   value={formData.searchBefore}
@@ -372,16 +381,14 @@ const EditRepositoryModal = ({
                   }
                 />
               </div>
-            </div>
 
-            <div className="field">
-              <label htmlFor="repo-search-after" className="label">
-                Search After
-              </label>
-              <div className="control">
+              <div className="mb-3">
+                <label htmlFor="repo-search-after" className="form-label">
+                  Search After
+                </label>
                 <input
                   id="repo-search-after"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Publisher name"
                   value={formData.searchAfter}
@@ -390,16 +397,14 @@ const EditRepositoryModal = ({
                   }
                 />
               </div>
-            </div>
 
-            <div className="field">
-              <label htmlFor="repo-proxy" className="label">
-                Proxy
-              </label>
-              <div className="control">
+              <div className="mb-3">
+                <label htmlFor="repo-proxy" className="form-label">
+                  Proxy
+                </label>
                 <input
                   id="repo-proxy"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="http://proxy.example.com:8080"
                   value={formData.proxy}
@@ -412,33 +417,31 @@ const EditRepositoryModal = ({
       </div>
 
       {/* SSL Configuration */}
-      <div className="box">
-        <h3 className="title is-6">SSL Configuration (Optional)</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">SSL Configuration (Optional)</h3>
 
-        <div className="field">
-          <label htmlFor="repo-ssl-cert" className="label">
-            SSL Certificate
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="repo-ssl-cert" className="form-label">
+              SSL Certificate
+            </label>
             <textarea
               id="repo-ssl-cert"
-              className="textarea"
+              className="form-control"
               placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
               value={formData.sslCert}
               onChange={(e) => handleInputChange("sslCert", e.target.value)}
               rows="3"
             />
           </div>
-        </div>
 
-        <div className="field">
-          <label htmlFor="repo-ssl-key" className="label">
-            SSL Private Key
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label htmlFor="repo-ssl-key" className="form-label">
+              SSL Private Key
+            </label>
             <textarea
               id="repo-ssl-key"
-              className="textarea"
+              className="form-control"
               placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
               value={formData.sslKey}
               onChange={(e) => handleInputChange("sslKey", e.target.value)}

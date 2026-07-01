@@ -16,7 +16,7 @@ const UserGroupManagement = ({ server }) => {
 
   if (!server || !makeZoneweaverAPIRequest) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>Please select a server to manage users and groups.</p>
       </div>
     );
@@ -32,40 +32,40 @@ const UserGroupManagement = ({ server }) => {
   return (
     <div>
       {/* Section Navigation */}
-      <div className="tabs is-boxed mb-0">
-        <ul>
-          {sections.map((section) => (
-            <li
-              key={section.key}
-              className={activeSection === section.key ? "is-active" : ""}
-            >
-              <a
-                href={`#${section.key}`}
-                onClick={(e) => {
+      <ul className="nav nav-tabs mb-0">
+        {sections.map((section) => (
+          <li key={section.key} className="nav-item">
+            <button
+              type="button"
+              className={`nav-link ${
+                activeSection === section.key ? "active" : ""
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveSection(section.key);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   setActiveSection(section.key);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setActiveSection(section.key);
-                  }
-                }}
-              >
-                <span className="icon is-small">
-                  <i className={`fas ${section.icon}`} />
-                </span>
-                <span>{section.label}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+                }
+              }}
+            >
+              <i className={`fas ${section.icon} me-2`} />
+              <span>{section.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
 
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}

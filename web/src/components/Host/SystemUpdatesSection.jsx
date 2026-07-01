@@ -25,176 +25,197 @@ const AvailableUpdatesTab = ({
   return (
     <div>
       {/* Header with actions */}
-      <div className="level mb-4">
-        <div className="level-left">
-          <div className="level-item">
-            <h2 className="title is-5">System Updates</h2>
-          </div>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="d-flex align-items-center gap-2">
+          <h2 className="fs-5 fw-bold mb-0">System Updates</h2>
         </div>
-        <div className="level-right">
-          <div className="level-item">
-            <div className="buttons">
-              <button
-                className={`button is-info ${refreshing ? "is-loading" : ""}`}
-                onClick={onRefreshMetadata}
-                disabled={refreshing || checkingUpdates}
-              >
-                <span className="icon">
-                  <i className="fas fa-sync-alt" />
-                </span>
-                <span>Refresh Metadata</span>
-              </button>
-              <button
-                className={`button is-primary ${checkingUpdates ? "is-loading" : ""}`}
-                onClick={onCheckForUpdates}
-                disabled={checkingUpdates || refreshing}
-              >
-                <span className="icon">
-                  <i className="fas fa-search" />
-                </span>
-                <span>Check Updates</span>
-              </button>
-            </div>
-          </div>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-info"
+            onClick={onRefreshMetadata}
+            disabled={refreshing || checkingUpdates}
+          >
+            {refreshing && (
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              />
+            )}
+            <i className="fas fa-sync-alt me-2" />
+            <span>Refresh Metadata</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={onCheckForUpdates}
+            disabled={checkingUpdates || refreshing}
+          >
+            {checkingUpdates && (
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              />
+            )}
+            <i className="fas fa-search me-2" />
+            <span>Check Updates</span>
+          </button>
         </div>
       </div>
 
       {/* Update Status */}
       {updateData && (
-        <div className="box">
-          <div className="columns">
-            <div className="column">
-              <div className="field">
-                <div className="label">Updates Available</div>
-                <div className="control">
-                  <span
-                    className={`tag is-large ${updateData.updates_available ? "is-warning" : "is-success"}`}
-                  >
-                    {updateData.updates_available ? "Yes" : "No"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="column">
-              <div className="field">
-                <div className="label">Total Updates</div>
-                <div className="control">
-                  <span className="tag is-large is-info">
-                    {updateData.total_updates || 0}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="column">
-              <div className="field">
-                <div className="label">Last Checked</div>
-                <div className="control">
-                  <span className="has-text-grey">
-                    {formatLastChecked(updateData.last_checked)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Disk Space Warning */}
-          {diskSpaceWarning && (
-            <div className="notification is-warning">
-              <h4 className="title is-6">
-                <span className="icon">
-                  <i className="fas fa-exclamation-triangle" />
-                </span>
-                Insufficient Disk Space
-              </h4>
-              <p>
-                <strong>Available:</strong> {diskSpaceWarning.available}
-                <br />
-                <strong>Required:</strong> {diskSpaceWarning.required}
-              </p>
-              <p className="mt-2">
-                Free up disk space before installing updates.
-              </p>
-            </div>
-          )}
-
-          {/* Install Updates Button */}
-          {updateData.updates_available && !diskSpaceWarning && (
-            <div className="has-text-centered mt-4">
-              <button
-                className="button is-warning is-large"
-                onClick={onShowInstallModal}
-              >
-                <span className="icon">
-                  <i className="fas fa-download" />
-                </span>
-                <span>Install {updateData.total_updates} Updates</span>
-              </button>
-            </div>
-          )}
-
-          {/* Plan Summary */}
-          {updateData.plan_summary && (
-            <div className="mt-4">
-              <h4 className="title is-6">Update Plan Summary</h4>
-              <div className="columns is-multiline">
-                <div className="column is-3">
-                  <div className="box has-text-centered">
-                    <p className="heading">Install</p>
-                    <p className="title is-4">
-                      {updateData.plan_summary.packages_to_install || 0}
-                    </p>
+        <div className="card">
+          <div className="card-body">
+            <div className="row g-3">
+              <div className="col">
+                <div className="mb-3">
+                  <div className="form-label">Updates Available</div>
+                  <div>
+                    <span
+                      className={`badge fs-6 ${updateData.updates_available ? "text-bg-warning" : "text-bg-success"}`}
+                    >
+                      {updateData.updates_available ? "Yes" : "No"}
+                    </span>
                   </div>
                 </div>
-                <div className="column is-3">
-                  <div className="box has-text-centered">
-                    <p className="heading">Update</p>
-                    <p className="title is-4">
-                      {updateData.plan_summary.packages_to_update || 0}
-                    </p>
+              </div>
+              <div className="col">
+                <div className="mb-3">
+                  <div className="form-label">Total Updates</div>
+                  <div>
+                    <span className="badge fs-6 text-bg-info">
+                      {updateData.total_updates || 0}
+                    </span>
                   </div>
                 </div>
-                <div className="column is-3">
-                  <div className="box has-text-centered">
-                    <p className="heading">Remove</p>
-                    <p className="title is-4">
-                      {updateData.plan_summary.packages_to_remove || 0}
-                    </p>
-                  </div>
-                </div>
-                <div className="column is-3">
-                  <div className="box has-text-centered">
-                    <p className="heading">Download Size</p>
-                    <p className="title is-6">
-                      {updateData.plan_summary.total_download_size || "Unknown"}
-                    </p>
+              </div>
+              <div className="col">
+                <div className="mb-3">
+                  <div className="form-label">Last Checked</div>
+                  <div>
+                    <span className="text-muted">
+                      {formatLastChecked(updateData.last_checked)}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Raw Output Toggle */}
-          {updateData.raw_output && (
-            <div className="mt-4">
-              <button
-                className="button is-small"
-                onClick={() => setShowRawOutput(!showRawOutput)}
-              >
-                <span className="icon">
+            {/* Disk Space Warning */}
+            {diskSpaceWarning && (
+              <div className="alert alert-warning">
+                <h4 className="fs-6 fw-bold">
+                  <i className="fas fa-exclamation-triangle me-2" />
+                  Insufficient Disk Space
+                </h4>
+                <p>
+                  <strong>Available:</strong> {diskSpaceWarning.available}
+                  <br />
+                  <strong>Required:</strong> {diskSpaceWarning.required}
+                </p>
+                <p className="mt-2">
+                  Free up disk space before installing updates.
+                </p>
+              </div>
+            )}
+
+            {/* Install Updates Button */}
+            {updateData.updates_available && !diskSpaceWarning && (
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  className="btn btn-warning btn-lg"
+                  onClick={onShowInstallModal}
+                >
+                  <i className="fas fa-download me-2" />
+                  <span>Install {updateData.total_updates} Updates</span>
+                </button>
+              </div>
+            )}
+
+            {/* Plan Summary */}
+            {updateData.plan_summary && (
+              <div className="mt-4">
+                <h4 className="fs-6 fw-bold">Update Plan Summary</h4>
+                <div className="row g-3">
+                  <div className="col-lg-3">
+                    <div className="card">
+                      <div className="card-body text-center">
+                        <p className="text-uppercase small fw-semibold text-muted">
+                          Install
+                        </p>
+                        <p className="fs-4 fw-bold">
+                          {updateData.plan_summary.packages_to_install || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3">
+                    <div className="card">
+                      <div className="card-body text-center">
+                        <p className="text-uppercase small fw-semibold text-muted">
+                          Update
+                        </p>
+                        <p className="fs-4 fw-bold">
+                          {updateData.plan_summary.packages_to_update || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3">
+                    <div className="card">
+                      <div className="card-body text-center">
+                        <p className="text-uppercase small fw-semibold text-muted">
+                          Remove
+                        </p>
+                        <p className="fs-4 fw-bold">
+                          {updateData.plan_summary.packages_to_remove || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3">
+                    <div className="card">
+                      <div className="card-body text-center">
+                        <p className="text-uppercase small fw-semibold text-muted">
+                          Download Size
+                        </p>
+                        <p className="fs-6 fw-bold">
+                          {updateData.plan_summary.total_download_size ||
+                            "Unknown"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Raw Output Toggle */}
+            {updateData.raw_output && (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary"
+                  onClick={() => setShowRawOutput(!showRawOutput)}
+                >
                   <i
-                    className={`fas fa-chevron-${showRawOutput ? "up" : "down"}`}
+                    className={`fas fa-chevron-${showRawOutput ? "up" : "down"} me-2`}
                   />
-                </span>
-                <span>{showRawOutput ? "Hide" : "Show"} Raw Output</span>
-              </button>
+                  <span>{showRawOutput ? "Hide" : "Show"} Raw Output</span>
+                </button>
 
-              {showRawOutput && (
-                <pre className="box mt-2 has-background-black has-text-light is-size-7">
-                  {updateData.raw_output}
-                </pre>
-              )}
-            </div>
-          )}
+                {showRawOutput && (
+                  <pre className="card card-body mt-2 bg-dark text-light small">
+                    {updateData.raw_output}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -213,75 +234,75 @@ AvailableUpdatesTab.propTypes = {
 
 const UpdateHistoryTab = ({ historyLoading, updateHistory, onRefresh }) => (
   <div>
-    <div className="level mb-4">
-      <div className="level-left">
-        <div className="level-item">
-          <h2 className="title is-5">Update History</h2>
-        </div>
+    <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex align-items-center gap-2">
+        <h2 className="fs-5 fw-bold mb-0">Update History</h2>
       </div>
-      <div className="level-right">
-        <div className="level-item">
-          <button
-            className={`button is-primary ${historyLoading ? "is-loading" : ""}`}
-            onClick={onRefresh}
-            disabled={historyLoading}
-          >
-            <span className="icon">
-              <i className="fas fa-sync-alt" />
-            </span>
-            <span>Refresh</span>
-          </button>
-        </div>
+      <div className="d-flex align-items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={onRefresh}
+          disabled={historyLoading}
+        >
+          {historyLoading && (
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            />
+          )}
+          <i className="fas fa-sync-alt me-2" />
+          <span>Refresh</span>
+        </button>
       </div>
     </div>
 
-    <div className="box">
-      {historyLoading && (
-        <div className="has-text-centered p-6">
-          <span className="icon is-large">
+    <div className="card">
+      <div className="card-body">
+        {historyLoading && (
+          <div className="text-center p-6">
             <i className="fas fa-spinner fa-spin fa-2x" />
-          </span>
-          <p className="mt-2">Loading update history...</p>
-        </div>
-      )}
-      {!historyLoading && updateHistory.length === 0 && (
-        <div className="has-text-centered p-6">
-          <span className="icon is-large has-text-grey">
-            <i className="fas fa-history fa-2x" />
-          </span>
-          <p className="mt-2 has-text-grey">No update history available</p>
-        </div>
-      )}
-      {!historyLoading && updateHistory.length > 0 && (
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Operation</th>
-                <th>User</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {updateHistory.map((entry) => (
-                <tr key={`${entry.date}-${entry.operation}-${entry.user}`}>
-                  <td>{new Date(entry.date).toLocaleString()}</td>
-                  <td>{entry.operation}</td>
-                  <td>{entry.user}</td>
-                  <td>
-                    <span
-                      className={`tag ${entry.status === "Succeeded" ? "is-success" : "is-danger"}`}
-                    >
-                      {entry.status}
-                    </span>
-                  </td>
+            <p className="mt-2">Loading update history...</p>
+          </div>
+        )}
+        {!historyLoading && updateHistory.length === 0 && (
+          <div className="text-center p-6">
+            <i className="fas fa-history fa-2x text-muted" />
+            <p className="mt-2 text-muted">No update history available</p>
+          </div>
+        )}
+        {!historyLoading && updateHistory.length > 0 && (
+          <div className="table-responsive">
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Operation</th>
+                  <th>User</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {updateHistory.map((entry) => (
+                  <tr key={`${entry.date}-${entry.operation}-${entry.user}`}>
+                    <td>{new Date(entry.date).toLocaleString()}</td>
+                    <td>{entry.operation}</td>
+                    <td>{entry.user}</td>
+                    <td>
+                      <span
+                        className={`badge ${entry.status === "Succeeded" ? "text-bg-success" : "text-bg-danger"}`}
+                      >
+                        {entry.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   </div>
 );
@@ -454,50 +475,46 @@ const SystemUpdatesSection = ({ server, onError }) => {
   return (
     <div>
       {/* Tab Navigation */}
-      <div className="tabs is-boxed mb-4">
-        <ul>
-          <li className={activeTab === "updates" ? "is-active" : ""}>
-            <a
-              href="#updates"
-              onClick={(e) => {
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "updates" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("updates");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 setActiveTab("updates");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setActiveTab("updates");
-                }
-              }}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-download" />
-              </span>
-              <span>Available Updates</span>
-            </a>
-          </li>
-          <li className={activeTab === "history" ? "is-active" : ""}>
-            <a
-              href="#history"
-              onClick={(e) => {
+              }
+            }}
+          >
+            <i className="fas fa-download me-2" />
+            <span>Available Updates</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "history" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("history");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 setActiveTab("history");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setActiveTab("history");
-                }
-              }}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-history" />
-              </span>
-              <span>Update History</span>
-            </a>
-          </li>
-        </ul>
-      </div>
+              }
+            }}
+          >
+            <i className="fas fa-history me-2" />
+            <span>Update History</span>
+          </button>
+        </li>
+      </ul>
 
       {/* Available Updates Tab */}
       {activeTab === "updates" && (
@@ -546,7 +563,7 @@ const SystemUpdatesSection = ({ server, onError }) => {
             <li>Potentially require a system reboot</li>
             <li>Take several minutes to complete</li>
           </ul>
-          <div className="notification is-warning">
+          <div className="alert alert-warning">
             <p>
               <strong>Warning:</strong> This is a system-level operation that
               may affect system stability. Ensure you have adequate disk space

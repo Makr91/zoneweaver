@@ -38,9 +38,9 @@ const VncModal = ({
   }
 
   return (
-    <div className="modal is-active has-z-index-modal">
+    <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center has-z-index-modal">
       <div
-        className="modal-background"
+        className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75"
         onClick={closeVncConsole}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -59,19 +59,15 @@ const VncModal = ({
         }
       >
         <header
-          className={`modal-card-head ${isVncFullScreen ? "zw-modal-header-fullscreen" : "zw-modal-header-normal"}`}
+          className={`d-flex align-items-center bg-dark text-white ${isVncFullScreen ? "zw-modal-header-fullscreen" : "zw-modal-header-normal"}`}
         >
           <p
-            className={`modal-card-title ${isVncFullScreen ? "zw-modal-title-fullscreen" : "zw-modal-title-normal"}`}
+            className={`flex-grow-1 mb-0 ${isVncFullScreen ? "zw-modal-title-fullscreen" : "zw-modal-title-normal"}`}
           >
-            <span className="icon-text">
-              <span className="icon is-small">
-                <i className="fas fa-terminal" />
-              </span>
-              <span>Console - {selectedZone}</span>
-            </span>
+            <i className="fas fa-terminal me-2" />
+            <span>Console - {selectedZone}</span>
           </p>
-          <div className="buttons m-0">
+          <div className="d-flex gap-1 m-0">
             <VncActionsDropdown
               vncRef={modalVncRef}
               variant="button"
@@ -119,17 +115,17 @@ const VncModal = ({
             />
             {!modalVncViewOnly && (
               <button
-                className="button is-small is-info"
+                type="button"
+                className="btn btn-sm btn-info"
                 onClick={handleVncModalPaste}
                 title="Paste from Browser Clipboard"
               >
-                <span className="icon is-small">
-                  <i className="fas fa-paste" />
-                </span>
+                <i className="fas fa-paste" />
               </button>
             )}
             <button
-              className="button is-small is-warning"
+              type="button"
+              className="btn btn-sm btn-warning"
               onClick={async () => {
                 if (zoneDetails.zlogin_session) {
                   closeVncConsole();
@@ -149,67 +145,61 @@ const VncModal = ({
                   : "Start zlogin Console"
               }
             >
-              <span className="icon is-small">
-                <i
-                  className={`fas ${loading ? "fa-spinner fa-pulse" : "fa-terminal"}`}
-                />
-              </span>
+              <i
+                className={`fas ${loading ? "fa-spinner fa-pulse" : "fa-terminal"} me-2`}
+              />
               <span>{loading ? "Starting..." : "zlogin"}</span>
             </button>
             <button
-              className="button is-small is-info"
+              type="button"
+              className="btn btn-sm btn-info"
               onClick={openVncFullScreen}
               title={isVncFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
             >
-              <span className="icon">
-                <i
-                  className={`fas ${isVncFullScreen ? "fa-compress" : "fa-expand"}`}
-                />
-              </span>
+              <i
+                className={`fas ${isVncFullScreen ? "fa-compress" : "fa-expand"} me-2`}
+              />
               <span>{isVncFullScreen ? "Exit" : "Full"}</span>
             </button>
             <button
-              className="button is-small"
+              type="button"
+              className="btn btn-sm btn-light"
               onClick={closeVncConsole}
               title="Close Console"
             >
-              <span className="icon">
-                <i className="fas fa-times" />
-              </span>
+              <i className="fas fa-times me-2" />
               <span>Exit</span>
             </button>
           </div>
         </header>
-        <section className="modal-card-body p-0 zw-modal-body">
+        <section className="p-0 zw-modal-body">
           {(() => {
             if (vncLoadError) {
               return (
-                <div className="has-text-centered p-6 zw-error-container">
-                  <div className="icon is-large mb-3">
-                    <i className="fas fa-exclamation-triangle fa-3x has-text-warning" />
+                <div className="text-center p-5 zw-error-container">
+                  <div className="mb-3">
+                    <i className="fas fa-exclamation-triangle fa-3x text-warning" />
                   </div>
-                  <h4 className="title is-4">VNC Console Loading Error</h4>
+                  <h4 className="fs-4 fw-bold">VNC Console Loading Error</h4>
                   <p className="mb-4">
                     The VNC console failed to load in embedded mode. This could
                     be due to proxy issues or browser compatibility.
                   </p>
-                  <div className="buttons is-centered">
+                  <div className="d-flex justify-content-center gap-2">
                     <button
-                      className="button is-warning"
+                      type="button"
+                      className="btn btn-warning"
                       onClick={openDirectVncFallback}
                     >
-                      <span className="icon">
-                        <i className="fas fa-external-link-alt" />
-                      </span>
+                      <i className="fas fa-external-link-alt me-2" />
                       <span>Open Direct VNC Console</span>
                     </button>
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-outline-secondary"
                       onClick={() => setVncLoadError(false)}
                     >
-                      <span className="icon">
-                        <i className="fas fa-redo" />
-                      </span>
+                      <i className="fas fa-redo me-2" />
                       <span>Retry Embedded</span>
                     </button>
                   </div>
@@ -253,8 +243,8 @@ const VncModal = ({
 
             if (loadingVnc) {
               return (
-                <div className="has-text-centered p-6 zw-loading-container">
-                  <div className="icon is-large">
+                <div className="text-center p-5 zw-loading-container">
+                  <div>
                     <i className="fas fa-spinner fa-pulse fa-3x zw-loading-spinner" />
                   </div>
                   <p className="mt-3">Starting VNC console...</p>

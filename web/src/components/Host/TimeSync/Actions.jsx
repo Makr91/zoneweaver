@@ -7,43 +7,52 @@ const TimeSyncActions = ({
   syncing,
   statusAvailable,
 }) => (
-  <div className="box">
-    <h3 className="title is-6">Quick Actions</h3>
+  <div className="card">
+    <div className="card-body">
+      <h3 className="fs-6 fw-bold">Quick Actions</h3>
 
-    <div className="field is-grouped">
-      <div className="control">
+      <div className="d-flex gap-2">
         <button
-          className={`button is-primary ${syncing ? "is-loading" : ""}`}
+          type="button"
+          className="btn btn-primary"
           onClick={() => onAction("sync")}
           disabled={!statusAvailable || syncing || loading}
         >
-          <span className="icon">
-            <i className="fas fa-sync-alt" />
-          </span>
+          {syncing ? (
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            />
+          ) : (
+            <i className="fas fa-sync-alt me-2" />
+          )}
           <span>Force Sync Now</span>
         </button>
-      </div>
-      <div className="control">
         <button
-          className={`button is-info ${loading ? "is-loading" : ""}`}
+          type="button"
+          className="btn btn-info"
           onClick={onRefresh}
           disabled={loading || syncing}
         >
-          <span className="icon">
-            <i className="fas fa-refresh" />
-          </span>
+          {loading ? (
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            />
+          ) : (
+            <i className="fas fa-refresh me-2" />
+          )}
           <span>Refresh Status</span>
         </button>
-      </div>
-      <div className="control">
         <button
-          className="button is-warning"
+          type="button"
+          className="btn btn-warning"
           onClick={() => onAction("restart")}
           disabled={!statusAvailable || syncing || loading}
         >
-          <span className="icon">
-            <i className="fas fa-redo" />
-          </span>
+          <i className="fas fa-redo me-2" />
           <span>Restart Service</span>
         </button>
       </div>

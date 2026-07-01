@@ -16,39 +16,41 @@ const ConfigInfo = ({ configInfo }) => {
   };
 
   return (
-    <div className="box mb-4">
-      <h3 className="title is-6">Configuration File Information</h3>
-      <div className="table-container">
-        <table className="table is-fullwidth">
-          <tbody>
-            <tr>
-              <td>
-                <strong>Service Type</strong>
-              </td>
-              <td className="is-family-monospace">
-                {getServiceType(configInfo.service)}
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Configuration File</strong>
-              </td>
-              <td className="is-family-monospace">{configInfo.config_file}</td>
-            </tr>
-            <tr>
-              <td>
-                <strong>File Exists</strong>
-              </td>
-              <td>
-                <span
-                  className={`tag ${configInfo.config_exists ? "is-success" : "is-warning"}`}
-                >
-                  {configInfo.config_exists ? "Yes" : "No"}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div className="card mb-4">
+      <div className="card-body">
+        <h3 className="fs-6 fw-bold">Configuration File Information</h3>
+        <div className="table-responsive">
+          <table className="table">
+            <tbody>
+              <tr>
+                <td>
+                  <strong>Service Type</strong>
+                </td>
+                <td className="font-monospace">
+                  {getServiceType(configInfo.service)}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Configuration File</strong>
+                </td>
+                <td className="font-monospace">{configInfo.config_file}</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>File Exists</strong>
+                </td>
+                <td>
+                  <span
+                    className={`badge ${configInfo.config_exists ? "text-bg-success" : "text-bg-warning"}`}
+                  >
+                    {configInfo.config_exists ? "Yes" : "No"}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -32,55 +32,39 @@ const BootEnvironmentTable = ({
 
   const getActiveStatusBadge = (be) => {
     if (be.is_active_now && be.is_active_on_reboot) {
-      return <span className="tag is-success is-small">NR</span>;
+      return <span className="badge text-bg-success">NR</span>;
     }
     if (be.is_active_now) {
-      return <span className="tag is-success is-small">N</span>;
+      return <span className="badge text-bg-success">N</span>;
     }
     if (be.is_active_on_reboot) {
-      return <span className="tag is-info is-small">R</span>;
+      return <span className="badge text-bg-info">R</span>;
     }
-    return <span className="tag is-grey is-small">-</span>;
+    return <span className="badge text-bg-secondary">-</span>;
   };
 
   const getActiveIcon = (be) => {
     if (be.is_active_now && be.is_active_on_reboot) {
-      return (
-        <span className="icon has-text-success">
-          <i className="fas fa-check-double" />
-        </span>
-      );
+      return <i className="fas fa-check-double text-success" />;
     }
     if (be.is_active_now) {
-      return (
-        <span className="icon has-text-success">
-          <i className="fas fa-check-circle" />
-        </span>
-      );
+      return <i className="fas fa-check-circle text-success" />;
     }
     if (be.is_active_on_reboot) {
-      return (
-        <span className="icon has-text-info">
-          <i className="fas fa-clock" />
-        </span>
-      );
+      return <i className="fas fa-clock text-info" />;
     }
-    return (
-      <span className="icon has-text-grey">
-        <i className="fas fa-circle" />
-      </span>
-    );
+    return <i className="fas fa-circle text-muted" />;
   };
 
   const getPolicyTag = (policy) => {
     switch (policy?.toLowerCase()) {
       case "static":
-        return <span className="tag is-info is-small">Static</span>;
+        return <span className="badge text-bg-info">Static</span>;
       case "dynamic":
-        return <span className="tag is-warning is-small">Dynamic</span>;
+        return <span className="badge text-bg-warning">Dynamic</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{policy || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{policy || "Unknown"}</span>
         );
     }
   };
@@ -94,7 +78,7 @@ const BootEnvironmentTable = ({
         key: "activate",
         label: "Activate",
         icon: "fa-power-off",
-        class: "has-background-success-dark has-text-success-light",
+        class: "btn-success",
       });
     }
 
@@ -104,14 +88,14 @@ const BootEnvironmentTable = ({
         key: "mount",
         label: "Mount",
         icon: "fa-folder-open",
-        class: "has-background-info-dark has-text-info-light",
+        class: "btn-info",
       });
     } else {
       actions.push({
         key: "unmount",
         label: "Unmount",
         icon: "fa-folder",
-        class: "has-background-warning-dark has-text-warning-light",
+        class: "btn-warning",
       });
     }
 
@@ -121,7 +105,7 @@ const BootEnvironmentTable = ({
         key: "delete",
         label: "Delete",
         icon: "fa-trash",
-        class: "has-background-danger-dark has-text-danger-light",
+        class: "btn-danger",
       });
     }
 
@@ -153,10 +137,8 @@ const BootEnvironmentTable = ({
 
   if (loading && bootEnvironments.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading boot environments...</p>
       </div>
     );
@@ -164,18 +146,16 @@ const BootEnvironmentTable = ({
 
   if (bootEnvironments.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-layer-group fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No boot environments found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-layer-group fa-2x text-muted" />
+        <p className="mt-2 text-muted">No boot environments found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover table-sm">
         <thead>
           <tr>
             <th>Boot Environment</th>
@@ -194,12 +174,12 @@ const BootEnvironmentTable = ({
             return (
               <tr key={be.name || index}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getActiveIcon(be)}
-                    <span className="ml-2">
-                      <strong className="is-family-monospace">{be.name}</strong>
+                    <span className="ms-2">
+                      <strong className="font-monospace">{be.name}</strong>
                       {be.is_temporary && (
-                        <span className="tag is-warning is-small ml-2">
+                        <span className="badge text-bg-warning ms-2">
                           Temporary
                         </span>
                       )}
@@ -207,9 +187,9 @@ const BootEnvironmentTable = ({
                   </div>
                 </td>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getActiveStatusBadge(be)}
-                    <span className="ml-2 is-size-7">
+                    <span className="ms-2 small">
                       {be.is_active_now &&
                         be.is_active_on_reboot &&
                         "Active + Reboot"}
@@ -226,19 +206,19 @@ const BootEnvironmentTable = ({
                   </div>
                 </td>
                 <td>
-                  <span className="is-family-monospace is-size-7">
+                  <span className="font-monospace small">
                     {be.mountpoint === "-" ? "Not Mounted" : be.mountpoint}
                   </span>
                 </td>
                 <td>
-                  <span className="is-size-7">{be.space || "N/A"}</span>
+                  <span className="small">{be.space || "N/A"}</span>
                 </td>
                 <td>{getPolicyTag(be.policy)}</td>
                 <td>
-                  <span className="is-size-7">{formatDate(be.created)}</span>
+                  <span className="small">{formatDate(be.created)}</span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* Action Buttons */}
                     {availableActions.map((action) => {
                       const key = `${be.name}-${action.key}`;
@@ -246,15 +226,22 @@ const BootEnvironmentTable = ({
 
                       return (
                         <button
+                          type="button"
                           key={action.key}
-                          className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
+                          className={`btn btn-sm ${action.class}`}
                           onClick={() => handleAction(be, action.key)}
                           disabled={loading || isLoading}
                           title={action.label}
                         >
-                          <span className="icon is-small">
+                          {isLoading ? (
+                            <span
+                              className="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          ) : (
                             <i className={`fas ${action.icon}`} />
-                          </span>
+                          )}
                         </button>
                       );
                     })}

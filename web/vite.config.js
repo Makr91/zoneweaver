@@ -105,6 +105,18 @@ export default defineConfig({
             return "flow-diagrams";
           }
 
+          // React-Bootstrap UI framework + its runtime deps. Used app-wide via the
+          // shared modals (and growing as components migrate off Bulma), so split it out
+          // of vendor to keep that chunk under the size limit.
+          if (
+            id.includes("node_modules/react-bootstrap") ||
+            id.includes("node_modules/@restart") ||
+            id.includes("node_modules/@popperjs") ||
+            id.includes("node_modules/dom-helpers")
+          ) {
+            return "react-bootstrap";
+          }
+
           // Everything else stays together in vendor to avoid dependency issues
           // This includes React, Router, Axios, utilities, etc.
           if (id.includes("node_modules")) {

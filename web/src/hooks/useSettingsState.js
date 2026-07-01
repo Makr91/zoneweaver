@@ -35,20 +35,6 @@ const useSettingsState = () => {
     testPassword: "",
   });
 
-  // OIDC Provider management state
-  const [showOidcProviderModal, setShowOidcProviderModal] = useState(false);
-  const [oidcProviderForm, setOidcProviderForm] = useState({
-    name: "",
-    displayName: "",
-    issuer: "",
-    clientId: "",
-    clientSecret: "",
-    scope: "openid profile email",
-    responseType: "code",
-    enabled: true,
-  });
-  const [oidcProviderLoading, setOidcProviderLoading] = useState(false);
-
   // Server management state
   const [servers, setServers] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -109,16 +95,6 @@ const useSettingsState = () => {
       setTestEmail,
       ldapTestCredentials,
       setLdapTestCredentials,
-    },
-
-    // OIDC provider
-    oidc: {
-      showOidcProviderModal,
-      setShowOidcProviderModal,
-      oidcProviderForm,
-      setOidcProviderForm,
-      oidcProviderLoading,
-      setOidcProviderLoading,
     },
 
     // Server management

@@ -17,16 +17,17 @@ const InactiveConsoleDisplay = ({
 }) => (
   <div className="zw-console-container-hidden">
     {/* Inactive Console Header */}
-    <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
+    <div className="bg-dark text-white p-3 d-flex justify-content-between align-items-center">
       <div>
-        <h6 className="title is-7 has-text-white mb-1">Console Management</h6>
-        <p className="is-size-7 has-text-white-ter mb-0">
+        <h6 className="fs-6 fw-bold text-white mb-1">Console Management</h6>
+        <p className="small text-white-50 mb-0">
           No active sessions • Click to start
         </p>
       </div>
-      <div className="buttons m-0">
+      <div className="d-flex gap-1 m-0">
         <button
-          className="button is-small is-info"
+          type="button"
+          className="btn btn-sm btn-info"
           onClick={async () => {
             console.log(
               `🚀 START VNC: Starting VNC for preview in ${selectedZone}`
@@ -65,13 +66,12 @@ const InactiveConsoleDisplay = ({
           disabled={loading || loadingVnc}
           title="Start VNC Console"
         >
-          <span className="icon is-small">
-            <i className="fas fa-desktop" />
-          </span>
+          <i className="fas fa-desktop me-2" />
           <span>{loadingVnc ? "Starting..." : "Start VNC"}</span>
         </button>
         <button
-          className="button is-small is-success"
+          type="button"
+          className="btn btn-sm btn-success"
           onClick={async () => {
             if (!currentServer || !selectedZone) {
               return;
@@ -103,9 +103,7 @@ const InactiveConsoleDisplay = ({
           disabled={loading}
           title="Start zlogin Console"
         >
-          <span className="icon is-small">
-            <i className="fas fa-terminal" />
-          </span>
+          <i className="fas fa-terminal me-2" />
           <span>{loading ? "Starting..." : "Start zlogin"}</span>
         </button>
       </div>
@@ -113,7 +111,7 @@ const InactiveConsoleDisplay = ({
 
     {/* Console Content - Inactive State */}
     <div className="zw-inactive-console-content">
-      <div className="zw-text-placeholder has-text-centered">
+      <div className="zw-text-placeholder text-center">
         <div className="has-margin-bottom-12px">
           <img
             src="/images/startcloud.svg"
@@ -121,10 +119,10 @@ const InactiveConsoleDisplay = ({
             className="zw-startup-icon"
           />
         </div>
-        <div className="is-size-6 has-text-weight-medium mb-2">
+        <div className="fs-6 fw-medium mb-2">
           <strong>No Active Console Session</strong>
         </div>
-        <div className="is-size-7">
+        <div className="small">
           Click the buttons above to start VNC or zlogin console
         </div>
       </div>

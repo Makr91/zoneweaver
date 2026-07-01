@@ -95,12 +95,12 @@ const VncConsoleDisplay = ({
   return (
     <div className="zw-console-container">
       {/* VNC Console Header */}
-      <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
+      <div className="bg-dark text-white p-3 d-flex justify-content-between align-items-center">
         <div>
-          <h6 className="title is-7 has-text-white mb-1">Active VNC Session</h6>
+          <h6 className="fs-6 fw-bold text-white mb-1">Active VNC Session</h6>
           {zoneDetails.vnc_session_info &&
             zoneDetails.vnc_session_info.web_port && (
-              <p className="is-size-7 has-text-white-ter mb-0">
+              <p className="small text-white-50 mb-0">
                 Port: {zoneDetails.vnc_session_info.web_port} | Started:{" "}
                 {zoneDetails.vnc_session_info.created_at
                   ? new Date(
@@ -110,7 +110,7 @@ const VncConsoleDisplay = ({
               </p>
             )}
         </div>
-        <div className="buttons m-0">
+        <div className="d-flex gap-1 m-0">
           <VncActionsDropdown
             vncRef={vncRef}
             variant="button"
@@ -157,7 +157,8 @@ const VncConsoleDisplay = ({
           />
           {!previewVncViewOnly && (
             <button
-              className="button is-small is-info"
+              type="button"
+              className="btn btn-sm btn-info"
               onClick={async () => {
                 try {
                   if (navigator.clipboard && navigator.clipboard.readText) {
@@ -175,24 +176,22 @@ const VncConsoleDisplay = ({
               }}
               title="Paste from Browser Clipboard"
             >
-              <span className="icon is-small">
-                <i className="fas fa-paste" />
-              </span>
+              <i className="fas fa-paste" />
             </button>
           )}
           <button
-            className="button is-small is-primary"
+            type="button"
+            className="btn btn-sm btn-primary"
             onClick={() => handleVncConsole(selectedZone)}
             disabled={loading || loadingVnc}
             title="Expand VNC Console"
           >
-            <span className="icon is-small">
-              <i className="fas fa-expand" />
-            </span>
+            <i className="fas fa-expand" />
           </button>
           {hasZlogin ? (
             <button
-              className="button is-small is-warning"
+              type="button"
+              className="btn btn-sm btn-warning"
               onClick={() => {
                 console.log(
                   `🔄 PREVIEW SWITCH: Switching to zlogin preview from VNC`
@@ -201,13 +200,12 @@ const VncConsoleDisplay = ({
               }}
               title="Switch to zlogin Console"
             >
-              <span className="icon is-small">
-                <i className="fas fa-terminal" />
-              </span>
+              <i className="fas fa-terminal" />
             </button>
           ) : (
             <button
-              className="button is-small is-warning"
+              type="button"
+              className="btn btn-sm btn-warning"
               onClick={async () => {
                 console.log(
                   `🚀 START ZLOGIN: Starting zlogin for preview from VNC`
@@ -236,11 +234,9 @@ const VncConsoleDisplay = ({
               disabled={loading}
               title="Start zlogin Console"
             >
-              <span className="icon is-small">
-                <i
-                  className={`fas ${loading ? "fa-spinner fa-pulse" : "fa-terminal"}`}
-                />
-              </span>
+              <i
+                className={`fas ${loading ? "fa-spinner fa-pulse" : "fa-terminal"}`}
+              />
             </button>
           )}
         </div>
@@ -287,7 +283,7 @@ const VncConsoleDisplay = ({
           }
           return (
             <div className="zw-console-placeholder-hidden">
-              <div className="has-text-centered">
+              <div className="text-center">
                 <div className="has-margin-bottom-12px">
                   <img
                     src="/images/startcloud.svg"
@@ -295,10 +291,8 @@ const VncConsoleDisplay = ({
                     className="zw-startup-icon"
                   />
                 </div>
-                <div className="is-size-6 has-text-weight-medium">
-                  No Console Session
-                </div>
-                <div className="is-size-7 mt-6 opacity-07">
+                <div className="fs-6 fw-medium">No Console Session</div>
+                <div className="small mt-6 opacity-07">
                   Click Console to start session
                 </div>
               </div>

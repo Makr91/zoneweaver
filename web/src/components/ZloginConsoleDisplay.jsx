@@ -29,13 +29,11 @@ const ZloginConsoleDisplay = ({
 }) => (
   <div className="zw-console-container">
     {/* zlogin Console Header */}
-    <div className="has-background-dark has-text-white p-3 is-flex is-justify-content-space-between is-align-items-center">
+    <div className="bg-dark text-white p-3 d-flex justify-content-between align-items-center">
       <div>
-        <h6 className="title is-7 has-text-white mb-1">
-          Active zlogin Session
-        </h6>
+        <h6 className="fs-6 fw-bold text-white mb-1">Active zlogin Session</h6>
         {zoneDetails.zlogin_session && (
-          <p className="is-size-7 has-text-white-ter mb-0">
+          <p className="small text-white-50 mb-0">
             Session ID:{" "}
             {zoneDetails.zlogin_session.id?.substring(0, 8) || "Unknown"} |
             Started:{" "}
@@ -45,7 +43,7 @@ const ZloginConsoleDisplay = ({
           </p>
         )}
       </div>
-      <div className="buttons m-0">
+      <div className="d-flex gap-1 m-0">
         <ZloginActionsDropdown
           variant="button"
           onToggleReadOnly={() => {
@@ -99,7 +97,8 @@ const ZloginConsoleDisplay = ({
         />
         {!previewReadOnly && (
           <button
-            className="button is-small is-info has-box-shadow"
+            type="button"
+            className="btn btn-sm btn-info has-box-shadow"
             onClick={async () => {
               try {
                 if (navigator.clipboard && navigator.clipboard.readText) {
@@ -117,13 +116,12 @@ const ZloginConsoleDisplay = ({
             }}
             title="Paste from Browser Clipboard"
           >
-            <span className="icon is-small">
-              <i className="fas fa-paste" />
-            </span>
+            <i className="fas fa-paste" />
           </button>
         )}
         <button
-          className="button is-small is-primary"
+          type="button"
+          className="btn btn-sm btn-primary"
           onClick={() => {
             if (zoneDetails.zlogin_session) {
               setShowZloginConsole(true);
@@ -134,13 +132,12 @@ const ZloginConsoleDisplay = ({
           disabled={loading}
           title="Expand zlogin Console"
         >
-          <span className="icon is-small">
-            <i className="fas fa-expand" />
-          </span>
+          <i className="fas fa-expand" />
         </button>
         {hasVnc ? (
           <button
-            className="button is-small is-warning"
+            type="button"
+            className="btn btn-sm btn-warning"
             onClick={() => {
               console.log(
                 `🔄 PREVIEW SWITCH: Switching to VNC preview from zlogin`
@@ -149,13 +146,12 @@ const ZloginConsoleDisplay = ({
             }}
             title="Switch to VNC Console"
           >
-            <span className="icon is-small">
-              <i className="fas fa-desktop" />
-            </span>
+            <i className="fas fa-desktop" />
           </button>
         ) : (
           <button
-            className="button is-small is-warning"
+            type="button"
+            className="btn btn-sm btn-warning"
             onClick={async () => {
               console.log(`🚀 START VNC: Starting VNC for preview from zlogin`);
               try {
@@ -192,11 +188,9 @@ const ZloginConsoleDisplay = ({
             disabled={loadingVnc}
             title="Start VNC Console"
           >
-            <span className="icon is-small">
-              <i
-                className={`fas ${loadingVnc ? "fa-spinner fa-pulse" : "fa-desktop"}`}
-              />
-            </span>
+            <i
+              className={`fas ${loadingVnc ? "fa-spinner fa-pulse" : "fa-desktop"}`}
+            />
           </button>
         )}
       </div>
@@ -213,15 +207,13 @@ const ZloginConsoleDisplay = ({
       />
 
       <div className="zw-console-status-overlay">
-        <span className="icon is-small has-margin-right-3px">
-          <i
-            className={`fas fa-circle zw-console-status-icon ${
-              zoneDetails.zlogin_session
-                ? "zw-status-icon-active"
-                : "zw-status-icon-inactive"
-            }`}
-          />
-        </span>
+        <i
+          className={`fas fa-circle zw-console-status-icon has-margin-right-3px ${
+            zoneDetails.zlogin_session
+              ? "zw-status-icon-active"
+              : "zw-status-icon-inactive"
+          }`}
+        />
         {zoneDetails.zlogin_session ? "Live" : "Offline"}
       </div>
     </div>

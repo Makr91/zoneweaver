@@ -80,6 +80,31 @@ export const getSectionIcon = (section) => {
 };
 
 /**
+ * Determines whether a field should be shown given the current values, by
+ * evaluating its `conditional` ({ field, value }) against the live values.
+ * A field with no conditional is always visible. Single source of truth used
+ * by FieldRenderer (to skip a field) and by the settings UI (to hide empty
+ * subsections and count only the fields that currently apply).
+ * @param {object} field - Field metadata (may carry a `conditional`)
+ * @param {object} values - Current settings values keyed by path
+ * @returns {boolean} True if the field applies and should be rendered
+ */
+export const isFieldVisible = (field, values) => {
+  if (!field.conditional) {
+    return true;
+  }
+
+  const { field: dependsOn, value: showWhen } = field.conditional;
+  const dependentValue = values[dependsOn];
+
+  if (Array.isArray(showWhen)) {
+    return showWhen.includes(dependentValue);
+  }
+
+  return dependentValue === showWhen;
+};
+
+/**
  * Ensures a section exists in organizedSections
  */
 const ensureSection = (organizedSections, section, sectionMetadata) => {
@@ -108,6 +133,34 @@ const ensureSubsection = (organizedSections, section, subsection) => {
 };
 
 /**
+ * Normalizes a field's conditional-visibility metadata into a single
+ * { field: <full path>, value: <expected> } shape. The config file uses two
+ * dialects: an explicit `conditional: { field, value }` (already full-path), and
+ * a sibling-relative `depends_on: <name>` + `show_when: <value|[values]>`. This
+ * folds the latter into the former so isFieldVisible has one form to evaluate.
+ * @param {string} fullPath - The field's full config path
+ * @param {object} value - Raw field metadata
+ * @returns {object|null} Normalized conditional, or null if unconditional
+ */
+const normalizeConditional = (fullPath, value) => {
+  if (value.conditional) {
+    return value.conditional;
+  }
+  if (value.depends_on === undefined) {
+    return null;
+  }
+  const lastDot = fullPath.lastIndexOf(".");
+  const parentPath = lastDot === -1 ? "" : fullPath.slice(0, lastDot);
+  const dependsPath = parentPath
+    ? `${parentPath}.${value.depends_on}`
+    : value.depends_on;
+  return {
+    field: dependsPath,
+    value: value.show_when !== undefined ? value.show_when : true,
+  };
+};
+
+/**
  * Creates field data object from value metadata
  */
 const createFieldData = (fullPath, key, value) => ({
@@ -120,10 +173,48 @@ const createFieldData = (fullPath, key, value) => ({
   required: value.required || false,
   options: value.options || null,
   validation: value.validation || {},
-  conditional: value.conditional || null,
+  conditional: normalizeConditional(fullPath, value),
   order: value.order || 0,
   value: value.value,
+  collection:
+    value.type === "collection"
+      ? {
+          icon: value.icon || null,
+          itemSchema: value.item_schema || {},
+          itemLabelField: value.item_label_field || null,
+          secretFields: value.secret_fields || [],
+          keyLabel: value.key_label || "Name",
+          itemNoun: value.item_noun || "Item",
+          requiresRestart: value.requires_restart === true,
+        }
+      : null,
 });
+
+/**
+ * Expands a collection's item_schema into FieldRenderer-compatible field objects
+ * (path = the sub-field key, so each slots into a per-item values map), sorted by
+ * order. Lets the generic CollectionManager render an item's editor with the
+ * exact same field types, validation, and conditionals as top-level settings.
+ * @param {object} itemSchema - The collection's item_schema metadata map
+ * @returns {Array<object>} Field descriptors for FieldRenderer
+ */
+export const buildCollectionItemFields = (itemSchema = {}) =>
+  Object.entries(itemSchema)
+    .map(([key, meta]) => ({
+      key,
+      path: key,
+      type: meta.type,
+      label: meta.label || generateLabel(key),
+      description: meta.description || "",
+      placeholder: meta.placeholder || "",
+      required: meta.required || false,
+      options: meta.options || null,
+      validation: meta.validation || {},
+      conditional: meta.conditional || null,
+      order: meta.order || 0,
+      value: meta.value,
+    }))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
 /**
  * Checks if a value is a metadata field
@@ -163,8 +254,22 @@ export const processConfig = (config) => {
       const fullPath = path ? `${path}.${key}` : key;
 
       if (isMetadataField(value)) {
-        // This is a metadata field
-        extractedValues[fullPath] = value.value;
+        // Bare `type: object` values are legacy containers with no renderable
+        // schema — skip them entirely (never enter `values`, never render).
+        if (value.type === "object") {
+          continue;
+        }
+
+        const isCollection = value.type === "collection";
+
+        // Collections (keyed maps managed by CollectionManager via the dedicated
+        // /api/settings/collections endpoints) must NOT enter the flat `values`
+        // map — the generic save walks paths literally and would corrupt their
+        // nested {value}-wrapped structure — but we DO surface the field so it
+        // renders in its section/subsection.
+        if (!isCollection) {
+          extractedValues[fullPath] = value.value;
+        }
 
         // Determine section from metadata or infer from path
         const section = value.section || inferSection(fullPath) || sectionName;
@@ -175,20 +280,7 @@ export const processConfig = (config) => {
 
         const fieldData = createFieldData(fullPath, key, value);
 
-        // Special handling for object-type fields
-        if (
-          value.type === "object" &&
-          value.value &&
-          typeof value.value === "object"
-        ) {
-          // Create the parent subsection but don't add the object as a field
-          if (subsection) {
-            ensureSubsection(organizedSections, section, subsection);
-          }
-
-          // Recurse into their value to process nested fields
-          processObject(value.value, fullPath, section);
-        } else if (subsection) {
+        if (subsection) {
           // Regular field processing for subsection fields
           ensureSubsection(organizedSections, section, subsection);
           organizedSections[section].subsections[subsection].fields.push(

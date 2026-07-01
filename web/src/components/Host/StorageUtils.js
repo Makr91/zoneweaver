@@ -39,16 +39,16 @@ export const getHealthColor = (health) => {
     case "online":
     case "healthy":
     case "optimal":
-      return "is-success";
+      return "text-bg-success";
     case "degraded":
     case "warning":
-      return "is-warning";
+      return "text-bg-warning";
     case "faulted":
     case "offline":
     case "error":
-      return "is-danger";
+      return "text-bg-danger";
     default:
-      return "is-info";
+      return "text-bg-info";
   }
 };
 

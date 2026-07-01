@@ -41,36 +41,18 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
   const getSeverityIcon = (severity) => {
     switch (severity.toLowerCase()) {
       case "critical":
-        return (
-          <span className="icon has-text-danger">
-            <i className="fas fa-exclamation-circle" />
-          </span>
-        );
+        return <i className="fas fa-exclamation-circle text-danger" />;
       case "major":
-        return (
-          <span className="icon has-text-warning">
-            <i className="fas fa-exclamation-triangle" />
-          </span>
-        );
+        return <i className="fas fa-exclamation-triangle text-warning" />;
       case "minor":
-        return (
-          <span className="icon has-text-info">
-            <i className="fas fa-info-circle" />
-          </span>
-        );
+        return <i className="fas fa-info-circle text-info" />;
       default:
-        return (
-          <span className="icon has-text-grey">
-            <i className="fas fa-question-circle" />
-          </span>
-        );
+        return <i className="fas fa-question-circle text-muted" />;
     }
   };
 
   const getSeverityTag = (severity) => (
-    <span className={`tag ${getSeverityTagClass(severity)} is-small`}>
-      {severity}
-    </span>
+    <span className={`badge ${getSeverityTagClass(severity)}`}>{severity}</span>
   );
 
   const getAvailableActions = () =>
@@ -80,21 +62,21 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
         key: "acquit",
         label: "Acquit",
         icon: "fa-check",
-        class: "is-success",
+        class: "btn-success",
         requiresConfirm: true,
       },
       {
         key: "repaired",
         label: "Mark Repaired",
         icon: "fa-wrench",
-        class: "is-info",
+        class: "btn-info",
         requiresConfirm: true,
       },
       {
         key: "replaced",
         label: "Mark Replaced",
         icon: "fa-exchange-alt",
-        class: "is-warning",
+        class: "btn-warning",
         requiresConfirm: true,
       },
     ];
@@ -117,10 +99,8 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
 
   if (loading && faults.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading faults...</p>
       </div>
     );
@@ -128,22 +108,20 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
 
   if (faults.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-success">
-          <i className="fas fa-check-circle fa-2x" />
-        </span>
-        <p className="mt-2 has-text-success">
+      <div className="text-center p-4">
+        <i className="fas fa-check-circle fa-2x text-success" />
+        <p className="mt-2 text-success">
           <strong>No system faults found</strong>
         </p>
-        <p className="is-size-7 has-text-grey">System is operating normally</p>
+        <p className="small text-muted">System is operating normally</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="table-container">
-        <table className="table is-fullwidth is-hoverable">
+      <div className="table-responsive">
+        <table className="table table-hover">
           <thead>
             <tr>
               <th>Time</th>
@@ -161,36 +139,33 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
               return (
                 <tr key={fault.uuid || index}>
                   <td>
-                    <span className="is-size-7">{fault.time || "N/A"}</span>
+                    <span className="small">{fault.time || "N/A"}</span>
                   </td>
                   <td>
-                    <div className="is-flex is-align-items-center">
+                    <div className="d-flex align-items-center">
                       {getSeverityIcon(fault.severity)}
-                      <span className="ml-2">
+                      <span className="ms-2">
                         {getSeverityTag(fault.severity)}
                       </span>
                     </div>
                   </td>
                   <td>
-                    <span className="tag is-light is-small">
+                    <span className="badge text-bg-secondary">
                       {getFaultClass(fault.msgId)}
                     </span>
                   </td>
                   <td>
-                    <span className="is-family-monospace is-size-7 has-text-weight-semibold">
+                    <span className="font-monospace small fw-semibold">
                       {fault.msgId}
                     </span>
                   </td>
                   <td>
-                    <span
-                      className="is-family-monospace is-size-7"
-                      title={fault.uuid}
-                    >
+                    <span className="font-monospace small" title={fault.uuid}>
                       {fault.uuid ? `${fault.uuid.substring(0, 8)}...` : "N/A"}
                     </span>
                   </td>
                   <td>
-                    <div className="buttons are-small">
+                    <div className="d-flex gap-2">
                       {/* Action Buttons */}
                       {availableActions.map((action) => {
                         const key = `${fault.uuid}-${action.key}`;
@@ -199,7 +174,8 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
                         return (
                           <button
                             key={action.key}
-                            className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
+                            type="button"
+                            className={`btn btn-sm ${action.class}`}
                             onClick={() => {
                               if (action.requiresConfirm) {
                                 setPendingAction({ fault, action });
@@ -213,23 +189,28 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
                             disabled={loading || isLoading}
                             title={action.label}
                           >
-                            <span className="icon is-small">
+                            {isLoading ? (
+                              <span
+                                className="spinner-border spinner-border-sm"
+                                role="status"
+                                aria-hidden="true"
+                              />
+                            ) : (
                               <i className={`fas ${action.icon}`} />
-                            </span>
+                            )}
                           </button>
                         );
                       })}
 
                       {/* View Details Button */}
                       <button
-                        className="button"
+                        type="button"
+                        className="btn btn-sm btn-secondary"
                         onClick={() => onViewDetails(fault)}
                         disabled={loading}
                         title="View Details"
                       >
-                        <span className="icon is-small">
-                          <i className="fas fa-info-circle" />
-                        </span>
+                        <i className="fas fa-info-circle" />
                       </button>
                     </div>
                   </td>
@@ -248,7 +229,7 @@ const FaultTable = ({ faults, loading, onAction, onViewDetails }) => {
           title={`${pendingAction.action.label} Fault`}
           message={`Are you sure you want to ${pendingAction.action.label.toLowerCase()} this fault?`}
           confirmText={pendingAction.action.label}
-          confirmVariant="is-warning"
+          confirmVariant="warning"
           icon="fas fa-exclamation-triangle"
         />
       )}

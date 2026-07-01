@@ -5,15 +5,15 @@ import { FormModal } from "../common";
 
 const getSubmitVariant = (buttonClass) => {
   if (buttonClass.includes("danger")) {
-    return "is-danger";
+    return "danger";
   }
   if (buttonClass.includes("warning")) {
-    return "is-warning";
+    return "warning";
   }
   if (buttonClass.includes("success")) {
-    return "is-success";
+    return "success";
   }
-  return "is-info";
+  return "info";
 };
 
 const ConfirmActionModal = ({
@@ -58,7 +58,7 @@ const ConfirmActionModal = ({
         return {
           title: "Activate Boot Environment",
           icon: "fa-power-off",
-          buttonClass: "has-background-success-dark has-text-success-light",
+          buttonClass: "btn-success",
           description: `Activate boot environment "${bootEnvironment.name}" for next reboot.`,
           warning:
             "The system will boot from this environment on next restart.",
@@ -67,7 +67,7 @@ const ConfirmActionModal = ({
         return {
           title: "Mount Boot Environment",
           icon: "fa-folder-open",
-          buttonClass: "has-background-info-dark has-text-info-light",
+          buttonClass: "btn-info",
           description: `Mount boot environment "${bootEnvironment.name}" to access its filesystem.`,
           warning:
             "This will make the boot environment filesystem accessible for inspection or modification.",
@@ -76,7 +76,7 @@ const ConfirmActionModal = ({
         return {
           title: "Unmount Boot Environment",
           icon: "fa-folder",
-          buttonClass: "has-background-warning-dark has-text-warning-light",
+          buttonClass: "btn-warning",
           description: `Unmount boot environment "${bootEnvironment.name}".`,
           warning: "This will disconnect the boot environment filesystem.",
         };
@@ -84,7 +84,7 @@ const ConfirmActionModal = ({
         return {
           title: "Delete Boot Environment",
           icon: "fa-trash",
-          buttonClass: "has-background-danger-dark has-text-danger-light",
+          buttonClass: "btn-danger",
           description: `Permanently delete boot environment "${bootEnvironment.name}".`,
           warning:
             "This action cannot be undone. All data in this boot environment will be lost.",
@@ -93,7 +93,7 @@ const ConfirmActionModal = ({
         return {
           title: "Boot Environment Action",
           icon: "fa-layer-group",
-          buttonClass: "is-info",
+          buttonClass: "btn-info",
           description: `Perform ${action} on boot environment "${bootEnvironment.name}".`,
           warning: "Please confirm this action.",
         };
@@ -114,70 +114,74 @@ const ConfirmActionModal = ({
       loading={loading}
     >
       {/* Boot Environment Information */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Boot Environment Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>Name</strong>
-                </td>
-                <td className="is-family-monospace">{bootEnvironment.name}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Active Status</strong>
-                </td>
-                <td>
-                  {bootEnvironment.is_active_now &&
-                    bootEnvironment.is_active_on_reboot && (
-                      <span className="tag is-success is-small">
-                        Active Now + Reboot
-                      </span>
-                    )}
-                  {bootEnvironment.is_active_now &&
-                    !bootEnvironment.is_active_on_reboot && (
-                      <span className="tag is-success is-small">
-                        Active Now
-                      </span>
-                    )}
-                  {!bootEnvironment.is_active_now &&
-                    bootEnvironment.is_active_on_reboot && (
-                      <span className="tag is-info is-small">
-                        Active on Reboot
-                      </span>
-                    )}
-                  {!bootEnvironment.is_active_now &&
-                    !bootEnvironment.is_active_on_reboot && (
-                      <span className="tag is-grey is-small">Inactive</span>
-                    )}
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Mountpoint</strong>
-                </td>
-                <td className="is-family-monospace">
-                  {bootEnvironment.mountpoint === "-"
-                    ? "Not Mounted"
-                    : bootEnvironment.mountpoint}
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Space Used</strong>
-                </td>
-                <td>{bootEnvironment.space || "N/A"}</td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Boot Environment Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Name</strong>
+                  </td>
+                  <td className="font-monospace">{bootEnvironment.name}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Active Status</strong>
+                  </td>
+                  <td>
+                    {bootEnvironment.is_active_now &&
+                      bootEnvironment.is_active_on_reboot && (
+                        <span className="badge text-bg-success">
+                          Active Now + Reboot
+                        </span>
+                      )}
+                    {bootEnvironment.is_active_now &&
+                      !bootEnvironment.is_active_on_reboot && (
+                        <span className="badge text-bg-success">
+                          Active Now
+                        </span>
+                      )}
+                    {!bootEnvironment.is_active_now &&
+                      bootEnvironment.is_active_on_reboot && (
+                        <span className="badge text-bg-info">
+                          Active on Reboot
+                        </span>
+                      )}
+                    {!bootEnvironment.is_active_now &&
+                      !bootEnvironment.is_active_on_reboot && (
+                        <span className="badge text-bg-secondary">
+                          Inactive
+                        </span>
+                      )}
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Mountpoint</strong>
+                  </td>
+                  <td className="font-monospace">
+                    {bootEnvironment.mountpoint === "-"
+                      ? "Not Mounted"
+                      : bootEnvironment.mountpoint}
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Space Used</strong>
+                  </td>
+                  <td>{bootEnvironment.space || "N/A"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Action Description */}
       <div
-        className={`notification ${action === "delete" ? "is-danger" : "is-info"}`}
+        className={`alert ${action === "delete" ? "alert-danger" : "alert-info"}`}
       >
         <p>
           <strong>Action:</strong> {actionDetails.description}
@@ -187,143 +191,152 @@ const ConfirmActionModal = ({
 
       {/* Action-specific Options */}
       {action === "activate" && (
-        <div className="box">
-          <h3 className="title is-6">Activation Options</h3>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Activation Options</h3>
 
-          <div className="field">
-            <div className="control">
-              <label className="checkbox">
+            <div className="mb-3">
+              <div className="form-check">
                 <input
+                  id="option-temporary"
+                  className="form-check-input"
                   type="checkbox"
                   checked={options.temporary}
                   onChange={(e) =>
                     handleOptionChange("temporary", e.target.checked)
                   }
                 />
-                <span className="ml-2">
+                <label className="form-check-label" htmlFor="option-temporary">
                   <strong>Temporary Activation</strong> - Only activate for one
                   boot cycle
-                </span>
-              </label>
+                </label>
+              </div>
+              <p className="form-text text-muted">
+                If checked, the system will revert to the previous BE after the
+                next reboot.
+              </p>
             </div>
-            <p className="help">
-              If checked, the system will revert to the previous BE after the
-              next reboot.
-            </p>
           </div>
         </div>
       )}
 
       {action === "mount" && (
-        <div className="box">
-          <h3 className="title is-6">Mount Options</h3>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Mount Options</h3>
 
-          <div className="field">
-            <label className="label" htmlFor="mountpoint-input">
-              Mountpoint
-            </label>
-            <div className="control">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="mountpoint-input">
+                Mountpoint
+              </label>
               <input
                 id="mountpoint-input"
-                className="input"
+                className="form-control"
                 type="text"
                 value={options.mountpoint}
                 onChange={(e) =>
                   handleOptionChange("mountpoint", e.target.value)
                 }
               />
+              <p className="form-text text-muted">
+                Directory where the boot environment will be mounted
+              </p>
             </div>
-            <p className="help">
-              Directory where the boot environment will be mounted
-            </p>
-          </div>
 
-          <div className="field">
-            <label className="label" htmlFor="shared-mode-select">
-              Shared Mode
-            </label>
-            <div className="control">
-              <div className="select is-fullwidth">
-                <select
-                  id="shared-mode-select"
-                  value={options.sharedMode}
-                  onChange={(e) =>
-                    handleOptionChange("sharedMode", e.target.value)
-                  }
-                >
-                  <option value="ro">Read-Only</option>
-                  <option value="rw">Read-Write</option>
-                </select>
-              </div>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="shared-mode-select">
+                Shared Mode
+              </label>
+              <select
+                id="shared-mode-select"
+                className="form-select"
+                value={options.sharedMode}
+                onChange={(e) =>
+                  handleOptionChange("sharedMode", e.target.value)
+                }
+              >
+                <option value="ro">Read-Only</option>
+                <option value="rw">Read-Write</option>
+              </select>
+              <p className="form-text text-muted">Mount access mode</p>
             </div>
-            <p className="help">Mount access mode</p>
           </div>
         </div>
       )}
 
       {action === "unmount" && (
-        <div className="box">
-          <h3 className="title is-6">Unmount Options</h3>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Unmount Options</h3>
 
-          <div className="field">
-            <div className="control">
-              <label className="checkbox">
+            <div className="mb-3">
+              <div className="form-check">
                 <input
+                  id="option-force-unmount"
+                  className="form-check-input"
                   type="checkbox"
                   checked={options.force}
                   onChange={(e) =>
                     handleOptionChange("force", e.target.checked)
                   }
                 />
-                <span className="ml-2">
+                <label
+                  className="form-check-label"
+                  htmlFor="option-force-unmount"
+                >
                   <strong>Force Unmount</strong> - Force unmount even if busy
-                </span>
-              </label>
+                </label>
+              </div>
+              <p className="form-text text-muted">
+                Use this if the normal unmount fails due to busy files.
+              </p>
             </div>
-            <p className="help">
-              Use this if the normal unmount fails due to busy files.
-            </p>
           </div>
         </div>
       )}
 
       {action === "delete" && (
-        <div className="box">
-          <h3 className="title is-6">Delete Options</h3>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Delete Options</h3>
 
-          <div className="field">
-            <div className="control">
-              <label className="checkbox">
+            <div className="mb-3">
+              <div className="form-check">
                 <input
+                  id="option-force-delete"
+                  className="form-check-input"
                   type="checkbox"
                   checked={options.force}
                   onChange={(e) =>
                     handleOptionChange("force", e.target.checked)
                   }
                 />
-                <span className="ml-2">
+                <label
+                  className="form-check-label"
+                  htmlFor="option-force-delete"
+                >
                   <strong>Force Delete</strong> - Required for non-interactive
                   deletion (recommended)
-                </span>
-              </label>
+                </label>
+              </div>
             </div>
-          </div>
 
-          <div className="field">
-            <div className="control">
-              <label className="checkbox">
+            <div className="mb-3">
+              <div className="form-check">
                 <input
+                  id="option-snapshots"
+                  className="form-check-input"
                   type="checkbox"
                   checked={options.snapshots}
                   onChange={(e) =>
                     handleOptionChange("snapshots", e.target.checked)
                   }
                 />
-                <span className="ml-2">
+                <label className="form-check-label" htmlFor="option-snapshots">
                   <strong>Delete Snapshots</strong> - Also delete all associated
                   snapshots
-                </span>
-              </label>
+                </label>
+              </div>
             </div>
           </div>
         </div>

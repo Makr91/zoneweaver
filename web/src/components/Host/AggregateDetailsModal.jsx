@@ -19,45 +19,41 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
   const getStateTag = (state) => {
     switch (state?.toLowerCase()) {
       case "up":
-        return <span className="tag is-success is-small">{state}</span>;
+        return <span className="badge text-bg-success">{state}</span>;
       case "down":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{state || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{state || "Unknown"}</span>
         );
     }
   };
 
   const getPolicyTag = (policy) => {
     const policyColors = {
-      L2: "is-info",
-      L3: "is-primary",
-      L4: "is-link",
-      L2L3: "is-success",
-      L2L4: "is-warning",
-      L3L4: "is-danger",
-      L2L3L4: "is-dark",
+      L2: "text-bg-info",
+      L3: "text-bg-primary",
+      L4: "text-bg-primary",
+      L2L3: "text-bg-success",
+      L2L4: "text-bg-warning",
+      L3L4: "text-bg-danger",
+      L2L3L4: "text-bg-dark",
     };
 
-    const colorClass = policyColors[policy] || "";
-    return (
-      <span className={`tag ${colorClass} is-small`}>
-        {policy || "Unknown"}
-      </span>
-    );
+    const colorClass = policyColors[policy] || "text-bg-secondary";
+    return <span className={`badge ${colorClass}`}>{policy || "Unknown"}</span>;
   };
 
   const getLacpModeTag = (mode) => {
     switch (mode?.toLowerCase()) {
       case "active":
-        return <span className="tag is-success is-small">{mode}</span>;
+        return <span className="badge text-bg-success">{mode}</span>;
       case "passive":
-        return <span className="tag is-info is-small">{mode}</span>;
+        return <span className="badge text-bg-info">{mode}</span>;
       case "off":
-        return <span className="tag is-grey is-small">{mode}</span>;
+        return <span className="badge text-bg-secondary">{mode}</span>;
       default:
-        return <span className="tag is-grey is-small">{mode || "N/A"}</span>;
+        return <span className="badge text-bg-secondary">{mode || "N/A"}</span>;
     }
   };
 
@@ -83,16 +79,16 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
       title="Aggregate Details"
       icon="fas fa-network-wired"
     >
-      <h5 className="title is-6">Basic Information</h5>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
+      <h5 className="fs-6 fw-bold">Basic Information</h5>
+      <div className="table-responsive">
+        <table className="table table-striped">
           <tbody>
             <tr>
               <td>
                 <strong>Name</strong>
               </td>
               <td>
-                <span className="is-family-monospace">{aggregateName}</span>
+                <span className="font-monospace">{aggregateName}</span>
               </td>
             </tr>
             <tr>
@@ -100,7 +96,7 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
                 <strong>Class</strong>
               </td>
               <td>
-                <span className="tag is-info is-small">
+                <span className="badge text-bg-info">
                   {aggregate.class || "aggr"}
                 </span>
               </td>
@@ -147,9 +143,9 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
 
       {memberLinks.length > 0 && (
         <>
-          <h5 className="title is-6 mt-5">Member Links</h5>
-          <div className="table-container">
-            <table className="table is-fullwidth is-striped">
+          <h5 className="fs-6 fw-bold mt-5">Member Links</h5>
+          <div className="table-responsive">
+            <table className="table table-striped">
               <thead>
                 <tr>
                   <th>Link Name</th>
@@ -160,10 +156,10 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
                 {memberLinks.map((link) => (
                   <tr key={link}>
                     <td>
-                      <span className="is-family-monospace">{link}</span>
+                      <span className="font-monospace">{link}</span>
                     </td>
                     <td>
-                      <span className="tag is-success is-small">Active</span>
+                      <span className="badge text-bg-success">Active</span>
                     </td>
                   </tr>
                 ))}
@@ -175,9 +171,9 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
 
       {aggregateDetails && aggregateDetails.lacp && (
         <>
-          <h5 className="title is-6 mt-5">LACP Details</h5>
-          <div className="table-container">
-            <table className="table is-fullwidth is-striped">
+          <h5 className="fs-6 fw-bold mt-5">LACP Details</h5>
+          <div className="table-responsive">
+            <table className="table table-striped">
               <tbody>
                 <tr>
                   <td>
@@ -209,16 +205,16 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
         </>
       )}
 
-      <h5 className="title is-6 mt-5">Technical Details</h5>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
+      <h5 className="fs-6 fw-bold mt-5">Technical Details</h5>
+      <div className="table-responsive">
+        <table className="table table-striped">
           <tbody>
             <tr>
               <td>
                 <strong>MAC Address</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {formatValue(aggregate.macaddress)}
                 </span>
               </td>
@@ -281,16 +277,16 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
         </table>
       </div>
 
-      <h5 className="title is-6 mt-5">Timestamps</h5>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
+      <h5 className="fs-6 fw-bold mt-5">Timestamps</h5>
+      <div className="table-responsive">
+        <table className="table table-striped">
           <tbody>
             <tr>
               <td>
                 <strong>Last Scan</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {aggregate.scan_timestamp
                     ? new Date(aggregate.scan_timestamp).toLocaleString()
                     : "N/A"}
@@ -302,7 +298,7 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
                 <strong>Created</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {aggregate.createdAt
                     ? new Date(aggregate.createdAt).toLocaleString()
                     : "N/A"}
@@ -314,7 +310,7 @@ const AggregateDetailsModal = ({ aggregate, aggregateDetails, onClose }) => {
                 <strong>Updated</strong>
               </td>
               <td>
-                <span className="is-family-monospace">
+                <span className="font-monospace">
                   {aggregate.updatedAt
                     ? new Date(aggregate.updatedAt).toLocaleString()
                     : "N/A"}

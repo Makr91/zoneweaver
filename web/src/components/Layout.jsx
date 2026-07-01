@@ -27,14 +27,12 @@ const Accounts = React.lazy(() => import("./Accounts"));
 const Profile = React.lazy(() => import("./Profile"));
 
 const LoadingSpinner = () => (
-  <div className="hero">
-    <div className="hero-body">
-      <div className="container has-text-centered">
-        <div className="is-size-4">
-          <i className="fas fa-spinner fa-spin" />
-        </div>
-        <p className="mt-3">Loading...</p>
+  <div className="d-flex justify-content-center align-items-center h-100 p-5">
+    <div className="text-center">
+      <div className="fs-4">
+        <i className="fas fa-spinner fa-spin" />
       </div>
+      <p className="mt-3">Loading...</p>
     </div>
   </div>
 );
@@ -114,9 +112,9 @@ const LayoutContent = () => {
     : Math.max(userSettings.sidebarWidth, 38);
 
   return (
-    <div className="columns is-gapless">
+    <div className="d-flex">
       <ResizableBox
-        className={`column is-one-fifth ${userSettings.sidebarMinimized ? "is-sidebar-minimized" : ""}`}
+        className={`flex-shrink-0 ${userSettings.sidebarMinimized ? "is-sidebar-minimized" : ""}`}
         onResize={handleResize}
         width={effectiveWidth}
         height={Infinity}
@@ -127,9 +125,12 @@ const LayoutContent = () => {
       >
         <SideMenu />
       </ResizableBox>
-      <section className="column hero is-fullheight is-flex is-flex-direction-column">
+      <section
+        className="flex-grow-1 d-flex flex-column vh-100"
+        style={{ minWidth: 0 }}
+      >
         <Navbar />
-        <div className="hero-body zw-main-content-scrollable">
+        <div className="flex-grow-1 zw-main-content-scrollable">
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="" element={<Dashboard />} />
@@ -177,14 +178,12 @@ const Layout = () => {
 
   if (loading) {
     return (
-      <div className="hero is-fullheight">
-        <div className="hero-body">
-          <div className="container has-text-centered">
-            <div className="is-size-3">
-              <i className="fas fa-spinner fa-spin" />
-            </div>
-            <p className="mt-3">Loading...</p>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="text-center">
+          <div className="fs-3">
+            <i className="fas fa-spinner fa-spin" />
           </div>
+          <p className="mt-3">Loading...</p>
         </div>
       </div>
     );

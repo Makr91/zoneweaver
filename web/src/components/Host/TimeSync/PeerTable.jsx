@@ -7,43 +7,43 @@ const TimeSyncPeerTable = ({ peers, loading }) => {
         return {
           icon: "⭐",
           description: "Primary server (selected for synchronization)",
-          color: "has-text-success",
+          color: "text-success",
         };
       case "+":
         return {
           icon: "✅",
           description: "Backup server (good candidate)",
-          color: "has-text-info",
+          color: "text-info",
         };
       case "-":
         return {
           icon: "❌",
           description: "Rejected server (unreliable)",
-          color: "has-text-danger",
+          color: "text-danger",
         };
       case "x":
         return {
           icon: "⚠️",
           description: "False ticker (bad time)",
-          color: "has-text-warning",
+          color: "text-warning",
         };
       case ".":
         return {
           icon: "⚪",
           description: "Excess peer (not used)",
-          color: "has-text-grey",
+          color: "text-muted",
         };
       case " ":
         return {
           icon: "⚠️",
           description: "Candidate server (being evaluated)",
-          color: "has-text-warning",
+          color: "text-warning",
         };
       default:
         return {
           icon: "❓",
           description: "Unknown status",
-          color: "has-text-grey",
+          color: "text-muted",
         };
     }
   };
@@ -74,113 +74,115 @@ const TimeSyncPeerTable = ({ peers, loading }) => {
       return "";
     }
     if (value <= thresholds.good) {
-      return "has-text-success";
+      return "text-success";
     }
     if (value <= thresholds.warning) {
-      return "has-text-warning";
+      return "text-warning";
     }
-    return "has-text-danger";
+    return "text-danger";
   };
 
   return (
-    <div className="box mb-4">
-      <h3 className="title is-6">
-        Time Server Peers ({peers.length})
-        {loading && (
-          <span className="ml-2">
-            <i className="fas fa-spinner fa-spin" />
-          </span>
-        )}
-      </h3>
+    <div className="card mb-4">
+      <div className="card-body">
+        <h3 className="fs-6 fw-bold">
+          Time Server Peers ({peers.length})
+          {loading && (
+            <span className="ms-2">
+              <i className="fas fa-spinner fa-spin" />
+            </span>
+          )}
+        </h3>
 
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Server</th>
-              <th>Stratum</th>
-              <th>Delay</th>
-              <th>Offset</th>
-              <th>Jitter</th>
-              <th>Reach %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {peers.map((peer) => {
-              const statusDetails = getPeerStatusIndicator(peer.indicator);
-              return (
-                <tr key={peer.remote || peer.name || Math.random()}>
-                  <td>
-                    <span
-                      className={`icon ${statusDetails.color}`}
-                      title={statusDetails.description}
+        <div className="table-responsive">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Server</th>
+                <th>Stratum</th>
+                <th>Delay</th>
+                <th>Offset</th>
+                <th>Jitter</th>
+                <th>Reach %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {peers.map((peer) => {
+                const statusDetails = getPeerStatusIndicator(peer.indicator);
+                return (
+                  <tr key={peer.remote || peer.name || Math.random()}>
+                    <td>
+                      <span
+                        className={statusDetails.color}
+                        title={statusDetails.description}
+                      >
+                        {statusDetails.icon}
+                      </span>
+                      <span className="small ms-1">
+                        {peer.status || "Unknown"}
+                      </span>
+                    </td>
+                    <td className="font-monospace">
+                      {peer.remote || peer.name || "Unknown Server"}
+                    </td>
+                    <td>{peer.stratum || "N/A"}</td>
+                    <td
+                      className={getHealthColor(peer.delay, {
+                        good: 50,
+                        warning: 200,
+                      })}
                     >
-                      {statusDetails.icon}
-                    </span>
-                    <span className="is-size-7 ml-1">
-                      {peer.status || "Unknown"}
-                    </span>
-                  </td>
-                  <td className="is-family-monospace">
-                    {peer.remote || peer.name || "Unknown Server"}
-                  </td>
-                  <td>{peer.stratum || "N/A"}</td>
-                  <td
-                    className={getHealthColor(peer.delay, {
-                      good: 50,
-                      warning: 200,
-                    })}
-                  >
-                    {formatDelay(peer.delay)}
-                  </td>
-                  <td
-                    className={getHealthColor(Math.abs(peer.offset), {
-                      good: 10,
-                      warning: 100,
-                    })}
-                  >
-                    {formatOffset(peer.offset)}
-                  </td>
-                  <td
-                    className={getHealthColor(peer.jitter, {
-                      good: 10,
-                      warning: 50,
-                    })}
-                  >
-                    {formatJitter(peer.jitter)}
-                  </td>
-                  <td
-                    className={getHealthColor(
-                      100 - (peer.reachability_percent || 0),
-                      { good: 10, warning: 50 }
-                    )}
-                  >
-                    {peer.reachability_percent !== undefined
-                      ? `${peer.reachability_percent}%`
-                      : "N/A"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                      {formatDelay(peer.delay)}
+                    </td>
+                    <td
+                      className={getHealthColor(Math.abs(peer.offset), {
+                        good: 10,
+                        warning: 100,
+                      })}
+                    >
+                      {formatOffset(peer.offset)}
+                    </td>
+                    <td
+                      className={getHealthColor(peer.jitter, {
+                        good: 10,
+                        warning: 50,
+                      })}
+                    >
+                      {formatJitter(peer.jitter)}
+                    </td>
+                    <td
+                      className={getHealthColor(
+                        100 - (peer.reachability_percent || 0),
+                        { good: 10, warning: 50 }
+                      )}
+                    >
+                      {peer.reachability_percent !== undefined
+                        ? `${peer.reachability_percent}%`
+                        : "N/A"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="content is-small mt-3">
-        <p>
-          <strong>Status Indicators:</strong>
-        </p>
-        <p>
-          ⭐ Primary server (active) • ✅ Backup server • ❌ Rejected server •
-          ⚠️ Candidate/Problem • ⚪ Excess peer
-        </p>
-        <p>
-          <strong>Health Colors:</strong>{" "}
-          <span className="has-text-success">Green (good)</span> •{" "}
-          <span className="has-text-warning">Yellow (warning)</span> •{" "}
-          <span className="has-text-danger">Red (problem)</span>
-        </p>
+        <div className="small mt-3">
+          <p>
+            <strong>Status Indicators:</strong>
+          </p>
+          <p>
+            ⭐ Primary server (active) • ✅ Backup server • ❌ Rejected server •
+            ⚠️ Candidate/Problem • ⚪ Excess peer
+          </p>
+          <p>
+            <strong>Health Colors:</strong>{" "}
+            <span className="text-success">Green (good)</span> •{" "}
+            <span className="text-warning">Yellow (warning)</span> •{" "}
+            <span className="text-danger">Red (problem)</span>
+          </p>
+        </div>
       </div>
     </div>
   );

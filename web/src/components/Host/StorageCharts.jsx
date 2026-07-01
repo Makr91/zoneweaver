@@ -34,23 +34,24 @@ const StorageCharts = ({
   }
 
   return (
-    <div className="box mb-4">
-      <div className="level is-mobile mb-3">
-        <div className="level-left">
-          <h4 className="title is-5 mb-0">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-chart-area" />
+    <div className="card mb-4">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h4 className="fs-5 fw-bold mb-0">
+              <span className="d-inline-flex align-items-center gap-1">
+                <span className="me-1">
+                  <i className="fas fa-chart-area" />
+                </span>
+                <span>Real-Time Storage Performance Charts</span>
               </span>
-              <span>Real-Time Storage Performance Charts</span>
-            </span>
-          </h4>
-        </div>
-        <div className="level-right">
-          <div className="field is-grouped">
-            <div className="control">
-              <div className="select is-small">
+            </h4>
+          </div>
+          <div>
+            <div className="d-flex gap-2">
+              <div>
                 <select
+                  className="form-select form-select-sm"
                   value={chartSortBy}
                   onChange={(e) => setChartSortBy(e.target.value)}
                   disabled={loading}
@@ -62,12 +63,10 @@ const StorageCharts = ({
                   <option value="write">Write Bandwidth</option>
                 </select>
               </div>
-            </div>
-            <div className="control">
-              <div className="field is-grouped">
-                <div className="control">
+              <div>
+                <div className="btn-group">
                   <button
-                    className={`button is-small ${seriesVisibility.read ? "is-info" : "is-dark"}`}
+                    className={`btn btn-sm ${seriesVisibility.read ? "btn-info" : "btn-dark"}`}
                     onClick={() =>
                       setSeriesVisibility((prev) => ({
                         ...prev,
@@ -76,17 +75,15 @@ const StorageCharts = ({
                     }
                     title="Toggle Read bandwidth visibility on all charts"
                   >
-                    <span className="icon">
+                    <span className="me-1">
                       <i
                         className={`fas ${seriesVisibility.read ? "fa-eye" : "fa-eye-slash"}`}
                       />
                     </span>
                     <span>Read</span>
                   </button>
-                </div>
-                <div className="control">
                   <button
-                    className={`button is-small ${seriesVisibility.write ? "is-warning" : "is-dark"}`}
+                    className={`btn btn-sm ${seriesVisibility.write ? "btn-warning" : "btn-dark"}`}
                     onClick={() =>
                       setSeriesVisibility((prev) => ({
                         ...prev,
@@ -95,17 +92,15 @@ const StorageCharts = ({
                     }
                     title="Toggle Write bandwidth visibility on all charts"
                   >
-                    <span className="icon">
+                    <span className="me-1">
                       <i
                         className={`fas ${seriesVisibility.write ? "fa-eye" : "fa-eye-slash"}`}
                       />
                     </span>
                     <span>Write</span>
                   </button>
-                </div>
-                <div className="control">
                   <button
-                    className={`button is-small ${seriesVisibility.total ? "is-success" : "is-dark"}`}
+                    className={`btn btn-sm ${seriesVisibility.total ? "btn-success" : "btn-dark"}`}
                     onClick={() =>
                       setSeriesVisibility((prev) => ({
                         ...prev,
@@ -114,7 +109,7 @@ const StorageCharts = ({
                     }
                     title="Toggle Total bandwidth visibility on all charts"
                   >
-                    <span className="icon">
+                    <span className="me-1">
                       <i
                         className={`fas ${seriesVisibility.total ? "fa-eye" : "fa-eye-slash"}`}
                       />
@@ -123,68 +118,68 @@ const StorageCharts = ({
                   </button>
                 </div>
               </div>
-            </div>
-            <div className="control">
-              <button
-                className="button is-small is-ghost"
-                onClick={() => toggleSection("charts")}
-                title={
-                  sectionsCollapsed.charts
-                    ? "Expand section"
-                    : "Collapse section"
-                }
-              >
-                <span className="icon">
-                  <i
-                    className={`fas ${sectionsCollapsed.charts ? "fa-chevron-down" : "fa-chevron-up"}`}
-                  />
-                </span>
-              </button>
+              <div>
+                <button
+                  className="btn btn-sm btn-link"
+                  onClick={() => toggleSection("charts")}
+                  title={
+                    sectionsCollapsed.charts
+                      ? "Expand section"
+                      : "Collapse section"
+                  }
+                >
+                  <span className="me-1">
+                    <i
+                      className={`fas ${sectionsCollapsed.charts ? "fa-chevron-down" : "fa-chevron-up"}`}
+                    />
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
+        {!sectionsCollapsed.charts && (
+          <div>
+            <SummaryCharts
+              chartData={chartData}
+              expandChart={expandChart}
+              summaryChartRefs={summaryChartRefs}
+            />
+
+            <DeviceCharts
+              diskIOStats={diskIOStats}
+              getSortedChartEntries={getSortedChartEntries}
+              expandChart={expandChart}
+              chartRefs={chartRefs}
+              seriesVisibility={seriesVisibility}
+              chartSortBy={chartSortBy}
+            />
+
+            <PoolCharts
+              poolChartData={poolChartData}
+              poolIOStats={poolIOStats}
+              expandChart={expandChart}
+              poolChartRefs={poolChartRefs}
+              seriesVisibility={seriesVisibility}
+            />
+
+            <ArcCharts
+              arcChartData={arcChartData}
+              arcStats={arcStats}
+              expandChart={expandChart}
+            />
+
+            {diskIOStats.length === 0 && arcStats.length === 0 && (
+              <div className="alert alert-info">
+                <p>
+                  No performance data available for charting. Charts will appear
+                  when real-time data is collected.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      {!sectionsCollapsed.charts && (
-        <div>
-          <SummaryCharts
-            chartData={chartData}
-            expandChart={expandChart}
-            summaryChartRefs={summaryChartRefs}
-          />
-
-          <DeviceCharts
-            diskIOStats={diskIOStats}
-            getSortedChartEntries={getSortedChartEntries}
-            expandChart={expandChart}
-            chartRefs={chartRefs}
-            seriesVisibility={seriesVisibility}
-            chartSortBy={chartSortBy}
-          />
-
-          <PoolCharts
-            poolChartData={poolChartData}
-            poolIOStats={poolIOStats}
-            expandChart={expandChart}
-            poolChartRefs={poolChartRefs}
-            seriesVisibility={seriesVisibility}
-          />
-
-          <ArcCharts
-            arcChartData={arcChartData}
-            arcStats={arcStats}
-            expandChart={expandChart}
-          />
-
-          {diskIOStats.length === 0 && arcStats.length === 0 && (
-            <div className="notification is-info">
-              <p>
-                No performance data available for charting. Charts will appear
-                when real-time data is collected.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

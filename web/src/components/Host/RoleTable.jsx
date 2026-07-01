@@ -29,10 +29,8 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
 
   if (loading && roles.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading roles...</p>
       </div>
     );
@@ -40,18 +38,16 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
 
   if (roles.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-user-shield fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No roles found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-user-shield fa-2x text-muted" />
+        <p className="mt-2 text-muted">No roles found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Role Name</th>
@@ -66,95 +62,90 @@ const RoleTable = ({ roles, loading, onDelete, onViewDetails }) => {
           {roles.map((role) => (
             <tr key={role.rolename || role.name}>
               <td>
-                <div className="is-flex is-align-items-center">
-                  <span className="icon has-text-warning">
-                    <i className="fas fa-user-shield" />
-                  </span>
-                  <span className="ml-2">
+                <div className="d-flex align-items-center">
+                  <i className="fas fa-user-shield text-warning me-2" />
+                  <span>
                     <strong>{role.rolename}</strong>
                   </span>
                 </div>
               </td>
               <td>
-                <span className="is-size-7" title={role.comment}>
+                <span className="small" title={role.comment}>
                   {role.comment || "N/A"}
                 </span>
               </td>
               <td>
-                <span
-                  className="is-family-monospace is-size-7"
-                  title={role.shell}
-                >
+                <span className="font-monospace small" title={role.shell}>
                   {formatShell(role.shell)}
                 </span>
               </td>
               <td>
                 {role.authorizations && role.authorizations.length > 0 ? (
-                  <div className="tags">
+                  <div className="d-flex flex-wrap gap-1">
                     {role.authorizations.slice(0, 2).map((auth) => (
-                      <span key={auth} className="tag is-info is-small">
+                      <span key={auth} className="badge text-bg-info">
                         {auth}
                       </span>
                     ))}
                     {role.authorizations.length > 2 && (
-                      <span className="tag is-light is-small">
+                      <span className="badge text-bg-secondary">
                         +{role.authorizations.length - 2} more
                       </span>
                     )}
                   </div>
                 ) : (
-                  <span className="has-text-grey is-italic">None</span>
+                  <span className="text-muted fst-italic">None</span>
                 )}
               </td>
               <td>
                 {role.profiles && role.profiles.length > 0 ? (
-                  <div className="tags">
+                  <div className="d-flex flex-wrap gap-1">
                     {role.profiles.slice(0, 2).map((profile) => (
-                      <span
-                        key={profile}
-                        className="tag is-primary is-light is-small"
-                      >
+                      <span key={profile} className="badge text-bg-primary">
                         {profile}
                       </span>
                     ))}
                     {role.profiles.length > 2 && (
-                      <span className="tag is-light is-small">
+                      <span className="badge text-bg-secondary">
                         +{role.profiles.length - 2} more
                       </span>
                     )}
                   </div>
                 ) : (
-                  <span className="has-text-grey is-italic">None</span>
+                  <span className="text-muted fst-italic">None</span>
                 )}
               </td>
               <td>
-                <div className="buttons are-small">
+                <div className="d-flex gap-2">
                   {/* View Details Button */}
                   <button
-                    className="button"
+                    type="button"
+                    className="btn btn-secondary btn-sm"
                     onClick={() => handleAction(role, "viewDetails")}
                     disabled={loading}
                     title="View Details"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-info-circle" />
-                    </span>
+                    <i className="fas fa-info-circle" />
                   </button>
 
                   {/* Delete Button */}
                   <button
-                    className={`button is-danger ${
-                      actionLoading[`${role.rolename}-delete`]
-                        ? "is-loading"
-                        : ""
-                    }`}
+                    type="button"
+                    className="btn btn-danger btn-sm"
                     onClick={() => handleAction(role, "delete")}
-                    disabled={loading}
+                    disabled={
+                      loading || actionLoading[`${role.rolename}-delete`]
+                    }
                     title="Delete Role"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-trash" />
-                    </span>
+                    {actionLoading[`${role.rolename}-delete`] && (
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <i className="fas fa-trash" />
                   </button>
                 </div>
               </td>

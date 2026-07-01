@@ -30,19 +30,19 @@ const UsersTab = ({
 }) => (
   <>
     {/* Current User Info */}
-    <div className="box mb-4">
-      <h2 className="title is-5">Your Account</h2>
-      <div className="content">
+    <div className="card mb-4">
+      <div className="card-body">
+        <h2 className="fs-5 fw-bold">Your Account</h2>
         <p>
           <strong>Username:</strong> {user?.username}
-          <span className={`tag ml-2 ${getRoleBadgeClass(user?.role)}`}>
+          <span className={`badge ms-2 ${getRoleBadgeClass(user?.role)}`}>
             {user?.role}
           </span>
         </p>
         <p>
           <strong>Email:</strong> {user?.email}
         </p>
-        <p className="is-size-7 has-text-grey">
+        <p className="small text-muted">
           You can manage your profile and change your password in the Profile
           section.
         </p>
@@ -51,22 +51,21 @@ const UsersTab = ({
 
     {/* Invite User Section */}
     {(user?.role === "admin" || user?.role === "super-admin") && (
-      <div className="box mb-4">
-        <div className="level">
-          <div className="level-left">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h2 className="title is-6 mb-2">Invite New User</h2>
-              <p className="subtitle is-7 has-text-grey">
+              <h2 className="fs-6 fw-bold mb-2">Invite New User</h2>
+              <p className="text-muted small">
                 Send an email invitation to join{" "}
                 {user?.role === "super-admin" && viewScope === "all"
                   ? "the system"
                   : "your organization"}
               </p>
             </div>
-          </div>
-          <div className="level-right">
             <button
-              className="button is-primary"
+              type="button"
+              className="btn btn-primary"
               onClick={() => {
                 setShowInviteModal(true);
                 if (
@@ -78,110 +77,102 @@ const UsersTab = ({
               }}
               disabled={loading || inviteLoading}
             >
-              <span className="icon is-small">
-                <i className="fas fa-envelope" />
-              </span>
-              <span>Invite User</span>
+              <i className="fas fa-envelope me-2" />
+              Invite User
             </button>
           </div>
-        </div>
 
-        {inviteMsg && (
-          <div
-            className={`notification ${getNotificationClass(inviteMsg)} mt-3`}
-          >
-            <p>{inviteMsg}</p>
-          </div>
-        )}
+          {inviteMsg && (
+            <div className={`alert ${getNotificationClass(inviteMsg)} mt-3`}>
+              <p>{inviteMsg}</p>
+            </div>
+          )}
+        </div>
       </div>
     )}
 
     {/* Users Table */}
-    <div className="box">
-      <div className="level mb-3">
-        <div className="level-left">
-          <h2 className="title is-5">
+    <div className="card">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2 className="fs-5 fw-bold">
             {viewScope === "all"
               ? "All Users (System-wide)"
               : "Organization Users"}
           </h2>
+          <div>
+            {viewScope === "all" && (
+              <span className="badge text-bg-warning">Super Admin View</span>
+            )}
+            {viewScope === "organization" && (
+              <span className="badge text-bg-info">Organization View</span>
+            )}
+          </div>
         </div>
-        <div className="level-right">
-          {viewScope === "all" && (
-            <span className="tag is-warning">Super Admin View</span>
-          )}
-          {viewScope === "organization" && (
-            <span className="tag is-info">Organization View</span>
-          )}
-        </div>
-      </div>
 
-      {loading ? (
-        <div className="has-text-centered p-4">
-          <div className="button is-loading is-large is-ghost" />
-          <p className="mt-2">Loading users...</p>
-        </div>
-      ) : (
-        <div className="table-container">
-          <table className="table is-fullwidth is-hoverable">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Organization</th>
-                <th>Role</th>
-                <th>Created</th>
-                <th>Last Login</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allUsers.map((targetUser) => (
-                <tr key={targetUser.id}>
-                  <td>
-                    <strong>
-                      {targetUser.id === user.id
-                        ? user.username
-                        : targetUser.username}
-                    </strong>
-                    {targetUser.id === user.id && (
-                      <span className="tag is-small is-info ml-2">You</span>
-                    )}
-                  </td>
-                  <td>{targetUser.email}</td>
-                  <td>
-                    {targetUser.organization_name ? (
-                      targetUser.organization_name
-                    ) : (
-                      <span className="has-text-grey is-italic">
-                        {targetUser.role === "super-admin"
-                          ? "System Admin"
-                          : "No Organization"}
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    {editingUser === targetUser.id ? (
-                      <div className="field has-addons">
-                        <div className="control">
-                          <div className="select is-small">
-                            <select
-                              value={newRole}
-                              onChange={(e) => setNewRole(e.target.value)}
-                            >
-                              <option value="">Select Role</option>
-                              <option value="user">User</option>
-                              <option value="admin">Admin</option>
-                              {user.role === "super-admin" && (
-                                <option value="super-admin">Super Admin</option>
-                              )}
-                            </select>
-                          </div>
-                        </div>
-                        <div className="control">
+        {loading ? (
+          <div className="text-center p-4">
+            <span className="spinner-border" role="status" aria-hidden="true" />
+            <p className="mt-2">Loading users...</p>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Organization</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                  <th>Last Login</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allUsers.map((targetUser) => (
+                  <tr key={targetUser.id}>
+                    <td>
+                      <strong>
+                        {targetUser.id === user.id
+                          ? user.username
+                          : targetUser.username}
+                      </strong>
+                      {targetUser.id === user.id && (
+                        <span className="badge text-bg-info ms-2">You</span>
+                      )}
+                    </td>
+                    <td>{targetUser.email}</td>
+                    <td>
+                      {targetUser.organization_name ? (
+                        targetUser.organization_name
+                      ) : (
+                        <span className="text-muted fst-italic">
+                          {targetUser.role === "super-admin"
+                            ? "System Admin"
+                            : "No Organization"}
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {editingUser === targetUser.id ? (
+                        <div className="input-group input-group-sm">
+                          <select
+                            className="form-select"
+                            value={newRole}
+                            onChange={(e) => setNewRole(e.target.value)}
+                          >
+                            <option value="">Select Role</option>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                            {user.role === "super-admin" && (
+                              <option value="super-admin">Super Admin</option>
+                            )}
+                          </select>
                           <button
-                            className="button is-small is-success"
+                            type="button"
+                            className="btn btn-success"
                             onClick={() =>
                               handleRoleChange(targetUser.id, newRole)
                             }
@@ -189,10 +180,9 @@ const UsersTab = ({
                           >
                             Save
                           </button>
-                        </div>
-                        <div className="control">
                           <button
-                            className="button is-small"
+                            type="button"
+                            className="btn btn-secondary"
                             onClick={() => {
                               setEditingUser(null);
                               setNewRole("");
@@ -201,93 +191,97 @@ const UsersTab = ({
                             Cancel
                           </button>
                         </div>
-                      </div>
-                    ) : (
+                      ) : (
+                        <span
+                          className={`badge ${getRoleBadgeClass(targetUser.role)}`}
+                        >
+                          {targetUser.role}
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      {new Date(targetUser.created_at).toLocaleDateString()}
+                    </td>
+                    <td>
+                      {targetUser.last_login
+                        ? new Date(targetUser.last_login).toLocaleDateString()
+                        : "Never"}
+                    </td>
+                    <td>
                       <span
-                        className={`tag ${getRoleBadgeClass(targetUser.role)}`}
+                        className={`badge ${targetUser.is_active ? "text-bg-success" : "text-bg-danger"}`}
                       >
-                        {targetUser.role}
+                        {targetUser.is_active ? "Active" : "Inactive"}
                       </span>
-                    )}
-                  </td>
-                  <td>
-                    {new Date(targetUser.created_at).toLocaleDateString()}
-                  </td>
-                  <td>
-                    {targetUser.last_login
-                      ? new Date(targetUser.last_login).toLocaleDateString()
-                      : "Never"}
-                  </td>
-                  <td>
-                    <span
-                      className={`tag ${targetUser.is_active ? "is-success" : "is-danger"}`}
-                    >
-                      {targetUser.is_active ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td>
-                    {canModifyUser(user, targetUser) ? (
-                      <div className="buttons are-small">
-                        {editingUser !== targetUser.id && (
-                          <>
-                            <button
-                              className="button is-small is-warning"
-                              onClick={() => {
-                                setEditingUser(targetUser.id);
-                                setNewRole(targetUser.role);
-                              }}
-                              disabled={loading}
-                            >
-                              Edit Role
-                            </button>
-                            {targetUser.is_active ? (
+                    </td>
+                    <td>
+                      {canModifyUser(user, targetUser) ? (
+                        <div className="d-flex gap-1">
+                          {editingUser !== targetUser.id && (
+                            <>
                               <button
-                                className="button is-small is-danger"
-                                onClick={() =>
-                                  handleDeactivateUser(targetUser.id)
-                                }
+                                type="button"
+                                className="btn btn-sm btn-warning"
+                                onClick={() => {
+                                  setEditingUser(targetUser.id);
+                                  setNewRole(targetUser.role);
+                                }}
                                 disabled={loading}
                               >
-                                Deactivate
+                                Edit Role
                               </button>
-                            ) : (
-                              <button
-                                className="button is-small is-success"
-                                onClick={() =>
-                                  handleReactivateUser(targetUser.id)
-                                }
-                                disabled={loading}
-                              >
-                                Reactivate
-                              </button>
-                            )}
-                            {user.role === "super-admin" && (
-                              <button
-                                className="button is-small is-danger is-outlined"
-                                onClick={() => setDeleteModalUser(targetUser)}
-                                disabled={loading}
-                                title="Permanent deletion (Super Admin only)"
-                              >
-                                Delete
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="has-text-grey is-size-7">
-                        {targetUser.id === user.id
-                          ? "Cannot modify self"
-                          : "No permission"}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                              {targetUser.is_active ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger"
+                                  onClick={() =>
+                                    handleDeactivateUser(targetUser.id)
+                                  }
+                                  disabled={loading}
+                                >
+                                  Deactivate
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success"
+                                  onClick={() =>
+                                    handleReactivateUser(targetUser.id)
+                                  }
+                                  disabled={loading}
+                                >
+                                  Reactivate
+                                </button>
+                              )}
+                              {user.role === "super-admin" && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => setDeleteModalUser(targetUser)}
+                                  disabled={loading}
+                                  title="Permanent deletion (Super Admin only)"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted small">
+                          {targetUser.id === user.id
+                            ? "Cannot modify self"
+                            : "No permission"}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   </>
 );

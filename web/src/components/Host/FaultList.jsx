@@ -142,89 +142,88 @@ const FaultList = ({ server }) => {
     <div>
       {/* Fault Summary */}
       {summary && (
-        <div className="box mb-4">
-          <h4 className="title is-6 mb-3">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-chart-pie" />
-              </span>
+        <div className="card mb-4">
+          <div className="card-body">
+            <h4 className="fs-6 fw-bold mb-3">
+              <i className="fas fa-chart-pie me-2" />
               <span>Fault Summary</span>
-            </span>
-          </h4>
+            </h4>
 
-          <div className="columns">
-            <div className="column">
-              <div className="field">
-                <span className="label is-small">Total Faults</span>
-                <p className="control">
-                  <span className="tag is-info is-medium">
-                    {summary.totalFaults}
-                  </span>
-                </p>
+            <div className="row g-3">
+              <div className="col">
+                <div className="mb-3">
+                  <span className="form-label">Total Faults</span>
+                  <p>
+                    <span className="badge text-bg-info">
+                      {summary.totalFaults}
+                    </span>
+                  </p>
+                </div>
               </div>
+              {summary.severityLevels.length > 0 && (
+                <div className="col">
+                  <div className="mb-3">
+                    <span className="form-label">Severity Levels</span>
+                    <div>
+                      <div className="d-flex flex-wrap gap-1">
+                        {[
+                          ...new Set(
+                            summary.severityLevels.map((level) =>
+                              level.toLowerCase()
+                            )
+                          ),
+                        ].map((level) => (
+                          <span
+                            key={level}
+                            className={`badge ${getSeverityTagClass(level)}`}
+                          >
+                            {level.charAt(0).toUpperCase() + level.slice(1)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {summary.faultClasses.length > 0 && (
+                <div className="col">
+                  <div className="mb-3">
+                    <span className="form-label">Fault Classes</span>
+                    <div>
+                      <div className="d-flex flex-wrap gap-1">
+                        {summary.faultClasses.slice(0, 3).map((cls) => (
+                          <span key={cls} className="badge text-bg-secondary">
+                            {cls.split(".").pop()}
+                          </span>
+                        ))}
+                        {summary.faultClasses.length > 3 && (
+                          <span className="badge text-bg-secondary">
+                            +{summary.faultClasses.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            {summary.severityLevels.length > 0 && (
-              <div className="column">
-                <div className="field">
-                  <span className="label is-small">Severity Levels</span>
-                  <div className="control">
-                    <div className="tags">
-                      {[
-                        ...new Set(
-                          summary.severityLevels.map((level) =>
-                            level.toLowerCase()
-                          )
-                        ),
-                      ].map((level) => (
-                        <span
-                          key={level}
-                          className={`tag ${getSeverityTagClass(level)}`}
-                        >
-                          {level.charAt(0).toUpperCase() + level.slice(1)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {summary.faultClasses.length > 0 && (
-              <div className="column">
-                <div className="field">
-                  <span className="label is-small">Fault Classes</span>
-                  <div className="control">
-                    <div className="tags">
-                      {summary.faultClasses.slice(0, 3).map((cls) => (
-                        <span key={cls} className="tag is-light is-small">
-                          {cls.split(".").pop()}
-                        </span>
-                      ))}
-                      {summary.faultClasses.length > 3 && (
-                        <span className="tag is-grey is-small">
-                          +{summary.faultClasses.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
 
       {/* Fault Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column is-3">
-            <div className="field">
-              <label htmlFor="fault-limit" className="label">
-                Max Faults
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-lg-3">
+              <div className="mb-3">
+                <label htmlFor="fault-limit" className="form-label">
+                  Max Faults
+                </label>
+                <div>
                   <select
                     id="fault-limit"
+                    className="form-select"
                     value={filters.limit}
                     onChange={(e) =>
                       handleFilterChange("limit", parseInt(e.target.value))
@@ -238,60 +237,65 @@ const FaultList = ({ server }) => {
                 </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label">Include Resolved</span>
-              <div className="control">
-                <label className="switch is-medium">
-                  <input
-                    type="checkbox"
-                    checked={filters.all}
-                    onChange={(e) =>
-                      handleFilterChange("all", e.target.checked)
-                    }
-                  />
-                  <span className="check" />
-                  <span className="control-label">Show All</span>
-                </label>
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label">Include Resolved</span>
+                <div>
+                  <div className="form-check form-switch">
+                    <input
+                      id="fault-include-resolved"
+                      className="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      checked={filters.all}
+                      onChange={(e) =>
+                        handleFilterChange("all", e.target.checked)
+                      }
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="fault-include-resolved"
+                    >
+                      Show All
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
-                <button
-                  className="button is-info"
-                  onClick={() => loadFaults(true)}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label" aria-hidden="true">
+                  &nbsp;
+                </span>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={() => loadFaults(true)}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-sync-alt me-2" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
-                <button
-                  className="button"
-                  onClick={clearFilters}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                  <span>Clear</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label" aria-hidden="true">
+                  &nbsp;
+                </span>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={clearFilters}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times me-2" />
+                    <span>Clear</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -300,33 +304,39 @@ const FaultList = ({ server }) => {
 
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
       {/* Faults Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              System Faults ({faults.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold">
+                System Faults ({faults.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
           </div>
-        </div>
 
-        <FaultTable
-          faults={faults}
-          loading={loading}
-          onAction={handleFaultAction}
-          onViewDetails={handleViewDetails}
-        />
+          <FaultTable
+            faults={faults}
+            loading={loading}
+            onAction={handleFaultAction}
+            onViewDetails={handleViewDetails}
+          />
+        </div>
       </div>
 
       {/* Fault Details Modal */}

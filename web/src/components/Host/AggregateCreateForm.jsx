@@ -17,80 +17,77 @@ const AggregateCreateForm = ({
   cdpServiceRunning,
 }) => (
   <>
-    <div className="field">
-      <label htmlFor="aggregate-name" className="label">
+    <div className="mb-3">
+      <label htmlFor="aggregate-name" className="form-label">
         Aggregate Name *
       </label>
-      <div className="control">
-        <input
-          id="aggregate-name"
-          className="input"
-          type="text"
-          placeholder="e.g., aggr0"
-          value={formData.name}
-          onChange={(e) => onInputChange("name", e.target.value)}
-          disabled={creating}
-          required
-        />
-      </div>
-      <p className="help">
+      <input
+        id="aggregate-name"
+        className="form-control"
+        type="text"
+        placeholder="e.g., aggr0"
+        value={formData.name}
+        onChange={(e) => onInputChange("name", e.target.value)}
+        disabled={creating}
+        required
+      />
+      <p className="form-text text-muted">
         Must start with a letter and contain only letters, numbers, and
         underscores
       </p>
     </div>
 
-    <div className="field">
-      <label htmlFor="aggregate-link-select" className="label">
+    <div className="mb-3">
+      <label htmlFor="aggregate-link-select" className="form-label">
         Member Links *
       </label>
-      <div className="field has-addons">
-        <div className="control is-expanded">
-          <div className="select is-fullwidth">
-            <select
-              id="aggregate-link-select"
-              value={newLink}
-              onChange={(e) => setNewLink(e.target.value)}
-              disabled={creating || loadingLinks}
-            >
-              <option value="">
-                {loadingLinks
-                  ? "Loading physical links..."
-                  : "Select a physical link to add"}
+      <div className="input-group">
+        <select
+          id="aggregate-link-select"
+          className="form-select"
+          value={newLink}
+          onChange={(e) => setNewLink(e.target.value)}
+          disabled={creating || loadingLinks}
+        >
+          <option value="">
+            {loadingLinks
+              ? "Loading physical links..."
+              : "Select a physical link to add"}
+          </option>
+          {availableLinks
+            .filter((link) => !formData.links.includes(link.link))
+            .map((link) => (
+              <option key={link.link} value={link.link}>
+                {link.link} ({link.state}, {link.speed || "Unknown speed"})
               </option>
-              {availableLinks
-                .filter((link) => !formData.links.includes(link.link))
-                .map((link) => (
-                  <option key={link.link} value={link.link}>
-                    {link.link} ({link.state}, {link.speed || "Unknown speed"})
-                  </option>
-                ))}
-            </select>
-          </div>
-        </div>
-        <div className="control">
-          <button
-            type="button"
-            className="button is-info"
-            onClick={onAddLink}
-            disabled={!newLink.trim() || creating}
-          >
-            Add Link
-          </button>
-        </div>
+            ))}
+        </select>
+        <button
+          type="button"
+          className="btn btn-info"
+          onClick={onAddLink}
+          disabled={!newLink.trim() || creating}
+        >
+          Add Link
+        </button>
       </div>
 
       {formData.links.length > 0 && (
-        <div className="content mt-3">
+        <div className="mt-3">
           <p>
             <strong>Current Links:</strong>
           </p>
-          <div className="tags">
+          <div className="d-flex flex-wrap gap-2">
             {formData.links.map((link) => (
-              <span key={link} className="tag is-info">
+              <span
+                key={link}
+                className="badge text-bg-info d-inline-flex align-items-center gap-1"
+              >
                 {link}
                 <button
                   type="button"
-                  className="delete is-small"
+                  className="btn-close btn-close-white"
+                  aria-label="Remove"
                   onClick={() => onRemoveLink(link)}
                   disabled={creating}
                 />
@@ -101,97 +98,86 @@ const AggregateCreateForm = ({
       )}
     </div>
 
-    <div className="columns">
-      <div className="column">
-        <div className="field">
-          <label htmlFor="aggregate-policy" className="label">
+    <div className="row g-3">
+      <div className="col">
+        <div className="mb-3">
+          <label htmlFor="aggregate-policy" className="form-label">
             Load Balancing Policy
           </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="aggregate-policy"
-                value={formData.policy}
-                onChange={(e) => onInputChange("policy", e.target.value)}
-                disabled={creating}
-              >
-                <option value="L2">L2 - MAC based</option>
-                <option value="L3">L3 - IP based</option>
-                <option value="L4">L4 - IP + Port based</option>
-                <option value="L2L3">L2L3 - MAC + IP</option>
-                <option value="L2L4">L2L4 - MAC + IP + Port</option>
-                <option value="L3L4">L3L4 - IP + Port</option>
-                <option value="L2L3L4">L2L3L4 - All layers</option>
-              </select>
-            </div>
-          </div>
+          <select
+            id="aggregate-policy"
+            className="form-select"
+            value={formData.policy}
+            onChange={(e) => onInputChange("policy", e.target.value)}
+            disabled={creating}
+          >
+            <option value="L2">L2 - MAC based</option>
+            <option value="L3">L3 - IP based</option>
+            <option value="L4">L4 - IP + Port based</option>
+            <option value="L2L3">L2L3 - MAC + IP</option>
+            <option value="L2L4">L2L4 - MAC + IP + Port</option>
+            <option value="L3L4">L3L4 - IP + Port</option>
+            <option value="L2L3L4">L2L3L4 - All layers</option>
+          </select>
         </div>
       </div>
-      <div className="column">
-        <div className="field">
-          <label htmlFor="aggregate-lacp-mode" className="label">
+      <div className="col">
+        <div className="mb-3">
+          <label htmlFor="aggregate-lacp-mode" className="form-label">
             LACP Mode
           </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="aggregate-lacp-mode"
-                value={formData.lacp_mode}
-                onChange={(e) => onInputChange("lacp_mode", e.target.value)}
-                disabled={creating}
-              >
-                <option value="off">Off</option>
-                <option value="active">Active</option>
-                <option value="passive">Passive</option>
-              </select>
-            </div>
-          </div>
+          <select
+            id="aggregate-lacp-mode"
+            className="form-select"
+            value={formData.lacp_mode}
+            onChange={(e) => onInputChange("lacp_mode", e.target.value)}
+            disabled={creating}
+          >
+            <option value="off">Off</option>
+            <option value="active">Active</option>
+            <option value="passive">Passive</option>
+          </select>
         </div>
       </div>
     </div>
 
     {formData.lacp_mode !== "off" && (
-      <div className="field">
-        <label htmlFor="aggregate-lacp-timer" className="label">
+      <div className="mb-3">
+        <label htmlFor="aggregate-lacp-timer" className="form-label">
           LACP Timer
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="aggregate-lacp-timer"
-              value={formData.lacp_timer}
-              onChange={(e) => onInputChange("lacp_timer", e.target.value)}
-              disabled={creating}
-            >
-              <option value="short">Short (1 second)</option>
-              <option value="long">Long (30 seconds)</option>
-            </select>
-          </div>
-        </div>
+        <select
+          id="aggregate-lacp-timer"
+          className="form-select"
+          value={formData.lacp_timer}
+          onChange={(e) => onInputChange("lacp_timer", e.target.value)}
+          disabled={creating}
+        >
+          <option value="short">Short (1 second)</option>
+          <option value="long">Long (30 seconds)</option>
+        </select>
       </div>
     )}
 
-    <div className="field">
-      <label htmlFor="aggregate-mac" className="label">
+    <div className="mb-3">
+      <label htmlFor="aggregate-mac" className="form-label">
         MAC Address (Optional)
       </label>
-      <div className="control">
-        <input
-          id="aggregate-mac"
-          className="input"
-          type="text"
-          placeholder="XX:XX:XX:XX:XX:XX"
-          value={formData.unicast_address}
-          onChange={(e) => onInputChange("unicast_address", e.target.value)}
-          disabled={creating}
-        />
-      </div>
-      <p className="help">Leave empty to auto-generate</p>
+      <input
+        id="aggregate-mac"
+        className="form-control"
+        type="text"
+        placeholder="XX:XX:XX:XX:XX:XX"
+        value={formData.unicast_address}
+        onChange={(e) => onInputChange("unicast_address", e.target.value)}
+        disabled={creating}
+      />
+      <p className="form-text text-muted">Leave empty to auto-generate</p>
     </div>
 
     {cdpServiceRunning && (
-      <div className="notification is-warning mb-4">
-        <div className="content">
+      <div className="alert alert-warning mb-4">
+        <div>
           <p>
             <strong>CDP Service Conflict</strong>
           </p>
@@ -200,24 +186,24 @@ const AggregateCreateForm = ({
             must be disabled before creating link aggregates.
           </p>
 
-          <div className="field mt-3">
-            <div className="control">
-              <label htmlFor="aggregate-disable-cdp" className="checkbox">
-                <input
-                  id="aggregate-disable-cdp"
-                  type="checkbox"
-                  checked={formData.disableCdp}
-                  onChange={(e) =>
-                    onInputChange("disableCdp", e.target.checked)
-                  }
-                  disabled={creating}
-                />{" "}
-                <strong className="ml-2">
-                  Disable CDP service before creating aggregate
-                </strong>
+          <div className="mb-3 mt-3">
+            <div className="form-check">
+              <input
+                id="aggregate-disable-cdp"
+                className="form-check-input"
+                type="checkbox"
+                checked={formData.disableCdp}
+                onChange={(e) => onInputChange("disableCdp", e.target.checked)}
+                disabled={creating}
+              />
+              <label
+                className="form-check-label"
+                htmlFor="aggregate-disable-cdp"
+              >
+                <strong>Disable CDP service before creating aggregate</strong>
               </label>
             </div>
-            <p className="help">
+            <p className="form-text text-muted">
               This will stop the CDP service to allow aggregate creation. You
               can re-enable it later from the Services page.
             </p>
@@ -226,16 +212,17 @@ const AggregateCreateForm = ({
       </div>
     )}
 
-    <div className="field">
-      <div className="control">
-        <label htmlFor="aggregate-temporary" className="checkbox">
-          <input
-            id="aggregate-temporary"
-            type="checkbox"
-            checked={formData.temporary}
-            onChange={(e) => onInputChange("temporary", e.target.checked)}
-            disabled={creating}
-          />{" "}
+    <div className="mb-3">
+      <div className="form-check">
+        <input
+          id="aggregate-temporary"
+          className="form-check-input"
+          type="checkbox"
+          checked={formData.temporary}
+          onChange={(e) => onInputChange("temporary", e.target.checked)}
+          disabled={creating}
+        />
+        <label className="form-check-label" htmlFor="aggregate-temporary">
           Temporary (not persistent across reboots)
         </label>
       </div>

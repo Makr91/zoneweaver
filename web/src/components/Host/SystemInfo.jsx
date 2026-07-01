@@ -12,38 +12,30 @@ const SystemInfo = ({
 }) => {
   const getHealthStatusClass = (status) => {
     if (status === "healthy") {
-      return "is-success";
+      return "text-bg-success";
     }
     if (status === "warning") {
-      return "is-warning";
+      return "text-bg-warning";
     }
-    return "is-danger";
+    return "text-bg-danger";
   };
 
   return (
-    <div className="box mb-5">
-      <h3 className="title is-5 mb-4">
-        <span className="icon-text">
-          <span className="icon">
-            <i className="fas fa-tachometer-alt" />
-          </span>
+    <div className="card mb-5">
+      <div className="card-body">
+        <h5 className="h5 mb-4 d-flex align-items-center gap-2">
+          <i className="fas fa-tachometer-alt" />
           <span>Host Overview</span>
-        </span>
-      </h3>
+        </h5>
 
-      <div className="columns">
-        {/* System Information with Monitoring & Tasks */}
-        <div className="column is-6">
-          <div className="content">
-            <h4 className="subtitle is-6 mb-3">
-              <span className="icon-text">
-                <span className="icon has-text-info">
-                  <i className="fas fa-server" />
-                </span>
-                <span>System Information</span>
-              </span>
-            </h4>
-            <table className="table is-fullwidth is-narrow">
+        <div className="row g-3">
+          {/* System Information with Monitoring & Tasks */}
+          <div className="col-12 col-lg-6">
+            <h6 className="h6 mb-3 d-flex align-items-center gap-2">
+              <i className="fas fa-server text-info" />
+              <span>System Information</span>
+            </h6>
+            <table className="table table-sm">
               <tbody>
                 <tr>
                   <td>
@@ -86,12 +78,12 @@ const SystemInfo = ({
                       </td>
                       <td>
                         <span
-                          className={`tag ${monitoringStatus.isRunning ? "is-success" : "is-danger"}`}
+                          className={`badge ${monitoringStatus.isRunning ? "text-bg-success" : "text-bg-danger"}`}
                         >
                           {monitoringStatus.isRunning ? "Running" : "Stopped"}
                         </span>
                         {monitoringStatus.isInitialized && (
-                          <span className="tag is-success ml-1">
+                          <span className="badge text-bg-success ms-1">
                             Initialized
                           </span>
                         )}
@@ -106,7 +98,7 @@ const SystemInfo = ({
                     </td>
                     <td>
                       <span
-                        className={`tag ${getHealthStatusClass(monitoringHealth.status)}`}
+                        className={`badge ${getHealthStatusClass(monitoringHealth.status)}`}
                       >
                         {monitoringHealth.status}
                       </span>
@@ -120,14 +112,14 @@ const SystemInfo = ({
                       <strong>Task Queue</strong>
                     </td>
                     <td>
-                      <span className="tag is-info mr-1">
+                      <span className="badge text-bg-info me-1">
                         {taskStats.pending || 0} Pending
                       </span>
-                      <span className="tag is-success mr-1">
+                      <span className="badge text-bg-success me-1">
                         {taskStats.completed || 0} Done
                       </span>
                       {(taskStats.failed || 0) > 0 && (
-                        <span className="tag is-danger">
+                        <span className="badge text-bg-danger">
                           {taskStats.failed} Failed
                         </span>
                       )}
@@ -137,13 +129,13 @@ const SystemInfo = ({
               </tbody>
             </table>
           </div>
-        </div>
 
-        {/* Resource Utilization */}
-        <ResourceUtilization
-          serverStats={serverStats}
-          swapSummaryData={swapSummaryData}
-        />
+          {/* Resource Utilization */}
+          <ResourceUtilization
+            serverStats={serverStats}
+            swapSummaryData={swapSummaryData}
+          />
+        </div>
       </div>
     </div>
   );

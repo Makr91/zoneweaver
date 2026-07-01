@@ -1,34 +1,34 @@
 /**
- * Get Bulma notification class based on validation state
+ * Get Bootstrap alert class based on validation state
  * @param {Array} errors - Validation errors
  * @param {Array} warnings - Validation warnings
- * @returns {string} Bulma class name
+ * @returns {string} Bootstrap alert class name
  */
 export const getValidationColor = (errors, warnings) => {
   if (errors && errors.length > 0) {
-    return "is-danger";
+    return "alert-danger";
   }
   if (warnings && warnings.length > 0) {
-    return "is-warning";
+    return "alert-warning";
   }
-  return "is-success";
+  return "alert-success";
 };
 
 /**
- * Get Bulma tag class based on service status state
+ * Get Bootstrap badge class based on service status state
  * @param {object} status - Service status object
- * @returns {string} Bulma class name
+ * @returns {string} Bootstrap badge class name
  */
 export const getServiceStatusColor = (status) => {
   switch (status?.state?.toLowerCase()) {
     case "online":
-      return "is-success";
+      return "text-bg-success";
     case "offline":
-      return "is-danger";
+      return "text-bg-danger";
     case "maintenance":
-      return "is-warning";
+      return "text-bg-warning";
     default:
-      return "is-light";
+      return "text-bg-secondary";
   }
 };
 
@@ -269,7 +269,7 @@ export const processRuleDisplay = (rule) => {
     rule.selector?.includes(";") || rule.selector?.includes(",");
 
   let actionType = rule.parsed?.action_type || "unknown";
-  let target = rule.parsed?.action_target || rule.action || "";
+  let target = String(rule.parsed?.action_target || rule.action || "");
 
   const specialMatch = matchSpecialTarget(
     rule,
@@ -304,58 +304,82 @@ export const processRuleDisplay = (rule) => {
  * @returns {object} Display info { class, icon, text }
  */
 export const getActionTypeDisplay = (actionType, isComplex) => {
-  const baseClass = isComplex ? "is-warning" : "";
+  const baseClass = isComplex ? "text-bg-warning" : "";
 
   switch (actionType) {
     case "file":
-      return { class: `is-info ${baseClass}`, icon: "fa-file", text: "File" };
+      return {
+        class: `${isComplex ? baseClass : "text-bg-info"}`,
+        icon: "fa-file",
+        text: "File",
+      };
     case "file_async":
-      return { class: `is-info`, icon: "fa-file", text: "Async File" };
+      return { class: `text-bg-info`, icon: "fa-file", text: "Async File" };
     case "remote_host":
       return {
-        class: `is-warning ${baseClass}`,
+        class: `text-bg-warning`,
         icon: "fa-server",
         text: "Remote",
       };
     case "all_users":
       return {
-        class: `is-danger ${baseClass}`,
+        class: `${isComplex ? baseClass : "text-bg-danger"}`,
         icon: "fa-users",
         text: "All Users",
       };
     case "user":
       return {
-        class: `is-primary ${baseClass}`,
+        class: `${isComplex ? baseClass : "text-bg-primary"}`,
         icon: "fa-user",
         text: "User",
       };
     case "multiple_users":
       return {
-        class: `is-primary ${baseClass}`,
+        class: `${isComplex ? baseClass : "text-bg-primary"}`,
         icon: "fa-users",
         text: "Multi-User",
       };
     case "conditional":
-      return { class: "is-warning", icon: "fa-code", text: "Conditional" };
+      return { class: "text-bg-warning", icon: "fa-code", text: "Conditional" };
     case "conditional_choice":
-      return { class: "is-warning", icon: "fa-code-branch", text: "If/Else" };
+      return {
+        class: "text-bg-warning",
+        icon: "fa-code-branch",
+        text: "If/Else",
+      };
     case "m4_block_start":
-      return { class: "is-info", icon: "fa-play", text: "Block Start" };
+      return { class: "text-bg-info", icon: "fa-play", text: "Block Start" };
     case "m4_block_end":
-      return { class: "is-info", icon: "fa-stop", text: "Block End" };
+      return { class: "text-bg-info", icon: "fa-stop", text: "Block End" };
     case "rsyslog_module":
-      return { class: "is-success", icon: "fa-puzzle-piece", text: "Module" };
+      return {
+        class: "text-bg-success",
+        icon: "fa-puzzle-piece",
+        text: "Module",
+      };
     case "rsyslog_global":
-      return { class: "is-success", icon: "fa-cogs", text: "Global" };
+      return { class: "text-bg-success", icon: "fa-cogs", text: "Global" };
     case "rsyslog_include":
-      return { class: "is-success", icon: "fa-folder-open", text: "Include" };
+      return {
+        class: "text-bg-success",
+        icon: "fa-folder-open",
+        text: "Include",
+      };
     case "rsyslog_input":
-      return { class: "is-success", icon: "fa-sign-in-alt", text: "Input" };
+      return {
+        class: "text-bg-success",
+        icon: "fa-sign-in-alt",
+        text: "Input",
+      };
     case "malformed":
-      return { class: "is-grey", icon: "fa-question", text: "Malformed" };
+      return {
+        class: "text-bg-secondary",
+        icon: "fa-question",
+        text: "Malformed",
+      };
     default:
       return {
-        class: "is-light",
+        class: "text-bg-secondary",
         icon: "fa-question",
         text: actionType || "Unknown",
       };

@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-import FieldRenderer from "../FieldRenderer";
+import SectionField from "../SectionField";
 
 const ServerSectionRenderer = ({
   section,
@@ -10,8 +10,10 @@ const ServerSectionRenderer = ({
   loading,
   onFieldChange,
   onSslFileUpload,
+  setMsg,
+  setRequiresRestart,
 }) => (
-  <div className="columns is-multiline">
+  <div className="row g-3">
     {section.fields.map((field) => {
       // Check if this is an SSL certificate field (kept for layout purposes - SSL fields take full width)
       const isSSLField =
@@ -32,12 +34,15 @@ const ServerSectionRenderer = ({
         <div
           key={field.path}
           className={
-            isSSLField || field.type === "textarea" || field.type === "array"
-              ? "column is-full"
-              : "column is-half"
+            isSSLField ||
+            field.type === "textarea" ||
+            field.type === "array" ||
+            field.type === "collection"
+              ? "col-12"
+              : "col-12 col-lg-6"
           }
         >
-          <FieldRenderer
+          <SectionField
             field={field}
             values={values}
             sslFiles={sslFiles}
@@ -45,6 +50,8 @@ const ServerSectionRenderer = ({
             loading={loading}
             onFieldChange={onFieldChange}
             onSslFileUpload={onSslFileUpload}
+            setMsg={setMsg}
+            setRequiresRestart={setRequiresRestart}
           />
         </div>
       );
@@ -60,6 +67,8 @@ ServerSectionRenderer.propTypes = {
   loading: PropTypes.bool.isRequired,
   onFieldChange: PropTypes.func.isRequired,
   onSslFileUpload: PropTypes.func.isRequired,
+  setMsg: PropTypes.func.isRequired,
+  setRequiresRestart: PropTypes.func.isRequired,
 };
 
 export default ServerSectionRenderer;

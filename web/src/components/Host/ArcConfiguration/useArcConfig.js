@@ -75,7 +75,7 @@ export const useArcConfig = (server) => {
         setMessage(
           `Failed to load ARC configuration: ${error.response?.data?.message || error.message}`
         );
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
       } finally {
         setLoading(false);
       }
@@ -94,7 +94,7 @@ export const useArcConfig = (server) => {
   useEffect(() => {
     if (
       message &&
-      (messageType === "is-success" || messageType === "is-warning")
+      (messageType === "alert-success" || messageType === "alert-warning")
     ) {
       const timer = setTimeout(() => {
         setMessage("");
@@ -117,14 +117,14 @@ export const useArcConfig = (server) => {
   const validateConfiguration = async () => {
     if (!server || (!formData.arc_max_gb && !formData.arc_min_gb)) {
       setMessage("Please enter ARC max or min values to validate.");
-      setMessageType("is-warning");
+      setMessageType("alert-warning");
       return;
     }
 
     try {
       setValidationLoading(true);
       setMessage("Validating configuration...");
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const payload = {};
       if (formData.arc_max_gb) {
@@ -145,19 +145,19 @@ export const useArcConfig = (server) => {
         setMessage(
           "Configuration validation passed! Settings are within safe limits."
         );
-        setMessageType("is-success");
+        setMessageType("alert-success");
       } else {
         setMessage(
           "Configuration validation found issues. Please review the warnings below."
         );
-        setMessageType("is-warning");
+        setMessageType("alert-warning");
       }
     } catch (error) {
       console.error("Error validating ARC configuration:", error);
       setMessage(
         `Validation failed: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
       setValidation(null);
     } finally {
       setValidationLoading(false);
@@ -177,14 +177,14 @@ export const useArcConfig = (server) => {
       setMessage(
         "Please configure at least one ZFS parameter to apply changes."
       );
-      setMessageType("is-warning");
+      setMessageType("alert-warning");
       return;
     }
 
     try {
       setLoading(true);
       setMessage("Applying ZFS configuration...");
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const payload = {
         apply_method: formData.apply_method,
@@ -225,27 +225,27 @@ export const useArcConfig = (server) => {
         setMessage(
           `ZFS configuration updated successfully! ${response.data.message}`
         );
-        setMessageType("is-success");
+        setMessageType("alert-success");
 
         if (response.data.results?.reboot_required) {
           setMessage(
             (prev) =>
               `${prev} Note: System reboot required for persistent changes to take effect.`
           );
-          setMessageType("is-warning");
+          setMessageType("alert-warning");
         }
 
         await loadArcConfig(false);
       } else {
         setMessage(`Failed to apply configuration: ${response.data.message}`);
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
       }
     } catch (error) {
       console.error("Error applying ZFS configuration:", error);
       setMessage(
         `Failed to apply configuration: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
     } finally {
       setLoading(false);
     }
@@ -271,7 +271,7 @@ export const useArcConfig = (server) => {
     try {
       setLoading(true);
       setMessage("Resetting ARC configuration to defaults...");
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const response = await axios.post(
         `/api/zapi/${server.protocol}/${server.hostname}/${server.port}/system/zfs/arc/reset`,
@@ -282,7 +282,7 @@ export const useArcConfig = (server) => {
         setMessage(
           `ARC configuration reset to defaults successfully! ${response.data.message}`
         );
-        setMessageType("is-success");
+        setMessageType("alert-success");
 
         setFormData({
           arc_max_gb: "",
@@ -299,14 +299,14 @@ export const useArcConfig = (server) => {
         await loadArcConfig();
       } else {
         setMessage(`Failed to reset configuration: ${response.data.message}`);
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
       }
     } catch (error) {
       console.error("Error resetting ARC configuration:", error);
       setMessage(
         `Failed to reset configuration: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
     } finally {
       setLoading(false);
     }

@@ -206,86 +206,99 @@ const ServerManagementTab = ({
 
   return (
     <>
-      {/* Server Management Header */}
-      <div className="level is-mobile mb-4">
-        <div className="level-left">
-          <h2 className="title is-5">Zoneweaver API Servers</h2>
-        </div>
-        <div className="level-right">
-          <button
-            className="button is-primary"
-            onClick={() => {
-              setShowAddForm(!showAddForm);
-              if (!showAddForm) {
-                resetForm();
-              }
-            }}
-          >
-            <span className="icon">
-              <i className={`fas fa-${showAddForm ? "times" : "plus"}`} />
-            </span>
-            <span>{showAddForm ? "Cancel" : "Add Server"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Add Server Form or Server Table */}
-      {showAddForm ? (
-        <form onSubmit={handleAddServer} autoComplete="off">
-          <div className="columns">
-            <div className="column is-8">
-              <ServerForm
-                hostname={hostname}
-                setHostname={setHostname}
-                port={port}
-                setPort={setPort}
-                protocol={protocol}
-                setProtocol={setProtocol}
-                entityName={entityName}
-                setEntityName={setEntityName}
-                apiKey={apiKey}
-                setApiKey={setApiKey}
-                useExistingApiKey={useExistingApiKey}
-                setUseExistingApiKey={setUseExistingApiKey}
-                loading={loading}
-              />
-            </div>
-            <div className="column is-4">
-              <ServerHelpPanel useExistingApiKey={useExistingApiKey} />
-              <ServerStatusCard
-                testResult={testResult}
-                useExistingApiKey={useExistingApiKey}
-              />
-            </div>
-          </div>
-          <div className="buttons is-centered">
+      <div className="card mb-4">
+        <div className="card-body">
+          {/* Server Management Header */}
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="fs-5 fw-bold">Zoneweaver API Servers</h2>
             <button
               type="button"
-              className={`button is-info ${loading ? "is-loading" : ""}`}
-              onClick={handleTestConnection}
-              disabled={loading}
+              className="btn btn-primary"
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                if (!showAddForm) {
+                  resetForm();
+                }
+              }}
             >
-              Test Connection
-            </button>
-            <button
-              type="submit"
-              className={`button is-primary ${loading ? "is-loading" : ""}`}
-              disabled={loading}
-            >
-              {useExistingApiKey ? "Add Server" : "Bootstrap Server"}
+              <i className={`fas fa-${showAddForm ? "times" : "plus"} me-2`} />
+              {showAddForm ? "Cancel" : "Add Server"}
             </button>
           </div>
-        </form>
-      ) : (
-        <ServerTable
-          servers={servers}
-          onEdit={handleEditServer}
-          onDelete={(serverId) => {
-            setConfirmDelete(serverId);
-          }}
-          loading={loading}
-        />
-      )}
+
+          {/* Add Server Form or Server Table */}
+          {showAddForm ? (
+            <form onSubmit={handleAddServer} autoComplete="off">
+              <div className="row g-3">
+                <div className="col-12 col-lg-8">
+                  <ServerForm
+                    hostname={hostname}
+                    setHostname={setHostname}
+                    port={port}
+                    setPort={setPort}
+                    protocol={protocol}
+                    setProtocol={setProtocol}
+                    entityName={entityName}
+                    setEntityName={setEntityName}
+                    apiKey={apiKey}
+                    setApiKey={setApiKey}
+                    useExistingApiKey={useExistingApiKey}
+                    setUseExistingApiKey={setUseExistingApiKey}
+                    loading={loading}
+                  />
+                </div>
+                <div className="col-12 col-lg-4">
+                  <ServerHelpPanel useExistingApiKey={useExistingApiKey} />
+                  <ServerStatusCard
+                    testResult={testResult}
+                    useExistingApiKey={useExistingApiKey}
+                  />
+                </div>
+              </div>
+              <div className="d-flex justify-content-center gap-2">
+                <button
+                  type="button"
+                  className="btn btn-info"
+                  onClick={handleTestConnection}
+                  disabled={loading}
+                >
+                  {loading && (
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                  )}
+                  Test Connection
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading && (
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {useExistingApiKey ? "Add Server" : "Bootstrap Server"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <ServerTable
+              servers={servers}
+              onEdit={handleEditServer}
+              onDelete={(serverId) => {
+                setConfirmDelete(serverId);
+              }}
+              loading={loading}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal

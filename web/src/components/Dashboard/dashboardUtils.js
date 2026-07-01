@@ -35,13 +35,13 @@ const getServerHealthStatus = (serverResult) => {
 const getStatusColor = (status) => {
   switch (status) {
     case "healthy":
-      return "has-text-success";
+      return "text-success";
     case "warning":
-      return "has-text-warning";
+      return "text-warning";
     case "offline":
-      return "has-text-danger";
+      return "text-danger";
     default:
-      return "has-text-grey";
+      return "text-muted";
   }
 };
 

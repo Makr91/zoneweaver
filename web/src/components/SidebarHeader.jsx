@@ -14,34 +14,29 @@ const SidebarHeader = () => {
     }
   };
 
-  const getHeaderContent = () => {
-    const width = userContext.sidebarWidth;
+  const isIconOnly =
+    userContext.sidebarMinimized || userContext.sidebarWidth <= 38;
 
-    if (userContext.sidebarMinimized || width <= 38) {
+  const getHeaderContent = () => {
+    if (isIconOnly) {
       return (
-        <span
-          className="icon has-tooltip-arrow has-tooltip-right"
-          data-tooltip="Expand Sidebar"
-        >
+        <span title="Expand Sidebar">
           <i className="icon-zoneweaver-logo" />
         </span>
       );
     }
     return (
       <>
-        <span className="level-item icon is-flex-grow-0">
+        <span className="flex-grow-0">
           <i className="icon-zoneweaver-logo" />
         </span>
-        <span className="level-item">Zoneweaver</span>
-        <span className="level-item is-justify-content-flex-end is-flex-grow-0 icon pr-2">
+        <span>Zoneweaver</span>
+        <span className="ms-auto flex-grow-0 pe-2">
           <i className="fa fa-angle-left" />
         </span>
       </>
     );
   };
-
-  const isIconOnly =
-    userContext.sidebarMinimized || userContext.sidebarWidth <= 38;
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -54,7 +49,7 @@ const SidebarHeader = () => {
     <div
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      className={`${isIconOnly ? "level button" : "level button"}`}
+      className={`btn w-100 d-flex align-items-center gap-2 ${isIconOnly ? "justify-content-center px-0" : "justify-content-between"}`}
       role="button"
       tabIndex={0}
     >

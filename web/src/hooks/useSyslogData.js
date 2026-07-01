@@ -63,13 +63,13 @@ export const useSyslogData = (server) => {
           setConfigContent(result.data?.config_content || "");
         } else {
           setMessage(result.message || "Failed to load syslog configuration");
-          setMessageType("is-danger");
+          setMessageType("alert-danger");
           setConfig(null);
           setConfigContent("");
         }
       } catch (err) {
         setMessage(`Error loading syslog configuration: ${err.message}`);
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
         setConfig(null);
         setConfigContent("");
       } finally {
@@ -116,7 +116,7 @@ export const useSyslogData = (server) => {
   useEffect(() => {
     if (
       message &&
-      (messageType === "is-success" || messageType === "is-warning")
+      (messageType === "alert-success" || messageType === "alert-warning")
     ) {
       const timer = setTimeout(() => {
         setMessage("");
@@ -134,14 +134,14 @@ export const useSyslogData = (server) => {
   const validateConfiguration = async () => {
     if (!server || !configContent.trim()) {
       setMessage("Please enter configuration content to validate.");
-      setMessageType("is-warning");
+      setMessageType("alert-warning");
       return;
     }
 
     try {
       setValidationLoading(true);
       setMessage("Validating syslog configuration...");
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -156,19 +156,19 @@ export const useSyslogData = (server) => {
 
       if (result.data?.valid) {
         setMessage("Configuration validation passed! No syntax errors found.");
-        setMessageType("is-success");
+        setMessageType("alert-success");
       } else {
         setMessage(
           `Configuration validation found ${result.data?.errors?.length || 0} error(s) and ${result.data?.warnings?.length || 0} warning(s).`
         );
-        setMessageType("is-warning");
+        setMessageType("alert-warning");
       }
     } catch (error) {
       console.error("Error validating syslog configuration:", error);
       setMessage(
         `Validation failed: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
       setValidation(null);
     } finally {
       setValidationLoading(false);
@@ -181,14 +181,14 @@ export const useSyslogData = (server) => {
   const applyConfiguration = async () => {
     if (!server || !configContent.trim()) {
       setMessage("Please enter configuration content to apply.");
-      setMessageType("is-warning");
+      setMessageType("alert-warning");
       return;
     }
 
     try {
       setLoading(true);
       setMessage("Applying syslog configuration...");
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -207,20 +207,20 @@ export const useSyslogData = (server) => {
         setMessage(
           `Syslog configuration updated successfully! ${result.data?.message || ""}`
         );
-        setMessageType("is-success");
+        setMessageType("alert-success");
 
         // Reload current configuration without clearing success message
         await loadSyslogConfig(false);
       } else {
         setMessage(`Failed to apply configuration: ${result.message}`);
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
       }
     } catch (error) {
       console.error("Error applying syslog configuration:", error);
       setMessage(
         `Failed to apply configuration: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
     } finally {
       setLoading(false);
     }
@@ -237,7 +237,7 @@ export const useSyslogData = (server) => {
     try {
       setLoading(true);
       setMessage("Reloading syslog service...");
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -251,20 +251,20 @@ export const useSyslogData = (server) => {
         setMessage(
           `Syslog service reloaded successfully! ${result.data?.message || ""}`
         );
-        setMessageType("is-success");
+        setMessageType("alert-success");
 
         // Reload configuration to get updated service status
         await loadSyslogConfig(false);
       } else {
         setMessage(`Failed to reload syslog service: ${result.message}`);
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
       }
     } catch (error) {
       console.error("Error reloading syslog service:", error);
       setMessage(
         `Failed to reload syslog service: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
     } finally {
       setLoading(false);
     }
@@ -295,7 +295,7 @@ export const useSyslogData = (server) => {
     try {
       setLoading(true);
       setMessage(`Switching to ${targetService}...`);
-      setMessageType("is-info");
+      setMessageType("alert-info");
 
       const result = await makeZoneweaverAPIRequest(
         server.hostname,
@@ -310,20 +310,20 @@ export const useSyslogData = (server) => {
         setMessage(
           `Successfully switched to ${targetService}! Logging service has been restarted.`
         );
-        setMessageType("is-success");
+        setMessageType("alert-success");
 
         // Reload configuration to show new service
         await loadSyslogConfig(false);
       } else {
         setMessage(`Failed to switch service: ${result.message}`);
-        setMessageType("is-danger");
+        setMessageType("alert-danger");
       }
     } catch (error) {
       console.error("Error switching syslog service:", error);
       setMessage(
         `Failed to switch service: ${error.response?.data?.message || error.message}`
       );
-      setMessageType("is-danger");
+      setMessageType("alert-danger");
     } finally {
       setLoading(false);
     }

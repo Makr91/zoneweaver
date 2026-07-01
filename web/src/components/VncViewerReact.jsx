@@ -22,15 +22,13 @@ import { buildWsUrl } from "../utils/websocket";
  */
 const VncErrorDisplay = ({ className, style, message, onRetry }) => (
   <div className={`vnc-viewer-error ${className}`} style={style}>
-    <div className="notification is-danger">
-      <h4 className="title is-5">VNC Console Error</h4>
+    <div className="alert alert-danger">
+      <h4 className="fs-5 fw-bold">VNC Console Error</h4>
       <p>{message}</p>
       {onRetry && (
-        <div className="buttons mt-3">
-          <button className="button is-primary" onClick={onRetry}>
-            <span className="icon">
-              <i className="fas fa-redo" />
-            </span>
+        <div className="d-flex gap-2 mt-3">
+          <button type="button" className="btn btn-primary" onClick={onRetry}>
+            <i className="fas fa-redo me-2" />
             <span>Retry</span>
           </button>
         </div>
@@ -59,46 +57,40 @@ const VncControls = ({
 }) => (
   <div className="vnc-controls zw-vnc-controls">
     <div className="vnc-status">
-      <span className="icon-text">
-        <span className="icon is-small">
-          <i
-            className={`fas fa-circle ${getStatusColorClass(connected, connecting)}`}
-          />
-        </span>
-        <span className="ml-1">
-          {connected && "Connected"}
-          {connecting && !connected && "Connecting..."}
-          {!connected && !connecting && "Disconnected"}
-          {connected && ` • ${zoneName}`}
-        </span>
+      <i
+        className={`fas fa-circle ${getStatusColorClass(connected, connecting)}`}
+      />
+      <span className="ms-1">
+        {connected && "Connected"}
+        {connecting && !connected && "Connecting..."}
+        {!connected && !connecting && "Disconnected"}
+        {connected && ` • ${zoneName}`}
       </span>
     </div>
 
     <div className="vnc-actions">
-      <div className="buttons is-small m-0">
+      <div className="d-flex gap-1 m-0">
         {/* Ctrl+Alt+Del Button */}
         <button
-          className="button is-small is-warning"
+          type="button"
+          className="btn btn-sm btn-warning"
           onClick={onCtrlAltDel}
           disabled={!connected}
           title="Send Ctrl+Alt+Del to guest system"
         >
-          <span className="icon is-small">
-            <i className="fas fa-keyboard" />
-          </span>
+          <i className="fas fa-keyboard me-2" />
           <span>Ctrl+Alt+Del</span>
         </button>
 
         {/* Connect/Disconnect Button */}
         <button
-          className={`button is-small ${connected ? "is-danger" : "is-success"}`}
+          type="button"
+          className={`btn btn-sm ${connected ? "btn-danger" : "btn-success"}`}
           onClick={connected ? onDisconnect : onConnect}
           disabled={connecting}
           title={connected ? "Disconnect from VNC" : "Connect to VNC"}
         >
-          <span className="icon is-small">
-            <i className={`fas ${connected ? "fa-plug" : "fa-play"}`} />
-          </span>
+          <i className={`fas ${connected ? "fa-plug" : "fa-play"} me-2`} />
           <span>
             {connected && "Disconnect"}
             {connecting && !connected && "Connecting..."}
@@ -124,12 +116,10 @@ VncControls.propTypes = {
  */
 const VncConnectingOverlay = () => (
   <div className="has-z-index-overlay zw-vnc-connecting-overlay">
-    <div className="has-text-centered">
-      <div className="icon is-large">
-        <i className="fas fa-spinner fa-pulse fa-2x zw-loading-spinner" />
-      </div>
+    <div className="text-center">
+      <i className="fas fa-spinner fa-pulse fa-2x zw-loading-spinner" />
       <p className="mt-2">Connecting to VNC...</p>
-      <p className="is-size-7 has-text-grey-light mt-1">
+      <p className="small text-muted mt-1">
         Using react-vnc • Single WebSocket
       </p>
     </div>

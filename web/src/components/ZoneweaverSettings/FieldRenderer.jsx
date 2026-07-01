@@ -1,5 +1,8 @@
 import PropTypes from "prop-types";
 
+import { isFieldVisible } from "../../utils/settingsUtils";
+import { toBsVariant } from "../common/bulmaVariant";
+
 const FieldRenderer = ({
   field,
   values,
@@ -9,26 +12,10 @@ const FieldRenderer = ({
   onFieldChange,
   onSslFileUpload,
 }) => {
-  // Check if field should be shown based on conditional logic
-  const shouldShowField = (fieldToCheck) => {
-    if (!fieldToCheck.conditional) {
-      return true;
-    }
-
-    const { field: dependsOn, value: showWhen } = fieldToCheck.conditional;
-    const dependentValue = values[dependsOn];
-
-    if (Array.isArray(showWhen)) {
-      return showWhen.includes(dependentValue);
-    }
-
-    return dependentValue === showWhen;
-  };
-
   // SSL file field renderer for certificate, key, and CA files
   const renderSSLFileField = (sslField) => {
     // Skip field if conditional logic says to hide it
-    if (!shouldShowField(sslField)) {
+    if (!isFieldVisible(sslField, values)) {
       return null;
     }
 
@@ -90,92 +77,73 @@ const FieldRenderer = ({
     };
 
     return (
-      <div className="field" key={sslField.path}>
-        <label className="label" htmlFor={sslField.path}>
-          <span className="icon is-small mr-2">
-            <i className={config.icon} />
-          </span>
+      <div className="mb-4" key={sslField.path}>
+        <label className="form-label" htmlFor={sslField.path}>
+          <i
+            className={`${config.icon} text-${toBsVariant(config.color)} me-2`}
+          />
           {sslField.label}
         </label>
 
         {/* File path input - always visible */}
-        <div className="field">
-          <label className="label is-small" htmlFor={`${sslField.path}-input`}>
+        <div className="mb-2">
+          <label
+            className="form-label small"
+            htmlFor={`${sslField.path}-input`}
+          >
             File Path:
           </label>
-          <div className="control">
-            <input
-              id={`${sslField.path}-input`}
-              className="input is-small"
-              type="text"
-              value={currentValue || ""}
-              onChange={(e) => onFieldChange(sslField.path, e.target.value)}
-              placeholder={sslField.placeholder || "Enter file path..."}
-              disabled={loading}
-            />
-          </div>
-          <p className="help is-size-7">
+          <input
+            id={`${sslField.path}-input`}
+            className="form-control form-control-sm"
+            type="text"
+            value={currentValue || ""}
+            onChange={(e) => onFieldChange(sslField.path, e.target.value)}
+            placeholder={sslField.placeholder || "Enter file path..."}
+            disabled={loading}
+          />
+          <p className="form-text">
             Specify where the uploaded file should be saved. The upload will
             update this path automatically.
           </p>
         </div>
 
-        {/* File upload component */}
-        <div
-          className={`file has-name ${config.color} ${isUploading ? "is-loading" : ""}`}
-        >
-          <label className="file-label" htmlFor={`${sslField.path}-file`}>
-            <input
-              id={`${sslField.path}-file`}
-              className="file-input"
-              type="file"
-              accept={config.accept}
-              onChange={handleFileInputChange}
-              disabled={loading || isUploading}
-            />
-            <span className="file-cta">
-              <span className="file-icon">
-                <i
-                  className={
-                    isUploading ? "fas fa-spinner fa-pulse" : config.icon
-                  }
-                />
-              </span>
-              <span className="file-label">
-                {isUploading ? "Uploading..." : `Upload ${config.type}`}
-              </span>
-            </span>
-            <span className="file-name">
-              {uploadedFile ? uploadedFile.name : "No file selected"}
-            </span>
-          </label>
-        </div>
+        {/* File upload */}
+        <input
+          id={`${sslField.path}-file`}
+          className="form-control"
+          type="file"
+          accept={config.accept}
+          onChange={handleFileInputChange}
+          disabled={loading || isUploading}
+        />
+        {isUploading && (
+          <p className="form-text">
+            <i className="fas fa-spinner fa-pulse me-1" />
+            Uploading {config.type}…
+          </p>
+        )}
 
         {/* File status and info */}
         {uploadedFile && (
-          <div className="notification is-success is-small mt-2">
-            <div className="columns is-mobile is-vcentered">
-              <div className="column">
-                <p className="is-size-7">
+          <div className="alert alert-success p-2 mt-2">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <p className="small mb-0">
                   <strong>{uploadedFile.name}</strong> (
                   {(uploadedFile.size / 1024).toFixed(1)} KB)
                 </p>
-                <p className="is-size-7 has-text-grey">
-                  Uploaded to:{" "}
-                  <code className="is-size-7">{uploadedFile.uploadedPath}</code>
+                <p className="small text-muted mb-0">
+                  Uploaded to: <code>{uploadedFile.uploadedPath}</code>
                 </p>
               </div>
-              <div className="column is-narrow">
-                <span className="icon has-text-success">
-                  <i className="fas fa-check-circle" />
-                </span>
-              </div>
+              <i className="fas fa-check-circle text-success" />
             </div>
           </div>
         )}
 
         {sslField.description && (
-          <p className="help has-text-grey">
+          <p className="form-text text-muted">
             {sslField.description}
             <br />
             <small>
@@ -191,7 +159,7 @@ const FieldRenderer = ({
   // Dynamic field renderer based on metadata type
   const renderField = (fieldToRender) => {
     // Skip field if conditional logic says to hide it
-    if (!shouldShowField(fieldToRender)) {
+    if (!isFieldVisible(fieldToRender, values)) {
       return null;
     }
 
@@ -220,22 +188,25 @@ const FieldRenderer = ({
 
     if (fieldToRender.type === "boolean") {
       inputElement = (
-        <label className="switch is-medium" htmlFor={fieldToRender.path}>
+        <div className="form-check form-switch">
           <input
             id={fieldToRender.path}
+            className="form-check-input"
             type="checkbox"
+            role="switch"
             checked={!!currentValue}
             onChange={fieldProps.onChange}
             disabled={fieldProps.disabled}
           />
-          <span className="check" />
-          <span className="control-label">{fieldToRender.label}</span>
-        </label>
+          <label className="form-check-label" htmlFor={fieldToRender.path}>
+            {fieldToRender.label}
+          </label>
+        </div>
       );
     } else if (fieldToRender.type === "integer") {
       inputElement = (
         <input
-          className="input"
+          className="form-control"
           type="number"
           {...fieldProps}
           min={fieldToRender.validation?.min}
@@ -244,56 +215,56 @@ const FieldRenderer = ({
       );
     } else if (fieldToRender.type === "password") {
       inputElement = (
-        <input className="input" type="password" {...fieldProps} />
+        <input className="form-control" type="password" {...fieldProps} />
       );
     } else if (fieldToRender.type === "email") {
-      inputElement = <input className="input" type="email" {...fieldProps} />;
+      inputElement = (
+        <input className="form-control" type="email" {...fieldProps} />
+      );
     } else if (fieldToRender.type === "select") {
       inputElement = (
-        <div className="select is-fullwidth">
-          <select {...fieldProps}>
-            {fieldToRender.options &&
-              fieldToRender.options
-                .map((option) => {
-                  // Handle both string and object options
-                  const optionValue =
-                    typeof option === "object" ? option.value : option;
-                  let optionLabel =
-                    typeof option === "object" ? option.label : option;
+        <select className="form-select" {...fieldProps}>
+          {fieldToRender.options &&
+            fieldToRender.options
+              .map((option) => {
+                // Handle both string and object options
+                const optionValue =
+                  typeof option === "object" ? option.value : option;
+                let optionLabel =
+                  typeof option === "object" ? option.label : option;
 
-                  // Skip empty/null values unless they're intentionally empty strings
-                  if (optionValue === null || optionValue === undefined) {
-                    return null;
+                // Skip empty/null values unless they're intentionally empty strings
+                if (optionValue === null || optionValue === undefined) {
+                  return null;
+                }
+
+                // Special handling for CORS allow_origin field
+                if (fieldToRender.path === "security.cors.allow_origin") {
+                  if (optionValue === true) {
+                    optionLabel = "Allow all origins in whitelist";
+                  } else if (optionValue === false) {
+                    optionLabel = "Deny all origins";
+                  } else if (optionValue === "specific") {
+                    optionLabel = "Use exact whitelist matching";
                   }
+                }
 
-                  // Special handling for CORS allow_origin field
-                  if (fieldToRender.path === "security.cors.allow_origin") {
-                    if (optionValue === true) {
-                      optionLabel = "Allow all origins in whitelist";
-                    } else if (optionValue === false) {
-                      optionLabel = "Deny all origins";
-                    } else if (optionValue === "specific") {
-                      optionLabel = "Use exact whitelist matching";
-                    }
-                  }
+                // Use a combination of value and label for unique key
+                const uniqueKey = `${optionValue}-${optionLabel}`;
 
-                  // Use a combination of value and label for unique key
-                  const uniqueKey = `${optionValue}-${optionLabel}`;
-
-                  return (
-                    <option key={uniqueKey} value={optionValue}>
-                      {optionLabel}
-                    </option>
-                  );
-                })
-                .filter(Boolean)}
-          </select>
-        </div>
+                return (
+                  <option key={uniqueKey} value={optionValue}>
+                    {optionLabel}
+                  </option>
+                );
+              })
+              .filter(Boolean)}
+        </select>
       );
     } else if (fieldToRender.type === "textarea") {
       inputElement = (
         <textarea
-          className="textarea"
+          className="form-control"
           {...fieldProps}
           rows={fieldToRender.validation?.rows || 3}
         />
@@ -310,7 +281,7 @@ const FieldRenderer = ({
       inputElement = (
         <textarea
           id={fieldToRender.path}
-          className="textarea"
+          className="form-control"
           value={arrayValue}
           onChange={handleArrayChange}
           placeholder={fieldToRender.placeholder || "One item per line"}
@@ -320,19 +291,21 @@ const FieldRenderer = ({
       );
     } else {
       // default: 'string', 'host', etc.
-      inputElement = <input className="input" type="text" {...fieldProps} />;
+      inputElement = (
+        <input className="form-control" type="text" {...fieldProps} />
+      );
     }
 
     return (
-      <div className="field" key={fieldToRender.path}>
+      <div className="mb-3" key={fieldToRender.path}>
         {fieldToRender.type !== "boolean" && (
-          <label className="label" htmlFor={fieldToRender.path}>
+          <label className="form-label" htmlFor={fieldToRender.path}>
             {fieldToRender.label}
           </label>
         )}
-        <div className="control">{inputElement}</div>
+        {inputElement}
         {fieldToRender.description && (
-          <p className="help has-text-grey">{fieldToRender.description}</p>
+          <p className="form-text text-muted">{fieldToRender.description}</p>
         )}
       </div>
     );

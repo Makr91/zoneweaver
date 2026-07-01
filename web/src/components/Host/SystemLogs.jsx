@@ -322,15 +322,19 @@ const SystemLogs = ({ server }) => {
     <div>
       {/* Error Display */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
-          <p>{error}</p>
+        <div className="alert alert-danger mb-4 d-flex justify-content-between align-items-center">
+          <p className="mb-0">{error}</p>
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
         </div>
       )}
 
-      <div className="columns">
+      <div className="row g-3">
         {/* Left Panel - File Explorer */}
-        <div className="column is-3">
+        <div className="col-lg-3">
           <LogFileExplorer
             logFiles={logFiles}
             selectedLog={selectedLog}
@@ -340,7 +344,7 @@ const SystemLogs = ({ server }) => {
         </div>
 
         {/* Right Panel - Log Viewer */}
-        <div className="column is-9">
+        <div className="col-lg-9">
           {selectedLog ? (
             <div>
               <LogControls
@@ -365,18 +369,16 @@ const SystemLogs = ({ server }) => {
               />
             </div>
           ) : (
-            <div className="box">
-              <div className="has-text-centered p-6">
-                <span className="icon is-large has-text-info">
-                  <i className="fas fa-file-alt fa-3x" />
-                </span>
-                <h4 className="title is-5 mt-4">System Log Viewer</h4>
-                <p className="content">
+            <div className="card">
+              <div className="card-body text-center p-6">
+                <i className="fas fa-file-alt fa-3x text-info" />
+                <h4 className="fs-5 fw-bold mt-4">System Log Viewer</h4>
+                <p>
                   Select a log file from the left panel to view its contents.
                   Use filters to search specific entries, limit line count, or
                   view recent activity.
                 </p>
-                <div className="content is-small has-text-grey">
+                <div className="small text-muted">
                   <p>
                     <strong>Available Logs:</strong>
                   </p>

@@ -12,40 +12,32 @@ const UrlListEditor = ({
   addButtonIcon,
 }) => (
   <div>
-    <span className="label">{label}</span>
+    <span className="form-label">{label}</span>
     {entries.map((entry) => (
-      <div key={entry.id} className="field has-addons mb-3">
-        <div className="control is-expanded">
-          <input
-            className="input"
-            type="url"
-            placeholder={placeholder}
-            value={entry.value}
-            onChange={(e) => onEntryChange(entry.id, e.target.value)}
-          />
-        </div>
-        <div className="control">
-          <button
-            type="button"
-            className="button has-background-danger-dark has-text-danger-light"
-            onClick={() => onRemove(entry.id)}
-            disabled={entries.length === 1}
-          >
-            <span className="icon">
-              <i className="fas fa-trash" />
-            </span>
-          </button>
-        </div>
+      <div key={entry.id} className="input-group mb-3">
+        <input
+          className="form-control"
+          type="url"
+          placeholder={placeholder}
+          value={entry.value}
+          onChange={(e) => onEntryChange(entry.id, e.target.value)}
+        />
+        <button
+          type="button"
+          className="btn btn-danger"
+          onClick={() => onRemove(entry.id)}
+          disabled={entries.length === 1}
+        >
+          <i className="fas fa-trash" />
+        </button>
       </div>
     ))}
     <button
       type="button"
-      className={`button is-small ${addButtonClass}`}
+      className={`btn btn-sm ${addButtonClass}`}
       onClick={onAdd}
     >
-      <span className="icon is-small">
-        <i className={`fas ${addButtonIcon}`} />
-      </span>
+      <i className={`fas ${addButtonIcon} me-2`} />
       <span>{addButtonText}</span>
     </button>
   </div>

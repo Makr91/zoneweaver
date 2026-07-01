@@ -6,7 +6,8 @@ import { register } from "register-service-worker";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-import "bootstrap/dist/css/bootstrap.min.css";
+// Bootstrap CSS now compiles from Sass (brand-themed) inside ./scss/styles.scss,
+// so the precompiled bootstrap.min.css import is gone. The JS bundle stays.
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./scss/styles.scss";
 import "./sass/zoneweaver.scss";

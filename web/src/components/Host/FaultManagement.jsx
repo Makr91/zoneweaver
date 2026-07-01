@@ -11,7 +11,7 @@ const FaultManagement = ({ server }) => {
 
   if (!server) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>No server selected for fault management.</p>
       </div>
     );
@@ -20,73 +20,59 @@ const FaultManagement = ({ server }) => {
   return (
     <div>
       {/* Sub-Tab Navigation */}
-      <div className="tabs is-boxed mb-0">
-        <ul>
-          <li className={activeTab === "faults" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveTab("faults")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-exclamation-triangle" />
-              </span>
-              <span>Current Faults</span>
-            </button>
-          </li>
-          <li className={activeTab === "logs" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveTab("logs")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-file-alt" />
-              </span>
-              <span>System Logs</span>
-            </button>
-          </li>
-          <li className={activeTab === "config" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveTab("config")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-cog" />
-              </span>
-              <span>Configuration</span>
-            </button>
-          </li>
-          <li className={activeTab === "syslog-config" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveTab("syslog-config")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-edit" />
-              </span>
-              <span>Syslog Config</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+      <ul className="nav nav-tabs mb-0">
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "faults" ? "active" : ""}`}
+            onClick={() => setActiveTab("faults")}
+          >
+            <i className="fas fa-exclamation-triangle me-2" />
+            <span>Current Faults</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "logs" ? "active" : ""}`}
+            onClick={() => setActiveTab("logs")}
+          >
+            <i className="fas fa-file-alt me-2" />
+            <span>System Logs</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "config" ? "active" : ""}`}
+            onClick={() => setActiveTab("config")}
+          >
+            <i className="fas fa-cog me-2" />
+            <span>Configuration</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "syslog-config" ? "active" : ""}`}
+            onClick={() => setActiveTab("syslog-config")}
+          >
+            <i className="fas fa-edit me-2" />
+            <span>Syslog Config</span>
+          </button>
+        </li>
+      </ul>
 
       {/* Tab Content */}
       <div className="mt-4">
         {activeTab === "faults" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-exclamation-triangle" />
-                  </span>
-                  <span>Current System Faults</span>
-                </span>
+              <h3 className="fs-6 fw-bold">
+                <i className="fas fa-exclamation-triangle me-2" />
+                <span>Current System Faults</span>
               </h3>
-              <p className="content">
+              <p>
                 Monitor and manage active system faults on{" "}
                 <strong>{server.hostname}</strong>. View fault details, acquit
                 resolved issues, and track fault resolution status.
@@ -100,15 +86,11 @@ const FaultManagement = ({ server }) => {
         {activeTab === "logs" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-file-alt" />
-                  </span>
-                  <span>System Logs</span>
-                </span>
+              <h3 className="fs-6 fw-bold">
+                <i className="fas fa-file-alt me-2" />
+                <span>System Logs</span>
               </h3>
-              <p className="content">
+              <p>
                 Browse and analyze system log files on{" "}
                 <strong>{server.hostname}</strong>. View system messages,
                 authentication logs, and fault manager logs with real-time
@@ -123,15 +105,11 @@ const FaultManagement = ({ server }) => {
         {activeTab === "config" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-cog" />
-                  </span>
-                  <span>Fault Manager Configuration</span>
-                </span>
+              <h3 className="fs-6 fw-bold">
+                <i className="fas fa-cog me-2" />
+                <span>Fault Manager Configuration</span>
               </h3>
-              <p className="content">
+              <p>
                 View fault manager configuration and module status on{" "}
                 <strong>{server.hostname}</strong>. Monitor installed fault
                 management modules and their current state.
@@ -145,15 +123,11 @@ const FaultManagement = ({ server }) => {
         {activeTab === "syslog-config" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-edit" />
-                  </span>
-                  <span>Syslog Configuration</span>
-                </span>
+              <h3 className="fs-6 fw-bold">
+                <i className="fas fa-edit me-2" />
+                <span>Syslog Configuration</span>
               </h3>
-              <p className="content">
+              <p>
                 Configure system logging on <strong>{server.hostname}</strong>.
                 Manage syslog rules, facilities, and log destinations with
                 validation and backup support.

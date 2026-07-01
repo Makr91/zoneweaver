@@ -4,26 +4,26 @@ import Chart from "../../Chart";
 import Highcharts from "../../Highcharts";
 
 const ZfsArcChart = ({ arcChartData, expandChart }) => (
-  <div className="column is-4">
-    <div className="card has-background-dark">
-      <header className="card-header has-background-grey-darker">
-        <p className="card-header-title has-text-white">
-          <span className="icon-text">
-            <span className="icon">
+  <div className="col-4">
+    <div className="card bg-dark">
+      <header className="card-header bg-dark d-flex justify-content-between align-items-center">
+        <p className="text-white fw-bold mb-0">
+          <span className="d-inline-flex align-items-center gap-1">
+            <span className="d-inline-flex align-items-center">
               <i className="fas fa-memory" />
             </span>
             <span>ZFS ARC</span>
           </span>
         </p>
-        <div className="card-header-icon">
-          <div className="field is-grouped">
-            <div className="control">
+        <div>
+          <div className="d-flex gap-2">
+            <div>
               <button
-                className="button is-small is-light"
+                className="btn btn-sm btn-light"
                 onClick={() => expandChart("arc", "arc")}
                 title="Expand chart to full size"
               >
-                <span className="icon">
+                <span className="d-inline-flex align-items-center">
                   <i className="fas fa-expand" />
                 </span>
               </button>
@@ -31,7 +31,7 @@ const ZfsArcChart = ({ arcChartData, expandChart }) => (
           </div>
         </div>
       </header>
-      <div className="card-content p-2">
+      <div className="card-body p-2">
         {arcChartData &&
         (arcChartData.sizeData.length > 0 ||
           arcChartData.targetData.length > 0 ||
@@ -190,8 +190,8 @@ const ZfsArcChart = ({ arcChartData, expandChart }) => (
             />
           </div>
         ) : (
-          <div className="has-text-centered p-4">
-            <p className="has-text-grey">No ARC data available</p>
+          <div className="text-center p-4">
+            <p className="text-muted">No ARC data available</p>
           </div>
         )}
       </div>

@@ -161,7 +161,7 @@ const ArtifactDownloadModal = ({
         submitText="Close"
         submitVariant="is-info"
       >
-        <div className="notification is-warning">
+        <div className="alert alert-warning">
           <p>
             <strong>No enabled storage locations available.</strong>
           </p>
@@ -188,128 +188,122 @@ const ArtifactDownloadModal = ({
       loading={loading}
       showCancelButton
     >
-      <div className="field">
-        <label htmlFor="download-url" className="label">
+      <div className="mb-3">
+        <label htmlFor="download-url" className="form-label">
           URL
         </label>
-        <div className="control">
-          <input
-            id="download-url"
-            className={`input ${errors.url ? "is-danger" : ""}`}
-            type="url"
-            placeholder="https://example.com/file.iso"
-            value={formData.url}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-        {errors.url && <p className="help is-danger">{errors.url}</p>}
-        <p className="help">URL of the file to download</p>
+        <input
+          id="download-url"
+          className={`form-control ${errors.url ? "is-invalid" : ""}`}
+          type="url"
+          placeholder="https://example.com/file.iso"
+          value={formData.url}
+          onChange={(e) => handleUrlChange(e.target.value)}
+          disabled={loading}
+        />
+        {errors.url && <p className="form-text text-danger">{errors.url}</p>}
+        <p className="form-text text-muted">URL of the file to download</p>
       </div>
 
-      <div className="field">
-        <label htmlFor="download-storage-location" className="label">
+      <div className="mb-3">
+        <label htmlFor="download-storage-location" className="form-label">
           Storage Location
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="download-storage-location"
-              value={formData.storage_path_id}
-              onChange={(e) =>
-                handleInputChange("storage_path_id", e.target.value)
-              }
-              disabled={loading}
-              className={errors.storage_path_id ? "is-danger" : ""}
-            >
-              <option value="">Select storage location...</option>
-              {enabledStoragePaths.map((path) => (
-                <option key={path.id} value={path.id}>
-                  {path.name} ({path.type}) - {path.path}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <select
+          id="download-storage-location"
+          value={formData.storage_path_id}
+          onChange={(e) => handleInputChange("storage_path_id", e.target.value)}
+          disabled={loading}
+          className={`form-select ${errors.storage_path_id ? "is-invalid" : ""}`}
+        >
+          <option value="">Select storage location...</option>
+          {enabledStoragePaths.map((path) => (
+            <option key={path.id} value={path.id}>
+              {path.name} ({path.type}) - {path.path}
+            </option>
+          ))}
+        </select>
         {errors.storage_path_id && (
-          <p className="help is-danger">{errors.storage_path_id}</p>
+          <p className="form-text text-danger">{errors.storage_path_id}</p>
         )}
-        <p className="help">Where to store the downloaded file</p>
+        <p className="form-text text-muted">
+          Where to store the downloaded file
+        </p>
       </div>
 
-      <div className="field">
-        <label htmlFor="download-filename" className="label">
+      <div className="mb-3">
+        <label htmlFor="download-filename" className="form-label">
           Filename (Optional)
         </label>
-        <div className="control">
-          <input
-            id="download-filename"
-            className="input"
-            type="text"
-            placeholder="Leave blank to use original filename"
-            value={formData.filename}
-            onChange={(e) => handleInputChange("filename", e.target.value)}
-            disabled={loading}
-          />
-        </div>
-        <p className="help">Custom filename for the downloaded file</p>
+        <input
+          id="download-filename"
+          className="form-control"
+          type="text"
+          placeholder="Leave blank to use original filename"
+          value={formData.filename}
+          onChange={(e) => handleInputChange("filename", e.target.value)}
+          disabled={loading}
+        />
+        <p className="form-text text-muted">
+          Custom filename for the downloaded file
+        </p>
       </div>
 
-      <div className="field">
-        <span className="label">Checksum (Optional)</span>
-        <div className="field has-addons">
-          <div className="control is-expanded">
-            <input
-              className="input"
-              type="text"
-              placeholder="Expected checksum for verification"
-              value={formData.checksum}
-              onChange={(e) => handleInputChange("checksum", e.target.value)}
-              disabled={loading}
-            />
-          </div>
-          <div className="control">
-            <div className="select">
-              <select
-                value={formData.checksum_algorithm}
-                onChange={(e) =>
-                  handleInputChange("checksum_algorithm", e.target.value)
-                }
-                disabled={loading || !formData.checksum.trim()}
-              >
-                <option value="md5">MD5</option>
-                <option value="sha1">SHA1</option>
-                <option value="sha256">SHA256</option>
-              </select>
-            </div>
-          </div>
+      <div className="mb-3">
+        <span className="form-label">Checksum (Optional)</span>
+        <div className="input-group">
+          <input
+            className="form-control"
+            type="text"
+            placeholder="Expected checksum for verification"
+            value={formData.checksum}
+            onChange={(e) => handleInputChange("checksum", e.target.value)}
+            disabled={loading}
+          />
+          <select
+            className="form-select"
+            value={formData.checksum_algorithm}
+            onChange={(e) =>
+              handleInputChange("checksum_algorithm", e.target.value)
+            }
+            disabled={loading || !formData.checksum.trim()}
+          >
+            <option value="md5">MD5</option>
+            <option value="sha1">SHA1</option>
+            <option value="sha256">SHA256</option>
+          </select>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           Optional checksum for file integrity verification
         </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.overwrite_existing}
-              onChange={(e) =>
-                handleInputChange("overwrite_existing", e.target.checked)
-              }
-              disabled={loading}
-            />
-            <span className="ml-2">Overwrite existing files</span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="download-overwrite-existing"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.overwrite_existing}
+            onChange={(e) =>
+              handleInputChange("overwrite_existing", e.target.checked)
+            }
+            disabled={loading}
+          />
+          <label
+            className="form-check-label"
+            htmlFor="download-overwrite-existing"
+          >
+            Overwrite existing files
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           Replace existing files with the same name in the storage location
         </p>
       </div>
 
       {selectedStoragePath && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <div className="content">
             <p>
               <strong>Selected Storage Location:</strong>
@@ -333,7 +327,7 @@ const ArtifactDownloadModal = ({
         </div>
       )}
 
-      <div className="notification is-light">
+      <div className="alert alert-secondary">
         <div className="content">
           <p>
             <strong>Download Process:</strong>

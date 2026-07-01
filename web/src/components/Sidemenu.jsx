@@ -11,12 +11,12 @@ const SideMenu = () => {
 
   return (
     <section
-      className={`hero is-fullheight ${sidebarMinimized ? "is-minimized" : ""}`}
+      className={`d-flex flex-column min-vh-100 ${sidebarMinimized ? "is-minimized" : ""}`}
     >
-      <div className="hero-head has-z-index-sidebar">
+      <div className="has-z-index-sidebar">
         <SidebarHeader />
       </div>
-      <div className="hero-body p-0 is-align-items-flex-start">
+      <div className="flex-grow-1 p-0 d-flex align-items-start">
         <Sidebar />
       </div>
       <SidebarFooter />

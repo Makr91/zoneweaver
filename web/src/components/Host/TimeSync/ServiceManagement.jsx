@@ -66,39 +66,37 @@ const TimeSyncServiceManagement = ({
   };
 
   return (
-    <div className="box">
-      <h3 className="title is-6">Time Synchronization Service Management</h3>
+    <div className="card">
+      <div className="card-body">
+        <h3 className="fs-6 fw-bold">
+          Time Synchronization Service Management
+        </h3>
 
-      {/* Available Systems */}
-      {availableSystems?.available && (
-        <div className="columns is-multiline">
-          {Object.keys(availableSystems.available).map((systemKey) => {
-            const systemData = getSystemStatus(systemKey);
-            const systemInfo = getSystemInfo(systemKey);
-            const isCurrent = availableSystems.current?.service === systemKey;
+        {/* Available Systems */}
+        {availableSystems?.available && (
+          <div className="row g-3">
+            {Object.keys(availableSystems.available).map((systemKey) => {
+              const systemData = getSystemStatus(systemKey);
+              const systemInfo = getSystemInfo(systemKey);
+              const isCurrent = availableSystems.current?.service === systemKey;
 
-            return (
-              <div key={systemKey} className="column is-one-third">
-                <div
-                  className={`card ${isCurrent ? "has-background-info-soft" : ""}`}
-                >
-                  <div className="card-header">
-                    <p className="card-header-title">
-                      <span className="icon mr-2">
-                        <i className={`fas ${systemInfo.icon}`} />
-                      </span>
-                      {systemInfo.name}
-                      {isCurrent && (
-                        <span className="tag is-success is-small ml-2">
-                          Current
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="card-content">
-                    <div className="content">
+              return (
+                <div key={systemKey} className="col-lg-4">
+                  <div className={`card ${isCurrent ? "bg-info-subtle" : ""}`}>
+                    <div className="card-header">
+                      <div className="d-flex align-items-center">
+                        <i className={`fas ${systemInfo.icon} me-2`} />
+                        {systemInfo.name}
+                        {isCurrent && (
+                          <span className="badge text-bg-success ms-2">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="card-body">
                       <p>{systemInfo.description}</p>
-                      <ul className="is-size-7">
+                      <ul className="small">
                         {systemInfo.features.map((feature) => (
                           <li key={feature}>{feature}</li>
                         ))}
@@ -106,9 +104,9 @@ const TimeSyncServiceManagement = ({
 
                       {systemData && (
                         <div className="mt-3">
-                          <div className="tags">
+                          <div className="d-flex gap-1 flex-wrap">
                             <span
-                              className={`tag is-small ${systemData.installed ? "is-success" : "is-warning"}`}
+                              className={`badge ${systemData.installed ? "text-bg-success" : "text-bg-warning"}`}
                             >
                               {systemData.installed
                                 ? "Installed"
@@ -116,25 +114,24 @@ const TimeSyncServiceManagement = ({
                             </span>
                             {systemData.installed && (
                               <span
-                                className={`tag is-small ${systemData.enabled ? "is-info" : "is-grey"}`}
+                                className={`badge ${systemData.enabled ? "text-bg-info" : "text-bg-secondary"}`}
                               >
                                 {systemData.enabled ? "Enabled" : "Disabled"}
                               </span>
                             )}
                           </div>
                           {systemData.package_name && (
-                            <p className="is-size-7 has-text-grey">
+                            <p className="small text-muted">
                               Package: {systemData.package_name}
                             </p>
                           )}
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div className="card-footer">
-                    <div className="card-footer-item">
+                    <div className="card-footer">
                       <button
-                        className={`button is-small ${isCurrent ? "is-success" : "is-info"} ${syncing ? "is-loading" : ""}`}
+                        type="button"
+                        className={`btn btn-sm w-100 ${isCurrent ? "btn-success" : "btn-info"}`}
                         onClick={() => onSwitch(systemKey)}
                         disabled={
                           isCurrent ||
@@ -143,11 +140,17 @@ const TimeSyncServiceManagement = ({
                           syncing
                         }
                       >
-                        <span className="icon">
-                          <i
-                            className={`fas ${isCurrent ? "fa-check" : "fa-exchange-alt"}`}
+                        {syncing ? (
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true"
                           />
-                        </span>
+                        ) : (
+                          <i
+                            className={`fas ${isCurrent ? "fa-check" : "fa-exchange-alt"} me-2`}
+                          />
+                        )}
                         <span>
                           {getSwitchButtonLabel(
                             isCurrent,
@@ -159,23 +162,23 @@ const TimeSyncServiceManagement = ({
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
 
-      {/* No systems available fallback */}
-      {!availableSystems?.available && !loading && (
-        <div className="notification is-warning">
-          <p>
-            <strong>No Time Synchronization Systems Available</strong>
-            <br />
-            Unable to detect available time synchronization systems. The system
-            may need package installation or configuration.
-          </p>
-        </div>
-      )}
+        {/* No systems available fallback */}
+        {!availableSystems?.available && !loading && (
+          <div className="alert alert-warning">
+            <p>
+              <strong>No Time Synchronization Systems Available</strong>
+              <br />
+              Unable to detect available time synchronization systems. The
+              system may need package installation or configuration.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

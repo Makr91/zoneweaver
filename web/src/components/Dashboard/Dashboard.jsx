@@ -143,12 +143,14 @@ const Dashboard = () => {
   if (serversLoading || (loading && !infrastructureData.servers)) {
     return (
       <div className="zw-page-content-scrollable">
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="p-4 has-background-grey">
-              <div className="box has-text-centered p-6">
-                <div className="button is-loading is-large is-ghost" />
-                <p className="mt-2">Loading infrastructure overview...</p>
+        <div className="container-fluid p-0">
+          <div className="p-4 bg-body-secondary">
+            <div className="card">
+              <div className="card-body text-center p-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p className="mt-3 mb-0">Loading infrastructure overview...</p>
               </div>
             </div>
           </div>
@@ -166,25 +168,22 @@ const Dashboard = () => {
           <title>Infrastructure Overview - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="p-4 has-background-grey">
-              <div className="notification is-info">
-                <h2 className="title is-4">Welcome to Zoneweaver</h2>
-                <p className="mb-4">
-                  Get started by adding your first Zoneweaver API Server to
-                  begin managing your infrastructure.
-                </p>
-                <button
-                  onClick={navigateToServerRegister}
-                  className="button is-primary"
-                >
-                  <span className="icon">
-                    <i className="fas fa-plus" />
-                  </span>
-                  <span>Add Zoneweaver API Server</span>
-                </button>
-              </div>
+        <div className="container-fluid p-0">
+          <div className="p-4 bg-body-secondary">
+            <div className="alert alert-info">
+              <h2 className="h4">Welcome to Zoneweaver</h2>
+              <p className="mb-4">
+                Get started by adding your first Zoneweaver API Server to begin
+                managing your infrastructure.
+              </p>
+              <button
+                type="button"
+                onClick={navigateToServerRegister}
+                className="btn btn-primary"
+              >
+                <i className="fas fa-plus me-2" />
+                Add Zoneweaver API Server
+              </button>
             </div>
           </div>
         </div>
@@ -202,80 +201,79 @@ const Dashboard = () => {
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
 
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
-          <div className="p-4 has-background-grey">
-            {/* Header */}
-            <div className="box mb-3">
-              <div className="level is-mobile">
-                <div className="level-left">
-                  <div className="level-item">
-                    <div>
-                      <h1 className="title is-3 mb-1">
-                        Infrastructure Overview
-                      </h1>
-                      <p className="subtitle is-6 has-text-grey">
-                        Managing {summary?.totalServers || 0} servers with{" "}
-                        {summary?.totalZones || 0} zones
-                        {lastRefresh && (
-                          <span className="ml-2">
-                            • Last updated {lastRefresh.toLocaleTimeString()}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="level-right">
-                  <div className="level-item">
-                    <button
-                      className={`button is-small ${loading ? "is-loading" : ""}`}
-                      onClick={fetchInfrastructureData}
-                      disabled={loading}
-                    >
-                      <span className="icon">
-                        <i className="fas fa-sync-alt" />
+      <div className="container-fluid p-0">
+        <div className="p-4 bg-body-secondary">
+          {/* Header */}
+          <div className="card mb-3">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h1 className="h3 mb-1">Infrastructure Overview</h1>
+                  <p className="text-muted mb-0">
+                    Managing {summary?.totalServers || 0} servers with{" "}
+                    {summary?.totalZones || 0} zones
+                    {lastRefresh && (
+                      <span className="ms-2">
+                        • Last updated {lastRefresh.toLocaleTimeString()}
                       </span>
-                      <span>Refresh</span>
-                    </button>
-                  </div>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={fetchInfrastructureData}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <i className="fas fa-sync-alt me-2" />
+                    )}
+                    Refresh
+                  </button>
                 </div>
               </div>
             </div>
-
-            {error && (
-              <div className="notification is-danger mb-4">
-                <p>{error}</p>
-              </div>
-            )}
-
-            {summary && (
-              <DashboardSummaryCards
-                summary={summary}
-                onShowHealthModal={() => setShowHealthModal(true)}
-              />
-            )}
-
-            <DashboardQuickActions
-              servers={infrastructureData.servers || []}
-              summary={summary || {}}
-              onNavigateZoneRegister={navigateToZoneRegister}
-              onNavigateZones={navigateToZones}
-              onNavigateServerRegister={navigateToServerRegister}
-              onNavigateSettings={navigateToSettings}
-            />
-
-            <DashboardServerCards
-              servers={infrastructureData.servers || []}
-              onNavigateToServer={navigateToServer}
-            />
-
-            <DashboardHealthModal
-              isOpen={showHealthModal}
-              onClose={() => setShowHealthModal(false)}
-              servers={infrastructureData.servers || []}
-            />
           </div>
+
+          {error && (
+            <div className="alert alert-danger">
+              <p className="mb-0">{error}</p>
+            </div>
+          )}
+
+          {summary && (
+            <DashboardSummaryCards
+              summary={summary}
+              onShowHealthModal={() => setShowHealthModal(true)}
+            />
+          )}
+
+          <DashboardQuickActions
+            servers={infrastructureData.servers || []}
+            summary={summary || {}}
+            onNavigateZoneRegister={navigateToZoneRegister}
+            onNavigateZones={navigateToZones}
+            onNavigateServerRegister={navigateToServerRegister}
+            onNavigateSettings={navigateToSettings}
+          />
+
+          <DashboardServerCards
+            servers={infrastructureData.servers || []}
+            onNavigateToServer={navigateToServer}
+          />
+
+          <DashboardHealthModal
+            isOpen={showHealthModal}
+            onClose={() => setShowHealthModal(false)}
+            servers={infrastructureData.servers || []}
+          />
         </div>
       </div>
     </div>

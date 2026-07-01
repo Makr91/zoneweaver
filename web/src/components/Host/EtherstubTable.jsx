@@ -17,10 +17,8 @@ const EtherstubTable = ({ etherstubs, loading, onDelete, onViewDetails }) => {
 
   if (loading && etherstubs.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading etherstubs...</p>
       </div>
     );
@@ -28,18 +26,16 @@ const EtherstubTable = ({ etherstubs, loading, onDelete, onViewDetails }) => {
 
   if (etherstubs.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-ethernet fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No etherstubs found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-ethernet fa-2x text-muted" />
+        <p className="mt-2 text-muted">No etherstubs found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover">
         <thead>
           <tr>
             <th>Etherstub Name</th>
@@ -58,54 +54,57 @@ const EtherstubTable = ({ etherstubs, loading, onDelete, onViewDetails }) => {
             return (
               <tr key={etherstubName || index}>
                 <td>
-                  <strong className="is-family-monospace">
-                    {etherstubName}
-                  </strong>
+                  <strong className="font-monospace">{etherstubName}</strong>
                 </td>
                 <td>
-                  <span className="tag is-info is-small">
+                  <span className="badge text-bg-info">
                     {etherstub.class || "etherstub"}
                   </span>
                 </td>
                 <td>
-                  <span className="tag is-success is-small">
+                  <span className="badge text-bg-success">
                     {etherstub.state || "up"}
                   </span>
                 </td>
                 <td>
-                  <span className="is-size-7">{etherstub.over || "--"}</span>
+                  <span className="small">{etherstub.over || "--"}</span>
                 </td>
                 <td>
-                  <span className="is-size-7">
+                  <span className="small">
                     {etherstub.vnics
                       ? `${etherstub.vnics.length} VNICs`
                       : "0 VNICs"}
                   </span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* View Details Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-secondary btn-sm"
                       onClick={() => onViewDetails(etherstub)}
                       disabled={loading || isDeleting}
                       title="View Details"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
+                      <i className="fas fa-info-circle" />
                     </button>
 
                     {/* Delete Button */}
                     <button
-                      className={`button is-danger ${isDeleting ? "is-loading" : ""}`}
+                      type="button"
+                      className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(etherstub)}
                       disabled={loading || isDeleting}
                       title="Delete Etherstub"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-trash" />
-                      </span>
+                      {isDeleting && (
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <i className="fas fa-trash" />
                     </button>
                   </div>
                 </td>

@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 
 const ServerHelpPanel = ({ useExistingApiKey }) => (
-  <div className="box">
-    <h2 className="title is-6">Setup Guide</h2>
-    <div className="content is-size-7">
+  <div>
+    <h3 className="fs-6 fw-bold mb-3">Setup Guide</h3>
+    <div className="small">
       <p>
         <strong>Steps:</strong>
       </p>

@@ -189,24 +189,24 @@ const IpAddressManagement = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">IP Address Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">IP Address Management</h2>
+        <p>
           Manage IP address assignments on <strong>{server.hostname}</strong>.
         </p>
       </div>
 
       {/* IP Address Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-interface">
-                Filter by Interface
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-interface">
+                  Filter by Interface
+                </label>
                 <input
                   id="filter-interface"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="e.g., vnic0"
                   value={filters.interface}
@@ -216,112 +216,99 @@ const IpAddressManagement = ({ server, onError }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-ip-version">
-                IP Version
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="filter-ip-version"
-                    value={filters.ip_version}
-                    onChange={(e) =>
-                      handleFilterChange("ip_version", e.target.value)
-                    }
-                  >
-                    <option value="">All Versions</option>
-                    <option value="v4">IPv4</option>
-                    <option value="v6">IPv6</option>
-                  </select>
-                </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-ip-version">
+                  IP Version
+                </label>
+                <select
+                  id="filter-ip-version"
+                  className="form-select"
+                  value={filters.ip_version}
+                  onChange={(e) =>
+                    handleFilterChange("ip_version", e.target.value)
+                  }
+                >
+                  <option value="">All Versions</option>
+                  <option value="v4">IPv4</option>
+                  <option value="v6">IPv6</option>
+                </select>
+              </div>
+            </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-type">
+                  Address Type
+                </label>
+                <select
+                  id="filter-type"
+                  className="form-select"
+                  value={filters.type}
+                  onChange={(e) => handleFilterChange("type", e.target.value)}
+                >
+                  <option value="">All Types</option>
+                  <option value="static">Static</option>
+                  <option value="dhcp">DHCP</option>
+                  <option value="addrconf">Auto Config</option>
+                </select>
+              </div>
+            </div>
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-state">
+                  State
+                </label>
+                <select
+                  id="filter-state"
+                  className="form-select"
+                  value={filters.state}
+                  onChange={(e) => handleFilterChange("state", e.target.value)}
+                >
+                  <option value="">All States</option>
+                  <option value="ok">OK</option>
+                  <option value="disabled">Disabled</option>
+                  <option value="down">Down</option>
+                  <option value="duplicate">Duplicate</option>
+                </select>
               </div>
             </div>
           </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-type">
-                Address Type
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="filter-type"
-                    value={filters.type}
-                    onChange={(e) => handleFilterChange("type", e.target.value)}
-                  >
-                    <option value="">All Types</option>
-                    <option value="static">Static</option>
-                    <option value="dhcp">DHCP</option>
-                    <option value="addrconf">Auto Config</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-state">
-                State
-              </label>
-              <div className="control">
-                <div className="select is-fullwidth">
-                  <select
-                    id="filter-state"
-                    value={filters.state}
-                    onChange={(e) =>
-                      handleFilterChange("state", e.target.value)
-                    }
-                  >
-                    <option value="">All States</option>
-                    <option value="ok">OK</option>
-                    <option value="disabled">Disabled</option>
-                    <option value="down">Down</option>
-                    <option value="duplicate">Duplicate</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="columns">
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
-                <button
-                  className="button is-info"
-                  onClick={loadAddresses}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
+          <div className="row g-3">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label" aria-hidden="true">
+                  &nbsp;
+                </span>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={loadAddresses}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-sync-alt me-2" />
+                    Refresh
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
-                <button
-                  className="button"
-                  onClick={clearFilters}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                  <span>Clear</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label" aria-hidden="true">
+                  &nbsp;
+                </span>
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={clearFilters}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times me-2" />
+                    Clear
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -329,38 +316,39 @@ const IpAddressManagement = ({ server, onError }) => {
       </div>
 
       {/* IP Addresses Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              IP Addresses ({addresses.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                IP Addresses ({addresses.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                Create IP Address
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create IP Address</span>
-            </button>
-          </div>
-        </div>
 
-        <IpAddressTableManagement
-          addresses={addresses}
-          loading={loading}
-          onDelete={handleDeleteAddress}
-          onToggle={handleToggleAddress}
-        />
+          <IpAddressTableManagement
+            addresses={addresses}
+            loading={loading}
+            onDelete={handleDeleteAddress}
+            onToggle={handleToggleAddress}
+          />
+        </div>
       </div>
 
       {/* IP Address Create Modal */}
@@ -391,16 +379,16 @@ const IpAddressManagement = ({ server, onError }) => {
           submitVariant="is-danger"
           loading={deleting}
         >
-          <div className="notification is-danger is-light">
+          <div className="alert alert-danger">
             <p>
               <strong>Warning:</strong> This action cannot be undone.
             </p>
           </div>
           <p className="mb-4">
             Are you sure you want to delete the IP address{" "}
-            <strong className="is-family-monospace">{addressToDelete}</strong>?
+            <strong className="font-monospace">{addressToDelete}</strong>?
           </p>
-          <p className="has-text-grey is-size-7">
+          <p className="text-muted small">
             This will remove the IP address configuration from the system.
           </p>
         </FormModal>

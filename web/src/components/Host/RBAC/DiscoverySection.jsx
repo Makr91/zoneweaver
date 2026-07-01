@@ -202,8 +202,8 @@ const RBACDiscoverySection = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">RBAC Discovery</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">RBAC Discovery</h2>
+        <p>
           Browse available authorizations, profiles, and roles on{" "}
           <strong>{server.hostname}</strong>. Use this to discover what RBAC
           components are available for user and role configuration.
@@ -211,43 +211,37 @@ const RBACDiscoverySection = ({ server, onError }) => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="tabs is-boxed mb-0">
-        <ul>
-          {tabs.map((tab) => (
-            <li
-              key={tab.key}
-              className={activeTab === tab.key ? "is-active" : ""}
+      <ul className="nav nav-tabs mb-0">
+        {tabs.map((tab) => (
+          <li key={tab.key} className="nav-item">
+            <button
+              type="button"
+              className={`nav-link ${activeTab === tab.key ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.key)}
             >
-              <button
-                className="button is-text"
-                onClick={() => setActiveTab(tab.key)}
-              >
-                <span className="icon is-small">
-                  <i className={`fas ${tab.icon}`} />
-                </span>
-                <span>{tab.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+              <i className={`fas ${tab.icon} me-2`} />
+              <span>{tab.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
 
       {/* Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          {activeTab !== "roles" && (
-            <div className="column">
-              <div className="field">
-                <label className="label" htmlFor="rbac-filter">
-                  Filter{" "}
-                  {activeTab === "authorizations"
-                    ? "Authorizations"
-                    : "Profiles"}
-                </label>
-                <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            {activeTab !== "roles" && (
+              <div className="col">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="rbac-filter">
+                    Filter{" "}
+                    {activeTab === "authorizations"
+                      ? "Authorizations"
+                      : "Profiles"}
+                  </label>
                   <input
                     id="rbac-filter"
-                    className="input"
+                    className="form-control"
                     type="text"
                     placeholder={
                       activeTab === "authorizations"
@@ -270,158 +264,155 @@ const RBACDiscoverySection = ({ server, onError }) => {
                   />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab !== "roles" && (
-            <div className="column is-narrow">
-              <div className="field">
-                <label className="label" htmlFor="rbac-limit">
-                  Limit Results
-                </label>
-                <div className="control">
-                  <div className="select">
-                    <select
-                      id="rbac-limit"
-                      value={filters.limit}
-                      onChange={(e) =>
-                        handleFilterChange("limit", parseInt(e.target.value))
-                      }
-                    >
-                      <option value={50}>50 Results</option>
-                      <option value={100}>100 Results</option>
-                      <option value={200}>200 Results</option>
-                      <option value={500}>500 Results</option>
-                    </select>
-                  </div>
+            {activeTab !== "roles" && (
+              <div className="col-auto">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="rbac-limit">
+                    Limit Results
+                  </label>
+                  <select
+                    id="rbac-limit"
+                    className="form-select w-auto"
+                    value={filters.limit}
+                    onChange={(e) =>
+                      handleFilterChange("limit", parseInt(e.target.value))
+                    }
+                  >
+                    <option value={50}>50 Results</option>
+                    <option value={100}>100 Results</option>
+                    <option value={200}>200 Results</option>
+                    <option value={500}>500 Results</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="rbac-refresh">
-                Refresh
-              </label>
-              <div className="control">
-                <button
-                  id="rbac-refresh"
-                  className="button is-info"
-                  onClick={handleRefresh}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {activeTab !== "roles" && (
-            <div className="column is-narrow">
-              <div className="field">
-                <label className="label" htmlFor="rbac-clear">
-                  Clear
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="rbac-refresh">
+                  Refresh
                 </label>
-                <div className="control">
+                <div>
                   <button
-                    id="rbac-clear"
-                    className="button"
-                    onClick={clearFilters}
+                    type="button"
+                    id="rbac-refresh"
+                    className="btn btn-info"
+                    onClick={handleRefresh}
                     disabled={loading}
                   >
-                    <span className="icon">
-                      <i className="fas fa-times" />
-                    </span>
-                    <span>Clear</span>
+                    <i className="fas fa-sync-alt me-2" />
+                    <span>Refresh</span>
                   </button>
                 </div>
               </div>
+            </div>
+
+            {activeTab !== "roles" && (
+              <div className="col-auto">
+                <div className="mb-3">
+                  <label className="form-label" htmlFor="rbac-clear">
+                    Clear
+                  </label>
+                  <div>
+                    <button
+                      type="button"
+                      id="rbac-clear"
+                      className="btn"
+                      onClick={clearFilters}
+                      disabled={loading}
+                    >
+                      <i className="fas fa-times me-2" />
+                      <span>Clear</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="card">
+        <div className="card-body">
+          {/* Authorizations Tab */}
+          {activeTab === "authorizations" && (
+            <div>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="d-flex align-items-center gap-2">
+                  <h3 className="fs-6 fw-bold">
+                    Authorizations ({authorizations.length})
+                    {loading && (
+                      <span className="ms-2">
+                        <i className="fas fa-spinner fa-spin" />
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              </div>
+
+              <AuthorizationsTab
+                authorizations={authorizations}
+                loading={loading}
+                copyToClipboard={copyToClipboard}
+              />
+            </div>
+          )}
+
+          {/* Profiles Tab */}
+          {activeTab === "profiles" && (
+            <div>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="d-flex align-items-center gap-2">
+                  <h3 className="fs-6 fw-bold">
+                    Profiles ({profiles.length})
+                    {loading && (
+                      <span className="ms-2">
+                        <i className="fas fa-spinner fa-spin" />
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              </div>
+
+              <ProfilesTab
+                profiles={profiles}
+                loading={loading}
+                copyToClipboard={copyToClipboard}
+              />
+            </div>
+          )}
+
+          {/* Roles Tab */}
+          {activeTab === "roles" && (
+            <div>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="d-flex align-items-center gap-2">
+                  <h3 className="fs-6 fw-bold">
+                    Available Roles ({roles.length})
+                    {loading && (
+                      <span className="ms-2">
+                        <i className="fas fa-spinner fa-spin" />
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              </div>
+
+              <RolesTab
+                roles={roles}
+                loading={loading}
+                copyToClipboard={copyToClipboard}
+              />
             </div>
           )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="box">
-        {/* Authorizations Tab */}
-        {activeTab === "authorizations" && (
-          <div>
-            <div className="level is-mobile mb-4">
-              <div className="level-left">
-                <h3 className="title is-6">
-                  Authorizations ({authorizations.length})
-                  {loading && (
-                    <span className="ml-2">
-                      <i className="fas fa-spinner fa-spin" />
-                    </span>
-                  )}
-                </h3>
-              </div>
-            </div>
-
-            <AuthorizationsTab
-              authorizations={authorizations}
-              loading={loading}
-              copyToClipboard={copyToClipboard}
-            />
-          </div>
-        )}
-
-        {/* Profiles Tab */}
-        {activeTab === "profiles" && (
-          <div>
-            <div className="level is-mobile mb-4">
-              <div className="level-left">
-                <h3 className="title is-6">
-                  Profiles ({profiles.length})
-                  {loading && (
-                    <span className="ml-2">
-                      <i className="fas fa-spinner fa-spin" />
-                    </span>
-                  )}
-                </h3>
-              </div>
-            </div>
-
-            <ProfilesTab
-              profiles={profiles}
-              loading={loading}
-              copyToClipboard={copyToClipboard}
-            />
-          </div>
-        )}
-
-        {/* Roles Tab */}
-        {activeTab === "roles" && (
-          <div>
-            <div className="level is-mobile mb-4">
-              <div className="level-left">
-                <h3 className="title is-6">
-                  Available Roles ({roles.length})
-                  {loading && (
-                    <span className="ml-2">
-                      <i className="fas fa-spinner fa-spin" />
-                    </span>
-                  )}
-                </h3>
-              </div>
-            </div>
-
-            <RolesTab
-              roles={roles}
-              loading={loading}
-              copyToClipboard={copyToClipboard}
-            />
-          </div>
-        )}
-      </div>
-
       {/* Help Information */}
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>
           <strong>Tip:</strong> Use the copy button next to each item to copy
           its name to your clipboard. You can then paste it when creating or

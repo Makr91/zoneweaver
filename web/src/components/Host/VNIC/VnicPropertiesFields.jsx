@@ -56,25 +56,24 @@ const VnicPropertiesFields = ({
   const getPropertyValueInput = () => {
     if (propertyValueOptions[propertyKey]) {
       return (
-        <div className="select is-fullwidth">
-          <select
-            value={propertyValue}
-            onChange={(e) => setPropertyValue(e.target.value)}
-            disabled={disabled}
-          >
-            <option value="">Select {propertyKey} value</option>
-            {propertyValueOptions[propertyKey].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          className="form-select"
+          value={propertyValue}
+          onChange={(e) => setPropertyValue(e.target.value)}
+          disabled={disabled}
+        >
+          <option value="">Select {propertyKey} value</option>
+          {propertyValueOptions[propertyKey].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       );
     }
     return (
       <input
-        className="input"
+        className="form-control"
         type="text"
         placeholder="Property value"
         value={propertyValue}
@@ -85,55 +84,54 @@ const VnicPropertiesFields = ({
   };
 
   return (
-    <div className="field">
-      <label className="label" htmlFor="vnic-create-prop-key">
+    <div className="mb-3">
+      <label className="form-label" htmlFor="vnic-create-prop-key">
         Additional Properties
       </label>
-      <div className="field has-addons">
-        <div className="control">
-          <div className="select">
-            <select
-              id="vnic-create-prop-key"
-              value={propertyKey}
-              onChange={(e) => setPropertyKey(e.target.value)}
-              disabled={disabled}
-            >
-              <option value="">Select property</option>
-              {commonProperties
-                .filter((prop) => !properties[prop])
-                .map((prop) => (
-                  <option key={prop} value={prop}>
-                    {prop}
-                  </option>
-                ))}
-            </select>
-          </div>
-        </div>
-        <div className="control is-expanded">{getPropertyValueInput()}</div>
-        <div className="control">
-          <button
-            type="button"
-            className="button is-info"
-            onClick={handleAdd}
-            disabled={!propertyKey.trim() || !propertyValue.trim() || disabled}
-          >
-            Add
-          </button>
-        </div>
+      <div className="input-group">
+        <select
+          id="vnic-create-prop-key"
+          className="form-select"
+          value={propertyKey}
+          onChange={(e) => setPropertyKey(e.target.value)}
+          disabled={disabled}
+        >
+          <option value="">Select property</option>
+          {commonProperties
+            .filter((prop) => !properties[prop])
+            .map((prop) => (
+              <option key={prop} value={prop}>
+                {prop}
+              </option>
+            ))}
+        </select>
+        {getPropertyValueInput()}
+        <button
+          type="button"
+          className="btn btn-info"
+          onClick={handleAdd}
+          disabled={!propertyKey.trim() || !propertyValue.trim() || disabled}
+        >
+          Add
+        </button>
       </div>
 
       {Object.keys(properties).length > 0 && (
-        <div className="content mt-3">
+        <div className="mt-3">
           <p>
             <strong>Current Properties:</strong>
           </p>
-          <div className="tags">
+          <div className="d-flex flex-wrap gap-2">
             {Object.entries(properties).map(([key, value]) => (
-              <span key={key} className="tag is-info">
+              <span
+                key={key}
+                className="badge text-bg-info d-inline-flex align-items-center gap-1"
+              >
                 {key}={value}
                 <button
                   type="button"
-                  className="delete is-small"
+                  className="btn-close btn-close-white"
+                  aria-label="Remove"
                   onClick={() => onRemoveProperty(key)}
                   disabled={disabled}
                 />

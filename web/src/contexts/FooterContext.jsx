@@ -255,7 +255,7 @@ export const FooterProvider = ({ children }) => {
 
     // Reset session state
     setSession(null);
-  }, [currentServer?.hostname]); // Only trigger when server hostname changes
+  }, [currentServer?.hostname, currentServer?.port]); // Trigger when the server identity (host:port) changes
 
   // Create session and WebSocket for react-xtermjs
   const createSession = useCallback(async () => {

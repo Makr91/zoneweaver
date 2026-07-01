@@ -200,25 +200,25 @@ const RoleSection = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Role Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Role Management</h2>
+        <p>
           Manage RBAC roles on <strong>{server.hostname}</strong>. Create,
           modify, and delete roles, and manage role authorizations and profiles.
         </p>
       </div>
 
       {/* Role Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-pattern">
-                Filter by Role Name
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-pattern">
+                  Filter by Role Name
+                </label>
                 <input
                   id="filter-pattern"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Enter role name pattern..."
                   value={filters.pattern}
@@ -228,66 +228,61 @@ const RoleSection = ({ server, onError }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="filter-limit">
-                Limit Results
-              </label>
-              <div className="control">
-                <div className="select">
-                  <select
-                    id="filter-limit"
-                    value={filters.limit}
-                    onChange={(e) =>
-                      handleFilterChange("limit", parseInt(e.target.value))
-                    }
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-limit">
+                  Limit Results
+                </label>
+                <select
+                  id="filter-limit"
+                  className="form-select"
+                  value={filters.limit}
+                  onChange={(e) =>
+                    handleFilterChange("limit", parseInt(e.target.value))
+                  }
+                >
+                  <option value={25}>25 Roles</option>
+                  <option value={50}>50 Roles</option>
+                  <option value={100}>100 Roles</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="refresh-button">
+                  Refresh
+                </label>
+                <div>
+                  <button
+                    id="refresh-button"
+                    type="button"
+                    className="btn btn-info"
+                    onClick={loadRoles}
+                    disabled={loading}
                   >
-                    <option value={25}>25 Roles</option>
-                    <option value={50}>50 Roles</option>
-                    <option value={100}>100 Roles</option>
-                  </select>
+                    <i className="fas fa-sync-alt me-2" />
+                    <span>Refresh</span>
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="refresh-button">
-                Refresh
-              </label>
-              <div className="control">
-                <button
-                  id="refresh-button"
-                  className="button is-info"
-                  onClick={loadRoles}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
-                  <span>Refresh</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="clear-button">
-                Clear
-              </label>
-              <div className="control">
-                <button
-                  id="clear-button"
-                  className="button"
-                  onClick={clearFilters}
-                  disabled={loading}
-                >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
-                  <span>Clear</span>
-                </button>
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="clear-button">
+                  Clear
+                </label>
+                <div>
+                  <button
+                    id="clear-button"
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={clearFilters}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times me-2" />
+                    <span>Clear</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -295,41 +290,42 @@ const RoleSection = ({ server, onError }) => {
       </div>
 
       {/* Roles Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              Roles ({roles.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                Roles ({roles.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Create Role</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create Role</span>
-            </button>
-          </div>
-        </div>
 
-        <RoleTable
-          roles={roles}
-          loading={loading}
-          onDelete={handleDeleteRole}
-          onViewDetails={(role) => {
-            setSelectedRole(role);
-            setShowDetailsModal(true);
-          }}
-        />
+          <RoleTable
+            roles={roles}
+            loading={loading}
+            onDelete={handleDeleteRole}
+            onViewDetails={(role) => {
+              setSelectedRole(role);
+              setShowDetailsModal(true);
+            }}
+          />
+        </div>
       </div>
 
       {/* Role Details Modal */}

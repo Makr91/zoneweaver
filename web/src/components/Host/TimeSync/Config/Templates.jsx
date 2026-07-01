@@ -9,44 +9,45 @@ const ConfigTemplates = ({
   loading,
   saving,
 }) => (
-  <div className="box mb-4">
-    <h3 className="title is-6">Configuration Templates</h3>
+  <div className="card mb-4">
+    <div className="card-body">
+      <h3 className="fs-6 fw-bold">Configuration Templates</h3>
 
-    <div className="field is-grouped">
-      <div className="control is-expanded">
-        <div className="select is-fullwidth">
-          <select
-            value={selectedTemplate}
-            onChange={(e) => setSelectedTemplate(e.target.value)}
-          >
-            <option value="">Select a template...</option>
-            {configInfo?.suggested_defaults?.config_template && (
-              <option value="default">Default Pool Configuration</option>
-            )}
-          </select>
-        </div>
-      </div>
-      <div className="control">
+      <div className="d-flex gap-2">
+        <select
+          className="form-select flex-grow-1"
+          value={selectedTemplate}
+          onChange={(e) => setSelectedTemplate(e.target.value)}
+        >
+          <option value="">Select a template...</option>
+          {configInfo?.suggested_defaults?.config_template && (
+            <option value="default">Default Pool Configuration</option>
+          )}
+        </select>
         <button
-          className="button is-info"
+          type="button"
+          className="btn btn-info"
           onClick={onLoadTemplate}
           disabled={!selectedTemplate || loading}
         >
-          <span className="icon">
-            <i className="fas fa-download" />
-          </span>
+          <i className="fas fa-download me-2" />
           <span>Load Template</span>
         </button>
-      </div>
-      <div className="control">
         <button
-          className={`button is-info ${loading ? "is-loading" : ""}`}
+          type="button"
+          className="btn btn-info"
           onClick={onRefresh}
           disabled={loading || saving}
         >
-          <span className="icon">
-            <i className="fas fa-refresh" />
-          </span>
+          {loading ? (
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            />
+          ) : (
+            <i className="fas fa-refresh me-2" />
+          )}
           <span>Refresh</span>
         </button>
       </div>

@@ -5,13 +5,13 @@ import ContentModal from "../common/ContentModal";
 const UserDetailsModal = ({ user, onClose }) => {
   const formatValue = (value) => {
     if (value === null || value === undefined || value === "") {
-      return <span className="has-text-grey">N/A</span>;
+      return <span className="text-muted">N/A</span>;
     }
     if (Array.isArray(value)) {
       return value.length > 0 ? (
         value.join(", ")
       ) : (
-        <span className="has-text-grey">None</span>
+        <span className="text-muted">None</span>
       );
     }
     return value;
@@ -19,31 +19,31 @@ const UserDetailsModal = ({ user, onClose }) => {
 
   const getUserType = () => {
     if (user.uid < 100 && !user.comment?.includes("User")) {
-      return { type: "System User", class: "is-info" };
+      return { type: "System User", class: "text-bg-info" };
     }
-    return { type: "Regular User", class: "is-success" };
+    return { type: "Regular User", class: "text-bg-success" };
   };
 
   const userType = getUserType();
 
   const getAccountStatusClass = (status) => {
     if (status === "active") {
-      return "is-success";
+      return "text-bg-success";
     }
     if (status === "locked") {
-      return "is-danger";
+      return "text-bg-danger";
     }
-    return "is-warning";
+    return "text-bg-warning";
   };
 
   const getPasswordStatusClass = (status) => {
     if (status === "set") {
-      return "is-success";
+      return "text-bg-success";
     }
     if (status === "expired") {
-      return "is-warning";
+      return "text-bg-warning";
     }
-    return "is-light";
+    return "text-bg-secondary";
   };
 
   return (
@@ -52,46 +52,43 @@ const UserDetailsModal = ({ user, onClose }) => {
       onClose={onClose}
       title={`User Details: ${user.username}`}
       icon="fas fa-user"
-      className="is-large"
       aria-label={`User details for ${user.username}`}
     >
-      <div className="columns">
+      <div className="row g-3">
         {/* Basic Information */}
-        <div className="column">
-          <h4 className="title is-5">
-            <span className="icon">
-              <i className="fas fa-info-circle" />
-            </span>
+        <div className="col">
+          <h4 className="fs-5 fw-bold">
+            <i className="fas fa-info-circle me-2" />
             <span>Basic Information</span>
           </h4>
 
-          <div className="table-container">
-            <table className="table is-fullwidth">
+          <div className="table-responsive">
+            <table className="table">
               <tbody>
                 <tr>
                   <td>
                     <strong>Username</strong>
                   </td>
-                  <td className="is-family-monospace">{user.username}</td>
+                  <td className="font-monospace">{user.username}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>User ID (UID)</strong>
                   </td>
-                  <td className="is-family-monospace">{user.uid}</td>
+                  <td className="font-monospace">{user.uid}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Group ID (GID)</strong>
                   </td>
-                  <td className="is-family-monospace">{user.gid}</td>
+                  <td className="font-monospace">{user.gid}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>User Type</strong>
                   </td>
                   <td>
-                    <span className={`tag ${userType.class}`}>
+                    <span className={`badge ${userType.class}`}>
                       {userType.type}
                     </span>
                   </td>
@@ -106,17 +103,13 @@ const UserDetailsModal = ({ user, onClose }) => {
                   <td>
                     <strong>Home Directory</strong>
                   </td>
-                  <td className="is-family-monospace">
-                    {formatValue(user.home)}
-                  </td>
+                  <td className="font-monospace">{formatValue(user.home)}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Shell</strong>
                   </td>
-                  <td className="is-family-monospace">
-                    {formatValue(user.shell)}
-                  </td>
+                  <td className="font-monospace">{formatValue(user.shell)}</td>
                 </tr>
               </tbody>
             </table>
@@ -124,17 +117,15 @@ const UserDetailsModal = ({ user, onClose }) => {
         </div>
 
         {/* Extended Attributes */}
-        <div className="column">
-          <h4 className="title is-5">
-            <span className="icon">
-              <i className="fas fa-shield-alt" />
-            </span>
+        <div className="col">
+          <h4 className="fs-5 fw-bold">
+            <i className="fas fa-shield-alt me-2" />
             <span>RBAC Attributes</span>
           </h4>
 
           {user.attributes ? (
-            <div className="table-container">
-              <table className="table is-fullwidth">
+            <div className="table-responsive">
+              <table className="table">
                 <tbody>
                   {user.attributes.groups && (
                     <tr>
@@ -143,15 +134,18 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         {user.attributes.groups.length > 0 ? (
-                          <div className="tags">
+                          <div className="d-flex flex-wrap gap-1">
                             {user.attributes.groups.map((group) => (
-                              <span key={group} className="tag is-light">
+                              <span
+                                key={group}
+                                className="badge text-bg-secondary"
+                              >
                                 {group}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="has-text-grey">None</span>
+                          <span className="text-muted">None</span>
                         )}
                       </td>
                     </tr>
@@ -164,18 +158,15 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         {user.attributes.authorizations.length > 0 ? (
-                          <div className="content">
+                          <div>
                             {user.attributes.authorizations.map((auth) => (
-                              <div
-                                key={auth}
-                                className="is-family-monospace is-size-7"
-                              >
+                              <div key={auth} className="font-monospace small">
                                 {auth}
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <span className="has-text-grey">None</span>
+                          <span className="text-muted">None</span>
                         )}
                       </td>
                     </tr>
@@ -188,18 +179,18 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         {user.attributes.profiles.length > 0 ? (
-                          <div className="tags">
+                          <div className="d-flex flex-wrap gap-1">
                             {user.attributes.profiles.map((profile) => (
                               <span
                                 key={profile}
-                                className="tag is-primary is-light"
+                                className="badge text-bg-primary"
                               >
                                 {profile}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="has-text-grey">None</span>
+                          <span className="text-muted">None</span>
                         )}
                       </td>
                     </tr>
@@ -212,18 +203,18 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         {user.attributes.roles.length > 0 ? (
-                          <div className="tags">
+                          <div className="d-flex flex-wrap gap-1">
                             {user.attributes.roles.map((role) => (
                               <span
                                 key={role}
-                                className="tag is-warning is-light"
+                                className="badge text-bg-warning"
                               >
                                 {role}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="has-text-grey">None</span>
+                          <span className="text-muted">None</span>
                         )}
                       </td>
                     </tr>
@@ -234,7 +225,7 @@ const UserDetailsModal = ({ user, onClose }) => {
                       <td>
                         <strong>Project</strong>
                       </td>
-                      <td className="is-family-monospace">
+                      <td className="font-monospace">
                         {user.attributes.project}
                       </td>
                     </tr>
@@ -247,7 +238,7 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         <span
-                          className={`tag ${getAccountStatusClass(
+                          className={`badge ${getAccountStatusClass(
                             user.attributes.account_status
                           )}`}
                         >
@@ -264,7 +255,7 @@ const UserDetailsModal = ({ user, onClose }) => {
                       </td>
                       <td>
                         <span
-                          className={`tag ${getPasswordStatusClass(
+                          className={`badge ${getPasswordStatusClass(
                             user.attributes.password_status
                           )}`}
                         >
@@ -279,7 +270,7 @@ const UserDetailsModal = ({ user, onClose }) => {
                       <td>
                         <strong>Last Login</strong>
                       </td>
-                      <td className="is-family-monospace">
+                      <td className="font-monospace">
                         {user.attributes.last_login}
                       </td>
                     </tr>
@@ -288,8 +279,8 @@ const UserDetailsModal = ({ user, onClose }) => {
               </table>
             </div>
           ) : (
-            <div className="notification is-info">
-              <p>
+            <div className="alert alert-info">
+              <p className="mb-0">
                 Extended attributes not loaded. Click &quot;View Details&quot;
                 to load full user information.
               </p>
@@ -302,14 +293,12 @@ const UserDetailsModal = ({ user, onClose }) => {
       {user.attributes && Object.keys(user.attributes).length > 0 && (
         <>
           <hr />
-          <h4 className="title is-6">
-            <span className="icon">
-              <i className="fas fa-cog" />
-            </span>
+          <h4 className="fs-6 fw-bold">
+            <i className="fas fa-cog me-2" />
             <span>Raw Attributes</span>
           </h4>
-          <div className="content">
-            <pre className="has-background-light p-3 is-size-7">
+          <div>
+            <pre className="bg-body-tertiary p-3 small">
               {JSON.stringify(user.attributes, null, 2)}
             </pre>
           </div>

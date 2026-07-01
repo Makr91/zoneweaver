@@ -160,156 +160,147 @@ const Login = () => {
     return "Use your local account credentials";
   };
 
+  const isError = msg.includes("error") || msg.includes("failed");
+
   return (
-    <section className="hero is-fullheight is-fullwidth">
+    <section className="min-vh-100 d-flex align-items-center py-4">
       <Helmet>
         <meta charSet="utf-8" />
         <title>Login - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-centered">
-            <div className="column is-4-desktop">
-              <form onSubmit={handleLogin} className="box has-text-centered">
-                <p className="is-size-1">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-12 col-lg-4">
+            <form onSubmit={handleLogin} className="card">
+              <div className="card-body p-4 text-center">
+                <p className="fs-2 fw-semibold mb-2">
                   Zoneweaver {__APP_VERSION__ || "1.0.0"}
                 </p>
-                <figure className="image container my-1 py-1 is-256x256">
+                <div className="d-flex justify-content-center my-2">
                   <Logo />
-                </figure>
+                </div>
                 {msg && (
                   <div
-                    className={`notification ${msg.includes("error") || msg.includes("failed") ? "is-danger" : "is-info"}`}
+                    className={`alert ${isError ? "alert-danger" : "alert-info"}`}
                   >
-                    <p>{msg}</p>
+                    <p className="mb-0">{msg}</p>
                   </div>
                 )}
 
                 {/* Show username/password fields only for local/LDAP authentication */}
                 {!authMethod.startsWith("oidc-") && (
                   <>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="identifier">
+                    <div className="mb-3 text-start">
+                      <label className="form-label" htmlFor="identifier">
                         {authMethod === "ldap"
                           ? "Username"
                           : "Email or Username"}
                       </label>
-                      <div className="controls">
-                        <input
-                          id="identifier"
-                          type="text"
-                          className="input"
-                          name="identifier"
-                          autoComplete="username"
-                          placeholder={
-                            authMethod === "ldap"
-                              ? "Username"
-                              : "Username or Email"
-                          }
-                          value={identifier}
-                          onChange={(e) => setIdentifier(e.target.value)}
-                          disabled={loading || methodsLoading}
-                        />
-                      </div>
+                      <input
+                        id="identifier"
+                        type="text"
+                        className="form-control"
+                        name="identifier"
+                        autoComplete="username"
+                        placeholder={
+                          authMethod === "ldap"
+                            ? "Username"
+                            : "Username or Email"
+                        }
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        disabled={loading || methodsLoading}
+                      />
                     </div>
-                    <div className="field mt-5">
-                      <label className="label" htmlFor="password">
+                    <div className="mb-3 text-start">
+                      <label className="form-label" htmlFor="password">
                         Password
                       </label>
-                      <div className="controls">
-                        <input
-                          id="password"
-                          type="password"
-                          name="password"
-                          autoComplete="current-password"
-                          className="input"
-                          placeholder="******"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          disabled={loading}
-                        />
-                      </div>
+                      <input
+                        id="password"
+                        type="password"
+                        name="password"
+                        autoComplete="current-password"
+                        className="form-control"
+                        placeholder="******"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={loading}
+                      />
                     </div>
                   </>
                 )}
 
                 {/* Show OIDC information when an OIDC provider is selected */}
                 {authMethod.startsWith("oidc-") && (
-                  <div className="field mt-5">
-                    <div className="notification is-info is-light">
-                      <p className="has-text-centered">
-                        <span className="icon">
-                          <i className="fas fa-external-link-alt" />
-                        </span>
-                        <br />
-                        You will be redirected to your identity provider to sign
-                        in.
-                      </p>
-                    </div>
+                  <div className="alert alert-info mb-3">
+                    <i className="fas fa-external-link-alt" />
+                    <br />
+                    You will be redirected to your identity provider to sign in.
                   </div>
                 )}
                 {/* Authentication Method Selector - Show only if multiple methods available */}
                 {!methodsLoading && authMethods.length > 1 && (
-                  <div className="field mt-5">
-                    <label className="label" htmlFor="authMethod">
+                  <div className="mb-3 text-start">
+                    <label className="form-label" htmlFor="authMethod">
                       Authentication Method
                     </label>
-                    <div className="control">
-                      <div className="select is-fullwidth">
-                        <select
-                          id="authMethod"
-                          value={authMethod}
-                          onChange={(e) =>
-                            handleAuthMethodChange(e.target.value)
-                          }
-                          disabled={loading}
-                        >
-                          {authMethods.map((method) => (
-                            <option key={method.id} value={method.id}>
-                              {method.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <p className="help is-size-7 has-text-grey">
+                    <select
+                      id="authMethod"
+                      className="form-select"
+                      value={authMethod}
+                      onChange={(e) => handleAuthMethodChange(e.target.value)}
+                      disabled={loading}
+                    >
+                      {authMethods.map((method) => (
+                        <option key={method.id} value={method.id}>
+                          {method.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="form-text text-muted">
                       {getAuthMethodHelpText()}
-                    </p>
+                    </div>
                   </div>
                 )}
-                <div className="field mt-5">
+                <div className="mb-3">
                   <button
                     type="submit"
-                    className={`button is-primary is-fullwidth ${loading ? "is-loading" : ""}`}
+                    className="btn btn-primary w-100"
                     disabled={loading}
                   >
+                    {loading && (
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}
                     {authMethod.startsWith("oidc-")
                       ? authMethods.find((m) => m.id === authMethod)?.name ||
                         "Continue with OpenID Connect"
                       : "Login"}
                   </button>
                 </div>
-                <div className="has-text-centered mt-3">
-                  <p>
+                <div className="mt-3">
+                  <p className="mb-0">
                     Don&apos;t have an account?{" "}
-                    <a href="/register" className="has-text-link">
-                      Register here
-                    </a>
+                    <a href="/register">Register here</a>
                   </p>
                 </div>
-                <div className="has-text-centered mt-3">
+                <div className="mt-3">
                   <a
                     href="/docs"
-                    className="has-text-grey"
+                    className="text-muted"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     Documentation
                   </a>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

@@ -194,25 +194,25 @@ const GroupSection = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Group Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Group Management</h2>
+        <p>
           Manage system groups on <strong>{server.hostname}</strong>. Create,
           modify, and delete groups, and manage group memberships.
         </p>
       </div>
 
       {/* Group Filters */}
-      <div className="box mb-4">
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label className="label" htmlFor="filter-group-name">
-                Filter by Group Name
-              </label>
-              <div className="control">
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-group-name">
+                  Filter by Group Name
+                </label>
                 <input
                   id="filter-group-name"
-                  className="input"
+                  className="form-control"
                   type="text"
                   placeholder="Enter group name pattern..."
                   value={filters.pattern}
@@ -222,84 +222,79 @@ const GroupSection = ({ server, onError }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="filter-include-system">
-                Include System Groups
-              </label>
-              <div className="control">
-                <label className="switch is-medium">
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-include-system">
+                  Include System Groups
+                </label>
+                <div className="form-check form-switch">
                   <input
                     id="filter-include-system"
+                    className="form-check-input"
                     type="checkbox"
+                    role="switch"
                     checked={filters.includeSystem}
                     onChange={(e) =>
                       handleFilterChange("includeSystem", e.target.checked)
                     }
                   />
-                  <span className="check" />
-                  <span className="control-label">Show All</span>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <label className="label" htmlFor="filter-limit">
-                Limit Results
-              </label>
-              <div className="control">
-                <div className="select">
-                  <select
-                    id="filter-limit"
-                    value={filters.limit}
-                    onChange={(e) =>
-                      handleFilterChange("limit", parseInt(e.target.value))
-                    }
+                  <label
+                    className="form-check-label"
+                    htmlFor="filter-include-system"
                   >
-                    <option value={25}>25 Groups</option>
-                    <option value={50}>50 Groups</option>
-                    <option value={100}>100 Groups</option>
-                    <option value={200}>200 Groups</option>
-                  </select>
+                    Show All
+                  </label>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="filter-limit">
+                  Limit Results
+                </label>
+                <select
+                  id="filter-limit"
+                  className="form-select"
+                  value={filters.limit}
+                  onChange={(e) =>
+                    handleFilterChange("limit", parseInt(e.target.value))
+                  }
+                >
+                  <option value={25}>25 Groups</option>
+                  <option value={50}>50 Groups</option>
+                  <option value={100}>100 Groups</option>
+                  <option value={200}>200 Groups</option>
+                </select>
+              </div>
+            </div>
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button is-info"
+                  type="button"
+                  className="btn btn-info"
                   onClick={loadGroups}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-sync-alt" />
-                  </span>
+                  <i className="fas fa-sync-alt me-2" />
                   <span>Refresh</span>
                 </button>
               </div>
             </div>
-          </div>
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label" aria-hidden="true">
-                &nbsp;
-              </span>
-              <div className="control">
+            <div className="col-auto">
+              <div className="mb-3">
+                <span className="form-label d-block" aria-hidden="true">
+                  &nbsp;
+                </span>
                 <button
-                  className="button"
+                  type="button"
+                  className="btn btn-secondary"
                   onClick={clearFilters}
                   disabled={loading}
                 >
-                  <span className="icon">
-                    <i className="fas fa-times" />
-                  </span>
+                  <i className="fas fa-times me-2" />
                   <span>Clear</span>
                 </button>
               </div>
@@ -309,41 +304,42 @@ const GroupSection = ({ server, onError }) => {
       </div>
 
       {/* Groups Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              Groups ({groups.length})
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                Groups ({groups.length})
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowCreateModal(true)}
+                disabled={loading}
+              >
+                <i className="fas fa-plus me-2" />
+                <span>Create Group</span>
+              </button>
+            </div>
           </div>
-          <div className="level-right">
-            <button
-              className="button is-primary"
-              onClick={() => setShowCreateModal(true)}
-              disabled={loading}
-            >
-              <span className="icon">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Create Group</span>
-            </button>
-          </div>
-        </div>
 
-        <GroupTable
-          groups={groups}
-          loading={loading}
-          onDelete={handleDeleteGroup}
-          onViewDetails={(group) => {
-            setSelectedGroup(group);
-            setShowDetailsModal(true);
-          }}
-        />
+          <GroupTable
+            groups={groups}
+            loading={loading}
+            onDelete={handleDeleteGroup}
+            onViewDetails={(group) => {
+              setSelectedGroup(group);
+              setShowDetailsModal(true);
+            }}
+          />
+        </div>
       </div>
 
       {/* Group Details Modal */}
@@ -372,48 +368,56 @@ const GroupSection = ({ server, onError }) => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirmModal && groupToDelete && (
-        <div className="modal is-active">
+        <>
+          <div className="modal fade show d-block" tabIndex="-1" role="dialog">
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Confirm Delete</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={cancelDeleteGroup}
+                  />
+                </div>
+                <div className="modal-body">
+                  <p>
+                    Are you sure you want to delete group{" "}
+                    <strong>{groupToDelete.groupname}</strong>?
+                  </p>
+                  <p className="mt-3 text-danger">
+                    <i className="fas fa-exclamation-triangle me-2" />
+                    <span>This action cannot be undone.</span>
+                  </p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={confirmDeleteGroup}
+                    disabled={loading}
+                  >
+                    Delete Group
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={cancelDeleteGroup}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
           <button
-            className="modal-background"
-            onClick={cancelDeleteGroup}
             type="button"
+            className="modal-backdrop fade show"
+            onClick={cancelDeleteGroup}
             aria-label="Close modal"
           />
-          <div className="modal-card">
-            <header className="modal-card-head">
-              <p className="modal-card-title">Confirm Delete</p>
-              <button
-                className="delete"
-                aria-label="close"
-                onClick={cancelDeleteGroup}
-              />
-            </header>
-            <section className="modal-card-body">
-              <p>
-                Are you sure you want to delete group{" "}
-                <strong>{groupToDelete.groupname}</strong>?
-              </p>
-              <p className="mt-3 has-text-danger">
-                <span className="icon">
-                  <i className="fas fa-exclamation-triangle" />
-                </span>
-                <span>This action cannot be undone.</span>
-              </p>
-            </section>
-            <footer className="modal-card-foot">
-              <button
-                className="button is-danger"
-                onClick={confirmDeleteGroup}
-                disabled={loading}
-              >
-                Delete Group
-              </button>
-              <button className="button" onClick={cancelDeleteGroup}>
-                Cancel
-              </button>
-            </footer>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

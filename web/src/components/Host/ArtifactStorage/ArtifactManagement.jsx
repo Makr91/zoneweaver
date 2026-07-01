@@ -12,15 +12,15 @@ import useArtifactDownloads from "./useArtifactDownloads";
 
 const getDownloadTagClass = (status) => {
   if (status === "running") {
-    return "is-primary";
+    return "text-bg-primary";
   }
   if (status === "queued") {
-    return "is-info";
+    return "text-bg-info";
   }
   if (status === "failed") {
-    return "is-danger";
+    return "text-bg-danger";
   }
-  return "is-light";
+  return "text-bg-secondary";
 };
 
 const ArtifactManagement = ({ server }) => {
@@ -413,7 +413,7 @@ const ArtifactManagement = ({ server }) => {
 
   if (!server) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>No server selected for artifact management.</p>
       </div>
     );
@@ -446,38 +446,40 @@ const ArtifactManagement = ({ server }) => {
       />
 
       {/* Sub-Tab Navigation */}
-      <div className="tabs is-boxed mb-0">
-        <ul>
-          <li className={activeTab === "storage-paths" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveTab("storage-paths")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-folder" />
-              </span>
-              <span>Storage Locations</span>
-            </button>
-          </li>
-          <li className={activeTab === "artifacts" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveTab("artifacts")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-compact-disc" />
-              </span>
-              <span>Artifacts</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+      <ul className="nav nav-tabs mb-0">
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "storage-paths" ? "active" : ""}`}
+            onClick={() => setActiveTab("storage-paths")}
+          >
+            <span className="me-1">
+              <i className="fas fa-folder" />
+            </span>
+            <span>Storage Locations</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === "artifacts" ? "active" : ""}`}
+            onClick={() => setActiveTab("artifacts")}
+          >
+            <span className="me-1">
+              <i className="fas fa-compact-disc" />
+            </span>
+            <span>Artifacts</span>
+          </button>
+        </li>
+      </ul>
 
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
@@ -486,73 +488,71 @@ const ArtifactManagement = ({ server }) => {
         {activeTab === "storage-paths" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
+              <h3 className="fs-6 fw-bold">
+                <span className="d-inline-flex align-items-center">
+                  <span className="me-2">
                     <i className="fas fa-folder" />
                   </span>
                   <span>Storage Locations</span>
                 </span>
               </h3>
-              <p className="content">
+              <p>
                 Configure designated storage locations for ISO files and VM
                 artifacts on <strong>{server.hostname}</strong>.
               </p>
             </div>
 
-            <div className="box">
-              <div className="level is-mobile mb-4">
-                <div className="level-left">
-                  <h4 className="title is-6">
-                    Storage Paths ({storagePaths.length})
-                    {storagePathsLoading && (
-                      <span className="ml-2">
-                        <i className="fas fa-spinner fa-spin" />
-                      </span>
-                    )}
-                  </h4>
-                </div>
-                <div className="level-right">
-                  <div className="field is-grouped">
-                    <p className="control">
+            <div className="card">
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <h4 className="fs-6 fw-bold">
+                      Storage Paths ({storagePaths.length})
+                      {storagePathsLoading && (
+                        <span className="ms-2">
+                          <i className="fas fa-spinner fa-spin" />
+                        </span>
+                      )}
+                    </h4>
+                  </div>
+                  <div>
+                    <div className="d-flex gap-2">
                       <button
-                        className="button is-info"
+                        className="btn btn-info"
                         onClick={loadStoragePaths}
                         disabled={storagePathsLoading}
                       >
-                        <span className="icon">
+                        <span className="me-1">
                           <i className="fas fa-sync-alt" />
                         </span>
                         <span>Refresh</span>
                       </button>
-                    </p>
-                    <p className="control">
                       <button
-                        className="button is-primary"
+                        className="btn btn-primary"
                         onClick={() => setShowStoragePathCreateModal(true)}
                         disabled={storagePathsLoading}
                       >
-                        <span className="icon">
+                        <span className="me-1">
                           <i className="fas fa-plus" />
                         </span>
                         <span>Create Storage Path</span>
                       </button>
-                    </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <StoragePathTable
-                storagePaths={storagePaths}
-                loading={storagePathsLoading}
-                onEdit={(sp) => {
-                  setSelectedStoragePath(sp);
-                  setShowStoragePathEditModal(true);
-                }}
-                onDelete={setDeleteStoragePathTarget}
-                onToggle={handleStoragePathToggle}
-                onNameClick={handleStoragePathClick}
-              />
+                <StoragePathTable
+                  storagePaths={storagePaths}
+                  loading={storagePathsLoading}
+                  onEdit={(sp) => {
+                    setSelectedStoragePath(sp);
+                    setShowStoragePathEditModal(true);
+                  }}
+                  onDelete={setDeleteStoragePathTarget}
+                  onToggle={handleStoragePathToggle}
+                  onNameClick={handleStoragePathClick}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -560,47 +560,45 @@ const ArtifactManagement = ({ server }) => {
         {activeTab === "artifacts" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
+              <h3 className="fs-6 fw-bold">
+                <span className="d-inline-flex align-items-center">
+                  <span className="me-2">
                     <i className="fas fa-compact-disc" />
                   </span>
                   <span>Artifacts</span>
                 </span>
               </h3>
-              <p className="content">
+              <p>
                 Manage ISO files, VM images, and other artifacts stored on{" "}
                 <strong>{server.hostname}</strong>.
               </p>
             </div>
 
             {activeDownloadsList.length > 0 && (
-              <div className="notification is-info mb-4">
-                <div className="level is-mobile">
-                  <div className="level-left">
-                    <div className="level-item">
-                      <span className="icon">
+              <div className="alert alert-info mb-4">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div className="d-flex align-items-center">
+                      <span className="me-2">
                         <i className="fas fa-download" />
                       </span>
-                      <span className="ml-2">
+                      <span>
                         <strong>{activeDownloadsList.length}</strong> download
                         {activeDownloadsList.length !== 1 ? "s" : ""} in
                         progress
                       </span>
                     </div>
                   </div>
-                  <div className="level-right">
-                    <div className="level-item">
-                      <div className="tags">
-                        {activeDownloadsList.map((download) => (
-                          <span
-                            key={download.taskId}
-                            className={`tag is-small ${getDownloadTagClass(download.status)}`}
-                          >
-                            {download.filename || "Unknown"}
-                          </span>
-                        ))}
-                      </div>
+                  <div>
+                    <div className="d-flex gap-2 flex-wrap">
+                      {activeDownloadsList.map((download) => (
+                        <span
+                          key={download.taskId}
+                          className={`badge ${getDownloadTagClass(download.status)}`}
+                        >
+                          {download.filename || "Unknown"}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -618,29 +616,31 @@ const ArtifactManagement = ({ server }) => {
               loading={artifactsLoading}
             />
 
-            <div className="box">
-              <ArtifactTable
-                artifacts={artifacts}
-                activeDownloads={activeDownloads}
-                pagination={artifactsPagination}
-                loading={artifactsLoading}
-                onDetails={handleArtifactDetails}
-                onDelete={setDeleteArtifactIds}
-                onMove={(artifact) => {
-                  setSelectedArtifact(artifact);
-                  setShowArtifactMoveModal(true);
-                }}
-                onCopy={(artifact) => {
-                  setSelectedArtifact(artifact);
-                  setShowArtifactCopyModal(true);
-                }}
-                onPaginationChange={handlePaginationChange}
-                onSort={(sortBy, sortOrder) => {
-                  handleFilterChange("sort_by", sortBy);
-                  handleFilterChange("sort_order", sortOrder);
-                }}
-                onCancelDownload={stopDownloadTracking}
-              />
+            <div className="card">
+              <div className="card-body">
+                <ArtifactTable
+                  artifacts={artifacts}
+                  activeDownloads={activeDownloads}
+                  pagination={artifactsPagination}
+                  loading={artifactsLoading}
+                  onDetails={handleArtifactDetails}
+                  onDelete={setDeleteArtifactIds}
+                  onMove={(artifact) => {
+                    setSelectedArtifact(artifact);
+                    setShowArtifactMoveModal(true);
+                  }}
+                  onCopy={(artifact) => {
+                    setSelectedArtifact(artifact);
+                    setShowArtifactCopyModal(true);
+                  }}
+                  onPaginationChange={handlePaginationChange}
+                  onSort={(sortBy, sortOrder) => {
+                    handleFilterChange("sort_by", sortBy);
+                    handleFilterChange("sort_order", sortOrder);
+                  }}
+                  onCancelDownload={stopDownloadTracking}
+                />
+              </div>
             </div>
           </div>
         )}

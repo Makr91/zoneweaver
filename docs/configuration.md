@@ -325,6 +325,7 @@ For production deployments:
    ```
 
 4. **Set Resource Limits**:
+
    ```yaml
    limits:
      max_organizations: 10

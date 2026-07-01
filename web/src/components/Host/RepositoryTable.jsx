@@ -30,53 +30,41 @@ const RepositoryTable = ({
   const getStatusIcon = (repo) => {
     const isEnabled = repo.enabled !== false;
     if (repo.status === "online" && isEnabled) {
-      return (
-        <span className="icon has-text-success">
-          <i className="fas fa-check-circle" />
-        </span>
-      );
+      return <i className="fas fa-check-circle text-success" />;
     }
     if (repo.status === "online" && !isEnabled) {
-      return (
-        <span className="icon has-text-warning">
-          <i className="fas fa-pause-circle" />
-        </span>
-      );
+      return <i className="fas fa-pause-circle text-warning" />;
     }
-    return (
-      <span className="icon has-text-danger">
-        <i className="fas fa-times-circle" />
-      </span>
-    );
+    return <i className="fas fa-times-circle text-danger" />;
   };
 
   const getStatusTag = (repo) => {
     const isEnabled = repo.enabled !== false;
     if (repo.status === "online" && isEnabled) {
-      return <span className="tag is-success is-small">Online</span>;
+      return <span className="badge text-bg-success">Online</span>;
     }
     if (repo.status === "online" && !isEnabled) {
-      return <span className="tag is-warning is-small">Disabled</span>;
+      return <span className="badge text-bg-warning">Disabled</span>;
     }
-    return <span className="tag is-danger is-small">Offline</span>;
+    return <span className="badge text-bg-danger">Offline</span>;
   };
   const getTypeTag = (type) => {
     switch (type?.toLowerCase()) {
       case "origin":
-        return <span className="tag is-primary is-small">Origin</span>;
+        return <span className="badge text-bg-primary">Origin</span>;
       case "mirror":
-        return <span className="tag is-info is-small">Mirror</span>;
+        return <span className="badge text-bg-info">Mirror</span>;
       default:
         return (
-          <span className="tag is-grey is-small">{type || "Unknown"}</span>
+          <span className="badge text-bg-secondary">{type || "Unknown"}</span>
         );
     }
   };
   const getProxyTag = (proxy) => {
     if (proxy === "T" || proxy === true) {
-      return <span className="tag is-warning is-small">Yes</span>;
+      return <span className="badge text-bg-warning">Yes</span>;
     }
-    return <span className="tag is-grey is-small">No</span>;
+    return <span className="badge text-bg-secondary">No</span>;
   };
 
   const getAvailableActions = (repo) => {
@@ -88,14 +76,14 @@ const RepositoryTable = ({
         key: "disable",
         label: "Disable",
         icon: "fa-pause",
-        class: "has-background-warning-dark has-text-warning-light",
+        class: "btn-warning",
       });
     } else {
       actions.push({
         key: "enable",
         label: "Enable",
         icon: "fa-play",
-        class: "has-background-success-dark has-text-success-light",
+        class: "btn-success",
       });
     }
 
@@ -114,27 +102,23 @@ const RepositoryTable = ({
   };
   if (loading && repositories.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading repositories...</p>
       </div>
     );
   }
   if (repositories.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-database fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No repositories found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-database fa-2x text-muted" />
+        <p className="mt-2 text-muted">No repositories found</p>
       </div>
     );
   }
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable is-striped">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover">
         <thead>
           <tr>
             <th>Publisher</th>
@@ -151,28 +135,23 @@ const RepositoryTable = ({
             return (
               <tr key={`${repo.name}-${repo.type}`}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center">
                     {getStatusIcon(repo)}
-                    <span className="ml-2">
-                      <strong className="is-family-monospace">
-                        {repo.name}
-                      </strong>
+                    <span className="ms-2">
+                      <strong className="font-monospace">{repo.name}</strong>
                     </span>
                   </div>
                 </td>
                 <td>{getTypeTag(repo.type)}</td>
                 <td>{getStatusTag(repo)}</td>
                 <td>
-                  <span
-                    className="is-size-7 is-family-monospace"
-                    title={repo.location}
-                  >
+                  <span className="small font-monospace" title={repo.location}>
                     {formatLocation(repo.location)}
                   </span>
                 </td>
                 <td>{getProxyTag(repo.proxy)}</td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-2">
                     {/* Enable/Disable Buttons */}
                     {availableActions.map((action) => {
                       const key = `${repo.name}-${action.key}`;
@@ -181,40 +160,44 @@ const RepositoryTable = ({
                       return (
                         <button
                           key={action.key}
-                          className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
+                          type="button"
+                          className={`btn btn-sm ${action.class}`}
                           onClick={() => handleAction(repo, action.key)}
                           disabled={loading || isLoading}
                           title={action.label}
                         >
-                          <span className="icon is-small">
-                            <i className={`fas ${action.icon}`} />
-                          </span>
+                          {isLoading && (
+                            <span
+                              className="spinner-border spinner-border-sm me-2"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <i className={`fas ${action.icon}`} />
                         </button>
                       );
                     })}
 
                     {/* Edit Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-sm btn-secondary"
                       onClick={() => handleAction(repo, "edit")}
                       disabled={loading}
                       title="Edit Repository"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-edit" />
-                      </span>
+                      <i className="fas fa-edit" />
                     </button>
 
                     {/* Delete Button */}
                     <button
-                      className="button has-background-danger-dark has-text-danger-light"
+                      type="button"
+                      className="btn btn-sm btn-danger"
                       onClick={() => handleAction(repo, "delete")}
                       disabled={loading}
                       title="Delete Repository"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-trash" />
-                      </span>
+                      <i className="fas fa-trash" />
                     </button>
                   </div>
                 </td>

@@ -123,20 +123,19 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
       disabled={false}
       showCancelButton={hasChanges}
       cancelText="Cancel"
-      className="is-large"
     >
-      <div className="field">
+      <div className="mb-3">
         {/* File info */}
-        <div className="notification mb-4">
-          <div className="columns is-mobile">
-            <div className="column">
+        <div className="alert alert-secondary mb-4">
+          <div className="row">
+            <div className="col">
               <strong>File:</strong> {file?.path || "Unknown"}
             </div>
-            <div className="column">
+            <div className="col">
               <strong>Size:</strong>{" "}
               {file?.size ? `${Math.round(file.size / 1024)} KB` : "Unknown"}
             </div>
-            <div className="column">
+            <div className="col">
               <strong>Modified:</strong>{" "}
               {file?.updatedAt
                 ? new Date(file.updatedAt).toLocaleString()
@@ -145,7 +144,7 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
           </div>
 
           {hasChanges && (
-            <div className="notification is-warning is-small mt-2">
+            <div className="alert alert-warning small mt-2">
               <strong>Unsaved Changes:</strong> You have made changes to this
               file.
             </div>
@@ -154,27 +153,31 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
 
         {/* Size warning */}
         {sizeInfo.warning && (
-          <div className="notification is-warning mb-4">
+          <div className="alert alert-warning mb-4">
             <strong>Warning:</strong> {sizeInfo.message}
           </div>
         )}
 
         {/* Error message */}
         {error && (
-          <div className="notification is-danger mb-4">
-            <button className="delete is-small" onClick={() => setError("")} />
+          <div className="alert alert-danger mb-4">
+            <button
+              type="button"
+              className="btn-close"
+              onClick={() => setError("")}
+            />
             <strong>Error:</strong> {error}
           </div>
         )}
 
         {/* Content editor */}
-        <label className="label" htmlFor="file-content-textarea">
+        <label className="form-label" htmlFor="file-content-textarea">
           File Content
         </label>
-        <div className="control">
+        <div>
           <textarea
             id="file-content-textarea"
-            className="textarea"
+            className="form-control"
             rows="25"
             value={content}
             onChange={handleContentChange}
@@ -189,30 +192,30 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
         </div>
 
         {/* Content stats */}
-        <p className="help">
+        <p className="form-text text-muted">
           Lines: {content.split("\n").length} | Characters: {content.length} |
           Size: ~{Math.round(new Blob([content]).size / 1024)} KB
         </p>
       </div>
 
       {/* Keyboard shortcuts help */}
-      <div className="field">
-        <div className="notification is-info">
-          <div className="content is-small">
+      <div className="mb-3">
+        <div className="alert alert-info">
+          <div className="small">
             <strong>Keyboard Shortcuts:</strong>
             <br />
-            <div className="columns is-mobile">
-              <div className="column">
+            <div className="row">
+              <div className="col">
                 <kbd>Ctrl</kbd> + <kbd>S</kbd> - Save
                 <br />
                 <kbd>Ctrl</kbd> + <kbd>Z</kbd> - Undo
               </div>
-              <div className="column">
+              <div className="col">
                 <kbd>Ctrl</kbd> + <kbd>Y</kbd> - Redo
                 <br />
                 <kbd>Ctrl</kbd> + <kbd>A</kbd> - Select All
               </div>
-              <div className="column">
+              <div className="col">
                 <kbd>Ctrl</kbd> + <kbd>F</kbd> - Find
                 <br />
                 <kbd>Tab</kbd> - Insert tab
@@ -224,19 +227,19 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
 
       {/* File type detection info */}
       {file?._zwMetadata && (
-        <div className="field">
-          <div className="notification is-small">
-            <div className="columns is-mobile is-vcentered">
-              <div className="column">
+        <div className="mb-3">
+          <div className="alert alert-secondary small">
+            <div className="row align-items-center">
+              <div className="col">
                 <strong>Detected Type:</strong>{" "}
                 {file._zwMetadata.mimeType || "text/plain"}
               </div>
               {file._zwMetadata.syntax && (
-                <div className="column">
+                <div className="col">
                   <strong>Syntax:</strong> {file._zwMetadata.syntax}
                 </div>
               )}
-              <div className="column">
+              <div className="col">
                 <strong>Permissions:</strong>{" "}
                 {file._zwMetadata.permissions?.octal || "Unknown"}
               </div>
@@ -257,7 +260,7 @@ const TextFileEditor = ({ file, api, onClose, onSave }) => {
           submitVariant="is-danger"
           cancelText="Keep Editing"
         >
-          <div className="notification is-warning">
+          <div className="alert alert-warning">
             <p>
               <strong>Warning:</strong> You have unsaved changes that will be
               lost.

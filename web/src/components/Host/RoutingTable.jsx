@@ -1,78 +1,75 @@
 import PropTypes from "prop-types";
 
 const RoutingTable = ({ routes, sectionsCollapsed, toggleSection }) => (
-  <div className="box mb-4">
-    <div className="level is-mobile mb-3">
-      <div className="level-left">
-        <h4 className="title is-5 mb-0">
-          <span className="icon-text">
-            <span className="icon">
-              <i className="fas fa-route" />
-            </span>
-            <span>Routing Table</span>
-          </span>
-        </h4>
-      </div>
-      <div className="level-right">
-        <button
-          className="button is-small is-ghost"
-          onClick={() => toggleSection("routingTable")}
-          title={
-            sectionsCollapsed.routingTable
-              ? "Expand section"
-              : "Collapse section"
-          }
-        >
-          <span className="icon">
+  <div className="card mb-4">
+    <div className="card-body">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <h4 className="fs-5 fw-bold mb-0">
+            <i className="fas fa-route me-2" />
+            Routing Table
+          </h4>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-link"
+            onClick={() => toggleSection("routingTable")}
+            title={
+              sectionsCollapsed.routingTable
+                ? "Expand section"
+                : "Collapse section"
+            }
+          >
             <i
               className={`fas ${sectionsCollapsed.routingTable ? "fa-chevron-down" : "fa-chevron-up"}`}
             />
-          </span>
-        </button>
+          </button>
+        </div>
       </div>
-    </div>
-    {!sectionsCollapsed.routingTable &&
-      (routes.length > 0 ? (
-        <div className="table-container">
-          <table className="table is-fullwidth is-striped">
-            <thead>
-              <tr>
-                <th>Interface</th>
-                <th>Destination</th>
-                <th>Gateway</th>
-                <th>Metric</th>
-                <th>Type</th>
-              </tr>
-            </thead>
-            <tbody>
-              {routes.map((route, index) => (
-                <tr key={route.destination || index}>
-                  <td>
-                    <strong>{route.interface || "N/A"}</strong>
-                  </td>
-                  <td>
-                    <code>{route.destination || "N/A"}</code>
-                  </td>
-                  <td>
-                    <code>{route.gateway || "N/A"}</code>
-                  </td>
-                  <td>N/A</td>
-                  <td>
-                    <span className="tag is-dark">Static</span>
-                  </td>
+      {!sectionsCollapsed.routingTable &&
+        (routes.length > 0 ? (
+          <div className="table-responsive">
+            <table className="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>Interface</th>
+                  <th>Destination</th>
+                  <th>Gateway</th>
+                  <th>Metric</th>
+                  <th>Type</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="notification is-info">
-          <p>
-            No routing table data available or monitoring endpoint not
-            configured.
-          </p>
-        </div>
-      ))}
+              </thead>
+              <tbody>
+                {routes.map((route, index) => (
+                  <tr key={route.destination || index}>
+                    <td>
+                      <strong>{route.interface || "N/A"}</strong>
+                    </td>
+                    <td>
+                      <code>{route.destination || "N/A"}</code>
+                    </td>
+                    <td>
+                      <code>{route.gateway || "N/A"}</code>
+                    </td>
+                    <td>N/A</td>
+                    <td>
+                      <span className="badge text-bg-dark">Static</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="alert alert-info">
+            <p>
+              No routing table data available or monitoring endpoint not
+              configured.
+            </p>
+          </div>
+        ))}
+    </div>
   </div>
 );
 

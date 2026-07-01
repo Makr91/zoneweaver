@@ -34,13 +34,13 @@ const ArtifactTable = ({
 
   const getSortIcon = (field) => {
     if (sortBy !== field) {
-      return <i className="fas fa-sort has-text-grey-light" />;
+      return <i className="fas fa-sort text-muted" />;
     }
 
     return sortOrder === "asc" ? (
-      <i className="fas fa-sort-up has-text-primary" />
+      <i className="fas fa-sort-up text-primary" />
     ) : (
-      <i className="fas fa-sort-down has-text-primary" />
+      <i className="fas fa-sort-down text-primary" />
     );
   };
 
@@ -85,12 +85,12 @@ const ArtifactTable = ({
 
     return (
       <nav
-        className="pagination is-centered mt-4"
+        className="d-flex justify-content-center align-items-center gap-2 mt-4"
         role="navigation"
         aria-label="pagination"
       >
         <button
-          className="pagination-previous"
+          className="btn btn-outline-primary"
           disabled={!hasPrev || loading}
           onClick={() =>
             onPaginationChange(
@@ -100,8 +100,11 @@ const ArtifactTable = ({
         >
           Previous
         </button>
+        <span>
+          Page {currentPage} of {totalPages} ({pagination.total} total)
+        </span>
         <button
-          className="pagination-next"
+          className="btn btn-outline-primary"
           disabled={!hasNext || loading}
           onClick={() =>
             onPaginationChange(pagination.offset + pagination.limit)
@@ -109,21 +112,14 @@ const ArtifactTable = ({
         >
           Next
         </button>
-        <ul className="pagination-list">
-          <li>
-            <span className="pagination-ellipsis">
-              Page {currentPage} of {totalPages} ({pagination.total} total)
-            </span>
-          </li>
-        </ul>
       </nav>
     );
   };
 
   if (loading && artifacts.length === 0 && activeDownloadsList.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span className="icon">
           <i className="fas fa-spinner fa-spin fa-2x" />
         </span>
         <p className="mt-2">Loading artifacts...</p>
@@ -133,12 +129,12 @@ const ArtifactTable = ({
 
   if (artifacts.length === 0 && activeDownloadsList.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
+      <div className="text-center p-4">
+        <span className="icon text-muted">
           <i className="fas fa-compact-disc fa-2x" />
         </span>
-        <p className="mt-2 has-text-grey">No artifacts found</p>
-        <p className="has-text-grey is-size-7">
+        <p className="mt-2 text-muted">No artifacts found</p>
+        <p className="text-muted small">
           Upload files or download from URLs to get started
         </p>
       </div>
@@ -149,21 +145,21 @@ const ArtifactTable = ({
     <div>
       {/* Bulk Actions */}
       {selectedArtifacts.size > 0 && (
-        <div className="notification is-light mb-4">
-          <div className="level is-mobile">
-            <div className="level-left">
-              <span className="level-item">
+        <div className="alert alert-secondary mb-4">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <span>
                 <strong>{selectedArtifacts.size}</strong> artifacts selected
               </span>
             </div>
-            <div className="level-right">
-              <div className="level-item">
+            <div>
+              <div>
                 <button
-                  className="button is-danger is-small"
+                  className="btn btn-danger btn-sm"
                   onClick={handleBulkDelete}
                   disabled={loading}
                 >
-                  <span className="icon is-small">
+                  <span className="icon">
                     <i className="fas fa-trash" />
                   </span>
                   <span>Delete Selected</span>
@@ -175,58 +171,61 @@ const ArtifactTable = ({
       )}
 
       {/* Table */}
-      <div className="table-container">
-        <table className="table is-fullwidth is-hoverable">
+      <div className="table-responsive">
+        <table className="table table-hover">
           <thead>
             <tr>
               <th width="30">
-                <label className="checkbox">
+                <div className="form-check">
                   <input
+                    className="form-check-input"
                     type="checkbox"
+                    id="artifact-select-all"
                     checked={
                       selectedArtifacts.size === artifacts.length &&
                       artifacts.length > 0
                     }
                     onChange={handleSelectAll}
                   />
-                  <span className="is-sr-only">Select all artifacts</span>
-                </label>
+                  <label
+                    className="form-check-label visually-hidden"
+                    htmlFor="artifact-select-all"
+                  >
+                    Select all artifacts
+                  </label>
+                </div>
               </th>
               <th
-                className="is-clickable"
+                className="cursor-pointer"
                 onClick={() => handleSort("filename")}
                 title="Click to sort by filename"
               >
-                <span className="icon-text">
+                <span className="d-inline-flex align-items-center">
                   <span>Filename</span>
-                  <span className="icon is-small ml-1">
-                    {getSortIcon("filename")}
-                  </span>
+                  <span className="icon ms-1">{getSortIcon("filename")}</span>
                 </span>
               </th>
               <th>Type</th>
               <th
-                className="is-clickable"
+                className="cursor-pointer"
                 onClick={() => handleSort("size")}
                 title="Click to sort by size"
               >
-                <span className="icon-text">
+                <span className="d-inline-flex align-items-center">
                   <span>Size</span>
-                  <span className="icon is-small ml-1">
-                    {getSortIcon("size")}
-                  </span>
+                  <span className="icon ms-1">{getSortIcon("size")}</span>
                 </span>
               </th>
               <th>Checksum</th>
               <th>Storage Location</th>
               <th
-                className="is-clickable"
+                className="cursor-pointer"
                 onClick={() => handleSort("discovered_at")}
                 title="Click to sort by date"
               >
-                <span className="icon-text">
+                <span className="d-inline-flex align-items-center">
                   <span>Added</span>
-                  <span className="icon is-small ml-1">
+                  <span className="icon ms-1">
                     {getSortIcon("discovered_at")}
                   </span>
                 </span>

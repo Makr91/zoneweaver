@@ -9,22 +9,22 @@ const NetworkChart = ({
   setNetworkSeriesVisibility,
   expandChart,
 }) => (
-  <div className="column is-4">
-    <div className="card has-background-dark">
-      <header className="card-header has-background-grey-darker">
-        <p className="card-header-title has-text-white">
-          <span className="icon-text">
-            <span className="icon">
+  <div className="col-4">
+    <div className="card bg-dark">
+      <header className="card-header bg-dark d-flex justify-content-between align-items-center">
+        <p className="text-white fw-bold mb-0">
+          <span className="d-inline-flex align-items-center gap-1">
+            <span className="d-inline-flex align-items-center">
               <i className="fas fa-network-wired" />
             </span>
             <span>Network</span>
           </span>
         </p>
-        <div className="card-header-icon">
-          <div className="field is-grouped">
-            <div className="control">
+        <div>
+          <div className="d-flex gap-2">
+            <div>
               <button
-                className={`button is-small ${networkSeriesVisibility.read ? "is-info" : "is-dark"}`}
+                className={`btn btn-sm ${networkSeriesVisibility.read ? "btn-info" : "btn-dark"}`}
                 onClick={() =>
                   setNetworkSeriesVisibility((prev) => ({
                     ...prev,
@@ -33,7 +33,7 @@ const NetworkChart = ({
                 }
                 title="Toggle RX bandwidth visibility"
               >
-                <span className="icon">
+                <span className="me-1">
                   <i
                     className={`fas ${networkSeriesVisibility.read ? "fa-eye" : "fa-eye-slash"}`}
                   />
@@ -41,9 +41,9 @@ const NetworkChart = ({
                 <span>RX</span>
               </button>
             </div>
-            <div className="control">
+            <div>
               <button
-                className={`button is-small ${networkSeriesVisibility.write ? "is-warning" : "is-dark"}`}
+                className={`btn btn-sm ${networkSeriesVisibility.write ? "btn-warning" : "btn-dark"}`}
                 onClick={() =>
                   setNetworkSeriesVisibility((prev) => ({
                     ...prev,
@@ -52,7 +52,7 @@ const NetworkChart = ({
                 }
                 title="Toggle TX bandwidth visibility"
               >
-                <span className="icon">
+                <span className="me-1">
                   <i
                     className={`fas ${networkSeriesVisibility.write ? "fa-eye" : "fa-eye-slash"}`}
                   />
@@ -60,9 +60,9 @@ const NetworkChart = ({
                 <span>TX</span>
               </button>
             </div>
-            <div className="control">
+            <div>
               <button
-                className={`button is-small ${networkSeriesVisibility.total ? "is-success" : "is-dark"}`}
+                className={`btn btn-sm ${networkSeriesVisibility.total ? "btn-success" : "btn-dark"}`}
                 onClick={() =>
                   setNetworkSeriesVisibility((prev) => ({
                     ...prev,
@@ -71,7 +71,7 @@ const NetworkChart = ({
                 }
                 title="Toggle Total bandwidth visibility"
               >
-                <span className="icon">
+                <span className="me-1">
                   <i
                     className={`fas ${networkSeriesVisibility.total ? "fa-eye" : "fa-eye-slash"}`}
                   />
@@ -79,13 +79,13 @@ const NetworkChart = ({
                 <span>Total</span>
               </button>
             </div>
-            <div className="control">
+            <div>
               <button
-                className="button is-small is-light"
+                className="btn btn-sm btn-light"
                 onClick={() => expandChart("network", "network")}
                 title="Expand chart to full size"
               >
-                <span className="icon">
+                <span className="d-inline-flex align-items-center">
                   <i className="fas fa-expand" />
                 </span>
               </button>
@@ -93,7 +93,7 @@ const NetworkChart = ({
           </div>
         </div>
       </header>
-      <div className="card-content p-2">
+      <div className="card-body p-2">
         {networkChartData && Object.keys(networkChartData).length > 0 ? (
           <div>
             <Chart
@@ -223,8 +223,8 @@ const NetworkChart = ({
             />
           </div>
         ) : (
-          <div className="has-text-centered p-4">
-            <p className="has-text-grey">No real interface data available</p>
+          <div className="text-center p-4">
+            <p className="text-muted">No real interface data available</p>
           </div>
         )}
       </div>

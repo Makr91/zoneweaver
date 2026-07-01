@@ -1,40 +1,32 @@
 import PropTypes from "prop-types";
 
 const LoggingSectionRenderer = ({ values, handleFieldChange, loading }) => (
-  <div className="columns is-vcentered">
+  <div className="row align-items-center g-3">
     {/* Logging Level - Left Column */}
-    <div className="column is-6">
-      <div className="field">
-        <label
-          className="label has-text-weight-semibold"
-          htmlFor="logging-level"
-        >
-          <span className="icon is-small mr-2">
-            <i className="fas fa-layer-group" />
-          </span>
+    <div className="col-12 col-lg-6">
+      <div className="mb-3">
+        <label className="form-label fw-semibold" htmlFor="logging-level">
+          <i className="fas fa-layer-group me-2" />
           Logging Level
         </label>
-        <div className="control has-icons-left">
-          <div className="select is-fullwidth">
-            <select
-              id="logging-level"
-              value={values["logging.level"] || "info"}
-              onChange={(e) =>
-                handleFieldChange("logging.level", e.target.value)
-              }
-              disabled={loading}
-            >
-              <option value="error">Error - Critical issues only</option>
-              <option value="warn">Warning - Errors + warnings</option>
-              <option value="info">Info - General operations</option>
-              <option value="debug">Debug - Detailed diagnostics</option>
-            </select>
-          </div>
-          <span className="icon is-small is-left">
+        <div className="input-group">
+          <span className="input-group-text">
             <i className="fas fa-list-ul" />
           </span>
+          <select
+            className="form-select"
+            id="logging-level"
+            value={values["logging.level"] || "info"}
+            onChange={(e) => handleFieldChange("logging.level", e.target.value)}
+            disabled={loading}
+          >
+            <option value="error">Error - Critical issues only</option>
+            <option value="warn">Warning - Errors + warnings</option>
+            <option value="info">Info - General operations</option>
+            <option value="debug">Debug - Detailed diagnostics</option>
+          </select>
         </div>
-        <p className="help has-text-grey">
+        <p className="form-text text-muted">
           Controls the minimum level of messages that will be logged to console
           and files
         </p>
@@ -42,51 +34,39 @@ const LoggingSectionRenderer = ({ values, handleFieldChange, loading }) => (
     </div>
 
     {/* Logging Enabled - Right Column */}
-    <div className="column is-6">
-      <div className="field">
-        <label
-          className="label has-text-weight-semibold"
-          htmlFor="logging-enabled"
-        >
-          <span className="icon is-small mr-2">
-            <i className="fas fa-power-off" />
-          </span>
+    <div className="col-12 col-lg-6">
+      <div className="mb-3">
+        <label className="form-label fw-semibold" htmlFor="logging-enabled">
+          <i className="fas fa-power-off me-2" />
           Enable Logging
         </label>
-        <div className="control">
-          <div className="field">
-            <label className="switch is-medium" htmlFor="logging-enabled">
-              <input
-                id="logging-enabled"
-                type="checkbox"
-                checked={!!values["logging.enabled"]}
-                onChange={(e) =>
-                  handleFieldChange("logging.enabled", e.target.checked)
-                }
-                disabled={loading}
-              />
-              <span className="check" />
-              <span className="control-label">
-                {values["logging.enabled"] ? (
-                  <span className="has-text-success">
-                    <span className="icon is-small mr-2">
-                      <i className="fas fa-check-circle" />
-                    </span>
-                    Logging is enabled
-                  </span>
-                ) : (
-                  <span className="has-text-danger">
-                    <span className="icon is-small mr-2">
-                      <i className="fas fa-times-circle" />
-                    </span>
-                    Logging is disabled
-                  </span>
-                )}
+        <div className="form-check form-switch">
+          <input
+            id="logging-enabled"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={!!values["logging.enabled"]}
+            onChange={(e) =>
+              handleFieldChange("logging.enabled", e.target.checked)
+            }
+            disabled={loading}
+          />
+          <label className="form-check-label" htmlFor="logging-enabled">
+            {values["logging.enabled"] ? (
+              <span className="text-success">
+                <i className="fas fa-check-circle me-1" />
+                Logging is enabled
               </span>
-            </label>
-          </div>
+            ) : (
+              <span className="text-danger">
+                <i className="fas fa-times-circle me-1" />
+                Logging is disabled
+              </span>
+            )}
+          </label>
         </div>
-        <p className="help has-text-grey">
+        <p className="form-text text-muted">
           Disable only for testing - logging is essential for troubleshooting
         </p>
       </div>

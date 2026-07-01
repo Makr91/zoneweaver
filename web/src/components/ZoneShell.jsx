@@ -59,13 +59,11 @@ const ZoneShell = memo(
           className={`zw-zone-shell-container ${className || ""}`}
           style={style}
         >
-          <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
-            <div className="has-text-centered">
-              <div className="icon is-large mb-2">
-                <i className="fas fa-terminal fa-2x fa-pulse" />
-              </div>
+          <div className="h-100 w-100 d-flex align-items-center justify-content-center text-white-50">
+            <div className="text-center">
+              <i className="fas fa-terminal fa-2x fa-pulse mb-2" />
               <p>Connecting to {zoneName}...</p>
-              <p className="is-size-7 has-text-grey">
+              <p className="small text-muted">
                 {readOnly ? "Read-only mode" : "Interactive mode"}
               </p>
             </div>
@@ -80,7 +78,7 @@ const ZoneShell = memo(
         style={style}
       >
         <XTerm
-          className="zw-zone-shell-terminal is-fullheight is-fullwidth"
+          className="zw-zone-shell-terminal h-100 w-100"
           style={{ height: "100%", width: "100%" }}
           addons={addons}
           options={options}

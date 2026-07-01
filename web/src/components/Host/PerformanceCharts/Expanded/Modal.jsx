@@ -108,24 +108,24 @@ const ExpandedChartModal = ({
 
   const renderControls = () => {
     const storageLabels = {
-      read: { label: "Read", className: "is-info" },
-      write: { label: "Write", className: "is-warning" },
-      total: { label: "Total", className: "is-success" },
+      read: { label: "Read", className: "btn-info" },
+      write: { label: "Write", className: "btn-warning" },
+      total: { label: "Total", className: "btn-success" },
     };
     const networkLabels = {
-      read: { label: "RX", className: "is-info" },
-      write: { label: "TX", className: "is-warning" },
-      total: { label: "Total", className: "is-success" },
+      read: { label: "RX", className: "btn-info" },
+      write: { label: "TX", className: "btn-warning" },
+      total: { label: "Total", className: "btn-success" },
     };
     const cpuLabels = {
-      overall: { label: "Avg", className: "is-info" },
-      cores: { label: "Cores", className: "is-info" },
-      load: { label: "Load", className: "is-info" },
+      overall: { label: "Avg", className: "btn-info" },
+      cores: { label: "Cores", className: "btn-info" },
+      load: { label: "Load", className: "btn-info" },
     };
     const memoryLabels = {
-      used: { label: "Used", className: "is-info" },
-      free: { label: "Free", className: "is-success" },
-      cached: { label: "Cached", className: "is-warning" },
+      used: { label: "Used", className: "btn-info" },
+      free: { label: "Free", className: "btn-success" },
+      cached: { label: "Cached", className: "btn-warning" },
     };
 
     switch (expandedChartType) {

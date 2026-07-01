@@ -109,7 +109,7 @@ const ExtendedFileManager = ({ server }) => {
   // Don't render if no server is selected
   if (!server) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>
           Please select a server from the navbar to access the file manager.
         </p>
@@ -121,8 +121,12 @@ const ExtendedFileManager = ({ server }) => {
     <div className="host-file-manager extended">
       {/* Error notification */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}

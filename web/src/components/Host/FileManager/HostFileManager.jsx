@@ -31,29 +31,29 @@ const getFileSizeDisplay = (file) => {
 const getFilePreviewContent = (file, handlers) => {
   if (file.isDirectory) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-folder fa-3x" />
         </span>
         <p className="mt-2">Directory</p>
-        <p className="help">Double-click to open</p>
+        <p className="small text-muted">Double-click to open</p>
       </div>
     );
   }
 
   if (isTextFile(file)) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-file-alt fa-3x" />
         </span>
         <p className="mt-2">Text File</p>
-        <div className="buttons is-centered mt-3">
+        <div className="d-flex gap-2 justify-content-center mt-3">
           <button
-            className="button is-primary is-small"
+            className="btn btn-primary btn-sm"
             onClick={() => handlers.onEditText(file)}
           >
-            <span className="icon is-small">
+            <span className="me-1">
               <i className="fas fa-edit" />
             </span>
             <span>Edit File</span>
@@ -65,18 +65,18 @@ const getFilePreviewContent = (file, handlers) => {
 
   if (isArchiveFile(file)) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
+      <div className="text-center p-4">
+        <span>
           <i className="fas fa-file-archive fa-3x" />
         </span>
         <p className="mt-2">Archive File</p>
-        <div className="buttons is-centered mt-3">
+        <div className="d-flex gap-2 justify-content-center mt-3">
           <button
-            className="button is-success is-small"
+            className="btn btn-success btn-sm"
             onClick={() => handlers.onExtract(file)}
             disabled={!handlers.canManage}
           >
-            <span className="icon is-small">
+            <span className="me-1">
               <i className="fas fa-expand-arrows-alt" />
             </span>
             <span>Extract</span>
@@ -87,12 +87,12 @@ const getFilePreviewContent = (file, handlers) => {
   }
 
   return (
-    <div className="has-text-centered p-4">
-      <span className="icon is-large">
+    <div className="text-center p-4">
+      <span>
         <i className="fas fa-file fa-3x" />
       </span>
       <p className="mt-2">File</p>
-      <p className="help">Double-click to download</p>
+      <p className="small text-muted">Double-click to download</p>
     </div>
   );
 };
@@ -609,7 +609,7 @@ const HostFileManager = ({ server }) => {
   // Don't render if no server is selected
   if (!server) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>
           Please select a server from the navbar to access the file manager.
         </p>
@@ -621,98 +621,104 @@ const HostFileManager = ({ server }) => {
     <div className="host-file-manager">
       {/* Error notification */}
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
       {/* Custom Action Bar */}
       {canManageHosts(user?.role) && (
-        <div className="box mb-4">
-          <div className="level is-mobile">
-            <div className="level-left">
-              <div className="level-item">
-                <span className="tag is-info is-light">
-                  <span className="icon is-small">
-                    <i className="fas fa-folder" />
+        <div className="card mb-4">
+          <div className="card-body">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <div>
+                  <span className="badge text-bg-info d-inline-flex align-items-center gap-1">
+                    <span className="me-1">
+                      <i className="fas fa-folder" />
+                    </span>
+                    <span>Current: {currentPath}</span>
                   </span>
-                  <span>Current: {currentPath}</span>
-                </span>
+                </div>
               </div>
-            </div>
 
-            <div className="level-right">
-              <div className="level-item">
-                <div className="buttons">
-                  {/* Create Archive Button */}
-                  <button
-                    className={`button is-info is-small ${currentlySelectedFiles.length === 0 ? "is-outlined" : ""}`}
-                    onClick={() => {
-                      if (currentlySelectedFiles.length > 0) {
-                        handleCreateArchive(currentlySelectedFiles);
-                      } else {
-                        setError(
-                          "Please select files or folders to create an archive"
-                        );
+              <div>
+                <div>
+                  <div className="d-flex gap-2">
+                    {/* Create Archive Button */}
+                    <button
+                      className={`btn btn-sm ${currentlySelectedFiles.length === 0 ? "btn-outline-info" : "btn-info"}`}
+                      onClick={() => {
+                        if (currentlySelectedFiles.length > 0) {
+                          handleCreateArchive(currentlySelectedFiles);
+                        } else {
+                          setError(
+                            "Please select files or folders to create an archive"
+                          );
+                        }
+                      }}
+                      disabled={currentlySelectedFiles.length === 0}
+                      title={
+                        currentlySelectedFiles.length > 0
+                          ? `Create archive from ${currentlySelectedFiles.length} selected item(s)`
+                          : "Select files or folders to create an archive"
                       }
-                    }}
-                    disabled={currentlySelectedFiles.length === 0}
-                    title={
-                      currentlySelectedFiles.length > 0
-                        ? `Create archive from ${currentlySelectedFiles.length} selected item(s)`
-                        : "Select files or folders to create an archive"
-                    }
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-file-archive" />
-                    </span>
-                    <span>
-                      {currentlySelectedFiles.length > 0
-                        ? `Archive (${currentlySelectedFiles.length})`
-                        : "Archive"}
-                    </span>
-                  </button>
+                    >
+                      <span className="me-1">
+                        <i className="fas fa-file-archive" />
+                      </span>
+                      <span>
+                        {currentlySelectedFiles.length > 0
+                          ? `Archive (${currentlySelectedFiles.length})`
+                          : "Archive"}
+                      </span>
+                    </button>
 
-                  {/* Archive Directory Button */}
-                  <button
-                    className="button is-success is-small is-outlined"
-                    onClick={() => {
-                      // Archive entire current directory
-                      const currentDirFiles = files.filter((f) => {
-                        const filePath = f.path.startsWith("/")
-                          ? f.path.substring(1)
-                          : f.path;
-                        const currentPathNormalized = currentPath.startsWith(
-                          "/"
-                        )
-                          ? currentPath.substring(1)
-                          : currentPath;
+                    {/* Archive Directory Button */}
+                    <button
+                      className="btn btn-outline-success btn-sm"
+                      onClick={() => {
+                        // Archive entire current directory
+                        const currentDirFiles = files.filter((f) => {
+                          const filePath = f.path.startsWith("/")
+                            ? f.path.substring(1)
+                            : f.path;
+                          const currentPathNormalized = currentPath.startsWith(
+                            "/"
+                          )
+                            ? currentPath.substring(1)
+                            : currentPath;
 
-                        // Check if file is in current directory (not subdirectory)
-                        const relativePath = filePath.replace(
-                          `${currentPathNormalized}/`,
-                          ""
-                        );
-                        return (
-                          !relativePath.includes("/") &&
-                          filePath.startsWith(currentPathNormalized)
-                        );
-                      });
+                          // Check if file is in current directory (not subdirectory)
+                          const relativePath = filePath.replace(
+                            `${currentPathNormalized}/`,
+                            ""
+                          );
+                          return (
+                            !relativePath.includes("/") &&
+                            filePath.startsWith(currentPathNormalized)
+                          );
+                        });
 
-                      if (currentDirFiles.length > 0) {
-                        handleCreateArchive(currentDirFiles);
-                      } else {
-                        setError("Current directory is empty");
-                      }
-                    }}
-                    title="Create archive of entire current directory"
-                  >
-                    <span className="icon is-small">
-                      <i className="fas fa-archive" />
-                    </span>
-                    <span>Archive Directory</span>
-                  </button>
+                        if (currentDirFiles.length > 0) {
+                          handleCreateArchive(currentDirFiles);
+                        } else {
+                          setError("Current directory is empty");
+                        }
+                      }}
+                      title="Create archive of entire current directory"
+                    >
+                      <span className="me-1">
+                        <i className="fas fa-archive" />
+                      </span>
+                      <span>Archive Directory</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -745,11 +751,13 @@ const HostFileManager = ({ server }) => {
         filePreviewComponent={(file) => (
           <div className="file-preview-container">
             <div className="preview-header">
-              <h4 className="title is-6">{file.name}</h4>
+              <h4 className="fs-6 fw-bold">{file.name}</h4>
               <div className="preview-info">
-                <span className="tag is-light">{getFileSizeDisplay(file)}</span>
+                <span className="badge text-bg-secondary">
+                  {getFileSizeDisplay(file)}
+                </span>
                 {file._zwMetadata?.mimeType && (
-                  <span className="tag is-info is-light">
+                  <span className="badge text-bg-info">
                     {file._zwMetadata.mimeType}
                   </span>
                 )}
@@ -769,11 +777,13 @@ const HostFileManager = ({ server }) => {
 
             {/* File metadata */}
             <div className="preview-metadata">
-              <div className="field is-grouped is-grouped-multiline">
-                <div className="control">
-                  <div className="tags has-addons">
-                    <span className="tag is-dark">Modified</span>
-                    <span className="tag is-light">
+              <div className="d-flex flex-wrap gap-2">
+                <div>
+                  <div className="d-inline-flex">
+                    <span className="badge text-bg-dark rounded-end-0">
+                      Modified
+                    </span>
+                    <span className="badge text-bg-secondary rounded-start-0">
                       {file.updatedAt
                         ? new Date(file.updatedAt).toLocaleDateString()
                         : "Unknown"}
@@ -781,20 +791,24 @@ const HostFileManager = ({ server }) => {
                   </div>
                 </div>
                 {file._zwMetadata?.permissions && (
-                  <div className="control">
-                    <div className="tags has-addons">
-                      <span className="tag is-dark">Permissions</span>
-                      <span className="tag is-light">
+                  <div>
+                    <div className="d-inline-flex">
+                      <span className="badge text-bg-dark rounded-end-0">
+                        Permissions
+                      </span>
+                      <span className="badge text-bg-secondary rounded-start-0">
                         {file._zwMetadata.permissions.octal || "Unknown"}
                       </span>
                     </div>
                   </div>
                 )}
                 {file._zwMetadata && (
-                  <div className="control">
-                    <div className="tags has-addons">
-                      <span className="tag is-dark">Owner</span>
-                      <span className="tag is-light">
+                  <div>
+                    <div className="d-inline-flex">
+                      <span className="badge text-bg-dark rounded-end-0">
+                        Owner
+                      </span>
+                      <span className="badge text-bg-secondary rounded-start-0">
                         {file._zwMetadata.uid || "Unknown"}:
                         {file._zwMetadata.gid || "Unknown"}
                       </span>
@@ -805,12 +819,12 @@ const HostFileManager = ({ server }) => {
 
               {/* Properties button */}
               {canManageHosts(user?.role) && (
-                <div className="has-text-centered mt-3">
+                <div className="text-center mt-3">
                   <button
-                    className="button is-link is-small is-outlined"
+                    className="btn btn-outline-primary btn-sm"
                     onClick={() => handleShowProperties(file)}
                   >
-                    <span className="icon is-small">
+                    <span className="me-1">
                       <i className="fas fa-cog" />
                     </span>
                     <span>Properties</span>

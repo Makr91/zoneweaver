@@ -143,12 +143,12 @@ const ArtifactUploadModal = ({
 
   const getProgressTagClass = (progressStatus) => {
     if (progressStatus === "completed") {
-      return "is-success";
+      return "text-bg-success";
     }
     if (progressStatus === "error") {
-      return "is-danger";
+      return "text-bg-danger";
     }
-    return "is-info";
+    return "text-bg-info";
   };
 
   const uploadFile = async (file, onProgress) => {
@@ -312,7 +312,7 @@ const ArtifactUploadModal = ({
         submitText="Close"
         submitVariant="is-info"
       >
-        <div className="notification is-warning">
+        <div className="alert alert-warning">
           <p>
             <strong>No enabled storage locations available.</strong>
           </p>
@@ -339,42 +339,38 @@ const ArtifactUploadModal = ({
       disabled={selectedFiles.length === 0}
       showCancelButton
     >
-      <div className="field">
-        <label htmlFor="upload-storage-location" className="label">
+      <div className="mb-3">
+        <label htmlFor="upload-storage-location" className="form-label">
           Storage Location
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="upload-storage-location"
-              value={formData.storage_path_id}
-              onChange={(e) =>
-                handleInputChange("storage_path_id", e.target.value)
-              }
-              disabled={loading}
-              className={errors.storage_path_id ? "is-danger" : ""}
-            >
-              <option value="">Select storage location...</option>
-              {enabledStoragePaths.map((path) => (
-                <option key={path.id} value={path.id}>
-                  {path.name} ({path.type}) - {path.path}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <select
+          id="upload-storage-location"
+          value={formData.storage_path_id}
+          onChange={(e) => handleInputChange("storage_path_id", e.target.value)}
+          disabled={loading}
+          className={`form-select ${errors.storage_path_id ? "is-invalid" : ""}`}
+        >
+          <option value="">Select storage location...</option>
+          {enabledStoragePaths.map((path) => (
+            <option key={path.id} value={path.id}>
+              {path.name} ({path.type}) - {path.path}
+            </option>
+          ))}
+        </select>
         {errors.storage_path_id && (
-          <p className="help is-danger">{errors.storage_path_id}</p>
+          <p className="form-text text-danger">{errors.storage_path_id}</p>
         )}
-        <p className="help">Where to store the uploaded files</p>
+        <p className="form-text text-muted">
+          Where to store the uploaded files
+        </p>
       </div>
 
-      <div className="field">
-        <label htmlFor="artifact-upload-file-input" className="label">
+      <div className="mb-3">
+        <label htmlFor="artifact-upload-file-input" className="form-label">
           Files
         </label>
         <div
-          className={`file is-boxed ${dragOver ? "is-active" : ""} ${errors.files ? "has-background-danger-light" : ""}`}
+          className={`border rounded p-4 text-center ${dragOver ? "border-primary bg-body-tertiary" : ""} ${errors.files ? "bg-danger-subtle" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -387,90 +383,89 @@ const ArtifactUploadModal = ({
             }
           }}
         >
-          <span className="file-label">
-            <input
-              id="artifact-upload-file-input"
-              ref={fileInputRef}
-              className="file-input"
-              type="file"
-              multiple
-              accept=".iso,.img,.vmdk,.vhd,.vhdx,.qcow2"
-              onChange={handleFileInputChange}
-              disabled={loading}
-            />
-            <span className="file-cta">
-              <span className="file-icon">
-                <i className="fas fa-upload" />
-              </span>
-              <span className="file-label">
-                {dragOver ? "Drop files here" : "Choose files or drag and drop"}
-              </span>
-            </span>
-          </span>
+          <div className="mb-2">
+            <i className="fas fa-upload" />
+          </div>
+          <div className="mb-3">
+            {dragOver ? "Drop files here" : "Choose files or drag and drop"}
+          </div>
+          <input
+            id="artifact-upload-file-input"
+            ref={fileInputRef}
+            className="form-control"
+            type="file"
+            multiple
+            accept=".iso,.img,.vmdk,.vhd,.vhdx,.qcow2"
+            onChange={handleFileInputChange}
+            disabled={loading}
+          />
         </div>
-        {errors.files && <p className="help is-danger">{errors.files}</p>}
-        <p className="help">
+        {errors.files && (
+          <p className="form-text text-danger">{errors.files}</p>
+        )}
+        <p className="form-text text-muted">
           Supported formats: ISO, IMG, VMDK, VHD, VHDX, QCOW2
         </p>
       </div>
 
       {/* Selected Files List */}
       {selectedFiles.length > 0 && (
-        <div className="field">
-          <span className="label">Selected Files ({selectedFiles.length})</span>
-          <div className="box">
-            {selectedFiles.map(({ id, file }) => {
-              const progress = uploadProgress[file.name];
-              return (
-                <div key={id} className="media">
-                  <div className="media-content">
+        <div className="mb-3">
+          <span className="form-label">
+            Selected Files ({selectedFiles.length})
+          </span>
+          <div className="card">
+            <div className="card-body">
+              {selectedFiles.map(({ id, file }) => {
+                const progress = uploadProgress[file.name];
+                return (
+                  <div key={id}>
                     <div className="content">
-                      <div className="level is-mobile">
-                        <div className="level-left">
-                          <div className="level-item">
-                            <div>
-                              <strong>{file.name}</strong>
-                              <br />
-                              <small>{formatFileSize(file.size)}</small>
-                            </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div>
+                          <div>
+                            <strong>{file.name}</strong>
+                            <br />
+                            <small>{formatFileSize(file.size)}</small>
                           </div>
                         </div>
-                        <div className="level-right">
-                          <div className="level-item">
-                            {!loading && (
-                              <button
-                                type="button"
-                                className="button is-small is-danger"
-                                onClick={() => removeFile(id)}
-                              >
-                                <span className="icon is-small">
-                                  <i className="fas fa-times" />
-                                </span>
-                              </button>
-                            )}
-                            {progress && (
-                              <span
-                                className={`tag is-small ml-2 ${getProgressTagClass(progress.status)}`}
-                              >
-                                {progress.status === "uploading" &&
-                                  `${progress.progress}%`}
-                                {progress.status === "completed" && "Complete"}
-                                {progress.status === "error" && "Error"}
+                        <div className="d-flex align-items-center">
+                          {!loading && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-danger"
+                              onClick={() => removeFile(id)}
+                            >
+                              <span>
+                                <i className="fas fa-times" />
                               </span>
-                            )}
-                          </div>
+                            </button>
+                          )}
+                          {progress && (
+                            <span
+                              className={`badge ms-2 ${getProgressTagClass(progress.status)}`}
+                            >
+                              {progress.status === "uploading" &&
+                                `${progress.progress}%`}
+                              {progress.status === "completed" && "Complete"}
+                              {progress.status === "error" && "Error"}
+                            </span>
+                          )}
                         </div>
                       </div>
                       {progress && progress.status === "uploading" && (
                         <div className="mt-2">
-                          <progress
-                            className="progress is-primary is-small"
-                            value={progress.progress}
-                            max="100"
+                          <div
+                            className="progress"
+                            style={{ height: "0.5rem" }}
+                            role="progressbar"
                           >
-                            {progress.progress}%
-                          </progress>
-                          <div className="is-size-7 has-text-grey">
+                            <div
+                              className="progress-bar bg-primary"
+                              style={{ width: `${progress.progress}%` }}
+                            />
+                          </div>
+                          <div className="small text-muted">
                             {progress.loaded && progress.total && (
                               <span>
                                 {formatFileSize(progress.loaded)} /{" "}
@@ -481,59 +476,54 @@ const ArtifactUploadModal = ({
                         </div>
                       )}
                       {progress && progress.status === "error" && (
-                        <div className="notification is-danger is-small mt-2">
+                        <div className="alert alert-danger mt-2">
                           {progress.error}
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
 
-      <div className="field">
-        <label htmlFor="artifact-checksum-input" className="label">
+      <div className="mb-3">
+        <label htmlFor="artifact-checksum-input" className="form-label">
           Checksum (Optional)
         </label>
-        <div className="field has-addons">
-          <div className="control is-expanded">
-            <input
-              id="artifact-checksum-input"
-              className="input"
-              type="text"
-              placeholder="Expected checksum for verification"
-              value={formData.checksum}
-              onChange={(e) => handleInputChange("checksum", e.target.value)}
-              disabled={loading}
-            />
-          </div>
-          <div className="control">
-            <div className="select">
-              <select
-                value={formData.checksum_algorithm}
-                onChange={(e) =>
-                  handleInputChange("checksum_algorithm", e.target.value)
-                }
-                disabled={loading || !formData.checksum.trim()}
-              >
-                <option value="md5">MD5</option>
-                <option value="sha1">SHA1</option>
-                <option value="sha256">SHA256</option>
-              </select>
-            </div>
-          </div>
+        <div className="input-group">
+          <input
+            id="artifact-checksum-input"
+            className="form-control"
+            type="text"
+            placeholder="Expected checksum for verification"
+            value={formData.checksum}
+            onChange={(e) => handleInputChange("checksum", e.target.value)}
+            disabled={loading}
+          />
+          <select
+            className="form-select"
+            value={formData.checksum_algorithm}
+            onChange={(e) =>
+              handleInputChange("checksum_algorithm", e.target.value)
+            }
+            disabled={loading || !formData.checksum.trim()}
+          >
+            <option value="md5">MD5</option>
+            <option value="sha1">SHA1</option>
+            <option value="sha256">SHA256</option>
+          </select>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           Optional checksum for file integrity verification (applies to all
           files)
         </p>
       </div>
 
       {selectedStoragePath && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <div className="content">
             <p>
               <strong>Upload Destination:</strong>

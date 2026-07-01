@@ -276,10 +276,8 @@ const TimeSyncConfig = ({ server, onError }) => {
 
   if (loading && !configInfo) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading time synchronization configuration...</p>
       </div>
     );
@@ -298,8 +296,8 @@ const TimeSyncConfig = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">NTP Configuration Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">NTP Configuration Management</h2>
+        <p>
           Configure time synchronization settings on{" "}
           <strong>{server.hostname}</strong>.{getServiceDescription()}
         </p>

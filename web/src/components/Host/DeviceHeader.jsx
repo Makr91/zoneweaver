@@ -1,20 +1,26 @@
 import PropTypes from "prop-types";
 
 const DeviceHeader = ({ selectedServer, loading, loadDeviceData }) => (
-  <div className="titlebar box active level is-mobile mb-0 p-3">
-    <div className="level-left">
+  <div className="titlebar active card-header d-flex justify-content-between align-items-center flex-wrap gap-2 p-3">
+    <div className="d-flex align-items-center gap-2">
       <strong>Device Monitoring</strong>
     </div>
-    <div className="level-right">
+    <div className="d-flex align-items-center gap-2">
       <button
-        className={`button is-small is-info ${loading ? "is-loading" : ""}`}
+        type="button"
+        className="btn btn-sm btn-info"
         onClick={() => selectedServer && loadDeviceData(selectedServer)}
         disabled={loading}
       >
-        <span className="icon">
-          <i className="fas fa-sync" />
-        </span>
-        <span>Refresh</span>
+        {loading && (
+          <span
+            className="spinner-border spinner-border-sm me-2"
+            role="status"
+            aria-hidden="true"
+          />
+        )}
+        <i className="fas fa-sync me-2" />
+        Refresh
       </button>
     </div>
   </div>

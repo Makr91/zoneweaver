@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import { useCallback } from "react";
 
-import FieldRenderer from "../FieldRenderer";
+import { isFieldVisible } from "../../../utils/settingsUtils";
+import SectionField from "../SectionField";
 
 const SubsectionRenderer = ({
   sectionName,
@@ -15,8 +16,8 @@ const SubsectionRenderer = ({
   uploadingFiles,
   onFieldChange,
   onSslFileUpload,
-  resetOidcProviderForm,
-  setShowOidcProviderModal,
+  setMsg,
+  setRequiresRestart,
   loading,
 }) => {
   const handleToggle = useCallback(() => {
@@ -33,10 +34,14 @@ const SubsectionRenderer = ({
     [handleToggle]
   );
 
-  // Special handling for OIDC Providers subsection
-  if (subsectionName === "OIDC Providers") {
-    return (
-      <div className="box mb-4">
+  // Only the fields whose conditional currently applies to the configuration.
+  const visibleFields = (subsection.fields || []).filter((field) =>
+    isFieldVisible(field, values)
+  );
+
+  return (
+    <div className="card mb-4">
+      <div className="card-body">
         <div
           className="is-clickable pb-2"
           onClick={handleToggle}
@@ -45,32 +50,15 @@ const SubsectionRenderer = ({
           tabIndex={0}
           aria-expanded={!isCollapsed}
         >
-          <h3 className="title is-6 mb-2">
-            <span className="icon is-small mr-2">
-              <i
-                className={`fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}`}
-              />
-            </span>
-            <span className="icon is-small mr-2">
-              <i className="fab fa-openid" />
-            </span>
+          <h3 className="fs-6 fw-bold mb-2">
+            <i
+              className={`fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"} me-2`}
+            />
+            <i className={`${section.icon} me-2`} />
             {subsection.title}
-            <span className="tag is-light is-small ml-2">
-              {
-                Object.entries(section.subsections || {}).filter(
-                  ([name]) =>
-                    name.toLowerCase().includes("oidc") &&
-                    name !== "OIDC Providers"
-                ).length
-              }{" "}
-              provider
-              {Object.entries(section.subsections || {}).filter(
-                ([name]) =>
-                  name.toLowerCase().includes("oidc") &&
-                  name !== "OIDC Providers"
-              ).length !== 1
-                ? "s"
-                : ""}
+            <span className="badge text-bg-light ms-2">
+              {visibleFields.length} setting
+              {visibleFields.length !== 1 ? "s" : ""}
             </span>
           </h3>
         </div>
@@ -78,149 +66,35 @@ const SubsectionRenderer = ({
         {/* Collapsible Content */}
         {!isCollapsed && (
           <div className="mt-3">
-            {/* OIDC Provider Management */}
-            <div className="level is-mobile mb-4">
-              <div className="level-left">
-                <div className="content">
-                  <p className="has-text-grey is-size-7 mb-0">
-                    Manage OpenID Connect authentication providers for single
-                    sign-on integration.
-                  </p>
-                </div>
-              </div>
-              <div className="level-right">
-                <button
-                  className="button is-primary is-small"
-                  onClick={() => {
-                    resetOidcProviderForm();
-                    setShowOidcProviderModal(true);
-                  }}
-                  disabled={loading}
+            <div className="row g-3">
+              {visibleFields.map((field) => (
+                <div
+                  key={field.path}
+                  className={
+                    field.type === "textarea" ||
+                    field.type === "array" ||
+                    field.type === "collection"
+                      ? "col-12"
+                      : "col-12 col-lg-6"
+                  }
                 >
-                  <span className="icon is-small">
-                    <i className="fas fa-plus" />
-                  </span>
-                  <span>Add OIDC Provider</span>
-                </button>
-              </div>
+                  <SectionField
+                    field={field}
+                    values={values}
+                    sslFiles={sslFiles}
+                    uploadingFiles={uploadingFiles}
+                    loading={loading}
+                    onFieldChange={onFieldChange}
+                    onSslFileUpload={onSslFileUpload}
+                    setMsg={setMsg}
+                    setRequiresRestart={setRequiresRestart}
+                  />
+                </div>
+              ))}
             </div>
-
-            {/* Show existing providers status */}
-            {Object.entries(section.subsections || {}).filter(
-              ([name]) =>
-                name.toLowerCase().includes("oidc") && name !== "OIDC Providers"
-            ).length > 0 ? (
-              <div className="notification is-info is-light mb-4">
-                <p className="is-size-7">
-                  <strong>
-                    {
-                      Object.entries(section.subsections || {}).filter(
-                        ([name]) =>
-                          name.toLowerCase().includes("oidc") &&
-                          name !== "OIDC Providers"
-                      ).length
-                    }
-                  </strong>{" "}
-                  OIDC provider(s) configured. Individual providers are shown as
-                  expandable sections below.
-                </p>
-              </div>
-            ) : (
-              <div className="notification is-warning is-light mb-4">
-                <p className="is-size-7">
-                  No OIDC providers configured yet. Click &quot;Add OIDC
-                  Provider&quot; to set up authentication with providers like
-                  Google, Microsoft, GitHub, etc.
-                </p>
-              </div>
-            )}
-
-            {/* Render any fields if they exist */}
-            {subsection.fields.length > 0 && (
-              <div className="columns is-multiline">
-                {subsection.fields.map((field) => (
-                  <div
-                    key={field.path}
-                    className={
-                      field.type === "textarea" || field.type === "array"
-                        ? "column is-full"
-                        : "column is-half"
-                    }
-                  >
-                    <FieldRenderer
-                      field={field}
-                      values={values}
-                      sslFiles={sslFiles}
-                      uploadingFiles={uploadingFiles}
-                      loading={loading}
-                      onFieldChange={onFieldChange}
-                      onSslFileUpload={onSslFileUpload}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>
-    );
-  }
-
-  // Regular subsection rendering
-  return (
-    <div className="box mb-4">
-      <div
-        className="is-clickable pb-2"
-        onClick={handleToggle}
-        onKeyDown={handleKeyDown}
-        role="button"
-        tabIndex={0}
-        aria-expanded={!isCollapsed}
-      >
-        <h3 className="title is-6 mb-2">
-          <span className="icon is-small mr-2">
-            <i
-              className={`fas ${isCollapsed ? "fa-chevron-right" : "fa-chevron-down"}`}
-            />
-          </span>
-          <span className="icon is-small mr-2">
-            <i className={section.icon} />
-          </span>
-          {subsection.title}
-          <span className="tag is-light is-small ml-2">
-            {subsection.fields.length} setting
-            {subsection.fields.length !== 1 ? "s" : ""}
-          </span>
-        </h3>
-      </div>
-
-      {/* Collapsible Content */}
-      {!isCollapsed && (
-        <div className="mt-3">
-          <div className="columns is-multiline">
-            {subsection.fields.map((field) => (
-              <div
-                key={field.path}
-                className={
-                  field.type === "textarea" || field.type === "array"
-                    ? "column is-full"
-                    : "column is-half"
-                }
-              >
-                <FieldRenderer
-                  field={field}
-                  values={values}
-                  sslFiles={sslFiles}
-                  uploadingFiles={uploadingFiles}
-                  loading={loading}
-                  onFieldChange={onFieldChange}
-                  onSslFileUpload={onSslFileUpload}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -237,8 +111,8 @@ SubsectionRenderer.propTypes = {
   uploadingFiles: PropTypes.object.isRequired,
   onFieldChange: PropTypes.func.isRequired,
   onSslFileUpload: PropTypes.func.isRequired,
-  resetOidcProviderForm: PropTypes.func.isRequired,
-  setShowOidcProviderModal: PropTypes.func.isRequired,
+  setMsg: PropTypes.func.isRequired,
+  setRequiresRestart: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
 };
 

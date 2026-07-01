@@ -127,24 +127,24 @@ const Profile = () => {
   const getRoleBadgeClass = (role) => {
     switch (role) {
       case "super-admin":
-        return "is-danger";
+        return "text-bg-danger";
       case "admin":
-        return "is-warning";
+        return "text-bg-warning";
       case "user":
-        return "is-success";
+        return "text-bg-success";
       default:
-        return "is-light";
+        return "text-bg-light";
     }
   };
 
   const getNotificationClass = () => {
     if (msg.includes("successfully")) {
-      return "is-success";
+      return "alert-success";
     }
     if (msg.includes("Error") || msg.includes("must")) {
-      return "is-danger";
+      return "alert-danger";
     }
-    return "is-warning";
+    return "alert-warning";
   };
 
   return (
@@ -154,89 +154,79 @@ const Profile = () => {
         <title>Profile - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
-          <div className="titlebar box active level is-mobile mb-0 p-3">
-            <div className="level-left">
-              <strong>User Profile</strong>
-            </div>
+      <div className="container-fluid p-0">
+        <div className="card">
+          <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <strong>User Profile</strong>
           </div>
 
           <div className="px-4">
             {msg && (
-              <div className={`notification ${getNotificationClass()}`}>
+              <div className={`alert ${getNotificationClass()}`}>
                 <p>{msg}</p>
               </div>
             )}
 
-            <div className="columns">
-              <div className="column is-one-third">
+            <div className="row g-3">
+              <div className="col-12 col-lg-4">
                 <ProfileInfo user={user} />
               </div>
 
-              <div className="column">
+              <div className="col">
                 {/* Account Information */}
-                <div className="box">
-                  <h2 className="title is-5">Account Information</h2>
-                  <div className="content">
-                    <div className="field">
-                      <label className="label" htmlFor="username">
+                <div className="card">
+                  <div className="card-body">
+                    <h2 className="fs-5 fw-bold">Account Information</h2>
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="username">
                         Username
                       </label>
-                      <div className="control">
-                        <input
-                          id="username"
-                          className="input"
-                          type="text"
-                          value={user?.username || ""}
-                          disabled
-                        />
-                      </div>
+                      <input
+                        id="username"
+                        className="form-control"
+                        type="text"
+                        value={user?.username || ""}
+                        disabled
+                      />
                     </div>
 
-                    <div className="field">
-                      <label className="label" htmlFor="email">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="email">
                         Email
                       </label>
-                      <div className="control">
-                        <input
-                          id="email"
-                          className="input"
-                          type="email"
-                          value={user?.email || ""}
-                          disabled
-                        />
-                      </div>
+                      <input
+                        id="email"
+                        className="form-control"
+                        type="email"
+                        value={user?.email || ""}
+                        disabled
+                      />
                     </div>
 
-                    <div className="field">
-                      <p className="label">Role</p>
-                      <div className="control">
-                        <span
-                          className={`tag is-medium ${getRoleBadgeClass(user?.role)}`}
-                        >
-                          {user?.role || "Unknown"}
-                        </span>
-                      </div>
+                    <div className="mb-3">
+                      <p className="form-label">Role</p>
+                      <span
+                        className={`badge ${getRoleBadgeClass(user?.role)}`}
+                      >
+                        {user?.role || "Unknown"}
+                      </span>
                     </div>
 
-                    <div className="field">
-                      <label className="label" htmlFor="createdAt">
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="createdAt">
                         Member Since
                       </label>
-                      <div className="control">
-                        <input
-                          id="createdAt"
-                          className="input"
-                          type="text"
-                          value={
-                            user?.createdAt
-                              ? new Date(user.createdAt).toLocaleDateString()
-                              : "Unknown"
-                          }
-                          disabled
-                        />
-                      </div>
+                      <input
+                        id="createdAt"
+                        className="form-control"
+                        type="text"
+                        value={
+                          user?.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString()
+                            : "Unknown"
+                        }
+                        disabled
+                      />
                     </div>
                   </div>
                 </div>
@@ -252,27 +242,30 @@ const Profile = () => {
                 />
 
                 {/* Account Deletion */}
-                <div className="box">
-                  <h2 className="title is-5 has-text-danger">Danger Zone</h2>
-                  <div className="notification is-danger">
-                    <p>
-                      <strong>Warning:</strong> Account deletion is permanent
-                      and cannot be undone.
-                    </p>
-                    {user?.role === "super-admin" && (
+                <div className="card">
+                  <div className="card-body">
+                    <h2 className="fs-5 fw-bold text-danger">Danger Zone</h2>
+                    <div className="alert alert-danger">
                       <p>
-                        <strong>Note:</strong> As a super-admin, you cannot
-                        delete your account if you are the last super-admin.
+                        <strong>Warning:</strong> Account deletion is permanent
+                        and cannot be undone.
                       </p>
-                    )}
-                  </div>
+                      {user?.role === "super-admin" && (
+                        <p>
+                          <strong>Note:</strong> As a super-admin, you cannot
+                          delete your account if you are the last super-admin.
+                        </p>
+                      )}
+                    </div>
 
-                  <button
-                    className="button is-danger is-outlined"
-                    onClick={() => setShowDeleteModal(true)}
-                  >
-                    Delete My Account
-                  </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger"
+                      onClick={() => setShowDeleteModal(true)}
+                    >
+                      Delete My Account
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -295,61 +288,59 @@ const Profile = () => {
             deleteData.confirmText !== "DELETE" || !deleteData.password
           }
         >
-          <div className="notification is-danger">
+          <div className="alert alert-danger">
             <p>
               <strong>WARNING: This action cannot be undone!</strong>
             </p>
             <p>You are about to permanently delete your account:</p>
           </div>
 
-          <div className="box has-background-grey-lighter">
-            <p>
-              <strong>Username:</strong> {user?.username}
-            </p>
-            <p>
-              <strong>Email:</strong> {user?.email}
-            </p>
-            <p>
-              <strong>Role:</strong> {user?.role}
-            </p>
+          <div className="card">
+            <div className="card-body">
+              <p>
+                <strong>Username:</strong> {user?.username}
+              </p>
+              <p>
+                <strong>Email:</strong> {user?.email}
+              </p>
+              <p>
+                <strong>Role:</strong> {user?.role}
+              </p>
+            </div>
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="deletePassword">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="deletePassword">
               Current Password
             </label>
-            <div className="control">
-              <input
-                id="deletePassword"
-                className="input"
-                type="password"
-                value={deleteData.password}
-                onChange={(e) =>
-                  setDeleteData({ ...deleteData, password: e.target.value })
-                }
-                placeholder="Enter your current password"
-              />
-            </div>
+            <input
+              id="deletePassword"
+              className="form-control"
+              type="password"
+              value={deleteData.password}
+              onChange={(e) =>
+                setDeleteData({ ...deleteData, password: e.target.value })
+              }
+              placeholder="Enter your current password"
+            />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="deleteConfirm">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="deleteConfirm">
               Type &quot;DELETE&quot; to confirm account deletion:
             </label>
-            <div className="control">
-              <input
-                id="deleteConfirm"
-                className="input"
-                type="text"
-                value={deleteData.confirmText}
-                onChange={(e) =>
-                  setDeleteData({ ...deleteData, confirmText: e.target.value })
-                }
-                placeholder="Type DELETE to confirm"
-                autoComplete="off"
-              />
-            </div>
-            <p className="help">
+            <input
+              id="deleteConfirm"
+              className="form-control"
+              type="text"
+              value={deleteData.confirmText}
+              onChange={(e) =>
+                setDeleteData({ ...deleteData, confirmText: e.target.value })
+              }
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+            />
+            <p className="form-text text-muted">
               This will permanently remove your account and all associated data.
             </p>
           </div>

@@ -21,17 +21,17 @@ const LogControls = ({
   };
 
   return (
-    <div className="box mb-4">
-      <div className="columns">
-        <div className="column is-2">
-          <div className="field">
-            <label className="label is-small" htmlFor="log-lines">
-              Lines
-            </label>
-            <div className="control">
+    <div className="card mb-4">
+      <div className="card-body">
+        <div className="row g-3">
+          <div className="col-2">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="log-lines">
+                Lines
+              </label>
               <input
                 id="log-lines"
-                className="input is-small"
+                className="form-control form-control-sm"
                 type="number"
                 min="10"
                 max="1000"
@@ -42,16 +42,14 @@ const LogControls = ({
               />
             </div>
           </div>
-        </div>
-        <div className="column is-3">
-          <div className="field">
-            <label className="label is-small" htmlFor="log-grep">
-              Filter (grep)
-            </label>
-            <div className="control">
+          <div className="col-3">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="log-grep">
+                Filter (grep)
+              </label>
               <input
                 id="log-grep"
-                className="input is-small"
+                className="form-control form-control-sm"
                 type="text"
                 placeholder="error, warning..."
                 value={filters.grep}
@@ -59,92 +57,82 @@ const LogControls = ({
               />
             </div>
           </div>
-        </div>
-        <div className="column is-3">
-          <div className="field">
-            <label className="label is-small" htmlFor="log-since">
-              Since
-            </label>
-            <div className="control">
+          <div className="col-3">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="log-since">
+                Since
+              </label>
               <input
                 id="log-since"
-                className="input is-small"
+                className="form-control form-control-sm"
                 type="datetime-local"
                 value={filters.since}
                 onChange={(e) => onFilterChange("since", e.target.value)}
               />
             </div>
           </div>
-        </div>
-        <div className="column is-1">
-          <div className="field">
-            <label className="label is-small" htmlFor="log-tail">
-              Tail
-            </label>
-            <div className="control">
-              <label className="checkbox">
+          <div className="col-1">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="log-tail">
+                Tail
+              </label>
+              <div className="form-check">
                 <input
                   id="log-tail"
+                  className="form-check-input"
                   type="checkbox"
                   checked={filters.tail}
                   onChange={(e) => onFilterChange("tail", e.target.checked)}
                 />
-                <span className="ml-1">Latest</span>
-              </label>
+                <label className="form-check-label" htmlFor="log-tail">
+                  Latest
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="column is-narrow">
-          <div className="field">
-            <div className="label is-small">&nbsp;</div>
-            <div className="control">
+          <div className="col-auto">
+            <div className="mb-3">
+              <div className="form-label">&nbsp;</div>
               <button
-                className="button is-small is-info"
+                type="button"
+                className="btn btn-sm btn-info"
                 onClick={onRefresh}
                 disabled={loading}
               >
-                <span className="icon">
-                  <i className="fas fa-sync-alt" />
-                </span>
+                <i className="fas fa-sync-alt me-2" />
                 <span>Refresh</span>
               </button>
             </div>
           </div>
-        </div>
-        <div className="column is-narrow">
-          <div className="field">
-            <div className="label is-small">&nbsp;</div>
-            <div className="control">
+          <div className="col-auto">
+            <div className="mb-3">
+              <div className="form-label">&nbsp;</div>
               <button
-                className={`button is-small ${autoRefresh ? "is-success" : ""}`}
+                type="button"
+                className={`btn btn-sm ${autoRefresh ? "btn-success" : "btn-secondary"}`}
                 onClick={onToggleAutoRefresh}
                 disabled={loading || isStreaming}
               >
-                <span className="icon">
-                  <i
-                    className={`fas ${autoRefresh ? "fa-pause" : "fa-play"}`}
-                  />
-                </span>
+                <i
+                  className={`fas ${autoRefresh ? "fa-pause" : "fa-play"} me-2`}
+                />
                 <span>{autoRefresh ? "Stop" : "Auto"}</span>
               </button>
             </div>
           </div>
-        </div>
-        <div className="column is-narrow">
-          <div className="field">
-            <div className="label is-small">&nbsp;</div>
-            <div className="control">
+          <div className="col-auto">
+            <div className="mb-3">
+              <div className="form-label">&nbsp;</div>
               <button
-                className={`button is-small ${isStreaming ? "is-primary" : "is-warning"}`}
+                type="button"
+                className={`btn btn-sm ${isStreaming ? "btn-primary" : "btn-warning"}`}
                 onClick={onToggleStreaming}
                 disabled={loading || selectedLog?.type === "fault-manager"}
                 title={getStreamingTitle()}
               >
-                <span className="icon">
-                  <i
-                    className={`fas ${isStreaming ? "fa-stop" : "fa-stream"}`}
-                  />
-                </span>
+                <i
+                  className={`fas ${isStreaming ? "fa-stop" : "fa-stream"} me-2`}
+                />
                 <span>{isStreaming ? "Stop Stream" : "Live Stream"}</span>
               </button>
             </div>

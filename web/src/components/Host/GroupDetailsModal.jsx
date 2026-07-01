@@ -5,9 +5,9 @@ import ContentModal from "../common/ContentModal";
 const GroupDetailsModal = ({ group, onClose }) => {
   const getGroupType = () => {
     if (group.gid < 100) {
-      return { type: "System Group", class: "is-info" };
+      return { type: "System Group", class: "text-bg-info" };
     }
-    return { type: "Regular Group", class: "is-success" };
+    return { type: "Regular Group", class: "text-bg-success" };
   };
 
   const groupType = getGroupType();
@@ -18,40 +18,37 @@ const GroupDetailsModal = ({ group, onClose }) => {
       onClose={onClose}
       title={`Group Details: ${group.groupname}`}
       icon="fas fa-users"
-      className="is-medium"
       aria-label={`Group details for ${group.groupname}`}
     >
-      <div className="columns">
+      <div className="row g-3">
         {/* Basic Information */}
-        <div className="column">
-          <h4 className="title is-5">
-            <span className="icon">
-              <i className="fas fa-info-circle" />
-            </span>
+        <div className="col">
+          <h4 className="fs-5 fw-bold">
+            <i className="fas fa-info-circle me-2" />
             <span>Basic Information</span>
           </h4>
 
-          <div className="table-container">
-            <table className="table is-fullwidth">
+          <div className="table-responsive">
+            <table className="table">
               <tbody>
                 <tr>
                   <td>
                     <strong>Group Name</strong>
                   </td>
-                  <td className="is-family-monospace">{group.groupname}</td>
+                  <td className="font-monospace">{group.groupname}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Group ID (GID)</strong>
                   </td>
-                  <td className="is-family-monospace">{group.gid}</td>
+                  <td className="font-monospace">{group.gid}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Group Type</strong>
                   </td>
                   <td>
-                    <span className={`tag ${groupType.class}`}>
+                    <span className={`badge ${groupType.class}`}>
                       {groupType.type}
                     </span>
                   </td>
@@ -61,7 +58,7 @@ const GroupDetailsModal = ({ group, onClose }) => {
                     <strong>Member Count</strong>
                   </td>
                   <td>
-                    <span className="tag is-light">
+                    <span className="badge text-bg-secondary">
                       {group.members ? group.members.length : 0} members
                     </span>
                   </td>
@@ -72,31 +69,28 @@ const GroupDetailsModal = ({ group, onClose }) => {
         </div>
 
         {/* Members */}
-        <div className="column">
-          <h4 className="title is-5">
-            <span className="icon">
-              <i className="fas fa-user-friends" />
-            </span>
+        <div className="col">
+          <h4 className="fs-5 fw-bold">
+            <i className="fas fa-user-friends me-2" />
             <span>Group Members</span>
           </h4>
 
           {group.members && group.members.length > 0 ? (
-            <div className="content">
-              <div className="tags">
-                {group.members.map((member) => (
-                  <span key={member} className="tag is-primary is-light">
-                    <span className="icon is-small">
-                      <i className="fas fa-user" />
-                    </span>
-                    <span className="ml-1">{member}</span>
-                  </span>
-                ))}
-              </div>
+            <div className="d-flex flex-wrap gap-1">
+              {group.members.map((member) => (
+                <span
+                  key={member}
+                  className="badge text-bg-secondary d-inline-flex align-items-center gap-1"
+                >
+                  <i className="fas fa-user" />
+                  <span>{member}</span>
+                </span>
+              ))}
             </div>
           ) : (
-            <div className="notification is-info">
+            <div className="alert alert-info">
               <p>This group has no members assigned.</p>
-              <p className="mt-2">
+              <p className="mt-2 mb-0">
                 <strong>Tip:</strong> Add users to this group by editing their
                 user accounts in the Users section.
               </p>
@@ -107,19 +101,17 @@ const GroupDetailsModal = ({ group, onClose }) => {
 
       {/* Additional Information */}
       <hr />
-      <h4 className="title is-6">
-        <span className="icon">
-          <i className="fas fa-cog" />
-        </span>
+      <h4 className="fs-6 fw-bold">
+        <i className="fas fa-cog me-2" />
         <span>Group Management</span>
       </h4>
 
-      <div className="content">
-        <div className="notification is-light">
+      <div>
+        <div className="alert alert-secondary">
           <p>
             <strong>Managing Group Membership:</strong>
           </p>
-          <ul>
+          <ul className="mb-0">
             <li>
               To add users to this group, edit the user&apos;s secondary groups
               in User Management
@@ -136,11 +128,11 @@ const GroupDetailsModal = ({ group, onClose }) => {
         </div>
 
         {group.gid < 100 && (
-          <div className="notification is-warning">
+          <div className="alert alert-warning">
             <p>
               <strong>System Group:</strong>
             </p>
-            <p>
+            <p className="mb-0">
               This is a system group (GID &lt; 100). Modifying system groups may
               affect system functionality.
             </p>

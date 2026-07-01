@@ -23,11 +23,8 @@ const LogFileExplorer = ({ logFiles, selectedLog, onLogSelect, loading }) => {
     return acc;
   }, {});
 
-  // Add fault manager special logs if not present (though usually they come from API or static list in parent)
-  // The parent `SystemLogs` was adding them if missing. I should probably move that logic here or keep it in parent.
-  // In the original code, `logFiles` state is populated from API. Then `groupedLogs` logic adds fault manager logs if missing.
-  // It's better if `logFiles` passed to this component already contains everything or this component handles the static additions.
-  // I will keep the logic here to match original behavior if `logFiles` doesn't have them.
+  // Fault Manager logs aren't returned by the log-list API, so surface them as
+  // static entries when the passed logFiles don't already include them.
   if (!groupedLogs["fault-manager"]) {
     groupedLogs["fault-manager"] = [
       {
@@ -58,63 +55,55 @@ const LogFileExplorer = ({ logFiles, selectedLog, onLogSelect, loading }) => {
   }
 
   return (
-    <div className="box">
-      <h4 className="title is-6 mb-3">
-        <span className="icon-text">
-          <span className="icon">
-            <i className="fas fa-folder-open" />
-          </span>
+    <div className="card">
+      <div className="card-body">
+        <h4 className="fs-6 fw-bold mb-3">
+          <i className="fas fa-folder-open me-2" />
           <span>Log Files</span>
-        </span>
-      </h4>
+        </h4>
 
-      {loading ? (
-        <div className="has-text-centered p-4">
-          <span className="icon">
+        {loading ? (
+          <div className="text-center p-4">
             <i className="fas fa-spinner fa-spin" />
-          </span>
-          <p className="mt-2 is-size-7">Loading...</p>
-        </div>
-      ) : (
-        <div className="menu">
-          {Object.entries(groupedLogs).map(([type, logs]) => (
-            <div key={type}>
-              <p className="menu-label">
-                {type
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
-                Logs
-              </p>
-              <ul className="menu-list">
-                {logs.map((log) => (
-                  <li key={log.name}>
-                    <a
-                      className={
-                        selectedLog?.name === log.name ? "is-active" : ""
-                      }
-                      onClick={(e) => {
-                        e.preventDefault();
+            <p className="mt-2 small">Loading...</p>
+          </div>
+        ) : (
+          <div>
+            {Object.entries(groupedLogs).map(([type, logs]) => (
+              <div key={type} className="mb-3">
+                <p className="text-uppercase small fw-semibold text-muted">
+                  {type
+                    .replace(/-/g, " ")
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
+                  Logs
+                </p>
+                <div className="list-group">
+                  {logs.map((log) => (
+                    <button
+                      key={log.name}
+                      type="button"
+                      className={`list-group-item list-group-item-action d-flex align-items-center${
+                        selectedLog?.name === log.name ? " active" : ""
+                      }`}
+                      onClick={() => {
                         onLogSelect(log);
                       }}
-                      href={`#log-${log.name}`}
                     >
-                      <span className="icon">
-                        <i className={getLogIcon(log.type)} />
-                      </span>
+                      <i className={`${getLogIcon(log.type)} me-2`} />
                       <span>{log.displayName || log.name}</span>
                       {log.sizeFormatted && (
-                        <span className="tag is-small is-light ml-auto">
+                        <span className="badge text-bg-secondary ms-auto">
                           {log.sizeFormatted}
                         </span>
                       )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

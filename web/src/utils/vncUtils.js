@@ -129,12 +129,12 @@ export const needsShiftKey = (char) =>
  */
 export const getStatusColorClass = (connected, connecting) => {
   if (connected) {
-    return "has-text-success";
+    return "text-success";
   }
   if (connecting) {
-    return "has-text-warning";
+    return "text-warning";
   }
-  return "has-text-danger";
+  return "text-danger";
 };
 
 /**

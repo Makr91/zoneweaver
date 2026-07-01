@@ -23,17 +23,17 @@ const ServiceDetailsModal = ({ service, onClose }) => {
   const getStateTagClass = (state) => {
     switch (state) {
       case "online":
-        return "is-success";
+        return "text-bg-success";
       case "disabled":
-        return "is-grey";
+        return "text-bg-secondary";
       case "offline":
-        return "is-danger";
+        return "text-bg-danger";
       case "legacy_run":
-        return "is-info";
+        return "text-bg-info";
       case "maintenance":
-        return "is-warning";
+        return "text-bg-warning";
       default:
-        return "is-light";
+        return "text-bg-light";
     }
   };
 
@@ -45,70 +45,76 @@ const ServiceDetailsModal = ({ service, onClose }) => {
       icon="fas fa-cogs"
     >
       {/* Service Basic Info */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Basic Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>FMRI</strong>
-                </td>
-                <td className="is-family-monospace">{service.fmri}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>State</strong>
-                </td>
-                <td>
-                  <span className={`tag ${getStateTagClass(service.state)}`}>
-                    {service.state}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Start Time</strong>
-                </td>
-                <td>{service.stime || "N/A"}</td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Basic Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>FMRI</strong>
+                  </td>
+                  <td className="font-monospace">{service.fmri}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>State</strong>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${getStateTagClass(service.state)}`}
+                    >
+                      {service.state}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Start Time</strong>
+                  </td>
+                  <td>{service.stime || "N/A"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Detailed Information */}
       {detailsArray.length > 0 && (
-        <div className="box">
-          <h3 className="title is-6">Detailed Information</h3>
-          <div className="table-container">
-            <table className="table is-fullwidth">
-              <tbody>
-                {detailsArray.map((detail) => (
-                  <tr key={detail.label}>
-                    <td>
-                      <strong>{detail.label}</strong>
-                    </td>
-                    <td>
-                      {detail.value.includes("\n") ? (
-                        <pre className="is-size-7 p-2">{detail.value}</pre>
-                      ) : (
-                        <span className="is-family-monospace is-size-7">
-                          {detail.value}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Detailed Information</h3>
+            <div className="table-responsive">
+              <table className="table">
+                <tbody>
+                  {detailsArray.map((detail) => (
+                    <tr key={detail.label}>
+                      <td>
+                        <strong>{detail.label}</strong>
+                      </td>
+                      <td>
+                        {detail.value.includes("\n") ? (
+                          <pre className="small p-2">{detail.value}</pre>
+                        ) : (
+                          <span className="font-monospace small">
+                            {detail.value}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Show message if no details available */}
       {detailsArray.length === 0 && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No detailed information available for this service.</p>
         </div>
       )}

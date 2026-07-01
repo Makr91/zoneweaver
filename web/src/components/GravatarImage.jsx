@@ -5,19 +5,20 @@ export default function GravatarImage() {
 
   if (!user || !user.gravatar) {
     return (
-      <figure className="image is-32x32">
-        <span className="skeleton__avatar is-rounded" />
-      </figure>
+      <span
+        className="rounded-circle d-inline-block bg-secondary-subtle"
+        style={{ width: 32, height: 32 }}
+      />
     );
   }
 
   return (
-    <figure className="image is-32x32">
-      <img
-        src={`${user.gravatar.avatar_url}?size=32`}
-        className="is-rounded"
-        alt="User avatar"
-      />
-    </figure>
+    <img
+      src={`${user.gravatar.avatar_url}?size=32`}
+      className="rounded-circle"
+      width={32}
+      height={32}
+      alt="User avatar"
+    />
   );
 }

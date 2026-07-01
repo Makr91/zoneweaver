@@ -236,198 +236,191 @@ const IpAddressCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitVariant="is-primary"
       loading={creating}
     >
-      <div className="field">
-        <label className="label" htmlFor="interface-select">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="interface-select">
           Interface *
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="interface-select"
-              value={formData.interface}
-              onChange={(e) => handleInputChange("interface", e.target.value)}
-              disabled={creating || loadingInterfaces}
-              required
-            >
-              <option value="">
-                {loadingInterfaces
-                  ? "Loading interfaces..."
-                  : "Select an interface"}
-              </option>
-              {interfaces.map((iface) => (
-                <option key={iface.name} value={iface.name}>
-                  {iface.name} ({iface.type}
-                  {iface.over ? ` over ${iface.over}` : ""})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <p className="help">The network interface to assign the address to</p>
+        <select
+          id="interface-select"
+          className="form-select"
+          value={formData.interface}
+          onChange={(e) => handleInputChange("interface", e.target.value)}
+          disabled={creating || loadingInterfaces}
+          required
+        >
+          <option value="">
+            {loadingInterfaces
+              ? "Loading interfaces..."
+              : "Select an interface"}
+          </option>
+          {interfaces.map((iface) => (
+            <option key={iface.name} value={iface.name}>
+              {iface.name} ({iface.type}
+              {iface.over ? ` over ${iface.over}` : ""})
+            </option>
+          ))}
+        </select>
+        <p className="form-text text-muted">
+          The network interface to assign the address to
+        </p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="addrobj-input">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="addrobj-input">
           Address Object Name *
         </label>
-        <div className="control">
-          <input
-            id="addrobj-input"
-            className="input"
-            type="text"
-            placeholder="e.g., vnic0/v4static"
-            value={formData.addrobj}
-            onChange={(e) => handleInputChange("addrobj", e.target.value)}
-            disabled={creating}
-            required
-          />
-        </div>
-        <p className="help">Unique name for this address object</p>
+        <input
+          id="addrobj-input"
+          className="form-control"
+          type="text"
+          placeholder="e.g., vnic0/v4static"
+          value={formData.addrobj}
+          onChange={(e) => handleInputChange("addrobj", e.target.value)}
+          disabled={creating}
+          required
+        />
+        <p className="form-text text-muted">
+          Unique name for this address object
+        </p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="type-select">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="type-select">
           Address Type
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="type-select"
-              value={formData.type}
-              onChange={(e) => handleInputChange("type", e.target.value)}
-              disabled={creating}
-            >
-              <option value="static">Static</option>
-              <option value="dhcp">DHCP</option>
-              <option value="addrconf">Auto Configuration</option>
-            </select>
-          </div>
-        </div>
+        <select
+          id="type-select"
+          className="form-select"
+          value={formData.type}
+          onChange={(e) => handleInputChange("type", e.target.value)}
+          disabled={creating}
+        >
+          <option value="static">Static</option>
+          <option value="dhcp">DHCP</option>
+          <option value="addrconf">Auto Configuration</option>
+        </select>
       </div>
 
       {formData.type === "static" && (
         <>
-          <div className="columns">
-            <div className="column is-two-thirds">
-              <div className="field">
-                <label className="label" htmlFor="address-input">
+          <div className="row g-3">
+            <div className="col-12 col-lg-8">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="address-input">
                   IP Address *
                 </label>
-                <div className="control">
-                  <input
-                    id="address-input"
-                    className="input"
-                    type="text"
-                    placeholder="192.168.1.100 or 2001:db8::1"
-                    value={formData.address}
-                    onChange={(e) =>
-                      handleInputChange("address", e.target.value)
-                    }
-                    disabled={creating}
-                    required
-                  />
-                </div>
-                <p className="help">IP address without CIDR notation</p>
+                <input
+                  id="address-input"
+                  className="form-control"
+                  type="text"
+                  placeholder="192.168.1.100 or 2001:db8::1"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  disabled={creating}
+                  required
+                />
+                <p className="form-text text-muted">
+                  IP address without CIDR notation
+                </p>
               </div>
             </div>
-            <div className="column">
-              <div className="field">
-                <label className="label" htmlFor="netmask-select">
+            <div className="col">
+              <div className="mb-3">
+                <label className="form-label" htmlFor="netmask-select">
                   Netmask *
                 </label>
-                <div className="control">
-                  <div className="select is-fullwidth">
-                    <select
-                      id="netmask-select"
-                      value={formData.netmask}
-                      onChange={(e) =>
-                        handleInputChange("netmask", e.target.value)
-                      }
-                      disabled={creating}
-                      required
-                    >
-                      <option value="8">/8 (255.0.0.0)</option>
-                      <option value="16">/16 (255.255.0.0)</option>
-                      <option value="24">/24 (255.255.255.0)</option>
-                      <option value="25">/25 (255.255.255.128)</option>
-                      <option value="26">/26 (255.255.255.192)</option>
-                      <option value="27">/27 (255.255.255.224)</option>
-                      <option value="28">/28 (255.255.255.240)</option>
-                      <option value="29">/29 (255.255.255.248)</option>
-                      <option value="30">/30 (255.255.255.252)</option>
-                    </select>
-                  </div>
-                </div>
-                <p className="help">Maximum /30</p>
+                <select
+                  id="netmask-select"
+                  className="form-select"
+                  value={formData.netmask}
+                  onChange={(e) => handleInputChange("netmask", e.target.value)}
+                  disabled={creating}
+                  required
+                >
+                  <option value="8">/8 (255.0.0.0)</option>
+                  <option value="16">/16 (255.255.0.0)</option>
+                  <option value="24">/24 (255.255.255.0)</option>
+                  <option value="25">/25 (255.255.255.128)</option>
+                  <option value="26">/26 (255.255.255.192)</option>
+                  <option value="27">/27 (255.255.255.224)</option>
+                  <option value="28">/28 (255.255.255.240)</option>
+                  <option value="29">/29 (255.255.255.248)</option>
+                  <option value="30">/30 (255.255.255.252)</option>
+                </select>
+                <p className="form-text text-muted">Maximum /30</p>
               </div>
             </div>
           </div>
         </>
       )}
 
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label className="label" htmlFor="wait-input">
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="wait-input">
               Wait Timeout (seconds)
             </label>
-            <div className="control">
-              <input
-                id="wait-input"
-                className="input"
-                type="number"
-                min="1"
-                max="300"
-                value={formData.wait}
-                onChange={(e) => handleInputChange("wait", e.target.value)}
-                disabled={creating}
-              />
-            </div>
-            <p className="help">Timeout for address configuration</p>
+            <input
+              id="wait-input"
+              className="form-control"
+              type="number"
+              min="1"
+              max="300"
+              value={formData.wait}
+              onChange={(e) => handleInputChange("wait", e.target.value)}
+              disabled={creating}
+            />
+            <p className="form-text text-muted">
+              Timeout for address configuration
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.primary}
-              onChange={(e) => handleInputChange("primary", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">Primary address</span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="primary-checkbox"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.primary}
+            onChange={(e) => handleInputChange("primary", e.target.checked)}
+            disabled={creating}
+          />
+          <label className="form-check-label" htmlFor="primary-checkbox">
+            Primary address
           </label>
         </div>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.temporary}
-              onChange={(e) => handleInputChange("temporary", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">
-              Temporary (not persistent across reboots)
-            </span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="temporary-checkbox"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.temporary}
+            onChange={(e) => handleInputChange("temporary", e.target.checked)}
+            disabled={creating}
+          />
+          <label className="form-check-label" htmlFor="temporary-checkbox">
+            Temporary (not persistent across reboots)
           </label>
         </div>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.down}
-              onChange={(e) => handleInputChange("down", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">Create in down state</span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="down-checkbox"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.down}
+            onChange={(e) => handleInputChange("down", e.target.checked)}
+            disabled={creating}
+          />
+          <label className="form-check-label" htmlFor="down-checkbox">
+            Create in down state
           </label>
         </div>
       </div>

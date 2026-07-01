@@ -729,6 +729,37 @@ router.delete(
   SettingsController.deleteBackup
 );
 
+// Config collection management endpoints (keyed maps, e.g. OIDC providers)
+// - Protected with admin rate limiting. :path is a dotted config path.
+router.get(
+  '/api/settings/collections/:path',
+  adminLimiter,
+  authenticate,
+  requireSuperAdmin,
+  SettingsController.getCollection
+);
+router.post(
+  '/api/settings/collections/:path',
+  adminLimiter,
+  authenticate,
+  requireSuperAdmin,
+  SettingsController.createCollectionItem
+);
+router.put(
+  '/api/settings/collections/:path/:key',
+  adminLimiter,
+  authenticate,
+  requireSuperAdmin,
+  SettingsController.updateCollectionItem
+);
+router.delete(
+  '/api/settings/collections/:path/:key',
+  adminLimiter,
+  authenticate,
+  requireSuperAdmin,
+  SettingsController.deleteCollectionItem
+);
+
 // Mail testing endpoint - Protected with admin rate limiting
 router.post(
   '/api/mail/test',

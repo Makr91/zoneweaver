@@ -282,8 +282,8 @@ const PackageSection = ({ server, onError }) => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="title is-5">Package Management</h2>
-        <p className="content">
+        <h2 className="fs-5 fw-bold">Package Management</h2>
+        <p>
           Manage packages on <strong>{server.hostname}</strong>. Search for
           available packages, install, uninstall, and view package information.
         </p>
@@ -301,30 +301,32 @@ const PackageSection = ({ server, onError }) => {
       />
 
       {/* Packages Table */}
-      <div className="box">
-        <div className="level is-mobile mb-4">
-          <div className="level-left">
-            <h3 className="title is-6">
-              {isSearchMode
-                ? `Search Results (${displayPackages.length})`
-                : `Packages (${displayPackages.length})`}
-              {loading && (
-                <span className="ml-2">
-                  <i className="fas fa-spinner fa-spin" />
-                </span>
-              )}
-            </h3>
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-2">
+              <h3 className="fs-6 fw-bold mb-0">
+                {isSearchMode
+                  ? `Search Results (${displayPackages.length})`
+                  : `Packages (${displayPackages.length})`}
+                {loading && (
+                  <span className="ms-2">
+                    <i className="fas fa-spinner fa-spin" />
+                  </span>
+                )}
+              </h3>
+            </div>
           </div>
-        </div>
 
-        <PackageTable
-          packages={displayPackages}
-          loading={loading}
-          onInstall={(pkg) => handleShowActionModal(pkg, "install")}
-          onUninstall={(pkg) => handleShowActionModal(pkg, "uninstall")}
-          onViewDetails={handleViewDetails}
-          isSearchMode={isSearchMode}
-        />
+          <PackageTable
+            packages={displayPackages}
+            loading={loading}
+            onInstall={(pkg) => handleShowActionModal(pkg, "install")}
+            onUninstall={(pkg) => handleShowActionModal(pkg, "uninstall")}
+            onViewDetails={handleViewDetails}
+            isSearchMode={isSearchMode}
+          />
+        </div>
       </div>
 
       {/* Package Details Modal */}

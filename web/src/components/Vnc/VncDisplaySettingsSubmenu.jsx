@@ -39,7 +39,7 @@ const VncDisplaySettingsSubmenu = ({
 
   return (
     <div
-      className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center"
+      className="dropdown-item position-relative d-flex justify-content-between align-items-center"
       onMouseEnter={() => setShowDisplaySettings(true)}
       onMouseLeave={() => setShowDisplaySettings(false)}
       role="button"
@@ -47,47 +47,38 @@ const VncDisplaySettingsSubmenu = ({
       aria-haspopup="true"
       aria-expanded={showDisplaySettings}
     >
-      <div className="is-flex is-align-items-center">
-        <span className="icon mr-2">
-          <i className="fas fa-desktop" />
-        </span>
+      <div className="d-flex align-items-center">
+        <i className="fas fa-desktop me-2" />
         <span>Display Settings</span>
       </div>
-      <span className="icon">
-        <i className="fas fa-chevron-right" />
-      </span>
+      <i className="fas fa-chevron-right" />
 
       {showDisplaySettings && (
-        <div className={`dropdown-menu ${calculateSubmenuPosition(350)}`}>
-          <div className="dropdown-content">
+        <div className={`dropdown-menu show ${calculateSubmenuPosition(350)}`}>
+          <div>
             <div className="dropdown-item">
-              <div className="field">
-                <label className="label is-small" htmlFor="vnc-scaling-mode">
+              <div className="mb-2">
+                <label className="form-label" htmlFor="vnc-scaling-mode">
                   Scaling Mode
                 </label>
-                <div className="control">
-                  <div className="select is-small is-fullwidth">
-                    <select
-                      id="vnc-scaling-mode"
-                      value={getSelectValue()}
-                      onChange={handleSelectChange}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <option value="none">None (1:1)</option>
-                      <option value="local">Local Scaling</option>
-                      <option value="remote">Remote Resizing</option>
-                    </select>
-                  </div>
-                </div>
+                <select
+                  className="form-select form-select-sm"
+                  id="vnc-scaling-mode"
+                  value={getSelectValue()}
+                  onChange={handleSelectChange}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="none">None (1:1)</option>
+                  <option value="local">Local Scaling</option>
+                  <option value="remote">Remote Resizing</option>
+                </select>
               </div>
             </div>
 
             <div className="dropdown-item">
-              <div className="field mb-4">
-                <label className="label is-small">
-                  Quality Level: {quality}
-                </label>
-                <div className="control mt-5 mb-5">
+              <div className="mb-4">
+                <label className="form-label">Quality Level: {quality}</label>
+                <div className="mt-5 mb-5">
                   <input
                     className="zw-range-slider-primary"
                     type="range"
@@ -105,18 +96,18 @@ const VncDisplaySettingsSubmenu = ({
                     }}
                   />
                 </div>
-                <div className="help is-size-7 mt-2 mb-2">
+                <div className="form-text mt-2 mb-2">
                   0 = Lowest quality, 9 = Highest quality
                 </div>
               </div>
             </div>
 
             <div className="dropdown-item">
-              <div className="field mb-4">
-                <label className="label is-small">
+              <div className="mb-4">
+                <label className="form-label">
                   Compression Level: {compression}
                 </label>
-                <div className="control mt-5 mb-5">
+                <div className="mt-5 mb-5">
                   <input
                     className="zw-range-slider-info"
                     type="range"
@@ -134,29 +125,29 @@ const VncDisplaySettingsSubmenu = ({
                     }}
                   />
                 </div>
-                <div className="help is-size-7 mt-2 mb-2">
+                <div className="form-text mt-2 mb-2">
                   0 = No compression, 9 = Max compression
                 </div>
               </div>
             </div>
 
             <div className="dropdown-item">
-              <div className="field">
-                <div className="control">
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={showDot}
-                      onChange={(e) => {
-                        if (onShowDotChange) {
-                          onShowDotChange(e.target.checked);
-                        }
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <span className="ml-2">Show cursor dot when no cursor</span>
-                  </label>
-                </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="vnc-show-dot"
+                  checked={showDot}
+                  onChange={(e) => {
+                    if (onShowDotChange) {
+                      onShowDotChange(e.target.checked);
+                    }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <label className="form-check-label" htmlFor="vnc-show-dot">
+                  Show cursor dot when no cursor
+                </label>
               </div>
             </div>
           </div>

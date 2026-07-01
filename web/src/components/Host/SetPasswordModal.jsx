@@ -70,93 +70,99 @@ const SetPasswordModal = ({ user, onClose, onSuccess }) => {
       aria-label={`Set password for user ${user.username}`}
     >
       {error && (
-        <div className="notification is-danger mb-4">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger mb-4">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           <p>{error}</p>
         </div>
       )}
 
-      <div className="field">
-        <label className="label" htmlFor="new-password-input">
-          New Password <span className="has-text-danger">*</span>
+      <div className="mb-3">
+        <label className="form-label" htmlFor="new-password-input">
+          New Password <span className="text-danger">*</span>
         </label>
-        <div className="control">
-          <input
-            id="new-password-input"
-            className="input"
-            type="password"
-            value={formData.password}
-            onChange={(e) => handleInputChange("password", e.target.value)}
-            required
-            disabled={loading}
-            placeholder="Enter new password"
-            autoComplete="new-password"
-          />
-        </div>
-        <p className="help">Password must be at least 8 characters long</p>
+        <input
+          id="new-password-input"
+          className="form-control"
+          type="password"
+          value={formData.password}
+          onChange={(e) => handleInputChange("password", e.target.value)}
+          required
+          disabled={loading}
+          placeholder="Enter new password"
+          autoComplete="new-password"
+        />
+        <p className="form-text text-muted">
+          Password must be at least 8 characters long
+        </p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="confirm-password-input">
-          Confirm Password <span className="has-text-danger">*</span>
+      <div className="mb-3">
+        <label className="form-label" htmlFor="confirm-password-input">
+          Confirm Password <span className="text-danger">*</span>
         </label>
-        <div className="control">
-          <input
-            id="confirm-password-input"
-            className="input"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={(e) =>
-              handleInputChange("confirmPassword", e.target.value)
-            }
-            required
-            disabled={loading}
-            placeholder="Confirm new password"
-            autoComplete="new-password"
-          />
-        </div>
+        <input
+          id="confirm-password-input"
+          className="form-control"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+          required
+          disabled={loading}
+          placeholder="Confirm new password"
+          autoComplete="new-password"
+        />
       </div>
 
       <hr />
 
-      <div className="field">
-        <div className="control">
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={formData.forceChange}
-              onChange={(e) =>
-                handleInputChange("forceChange", e.target.checked)
-              }
-              disabled={loading}
-            />
-            <span className="check" />
-            <span className="control-label">
-              Force password change on next login
-            </span>
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            id="set-password-force-change"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={formData.forceChange}
+            onChange={(e) => handleInputChange("forceChange", e.target.checked)}
+            disabled={loading}
+          />
+          <label
+            className="form-check-label"
+            htmlFor="set-password-force-change"
+          >
+            Force password change on next login
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           User will be required to change password on their next login
         </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={formData.unlockAccount}
-              onChange={(e) =>
-                handleInputChange("unlockAccount", e.target.checked)
-              }
-              disabled={loading}
-            />
-            <span className="check" />
-            <span className="control-label">Unlock account if locked</span>
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            id="set-password-unlock-account"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={formData.unlockAccount}
+            onChange={(e) =>
+              handleInputChange("unlockAccount", e.target.checked)
+            }
+            disabled={loading}
+          />
+          <label
+            className="form-check-label"
+            htmlFor="set-password-unlock-account"
+          >
+            Unlock account if locked
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           Automatically unlock the account when setting the password
         </p>
       </div>

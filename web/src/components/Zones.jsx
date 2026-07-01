@@ -266,16 +266,16 @@ const Zones = () => {
           <title>Zones - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-0 p-3">
+              <div className="d-flex justify-content-between align-items-center">
                 <strong>Zone Management</strong>
               </div>
             </div>
             <div className="px-4">
-              <div className="notification is-info">
-                <h2 className="title is-4">No Zoneweaver API Servers</h2>
+              <div className="alert alert-info">
+                <h2 className="fs-4 fw-bold">No Zoneweaver API Servers</h2>
                 <p>
                   You haven&apos;t added any Zoneweaver API Servers yet. Add a
                   server to start managing zones.
@@ -283,12 +283,10 @@ const Zones = () => {
                 <div className="mt-4">
                   <a
                     href="/ui/settings/zoneweaver?tab=servers"
-                    className="button is-primary"
+                    className="btn btn-primary"
                   >
-                    <span className="icon">
-                      <i className="fas fa-plus" />
-                    </span>
-                    <span>Add Zoneweaver API Server</span>
+                    <i className="fas fa-plus me-2" />
+                    Add Zoneweaver API Server
                   </a>
                 </div>
               </div>
@@ -306,53 +304,47 @@ const Zones = () => {
         <title>Zones - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
-          <div className="titlebar box active level is-mobile mb-0 p-3">
-            <div className="level-left">
+      <div className="container-fluid p-0">
+        <div className="card">
+          <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-0 p-3">
+            <div className="d-flex justify-content-between align-items-center">
               <strong>Zone Management</strong>
             </div>
-            <div className="level-right">
-              <div className="field is-grouped">
-                <div className="control">
-                  <div className="tags has-addons">
-                    <span className="tag">Total</span>
-                    <span className="tag is-info">{zones.length}</span>
-                  </div>
-                </div>
-                <div className="control">
-                  <div className="tags has-addons">
-                    <span className="tag">Running</span>
-                    <span className="tag is-success">
-                      {runningZones.length}
-                    </span>
-                  </div>
-                </div>
-                <div className="control">
-                  <div className="tags has-addons">
-                    <span className="tag">Stopped</span>
-                    <span className="tag is-danger">
-                      {zones.length - runningZones.length}
-                    </span>
-                  </div>
-                </div>
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div className="d-flex gap-2">
+                <span className="d-inline-flex">
+                  <span className="badge text-bg-secondary">Total</span>
+                  <span className="badge text-bg-info">{zones.length}</span>
+                </span>
+                <span className="d-inline-flex">
+                  <span className="badge text-bg-secondary">Running</span>
+                  <span className="badge text-bg-success">
+                    {runningZones.length}
+                  </span>
+                </span>
+                <span className="d-inline-flex">
+                  <span className="badge text-bg-secondary">Stopped</span>
+                  <span className="badge text-bg-danger">
+                    {zones.length - runningZones.length}
+                  </span>
+                </span>
               </div>
             </div>
           </div>
 
           <div className="px-4">
             {error && (
-              <div className="notification is-danger mb-4">
+              <div className="alert alert-danger mb-4">
                 <p>{error}</p>
               </div>
             )}
             {zonesError && (
-              <div className="notification is-danger mb-4">
+              <div className="alert alert-danger mb-4">
                 <p>{zonesError}</p>
               </div>
             )}
             {detailsError && (
-              <div className="notification is-danger mb-4">
+              <div className="alert alert-danger mb-4">
                 <p>{detailsError}</p>
               </div>
             )}
@@ -360,136 +352,149 @@ const Zones = () => {
             {/* Zone Details - Full Width */}
             <div>
               {selectedZone ? (
-                <div className="box">
-                  {Object.keys(zoneDetails).length > 0 ? (
-                    <div className="content">
-                      {/* Main Layout with VNC Console spanning both sections */}
-                      <div className="columns">
-                        {/* Left Column - Zone Information and Hardware & System */}
-                        <div className="column is-6">
-                          <ZoneInfo
-                            zoneDetails={zoneDetails}
-                            monitoringHealth={monitoringHealth}
-                            getZoneStatus={getZoneStatus}
-                            selectedZone={selectedZone}
-                          />
+                <div className="card">
+                  <div className="card-body">
+                    {Object.keys(zoneDetails).length > 0 ? (
+                      <div>
+                        {/* Main Layout with VNC Console spanning both sections */}
+                        <div className="row g-3">
+                          {/* Left Column - Zone Information and Hardware & System */}
+                          <div className="col-12 col-lg-6">
+                            <ZoneInfo
+                              zoneDetails={zoneDetails}
+                              monitoringHealth={monitoringHealth}
+                              getZoneStatus={getZoneStatus}
+                              selectedZone={selectedZone}
+                            />
 
-                          <ZoneHardware zoneDetails={zoneDetails} />
-                        </div>
+                            <ZoneHardware zoneDetails={zoneDetails} />
+                          </div>
 
-                        {/* Right Column - Console Display with Toggle */}
-                        <div className="column is-6">
-                          <ConsoleDisplay
-                            zoneDetails={zoneDetails}
-                            activeConsoleType={activeConsoleType}
-                            selectedZone={selectedZone}
-                            currentServer={currentServer}
-                            user={user}
-                            loading={loading}
-                            loadingVnc={loadingVnc}
-                            previewReadOnly={previewReadOnly}
-                            previewVncViewOnly={previewVncViewOnly}
-                            previewReconnectKey={previewReconnectKey}
-                            vncReconnectKey={vncReconnectKey}
-                            vncSettings={vncSettings}
-                            setActiveConsoleType={setActiveConsoleType}
-                            setLoading={setLoading}
-                            setLoadingVnc={setLoadingVnc}
-                            setError={setError}
-                            setPreviewReadOnly={setPreviewReadOnly}
-                            setPreviewVncViewOnly={setPreviewVncViewOnly}
-                            setZoneDetails={setZoneDetails}
-                            startZloginSessionExplicitly={
-                              startZloginSessionExplicitly
-                            }
-                            forceZoneSessionCleanup={forceZoneSessionCleanup}
-                            handleZloginConsole={handleZloginConsole}
-                            handleVncConsole={handleVncConsole}
-                            handleKillVncSession={handleKillVncSession}
-                            handleVncQualityChange={handleVncQualityChange}
-                            handleVncCompressionChange={
-                              handleVncCompressionChange
-                            }
-                            handleVncResizeChange={handleVncResizeChange}
-                            handleVncShowDotChange={handleVncShowDotChange}
-                            handleVncClipboardPaste={handleVncClipboardPaste}
-                            startVncSession={rawStartVncSession}
-                            waitForVncSessionReady={waitForVncSessionReady}
-                            pasteTextToZone={pasteTextToZone}
-                            setShowZloginConsole={setShowZloginConsole}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Configuration Display */}
-                      {zoneDetails.configuration &&
-                      Object.keys(zoneDetails.configuration).length > 0 ? (
-                        <div>
-                          <ZoneStorage
-                            configuration={zoneDetails.configuration}
-                          />
-                          <ZoneNetwork
-                            configuration={zoneDetails.configuration}
-                          />
-                        </div>
-                      ) : (
-                        <div className="box mb-4">
-                          <h4 className="title is-6">Configuration</h4>
-                          <div className="notification is-info">
-                            <p>
-                              <strong>No Configuration Data Available</strong>
-                            </p>
-                            <p>
-                              Zone configuration details are not available for
-                              this zone. This could be because:
-                            </p>
-                            <ul>
-                              <li>
-                                The zone configuration hasn&apos;t been loaded
-                                yet
-                              </li>
-                              <li>
-                                The Zoneweaver API doesn&apos;t have
-                                configuration data for this zone
-                              </li>
-                              <li>The zone might be in a transitional state</li>
-                            </ul>
+                          {/* Right Column - Console Display with Toggle */}
+                          <div className="col-12 col-lg-6">
+                            <ConsoleDisplay
+                              zoneDetails={zoneDetails}
+                              activeConsoleType={activeConsoleType}
+                              selectedZone={selectedZone}
+                              currentServer={currentServer}
+                              user={user}
+                              loading={loading}
+                              loadingVnc={loadingVnc}
+                              previewReadOnly={previewReadOnly}
+                              previewVncViewOnly={previewVncViewOnly}
+                              previewReconnectKey={previewReconnectKey}
+                              vncReconnectKey={vncReconnectKey}
+                              vncSettings={vncSettings}
+                              setActiveConsoleType={setActiveConsoleType}
+                              setLoading={setLoading}
+                              setLoadingVnc={setLoadingVnc}
+                              setError={setError}
+                              setPreviewReadOnly={setPreviewReadOnly}
+                              setPreviewVncViewOnly={setPreviewVncViewOnly}
+                              setZoneDetails={setZoneDetails}
+                              startZloginSessionExplicitly={
+                                startZloginSessionExplicitly
+                              }
+                              forceZoneSessionCleanup={forceZoneSessionCleanup}
+                              handleZloginConsole={handleZloginConsole}
+                              handleVncConsole={handleVncConsole}
+                              handleKillVncSession={handleKillVncSession}
+                              handleVncQualityChange={handleVncQualityChange}
+                              handleVncCompressionChange={
+                                handleVncCompressionChange
+                              }
+                              handleVncResizeChange={handleVncResizeChange}
+                              handleVncShowDotChange={handleVncShowDotChange}
+                              handleVncClipboardPaste={handleVncClipboardPaste}
+                              startVncSession={rawStartVncSession}
+                              waitForVncSessionReady={waitForVncSessionReady}
+                              pasteTextToZone={pasteTextToZone}
+                              setShowZloginConsole={setShowZloginConsole}
+                            />
                           </div>
                         </div>
-                      )}
 
-                      {/* Raw Data (for debugging) */}
-                      <details>
-                        <summary className="title is-6 is-clickable">
-                          Raw Data (Debug)
-                        </summary>
-                        <div className="box">
-                          <pre className="is-size-7">
-                            {JSON.stringify(zoneDetails, null, 2)}
-                          </pre>
-                        </div>
-                      </details>
-                    </div>
-                  ) : (
-                    <div className="notification is-info">
-                      <p>Zone details will appear here when available.</p>
-                      <p className="is-size-7 has-text-grey">
-                        Note: Zone detail fetching depends on Zoneweaver API
-                        Server API support.
-                      </p>
-                    </div>
-                  )}
+                        {/* Configuration Display */}
+                        {zoneDetails.configuration &&
+                        Object.keys(zoneDetails.configuration).length > 0 ? (
+                          <div>
+                            <ZoneStorage
+                              configuration={zoneDetails.configuration}
+                            />
+                            <ZoneNetwork
+                              configuration={zoneDetails.configuration}
+                            />
+                          </div>
+                        ) : (
+                          <div className="card mb-4">
+                            <div className="card-body">
+                              <h4 className="fs-6 fw-bold">Configuration</h4>
+                              <div className="alert alert-info">
+                                <p>
+                                  <strong>
+                                    No Configuration Data Available
+                                  </strong>
+                                </p>
+                                <p>
+                                  Zone configuration details are not available
+                                  for this zone. This could be because:
+                                </p>
+                                <ul>
+                                  <li>
+                                    The zone configuration hasn&apos;t been
+                                    loaded yet
+                                  </li>
+                                  <li>
+                                    The Zoneweaver API doesn&apos;t have
+                                    configuration data for this zone
+                                  </li>
+                                  <li>
+                                    The zone might be in a transitional state
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Raw Data (for debugging) */}
+                        <details>
+                          <summary className="fs-6 fw-bold">
+                            Raw Data (Debug)
+                          </summary>
+                          <div className="card">
+                            <div className="card-body">
+                              <pre className="small">
+                                {JSON.stringify(zoneDetails, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        </details>
+                      </div>
+                    ) : (
+                      <div className="alert alert-info">
+                        <p>Zone details will appear here when available.</p>
+                        <p className="small text-muted">
+                          Note: Zone detail fetching depends on Zoneweaver API
+                          Server API support.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="box">
-                  <div className="has-text-centered has-text-grey p-6">
-                    <div className="icon is-large mb-3">
-                      <i className="fas fa-server fa-3x" />
+                <div className="card">
+                  <div className="card-body">
+                    <div className="text-center text-muted p-5">
+                      <div className="mb-3">
+                        <i className="fas fa-server fa-3x" />
+                      </div>
+                      <h3 className="fs-4 fw-bold text-muted">Select a Zone</h3>
+                      <p>
+                        Choose a zone from the list to view details and manage
+                        it.
+                      </p>
                     </div>
-                    <h3 className="title is-4 has-text-grey">Select a Zone</h3>
-                    <p>
-                      Choose a zone from the list to view details and manage it.
-                    </p>
                   </div>
                 </div>
               )}

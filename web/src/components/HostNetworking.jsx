@@ -85,16 +85,16 @@ const HostNetworking = () => {
           <title>Network Monitoring - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="titlebar card-header active d-flex justify-content-between align-items-center mb-0 p-3">
+              <div className="d-flex align-items-center gap-2">
                 <strong>Network Monitoring</strong>
               </div>
             </div>
             <div className="px-4">
-              <div className="notification is-info">
-                <h2 className="title is-4">No Zoneweaver API Servers</h2>
+              <div className="alert alert-info">
+                <h2 className="fs-4 fw-bold">No Zoneweaver API Servers</h2>
                 <p>
                   You haven&apos;t added any Zoneweaver API Servers yet. Add a
                   server to start monitoring network interfaces.
@@ -102,11 +102,9 @@ const HostNetworking = () => {
                 <div className="mt-4">
                   <a
                     href="/ui/settings/zoneweaver?tab=servers"
-                    className="button is-primary"
+                    className="btn btn-primary"
                   >
-                    <span className="icon">
-                      <i className="fas fa-plus" />
-                    </span>
+                    <i className="fas fa-plus me-2" />
                     <span>Add Zoneweaver API Server</span>
                   </a>
                 </div>
@@ -125,8 +123,8 @@ const HostNetworking = () => {
         <title>Network Monitoring - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
+      <div className="container-fluid p-0">
+        <div className="card">
           <NetworkingHeader
             loading={loading}
             autoRefresh={autoRefresh}
@@ -143,7 +141,7 @@ const HostNetworking = () => {
 
           <div className="px-4">
             {error && (
-              <div className="notification is-danger mb-4">
+              <div className="alert alert-danger mb-4">
                 <p>{error}</p>
               </div>
             )}
@@ -155,41 +153,30 @@ const HostNetworking = () => {
             />
 
             {/* Network Topology Visualization */}
-            <div className="box mb-4">
-              <div className="level is-mobile mb-3">
-                <div className="level-left">
-                  <div className="level-item">
-                    <h2 className="title is-5 mb-0">
-                      <span className="icon-text">
-                        <span className="icon">
-                          <i className="fas fa-project-diagram" />
-                        </span>
-                        <span>Network Topology</span>
-                      </span>
-                    </h2>
-                  </div>
+            <div className="card mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex align-items-center gap-2">
+                  <h2 className="fs-5 fw-bold mb-0">
+                    <i className="fas fa-project-diagram me-2" />
+                    <span>Network Topology</span>
+                  </h2>
                 </div>
-                <div className="level-right">
-                  <div className="level-item">
-                    <button
-                      className={`button is-small ${sectionsCollapsed.topology ? "" : "is-primary"}`}
-                      onClick={() => toggleSection("topology")}
-                    >
-                      <span className="icon is-small">
-                        <i
-                          className={`fas fa-chevron-${sectionsCollapsed.topology ? "down" : "up"}`}
-                        />
-                      </span>
-                      <span>
-                        {sectionsCollapsed.topology ? "Show" : "Hide"}
-                      </span>
-                    </button>
-                  </div>
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${sectionsCollapsed.topology ? "btn-secondary" : "btn-primary"}`}
+                    onClick={() => toggleSection("topology")}
+                  >
+                    <i
+                      className={`fas fa-chevron-${sectionsCollapsed.topology ? "down" : "up"} me-2`}
+                    />
+                    <span>{sectionsCollapsed.topology ? "Show" : "Hide"}</span>
+                  </button>
                 </div>
               </div>
 
               {!sectionsCollapsed.topology && (
-                <div className="content has-min-height-600">
+                <div className="has-min-height-600">
                   <NetworkTopologyViewer
                     networkData={{
                       networkInterfaces: networkInterfaces || [],
@@ -216,8 +203,8 @@ const HostNetworking = () => {
 
             {/* Network Topology Legend */}
             {!sectionsCollapsed.topology && (
-              <div className="box mb-4">
-                <div className="content">
+              <div className="card mb-4">
+                <div>
                   <BandwidthLegend horizontal />
                 </div>
               </div>

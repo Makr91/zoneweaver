@@ -30,9 +30,9 @@ const ZloginModal = ({
   }
 
   return (
-    <div className="modal is-active has-z-index-modal">
+    <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center has-z-index-modal">
       <div
-        className="modal-background"
+        className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75"
         onClick={() => setShowZloginConsole(false)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -51,19 +51,15 @@ const ZloginModal = ({
         }
       >
         <header
-          className={`modal-card-head ${isZloginFullScreen ? "zw-modal-header-fullscreen" : "zw-modal-header-normal"}`}
+          className={`d-flex align-items-center bg-dark text-white ${isZloginFullScreen ? "zw-modal-header-fullscreen" : "zw-modal-header-normal"}`}
         >
           <p
-            className={`modal-card-title ${isZloginFullScreen ? "zw-modal-title-fullscreen" : "zw-modal-title-normal"}`}
+            className={`flex-grow-1 mb-0 ${isZloginFullScreen ? "zw-modal-title-fullscreen" : "zw-modal-title-normal"}`}
           >
-            <span className="icon-text">
-              <span className="icon is-small">
-                <i className="fas fa-terminal" />
-              </span>
-              <span>zlogin Console - {selectedZone}</span>
-            </span>
+            <i className="fas fa-terminal me-2" />
+            <span>zlogin Console - {selectedZone}</span>
           </p>
-          <div className="buttons m-0">
+          <div className="d-flex gap-1 m-0">
             <ZloginActionsDropdown
               variant="button"
               onToggleReadOnly={() => {
@@ -158,17 +154,17 @@ const ZloginModal = ({
             />
             {!modalReadOnly && (
               <button
-                className="button is-small is-info"
+                type="button"
+                className="btn btn-sm btn-info"
                 onClick={handleZloginModalPaste}
                 title="Paste from Browser Clipboard"
               >
-                <span className="icon is-small">
-                  <i className="fas fa-paste" />
-                </span>
+                <i className="fas fa-paste" />
               </button>
             )}
             <button
-              className="button is-small is-warning"
+              type="button"
+              className="btn btn-sm btn-warning"
               onClick={async () => {
                 if (zoneDetails.active_vnc_session) {
                   setShowZloginConsole(false);
@@ -188,40 +184,36 @@ const ZloginModal = ({
                   : "Start VNC Console"
               }
             >
-              <span className="icon is-small">
-                <i
-                  className={`fas ${loadingVnc ? "fa-spinner fa-pulse" : "fa-desktop"}`}
-                />
-              </span>
+              <i
+                className={`fas ${loadingVnc ? "fa-spinner fa-pulse" : "fa-desktop"} me-2`}
+              />
               <span>{loadingVnc ? "Starting..." : "VNC"}</span>
             </button>
             <button
-              className="button is-small is-info"
+              type="button"
+              className="btn btn-sm btn-info"
               onClick={() => setIsZloginFullScreen(!isZloginFullScreen)}
               title={
                 isZloginFullScreen ? "Exit Full Screen" : "Enter Full Screen"
               }
             >
-              <span className="icon">
-                <i
-                  className={`fas ${isZloginFullScreen ? "fa-compress" : "fa-expand"}`}
-                />
-              </span>
+              <i
+                className={`fas ${isZloginFullScreen ? "fa-compress" : "fa-expand"} me-2`}
+              />
               <span>{isZloginFullScreen ? "Exit" : "Full"}</span>
             </button>
             <button
-              className="button is-small"
+              type="button"
+              className="btn btn-sm btn-light"
               onClick={() => setShowZloginConsole(false)}
               title="Close Console"
             >
-              <span className="icon">
-                <i className="fas fa-times" />
-              </span>
+              <i className="fas fa-times me-2" />
               <span>Exit</span>
             </button>
           </div>
         </header>
-        <section className="modal-card-body p-0 zw-modal-body">
+        <section className="p-0 zw-modal-body">
           <ZoneShell
             key={`zlogin-modal-${selectedZone}-${modalReadOnly ? "ro" : "rw"}`}
             zoneName={selectedZone}

@@ -208,128 +208,113 @@ const UserEditModal = ({ server, user, onClose, onSuccess, onError }) => {
       showCancelButton
       aria-label={`Edit user ${user.username}`}
     >
-      <div className="field">
-        <label className="label" htmlFor="user-edit-username">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-edit-username">
           Username
         </label>
-        <div className="control">
-          <input
-            id="user-edit-username"
-            className="input"
-            type="text"
-            value={user.username}
-            disabled
-            readOnly
-          />
-        </div>
-        <p className="help">Username cannot be changed</p>
+        <input
+          id="user-edit-username"
+          className="form-control"
+          type="text"
+          value={user.username}
+          disabled
+          readOnly
+        />
+        <p className="form-text text-muted">Username cannot be changed</p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="user-edit-comment">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-edit-comment">
           Comment
         </label>
-        <div className="control">
-          <input
-            id="user-edit-comment"
-            className="input"
-            type="text"
-            value={formData.new_comment}
-            onChange={(e) => handleInputChange("new_comment", e.target.value)}
-            disabled={loading}
-            placeholder="User description or full name"
-          />
-        </div>
+        <input
+          id="user-edit-comment"
+          className="form-control"
+          type="text"
+          value={formData.new_comment}
+          onChange={(e) => handleInputChange("new_comment", e.target.value)}
+          disabled={loading}
+          placeholder="User description or full name"
+        />
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="user-edit-shell">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-edit-shell">
           Shell
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="user-edit-shell"
-              value={formData.new_shell}
-              onChange={(e) => handleInputChange("new_shell", e.target.value)}
-              disabled={loading}
-            >
-              {shells.map((shell) => (
-                <option key={shell} value={shell}>
-                  {shell}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <select
+          id="user-edit-shell"
+          className="form-select"
+          value={formData.new_shell}
+          onChange={(e) => handleInputChange("new_shell", e.target.value)}
+          disabled={loading}
+        >
+          {shells.map((shell) => (
+            <option key={shell} value={shell}>
+              {shell}
+            </option>
+          ))}
+        </select>
       </div>
 
       <hr />
 
-      <h5 className="title is-6">RBAC Configuration</h5>
+      <h5 className="fs-6 fw-bold">RBAC Configuration</h5>
 
-      <div className="field">
-        <label className="label" htmlFor="user-edit-groups">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-edit-groups">
           Secondary Groups
         </label>
-        <div className="control">
-          <input
-            id="user-edit-groups"
-            className="input"
-            type="text"
-            value={formData.new_groups.join(", ")}
-            onChange={(e) =>
-              handleArrayInputChange("new_groups", e.target.value)
-            }
-            disabled={loading}
-            placeholder="staff, admin, developers (comma-separated)"
-          />
-        </div>
-        <p className="help">
+        <input
+          id="user-edit-groups"
+          className="form-control"
+          type="text"
+          value={formData.new_groups.join(", ")}
+          onChange={(e) => handleArrayInputChange("new_groups", e.target.value)}
+          disabled={loading}
+          placeholder="staff, admin, developers (comma-separated)"
+        />
+        <p className="form-text text-muted">
           Available groups: {availableGroups.map((g) => g.groupname).join(", ")}
         </p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="user-edit-authorizations">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-edit-authorizations">
           Authorizations
         </label>
-        <div className="control">
-          <textarea
-            id="user-edit-authorizations"
-            className="textarea"
-            rows="2"
-            value={formData.new_authorizations.join(", ")}
-            onChange={(e) =>
-              handleArrayInputChange("new_authorizations", e.target.value)
-            }
-            disabled={loading}
-            placeholder="solaris.admin.usermgr.*, solaris.network.* (comma-separated)"
-          />
-        </div>
+        <textarea
+          id="user-edit-authorizations"
+          className="form-control"
+          rows="2"
+          value={formData.new_authorizations.join(", ")}
+          onChange={(e) =>
+            handleArrayInputChange("new_authorizations", e.target.value)
+          }
+          disabled={loading}
+          placeholder="solaris.admin.usermgr.*, solaris.network.* (comma-separated)"
+        />
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="user-edit-profiles">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="user-edit-profiles">
           Profiles
         </label>
-        <div className="control">
-          <input
-            id="user-edit-profiles"
-            className="input"
-            type="text"
-            value={formData.new_profiles.join(", ")}
-            onChange={(e) =>
-              handleArrayInputChange("new_profiles", e.target.value)
-            }
-            disabled={loading}
-            placeholder="System Administrator, Network Management (comma-separated)"
-          />
-        </div>
+        <input
+          id="user-edit-profiles"
+          className="form-control"
+          type="text"
+          value={formData.new_profiles.join(", ")}
+          onChange={(e) =>
+            handleArrayInputChange("new_profiles", e.target.value)
+          }
+          disabled={loading}
+          placeholder="System Administrator, Network Management (comma-separated)"
+        />
       </div>
 
-      <div className="notification is-info">
-        <p>
+      <div className="alert alert-info">
+        <p className="mb-0">
           <strong>Note:</strong> Only fields that have been changed will be
           updated. User ID (UID) and primary group (GID) cannot be modified.
         </p>

@@ -3,10 +3,8 @@ import PropTypes from "prop-types";
 const RolesTab = ({ roles, loading, copyToClipboard }) => {
   if (loading && roles.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading roles...</p>
       </div>
     );
@@ -14,18 +12,16 @@ const RolesTab = ({ roles, loading, copyToClipboard }) => {
 
   if (roles.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-user-shield fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No roles found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-user-shield fa-2x text-muted" />
+        <p className="mt-2 text-muted">No roles found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Role Name</th>
@@ -37,27 +33,24 @@ const RolesTab = ({ roles, loading, copyToClipboard }) => {
           {roles.map((role) => (
             <tr key={role.name}>
               <td>
-                <div className="is-flex is-align-items-center">
-                  <span className="icon has-text-warning">
-                    <i className="fas fa-user-shield" />
-                  </span>
-                  <span className="ml-2">
+                <div className="d-flex align-items-center">
+                  <i className="fas fa-user-shield text-warning me-2" />
+                  <span>
                     <strong>{role.name}</strong>
                   </span>
                 </div>
               </td>
-              <td className="is-size-7" title={role.description}>
+              <td className="small" title={role.description}>
                 {role.description || "N/A"}
               </td>
               <td>
                 <button
-                  className="button is-small"
+                  type="button"
+                  className="btn btn-sm"
                   onClick={() => copyToClipboard(role.name)}
                   title="Copy to clipboard"
                 >
-                  <span className="icon is-small">
-                    <i className="fas fa-copy" />
-                  </span>
+                  <i className="fas fa-copy" />
                 </button>
               </td>
             </tr>

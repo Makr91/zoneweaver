@@ -127,15 +127,11 @@ const HostShell = () => {
 
   if (!session) {
     return (
-      <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
-        <div className="has-text-centered">
-          <div className="icon is-large mb-2">
-            <i className="fas fa-terminal fa-2x" />
-          </div>
+      <div className="h-100 w-100 d-flex align-items-center justify-content-center text-white-50">
+        <div className="text-center">
+          <i className="fas fa-terminal fa-2x mb-2" />
           <p>No session available</p>
-          <p className="is-size-7 has-text-grey">
-            Select a server to start terminal
-          </p>
+          <p className="small text-muted">Select a server to start terminal</p>
         </div>
       </div>
     );
@@ -143,25 +139,23 @@ const HostShell = () => {
 
   if (!instance) {
     return (
-      <div className="is-fullheight is-fullwidth is-flex is-align-items-center is-justify-content-center has-text-white-ter">
-        <div className="has-text-centered">
-          <div className="icon is-large mb-2">
-            <i className="fas fa-terminal fa-2x fa-pulse" />
-          </div>
+      <div className="h-100 w-100 d-flex align-items-center justify-content-center text-white-50">
+        <div className="text-center">
+          <i className="fas fa-terminal fa-2x fa-pulse mb-2" />
           <p>Loading terminal...</p>
-          <p className="is-size-7 has-text-grey">Initializing xterm.js</p>
+          <p className="small text-muted">Initializing xterm.js</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="is-fullheight is-fullwidth is-flex is-flex-direction-column">
-      <div ref={ref} className="is-fullheight is-fullwidth is-flex-grow-1" />
+    <div className="h-100 w-100 d-flex flex-column">
+      <div ref={ref} className="h-100 w-100 flex-grow-1" />
 
       {!isReady && (
-        <div className="notification is-dark is-small is-pulled-right mt-1 mr-1">
-          <i className="fas fa-plug fa-pulse mr-1" />
+        <div className="alert alert-dark p-2 float-end mt-1 me-1">
+          <i className="fas fa-plug fa-pulse me-1" />
           {session?.websocket?.readyState === WebSocket.CONNECTING
             ? "Connecting..."
             : "Waiting for server"}

@@ -329,48 +329,38 @@ const NetworkTopologyViewer = ({ networkData, onNodeClick, onEdgeClick }) => {
 
       {/* Header with View Switcher and Fullscreen Toggle */}
       <div
-        className={`level is-mobile mb-3 ${isFullscreen ? "zw-topology-header-fullscreen" : "zw-topology-header-normal"}`}
+        className={`d-flex justify-content-between align-items-center mb-3 ${isFullscreen ? "zw-topology-header-fullscreen" : "zw-topology-header-normal"}`}
       >
-        <div className="level-left">
-          <div className="level-item">
-            <TopologyViewSwitcher
-              currentView={currentView}
-              onViewChange={handleViewChange}
-              layoutType={layoutType}
-              onLayoutChange={handleLayoutChange}
-            />
-          </div>
+        <div className="d-flex align-items-center gap-2">
+          <TopologyViewSwitcher
+            currentView={currentView}
+            onViewChange={handleViewChange}
+            layoutType={layoutType}
+            onLayoutChange={handleLayoutChange}
+          />
         </div>
-        <div className="level-right">
-          <div className="level-item">
-            <div className="field is-grouped">
-              <div className="control">
-                <button
-                  className={`button is-small ${showMinimap ? "is-info" : "is-light"}`}
-                  onClick={() => setShowMinimap(!showMinimap)}
-                  title={showMinimap ? "Hide Minimap" : "Show Minimap"}
-                >
-                  <span className="icon is-small">
-                    <i className="fas fa-map" />
-                  </span>
-                  <span>Minimap</span>
-                </button>
-              </div>
-              <div className="control">
-                <button
-                  className={`button is-small ${isFullscreen ? "is-danger" : "is-primary"}`}
-                  onClick={() => setIsFullscreen(!isFullscreen)}
-                  title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                >
-                  <span className="icon is-small">
-                    <i
-                      className={`fas ${isFullscreen ? "fa-compress" : "fa-expand"}`}
-                    />
-                  </span>
-                  <span>{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</span>
-                </button>
-              </div>
-            </div>
+        <div className="d-flex align-items-center gap-2">
+          <div className="btn-group">
+            <button
+              type="button"
+              className={`btn btn-sm ${showMinimap ? "btn-info" : "btn-light"}`}
+              onClick={() => setShowMinimap(!showMinimap)}
+              title={showMinimap ? "Hide Minimap" : "Show Minimap"}
+            >
+              <i className="fas fa-map me-2" />
+              <span>Minimap</span>
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${isFullscreen ? "btn-danger" : "btn-primary"}`}
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            >
+              <i
+                className={`fas ${isFullscreen ? "fa-compress" : "fa-expand"} me-2`}
+              />
+              <span>{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</span>
+            </button>
           </div>
         </div>
       </div>

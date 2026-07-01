@@ -17,7 +17,7 @@ const ZoneHardware = ({ zoneDetails }) => {
     offLabel = "Disabled"
   ) => (
     <span
-      className={`has-text-weight-semibold ${value === trueCondition ? "has-text-success" : "has-text-danger"}`}
+      className={`fw-semibold ${value === trueCondition ? "text-success" : "text-danger"}`}
     >
       {value === trueCondition ? onLabel : offLabel}
     </span>
@@ -26,7 +26,7 @@ const ZoneHardware = ({ zoneDetails }) => {
   const renderVncPort = () => {
     if (zoneDetails.vnc_session_info?.web_port) {
       return (
-        <span className="has-text-grey is-family-monospace">
+        <span className="text-muted font-monospace">
           {zoneDetails.vnc_session_info.web_port}
         </span>
       );
@@ -37,153 +37,149 @@ const ZoneHardware = ({ zoneDetails }) => {
 
     if (configPort || infoPort) {
       return (
-        <span className="has-text-grey is-family-monospace">
+        <span className="text-muted font-monospace">
           {configPort || infoPort}
         </span>
       );
     }
 
-    return (
-      <span className="has-text-weight-semibold has-text-success">Auto</span>
-    );
+    return <span className="fw-semibold text-success">Auto</span>;
   };
 
   return (
-    <div className="box mb-0 pt-0 pd-0">
-      <h4 className="title is-6 mb-3">
-        <span className="icon-text">
-          <span className="icon">
-            <i className="fas fa-microchip" />
-          </span>
-          <span>Hardware & System</span>
-        </span>
-      </h4>
-      <div className="table-container">
-        <table className="table is-fullwidth is-striped is-size-7">
-          <tbody>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>RAM</strong>
-              </td>
-              <td className="px-3 py-2">{configuration.ram}</td>
-              <td className="px-3 py-2">
-                <strong>ACPI</strong>
-              </td>
-              <td className="px-3 py-2">
-                {renderStatusBadge(configuration.acpi, "true")}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>vCPUs</strong>
-              </td>
-              <td className="px-3 py-2">{configuration.vcpus}</td>
-              <td className="px-3 py-2">
-                <strong>Auto Boot</strong>
-              </td>
-              <td className="px-3 py-2">
-                {renderStatusBadge(configuration.autoboot, "true")}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>Boot ROM</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span className="has-text-grey is-family-monospace">
-                  {configuration.bootrom}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <strong>UEFI Vars</strong>
-              </td>
-              <td className="px-3 py-2">
-                {renderStatusBadge(configuration.uefivars, "on", "On", "Off")}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>Host Bridge</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span className="has-text-grey is-family-monospace">
-                  {configuration.hostbridge}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <strong>xHCI</strong>
-              </td>
-              <td className="px-3 py-2">
-                {renderStatusBadge(configuration.xhci, "on", "On", "Off")}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>Brand</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span className="has-text-grey is-family-monospace">
-                  {configuration.brand}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <strong>RNG</strong>
-              </td>
-              <td className="px-3 py-2">
-                {renderStatusBadge(configuration.rng, "on", "On", "Off")}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>Type</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span className="has-text-grey is-family-monospace">
-                  {configuration.type || "N/A"}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <strong>Cloud Init</strong>
-              </td>
-              <td className="px-3 py-2">
-                {renderStatusBadge(
-                  configuration["cloud-init"],
-                  "on",
-                  "On",
-                  "Off"
-                )}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>VNC Console</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${zoneDetails.vnc_session_info ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {zoneDetails.vnc_session_info ? "Active" : "Inactive"}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <strong>VNC Port</strong>
-              </td>
-              <td className="px-3 py-2">{renderVncPort()}</td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2">
-                <strong>zlogin</strong>
-              </td>
-              <td className="px-3 py-2">
-                <span
-                  className={`has-text-weight-semibold ${zoneDetails.zlogin_session ? "has-text-success" : "has-text-danger"}`}
-                >
-                  {zoneDetails.zlogin_session ? "Active" : "Inactive"}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div className="card mb-0 pt-0">
+      <div className="card-body">
+        <h4 className="fs-6 fw-bold mb-3">
+          <i className="fas fa-microchip me-2" />
+          Hardware & System
+        </h4>
+        <div className="table-responsive">
+          <table className="table table-striped small">
+            <tbody>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>RAM</strong>
+                </td>
+                <td className="px-3 py-2">{configuration.ram}</td>
+                <td className="px-3 py-2">
+                  <strong>ACPI</strong>
+                </td>
+                <td className="px-3 py-2">
+                  {renderStatusBadge(configuration.acpi, "true")}
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>vCPUs</strong>
+                </td>
+                <td className="px-3 py-2">{configuration.vcpus}</td>
+                <td className="px-3 py-2">
+                  <strong>Auto Boot</strong>
+                </td>
+                <td className="px-3 py-2">
+                  {renderStatusBadge(configuration.autoboot, "true")}
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>Boot ROM</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-muted font-monospace">
+                    {configuration.bootrom}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <strong>UEFI Vars</strong>
+                </td>
+                <td className="px-3 py-2">
+                  {renderStatusBadge(configuration.uefivars, "on", "On", "Off")}
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>Host Bridge</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-muted font-monospace">
+                    {configuration.hostbridge}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <strong>xHCI</strong>
+                </td>
+                <td className="px-3 py-2">
+                  {renderStatusBadge(configuration.xhci, "on", "On", "Off")}
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>Brand</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-muted font-monospace">
+                    {configuration.brand}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <strong>RNG</strong>
+                </td>
+                <td className="px-3 py-2">
+                  {renderStatusBadge(configuration.rng, "on", "On", "Off")}
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>Type</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-muted font-monospace">
+                    {configuration.type || "N/A"}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <strong>Cloud Init</strong>
+                </td>
+                <td className="px-3 py-2">
+                  {renderStatusBadge(
+                    configuration["cloud-init"],
+                    "on",
+                    "On",
+                    "Off"
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>VNC Console</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`fw-semibold ${zoneDetails.vnc_session_info ? "text-success" : "text-danger"}`}
+                  >
+                    {zoneDetails.vnc_session_info ? "Active" : "Inactive"}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <strong>VNC Port</strong>
+                </td>
+                <td className="px-3 py-2">{renderVncPort()}</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2">
+                  <strong>zlogin</strong>
+                </td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`fw-semibold ${zoneDetails.zlogin_session ? "text-success" : "text-danger"}`}
+                  >
+                    {zoneDetails.zlogin_session ? "Active" : "Inactive"}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

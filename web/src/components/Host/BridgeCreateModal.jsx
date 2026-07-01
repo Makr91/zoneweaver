@@ -178,192 +178,174 @@ const BridgeCreateModal = ({ server, onClose, onSuccess, onError }) => {
       submitVariant="is-primary"
       loading={creating}
     >
-      <div className="field">
-        <label htmlFor="bridge-name" className="label">
+      <div className="mb-3">
+        <label htmlFor="bridge-name" className="form-label">
           Bridge Name *
         </label>
-        <div className="control">
-          <input
-            id="bridge-name"
-            className="input"
-            type="text"
-            placeholder="e.g., bridge0"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            disabled={creating}
-            required
-          />
-        </div>
-        <p className="help">
+        <input
+          id="bridge-name"
+          className="form-control"
+          type="text"
+          placeholder="e.g., bridge0"
+          value={formData.name}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          disabled={creating}
+          required
+        />
+        <p className="form-text text-muted">
           Must start with a letter and contain only letters, numbers, and
           underscores
         </p>
       </div>
 
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label htmlFor="bridge-protection" className="label">
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label htmlFor="bridge-protection" className="form-label">
               Protection
             </label>
-            <div className="control">
-              <div className="select is-fullwidth">
-                <select
-                  id="bridge-protection"
-                  value={formData.protection}
-                  onChange={(e) =>
-                    handleInputChange("protection", e.target.value)
-                  }
-                  disabled={creating}
-                >
-                  <option value="stp">STP (Spanning Tree Protocol)</option>
-                  <option value="rstp">RSTP (Rapid Spanning Tree)</option>
-                  <option value="none">None</option>
-                </select>
-              </div>
-            </div>
+            <select
+              id="bridge-protection"
+              className="form-select"
+              value={formData.protection}
+              onChange={(e) => handleInputChange("protection", e.target.value)}
+              disabled={creating}
+            >
+              <option value="stp">STP (Spanning Tree Protocol)</option>
+              <option value="rstp">RSTP (Rapid Spanning Tree)</option>
+              <option value="none">None</option>
+            </select>
           </div>
         </div>
-        <div className="column">
-          <div className="field">
-            <label htmlFor="bridge-priority" className="label">
+        <div className="col">
+          <div className="mb-3">
+            <label htmlFor="bridge-priority" className="form-label">
               Priority
             </label>
-            <div className="control">
-              <input
-                id="bridge-priority"
-                className="input"
-                type="number"
-                min="0"
-                max="65535"
-                value={formData.priority}
-                onChange={(e) => handleInputChange("priority", e.target.value)}
-                disabled={creating}
-              />
-            </div>
-            <p className="help">0-65535 (default: 32768)</p>
+            <input
+              id="bridge-priority"
+              className="form-control"
+              type="number"
+              min="0"
+              max="65535"
+              value={formData.priority}
+              onChange={(e) => handleInputChange("priority", e.target.value)}
+              disabled={creating}
+            />
+            <p className="form-text text-muted">0-65535 (default: 32768)</p>
           </div>
         </div>
       </div>
 
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-            <label htmlFor="bridge-max-age" className="label">
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label htmlFor="bridge-max-age" className="form-label">
               Max Age (seconds)
             </label>
-            <div className="control">
-              <input
-                id="bridge-max-age"
-                className="input"
-                type="number"
-                min="6"
-                max="40"
-                value={formData.max_age}
-                onChange={(e) => handleInputChange("max_age", e.target.value)}
-                disabled={creating}
-              />
-            </div>
-            <p className="help">6-40 seconds</p>
+            <input
+              id="bridge-max-age"
+              className="form-control"
+              type="number"
+              min="6"
+              max="40"
+              value={formData.max_age}
+              onChange={(e) => handleInputChange("max_age", e.target.value)}
+              disabled={creating}
+            />
+            <p className="form-text text-muted">6-40 seconds</p>
           </div>
         </div>
-        <div className="column">
-          <div className="field">
-            <label htmlFor="bridge-hello-time" className="label">
+        <div className="col">
+          <div className="mb-3">
+            <label htmlFor="bridge-hello-time" className="form-label">
               Hello Time (seconds)
             </label>
-            <div className="control">
-              <input
-                id="bridge-hello-time"
-                className="input"
-                type="number"
-                min="1"
-                max="10"
-                value={formData.hello_time}
-                onChange={(e) =>
-                  handleInputChange("hello_time", e.target.value)
-                }
-                disabled={creating}
-              />
-            </div>
-            <p className="help">1-10 seconds</p>
+            <input
+              id="bridge-hello-time"
+              className="form-control"
+              type="number"
+              min="1"
+              max="10"
+              value={formData.hello_time}
+              onChange={(e) => handleInputChange("hello_time", e.target.value)}
+              disabled={creating}
+            />
+            <p className="form-text text-muted">1-10 seconds</p>
           </div>
         </div>
-        <div className="column">
-          <div className="field">
-            <label htmlFor="bridge-forward-delay" className="label">
+        <div className="col">
+          <div className="mb-3">
+            <label htmlFor="bridge-forward-delay" className="form-label">
               Forward Delay (seconds)
             </label>
-            <div className="control">
-              <input
-                id="bridge-forward-delay"
-                className="input"
-                type="number"
-                min="4"
-                max="30"
-                value={formData.forward_delay}
-                onChange={(e) =>
-                  handleInputChange("forward_delay", e.target.value)
-                }
-                disabled={creating}
-              />
-            </div>
-            <p className="help">4-30 seconds</p>
+            <input
+              id="bridge-forward-delay"
+              className="form-control"
+              type="number"
+              min="4"
+              max="30"
+              value={formData.forward_delay}
+              onChange={(e) =>
+                handleInputChange("forward_delay", e.target.value)
+              }
+              disabled={creating}
+            />
+            <p className="form-text text-muted">4-30 seconds</p>
           </div>
         </div>
       </div>
 
-      <div className="field">
-        <span className="label">Member Links (Optional)</span>
-        <div className="field has-addons">
-          <div className="control is-expanded">
-            <div className="select is-fullwidth">
-              <select
-                id="bridge-link-select"
-                value={newLink}
-                onChange={(e) => setNewLink(e.target.value)}
-                disabled={creating || loadingLinks}
-              >
-                <option value="">
-                  {loadingLinks
-                    ? "Loading available links..."
-                    : "Select a link to add to bridge"}
+      <div className="mb-3">
+        <span className="form-label d-block">Member Links (Optional)</span>
+        <div className="input-group">
+          <select
+            id="bridge-link-select"
+            className="form-select"
+            value={newLink}
+            onChange={(e) => setNewLink(e.target.value)}
+            disabled={creating || loadingLinks}
+          >
+            <option value="">
+              {loadingLinks
+                ? "Loading available links..."
+                : "Select a link to add to bridge"}
+            </option>
+            {availableLinks
+              .filter((link) => !formData.links.includes(link.link))
+              .map((link) => (
+                <option key={link.link} value={link.link}>
+                  {link.link} ({link.class}, {link.state},{" "}
+                  {link.speed || "Unknown speed"})
                 </option>
-                {availableLinks
-                  .filter((link) => !formData.links.includes(link.link))
-                  .map((link) => (
-                    <option key={link.link} value={link.link}>
-                      {link.link} ({link.class}, {link.state},{" "}
-                      {link.speed || "Unknown speed"})
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </div>
-          <div className="control">
-            <button
-              type="button"
-              className="button is-info"
-              onClick={addLink}
-              disabled={!newLink.trim() || creating}
-            >
-              Add Link
-            </button>
-          </div>
+              ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-info"
+            onClick={addLink}
+            disabled={!newLink.trim() || creating}
+          >
+            Add Link
+          </button>
         </div>
 
         {formData.links.length > 0 && (
-          <div className="content mt-3">
+          <div className="mt-3">
             <p>
               <strong>Current Links:</strong>
             </p>
-            <div className="tags">
+            <div className="d-flex flex-wrap gap-2">
               {formData.links.map((link) => (
-                <span key={link} className="tag is-info">
+                <span
+                  key={link}
+                  className="badge text-bg-info d-inline-flex align-items-center gap-1"
+                >
                   {link}
                   <button
                     type="button"
-                    className="delete is-small"
+                    className="btn-close btn-close-white"
+                    aria-label="Remove"
                     onClick={() => removeLink(link)}
                     disabled={creating}
                   />

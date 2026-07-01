@@ -29,51 +29,51 @@ const getTypeIcon = (fileType, extension) => {
   const type = fileType?.toLowerCase() || extension?.toLowerCase();
 
   if (type === "iso" || extension?.toLowerCase() === ".iso") {
-    return <i className="fas fa-compact-disc has-text-info" />;
+    return <i className="fas fa-compact-disc text-info" />;
   } else if (
     type === "image" ||
     [".vmdk", ".vhd", ".vhdx", ".qcow2", ".img"].includes(
       extension?.toLowerCase()
     )
   ) {
-    return <i className="fas fa-hdd has-text-warning" />;
+    return <i className="fas fa-hdd text-warning" />;
   }
-  return <i className="fas fa-file has-text-grey" />;
+  return <i className="fas fa-file text-muted" />;
 };
 
 const getTypeTag = (fileType, extension) => {
   const type = fileType?.toLowerCase();
 
   if (type === "iso") {
-    return <span className="tag is-info is-small">ISO</span>;
+    return <span className="badge text-bg-info">ISO</span>;
   } else if (type === "image") {
-    return <span className="tag is-warning is-small">Image</span>;
+    return <span className="badge text-bg-warning">Image</span>;
   }
-  return <span className="tag is-light is-small">{extension || "File"}</span>;
+  return <span className="badge text-bg-light">{extension || "File"}</span>;
 };
 
 const getChecksumStatus = (artifact) => {
   if (artifact.checksum_verified === true) {
     return (
-      <span className="icon has-text-success" title="Checksum verified">
+      <span className="icon text-success" title="Checksum verified">
         <i className="fas fa-check-circle" />
       </span>
     );
   } else if (artifact.checksum_verified === false) {
     return (
-      <span className="icon has-text-danger" title="Checksum mismatch">
+      <span className="icon text-danger" title="Checksum mismatch">
         <i className="fas fa-times-circle" />
       </span>
     );
   } else if (artifact.calculated_checksum && !artifact.user_provided_checksum) {
     return (
-      <span className="icon has-text-info" title="Checksum calculated">
+      <span className="icon text-info" title="Checksum calculated">
         <i className="fas fa-info-circle" />
       </span>
     );
   }
   return (
-    <span className="icon has-text-grey" title="No checksum">
+    <span className="icon text-muted" title="No checksum">
       <i className="fas fa-minus-circle" />
     </span>
   );
@@ -82,15 +82,15 @@ const getChecksumStatus = (artifact) => {
 const getDownloadStatusIcon = (status) => {
   switch (status) {
     case "queued":
-      return <i className="fas fa-clock has-text-info" />;
+      return <i className="fas fa-clock text-info" />;
     case "running":
-      return <i className="fas fa-spinner fa-spin has-text-primary" />;
+      return <i className="fas fa-spinner fa-spin text-primary" />;
     case "completed":
-      return <i className="fas fa-check-circle has-text-success" />;
+      return <i className="fas fa-check-circle text-success" />;
     case "failed":
-      return <i className="fas fa-times-circle has-text-danger" />;
+      return <i className="fas fa-times-circle text-danger" />;
     default:
-      return <i className="fas fa-question-circle has-text-grey" />;
+      return <i className="fas fa-question-circle text-muted" />;
   }
 };
 
@@ -112,15 +112,15 @@ const getDownloadStatusText = (status) => {
 const getDownloadStatusTag = (status) => {
   switch (status) {
     case "queued":
-      return <span className="tag is-info is-small">Queued</span>;
+      return <span className="badge text-bg-info">Queued</span>;
     case "running":
-      return <span className="tag is-primary is-small">Downloading</span>;
+      return <span className="badge text-bg-primary">Downloading</span>;
     case "completed":
-      return <span className="tag is-success is-small">Completed</span>;
+      return <span className="badge text-bg-success">Completed</span>;
     case "failed":
-      return <span className="tag is-danger is-small">Failed</span>;
+      return <span className="badge text-bg-danger">Failed</span>;
     default:
-      return <span className="tag is-light is-small">{status}</span>;
+      return <span className="badge text-bg-light">{status}</span>;
   }
 };
 

@@ -144,137 +144,128 @@ const RoleCreateModal = ({ server, onClose, onSuccess, onError }) => {
       showCancelButton
       aria-label="Create new RBAC role"
     >
-      <div className="field">
-        <label className="label" htmlFor="rolename">
-          Role Name <span className="has-text-danger">*</span>
+      <div className="mb-3">
+        <label className="form-label" htmlFor="rolename">
+          Role Name <span className="text-danger">*</span>
         </label>
-        <div className="control">
-          <input
-            id="rolename"
-            className="input"
-            type="text"
-            value={formData.rolename}
-            onChange={(e) => handleInputChange("rolename", e.target.value)}
-            required
-            disabled={loading}
-            placeholder="Enter role name"
-          />
-        </div>
-        <p className="help">
+        <input
+          id="rolename"
+          className="form-control"
+          type="text"
+          value={formData.rolename}
+          onChange={(e) => handleInputChange("rolename", e.target.value)}
+          required
+          disabled={loading}
+          placeholder="Enter role name"
+        />
+        <p className="form-text text-muted">
           Role name must be unique and contain only valid characters
         </p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="comment">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="comment">
           Comment
         </label>
-        <div className="control">
-          <input
-            id="comment"
-            className="input"
-            type="text"
-            value={formData.comment}
-            onChange={(e) => handleInputChange("comment", e.target.value)}
-            disabled={loading}
-            placeholder="Role description"
-          />
-        </div>
+        <input
+          id="comment"
+          className="form-control"
+          type="text"
+          value={formData.comment}
+          onChange={(e) => handleInputChange("comment", e.target.value)}
+          disabled={loading}
+          placeholder="Role description"
+        />
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="shell">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="shell">
           Shell
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="shell"
-              value={formData.shell}
-              onChange={(e) => handleInputChange("shell", e.target.value)}
-              disabled={loading}
-            >
-              {shells.map((shell) => (
-                <option key={shell} value={shell}>
-                  {shell}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <p className="help">
+        <select
+          id="shell"
+          className="form-select"
+          value={formData.shell}
+          onChange={(e) => handleInputChange("shell", e.target.value)}
+          disabled={loading}
+        >
+          {shells.map((shell) => (
+            <option key={shell} value={shell}>
+              {shell}
+            </option>
+          ))}
+        </select>
+        <p className="form-text text-muted">
           Profile shell (pfsh) is recommended for RBAC roles
         </p>
       </div>
 
       <hr />
 
-      <h5 className="title is-6">RBAC Configuration</h5>
+      <h5 className="fs-6 fw-bold">RBAC Configuration</h5>
 
-      <div className="field">
-        <label className="label" htmlFor="authorizations">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="authorizations">
           Authorizations
         </label>
-        <div className="control">
-          <textarea
-            id="authorizations"
-            className="textarea"
-            rows="3"
-            value={formData.authorizations.join(", ")}
-            onChange={(e) =>
-              handleArrayInputChange("authorizations", e.target.value)
-            }
-            disabled={loading}
-            placeholder="solaris.admin.dcmgr.*, solaris.smf.read (comma-separated)"
-          />
-        </div>
-        <p className="help">
+        <textarea
+          id="authorizations"
+          className="form-control"
+          rows="3"
+          value={formData.authorizations.join(", ")}
+          onChange={(e) =>
+            handleArrayInputChange("authorizations", e.target.value)
+          }
+          disabled={loading}
+          placeholder="solaris.admin.dcmgr.*, solaris.smf.read (comma-separated)"
+        />
+        <p className="form-text text-muted">
           Enter authorizations separated by commas. Use * for wildcards.
         </p>
       </div>
 
-      <div className="field">
-        <label className="label" htmlFor="profiles">
+      <div className="mb-3">
+        <label className="form-label" htmlFor="profiles">
           Profiles
         </label>
-        <div className="control">
-          <input
-            id="profiles"
-            className="input"
-            type="text"
-            value={formData.profiles.join(", ")}
-            onChange={(e) => handleArrayInputChange("profiles", e.target.value)}
-            disabled={loading}
-            placeholder="Media Backup, File System Management (comma-separated)"
-          />
-        </div>
-        <p className="help">Enter profile names separated by commas</p>
+        <input
+          id="profiles"
+          className="form-control"
+          type="text"
+          value={formData.profiles.join(", ")}
+          onChange={(e) => handleArrayInputChange("profiles", e.target.value)}
+          disabled={loading}
+          placeholder="Media Backup, File System Management (comma-separated)"
+        />
+        <p className="form-text text-muted">
+          Enter profile names separated by commas
+        </p>
       </div>
 
       <hr />
 
-      <div className="field">
-        <div className="control">
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={formData.create_home}
-              onChange={(e) =>
-                handleInputChange("create_home", e.target.checked)
-              }
-              disabled={loading}
-            />
-            <span className="check" />
-            <span className="control-label">Create Home Directory</span>
+      <div className="mb-3">
+        <div className="form-check form-switch">
+          <input
+            id="create_home"
+            className="form-check-input"
+            type="checkbox"
+            role="switch"
+            checked={formData.create_home}
+            onChange={(e) => handleInputChange("create_home", e.target.checked)}
+            disabled={loading}
+          />
+          <label className="form-check-label" htmlFor="create_home">
+            Create Home Directory
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           Usually not needed for roles unless they require file storage
         </p>
       </div>
 
-      <div className="notification is-info">
-        <p>
+      <div className="alert alert-info">
+        <p className="mb-0">
           <strong>Note:</strong> Roles are special user accounts used for RBAC.
           Users can assume roles to gain additional privileges without needing
           direct assignment of authorizations.

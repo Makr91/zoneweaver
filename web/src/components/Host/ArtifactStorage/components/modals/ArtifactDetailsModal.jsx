@@ -36,25 +36,25 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
     const type = fileType?.toLowerCase() || extension?.toLowerCase();
 
     if (type === "iso" || extension?.toLowerCase() === ".iso") {
-      return "fas fa-compact-disc has-text-info";
+      return "fas fa-compact-disc text-info";
     } else if (
       type === "image" ||
       [".vmdk", ".vhd", ".vhdx", ".qcow2", ".img"].includes(
         extension?.toLowerCase()
       )
     ) {
-      return "fas fa-hdd has-text-warning";
+      return "fas fa-hdd text-warning";
     }
-    return "fas fa-file has-text-grey";
+    return "fas fa-file text-muted";
   };
 
   const getChecksumStatusIcon = (verified) => {
     if (verified === true) {
-      return <i className="fas fa-check-circle has-text-success" />;
+      return <i className="fas fa-check-circle text-success" />;
     } else if (verified === false) {
-      return <i className="fas fa-times-circle has-text-danger" />;
+      return <i className="fas fa-times-circle text-danger" />;
     }
-    return <i className="fas fa-question-circle has-text-grey" />;
+    return <i className="fas fa-question-circle text-muted" />;
   };
 
   const getChecksumStatusText = (verified) => {
@@ -68,22 +68,22 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
   const getFileTypeTagClass = (fileType) => {
     if (fileType === "iso") {
-      return "is-info";
+      return "text-bg-info";
     }
     if (fileType === "image") {
-      return "is-warning";
+      return "text-bg-warning";
     }
-    return "is-light";
+    return "text-bg-secondary";
   };
 
   const getChecksumVerificationClass = (verified) => {
     if (verified === true) {
-      return "has-text-success";
+      return "text-success";
     }
     if (verified === false) {
-      return "has-text-danger";
+      return "text-danger";
     }
-    return "has-text-grey";
+    return "text-muted";
   };
 
   const handleDownloadFile = async () => {
@@ -133,188 +133,188 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
     >
       {/* Main Info Section */}
       <div className="content">
-        <div className="columns">
-          <div className="column">
-            <h4 className="title is-5">File Information</h4>
+        <div className="row">
+          <div className="col">
+            <h4 className="fs-5 fw-bold">File Information</h4>
 
-            <table className="table is-fullwidth">
-              <tbody>
-                <tr>
-                  <td>
-                    <strong>Filename:</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {artifactData.filename}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>File Type:</strong>
-                  </td>
-                  <td>
-                    <span
-                      className={`tag ${getFileTypeTagClass(artifactData.file_type)}`}
-                    >
-                      {artifactData.file_type?.toUpperCase() || "Unknown"}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Extension:</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {artifactData.extension || "N/A"}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>MIME Type:</strong>
-                  </td>
-                  <td className="is-family-monospace">
-                    {artifactData.mime_type || "N/A"}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>File Size:</strong>
-                  </td>
-                  <td>
-                    <strong>{formatSize(artifactData.size)}</strong>
-                    <span className="ml-2 has-text-grey is-size-7">
-                      ({artifactData.size?.toLocaleString()} bytes)
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>Path:</strong>
-                  </td>
-                  <td className="is-family-monospace is-size-7">
-                    {artifactData.path}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="column">
-            <h4 className="title is-5">Storage Details</h4>
-
-            <table className="table is-fullwidth">
-              <tbody>
-                {artifactData.storage_location && (
-                  <>
-                    <tr>
-                      <td>
-                        <strong>Storage Name:</strong>
-                      </td>
-                      <td>{artifactData.storage_location.name}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <strong>Storage Path:</strong>
-                      </td>
-                      <td className="is-family-monospace is-size-7">
-                        {artifactData.storage_location.path}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <strong>Storage Type:</strong>
-                      </td>
-                      <td>
-                        <span className="tag is-light">
-                          {artifactData.storage_location.type?.toUpperCase()}
-                        </span>
-                      </td>
-                    </tr>
-                  </>
-                )}
-                <tr>
-                  <td>
-                    <strong>Discovered:</strong>
-                  </td>
-                  <td>{formatDate(artifactData.discovered_at)}</td>
-                </tr>
-                {artifactData.source_url && (
+            <div className="table-responsive">
+              <table className="table table-sm">
+                <tbody>
                   <tr>
                     <td>
-                      <strong>Source URL:</strong>
+                      <strong>Filename:</strong>
+                    </td>
+                    <td className="font-monospace">{artifactData.filename}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>File Type:</strong>
                     </td>
                     <td>
-                      <a
-                        href={artifactData.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="is-size-7"
+                      <span
+                        className={`badge ${getFileTypeTagClass(artifactData.file_type)}`}
                       >
-                        {artifactData.source_url}
-                        <span className="icon is-small ml-1">
-                          <i className="fas fa-external-link-alt" />
-                        </span>
-                      </a>
+                        {artifactData.file_type?.toUpperCase() || "Unknown"}
+                      </span>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                  <tr>
+                    <td>
+                      <strong>Extension:</strong>
+                    </td>
+                    <td className="font-monospace">
+                      {artifactData.extension || "N/A"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>MIME Type:</strong>
+                    </td>
+                    <td className="font-monospace">
+                      {artifactData.mime_type || "N/A"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>File Size:</strong>
+                    </td>
+                    <td>
+                      <strong>{formatSize(artifactData.size)}</strong>
+                      <span className="ms-2 text-muted small">
+                        ({artifactData.size?.toLocaleString()} bytes)
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <strong>Path:</strong>
+                    </td>
+                    <td className="font-monospace small">
+                      {artifactData.path}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="col">
+            <h4 className="fs-5 fw-bold">Storage Details</h4>
+
+            <div className="table-responsive">
+              <table className="table table-sm">
+                <tbody>
+                  {artifactData.storage_location && (
+                    <>
+                      <tr>
+                        <td>
+                          <strong>Storage Name:</strong>
+                        </td>
+                        <td>{artifactData.storage_location.name}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <strong>Storage Path:</strong>
+                        </td>
+                        <td className="font-monospace small">
+                          {artifactData.storage_location.path}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <strong>Storage Type:</strong>
+                        </td>
+                        <td>
+                          <span className="badge text-bg-secondary">
+                            {artifactData.storage_location.type?.toUpperCase()}
+                          </span>
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                  <tr>
+                    <td>
+                      <strong>Discovered:</strong>
+                    </td>
+                    <td>{formatDate(artifactData.discovered_at)}</td>
+                  </tr>
+                  {artifactData.source_url && (
+                    <tr>
+                      <td>
+                        <strong>Source URL:</strong>
+                      </td>
+                      <td>
+                        <a
+                          href={artifactData.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="small"
+                        >
+                          {artifactData.source_url}
+                          <span className="ms-1">
+                            <i className="fas fa-external-link-alt" />
+                          </span>
+                        </a>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Checksum Section */}
       <div className="content">
-        <h4 className="title is-5">
-          <span className="icon-text">
-            <span className="icon">
+        <h4 className="fs-5 fw-bold">
+          <span className="d-inline-flex align-items-center">
+            <span className="me-1">
               <i className="fas fa-shield-alt" />
             </span>
             <span>Checksum Information</span>
           </span>
         </h4>
 
-        <div className="columns">
-          <div className="column">
-            <div className="field">
-              <label htmlFor="artifact-checksum" className="label">
+        <div className="row">
+          <div className="col">
+            <div className="mb-3">
+              <label htmlFor="artifact-checksum" className="form-label">
                 Checksum
               </label>
-              <div className="control">
-                <input
-                  id="artifact-checksum"
-                  className="input is-family-monospace is-size-7"
-                  type="text"
-                  value={artifactData.checksum || "Not calculated"}
-                  readOnly
-                />
-              </div>
+              <input
+                id="artifact-checksum"
+                className="form-control font-monospace small"
+                type="text"
+                value={artifactData.checksum || "Not calculated"}
+                readOnly
+              />
             </div>
           </div>
         </div>
 
-        <div className="columns">
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label">Algorithm</span>
-              <div className="control">
-                <span className="tag is-info">
+        <div className="row">
+          <div className="col-auto">
+            <div className="mb-3">
+              <span className="form-label">Algorithm</span>
+              <div>
+                <span className="badge text-bg-info">
                   {artifactData.checksum_algorithm?.toUpperCase() || "N/A"}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="column is-narrow">
-            <div className="field">
-              <span className="label">Verification Status</span>
-              <div className="control">
-                <span className="icon-text">
-                  <span className="icon">
+          <div className="col-auto">
+            <div className="mb-3">
+              <span className="form-label">Verification Status</span>
+              <div>
+                <span className="d-inline-flex align-items-center">
+                  <span className="me-1">
                     {getChecksumStatusIcon(artifactData.checksum_verified)}
                   </span>
                   <span
-                    className={`has-text-weight-semibold ${getChecksumVerificationClass(artifactData.checksum_verified)}`}
+                    className={`fw-semibold ${getChecksumVerificationClass(artifactData.checksum_verified)}`}
                   >
                     {getChecksumStatusText(artifactData.checksum_verified)}
                   </span>
@@ -325,7 +325,7 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
         </div>
 
         {artifactData.checksum_verified === false && (
-          <div className="notification is-warning">
+          <div className="alert alert-warning">
             <p>
               <strong>Checksum Mismatch Warning:</strong> The calculated
               checksum does not match the expected checksum. This could indicate
@@ -337,44 +337,42 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
 
       {/* Actions Section */}
       <div className="content">
-        <h4 className="title is-5">Actions</h4>
+        <h4 className="fs-5 fw-bold">Actions</h4>
 
         {downloadError && (
-          <div className="notification is-danger">
+          <div className="alert alert-danger">
             <button
               type="button"
-              className="delete"
+              className="btn-close"
               onClick={() => setDownloadError("")}
             />
             {downloadError}
           </div>
         )}
 
-        <div className="field is-grouped">
-          <p className="control">
-            <button className="button is-primary" onClick={handleDownloadFile}>
-              <span className="icon">
-                <i className="fas fa-download" />
-              </span>
-              <span>Download File</span>
-            </button>
-          </p>
+        <div className="d-flex gap-2">
+          <button className="btn btn-primary" onClick={handleDownloadFile}>
+            <span className="me-1">
+              <i className="fas fa-download" />
+            </span>
+            <span>Download File</span>
+          </button>
         </div>
       </div>
 
       {/* Technical Details */}
       <div className="content">
-        <h4 className="title is-5">Technical Details</h4>
-        <div className="notification is-light">
-          <div className="columns is-mobile">
-            <div className="column">
+        <h4 className="fs-5 fw-bold">Technical Details</h4>
+        <div className="alert alert-secondary">
+          <div className="row">
+            <div className="col">
               <p className="heading">Artifact ID</p>
-              <p className="is-family-monospace is-size-7">{artifactData.id}</p>
+              <p className="font-monospace small">{artifactData.id}</p>
             </div>
             {artifactData.storage_location && (
-              <div className="column">
+              <div className="col">
                 <p className="heading">Storage Location ID</p>
-                <p className="is-family-monospace is-size-7">
+                <p className="font-monospace small">
                   {artifactData.storage_location.id}
                 </p>
               </div>
@@ -387,15 +385,15 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
       {(artifactData.file_type === "iso" ||
         artifactData.extension === ".iso") && (
         <div className="content">
-          <h4 className="title is-5">
-            <span className="icon-text">
-              <span className="icon">
+          <h4 className="fs-5 fw-bold">
+            <span className="d-inline-flex align-items-center">
+              <span className="me-1">
                 <i className="fas fa-compact-disc" />
               </span>
               <span>ISO Information</span>
             </span>
           </h4>
-          <div className="notification is-info">
+          <div className="alert alert-info">
             <p>
               This is an ISO 9660 disc image file, commonly used for
               distributing operating systems, software, and other bootable
@@ -411,15 +409,15 @@ const ArtifactDetailsModal = ({ artifact, details, server, onClose }) => {
           artifactData.extension
         ) && (
           <div className="content">
-            <h4 className="title is-5">
-              <span className="icon-text">
-                <span className="icon">
+            <h4 className="fs-5 fw-bold">
+              <span className="d-inline-flex align-items-center">
+                <span className="me-1">
                   <i className="fas fa-hdd" />
                 </span>
                 <span>VM Image Information</span>
               </span>
             </h4>
-            <div className="notification is-warning">
+            <div className="alert alert-warning">
               <p>
                 This is a virtual machine disk image file. These files contain
                 complete virtual machine hard drives and can be used with

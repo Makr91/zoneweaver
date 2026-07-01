@@ -2,23 +2,21 @@ import PropTypes from "prop-types";
 
 const ExpandedChartControls = ({ visibility, setVisibility, labels }) => (
   <div className="mb-4">
-    <div className="field is-grouped is-grouped-centered">
+    <div className="d-flex gap-2 justify-content-center">
       {Object.entries(labels).map(([key, { label, className }]) => (
-        <div className="control" key={key}>
+        <div key={key}>
           <button
-            className={`button is-small ${
-              visibility[key] ? className : "is-dark"
-            }`}
+            className={`btn btn-sm ${visibility[key] ? className : "btn-dark"}`}
             onClick={() =>
               setVisibility((prev) => ({ ...prev, [key]: !prev[key] }))
             }
             title={`Toggle ${label} visibility`}
           >
-            <span className="icon">
-              <i
-                className={`fas ${visibility[key] ? "fa-eye" : "fa-eye-slash"}`}
-              />
-            </span>
+            <i
+              className={`fas ${
+                visibility[key] ? "fa-eye" : "fa-eye-slash"
+              } me-1`}
+            />
             <span>{label}</span>
           </button>
         </div>

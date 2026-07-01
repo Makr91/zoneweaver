@@ -78,99 +78,105 @@ const PackageDetailsModal = ({ package: pkg, onClose }) => {
       icon="fas fa-cube"
     >
       {/* Package Basic Info */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Basic Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>Package Name</strong>
-                </td>
-                <td className="is-family-monospace">{pkg.name}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Publisher</strong>
-                </td>
-                <td>
-                  <span className="tag is-info is-small">
-                    {pkg.publisher || "Unknown"}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Version</strong>
-                </td>
-                <td className="is-family-monospace">{pkg.version || "N/A"}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Flags</strong>
-                </td>
-                <td className="is-family-monospace">{pkg.flags || "N/A"}</td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Basic Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Package Name</strong>
+                  </td>
+                  <td className="font-monospace">{pkg.name}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Publisher</strong>
+                  </td>
+                  <td>
+                    <span className="badge text-bg-info">
+                      {pkg.publisher || "Unknown"}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Version</strong>
+                  </td>
+                  <td className="font-monospace">{pkg.version || "N/A"}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Flags</strong>
+                  </td>
+                  <td className="font-monospace">{pkg.flags || "N/A"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Package Status */}
       {statusInfo.length > 0 && (
-        <div className="box mb-4">
-          <h3 className="title is-6">Package Status</h3>
-          <div className="table-container">
-            <table className="table is-fullwidth">
-              <tbody>
-                {statusInfo.map((info) => (
-                  <tr key={info.label}>
-                    <td>
-                      <strong>{info.label}</strong>
-                    </td>
-                    <td>{info.value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="card mb-4">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Package Status</h3>
+            <div className="table-responsive">
+              <table className="table">
+                <tbody>
+                  {statusInfo.map((info) => (
+                    <tr key={info.label}>
+                      <td>
+                        <strong>{info.label}</strong>
+                      </td>
+                      <td>{info.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Detailed Information */}
       {detailsArray.length > 0 && (
-        <div className="box">
-          <h3 className="title is-6">Detailed Information</h3>
-          <div className="table-container">
-            <table className="table is-fullwidth">
-              <tbody>
-                {detailsArray.map((detail) => (
-                  <tr key={detail.label}>
-                    <td>
-                      <strong>{detail.label}</strong>
-                    </td>
-                    <td>
-                      {detail.value.includes("\n") ? (
-                        <pre className="is-size-7 has-background-grey-lightest p-2">
-                          {detail.value}
-                        </pre>
-                      ) : (
-                        <span className="is-family-monospace is-size-7">
-                          {detail.value}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="card">
+          <div className="card-body">
+            <h3 className="fs-6 fw-bold">Detailed Information</h3>
+            <div className="table-responsive">
+              <table className="table">
+                <tbody>
+                  {detailsArray.map((detail) => (
+                    <tr key={detail.label}>
+                      <td>
+                        <strong>{detail.label}</strong>
+                      </td>
+                      <td>
+                        {detail.value.includes("\n") ? (
+                          <pre className="small bg-body-tertiary p-2">
+                            {detail.value}
+                          </pre>
+                        ) : (
+                          <span className="font-monospace small">
+                            {detail.value}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Show message if no details available */}
       {detailsArray.length === 0 && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No detailed information available for this package.</p>
         </div>
       )}

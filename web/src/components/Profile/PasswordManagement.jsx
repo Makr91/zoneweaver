@@ -9,31 +9,32 @@ const PasswordManagement = ({
   loading,
   setMsg,
 }) => (
-  <div className="box">
-    <h2 className="title is-5">Password Management</h2>
+  <div className="card">
+    <div className="card-body">
+      <h2 className="fs-5 fw-bold">Password Management</h2>
 
-    {!showPasswordChange ? (
-      <div>
-        <p className="mb-3">
-          Change your account password for enhanced security.
-        </p>
-        <button
-          className="button is-primary"
-          onClick={() => setShowPasswordChange(true)}
-        >
-          Change Password
-        </button>
-      </div>
-    ) : (
-      <form onSubmit={handlePasswordChange}>
-        <div className="field">
-          <label className="label" htmlFor="currentPassword">
-            Current Password
-          </label>
-          <div className="control">
+      {!showPasswordChange ? (
+        <div>
+          <p className="mb-3">
+            Change your account password for enhanced security.
+          </p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setShowPasswordChange(true)}
+          >
+            Change Password
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handlePasswordChange}>
+          <div className="mb-3">
+            <label className="form-label" htmlFor="currentPassword">
+              Current Password
+            </label>
             <input
               id="currentPassword"
-              className="input"
+              className="form-control"
               type="password"
               value={passwordData.currentPassword}
               onChange={(e) =>
@@ -45,16 +46,14 @@ const PasswordManagement = ({
               required
             />
           </div>
-        </div>
 
-        <div className="field">
-          <label className="label" htmlFor="newPassword">
-            New Password
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="newPassword">
+              New Password
+            </label>
             <input
               id="newPassword"
-              className="input"
+              className="form-control"
               type="password"
               value={passwordData.newPassword}
               onChange={(e) =>
@@ -66,18 +65,18 @@ const PasswordManagement = ({
               required
               minLength="8"
             />
+            <p className="form-text text-muted">
+              Must be at least 8 characters long
+            </p>
           </div>
-          <p className="help">Must be at least 8 characters long</p>
-        </div>
 
-        <div className="field">
-          <label className="label" htmlFor="confirmPassword">
-            Confirm New Password
-          </label>
-          <div className="control">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="confirmPassword">
+              Confirm New Password
+            </label>
             <input
               id="confirmPassword"
-              className="input"
+              className="form-control"
               type="password"
               value={passwordData.confirmPassword}
               onChange={(e) =>
@@ -89,22 +88,25 @@ const PasswordManagement = ({
               required
             />
           </div>
-        </div>
 
-        <div className="field is-grouped">
-          <div className="control">
+          <div className="d-flex gap-2">
             <button
               type="submit"
-              className={`button is-primary ${loading ? "is-loading" : ""}`}
+              className="btn btn-primary"
               disabled={loading}
             >
+              {loading && (
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                />
+              )}
               Update Password
             </button>
-          </div>
-          <div className="control">
             <button
               type="button"
-              className="button"
+              className="btn btn-secondary"
               onClick={() => {
                 setShowPasswordChange(false);
                 setPasswordData({
@@ -118,9 +120,9 @@ const PasswordManagement = ({
               Cancel
             </button>
           </div>
-        </div>
-      </form>
-    )}
+        </form>
+      )}
+    </div>
   </div>
 );
 

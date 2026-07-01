@@ -30,12 +30,10 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
   };
   if (servers.length === 0) {
     return (
-      <div className="has-text-centered p-6">
-        <div className="icon is-large mb-3 has-text-grey">
-          <i className="fas fa-server fa-3x" />
-        </div>
-        <h3 className="title is-4 has-text-grey">No Servers Configured</h3>
-        <p className="has-text-grey mb-4">
+      <div className="text-center p-6">
+        <i className="fas fa-server fa-3x mb-3 text-muted" />
+        <h3 className="fs-4 text-muted">No Servers Configured</h3>
+        <p className="text-muted mb-4">
           You haven&apos;t added any Zoneweaver API Servers yet. Add a server to
           start managing zones.
         </p>
@@ -44,8 +42,8 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-striped is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-striped table-hover">
         <thead>
           <tr>
             <th>No</th>
@@ -67,7 +65,7 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
                   {server.hostname || server.serverHostname || "No hostname"}
                 </strong>
                 {!server.hostname && !server.serverHostname && (
-                  <small className="has-text-danger is-block">
+                  <small className="text-danger d-block">
                     Missing hostname data - Check console
                   </small>
                 )}
@@ -76,30 +74,25 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
               <td>{server.port}</td>
               <td>{server.entityName}</td>
               <td>
-                <div className="field has-addons">
+                <div className="input-group">
                   {server.api_key && (
-                    <div className="control">
-                      <button
-                        className={`button is-small ${copiedKey === server.id ? "is-success" : "is-light"}`}
-                        onClick={() => copyApiKey(server.api_key, server.id)}
-                        title={
-                          copiedKey === server.id ? "Copied!" : "Copy API Key"
-                        }
-                        disabled={loading}
-                      >
-                        <span className="icon is-small">
-                          <i
-                            className={`fas ${copiedKey === server.id ? "fa-check" : "fa-copy"}`}
-                          />
-                        </span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      className={`btn btn-sm ${copiedKey === server.id ? "btn-success" : "btn-light"}`}
+                      onClick={() => copyApiKey(server.api_key, server.id)}
+                      title={
+                        copiedKey === server.id ? "Copied!" : "Copy API Key"
+                      }
+                      disabled={loading}
+                    >
+                      <i
+                        className={`fas ${copiedKey === server.id ? "fa-check" : "fa-copy"}`}
+                      />
+                    </button>
                   )}
-                  <div className="control">
-                    <span className="tag is-light is-medium">
-                      {maskApiKey(server.api_key)}
-                    </span>
-                  </div>
+                  <span className="badge text-bg-light">
+                    {maskApiKey(server.api_key)}
+                  </span>
                 </div>
               </td>
               <td>
@@ -108,26 +101,24 @@ const ServerTable = ({ servers, onEdit, onDelete, loading }) => {
                   : "Never"}
               </td>
               <td>
-                <div className="buttons are-small">
+                <div className="d-flex gap-1">
                   <button
-                    className="button is-small is-warning"
+                    type="button"
+                    className="btn btn-sm btn-warning"
                     onClick={() => onEdit(server.hostname)}
                     disabled={loading}
                     title="Edit Server"
                   >
-                    <span className="icon">
-                      <i className="fas fa-edit" />
-                    </span>
+                    <i className="fas fa-edit" />
                   </button>
                   <button
-                    className="button is-small is-danger"
+                    type="button"
+                    className="btn btn-sm btn-danger"
                     onClick={() => onDelete(server.id)}
                     disabled={loading}
                     title="Remove Server"
                   >
-                    <span className="icon">
-                      <i className="fas fa-trash" />
-                    </span>
+                    <i className="fas fa-trash" />
                   </button>
                 </div>
               </td>

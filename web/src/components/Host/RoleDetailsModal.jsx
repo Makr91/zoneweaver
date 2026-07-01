@@ -5,13 +5,13 @@ import ContentModal from "../common/ContentModal";
 const RoleDetailsModal = ({ role, onClose }) => {
   const formatValue = (value) => {
     if (value === null || value === undefined || value === "") {
-      return <span className="has-text-grey">N/A</span>;
+      return <span className="text-muted">N/A</span>;
     }
     if (Array.isArray(value)) {
       return value.length > 0 ? (
         value.join(", ")
       ) : (
-        <span className="has-text-grey">None</span>
+        <span className="text-muted">None</span>
       );
     }
     return value;
@@ -30,27 +30,24 @@ const RoleDetailsModal = ({ role, onClose }) => {
       onClose={onClose}
       title={`Role Details: ${role.rolename}`}
       icon="fas fa-user-shield"
-      className="is-large"
       aria-label={`Role details for ${role.rolename}`}
     >
-      <div className="columns">
+      <div className="row g-3">
         {/* Basic Information */}
-        <div className="column">
-          <h4 className="title is-5">
-            <span className="icon">
-              <i className="fas fa-info-circle" />
-            </span>
+        <div className="col">
+          <h4 className="fs-5 fw-bold">
+            <i className="fas fa-info-circle me-2" />
             <span>Basic Information</span>
           </h4>
 
-          <div className="table-container">
-            <table className="table is-fullwidth">
+          <div className="table-responsive">
+            <table className="table">
               <tbody>
                 <tr>
                   <td>
                     <strong>Role Name</strong>
                   </td>
-                  <td className="is-family-monospace">{role.rolename}</td>
+                  <td className="font-monospace">{role.rolename}</td>
                 </tr>
                 <tr>
                   <td>
@@ -62,17 +59,13 @@ const RoleDetailsModal = ({ role, onClose }) => {
                   <td>
                     <strong>Shell</strong>
                   </td>
-                  <td className="is-family-monospace">
-                    {formatShell(role.shell)}
-                  </td>
+                  <td className="font-monospace">{formatShell(role.shell)}</td>
                 </tr>
                 <tr>
                   <td>
                     <strong>Home Directory</strong>
                   </td>
-                  <td className="is-family-monospace">
-                    {formatValue(role.home)}
-                  </td>
+                  <td className="font-monospace">{formatValue(role.home)}</td>
                 </tr>
               </tbody>
             </table>
@@ -80,16 +73,14 @@ const RoleDetailsModal = ({ role, onClose }) => {
         </div>
 
         {/* RBAC Configuration */}
-        <div className="column">
-          <h4 className="title is-5">
-            <span className="icon">
-              <i className="fas fa-shield-alt" />
-            </span>
+        <div className="col">
+          <h4 className="fs-5 fw-bold">
+            <i className="fas fa-shield-alt me-2" />
             <span>RBAC Configuration</span>
           </h4>
 
-          <div className="table-container">
-            <table className="table is-fullwidth">
+          <div className="table-responsive">
+            <table className="table">
               <tbody>
                 <tr>
                   <td>
@@ -97,20 +88,17 @@ const RoleDetailsModal = ({ role, onClose }) => {
                   </td>
                   <td>
                     {role.authorizations && role.authorizations.length > 0 ? (
-                      <div className="content">
+                      <div>
                         {role.authorizations.map((auth) => (
-                          <div
-                            key={auth}
-                            className="is-family-monospace is-size-7"
-                          >
-                            <span className="tag is-info is-light mr-1">
+                          <div key={auth} className="font-monospace small">
+                            <span className="badge text-bg-info me-1">
                               {auth}
                             </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <span className="has-text-grey">None</span>
+                      <span className="text-muted">None</span>
                     )}
                   </td>
                 </tr>
@@ -121,18 +109,15 @@ const RoleDetailsModal = ({ role, onClose }) => {
                   </td>
                   <td>
                     {role.profiles && role.profiles.length > 0 ? (
-                      <div className="tags">
+                      <div className="d-flex flex-wrap gap-1">
                         {role.profiles.map((profile) => (
-                          <span
-                            key={profile}
-                            className="tag is-primary is-light"
-                          >
+                          <span key={profile} className="badge text-bg-primary">
                             {profile}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="has-text-grey">None</span>
+                      <span className="text-muted">None</span>
                     )}
                   </td>
                 </tr>
@@ -144,15 +129,13 @@ const RoleDetailsModal = ({ role, onClose }) => {
 
       {/* Role Usage Information */}
       <hr />
-      <h4 className="title is-6">
-        <span className="icon">
-          <i className="fas fa-user-friends" />
-        </span>
+      <h4 className="fs-6 fw-bold">
+        <i className="fas fa-user-friends me-2" />
         <span>Role Usage</span>
       </h4>
 
-      <div className="content">
-        <div className="notification is-light">
+      <div>
+        <div className="alert alert-secondary">
           <p>
             <strong>How Roles Work:</strong>
           </p>
@@ -179,7 +162,7 @@ const RoleDetailsModal = ({ role, onClose }) => {
           </ul>
         </div>
 
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>
             <strong>Assigning Roles to Users:</strong>
           </p>
@@ -193,7 +176,7 @@ const RoleDetailsModal = ({ role, onClose }) => {
 
       {/* Shell Information */}
       {role.shell && (
-        <div className="notification is-warning">
+        <div className="alert alert-warning">
           <p>
             <strong>Shell Configuration:</strong>
           </p>

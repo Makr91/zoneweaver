@@ -9,7 +9,7 @@ const StorageManagement = ({ server }) => {
 
   if (!server) {
     return (
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>No server selected for storage management.</p>
       </div>
     );
@@ -18,83 +18,71 @@ const StorageManagement = ({ server }) => {
   return (
     <div>
       {/* Sub-Tab Navigation */}
-      <div className="tabs is-boxed mb-0">
-        <ul>
-          <li className={activeTab === "arc" ? "is-active" : ""}>
-            <button
-              tabIndex={0}
-              onClick={(e) => {
+      <ul className="nav nav-tabs mb-0">
+        <li className="nav-item">
+          <button
+            type="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("arc");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 setActiveTab("arc");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setActiveTab("arc");
-                }
-              }}
-              className="button"
-            >
-              <span className="icon is-small">
-                <i className="fas fa-memory" />
-              </span>
-              <span>ZFS ARC</span>
-            </button>
-          </li>
-          <li className={activeTab === "artifacts" ? "is-active" : ""}>
-            <button
-              tabIndex={0}
-              onClick={(e) => {
+              }
+            }}
+            className={`nav-link ${activeTab === "arc" ? "active" : ""}`}
+          >
+            <i className="fas fa-memory me-2" />
+            ZFS ARC
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("artifacts");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 setActiveTab("artifacts");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setActiveTab("artifacts");
-                }
-              }}
-              className="button"
-            >
-              <span className="icon is-small">
-                <i className="fas fa-compact-disc" />
-              </span>
-              <span>ISO & Artifacts</span>
-            </button>
-          </li>
-          <li className="is-disabled">
-            <button className="button" disabled>
-              <span className="icon is-small">
-                <i className="fas fa-database" />
-              </span>
-              <span>ZFS Pools</span>
-            </button>
-          </li>
-          <li className="is-disabled">
-            <button className="button" disabled>
-              <span className="icon is-small">
-                <i className="fas fa-folder-tree" />
-              </span>
-              <span>ZFS Datasets</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+              }
+            }}
+            className={`nav-link ${activeTab === "artifacts" ? "active" : ""}`}
+          >
+            <i className="fas fa-compact-disc me-2" />
+            ISO & Artifacts
+          </button>
+        </li>
+        <li className="nav-item">
+          <button type="button" className="nav-link" disabled>
+            <i className="fas fa-database me-2" />
+            ZFS Pools
+          </button>
+        </li>
+        <li className="nav-item">
+          <button type="button" className="nav-link" disabled>
+            <i className="fas fa-folder-tree me-2" />
+            ZFS Datasets
+          </button>
+        </li>
+      </ul>
 
       {/* Tab Content */}
       <div className="mt-4">
         {activeTab === "arc" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-memory" />
-                  </span>
-                  <span>ZFS ARC Configuration</span>
-                </span>
+              <h3 className="fs-6 fw-bold">
+                <i className="fas fa-memory me-2" />
+                ZFS ARC Configuration
               </h3>
-              <p className="content">
+              <p>
                 Configure ZFS Adaptive Replacement Cache (ARC) settings on{" "}
                 <strong>{server.hostname}</strong>. The ARC is ZFS&apos;s
                 intelligent caching layer that stores frequently accessed data
@@ -110,15 +98,11 @@ const StorageManagement = ({ server }) => {
         {activeTab === "artifacts" && (
           <div>
             <div className="mb-4">
-              <h3 className="title is-6">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-compact-disc" />
-                  </span>
-                  <span>ISO & Artifact Management</span>
-                </span>
+              <h3 className="fs-6 fw-bold">
+                <i className="fas fa-compact-disc me-2" />
+                ISO & Artifact Management
               </h3>
-              <p className="content">
+              <p>
                 Manage ISO files, VM images, and artifact storage locations on{" "}
                 <strong>{server.hostname}</strong>. Configure storage paths,
                 upload files, download from URLs, and organize your
@@ -132,14 +116,14 @@ const StorageManagement = ({ server }) => {
 
         {/* Future: ZFS Pools tab content */}
         {activeTab === "pools" && (
-          <div className="notification is-info">
+          <div className="alert alert-info">
             <p>ZFS Pool management will be available in a future update.</p>
           </div>
         )}
 
         {/* Future: ZFS Datasets tab content */}
         {activeTab === "datasets" && (
-          <div className="notification is-info">
+          <div className="alert alert-info">
             <p>ZFS Dataset management will be available in a future update.</p>
           </div>
         )}

@@ -131,48 +131,46 @@ const EtherstubCreateModal = ({
       submitVariant="is-primary"
       loading={creating}
     >
-      <div className="field">
-        <label htmlFor="etherstub-name" className="label">
+      <div className="mb-3">
+        <label htmlFor="etherstub-name" className="form-label">
           Etherstub Name *
         </label>
-        <div className="control">
-          <input
-            id="etherstub-name"
-            className="input"
-            type="text"
-            placeholder="e.g., stub0"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            disabled={creating}
-            required
-          />
-        </div>
-        <p className="help">
+        <input
+          id="etherstub-name"
+          className="form-control"
+          type="text"
+          placeholder="e.g., stub0"
+          value={formData.name}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          disabled={creating}
+          required
+        />
+        <p className="form-text text-muted">
           Must start with a letter and contain only letters, numbers, and
           underscores
         </p>
       </div>
 
-      <div className="field">
-        <div className="control">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={formData.temporary}
-              onChange={(e) => handleInputChange("temporary", e.target.checked)}
-              disabled={creating}
-            />
-            <span className="ml-2">
-              Temporary (not persistent across reboots)
-            </span>
+      <div className="mb-3">
+        <div className="form-check">
+          <input
+            id="etherstub-temporary"
+            className="form-check-input"
+            type="checkbox"
+            checked={formData.temporary}
+            onChange={(e) => handleInputChange("temporary", e.target.checked)}
+            disabled={creating}
+          />
+          <label className="form-check-label" htmlFor="etherstub-temporary">
+            Temporary (not persistent across reboots)
           </label>
         </div>
-        <p className="help">
+        <p className="form-text text-muted">
           If checked, the etherstub will be removed when the system reboots
         </p>
       </div>
 
-      <div className="notification is-info mt-4">
+      <div className="alert alert-info mt-4">
         <p>
           <strong>About Etherstubs:</strong>
         </p>

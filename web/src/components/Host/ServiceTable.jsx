@@ -24,58 +24,34 @@ const ServiceTable = ({
   const getStateIcon = (state) => {
     switch (state.toLowerCase()) {
       case "online":
-        return (
-          <span className="icon has-text-success">
-            <i className="fas fa-check-circle" />
-          </span>
-        );
+        return <i className="fas fa-check-circle text-success" />;
       case "disabled":
-        return (
-          <span className="icon has-text-grey">
-            <i className="fas fa-circle" />
-          </span>
-        );
+        return <i className="fas fa-circle text-muted" />;
       case "offline":
-        return (
-          <span className="icon has-text-danger">
-            <i className="fas fa-times-circle" />
-          </span>
-        );
+        return <i className="fas fa-times-circle text-danger" />;
       case "legacy_run":
-        return (
-          <span className="icon has-text-info">
-            <i className="fas fa-legacy" />
-          </span>
-        );
+        return <i className="fas fa-legacy text-info" />;
       case "maintenance":
-        return (
-          <span className="icon has-text-warning">
-            <i className="fas fa-exclamation-triangle" />
-          </span>
-        );
+        return <i className="fas fa-exclamation-triangle text-warning" />;
       default:
-        return (
-          <span className="icon has-text-grey">
-            <i className="fas fa-question-circle" />
-          </span>
-        );
+        return <i className="fas fa-question-circle text-muted" />;
     }
   };
 
   const getStateTag = (state) => {
     switch (state.toLowerCase()) {
       case "online":
-        return <span className="tag is-success is-small">{state}</span>;
+        return <span className="badge text-bg-success">{state}</span>;
       case "disabled":
-        return <span className="tag is-grey is-small">{state}</span>;
+        return <span className="badge text-bg-secondary">{state}</span>;
       case "offline":
-        return <span className="tag is-danger is-small">{state}</span>;
+        return <span className="badge text-bg-danger">{state}</span>;
       case "legacy_run":
-        return <span className="tag is-info is-small">{state}</span>;
+        return <span className="badge text-bg-info">{state}</span>;
       case "maintenance":
-        return <span className="tag is-warning is-small">{state}</span>;
+        return <span className="badge text-bg-warning">{state}</span>;
       default:
-        return <span className="tagis-small">{state}</span>;
+        return <span className="badge text-bg-secondary">{state}</span>;
     }
   };
 
@@ -88,20 +64,20 @@ const ServiceTable = ({
         key: "enable",
         label: "Enable",
         icon: "fa-play",
-        class: "is-success",
+        class: "btn-success",
       });
     } else if (lowerState === "online") {
       actions.push({
         key: "disable",
         label: "Disable",
         icon: "fa-stop",
-        class: "is-warning",
+        class: "btn-warning",
       });
       actions.push({
         key: "restart",
         label: "Restart",
         icon: "fa-redo",
-        class: "is-info",
+        class: "btn-info",
       });
     }
 
@@ -111,7 +87,7 @@ const ServiceTable = ({
         key: "refresh",
         label: "Refresh",
         icon: "fa-sync",
-        class: "is-light",
+        class: "btn-light",
       });
     }
 
@@ -132,10 +108,8 @@ const ServiceTable = ({
 
   if (loading && services.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading services...</p>
       </div>
     );
@@ -143,18 +117,16 @@ const ServiceTable = ({
 
   if (services.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-cogs fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No services found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-cogs fa-2x text-muted" />
+        <p className="mt-2 text-muted">No services found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Service</th>
@@ -171,27 +143,24 @@ const ServiceTable = ({
             return (
               <tr key={service.fmri || index}>
                 <td>
-                  <div className="is-flex is-align-items-center">
+                  <div className="d-flex align-items-center gap-2">
                     {getStateIcon(service.state)}
-                    <span className="ml-2">
+                    <span>
                       <strong>{getServiceName(service.fmri)}</strong>
                     </span>
                   </div>
                 </td>
                 <td>
-                  <span
-                    className="is-family-monospace is-size-7"
-                    title={service.fmri}
-                  >
+                  <span className="font-monospace small" title={service.fmri}>
                     {service.fmri}
                   </span>
                 </td>
                 <td>{getStateTag(service.state)}</td>
                 <td>
-                  <span className="is-size-7">{service.stime || "N/A"}</span>
+                  <span className="small">{service.stime || "N/A"}</span>
                 </td>
                 <td>
-                  <div className="buttons are-small">
+                  <div className="d-flex gap-1">
                     {/* Action Buttons */}
                     {availableActions.map((action) => {
                       const key = `${service.fmri}-${action.key}`;
@@ -199,42 +168,46 @@ const ServiceTable = ({
 
                       return (
                         <button
+                          type="button"
                           key={action.key}
-                          className={`button ${action.class} ${isLoading ? "is-loading" : ""}`}
+                          className={`btn btn-sm ${action.class}`}
                           onClick={() => handleAction(service, action.key)}
                           disabled={loading || isLoading}
                           title={action.label}
                         >
-                          <span className="icon is-small">
-                            <i className={`fas ${action.icon}`} />
-                          </span>
+                          {isLoading && (
+                            <span
+                              className="spinner-border spinner-border-sm me-2"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <i className={`fas ${action.icon}`} />
                         </button>
                       );
                     })}
 
                     {/* View Details Button */}
                     <button
-                      className="button"
+                      type="button"
+                      className="btn btn-sm btn-secondary"
                       onClick={() => onViewDetails(service)}
                       disabled={loading}
                       title="View Details"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-info-circle" />
-                      </span>
+                      <i className="fas fa-info-circle" />
                     </button>
 
                     {/* View Properties Button - only for non-legacy services */}
                     {!service.fmri.startsWith("lrc:") && (
                       <button
-                        className="button"
+                        type="button"
+                        className="btn btn-sm btn-secondary"
                         onClick={() => onViewProperties(service)}
                         disabled={loading}
                         title="View Properties"
                       >
-                        <span className="icon is-small">
-                          <i className="fas fa-list" />
-                        </span>
+                        <i className="fas fa-list" />
                       </button>
                     )}
                   </div>

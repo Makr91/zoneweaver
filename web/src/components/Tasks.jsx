@@ -9,10 +9,10 @@ import TaskDetailModal from "./TaskDetailModal";
 const renderPriority = (task) => {
   const p = task.priority;
   if (p >= 100) {
-    return <span className="has-text-danger">CRITICAL</span>;
+    return <span className="text-danger">CRITICAL</span>;
   }
   if (p >= 80) {
-    return <span className="has-text-warning">HIGH</span>;
+    return <span className="text-warning">HIGH</span>;
   }
   if (p >= 60) {
     return <span>MEDIUM</span>;
@@ -21,16 +21,16 @@ const renderPriority = (task) => {
     return <span>SERVICE</span>;
   }
   if (p >= 40) {
-    return <span className="has-text-grey">LOW</span>;
+    return <span className="text-muted">LOW</span>;
   }
-  return <span className="has-text-grey-light">BG</span>;
+  return <span className="text-muted">BG</span>;
 };
 
 const renderStatus = (task) => {
   if (task.status === "running") {
     return (
       <span>
-        <i className="fas fa-spinner fa-spin mr-1" />
+        <i className="fas fa-spinner fa-spin me-1" />
         {task.status}
       </span>
     );
@@ -48,15 +48,21 @@ const renderProgress = (task) => {
   if (status === "running") {
     if (progress_percent !== null && progress_percent !== undefined) {
       return (
-        <div className="level mb-0">
-          <progress
-            className="level-item progress is-width-unset is-small is-primary mb-0"
-            value={progress_percent}
-            max="100"
+        <div className="d-flex align-items-center gap-2 mb-0">
+          <div
+            className="progress flex-grow-1"
+            style={{ height: "0.5rem" }}
+            role="progressbar"
+            aria-valuenow={progress_percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
           >
-            {progress_percent}%
-          </progress>
-          <span className="level-item is-size-7">{progress_percent}%</span>
+            <div
+              className="progress-bar bg-primary"
+              style={{ width: `${progress_percent}%` }}
+            />
+          </div>
+          <span className="small">{progress_percent}%</span>
         </div>
       );
     }
@@ -217,9 +223,9 @@ const Tasks = () => {
         className="has-overflow-y-scroll"
       >
         {loadingTasks && <p>Loading tasks...</p>}
-        {tasksError && <p className="has-text-danger">{tasksError}</p>}
+        {tasksError && <p className="text-danger">{tasksError}</p>}
         {!loadingTasks && !tasksError && (
-          <table className="table is-fullwidth is-striped">
+          <table className="table table-striped">
             <thead>
               <tr>
                 {visibleColumns.map((col) => (

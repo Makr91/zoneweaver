@@ -8,22 +8,22 @@ const CpuChart = ({
   setCpuSeriesVisibility,
   expandChart,
 }) => (
-  <div className="column is-4">
-    <div className="card has-background-dark">
-      <header className="card-header has-background-grey-darker">
-        <p className="card-header-title has-text-white">
-          <span className="icon-text">
-            <span className="icon">
+  <div className="col-4">
+    <div className="card bg-dark">
+      <header className="card-header bg-dark d-flex justify-content-between align-items-center">
+        <p className="text-white fw-bold mb-0">
+          <span className="d-inline-flex align-items-center gap-1">
+            <span className="d-inline-flex align-items-center">
               <i className="fas fa-microchip" />
             </span>
             <span>CPU Usage</span>
           </span>
         </p>
-        <div className="card-header-icon">
-          <div className="field is-grouped">
-            <div className="control">
+        <div>
+          <div className="d-flex gap-2">
+            <div>
               <button
-                className={`button is-small ${cpuSeriesVisibility.overall ? "is-info" : "is-dark"}`}
+                className={`btn btn-sm ${cpuSeriesVisibility.overall ? "btn-info" : "btn-dark"}`}
                 onClick={() =>
                   setCpuSeriesVisibility((prev) => ({
                     ...prev,
@@ -35,9 +35,9 @@ const CpuChart = ({
                 Avg
               </button>
             </div>
-            <div className="control">
+            <div>
               <button
-                className={`button is-small ${cpuSeriesVisibility.cores ? "is-info" : "is-dark"}`}
+                className={`btn btn-sm ${cpuSeriesVisibility.cores ? "btn-info" : "btn-dark"}`}
                 onClick={() =>
                   setCpuSeriesVisibility((prev) => ({
                     ...prev,
@@ -49,9 +49,9 @@ const CpuChart = ({
                 Cores
               </button>
             </div>
-            <div className="control">
+            <div>
               <button
-                className={`button is-small ${cpuSeriesVisibility.load ? "is-info" : "is-dark"}`}
+                className={`btn btn-sm ${cpuSeriesVisibility.load ? "btn-info" : "btn-dark"}`}
                 onClick={() =>
                   setCpuSeriesVisibility((prev) => ({
                     ...prev,
@@ -63,13 +63,13 @@ const CpuChart = ({
                 Load
               </button>
             </div>
-            <div className="control">
+            <div>
               <button
-                className="button is-small is-light"
+                className="btn btn-sm btn-light"
                 onClick={() => expandChart("cpu", "cpu")}
                 title="Expand chart to full size"
               >
-                <span className="icon">
+                <span className="d-inline-flex align-items-center">
                   <i className="fas fa-expand" />
                 </span>
               </button>
@@ -77,7 +77,7 @@ const CpuChart = ({
           </div>
         </div>
       </header>
-      <div className="card-content p-2">
+      <div className="card-body p-2">
         {cpuChartData.overall.length > 0 ? (
           <div>
             <Chart
@@ -163,8 +163,8 @@ const CpuChart = ({
             />
           </div>
         ) : (
-          <div className="has-text-centered p-4">
-            <p className="has-text-grey">No CPU data available</p>
+          <div className="text-center p-4">
+            <p className="text-muted">No CPU data available</p>
           </div>
         )}
       </div>

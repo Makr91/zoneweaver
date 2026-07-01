@@ -70,63 +70,60 @@ const ArtifactCopyModal = ({
       showCancelButton
     >
       {error && (
-        <div className="notification is-danger">
-          <button className="delete" onClick={() => setError("")} />
+        <div className="alert alert-danger">
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          />
           {error}
         </div>
       )}
 
-      <div className="field">
-        <label htmlFor="copy-artifact-name" className="label">
+      <div className="mb-3">
+        <label htmlFor="copy-artifact-name" className="form-label">
           Artifact
         </label>
-        <div className="control">
-          <input
-            id="copy-artifact-name"
-            className="input"
-            type="text"
-            value={artifact.filename}
-            readOnly
-          />
-        </div>
+        <input
+          id="copy-artifact-name"
+          className="form-control"
+          type="text"
+          value={artifact.filename}
+          readOnly
+        />
       </div>
 
-      <div className="field">
-        <label htmlFor="copy-current-location" className="label">
+      <div className="mb-3">
+        <label htmlFor="copy-current-location" className="form-label">
           Current Storage Location
         </label>
-        <div className="control">
-          <input
-            id="copy-current-location"
-            className="input"
-            type="text"
-            value={`${artifact.storage_location.name} (${artifact.storage_location.path})`}
-            readOnly
-          />
-        </div>
+        <input
+          id="copy-current-location"
+          className="form-control"
+          type="text"
+          value={`${artifact.storage_location.name} (${artifact.storage_location.path})`}
+          readOnly
+        />
       </div>
 
-      <div className="field">
-        <label htmlFor="copy-destination-location" className="label">
+      <div className="mb-3">
+        <label htmlFor="copy-destination-location" className="form-label">
           Destination Storage Location
         </label>
-        <div className="control">
-          <div className="select is-fullwidth">
-            <select
-              id="copy-destination-location"
-              value={destinationStoragePathId}
-              onChange={(e) => setDestinationStoragePathId(e.target.value)}
-              disabled={loading}
-            >
-              <option value="">Select a destination</option>
-              {availableStoragePaths.map((path) => (
-                <option key={path.id} value={path.id}>
-                  {path.name} ({path.path})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <select
+          id="copy-destination-location"
+          className="form-select"
+          value={destinationStoragePathId}
+          onChange={(e) => setDestinationStoragePathId(e.target.value)}
+          disabled={loading}
+        >
+          <option value="">Select a destination</option>
+          {availableStoragePaths.map((path) => (
+            <option key={path.id} value={path.id}>
+              {path.name} ({path.path})
+            </option>
+          ))}
+        </select>
       </div>
     </FormModal>
   );

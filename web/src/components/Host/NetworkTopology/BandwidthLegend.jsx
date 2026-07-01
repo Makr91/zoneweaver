@@ -28,104 +28,91 @@ const BandwidthLegend = ({ horizontal = false }) => {
     // Horizontal layout for bottom placement
     return (
       <div className="card">
-        <div className="card-content p-3">
-          <h6 className="title is-6 mb-3 has-text-centered">
-            <span className="icon-text">
-              <span className="icon is-small">
-                <i className="fas fa-info-circle" />
-              </span>
-              <span>Network Legend</span>
-            </span>
+        <div className="card-body p-3">
+          <h6 className="fs-6 fw-bold mb-3 text-center">
+            <i className="fas fa-info-circle me-2" />
+            <span>Network Legend</span>
           </h6>
 
-          <div className="columns is-multiline is-mobile">
+          <div className="row g-3">
             {/* Bandwidth Saturation */}
-            <div className="column is-one-third">
-              <p className="has-text-weight-bold is-size-7 mb-2">
-                Bandwidth Saturation
-              </p>
-              <div className="field is-grouped is-grouped-multiline">
+            <div className="col-12 col-md-4">
+              <p className="fw-bold small mb-2">Bandwidth Saturation</p>
+              <div className="d-flex flex-wrap gap-2">
                 {bandwidthRanges.map((range) => (
-                  <div key={range.label} className="control">
-                    <span
-                      className="tag is-small zw-bandwidth-tag"
-                      style={{
-                        backgroundColor: range.color,
-                      }}
-                      title={range.description}
-                    >
-                      {range.label}
-                    </span>
-                  </div>
+                  <span
+                    key={range.label}
+                    className="badge zw-bandwidth-tag"
+                    style={{
+                      backgroundColor: range.color,
+                    }}
+                    title={range.description}
+                  >
+                    {range.label}
+                  </span>
                 ))}
               </div>
             </div>
 
             {/* Node Types */}
-            <div className="column is-one-third">
-              <p className="has-text-weight-bold is-size-7 mb-2">Node Types</p>
-              <div className="field is-grouped is-grouped-multiline">
+            <div className="col-12 col-md-4">
+              <p className="fw-bold small mb-2">Node Types</p>
+              <div className="d-flex flex-wrap gap-2">
                 {nodeTypes.map((type) => (
-                  <div key={type.label} className="control">
-                    <span className="tag is-small is-white">
-                      <span
-                        className="icon is-small mr-1"
-                        style={{ color: type.color }}
-                      >
-                        <i className={`fas ${type.icon}`} />
-                      </span>
-                      <span className="is-size-7">{type.label}</span>
-                    </span>
-                  </div>
+                  <span
+                    key={type.label}
+                    className="badge text-bg-light d-inline-flex align-items-center gap-1"
+                  >
+                    <i
+                      className={`fas ${type.icon}`}
+                      style={{ color: type.color }}
+                    />
+                    <span className="small">{type.label}</span>
+                  </span>
                 ))}
               </div>
             </div>
 
             {/* Traffic Flow */}
-            <div className="column is-one-third">
-              <p className="has-text-weight-bold is-size-7 mb-2">
-                Traffic Flow
-              </p>
-              <div className="field is-grouped is-grouped-multiline">
+            <div className="col-12 col-md-4">
+              <p className="fw-bold small mb-2">Traffic Flow</p>
+              <div className="d-flex flex-wrap gap-2">
                 {trafficIndicators.map((indicator) => (
-                  <div key={indicator.label} className="control">
-                    <span className="tag is-small is-white">
-                      {indicator.symbol ? (
-                        <span
-                          className="has-text-weight-bold mr-1"
-                          style={{ color: indicator.color }}
-                        >
-                          {indicator.symbol}
-                        </span>
-                      ) : (
-                        <div
-                          className={`mr-1 zw-traffic-line-16 ${
-                            indicator.style === "dashed"
-                              ? "zw-traffic-line-dashed"
-                              : "zw-traffic-line-solid"
-                          } ${
-                            indicator.style === "thick"
-                              ? "zw-traffic-line-thick-16"
-                              : "zw-traffic-line-normal"
-                          }`}
-                          style={{
-                            backgroundColor: indicator.color || "#6b7280",
-                            borderColor: indicator.color || "#6b7280",
-                          }}
-                        />
-                      )}
-                      <span className="is-size-7">{indicator.label}</span>
-                    </span>
-                  </div>
-                ))}
-                <div className="control">
-                  <span className="tag is-small is-white">
-                    <span className="icon is-small mr-1">
-                      <i className="fas fa-circle zw-status-success " />
-                    </span>
-                    <span className="is-size-7">Live Traffic</span>
+                  <span
+                    key={indicator.label}
+                    className="badge text-bg-light d-inline-flex align-items-center gap-1"
+                  >
+                    {indicator.symbol ? (
+                      <span
+                        className="fw-bold"
+                        style={{ color: indicator.color }}
+                      >
+                        {indicator.symbol}
+                      </span>
+                    ) : (
+                      <div
+                        className={`zw-traffic-line-16 ${
+                          indicator.style === "dashed"
+                            ? "zw-traffic-line-dashed"
+                            : "zw-traffic-line-solid"
+                        } ${
+                          indicator.style === "thick"
+                            ? "zw-traffic-line-thick-16"
+                            : "zw-traffic-line-normal"
+                        }`}
+                        style={{
+                          backgroundColor: indicator.color || "#6b7280",
+                          borderColor: indicator.color || "#6b7280",
+                        }}
+                      />
+                    )}
+                    <span className="small">{indicator.label}</span>
                   </span>
-                </div>
+                ))}
+                <span className="badge text-bg-light d-inline-flex align-items-center gap-1">
+                  <i className="fas fa-circle zw-status-success " />
+                  <span className="small">Live Traffic</span>
+                </span>
               </div>
             </div>
           </div>
@@ -137,42 +124,33 @@ const BandwidthLegend = ({ horizontal = false }) => {
   // Vertical layout for sidebar placement
   return (
     <div className="card">
-      <div className="card-content p-3">
-        <h6 className="title is-6 mb-3">
-          <span className="icon-text">
-            <span className="icon is-small">
-              <i className="fas fa-info-circle" />
-            </span>
-            <span>Network Legend</span>
-          </span>
+      <div className="card-body p-3">
+        <h6 className="fs-6 fw-bold mb-3">
+          <i className="fas fa-info-circle me-2" />
+          <span>Network Legend</span>
         </h6>
 
         {/* Bandwidth Saturation */}
-        <div className="field">
-          <p className="has-text-weight-bold is-size-7 mb-2">
-            Bandwidth Saturation
-          </p>
-          <div className="content">
+        <div className="mb-3">
+          <p className="fw-bold small mb-2">Bandwidth Saturation</p>
+          <div>
             {bandwidthRanges.map((range) => (
-              <div key={range.label} className="level is-mobile mb-1">
-                <div className="level-left">
-                  <div className="level-item">
-                    <span
-                      className="tag is-small zw-bandwidth-tag-vertical"
-                      style={{
-                        backgroundColor: range.color,
-                      }}
-                    >
-                      {range.label}
-                    </span>
-                  </div>
+              <div
+                key={range.label}
+                className="d-flex justify-content-between align-items-center mb-1"
+              >
+                <div className="d-flex align-items-center gap-2">
+                  <span
+                    className="badge zw-bandwidth-tag-vertical"
+                    style={{
+                      backgroundColor: range.color,
+                    }}
+                  >
+                    {range.label}
+                  </span>
                 </div>
-                <div className="level-right">
-                  <div className="level-item">
-                    <span className="is-size-7 has-text-grey">
-                      {range.description}
-                    </span>
-                  </div>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="small text-muted">{range.description}</span>
                 </div>
               </div>
             ))}
@@ -180,93 +158,74 @@ const BandwidthLegend = ({ horizontal = false }) => {
         </div>
 
         {/* Node Types */}
-        <div className="field">
-          <p className="has-text-weight-bold is-size-7 mb-2">Node Types</p>
-          <div className="content">
+        <div className="mb-3">
+          <p className="fw-bold small mb-2">Node Types</p>
+          <div>
             {nodeTypes.map((type) => (
-              <div key={type.label} className="level is-mobile mb-1">
-                <div className="level-left">
-                  <div className="level-item">
-                    <span
-                      className="icon is-small mr-2"
-                      style={{ color: type.color }}
-                    >
-                      <i className={`fas ${type.icon}`} />
-                    </span>
-                    <span className="is-size-7">{type.label}</span>
-                  </div>
-                </div>
+              <div key={type.label} className="d-flex align-items-center mb-1">
+                <i
+                  className={`fas ${type.icon} me-2`}
+                  style={{ color: type.color }}
+                />
+                <span className="small">{type.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Traffic Flow */}
-        <div className="field">
-          <p className="has-text-weight-bold is-size-7 mb-2">Traffic Flow</p>
-          <div className="content">
+        <div className="mb-3">
+          <p className="fw-bold small mb-2">Traffic Flow</p>
+          <div>
             {trafficIndicators.map((indicator) => (
-              <div key={indicator.label} className="level is-mobile mb-1">
-                <div className="level-left">
-                  <div className="level-item">
-                    {indicator.symbol ? (
-                      <span
-                        className="has-text-weight-bold mr-2"
-                        style={{ color: indicator.color }}
-                      >
-                        {indicator.symbol}
-                      </span>
-                    ) : (
-                      <div
-                        className={`mr-2 zw-traffic-line-20 ${
-                          indicator.style === "dashed"
-                            ? "zw-traffic-line-dashed"
-                            : "zw-traffic-line-solid"
-                        } ${
-                          indicator.style === "thick"
-                            ? "zw-traffic-line-thick"
-                            : "zw-traffic-line-normal"
-                        }`}
-                        style={{
-                          backgroundColor: indicator.color || "#6b7280",
-                          borderColor: indicator.color || "#6b7280",
-                        }}
-                      />
-                    )}
-                    <span className="is-size-7">{indicator.label}</span>
-                  </div>
-                </div>
+              <div
+                key={indicator.label}
+                className="d-flex align-items-center mb-1"
+              >
+                {indicator.symbol ? (
+                  <span
+                    className="fw-bold me-2"
+                    style={{ color: indicator.color }}
+                  >
+                    {indicator.symbol}
+                  </span>
+                ) : (
+                  <div
+                    className={`me-2 zw-traffic-line-20 ${
+                      indicator.style === "dashed"
+                        ? "zw-traffic-line-dashed"
+                        : "zw-traffic-line-solid"
+                    } ${
+                      indicator.style === "thick"
+                        ? "zw-traffic-line-thick"
+                        : "zw-traffic-line-normal"
+                    }`}
+                    style={{
+                      backgroundColor: indicator.color || "#6b7280",
+                      borderColor: indicator.color || "#6b7280",
+                    }}
+                  />
+                )}
+                <span className="small">{indicator.label}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Animation Indicators */}
-        <div className="field">
-          <div className="notification is-small p-2">
-            <div className="level is-mobile mb-1">
-              <div className="level-left">
-                <div className="level-item">
-                  <span className="icon is-small">
-                    <i className="fas fa-circle zw-status-success " />
-                  </span>
-                  <span className="ml-2 is-size-7">
-                    Animated particles show live traffic
-                  </span>
-                </div>
-              </div>
+        <div className="mb-3">
+          <div className="alert p-2">
+            <div className="d-flex align-items-center mb-1">
+              <i className="fas fa-circle zw-status-success " />
+              <span className="ms-2 small">
+                Animated particles show live traffic
+              </span>
             </div>
-            <div className="level is-mobile">
-              <div className="level-left">
-                <div className="level-item">
-                  <span className="icon is-small">
-                    <i className="fas fa-bolt zw-status-warning " />
-                  </span>
-                  <span className="ml-2 is-size-7">
-                    Faster animation = higher traffic
-                  </span>
-                </div>
-              </div>
+            <div className="d-flex align-items-center">
+              <i className="fas fa-bolt zw-status-warning " />
+              <span className="ms-2 small">
+                Faster animation = higher traffic
+              </span>
             </div>
           </div>
         </div>

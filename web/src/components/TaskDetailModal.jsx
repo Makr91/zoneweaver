@@ -14,40 +14,42 @@ const formatDate = (dateStr) => {
 
 const renderPriorityBadge = (priority) => {
   if (priority >= 100) {
-    return <span className="tag is-danger">CRITICAL</span>;
+    return <span className="badge text-bg-danger">CRITICAL</span>;
   }
   if (priority >= 80) {
-    return <span className="tag is-warning">HIGH</span>;
+    return <span className="badge text-bg-warning">HIGH</span>;
   }
   if (priority >= 60) {
-    return <span className="tag is-info">MEDIUM</span>;
+    return <span className="badge text-bg-info">MEDIUM</span>;
   }
   if (priority >= 50) {
-    return <span className="tag is-link">SERVICE</span>;
+    return <span className="badge text-bg-primary">SERVICE</span>;
   }
   if (priority >= 40) {
-    return <span className="tag is-light">LOW</span>;
+    return <span className="badge text-bg-light">LOW</span>;
   }
-  return <span className="tag is-light">BACKGROUND</span>;
+  return <span className="badge text-bg-light">BACKGROUND</span>;
 };
 
 const renderStatusBadge = (status) => {
   const classMap = {
-    completed: "is-success",
-    failed: "is-danger",
-    running: "is-warning",
-    pending: "is-light",
-    cancelled: "is-dark",
+    completed: "text-bg-success",
+    failed: "text-bg-danger",
+    running: "text-bg-warning",
+    pending: "text-bg-light",
+    cancelled: "text-bg-dark",
   };
   return (
-    <span className={`tag ${classMap[status] || "is-light"}`}>{status}</span>
+    <span className={`badge ${classMap[status] || "text-bg-light"}`}>
+      {status}
+    </span>
   );
 };
 
 const InfoRow = ({ label, children }) => (
-  <div className="columns is-mobile mb-1">
-    <div className="column is-4 has-text-grey">{label}</div>
-    <div className="column">{children}</div>
+  <div className="row mb-1">
+    <div className="col-4 text-muted">{label}</div>
+    <div className="col">{children}</div>
   </div>
 );
 
@@ -166,133 +168,145 @@ const TaskDetailModal = ({ task, onClose }) => {
         onClose={onClose}
         title={`Task: ${task.operation}`}
         icon="fas fa-tasks"
-        className="is-large"
       >
         {/* Task Info */}
-        <div className="box">
-          <h6 className="title is-6">Details</h6>
-          <InfoRow label="ID">{task.id}</InfoRow>
-          <InfoRow label="Operation">{task.operation}</InfoRow>
-          <InfoRow label="Target">{task.zone_name}</InfoRow>
-          <InfoRow label="Status">{renderStatusBadge(task.status)}</InfoRow>
-          <InfoRow label="Priority">
-            {renderPriorityBadge(task.priority)}
-          </InfoRow>
-          <InfoRow label="Created By">{task.created_by || "-"}</InfoRow>
-          <InfoRow label="Created">{formatDate(task.created_at)}</InfoRow>
-          <InfoRow label="Started">{formatDate(task.started_at)}</InfoRow>
-          <InfoRow label="Completed">{formatDate(task.completed_at)}</InfoRow>
-          {task.error_message && (
-            <InfoRow label="Error">
-              <span className="has-text-danger">{task.error_message}</span>
+        <div className="card">
+          <div className="card-body">
+            <h6 className="fs-6 fw-bold">Details</h6>
+            <InfoRow label="ID">{task.id}</InfoRow>
+            <InfoRow label="Operation">{task.operation}</InfoRow>
+            <InfoRow label="Target">{task.zone_name}</InfoRow>
+            <InfoRow label="Status">{renderStatusBadge(task.status)}</InfoRow>
+            <InfoRow label="Priority">
+              {renderPriorityBadge(task.priority)}
             </InfoRow>
-          )}
-          {task.depends_on && (
-            <InfoRow label="Depends On">{task.depends_on}</InfoRow>
-          )}
-          {task.parent_task_id && (
-            <InfoRow label="Parent Task">{task.parent_task_id}</InfoRow>
-          )}
+            <InfoRow label="Created By">{task.created_by || "-"}</InfoRow>
+            <InfoRow label="Created">{formatDate(task.created_at)}</InfoRow>
+            <InfoRow label="Started">{formatDate(task.started_at)}</InfoRow>
+            <InfoRow label="Completed">{formatDate(task.completed_at)}</InfoRow>
+            {task.error_message && (
+              <InfoRow label="Error">
+                <span className="text-danger">{task.error_message}</span>
+              </InfoRow>
+            )}
+            {task.depends_on && (
+              <InfoRow label="Depends On">{task.depends_on}</InfoRow>
+            )}
+            {task.parent_task_id && (
+              <InfoRow label="Parent Task">{task.parent_task_id}</InfoRow>
+            )}
+          </div>
         </div>
 
         {/* Progress */}
         {task.progress_percent > 0 && (
-          <div className="box">
-            <h6 className="title is-6">Progress</h6>
-            <progress
-              className="progress is-primary"
-              value={task.progress_percent}
-              max="100"
-            >
-              {task.progress_percent}%
-            </progress>
-            <p className="has-text-centered">{task.progress_percent}%</p>
-            {task.progress_info && (
-              <pre className="is-size-7 mt-2">
-                {JSON.stringify(task.progress_info, null, 2)}
-              </pre>
-            )}
+          <div className="card">
+            <div className="card-body">
+              <h6 className="fs-6 fw-bold">Progress</h6>
+              <div
+                className="progress"
+                role="progressbar"
+                aria-valuenow={task.progress_percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="progress-bar bg-primary"
+                  style={{ width: `${task.progress_percent}%` }}
+                />
+              </div>
+              <p className="text-center">{task.progress_percent}%</p>
+              {task.progress_info && (
+                <pre className="small mt-2">
+                  {JSON.stringify(task.progress_info, null, 2)}
+                </pre>
+              )}
+            </div>
           </div>
         )}
 
         {/* Metadata */}
         {parsedMetadata && (
-          <div className="box">
-            <h6 className="title is-6">Metadata</h6>
-            <pre
-              className="is-size-7"
-              style={{ maxHeight: "200px", overflow: "auto" }}
-            >
-              {typeof parsedMetadata === "string"
-                ? parsedMetadata
-                : JSON.stringify(parsedMetadata, null, 2)}
-            </pre>
+          <div className="card">
+            <div className="card-body">
+              <h6 className="fs-6 fw-bold">Metadata</h6>
+              <pre
+                className="small"
+                style={{ maxHeight: "200px", overflow: "auto" }}
+              >
+                {typeof parsedMetadata === "string"
+                  ? parsedMetadata
+                  : JSON.stringify(parsedMetadata, null, 2)}
+              </pre>
+            </div>
           </div>
         )}
 
         {/* Task Output */}
-        <div className="box">
-          <h6 className="title is-6">
-            Output
-            {task.status === "running" && (
-              <span className="ml-2">
-                <i className="fas fa-spinner fa-spin is-size-7" />
-              </span>
-            )}
-          </h6>
-          <div
-            ref={outputRef}
-            style={{
-              maxHeight: "300px",
-              overflow: "auto",
-              backgroundColor: "#1a1a2e",
-              borderRadius: "4px",
-              padding: "8px",
-              fontFamily: "monospace",
-              fontSize: "12px",
-            }}
-          >
-            {output.length === 0 && (
-              <span className="has-text-grey-light">No output available</span>
-            )}
-            {output.map((entry) => (
-              <div
-                key={entry._ui_id}
-                className={
-                  entry.stream === "stderr"
-                    ? "has-text-danger"
-                    : "has-text-white"
-                }
-              >
-                {entry.data}
-              </div>
-            ))}
+        <div className="card">
+          <div className="card-body">
+            <h6 className="fs-6 fw-bold">
+              Output
+              {task.status === "running" && (
+                <span className="ms-2">
+                  <i className="fas fa-spinner fa-spin small" />
+                </span>
+              )}
+            </h6>
+            <div
+              ref={outputRef}
+              style={{
+                maxHeight: "300px",
+                overflow: "auto",
+                backgroundColor: "#1a1a2e",
+                borderRadius: "4px",
+                padding: "8px",
+                fontFamily: "monospace",
+                fontSize: "12px",
+              }}
+            >
+              {output.length === 0 && (
+                <span className="text-muted">No output available</span>
+              )}
+              {output.map((entry) => (
+                <div
+                  key={entry._ui_id}
+                  className={
+                    entry.stream === "stderr" ? "text-danger" : "text-white"
+                  }
+                >
+                  {entry.data}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Subtasks */}
         {subtasks.length > 0 && (
-          <div className="box">
-            <h6 className="title is-6">Subtasks ({subtasks.length})</h6>
-            <table className="table is-fullwidth is-striped is-narrow">
-              <thead>
-                <tr>
-                  <th>Operation</th>
-                  <th>Target</th>
-                  <th>Status</th>
-                  <th>Progress</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subtasks.map((st) => (
-                  <SubtaskRow
-                    key={st.id}
-                    task={st}
-                    onSelect={handleSubtaskSelect}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className="card">
+            <div className="card-body">
+              <h6 className="fs-6 fw-bold">Subtasks ({subtasks.length})</h6>
+              <table className="table table-striped table-sm">
+                <thead>
+                  <tr>
+                    <th>Operation</th>
+                    <th>Target</th>
+                    <th>Status</th>
+                    <th>Progress</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subtasks.map((st) => (
+                    <SubtaskRow
+                      key={st.id}
+                      task={st}
+                      onSelect={handleSubtaskSelect}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </ContentModal>

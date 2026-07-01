@@ -1,4 +1,5 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
+import PropTypes from "prop-types";
 import { useState, useEffect, useCallback } from "react";
 
 import { useAuth } from "../contexts/AuthContext";
@@ -52,6 +53,76 @@ const organizeBySection = (settingsData) => {
   });
 
   return sections;
+};
+
+// Editable JSON field for array/object values that have no flat representation
+// (e.g. artifact storage locations: an array of objects, which would otherwise
+// stringify to "[object Object]"). The raw text is held locally so the user can
+// type freely; the value is only committed to settings when the JSON parses.
+const JsonField = ({ fieldId, label, value, onChange }) => {
+  const [text, setText] = useState(() => JSON.stringify(value, null, 2));
+  const [error, setError] = useState("");
+
+  // Resync when the value changes from outside (settings reload / server switch)
+  // without clobbering an in-progress edit that already matches the value.
+  useEffect(() => {
+    setText((prev) => {
+      try {
+        if (JSON.stringify(JSON.parse(prev)) === JSON.stringify(value)) {
+          return prev;
+        }
+      } catch {
+        // prev is mid-edit invalid JSON; fall through to adopt the new value
+      }
+      return JSON.stringify(value, null, 2);
+    });
+    setError("");
+  }, [value]);
+
+  const handleChange = (e) => {
+    const next = e.target.value;
+    setText(next);
+    try {
+      onChange(JSON.parse(next));
+      setError("");
+    } catch (parseErr) {
+      setError(parseErr.message);
+    }
+  };
+
+  return (
+    <div className="col-12">
+      <div className="mb-3">
+        <label className="form-label" htmlFor={fieldId}>
+          {label}
+        </label>
+        <textarea
+          id={fieldId}
+          className={`form-control font-monospace${error ? " is-invalid" : ""}`}
+          rows="8"
+          value={text}
+          onChange={handleChange}
+          spellCheck={false}
+        />
+        {error ? (
+          <div className="invalid-feedback">
+            Invalid JSON — changes won&apos;t be saved until corrected.
+          </div>
+        ) : (
+          <p className="form-text text-muted">
+            Structured value, edited as JSON.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+JsonField.propTypes = {
+  fieldId: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.array, PropTypes.object]).isRequired,
+  onChange: PropTypes.func.isRequired,
 };
 
 const ZoneweaverAPISettings = () => {
@@ -496,110 +567,98 @@ const ZoneweaverAPISettings = () => {
 
   // Render orchestration control panel
   const renderOrchestrationControls = () => (
-    <div className="box mb-4 is-dark">
-      <h4 className="title is-6 mb-3">
-        <span className="icon-text">
-          <span className="icon has-text-info">
-            <i className="fas fa-layer-group" />
-          </span>
+    <div className="card mb-4 bg-dark text-light">
+      <div className="card-body">
+        <h4 className="fs-6 fw-bold mb-3">
+          <i className="fas fa-layer-group text-info me-2" />
           <span>Zone Orchestration Control</span>
-        </span>
-      </h4>
+        </h4>
 
-      <div className="columns">
-        <div className="column is-half">
-          <div className="field">
-            <p className="label is-size-7">Status</p>
-            <div className="control">
-              <span
-                className={`tag ${orchestrationStatus?.orchestration_enabled ? "is-success" : "is-grey"}`}
-              >
-                {orchestrationStatus?.orchestration_enabled
-                  ? "🟢 Enabled"
-                  : "🔴 Disabled"}
-              </span>
-              <span className="tag is-info ml-2">
-                Controller: {orchestrationStatus?.controller || "unknown"}
-              </span>
+        <div className="row g-3">
+          <div className="col-12 col-lg-6">
+            <div className="mb-3">
+              <p className="form-label small">Status</p>
+              <div>
+                <span
+                  className={`badge ${orchestrationStatus?.orchestration_enabled ? "text-bg-success" : "text-bg-secondary"}`}
+                >
+                  {orchestrationStatus?.orchestration_enabled
+                    ? "🟢 Enabled"
+                    : "🔴 Disabled"}
+                </span>
+                <span className="badge text-bg-info ms-2">
+                  Controller: {orchestrationStatus?.controller || "unknown"}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="column is-half">
-          <div className="field is-grouped">
-            <div className="control">
+          <div className="col-12 col-lg-6">
+            <div className="d-flex gap-2">
               <button
-                className="button is-small is-success"
+                type="button"
+                className="btn btn-sm btn-success"
                 onClick={handleEnableOrchestration}
                 disabled={
                   orchestrationLoading ||
                   orchestrationStatus?.orchestration_enabled
                 }
               >
-                <span className="icon is-small">
-                  <i className="fas fa-play" />
-                </span>
+                <i className="fas fa-play me-2" />
                 <span>Enable</span>
               </button>
-            </div>
-            <div className="control">
               <button
-                className="button is-small is-warning"
+                type="button"
+                className="btn btn-sm btn-warning"
                 onClick={handleDisableOrchestration}
                 disabled={
                   orchestrationLoading ||
                   !orchestrationStatus?.orchestration_enabled
                 }
               >
-                <span className="icon is-small">
-                  <i className="fas fa-pause" />
-                </span>
+                <i className="fas fa-pause me-2" />
                 <span>Disable</span>
               </button>
-            </div>
-            <div className="control">
               <button
-                className="button is-small is-info"
+                type="button"
+                className="btn btn-sm btn-info"
                 onClick={() => handleTestOrchestration()}
                 disabled={orchestrationLoading}
               >
-                <span className="icon is-small">
-                  <i className="fas fa-vial" />
-                </span>
+                <i className="fas fa-vial me-2" />
                 <span>Test</span>
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {zonePriorities && (
-        <div className="mt-4">
-          <p className="label is-size-7">Zone Priorities</p>
-          <div className="field">
-            <div className="control">
-              <div className="tags">
+        {zonePriorities && (
+          <div className="mt-4">
+            <p className="form-label small">Zone Priorities</p>
+            <div className="mb-3">
+              <div className="d-flex flex-wrap gap-2">
                 {Object.entries(zonePriorities.priority_groups || {}).map(
                   ([priority, zones]) => (
-                    <span key={priority} className="tag is-light">
+                    <span key={priority} className="badge text-bg-light">
                       Priority {priority}: {zones.length} zones
                     </span>
                   )
                 )}
               </div>
             </div>
+            <p className="form-text text-muted">
+              Total zones: {zonePriorities.total_zones || 0} |
+              <button
+                type="button"
+                className="btn btn-link btn-sm p-0 ms-1"
+                onClick={loadZonePriorities}
+                disabled={orchestrationLoading}
+              >
+                Refresh
+              </button>
+            </p>
           </div>
-          <p className="help">
-            Total zones: {zonePriorities.total_zones || 0} |
-            <button
-              className="button is-text is-small p-0 ml-1"
-              onClick={loadZonePriorities}
-              disabled={orchestrationLoading}
-            >
-              Refresh
-            </button>
-          </p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 
@@ -607,92 +666,105 @@ const ZoneweaverAPISettings = () => {
     return <div>Access Denied</div>;
   }
 
-  const renderField = (item, isIndented = false) => {
+  const renderField = (item) => {
     const { key, value, path } = item;
     const fieldId = path.join(".");
 
-    let inputElement;
+    // Boolean → Bootstrap switch; the label carries the field name.
     if (typeof value === "boolean") {
-      inputElement = (
-        <label className="switch is-medium">
-          <input
-            id={fieldId}
-            type="checkbox"
-            checked={value}
-            onChange={(e) => handleSettingChange(path, e.target.checked)}
-          />
-          <span className="check" />
-          <span className="control-label">
-            {key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-          </span>
-        </label>
+      return (
+        <div key={fieldId} className="col-12 col-lg-6">
+          <div className="mb-3">
+            <div className="form-check form-switch">
+              <input
+                id={fieldId}
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                checked={value}
+                onChange={(e) => handleSettingChange(path, e.target.checked)}
+              />
+              <label className="form-check-label" htmlFor={fieldId}>
+                {key
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+              </label>
+            </div>
+          </div>
+        </div>
       );
-    } else if (Array.isArray(value)) {
-      inputElement = (
-        <textarea
-          id={fieldId}
-          className="textarea is-small"
-          rows="10"
-          value={value.join("\n")}
-          onChange={(e) =>
-            handleSettingChange(path, e.target.value.split("\n"))
-          }
-        />
-      );
-    } else {
-      inputElement = (
-        <input
-          id={fieldId}
-          className="input is-small"
-          type={typeof value === "number" ? "number" : "text"}
+    }
+
+    const isArray = Array.isArray(value);
+
+    // Arrays of objects (e.g. artifact storage locations) have no flat input —
+    // edit them as JSON instead of stringifying each entry to "[object Object]".
+    if (
+      isArray &&
+      value.some((entry) => entry !== null && typeof entry === "object")
+    ) {
+      return (
+        <JsonField
+          key={fieldId}
+          fieldId={fieldId}
+          label={key.replace(/_/g, " ")}
           value={value}
-          onChange={(e) =>
-            handleSettingChange(
-              path,
-              typeof value === "number"
-                ? Number(e.target.value)
-                : e.target.value
-            )
-          }
+          onChange={(parsed) => handleSettingChange(path, parsed)}
         />
       );
     }
 
+    const inputElement = isArray ? (
+      <textarea
+        id={fieldId}
+        className="form-control"
+        rows="6"
+        value={value.join("\n")}
+        onChange={(e) => handleSettingChange(path, e.target.value.split("\n"))}
+      />
+    ) : (
+      <input
+        id={fieldId}
+        className="form-control"
+        type={typeof value === "number" ? "number" : "text"}
+        value={value}
+        onChange={(e) =>
+          handleSettingChange(
+            path,
+            typeof value === "number" ? Number(e.target.value) : e.target.value
+          )
+        }
+      />
+    );
+
     return (
-      <div key={fieldId} className="field is-horizontal mb-1">
-        <div
-          className={`field-label is-small is-flex-grow-0 ${
-            isIndented ? "pl-5" : "pl-0"
-          }`}
-        >
-          <label className="label is-size-7 has-text-left" htmlFor={fieldId}>
+      <div key={fieldId} className={isArray ? "col-12" : "col-12 col-lg-6"}>
+        <div className="mb-3">
+          <label className="form-label" htmlFor={fieldId}>
             {key.replace(/_/g, " ")}
           </label>
-        </div>
-        <div className="field-body">
-          <div className="field">
-            <div className="control">{inputElement}</div>
-          </div>
+          {inputElement}
         </div>
       </div>
     );
   };
 
-  const renderSectionContent = (content) =>
-    content.map((item) => {
+  // Render a list of items (fields + nested subsections) as grid columns in a row.
+  const renderItems = (items) =>
+    items.map((item) => {
       if (item.type === "subsection") {
         return (
-          <div key={item.name} className="mb-4">
-            <h5 className="subtitle is-6 has-text-weight-semibold has-text-grey mb-2">
+          <div key={item.name} className="col-12">
+            <h4 className="fs-6 fw-semibold text-muted mt-2 mb-2">
               {item.name
                 .replace(/_/g, " ")
                 .replace(/\b\w/g, (l) => l.toUpperCase())}
-            </h5>
-            <div className="ml-4">{renderSectionContent(item.fields)}</div>
+            </h4>
+            <div className="row g-3">{renderItems(item.fields)}</div>
           </div>
         );
       }
-      return renderField(item, false);
+      return renderField(item);
     });
 
   return (
@@ -703,147 +775,163 @@ const ZoneweaverAPISettings = () => {
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
       {/* Use consistent toggle switch styling with main Zoneweaver settings */}
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
-          <div className="titlebar box active level is-mobile mb-0 p-3">
-            <div className="level-left">
+      <div className="container-fluid p-0">
+        <div className="card">
+          <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
               <strong>Zoneweaver API System Settings</strong>
             </div>
-            <div className="level-right">
+            <div className="d-flex gap-2">
               <button
-                className="button is-small is-primary mr-2"
+                type="button"
+                className="btn btn-sm btn-primary"
                 onClick={saveSettings}
                 disabled={loading || !settings}
               >
-                <span className="icon is-small">
-                  <i className="fas fa-save" />
-                </span>
+                <i className="fas fa-save me-2" />
                 <span>Save</span>
               </button>
               <button
-                className="button is-small is-info mr-2"
+                type="button"
+                className="btn btn-sm btn-info"
                 onClick={createBackup}
                 disabled={loading}
               >
-                <span className="icon is-small">
-                  <i className="fas fa-download" />
-                </span>
+                <i className="fas fa-download me-2" />
                 <span>Backup</span>
               </button>
               <button
-                className="button is-small is-warning mr-2"
+                type="button"
+                className="btn btn-sm btn-warning"
                 onClick={() => setShowBackupModal(true)}
                 disabled={loading}
               >
-                <span className="icon is-small">
-                  <i className="fas fa-history" />
-                </span>
+                <i className="fas fa-history me-2" />
                 <span>Restore</span>
               </button>
               <button
-                className="button is-small is-danger"
+                type="button"
+                className="btn btn-sm btn-danger"
                 onClick={requestRestartServer}
                 disabled={loading}
               >
-                <span className="icon is-small">
-                  <i className="fas fa-redo" />
-                </span>
+                <i className="fas fa-redo me-2" />
                 <span>Restart</span>
               </button>
             </div>
           </div>
-          <div className="px-4">
-            {msg && <div className="notification is-infopy-2 mb-3">{msg}</div>}
+          {settings && currentServer && (
+            <ul className="nav nav-tabs px-3 pt-2 mb-0">
+              {organizeBySection(settings).map((section) => (
+                <li key={section.name} className="nav-item">
+                  <button
+                    type="button"
+                    className={`nav-link ${activeTab === section.name ? "active" : ""}`}
+                    onClick={() => setActiveTab(section.name)}
+                    role="tab"
+                    aria-selected={activeTab === section.name}
+                  >
+                    <span>
+                      {section.name
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </span>
+                  </button>
+                </li>
+              ))}
+              <li className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link ${activeTab === "api_management" ? "active" : ""}`}
+                  onClick={() => setActiveTab("api_management")}
+                  role="tab"
+                  aria-selected={activeTab === "api_management"}
+                >
+                  <span>API Management</span>
+                </button>
+              </li>
+            </ul>
+          )}
+
+          <div className="p-4">
+            {msg && <div className="alert alert-info py-2 mb-3">{msg}</div>}
             {!currentServer && (
-              <div className="notification is-warning">
+              <div className="alert alert-warning">
                 Please select a host from the navbar to manage its settings.
               </div>
             )}
-            {loading && <p className="has-text-grey">Loading...</p>}
+            {loading && <p className="text-muted">Loading...</p>}
             {settings && currentServer && (
-              <>
-                <div className="tabs is-boxed is-small">
-                  <ul>
-                    {organizeBySection(settings).map((section) => (
-                      <li
-                        key={section.name}
-                        className={
-                          activeTab === section.name ? "is-active" : ""
-                        }
-                      >
-                        <button
-                          className="button is-ghost"
-                          onClick={() => setActiveTab(section.name)}
-                          style={{ textDecoration: "none" }}
-                        >
-                          <span>
-                            {section.name
-                              .replace(/_/g, " ")
-                              .replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                    <li
-                      className={
-                        activeTab === "api_management" ? "is-active" : ""
-                      }
-                    >
-                      <button
-                        className="button is-ghost"
-                        onClick={() => setActiveTab("api_management")}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <span>API Management</span>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="tab-content">
-                  {organizeBySection(settings).map((section) => (
+              <div className="tab-content">
+                {organizeBySection(settings).map((section) => {
+                  const directFields = section.content.filter(
+                    (i) => i.type === "field"
+                  );
+                  const subsections = section.content.filter(
+                    (i) => i.type === "subsection"
+                  );
+                  return (
                     <div
                       key={section.name}
-                      className={`tab-pane ${activeTab !== section.name ? "is-hidden" : ""}`}
+                      className={`tab-pane ${activeTab === section.name ? "active" : ""}`}
                     >
                       {/* Special handling for orchestration sections */}
                       {isOrchestrationSection(section.name) &&
                         renderOrchestrationControls()}
 
-                      {section.name === "host_monitoring" ? (
-                        <div className="columns">
-                          <div className="column is-8">
-                            {renderSectionContent(section.content)}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="columns">
-                          <div className="column is-6">
-                            {renderSectionContent(
-                              section.content.slice(
-                                0,
-                                Math.ceil(section.content.length / 2)
-                              )
-                            )}
-                          </div>
-                          <div className="column is-6">
-                            {renderSectionContent(
-                              section.content.slice(
-                                Math.ceil(section.content.length / 2)
-                              )
-                            )}
+                      {directFields.length > 0 && (
+                        <div className="card mb-4">
+                          <div className="card-body">
+                            <h2 className="fs-5 fw-bold mb-3">
+                              {section.name
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                              <span className="badge text-bg-light ms-2">
+                                {directFields.length} setting
+                                {directFields.length !== 1 ? "s" : ""}
+                              </span>
+                            </h2>
+                            <div className="row g-3">
+                              {renderItems(directFields)}
+                            </div>
                           </div>
                         </div>
                       )}
+
+                      {subsections.map((sub) => {
+                        const subFieldCount = sub.fields.filter(
+                          (i) => i.type === "field"
+                        ).length;
+                        return (
+                          <div key={sub.name} className="card mb-4">
+                            <div className="card-body">
+                              <h3 className="fs-6 fw-bold mb-3">
+                                {sub.name
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+                                {subFieldCount > 0 && (
+                                  <span className="badge text-bg-light ms-2">
+                                    {subFieldCount} setting
+                                    {subFieldCount !== 1 ? "s" : ""}
+                                  </span>
+                                )}
+                              </h3>
+                              <div className="row g-3">
+                                {renderItems(sub.fields)}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                  <div
-                    className={`tab-pane ${activeTab !== "api_management" ? "is-hidden" : ""}`}
-                  >
-                    <ApiKeysTab />
-                  </div>
+                  );
+                })}
+                <div
+                  className={`tab-pane ${activeTab === "api_management" ? "active" : ""}`}
+                >
+                  <ApiKeysTab />
                 </div>
-              </>
+              </div>
             )}
 
             {/* Backup Modal */}
@@ -855,14 +943,14 @@ const ZoneweaverAPISettings = () => {
                 icon="fas fa-history"
               >
                 {backups.length === 0 ? (
-                  <p className="has-text-grey">No backups available</p>
+                  <p className="text-muted">No backups available</p>
                 ) : (
-                  <table className="table is-fullwidth is-striped">
+                  <table className="table table-striped">
                     <thead>
                       <tr>
                         <th>Filename</th>
                         <th>Created</th>
-                        <th className="has-text-right">Actions</th>
+                        <th className="text-end">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -870,31 +958,29 @@ const ZoneweaverAPISettings = () => {
                         <tr key={backup.filename}>
                           <td>{backup.filename}</td>
                           <td>{new Date(backup.createdAt).toLocaleString()}</td>
-                          <td className="has-text-right">
-                            <div className="field is-grouped is-grouped-right">
-                              <p className="control is-expanded">
-                                <button
-                                  className="button is-small is-warning is-fullwidth"
-                                  onClick={() => {
-                                    requestRestoreBackup(backup.filename);
-                                    setShowBackupModal(false);
-                                  }}
-                                  disabled={loading}
-                                >
-                                  Restore
-                                </button>
-                              </p>
-                              <p className="control is-expanded">
-                                <button
-                                  className="button is-small is-danger is-fullwidth"
-                                  onClick={() =>
-                                    requestDeleteBackup(backup.filename)
-                                  }
-                                  disabled={loading}
-                                >
-                                  Delete
-                                </button>
-                              </p>
+                          <td className="text-end">
+                            <div className="d-flex gap-2 justify-content-end">
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-warning w-100"
+                                onClick={() => {
+                                  requestRestoreBackup(backup.filename);
+                                  setShowBackupModal(false);
+                                }}
+                                disabled={loading}
+                              >
+                                Restore
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-danger w-100"
+                                onClick={() =>
+                                  requestDeleteBackup(backup.filename)
+                                }
+                                disabled={loading}
+                              >
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>

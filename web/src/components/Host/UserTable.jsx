@@ -66,24 +66,16 @@ const UserTable = ({
     // Determine user status based on available information
     // This is a simplified approach - actual implementation might need more logic
     if (user.uid < 100 && !user.comment?.includes("User")) {
-      return (
-        <span className="icon has-text-info" title="System User">
-          <i className="fas fa-cog" />
-        </span>
-      );
+      return <i className="fas fa-cog text-info" title="System User" />;
     }
-    return (
-      <span className="icon has-text-success" title="Regular User">
-        <i className="fas fa-user" />
-      </span>
-    );
+    return <i className="fas fa-user text-success" title="Regular User" />;
   };
 
   const getUserStatusTag = (user) => {
     if (user.uid < 100 && !user.comment?.includes("User")) {
-      return <span className="tag is-info is-small">System</span>;
+      return <span className="badge text-bg-info">System</span>;
     }
-    return <span className="tag is-success is-small">Active</span>;
+    return <span className="badge text-bg-success">Active</span>;
   };
 
   const formatShell = (shell) => {
@@ -106,10 +98,8 @@ const UserTable = ({
 
   if (loading && users.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large">
-          <i className="fas fa-spinner fa-spin fa-2x" />
-        </span>
+      <div className="text-center p-4">
+        <i className="fas fa-spinner fa-spin fa-2x" />
         <p className="mt-2">Loading users...</p>
       </div>
     );
@@ -117,18 +107,16 @@ const UserTable = ({
 
   if (users.length === 0) {
     return (
-      <div className="has-text-centered p-4">
-        <span className="icon is-large has-text-grey">
-          <i className="fas fa-users fa-2x" />
-        </span>
-        <p className="mt-2 has-text-grey">No users found</p>
+      <div className="text-center p-4">
+        <i className="fas fa-users fa-2x text-muted" />
+        <p className="mt-2 text-muted">No users found</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="table is-fullwidth is-hoverable">
+    <div className="table-responsive">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Username</th>
@@ -145,108 +133,103 @@ const UserTable = ({
           {users.map((user, index) => (
             <tr key={user.username || index}>
               <td>
-                <div className="is-flex is-align-items-center">
+                <div className="d-flex align-items-center">
                   {getUserStatusIcon(user)}
-                  <span className="ml-2">
+                  <span className="ms-2">
                     <strong>{user.username}</strong>
                   </span>
                 </div>
               </td>
               <td>
-                <span className="is-family-monospace">{user.uid}</span>
+                <span className="font-monospace">{user.uid}</span>
               </td>
               <td>
-                <span className="is-family-monospace">{user.gid}</span>
+                <span className="font-monospace">{user.gid}</span>
               </td>
               <td>
-                <span className="is-size-7" title={user.comment}>
+                <span className="small" title={user.comment}>
                   {user.comment || "N/A"}
                 </span>
               </td>
               <td>
-                <span
-                  className="is-family-monospace is-size-7"
-                  title={user.home}
-                >
+                <span className="font-monospace small" title={user.home}>
                   {formatHome(user.home)}
                 </span>
               </td>
               <td>
-                <span
-                  className="is-family-monospace is-size-7"
-                  title={user.shell}
-                >
+                <span className="font-monospace small" title={user.shell}>
                   {formatShell(user.shell)}
                 </span>
               </td>
               <td>{getUserStatusTag(user)}</td>
               <td>
-                <div className="buttons are-small">
+                <div className="d-flex gap-2">
                   {/* Edit Button */}
                   <button
-                    className="button"
+                    type="button"
+                    className="btn btn-sm btn-secondary"
                     onClick={() => handleActionClick(user, "edit")}
                     disabled={loading}
                     title="Edit User"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-edit" />
-                    </span>
+                    <i className="fas fa-edit" />
                   </button>
 
                   {/* Set Password Button */}
                   <button
-                    className="button is-info"
+                    type="button"
+                    className="btn btn-sm btn-info"
                     onClick={() => handleActionClick(user, "setPassword")}
                     disabled={loading}
                     title="Set Password"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-key" />
-                    </span>
+                    <i className="fas fa-key" />
                   </button>
 
                   {/* Lock/Unlock Button - only for non-system users */}
                   {user.uid >= 100 && (
                     <button
-                      className="button is-warning"
+                      type="button"
+                      className="btn btn-sm btn-warning"
                       onClick={() => handleActionClick(user, "lock")}
                       disabled={loading}
                       title="Lock Account"
                     >
-                      <span className="icon is-small">
-                        <i className="fas fa-lock" />
-                      </span>
+                      <i className="fas fa-lock" />
                     </button>
                   )}
 
                   {/* View Details Button */}
                   <button
-                    className="button"
+                    type="button"
+                    className="btn btn-sm btn-secondary"
                     onClick={() => onViewDetails(user)}
                     disabled={loading}
                     title="View Details"
                   >
-                    <span className="icon is-small">
-                      <i className="fas fa-info-circle" />
-                    </span>
+                    <i className="fas fa-info-circle" />
                   </button>
 
                   {/* Delete Button - only for non-system users */}
                   {user.uid >= 100 && (
                     <button
-                      className={`button is-danger ${
-                        actionLoading[`${user.username}-delete`]
-                          ? "is-loading"
-                          : ""
-                      }`}
+                      type="button"
+                      className="btn btn-sm btn-danger"
                       onClick={() => handleActionClick(user, "delete")}
-                      disabled={loading}
+                      disabled={
+                        loading || actionLoading[`${user.username}-delete`]
+                      }
                       title="Delete User"
                     >
-                      <span className="icon is-small">
+                      {actionLoading[`${user.username}-delete`] ? (
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      ) : (
                         <i className="fas fa-trash" />
-                      </span>
+                      )}
                     </button>
                   )}
                 </div>

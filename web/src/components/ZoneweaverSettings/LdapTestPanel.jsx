@@ -83,24 +83,22 @@ const LdapTestPanel = ({
   const isLdapSuccess = testResults.ldap?.success;
 
   return (
-    <div className="box mt-4 has-background-light">
-      <h3 className="title is-6">
-        <span className="icon is-small mr-2">
-          <i className="fas fa-vial" />
-        </span>
-        Test LDAP Connection
-      </h3>
+    <div className="card mt-4 bg-body-tertiary">
+      <div className="card-body">
+        <h3 className="fs-6 fw-bold">
+          <i className="fas fa-vial me-2" />
+          Test LDAP Connection
+        </h3>
 
-      <div className="columns">
-        <div className="column is-6">
-          <div className="field">
-            <label className="label" htmlFor="ldap-test-username">
-              Test Username (Optional)
-            </label>
-            <div className="control">
+        <div className="row g-3">
+          <div className="col-12 col-lg-6">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="ldap-test-username">
+                Test Username (Optional)
+              </label>
               <input
                 id="ldap-test-username"
-                className="input"
+                className="form-control"
                 type="text"
                 placeholder="test.user"
                 value={ldapTestCredentials.testUsername}
@@ -112,21 +110,19 @@ const LdapTestPanel = ({
                 }
                 disabled={testLoading.ldap || loading}
               />
+              <p className="form-text text-muted">
+                Optional: Provide a username to test user authentication
+              </p>
             </div>
-            <p className="help is-size-7">
-              Optional: Provide a username to test user authentication
-            </p>
           </div>
-        </div>
-        <div className="column is-6">
-          <div className="field">
-            <label className="label" htmlFor="ldap-test-password">
-              Test Password (Optional)
-            </label>
-            <div className="control">
+          <div className="col-12 col-lg-6">
+            <div className="mb-3">
+              <label className="form-label" htmlFor="ldap-test-password">
+                Test Password (Optional)
+              </label>
               <input
                 id="ldap-test-password"
-                className="input"
+                className="form-control"
                 type="password"
                 placeholder="user-password"
                 value={ldapTestCredentials.testPassword}
@@ -138,106 +134,90 @@ const LdapTestPanel = ({
                 }
                 disabled={testLoading.ldap || loading}
               />
+              <p className="form-text text-muted">
+                Optional: Password for the test user
+              </p>
             </div>
-            <p className="help is-size-7">
-              Optional: Password for the test user
-            </p>
           </div>
         </div>
-      </div>
 
-      <div className="field">
-        <div className="control">
+        <div className="mb-3">
           <button
-            className={`button is-info ${testLoading.ldap ? "is-loading" : ""}`}
+            type="button"
+            className="btn btn-info"
             onClick={testLdapConnection}
             disabled={testLoading.ldap || loading}
           >
-            <span className="icon">
-              <i className="fas fa-plug" />
-            </span>
+            {testLoading.ldap && (
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              />
+            )}
+            <i className="fas fa-plug me-2" />
             <span>Test LDAP Connection</span>
           </button>
+          <p className="form-text text-muted">
+            Tests server connection, bind credentials, search functionality, and
+            optional user authentication
+          </p>
         </div>
-        <p className="help has-text-grey">
-          Tests server connection, bind credentials, search functionality, and
-          optional user authentication
-        </p>
-      </div>
 
-      {testResults.ldap && (
-        <div
-          className={`notification mt-3 ${isLdapSuccess ? "is-success" : "is-danger"}`}
-        >
-          <div className="media">
-            <div className="media-left">
-              <span className="icon is-large">
+        {testResults.ldap && (
+          <div
+            className={`alert mt-3 ${isLdapSuccess ? "alert-success" : "alert-danger"}`}
+          >
+            <div className="d-flex">
+              <div className="flex-shrink-0 me-3">
                 <i
                   className={`fas fa-2x ${isLdapSuccess ? "fa-check-circle" : "fa-times-circle"}`}
                 />
-              </span>
-            </div>
-            <div className="media-content">
-              <p className="is-size-6 has-text-weight-semibold">
-                {testResults.ldap.message}
-              </p>
-              {testResults.ldap.details && (
-                <div className="content mt-2">
-                  <ul className="is-size-7">
-                    <li>
-                      <span
-                        className={`icon is-small ${testResults.ldap.details.connectionTest ? "has-text-success" : "has-text-danger"}`}
-                      >
-                        <i
-                          className={`fas ${testResults.ldap.details.connectionTest ? "fa-check" : "fa-times"}`}
-                        />
-                      </span>
-                      <span className="ml-1">Server Connection</span>
-                    </li>
-                    <li>
-                      <span
-                        className={`icon is-small ${testResults.ldap.details.bindTest ? "has-text-success" : "has-text-danger"}`}
-                      >
-                        <i
-                          className={`fas ${testResults.ldap.details.bindTest ? "fa-check" : "fa-times"}`}
-                        />
-                      </span>
-                      <span className="ml-1">Bind with Service Account</span>
-                    </li>
-                    <li>
-                      <span
-                        className={`icon is-small ${testResults.ldap.details.searchTest ? "has-text-success" : "has-text-danger"}`}
-                      >
-                        <i
-                          className={`fas ${testResults.ldap.details.searchTest ? "fa-check" : "fa-times"}`}
-                        />
-                      </span>
-                      <span className="ml-1">Directory Search</span>
-                    </li>
-                    {testResults.ldap.details.authTest !== null && (
+              </div>
+              <div className="flex-grow-1">
+                <p className="fw-semibold">{testResults.ldap.message}</p>
+                {testResults.ldap.details && (
+                  <div className="mt-2">
+                    <ul className="small">
                       <li>
-                        <span
-                          className={`icon is-small ${testResults.ldap.details.authTest ? "has-text-success" : "has-text-warning"}`}
-                        >
-                          <i
-                            className={`fas ${testResults.ldap.details.authTest ? "fa-check" : "fa-exclamation-triangle"}`}
-                          />
-                        </span>
-                        <span className="ml-1">User Authentication Test</span>
+                        <i
+                          className={`fas me-1 ${testResults.ldap.details.connectionTest ? "fa-check text-success" : "fa-times text-danger"}`}
+                        />
+                        <span>Server Connection</span>
                       </li>
-                    )}
-                  </ul>
-                </div>
-              )}
-              {testResults.ldap.error && (
-                <p className="is-size-7 has-text-grey mt-1">
-                  <strong>Error:</strong> {testResults.ldap.error}
-                </p>
-              )}
+                      <li>
+                        <i
+                          className={`fas me-1 ${testResults.ldap.details.bindTest ? "fa-check text-success" : "fa-times text-danger"}`}
+                        />
+                        <span>Bind with Service Account</span>
+                      </li>
+                      <li>
+                        <i
+                          className={`fas me-1 ${testResults.ldap.details.searchTest ? "fa-check text-success" : "fa-times text-danger"}`}
+                        />
+                        <span>Directory Search</span>
+                      </li>
+                      {testResults.ldap.details.authTest !== null && (
+                        <li>
+                          <i
+                            className={`fas me-1 ${testResults.ldap.details.authTest ? "fa-check text-success" : "fa-exclamation-triangle text-warning"}`}
+                          />
+                          <span>User Authentication Test</span>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+                {testResults.ldap.error && (
+                  <p className="small text-muted mt-1">
+                    <strong>Error:</strong> {testResults.ldap.error}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

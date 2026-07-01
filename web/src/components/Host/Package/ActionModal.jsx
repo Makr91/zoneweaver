@@ -87,42 +87,42 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
       loading={loading}
     >
       {/* Package Information */}
-      <div className="box mb-4">
-        <h3 className="title is-6">Package Information</h3>
-        <div className="table-container">
-          <table className="table is-fullwidth">
-            <tbody>
-              <tr>
-                <td>
-                  <strong>Package Name</strong>
-                </td>
-                <td className="is-family-monospace">{pkg.name}</td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Publisher</strong>
-                </td>
-                <td>
-                  <span className="tag is-info is-small">
-                    {pkg.publisher || "Unknown"}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Version</strong>
-                </td>
-                <td className="is-family-monospace">
-                  {pkg.version || "Latest"}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Package Information</h3>
+          <div className="table-responsive">
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Package Name</strong>
+                  </td>
+                  <td className="font-monospace">{pkg.name}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Publisher</strong>
+                  </td>
+                  <td>
+                    <span className="badge text-bg-info">
+                      {pkg.publisher || "Unknown"}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Version</strong>
+                  </td>
+                  <td className="font-monospace">{pkg.version || "Latest"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Action Description */}
-      <div className="notification is-info">
+      <div className="alert alert-info">
         <p>
           <strong>Action:</strong> {actionDetails.description}
         </p>
@@ -130,66 +130,69 @@ const PackageActionModal = ({ package: pkg, action, onClose, onConfirm }) => {
       </div>
 
       {/* Options */}
-      <div className="box">
-        <h3 className="title is-6">Options</h3>
+      <div className="card">
+        <div className="card-body">
+          <h3 className="fs-6 fw-bold">Options</h3>
 
-        {/* Dry Run Option */}
-        <div className="field">
-          <div className="control">
-            <label className="checkbox">
+          {/* Dry Run Option */}
+          <div className="mb-3">
+            <div className="form-check">
               <input
+                id="dry-run-option"
+                className="form-check-input"
                 type="checkbox"
                 checked={options.dryRun}
                 onChange={(e) => handleOptionChange("dryRun", e.target.checked)}
               />
-              <span className="ml-2">
+              <label className="form-check-label" htmlFor="dry-run-option">
                 <strong>Dry Run</strong> - Show what would be done without
                 actually performing the action
-              </span>
-            </label>
+              </label>
+            </div>
           </div>
-        </div>
 
-        {/* Accept Licenses Option (for install only) */}
-        {action === "install" && (
-          <div className="field">
-            <div className="control">
-              <label className="checkbox">
+          {/* Accept Licenses Option (for install only) */}
+          {action === "install" && (
+            <div className="mb-3">
+              <div className="form-check">
                 <input
+                  id="accept-licenses-option"
+                  className="form-check-input"
                   type="checkbox"
                   checked={options.acceptLicenses}
                   onChange={(e) =>
                     handleOptionChange("acceptLicenses", e.target.checked)
                   }
                 />
-                <span className="ml-2">
+                <label
+                  className="form-check-label"
+                  htmlFor="accept-licenses-option"
+                >
                   <strong>Accept Licenses</strong> - Automatically accept any
                   required package licenses
-                </span>
-              </label>
+                </label>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Boot Environment Name */}
-        <div className="field">
-          <label className="label" htmlFor="beName">
-            Boot Environment Name (Optional)
-          </label>
-          <div className="control">
+          {/* Boot Environment Name */}
+          <div className="mb-3">
+            <label className="form-label" htmlFor="beName">
+              Boot Environment Name (Optional)
+            </label>
             <input
               id="beName"
-              className="input"
+              className="form-control"
               type="text"
               placeholder="Leave empty to use default"
               value={options.beName}
               onChange={(e) => handleOptionChange("beName", e.target.value)}
             />
+            <p className="form-text text-muted">
+              Specify a boot environment name to create a backup before the
+              operation.
+            </p>
           </div>
-          <p className="help">
-            Specify a boot environment name to create a backup before the
-            operation.
-          </p>
         </div>
       </div>
     </FormModal>

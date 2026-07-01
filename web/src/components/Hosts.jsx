@@ -161,16 +161,16 @@ const Hosts = () => {
           <title>Host Overview - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <div>
                 <strong>Host Overview</strong>
               </div>
             </div>
-            <div className="px-4">
-              <div className="notification is-info">
-                <h2 className="title is-4">No Zoneweaver API Servers</h2>
+            <div className="card-body">
+              <div className="alert alert-info">
+                <h2 className="fs-4 fw-bold">No Zoneweaver API Servers</h2>
                 <p>
                   You haven&apos;t added any Zoneweaver API Servers yet. Add a
                   server to start managing hosts and zones.
@@ -178,12 +178,10 @@ const Hosts = () => {
                 <div className="mt-4">
                   <a
                     href="/ui/settings/zoneweaver?tab=servers"
-                    className="button is-primary"
+                    className="btn btn-primary"
                   >
-                    <span className="icon">
-                      <i className="fas fa-plus" />
-                    </span>
-                    <span>Add Zoneweaver API Server</span>
+                    <i className="fas fa-plus me-2" />
+                    Add Zoneweaver API Server
                   </a>
                 </div>
               </div>
@@ -203,16 +201,16 @@ const Hosts = () => {
           <title>Host Overview - Zoneweaver</title>
           <link rel="canonical" href={window.location.origin} />
         </Helmet>
-        <div className="container is-fluid p-0">
-          <div className="box p-0 is-radiusless">
-            <div className="titlebar box active level is-mobile mb-0 p-3">
-              <div className="level-left">
+        <div className="container-fluid p-0">
+          <div className="card">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <div>
                 <strong>Host Overview</strong>
               </div>
             </div>
-            <div className="px-4">
-              <div className="notification is-warning">
-                <h2 className="title is-4">No Host Selected</h2>
+            <div className="card-body">
+              <div className="alert alert-warning">
+                <h2 className="fs-4 fw-bold">No Host Selected</h2>
                 <p>
                   Please select a host from the dropdown in the navigation bar
                   to view its overview.
@@ -232,8 +230,8 @@ const Hosts = () => {
         <title>Host Overview - Zoneweaver</title>
         <link rel="canonical" href={window.location.origin} />
       </Helmet>
-      <div className="container is-fluid p-0">
-        <div className="box p-0 is-radiusless">
+      <div className="container-fluid p-0">
+        <div className="card">
           <HostHeader
             currentServer={currentServer}
             loading={loading}
@@ -248,9 +246,9 @@ const Hosts = () => {
             setAutoRefresh={setAutoRefresh}
           />
 
-          <div className="px-4">
+          <div className="card-body">
             {error && (
-              <div className="notification is-danger">
+              <div className="alert alert-danger">
                 <p>{error}</p>
               </div>
             )}
@@ -279,53 +277,51 @@ const Hosts = () => {
             />
 
             {/* Performance Monitoring Charts Section */}
-            <div className="box mb-5">
-              <h3 className="title is-5 mb-4">
-                <span className="icon-text">
-                  <span className="icon">
-                    <i className="fas fa-chart-area" />
-                  </span>
+            <div className="card mb-5">
+              <div className="card-body">
+                <h5 className="h5 mb-4 d-flex align-items-center gap-2">
+                  <i className="fas fa-chart-area" />
                   <span>Performance Monitoring</span>
-                </span>
-              </h3>
+                </h5>
 
-              <div className="columns is-multiline">
-                <StorageIOChart
-                  chartData={chartData}
-                  storageSeriesVisibility={storageSeriesVisibility}
-                  setStorageSeriesVisibility={setStorageSeriesVisibility}
-                  expandChart={expandChart}
-                  loading={loading}
-                />
+                <div className="columns is-multiline">
+                  <StorageIOChart
+                    chartData={chartData}
+                    storageSeriesVisibility={storageSeriesVisibility}
+                    setStorageSeriesVisibility={setStorageSeriesVisibility}
+                    expandChart={expandChart}
+                    loading={loading}
+                  />
 
-                <ZfsArcChart
-                  arcChartData={arcChartData}
-                  expandChart={expandChart}
-                  loading={loading}
-                />
+                  <ZfsArcChart
+                    arcChartData={arcChartData}
+                    expandChart={expandChart}
+                    loading={loading}
+                  />
 
-                <NetworkChart
-                  networkChartData={networkChartData}
-                  networkSeriesVisibility={networkSeriesVisibility}
-                  setNetworkSeriesVisibility={setNetworkSeriesVisibility}
-                  expandChart={expandChart}
-                  loading={loading}
-                />
+                  <NetworkChart
+                    networkChartData={networkChartData}
+                    networkSeriesVisibility={networkSeriesVisibility}
+                    setNetworkSeriesVisibility={setNetworkSeriesVisibility}
+                    expandChart={expandChart}
+                    loading={loading}
+                  />
 
-                <CpuChart
-                  cpuChartData={cpuChartData}
-                  cpuSeriesVisibility={cpuSeriesVisibility}
-                  setCpuSeriesVisibility={setCpuSeriesVisibility}
-                  expandChart={expandChart}
-                  loading={loading}
-                />
+                  <CpuChart
+                    cpuChartData={cpuChartData}
+                    cpuSeriesVisibility={cpuSeriesVisibility}
+                    setCpuSeriesVisibility={setCpuSeriesVisibility}
+                    expandChart={expandChart}
+                    loading={loading}
+                  />
 
-                <MemoryChart
-                  memoryChartData={memoryChartData}
-                  memorySeriesVisibility={memorySeriesVisibility}
-                  expandChart={expandChart}
-                  loading={loading}
-                />
+                  <MemoryChart
+                    memoryChartData={memoryChartData}
+                    memorySeriesVisibility={memorySeriesVisibility}
+                    expandChart={expandChart}
+                    loading={loading}
+                  />
+                </div>
               </div>
             </div>
 

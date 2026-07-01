@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-import FieldRenderer from "../FieldRenderer";
+import SectionField from "../SectionField";
 
 const StandardSectionRenderer = ({
   section,
@@ -10,18 +10,22 @@ const StandardSectionRenderer = ({
   loading,
   onFieldChange,
   onSslFileUpload,
+  setMsg,
+  setRequiresRestart,
 }) => (
-  <div className="columns is-multiline">
+  <div className="row g-3">
     {section.fields.map((field) => (
       <div
         key={field.path}
         className={
-          field.type === "textarea" || field.type === "array"
-            ? "column is-full"
-            : "column is-half"
+          field.type === "textarea" ||
+          field.type === "array" ||
+          field.type === "collection"
+            ? "col-12"
+            : "col-12 col-lg-6"
         }
       >
-        <FieldRenderer
+        <SectionField
           field={field}
           values={values}
           sslFiles={sslFiles}
@@ -29,6 +33,8 @@ const StandardSectionRenderer = ({
           loading={loading}
           onFieldChange={onFieldChange}
           onSslFileUpload={onSslFileUpload}
+          setMsg={setMsg}
+          setRequiresRestart={setRequiresRestart}
         />
       </div>
     ))}
@@ -43,6 +49,8 @@ StandardSectionRenderer.propTypes = {
   loading: PropTypes.bool.isRequired,
   onFieldChange: PropTypes.func.isRequired,
   onSslFileUpload: PropTypes.func.isRequired,
+  setMsg: PropTypes.func.isRequired,
+  setRequiresRestart: PropTypes.func.isRequired,
 };
 
 export default StandardSectionRenderer;

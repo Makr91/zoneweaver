@@ -1,127 +1,115 @@
 import PropTypes from "prop-types";
 
 const ProfileInfo = ({ user }) => (
-  <div className="box">
-    <h2 className="title is-5">Profile Information</h2>
-    <div className="content">
+  <div className="card">
+    <div className="card-body">
+      <h2 className="fs-5 fw-bold">Profile Information</h2>
       {user?.gravatar?.avatar_url && (
-        <div className="field has-text-centered mb-4">
-          <figure className="image is-128x128 is-inline-block">
-            <img
-              src={user.gravatar.avatar_url}
-              alt="Profile Avatar"
-              className="is-rounded"
-            />
-          </figure>
+        <div className="text-center mb-4">
+          <img
+            src={user.gravatar.avatar_url}
+            alt="Profile Avatar"
+            className="rounded-circle"
+            width={128}
+            height={128}
+          />
         </div>
       )}
 
       {user?.gravatar?.display_name && (
-        <div className="field">
-          <label className="label" htmlFor="display_name">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="display_name">
             Display Name
           </label>
-          <div className="control">
-            <input
-              id="display_name"
-              className="input"
-              type="text"
-              value={user.gravatar.display_name}
-              disabled
-            />
-          </div>
+          <input
+            id="display_name"
+            className="form-control"
+            type="text"
+            value={user.gravatar.display_name}
+            disabled
+          />
         </div>
       )}
 
       {user?.gravatar?.first_name && (
-        <div className="field">
-          <label className="label" htmlFor="first_name">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="first_name">
             First Name
           </label>
-          <div className="control">
-            <input
-              id="first_name"
-              className="input"
-              type="text"
-              value={user.gravatar.first_name}
-              disabled
-            />
-          </div>
+          <input
+            id="first_name"
+            className="form-control"
+            type="text"
+            value={user.gravatar.first_name}
+            disabled
+          />
         </div>
       )}
 
       {user?.gravatar?.last_name && (
-        <div className="field">
-          <label className="label" htmlFor="last_name">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="last_name">
             Last Name
           </label>
-          <div className="control">
-            <input
-              id="last_name"
-              className="input"
-              type="text"
-              value={user.gravatar.last_name}
-              disabled
-            />
-          </div>
+          <input
+            id="last_name"
+            className="form-control"
+            type="text"
+            value={user.gravatar.last_name}
+            disabled
+          />
         </div>
       )}
 
       {user?.gravatar?.job_title && (
-        <div className="field">
-          <label className="label" htmlFor="job_title">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="job_title">
             Job Title
           </label>
-          <div className="control">
-            <input
-              id="job_title"
-              className="input"
-              type="text"
-              value={user.gravatar.job_title}
-              disabled
-            />
-          </div>
+          <input
+            id="job_title"
+            className="form-control"
+            type="text"
+            value={user.gravatar.job_title}
+            disabled
+          />
         </div>
       )}
 
       {user?.gravatar?.location && (
-        <div className="field">
-          <label className="label" htmlFor="location">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="location">
             Location
           </label>
-          <div className="control">
-            <input
-              id="location"
-              className="input"
-              type="text"
-              value={user.gravatar.location}
-              disabled
-            />
-          </div>
+          <input
+            id="location"
+            className="form-control"
+            type="text"
+            value={user.gravatar.location}
+            disabled
+          />
         </div>
       )}
 
       {user?.gravatar?.timezone && (
-        <div className="field">
-          <label className="label" htmlFor="timezone">
+        <div className="mb-3">
+          <label className="form-label" htmlFor="timezone">
             Timezone
           </label>
-          <div className="control">
-            <input
-              id="timezone"
-              className="input"
-              type="text"
-              value={user.gravatar.timezone}
-              disabled
-            />
-          </div>
+          <input
+            id="timezone"
+            className="form-control"
+            type="text"
+            value={user.gravatar.timezone}
+            disabled
+          />
         </div>
       )}
 
       {(!user?.gravatar || Object.keys(user.gravatar).length === 0) && (
-        <div className="notification is-info">
+        <div className="alert alert-info">
           <p>No Gravatar profile found for this email address.</p>
-          <p className="is-size-7 mt-2">
+          <p className="small mt-2">
             <a
               href="https://gravatar.com"
               target="_blank"

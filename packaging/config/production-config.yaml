@@ -843,85 +843,66 @@ authentication:
     show_when: [true]
     order: 8
 
-  # OIDC Providers - Dynamic Configuration
-
+  # OIDC Providers - dynamic keyed collection managed via the settings UI
+  # (PUT/POST/DELETE /api/settings/collections/authentication.oidc_providers).
+  # Each provider is stored under value.<name> as { <field>: { value } } — the
+  # shape auth/passport.js reads. Adding/editing/removing a provider requires a
+  # server restart to (re)register its passport strategy.
   oidc_providers:
-    type: object
-    description: 'Configure OpenID Connect authentication providers'
+    type: collection
+    label: 'OIDC Providers'
+    icon: 'fab fa-openid'
+    description: 'Configure OpenID Connect authentication providers for single sign-on integration. Adding, editing, or removing a provider requires a server restart to take effect.'
     section: 'Authentication'
-    subsection: 'OIDC Providers' # ← This creates the subsection
+    subsection: 'OIDC Providers'
     required: false
-    order: 50 # ← Position after other subsections
-    value:
-  #    google:
-  #      enabled:
-  #        type: boolean
-  #        value: true
-  #        description: "Enable Google OIDC authentication"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: true
-  #        order: 1
-  #      display_name:
-  #        type: string
-  #        value: "Sign in with Google"
-  #        description: "Display name shown on login button"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: true
-  #        order: 2
-  #      issuer:
-  #        type: string
-  #        value: "https://accounts.google.com"
-  #        description: "Google OIDC issuer URL"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: true
-  #        order: 3
-  #      client_id:
-  #        type: string
-  #        value: "dfsdafdsfsadfdsafsdafdsafdsafasdfdsafm"
-  #        description: "Google OAuth Client ID"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: true
-  #        order: 4
-  #      client_secret:
-  #        type: password
-  #        value: "GOdfsafddsafsdafsfasfasdfsafsag4"
-  #        description: "Google OAuth Client Secret (keep secure)"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: true
-  #        order: 5
-  #      scope:
-  #        type: string
-  #        value: "openid profile email"
-  #        description: "OAuth scopes to request (space-separated)"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: false
-  #        order: 6
-  #      response_type:
-  #        type: select
-  #        value: "code"
-  #        options:
-  #          - "code"
-  #          - "id_token"
-  #          - "code id_token"
-  #        description: "OAuth 2.0 response type - 'code' is recommended for server-side apps"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: false
-  #        order: 7
-  #      prompt:
-  #        type: string
-  #        value: ""
-  #        description: "Optional prompt parameter (e.g., 'consent', 'login', 'select_account')"
-  #        section: "Authentication"
-  #        subsection: "Google OIDC"
-  #        required: false
-  #        order: 8
+    order: 50
+    requires_restart: true
+    item_noun: 'Provider'
+    key_label: 'Provider Name'
+    item_label_field: 'display_name'
+    secret_fields: ['client_secret']
+    item_schema:
+      enabled:
+        type: boolean
+        label: 'Enabled'
+        value: true
+        order: 1
+      display_name:
+        type: string
+        label: 'Display Name'
+        placeholder: 'e.g., Sign in with Company SSO'
+        required: true
+        order: 2
+      issuer:
+        type: string
+        label: 'Issuer URL'
+        placeholder: 'https://your-provider.com'
+        description: "The OIDC issuer URL (check your provider's documentation)."
+        required: true
+        order: 3
+      client_id:
+        type: string
+        label: 'Client ID'
+        required: true
+        order: 4
+      client_secret:
+        type: password
+        label: 'Client Secret'
+        required: true
+        order: 5
+      scope:
+        type: string
+        label: 'Scope'
+        value: 'openid profile email'
+        order: 6
+      response_type:
+        type: select
+        label: 'Response Type'
+        value: 'code'
+        options: ['code', 'id_token', 'code id_token']
+        order: 7
+    value: {}
 
   # External Provider Settings
   external_domain_mapping_enabled:

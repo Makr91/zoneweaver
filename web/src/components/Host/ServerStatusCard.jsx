@@ -6,37 +6,35 @@ const ServerStatusCard = ({ testResult, useExistingApiKey }) => {
   }
 
   return (
-    <div className="box">
-      <h2 className="title is-6">Connection Status</h2>
-      <div className="content">
-        {testResult === "success" && (
-          <div className="notification is-success">
-            <p>
-              <strong>✓ Connection Successful</strong>
-            </p>
-            <p>
-              Server is reachable and ready for{" "}
-              {useExistingApiKey ? "setup" : "bootstrap"}.
-            </p>
-          </div>
-        )}
-        {testResult === "error" && (
-          <div className="notification is-danger">
-            <p>
-              <strong>✗ Connection Failed</strong>
-            </p>
-            <p>Please check your server details and try again.</p>
-          </div>
-        )}
-        {testResult === "warning" && (
-          <div className="notification is-warning">
-            <p>
-              <strong>⚠ Partial Success</strong>
-            </p>
-            <p>Server added but connection test failed.</p>
-          </div>
-        )}
-      </div>
+    <div className="mt-3">
+      <h3 className="fs-6 fw-bold mb-2">Connection Status</h3>
+      {testResult === "success" && (
+        <div className="alert alert-success">
+          <p>
+            <strong>✓ Connection Successful</strong>
+          </p>
+          <p>
+            Server is reachable and ready for{" "}
+            {useExistingApiKey ? "setup" : "bootstrap"}.
+          </p>
+        </div>
+      )}
+      {testResult === "error" && (
+        <div className="alert alert-danger">
+          <p>
+            <strong>✗ Connection Failed</strong>
+          </p>
+          <p>Please check your server details and try again.</p>
+        </div>
+      )}
+      {testResult === "warning" && (
+        <div className="alert alert-warning">
+          <p>
+            <strong>⚠ Partial Success</strong>
+          </p>
+          <p>Server added but connection test failed.</p>
+        </div>
+      )}
     </div>
   );
 };

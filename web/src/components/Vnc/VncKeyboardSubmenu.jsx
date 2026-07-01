@@ -62,50 +62,44 @@ const VncKeyboardSubmenu = ({
 
   const getModifierClass = (mod, isActive) => {
     if (!isActive) {
-      return "is-light";
+      return "btn-light";
     }
     if (mod === "alt") {
-      return "is-warning";
+      return "btn-warning";
     }
     if (mod === "shift") {
-      return "is-info";
+      return "btn-info";
     }
-    return "is-primary";
+    return "btn-primary";
   };
 
   return (
     <div
-      className="dropdown-item is-relative is-flex is-justify-content-space-between is-align-items-center"
+      className="dropdown-item position-relative d-flex justify-content-between align-items-center"
       onMouseEnter={() => setShowKeyboardInput(true)}
       onMouseLeave={() => setShowKeyboardInput(false)}
       role="button"
       tabIndex={0}
     >
-      <div className="is-flex is-align-items-center">
-        <span className="icon mr-2">
-          <i className="fas fa-keyboard" />
-        </span>
+      <div className="d-flex align-items-center">
+        <i className="fas fa-keyboard me-2" />
         <span>Keyboard & Input</span>
       </div>
-      <span className="icon">
-        <i className="fas fa-chevron-right" />
-      </span>
+      <i className="fas fa-chevron-right" />
 
       {showKeyboardInput && (
         <div
-          className={`dropdown-menu has-z-index-modal-high ${calculateSubmenuPosition(350)}`}
+          className={`dropdown-menu show has-z-index-modal-high ${calculateSubmenuPosition(350)}`}
         >
-          <div className="dropdown-content">
-            <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-              <span className="icon mr-2">
-                <i className="fas fa-keyboard" />
-              </span>
+          <div>
+            <div className="dropdown-item fw-semibold text-secondary">
+              <i className="fas fa-keyboard me-2" />
               <span>Common Shortcuts</span>
             </div>
             <hr className="dropdown-divider" />
 
             <div
-              className="dropdown-item is-clickable"
+              className="dropdown-item"
               onClick={handleCtrlAltDel}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -116,14 +110,12 @@ const VncKeyboardSubmenu = ({
               role="button"
               tabIndex={0}
             >
-              <span className="icon mr-2">
-                <i className="fas fa-power-off" />
-              </span>
+              <i className="fas fa-power-off me-2" />
               <span>Ctrl+Alt+Del</span>
             </div>
 
             <div
-              className="dropdown-item is-clickable"
+              className="dropdown-item"
               onClick={() => handleKeyboardShortcut("Alt+Tab", keysymMap.tab)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -134,14 +126,12 @@ const VncKeyboardSubmenu = ({
               role="button"
               tabIndex={0}
             >
-              <span className="icon mr-2">
-                <i className="fas fa-window-restore" />
-              </span>
+              <i className="fas fa-window-restore me-2" />
               <span>Alt+Tab</span>
             </div>
 
             <div
-              className="dropdown-item is-clickable"
+              className="dropdown-item"
               onClick={() => handleKeyboardShortcut("Alt+F4", keysymMap.f4)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -152,38 +142,33 @@ const VncKeyboardSubmenu = ({
               role="button"
               tabIndex={0}
             >
-              <span className="icon mr-2">
-                <i className="fas fa-times" />
-              </span>
+              <i className="fas fa-times me-2" />
               <span>Alt+F4</span>
             </div>
 
             <hr className="dropdown-divider" />
 
-            <div className="dropdown-item has-text-weight-semibold has-text-grey-dark">
-              <span className="icon mr-2">
-                <i className="fas fa-hand-paper" />
-              </span>
+            <div className="dropdown-item fw-semibold text-secondary">
+              <i className="fas fa-hand-paper me-2" />
               <span>Modifier Keys</span>
             </div>
 
             <div className="dropdown-item px-3 py-2">
-              <div className="field is-grouped">
+              <div className="d-flex gap-2">
                 {["ctrl", "alt", "shift"].map((mod) => (
-                  <div className="control" key={mod}>
+                  <div key={mod}>
                     <button
-                      className={`button is-small ${getModifierClass(mod, modifierKeys[mod])}`}
+                      type="button"
+                      className={`btn btn-sm ${getModifierClass(mod, modifierKeys[mod])}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleModifier(mod);
                       }}
                       title={`${mod.toUpperCase()} ${modifierKeys[mod] ? "ON" : "OFF"} - Click to toggle`}
                     >
-                      <span className="icon is-small">
-                        <i
-                          className={`fas ${modifierKeys[mod] ? "fa-toggle-on" : "fa-toggle-off"}`}
-                        />
-                      </span>
+                      <i
+                        className={`fas ${modifierKeys[mod] ? "fa-toggle-on" : "fa-toggle-off"} me-2`}
+                      />
                       <span>{mod.toUpperCase()}</span>
                     </button>
                   </div>
@@ -192,7 +177,7 @@ const VncKeyboardSubmenu = ({
               {(modifierKeys.ctrl ||
                 modifierKeys.alt ||
                 modifierKeys.shift) && (
-                <div className="help is-size-7 has-text-grey mt-1">
+                <div className="form-text mt-1">
                   Active modifiers will be combined with function keys
                 </div>
               )}
@@ -201,23 +186,19 @@ const VncKeyboardSubmenu = ({
             <hr className="dropdown-divider" />
 
             <div
-              className="dropdown-item is-relative"
+              className="dropdown-item position-relative"
               onMouseEnter={() => setShowFunctionKeys(true)}
               onMouseLeave={() => setShowFunctionKeys(false)}
               role="button"
               tabIndex={0}
             >
-              <span className="icon mr-2">
-                <i className="fas fa-keyboard" />
-              </span>
+              <i className="fas fa-keyboard me-2" />
               <span>Function Keys</span>
-              <span className="icon ml-auto">
-                <i className="fas fa-chevron-right" />
-              </span>
+              <i className="fas fa-chevron-right ms-auto" />
 
               {showFunctionKeys && (
-                <div className="dropdown-menu has-z-index-modal-top zw-dropdown-function-keys">
-                  <div className="dropdown-content">
+                <div className="dropdown-menu show has-z-index-modal-top zw-dropdown-function-keys">
+                  <div>
                     {[...Array(12).keys()].map((i) => {
                       const fKeyNum = i + 1;
                       const keyCode = `F${fKeyNum}`;
@@ -225,7 +206,7 @@ const VncKeyboardSubmenu = ({
                       return (
                         <div
                           key={keyCode}
-                          className="dropdown-item is-clickable"
+                          className="dropdown-item"
                           onClick={() =>
                             handleKeyboardShortcut(keyCode, keysym, true)
                           }
@@ -239,9 +220,7 @@ const VncKeyboardSubmenu = ({
                           tabIndex={0}
                           title={`Send ${modifierKeys.ctrl || modifierKeys.alt || modifierKeys.shift ? buildKeyString(`F${fKeyNum}`) : `F${fKeyNum}`} to guest`}
                         >
-                          <span className="icon mr-2">
-                            <i className="fas fa-keyboard" />
-                          </span>
+                          <i className="fas fa-keyboard me-2" />
                           <span>F{fKeyNum}</span>
                         </div>
                       );

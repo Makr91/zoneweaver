@@ -1,33 +1,33 @@
 /**
  * Get notification CSS class based on message content
  * @param {string} msg - Notification message
- * @returns {string} Bulma notification class
+ * @returns {string} Bootstrap alert contextual class
  */
 export const getNotificationClass = (msg) => {
   if (msg.includes("successfully")) {
-    return "is-success";
+    return "alert-success";
   }
   if (msg.includes("Error") || msg.includes("Failed")) {
-    return "is-danger";
+    return "alert-danger";
   }
-  return "is-warning";
+  return "alert-warning";
 };
 
 /**
  * Get role badge color class
  * @param {string} role - User role
- * @returns {string} Bulma tag class
+ * @returns {string} Bootstrap badge contextual class
  */
 export const getRoleBadgeClass = (role) => {
   switch (role) {
     case "super-admin":
-      return "is-danger";
+      return "text-bg-danger";
     case "admin":
-      return "is-warning";
+      return "text-bg-warning";
     case "user":
-      return "is-success";
+      return "text-bg-success";
     default:
-      return "is-info";
+      return "text-bg-info";
   }
 };
 

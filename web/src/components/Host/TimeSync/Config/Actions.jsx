@@ -9,56 +9,57 @@ const ConfigActions = ({
   saving,
   loading,
 }) => (
-  <div className="box">
-    <h3 className="title is-6">Configuration Actions</h3>
+  <div className="card">
+    <div className="card-body">
+      <h3 className="fs-6 fw-bold">Configuration Actions</h3>
 
-    <div className="field is-grouped">
-      <div className="control">
+      <div className="d-flex gap-2">
         <button
-          className={`button is-primary ${saving ? "is-loading" : ""}`}
+          type="button"
+          className="btn btn-primary"
           onClick={onSave}
           disabled={!hasChanges || !isConfigValid || saving || loading}
         >
-          <span className="icon">
-            <i className="fas fa-save" />
-          </span>
+          {saving ? (
+            <span
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            />
+          ) : (
+            <i className="fas fa-save me-2" />
+          )}
           <span>Save Configuration</span>
         </button>
-      </div>
-      <div className="control">
         <button
-          className="button"
+          type="button"
+          className="btn btn-secondary"
           onClick={onReset}
           disabled={!hasChanges || saving}
         >
-          <span className="icon">
-            <i className="fas fa-undo" />
-          </span>
+          <i className="fas fa-undo me-2" />
           <span>Reset Changes</span>
         </button>
-      </div>
-      <div className="control">
         <button
-          className="button is-warning"
+          type="button"
+          className="btn btn-warning"
           onClick={onRestart}
           disabled={saving || loading}
         >
-          <span className="icon">
-            <i className="fas fa-redo" />
-          </span>
+          <i className="fas fa-redo me-2" />
           <span>Restart Service</span>
         </button>
       </div>
-    </div>
 
-    {hasChanges && (
-      <div className="notification is-info is-light mt-3">
-        <p>
-          You have unsaved changes. Remember to restart the time synchronization
-          service after saving to apply the new configuration.
-        </p>
-      </div>
-    )}
+      {hasChanges && (
+        <div className="alert alert-info mt-3">
+          <p>
+            You have unsaved changes. Remember to restart the time
+            synchronization service after saving to apply the new configuration.
+          </p>
+        </div>
+      )}
+    </div>
   </div>
 );
 

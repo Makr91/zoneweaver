@@ -16,10 +16,10 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
       title="Device Details"
       icon="fas fa-microchip"
     >
-      <div className="columns">
-        <div className="column is-6">
-          <div className="table-container">
-            <table className="table is-fullwidth">
+      <div className="row g-3">
+        <div className="col-12 col-lg-6">
+          <div className="table-responsive">
+            <table className="table">
               <tbody>
                 <tr>
                   <td>
@@ -63,7 +63,7 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
                   </td>
                   <td>
                     <span
-                      className={`tag ${getCategoryTagClass(selectedDevice.device_category)}`}
+                      className={`badge ${getCategoryTagClass(selectedDevice.device_category)}`}
                     >
                       {selectedDevice.device_category || "other"}
                     </span>
@@ -73,9 +73,9 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
             </table>
           </div>
         </div>
-        <div className="column is-6">
-          <div className="table-container">
-            <table className="table is-fullwidth">
+        <div className="col-12 col-lg-6">
+          <div className="table-responsive">
+            <table className="table">
               <tbody>
                 <tr>
                   <td>
@@ -99,7 +99,7 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
                   </td>
                   <td>
                     <span
-                      className={`tag ${selectedDevice.driver_attached ? "is-success" : "is-warning"}`}
+                      className={`badge ${selectedDevice.driver_attached ? "text-bg-success" : "text-bg-warning"}`}
                     >
                       {selectedDevice.driver_attached ? "Yes" : "No"}
                     </span>
@@ -111,7 +111,7 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
                   </td>
                   <td>
                     <span
-                      className={`tag ${selectedDevice.ppt_capable ? "is-success" : "is-dark"}`}
+                      className={`badge ${selectedDevice.ppt_capable ? "text-bg-success" : "text-bg-dark"}`}
                     >
                       {selectedDevice.ppt_capable ? "Yes" : "No"}
                     </span>
@@ -143,13 +143,14 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
 
       {selectedDevice.assigned_to_zones?.length > 0 && (
         <div className="mt-4">
-          <h5 className="subtitle is-6">Zone Assignments</h5>
-          <div className="tags">
+          <h5 className="fs-6 text-muted">Zone Assignments</h5>
+          <div className="d-flex flex-wrap gap-1">
             {selectedDevice.assigned_to_zones.map((zone) => (
-              <span key={zone} className="tag is-warning">
-                <span className="icon">
-                  <i className="fas fa-cube" />
-                </span>
+              <span
+                key={zone}
+                className="badge text-bg-warning d-inline-flex align-items-center gap-1"
+              >
+                <i className="fas fa-cube" />
                 <span>{zone}</span>
               </span>
             ))}
@@ -159,11 +160,9 @@ const DeviceDetailsModal = ({ selectedDevice, setSelectedDevice }) => {
 
       {selectedDevice.found_in_network_interfaces && (
         <div className="mt-4">
-          <div className="notification is-info">
+          <div className="alert alert-info">
             <p>
-              <span className="icon">
-                <i className="fas fa-ethernet" />
-              </span>
+              <i className="fas fa-ethernet me-2" />
               This device is also found in network interfaces.
             </p>
           </div>

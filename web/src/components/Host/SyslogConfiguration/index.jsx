@@ -28,10 +28,12 @@ const SyslogConfiguration = ({ server }) => {
 
   if (loading && !config) {
     return (
-      <div className="box">
-        <div className="has-text-centered">
-          <div className="loader" />
-          <p className="mt-3">Loading syslog configuration...</p>
+      <div className="card">
+        <div className="card-body">
+          <div className="text-center">
+            <span className="spinner-border" role="status" aria-hidden="true" />
+            <p className="mt-3">Loading syslog configuration...</p>
+          </div>
         </div>
       </div>
     );
@@ -41,123 +43,107 @@ const SyslogConfiguration = ({ server }) => {
     <div>
       {/* Status Messages */}
       {message && (
-        <div className={`notification ${messageType} mb-4`}>
+        <div
+          className={`alert ${messageType} mb-4 d-flex justify-content-between align-items-start`}
+        >
+          <p className="mb-0">{message}</p>
           <button
             type="button"
-            className="delete"
+            className="btn-close"
             onClick={() => setMessage("")}
           />
-          <p>{message}</p>
         </div>
       )}
 
       {/* Configuration Overview */}
       {config && (
-        <div className="box mb-4">
-          <h4 className="title is-6 mb-3">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-info-circle" />
-              </span>
+        <div className="card mb-4">
+          <div className="card-body">
+            <h4 className="fs-6 fw-bold mb-3">
+              <i className="fas fa-info-circle me-2" />
               <span>Configuration Status</span>
-            </span>
-          </h4>
+            </h4>
 
-          <div className="columns">
-            <div className="column">
-              <div className="field">
-                <p className="label is-small">Service Type</p>
-                <p className="control">
-                  <span className="tag is-primary">
-                    <span className="icon is-small">
+            <div className="row g-3">
+              <div className="col">
+                <div className="mb-3">
+                  <p className="form-label">Service Type</p>
+                  <p>
+                    <span className="badge text-bg-primary d-inline-flex align-items-center gap-1">
                       <i className={`fas ${getServiceType(config).icon}`} />
+                      <span>{getServiceType(config).display}</span>
                     </span>
-                    <span>{getServiceType(config).display}</span>
-                  </span>
-                </p>
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="column">
-              <div className="field">
-                <p className="label is-small">Service Status</p>
-                <p className="control">
-                  <span
-                    className={`tag ${getServiceStatusColor(config.service_status)}`}
-                  >
-                    <span className="icon is-small">
+              <div className="col">
+                <div className="mb-3">
+                  <p className="form-label">Service Status</p>
+                  <p>
+                    <span
+                      className={`badge ${getServiceStatusColor(config.service_status)} d-inline-flex align-items-center gap-1`}
+                    >
                       <i
                         className={`fas ${config.service_status?.state === "online" ? "fa-check-circle" : "fa-times-circle"}`}
                       />
+                      <span>{config.service_status?.state || "Unknown"}</span>
                     </span>
-                    <span>{config.service_status?.state || "Unknown"}</span>
-                  </span>
-                </p>
+                  </p>
+                </div>
+              </div>
+              <div className="col">
+                <div className="mb-3">
+                  <p className="form-label">Configuration File</p>
+                  <p>
+                    <span className="badge text-bg-info">
+                      {config.config_file || "/etc/syslog.conf"}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="col">
+                <div className="mb-3">
+                  <p className="form-label">Active Rules</p>
+                  <p>
+                    <span className="badge text-bg-secondary">
+                      {config.parsed_rules?.length || 0} rules
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="column">
-              <div className="field">
-                <p className="label is-small">Configuration File</p>
-                <p className="control">
-                  <span className="tag is-info is-small">
-                    {config.config_file || "/etc/syslog.conf"}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="column">
-              <div className="field">
-                <p className="label is-small">Active Rules</p>
-                <p className="control">
-                  <span className="tag is-light">
-                    {config.parsed_rules?.length || 0} rules
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
 
-          {/* Service Switching Controls */}
-          <div className="level is-mobile mt-4">
-            <div className="level-left">
-              <div className="level-item">
-                <p className="is-size-7 has-text-grey">
+            {/* Service Switching Controls */}
+            <div className="d-flex justify-content-between align-items-center mt-4">
+              <div className="d-flex align-items-center gap-2">
+                <p className="small text-muted mb-0">
                   Switch between traditional syslog and modern rsyslog service
                 </p>
               </div>
-            </div>
-            <div className="level-right">
-              <div className="level-item">
-                <div className="field has-addons">
-                  <div className="control">
-                    <button
-                      type="button"
-                      className={`button is-small ${getServiceType(config).name === "syslog" ? "is-primary" : ""}`}
-                      onClick={() => requestSwitchService("syslog")}
-                      disabled={
-                        loading || getServiceType(config).name === "syslog"
-                      }
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-file-alt" />
-                      </span>
-                      <span>Traditional Syslog</span>
-                    </button>
-                  </div>
-                  <div className="control">
-                    <button
-                      type="button"
-                      className={`button is-small ${getServiceType(config).name === "rsyslog" ? "is-primary" : ""}`}
-                      onClick={() => requestSwitchService("rsyslog")}
-                      disabled={
-                        loading || getServiceType(config).name === "rsyslog"
-                      }
-                    >
-                      <span className="icon is-small">
-                        <i className="fas fa-cogs" />
-                      </span>
-                      <span>Modern Rsyslog</span>
-                    </button>
-                  </div>
+              <div className="d-flex align-items-center gap-2">
+                <div className="input-group">
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${getServiceType(config).name === "syslog" ? "btn-primary" : "btn-secondary"}`}
+                    onClick={() => requestSwitchService("syslog")}
+                    disabled={
+                      loading || getServiceType(config).name === "syslog"
+                    }
+                  >
+                    <i className="fas fa-file-alt me-2" />
+                    <span>Traditional Syslog</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${getServiceType(config).name === "rsyslog" ? "btn-primary" : "btn-secondary"}`}
+                    onClick={() => requestSwitchService("rsyslog")}
+                    disabled={
+                      loading || getServiceType(config).name === "rsyslog"
+                    }
+                  >
+                    <i className="fas fa-cogs me-2" />
+                    <span>Modern Rsyslog</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -166,46 +152,38 @@ const SyslogConfiguration = ({ server }) => {
       )}
 
       {/* View Toggle */}
-      <div className="tabs is-toggle is-small mb-4">
-        <ul>
-          <li className={activeView === "current" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveView("current")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-list" />
-              </span>
-              <span>Current Rules</span>
-            </button>
-          </li>
-          <li className={activeView === "editor" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveView("editor")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-edit" />
-              </span>
-              <span>Config Editor</span>
-            </button>
-          </li>
-          <li className={activeView === "builder" ? "is-active" : ""}>
-            <button
-              type="button"
-              className="button is-ghost"
-              onClick={() => setActiveView("builder")}
-            >
-              <span className="icon is-small">
-                <i className="fas fa-plus" />
-              </span>
-              <span>Rule Builder</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeView === "current" ? "active" : ""}`}
+            onClick={() => setActiveView("current")}
+          >
+            <i className="fas fa-list me-2" />
+            <span>Current Rules</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeView === "editor" ? "active" : ""}`}
+            onClick={() => setActiveView("editor")}
+          >
+            <i className="fas fa-edit me-2" />
+            <span>Config Editor</span>
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            type="button"
+            className={`nav-link ${activeView === "builder" ? "active" : ""}`}
+            onClick={() => setActiveView("builder")}
+          >
+            <i className="fas fa-plus me-2" />
+            <span>Rule Builder</span>
+          </button>
+        </li>
+      </ul>
 
       {/* View Content */}
       {activeView === "current" && <CurrentRulesView config={config} />}

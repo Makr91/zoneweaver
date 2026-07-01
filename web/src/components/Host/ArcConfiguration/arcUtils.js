@@ -34,12 +34,12 @@ export const formatBytes = (bytes) => {
 
 export const getValidationColor = (errors, warnings) => {
   if (errors && errors.length > 0) {
-    return "is-danger";
+    return "danger";
   }
   if (warnings && warnings.length > 0) {
-    return "is-warning";
+    return "warning";
   }
-  return "is-success";
+  return "success";
 };
 
 export const computeSliderBackground = (value, min, max, color) => {

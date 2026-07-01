@@ -23,25 +23,32 @@ const ArtifactRow = ({
 }) => (
   <tr>
     <td>
-      <label className="checkbox">
+      <div className="form-check">
         <input
+          className="form-check-input"
           type="checkbox"
+          id={`artifact-select-${artifact.id}`}
           checked={selected}
           onChange={() => onSelect(artifact.id)}
         />
-        <span className="is-sr-only">Select {artifact.filename}</span>
-      </label>
+        <label
+          className="form-check-label visually-hidden"
+          htmlFor={`artifact-select-${artifact.id}`}
+        >
+          Select {artifact.filename}
+        </label>
+      </div>
     </td>
     <td>
-      <div className="is-flex is-align-items-center">
-        <span className="icon mr-2">
+      <div className="d-flex align-items-center">
+        <span className="icon me-2">
           {getTypeIcon(artifact.file_type, artifact.extension)}
         </span>
         <div>
-          <div className="has-text-weight-semibold">{artifact.filename}</div>
+          <div className="fw-semibold">{artifact.filename}</div>
           {artifact.source_url && (
-            <div className="is-size-7 has-text-grey">
-              <i className="fas fa-download mr-1" />
+            <div className="small text-muted">
+              <i className="fas fa-download me-1" />
               Downloaded from URL
             </div>
           )}
@@ -50,15 +57,13 @@ const ArtifactRow = ({
     </td>
     <td>{getTypeTag(artifact.file_type, artifact.extension)}</td>
     <td>
-      <span className="has-text-weight-semibold">
-        {formatSize(artifact.size)}
-      </span>
+      <span className="fw-semibold">{formatSize(artifact.size)}</span>
     </td>
     <td>
-      <div className="is-flex is-align-items-center">
+      <div className="d-flex align-items-center">
         {getChecksumStatus(artifact)}
         {artifact.checksum_algorithm && (
-          <span className="tag is-small is-light ml-1">
+          <span className="badge text-bg-light ms-1">
             {artifact.checksum_algorithm.toUpperCase()}
           </span>
         )}
@@ -67,82 +72,83 @@ const ArtifactRow = ({
     <td>
       {artifact.storage_location && (
         <div>
-          <div className="has-text-weight-semibold is-size-7">
+          <div className="fw-semibold small">
             {artifact.storage_location.name}
           </div>
-          <div className="is-size-7 has-text-grey">
+          <div className="small text-muted">
             {artifact.storage_location.path}
           </div>
         </div>
       )}
     </td>
     <td>
-      <span className="is-size-7">{formatDate(artifact.discovered_at)}</span>
+      <span className="small">{formatDate(artifact.discovered_at)}</span>
     </td>
     <td>
-      <div className="buttons are-small">
+      <div className="d-flex gap-2">
         <button
-          className="button"
+          className="btn btn-sm"
           onClick={() => onDetails(artifact)}
           disabled={loading}
           title="View details"
         >
-          <span className="icon is-small">
+          <span className="icon">
             <i className="fas fa-info-circle" />
           </span>
         </button>
 
         <button
-          className="button is-danger"
+          className="btn btn-danger btn-sm"
           onClick={() => onDelete([artifact.id])}
           disabled={loading}
           title="Delete artifact"
         >
-          <span className="icon is-small">
+          <span className="icon">
             <i className="fas fa-trash" />
           </span>
         </button>
 
-        <div className="dropdown is-hoverable is-right">
-          <div className="dropdown-trigger">
-            <button
-              className="button"
-              aria-haspopup="true"
-              aria-controls="dropdown-menu"
-            >
-              <span className="icon is-small">
-                <i className="fas fa-ellipsis-h" aria-hidden="true" />
-              </span>
-            </button>
-          </div>
-          <div className="dropdown-menu" id="dropdown-menu" role="menu">
-            <div className="dropdown-content">
+        <div className="dropdown">
+          <button
+            className="btn btn-sm dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <span className="icon">
+              <i className="fas fa-ellipsis-h" aria-hidden="true" />
+            </span>
+          </button>
+          <ul className="dropdown-menu dropdown-menu-end">
+            <li>
               <button
                 type="button"
-                className="dropdown-item button is-ghost"
+                className="dropdown-item"
                 onClick={() => onMove(artifact)}
               >
-                <span className="icon-text">
-                  <span className="icon">
+                <span className="d-inline-flex align-items-center">
+                  <span className="icon me-1">
                     <i className="fas fa-truck" />
                   </span>
                   <span>Move</span>
                 </span>
               </button>
+            </li>
+            <li>
               <button
                 type="button"
-                className="dropdown-item button is-ghost"
+                className="dropdown-item"
                 onClick={() => onCopy(artifact)}
               >
-                <span className="icon-text">
-                  <span className="icon">
+                <span className="d-inline-flex align-items-center">
+                  <span className="icon me-1">
                     <i className="fas fa-copy" />
                   </span>
                   <span>Copy</span>
                 </span>
               </button>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
       </div>
     </td>

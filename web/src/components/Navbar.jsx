@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import Dropdown from "react-bootstrap/Dropdown";
 
 import {
   canStartStopZones,
@@ -54,144 +55,126 @@ const Navbar = () => {
     const userRole = user?.role;
 
     return (
-      <div className="dropdown is-right is-hoverable">
-        <button
-          className="dropdown-trigger button"
-          aria-haspopup="true"
-          aria-controls="dropdown-menu"
-        >
-          <span>Zone Controls</span>
-          <span className="icon is-small">
-            <i className="fa fa-angle-down" aria-hidden="true" />
-          </span>
-        </button>
-        <div className="dropdown-menu" id="zone-control-menu" role="menu">
-          <div className="dropdown-content">
-            {isShareableRoute(location.pathname) && currentServer && (
-              <>
-                <button
-                  onClick={handleShareCurrentPage}
-                  className="dropdown-item"
-                  title="Copy shareable link to clipboard"
-                >
-                  <span className="icon has-text-info mr-2">
-                    <i className="fas fa-share-alt" />
-                  </span>
-                  <span>Share Link</span>
-                </button>
-                <hr className="dropdown-divider" />
-              </>
-            )}
+      <Dropdown align="end">
+        <Dropdown.Toggle variant="outline-secondary">
+          Zone Controls
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {isShareableRoute(location.pathname) && currentServer && (
+            <>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={handleShareCurrentPage}
+                title="Copy shareable link to clipboard"
+              >
+                <i className="fas fa-share-alt text-info me-2" />
+                Share Link
+              </Dropdown.Item>
+              <Dropdown.Divider />
+            </>
+          )}
 
-            {canStartStopZones(userRole) && (
-              <>
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("shutdown");
-                    setCurrentMode("zone");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon has-text-danger mr-2">
-                    <i className="fas fa-stop" />
-                  </span>
-                  <span>Shutdown</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("start");
-                    setCurrentMode("zone");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon has-text-success mr-2">
-                    <i className="fas fa-play" />
-                  </span>
-                  <span>Power On</span>
-                </button>
-              </>
-            )}
-
-            {canRestartZones(userRole) && (
-              <button
+          {canStartStopZones(userRole) && (
+            <>
+              <Dropdown.Item
+                as="button"
+                type="button"
                 onClick={() => {
                   handleModalClick();
-                  setCurrentAction("restart");
+                  setCurrentAction("shutdown");
                   setCurrentMode("zone");
                 }}
-                className="dropdown-item"
               >
-                <span className="icon has-text-warning mr-2">
-                  <i className="fas fa-redo" />
-                </span>
-                <span>Restart</span>
-              </button>
-            )}
+                <i className="fas fa-stop text-danger me-2" />
+                Shutdown
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={() => {
+                  handleModalClick();
+                  setCurrentAction("start");
+                  setCurrentMode("zone");
+                }}
+              >
+                <i className="fas fa-play text-success me-2" />
+                Power On
+              </Dropdown.Item>
+            </>
+          )}
 
-            {canDestroyZones(userRole) && (
-              <>
-                <hr className="dropdown-divider" />
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("kill");
-                    setCurrentMode("zone");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon has-text-danger mr-2">
-                    <i className="fas fa-skull" />
-                  </span>
-                  <span>Force Kill</span>
-                </button>
-                <button className="dropdown-item">
-                  <span className="icon mr-2">
-                    <i className="fas fa-camera" />
-                  </span>
-                  <span>Snapshot</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("provision");
-                    setCurrentMode("zone");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon mr-2">
-                    <i className="fas fa-cogs" />
-                  </span>
-                  <span>Provision</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("destroy");
-                    setCurrentMode("zone");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon has-text-danger mr-2">
-                    <i className="fas fa-trash" />
-                  </span>
-                  <span>Destroy</span>
-                </button>
-              </>
-            )}
+          {canRestartZones(userRole) && (
+            <Dropdown.Item
+              as="button"
+              type="button"
+              onClick={() => {
+                handleModalClick();
+                setCurrentAction("restart");
+                setCurrentMode("zone");
+              }}
+            >
+              <i className="fas fa-redo text-warning me-2" />
+              Restart
+            </Dropdown.Item>
+          )}
 
-            {!canDestroyZones(userRole) && (
-              <>
-                <hr className="dropdown-divider" />
-                <div className="has-text-grey-light has-text-centered p-2 is-size-7">
-                  Advanced controls require admin privileges
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+          {canDestroyZones(userRole) && (
+            <>
+              <Dropdown.Divider />
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={() => {
+                  handleModalClick();
+                  setCurrentAction("kill");
+                  setCurrentMode("zone");
+                }}
+              >
+                <i className="fas fa-skull text-danger me-2" />
+                Force Kill
+              </Dropdown.Item>
+              <Dropdown.Item as="button" type="button">
+                <i className="fas fa-camera me-2" />
+                Snapshot
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={() => {
+                  handleModalClick();
+                  setCurrentAction("provision");
+                  setCurrentMode("zone");
+                }}
+              >
+                <i className="fas fa-cogs me-2" />
+                Provision
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={() => {
+                  handleModalClick();
+                  setCurrentAction("destroy");
+                  setCurrentMode("zone");
+                }}
+              >
+                <i className="fas fa-trash text-danger me-2" />
+                Destroy
+              </Dropdown.Item>
+            </>
+          )}
+
+          {!canDestroyZones(userRole) && (
+            <>
+              <Dropdown.Divider />
+              <div className="text-muted text-center p-2 small">
+                Advanced controls require admin privileges
+              </div>
+            </>
+          )}
+        </Dropdown.Menu>
+      </Dropdown>
     );
   };
 
@@ -199,115 +182,95 @@ const Navbar = () => {
     const userRole = user?.role;
 
     return (
-      <div className="dropdown is-right is-hoverable">
-        <button
-          className="dropdown-trigger button"
-          aria-haspopup="true"
-          aria-controls="dropdown-menu"
-        >
-          <span>Host Actions</span>
-          <span className="icon is-small">
-            <i className="fa fa-angle-down" aria-hidden="true" />
-          </span>
-        </button>
-        <div className="dropdown-menu" id="host-control-menu" role="menu">
-          <div className="dropdown-content">
-            {isShareableRoute(location.pathname) && currentServer && (
-              <>
-                <button
-                  onClick={handleShareCurrentPage}
-                  className="dropdown-item"
-                  title="Copy shareable link to clipboard"
-                >
-                  <span className="icon has-text-info mr-2">
-                    <i className="fas fa-share-alt" />
-                  </span>
-                  <span>Share Link</span>
-                </button>
-                <hr className="dropdown-divider" />
-              </>
-            )}
+      <Dropdown align="end">
+        <Dropdown.Toggle variant="outline-secondary">
+          Host Actions
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {isShareableRoute(location.pathname) && currentServer && (
+            <>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={handleShareCurrentPage}
+                title="Copy shareable link to clipboard"
+              >
+                <i className="fas fa-share-alt text-info me-2" />
+                Share Link
+              </Dropdown.Item>
+              <Dropdown.Divider />
+            </>
+          )}
 
-            <button
-              onClick={() => navigate("/ui/hosts")}
-              className="dropdown-item"
-            >
-              <span className="icon has-text-info mr-2">
-                <i className="fas fa-eye" />
-              </span>
-              <span>View Host Details</span>
-            </button>
-            <button
-              onClick={() => navigate("/ui/host-manage")}
-              className="dropdown-item"
-            >
-              <span className="icon has-text-info mr-2">
-                <i className="fas fa-cogs" />
-              </span>
-              <span>Manage Host</span>
-            </button>
+          <Dropdown.Item
+            as="button"
+            type="button"
+            onClick={() => navigate("/ui/hosts")}
+          >
+            <i className="fas fa-eye text-info me-2" />
+            View Host Details
+          </Dropdown.Item>
+          <Dropdown.Item
+            as="button"
+            type="button"
+            onClick={() => navigate("/ui/host-manage")}
+          >
+            <i className="fas fa-cogs text-info me-2" />
+            Manage Host
+          </Dropdown.Item>
 
-            {canPowerOffHosts(userRole) && (
-              <>
-                <hr className="dropdown-divider" />
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("restart");
-                    setCurrentMode("host");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon has-text-warning mr-2">
-                    <i className="fas fa-redo" />
-                  </span>
-                  <span>Restart Host</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleModalClick();
-                    setCurrentAction("shutdown");
-                    setCurrentMode("host");
-                  }}
-                  className="dropdown-item"
-                >
-                  <span className="icon has-text-danger mr-2">
-                    <i className="fas fa-power-off" />
-                  </span>
-                  <span>Power Off Host</span>
-                </button>
-              </>
-            )}
+          {canPowerOffHosts(userRole) && (
+            <>
+              <Dropdown.Divider />
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={() => {
+                  handleModalClick();
+                  setCurrentAction("restart");
+                  setCurrentMode("host");
+                }}
+              >
+                <i className="fas fa-redo text-warning me-2" />
+                Restart Host
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                type="button"
+                onClick={() => {
+                  handleModalClick();
+                  setCurrentAction("shutdown");
+                  setCurrentMode("host");
+                }}
+              >
+                <i className="fas fa-power-off text-danger me-2" />
+                Power Off Host
+              </Dropdown.Item>
+            </>
+          )}
 
-            {!canControlHosts(userRole) && (
-              <>
-                <hr className="dropdown-divider" />
-                <div className="has-text-grey-light has-text-centered p-2 is-size-7">
-                  Host controls require admin privileges
-                  <br />
-                  Users have read-only access to host information
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+          {!canControlHosts(userRole) && (
+            <>
+              <Dropdown.Divider />
+              <div className="text-muted text-center p-2 small">
+                Host controls require admin privileges
+                <br />
+                Users have read-only access to host information
+              </div>
+            </>
+          )}
+        </Dropdown.Menu>
+      </Dropdown>
     );
   };
 
   const ZoneList = ({ zones: zoneData }) => (
-    <div
-      className="dropdown-menu dropdown-content"
-      id="zone-select"
-      role="menu"
-    >
+    <>
       {currentZone && (
-        <button onClick={clearZone} className="dropdown-item">
-          <span className="icon has-text-warning mr-2">
-            <i className="fas fa-times" />
-          </span>
-          <span>Deselect Zone</span>
-        </button>
+        <Dropdown.Item as="button" type="button" onClick={clearZone}>
+          <i className="fas fa-times text-warning me-2" />
+          Deselect Zone
+        </Dropdown.Item>
       )}
       {zoneData.data.allzones
         .filter((zone) => zone !== currentZone)
@@ -316,24 +279,21 @@ const Navbar = () => {
           const statusColor = getStatusDotColor(status);
 
           return (
-            <button
+            <Dropdown.Item
+              as="button"
+              type="button"
               key={zone}
-              onClick={() => {
-                selectZone(zone);
-              }}
-              className="dropdown-item zw-navbar-zone-item"
+              onClick={() => selectZone(zone)}
+              className="d-flex align-items-center gap-2"
             >
               <span>{zone}</span>
-              <span
-                className={`icon ${statusColor}`}
-                title={`Status: ${status}`}
-              >
-                <i className="fas fa-circle is-size-7" />
+              <span className={statusColor} title={`Status: ${status}`}>
+                <i className="fas fa-circle fa-xs" />
               </span>
-            </button>
+            </Dropdown.Item>
           );
         })}
-    </div>
+    </>
   );
 
   ZoneList.propTypes = {
@@ -345,8 +305,12 @@ const Navbar = () => {
   };
 
   return (
-    <div className="hero-head">
-      <nav className="level" role="navigation" aria-label="main navigation">
+    <div>
+      <nav
+        className="d-flex justify-content-between align-items-center gap-2 p-2"
+        role="navigation"
+        aria-label="main navigation"
+      >
         {!isModal && (
           <FormModal
             isOpen={!isModal}
@@ -364,7 +328,7 @@ const Navbar = () => {
           >
             {currentMode === "host" && currentServer && (
               <div>
-                <div className="notification is-warning mb-4">
+                <div className="alert alert-warning">
                   <p>
                     <strong>Target:</strong> {currentServer.hostname}
                   </p>
@@ -395,7 +359,7 @@ const Navbar = () => {
               </div>
             )}
             {currentMode === "zone" && currentZone && (
-              <div className="notification is-info">
+              <div className="alert alert-info">
                 <p>
                   <strong>Target:</strong> {currentZone}
                 </p>
@@ -404,92 +368,93 @@ const Navbar = () => {
             )}
           </FormModal>
         )}
-        {recoveryFailed && (
-          <div className="notification is-warning">
-            <button
-              className="delete"
-              onClick={() => setRecoveryFailed(false)}
-              type="button"
-            />
-            Host restart is taking longer than expected. Please refresh the page
-            manually to check if the server is back online.
-          </div>
-        )}
-        <div className="level-left">
+
+        <div className="d-flex align-items-center gap-2">
           {currentServer ? (
-            <div className="dropdown is-hoverable">
-              <button
-                className="dropdown-trigger button px-2"
-                aria-haspopup="true"
-                aria-controls="dropdown-menu"
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="outline-secondary"
+                className="d-flex align-items-center gap-2"
               >
-                <span>Host</span>
-                <span className="icon">
-                  <i className="fa fa-angle-down" aria-hidden="true" />
-                </span>
-              </button>
-              <div
-                className="dropdown-menu dropdown-content"
-                id="host-select"
-                role="menu"
-              >
+                <i className="fas fa-server" />
+                <span className="text-uppercase small opacity-75">Host</span>
+                <span className="fw-semibold">{currentServer.hostname}</span>
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
                 {allServers &&
                   allServers.map((server) => (
-                    <button
+                    <Dropdown.Item
+                      as="button"
+                      type="button"
                       key={server.hostname}
-                      onClick={() => {
-                        selectServer(server);
-                        console.log("Host selected:", server.hostname);
-                      }}
-                      className="dropdown-item"
+                      active={server.hostname === currentServer.hostname}
+                      onClick={() => selectServer(server)}
+                      className="d-flex align-items-center gap-2"
                     >
-                      {server.hostname}
-                    </button>
+                      <i className="fas fa-server" />
+                      <span>{server.hostname}</span>
+                    </Dropdown.Item>
                   ))}
-              </div>
-              <div className="px-1 button">{currentServer.hostname}</div>
-            </div>
+              </Dropdown.Menu>
+            </Dropdown>
           ) : (
             <a
               href="/ui/settings/zoneweaver?tab=servers"
-              className="px-1 button"
+              className="btn btn-outline-secondary d-flex align-items-center gap-2"
             >
-              <span>Add Server</span>
-              <span className="icon has-text-success">
-                <i className="fas fa-plus" />
-              </span>
+              <i className="fas fa-server" />
+              <span className="text-uppercase small opacity-75">Host</span>
+              <span className="fw-semibold">Add Server</span>
+              <i className="fas fa-plus text-success" />
             </a>
           )}
-          <div className="divider is-primary mx-4 is-vertical">|</div>
-          <div className="dropdown is-hoverable">
-            <button
-              className="dropdown-trigger button px-2"
-              aria-haspopup="true"
-              aria-controls="dropdown-menu"
+
+          <div className="vr mx-1" />
+
+          <Dropdown>
+            <Dropdown.Toggle
+              variant="outline-secondary"
+              className="d-flex align-items-center gap-2"
             >
-              <span>Zone</span>
-              <span className="icon">
-                <i className="fa fa-angle-down" aria-hidden="true" />
-              </span>
-            </button>
-            {zones && <ZoneList zones={zones} />}
-            <div className="px-1 button is-flex is-align-items-center is-justify-content-space-between">
-              <span>{currentZone}</span>
-              {currentZone && (
-                <span
-                  className={`icon is-small ml-2 ${getStatusDotColor(getZoneStatus(zones, currentZone))}`}
-                  title={`Status: ${getZoneStatus(zones, currentZone)}`}
-                >
-                  <i className="fas fa-circle is-size-8" />
+              <i className="fab fa-hive" />
+              <span className="text-uppercase small opacity-75">Zone</span>
+              {currentZone ? (
+                <span className="d-flex align-items-center gap-2">
+                  <span className="fw-semibold">{currentZone}</span>
+                  <span
+                    className={getStatusDotColor(
+                      getZoneStatus(zones, currentZone)
+                    )}
+                    title={`Status: ${getZoneStatus(zones, currentZone)}`}
+                  >
+                    <i className="fas fa-circle fa-xs" />
+                  </span>
                 </span>
+              ) : (
+                <span className="fw-semibold opacity-75">None</span>
               )}
-            </div>
-          </div>
+            </Dropdown.Toggle>
+            <Dropdown.Menu>{zones && <ZoneList zones={zones} />}</Dropdown.Menu>
+          </Dropdown>
         </div>
-        <div className="level-right">
+
+        <div className="d-flex align-items-center">
           {currentZone ? <ZoneControlDropdown /> : <HostControlDropdown />}
         </div>
       </nav>
+
+      {recoveryFailed && (
+        <div className="alert alert-warning alert-dismissible m-2">
+          Host restart is taking longer than expected. Please refresh the page
+          manually to check if the server is back online.
+          <button
+            type="button"
+            className="btn-close"
+            aria-label="Close"
+            onClick={() => setRecoveryFailed(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };

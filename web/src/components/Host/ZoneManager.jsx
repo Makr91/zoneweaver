@@ -1,137 +1,103 @@
 import PropTypes from "prop-types";
 
 const ZoneManager = ({ serverStats, currentServer, handleZoneAction }) => (
-  <div className="box mb-5">
-    <div className="level is-mobile mb-4">
-      <div className="level-left">
-        <div className="level-item">
-          <h3 className="title is-5 mb-0">
-            <span className="icon-text">
-              <span className="icon">
-                <i className="fas fa-server" />
-              </span>
-              <span>Zone Management</span>
-            </span>
+  <div className="card mb-5">
+    <div className="card-body">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+          <h3 className="h5 mb-0 d-flex align-items-center gap-2">
+            <i className="fas fa-server" />
+            <span>Zone Management</span>
           </h3>
         </div>
-      </div>
-      <div className="level-right">
-        <div className="level-item">
-          <div className="field is-grouped">
-            <div className="control">
-              <div className="tags has-addons">
-                <span className="tag">Total</span>
-                <span className="tag is-info">
-                  {serverStats.allzones?.length || 0}
-                </span>
-              </div>
-            </div>
-            <div className="control">
-              <div className="tags has-addons">
-                <span className="tag">Running</span>
-                <span className="tag is-success">
-                  {serverStats.runningzones?.length || 0}
-                </span>
-              </div>
-            </div>
-            <div className="control">
-              <div className="tags has-addons">
-                <span className="tag">Stopped</span>
-                <span className="tag is-warning">
-                  {(serverStats.allzones?.length || 0) -
-                    (serverStats.runningzones?.length || 0)}
-                </span>
-              </div>
-            </div>
+        <div>
+          <div className="d-flex gap-2 flex-wrap">
+            <span className="d-inline-flex">
+              <span className="badge text-bg-secondary rounded-0">Total</span>
+              <span className="badge text-bg-info rounded-0">
+                {serverStats.allzones?.length || 0}
+              </span>
+            </span>
+            <span className="d-inline-flex">
+              <span className="badge text-bg-secondary rounded-0">Running</span>
+              <span className="badge text-bg-success rounded-0">
+                {serverStats.runningzones?.length || 0}
+              </span>
+            </span>
+            <span className="d-inline-flex">
+              <span className="badge text-bg-secondary rounded-0">Stopped</span>
+              <span className="badge text-bg-warning rounded-0">
+                {(serverStats.allzones?.length || 0) -
+                  (serverStats.runningzones?.length || 0)}
+              </span>
+            </span>
           </div>
         </div>
       </div>
-    </div>
 
-    <div className="columns">
-      <div className="column is-half">
-        <h4 className="subtitle is-6 mb-3">
-          Zones on {currentServer.hostname}
-        </h4>
-        <div className="content">
+      <div className="row g-3">
+        <div className="col-12 col-lg-6">
+          <h4 className="h6 mb-3">Zones on {currentServer.hostname}</h4>
           {serverStats.allzones && serverStats.allzones.length > 0 ? (
             <>
-              <div className="tags">
+              <div className="d-flex flex-wrap gap-1">
                 {serverStats.allzones.slice(0, 12).map((zone) => (
                   <span
                     key={zone}
-                    className={`tag ${serverStats.runningzones?.includes(zone) ? "is-success" : "is-light"}`}
+                    className={`badge d-inline-flex align-items-center gap-1 ${serverStats.runningzones?.includes(zone) ? "text-bg-success" : "text-bg-light"}`}
                   >
-                    <span className="icon is-small">
-                      <i
-                        className={`fas ${serverStats.runningzones?.includes(zone) ? "fa-circle" : "fa-circle"}`}
-                      />
-                    </span>
+                    <i
+                      className={`${serverStats.runningzones?.includes(zone) ? "fas fa-circle" : "far fa-circle"}`}
+                    />
                     <span>{zone}</span>
                   </span>
                 ))}
               </div>
               {serverStats.allzones.length > 12 && (
-                <p className="has-text-grey is-size-7 mt-2">
+                <p className="small text-muted mt-2">
                   Showing 12 of {serverStats.allzones.length} zones.
-                  <a href="/ui/zones" className="has-text-link ml-1">
+                  <a href="/ui/zones" className="ms-1">
                     View all →
                   </a>
                 </p>
               )}
             </>
           ) : (
-            <p className="has-text-grey">No zones configured on this host</p>
+            <p className="text-muted">No zones configured on this host</p>
           )}
         </div>
-      </div>
-      <div className="column is-half">
-        <h4 className="subtitle is-6 mb-3">Quick Actions</h4>
-        <div className="content">
-          <div className="field is-grouped is-grouped-multiline">
-            <div className="control">
-              <a href="/ui/zones" className="button is-primary">
-                <span className="icon is-small">
-                  <i className="fas fa-eye" />
-                </span>
-                <span>View All Zones</span>
-              </a>
-            </div>
-            <div className="control">
-              <a href="/ui/zone-register" className="button is-success">
-                <span className="icon is-small">
-                  <i className="fas fa-plus" />
-                </span>
-                <span>Create Zone</span>
-              </a>
-            </div>
+        <div className="col-12 col-lg-6">
+          <h4 className="h6 mb-3">Quick Actions</h4>
+          <div className="d-flex flex-wrap gap-2">
+            <a href="/ui/zones" className="btn btn-primary">
+              <i className="fas fa-eye me-2" />
+              <span>View All Zones</span>
+            </a>
+            <a href="/ui/zone-register" className="btn btn-success">
+              <i className="fas fa-plus me-2" />
+              <span>Create Zone</span>
+            </a>
             {(serverStats.allzones?.length || 0) -
               (serverStats.runningzones?.length || 0) >
               0 && (
-              <div className="control">
-                <button
-                  className="button is-success"
-                  onClick={() => handleZoneAction("startAll")}
-                >
-                  <span className="icon is-small">
-                    <i className="fas fa-play" />
-                  </span>
-                  <span>Start All</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                className="btn btn-success"
+                onClick={() => handleZoneAction("startAll")}
+              >
+                <i className="fas fa-play me-2" />
+                <span>Start All</span>
+              </button>
             )}
             {(serverStats.runningzones?.length || 0) > 0 && (
-              <div className="control">
-                <button
-                  className="button is-warning"
-                  onClick={() => handleZoneAction("stopAll")}
-                >
-                  <span className="icon is-small">
-                    <i className="fas fa-pause" />
-                  </span>
-                  <span>Stop All</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                className="btn btn-warning"
+                onClick={() => handleZoneAction("stopAll")}
+              >
+                <i className="fas fa-pause me-2" />
+                <span>Stop All</span>
+              </button>
             )}
           </div>
         </div>

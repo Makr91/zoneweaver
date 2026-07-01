@@ -9,17 +9,17 @@ const PackageFilters = ({
   loading,
   loadPackages,
 }) => (
-  <div className="box mb-4">
-    <div className="columns">
-      <div className="column">
-        <div className="field">
-          <label className="label" htmlFor="package-name-filter">
-            Filter by Package Name
-          </label>
-          <div className="control">
+  <div className="card mb-4">
+    <div className="card-body">
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="package-name-filter">
+              Filter by Package Name
+            </label>
             <input
               id="package-name-filter"
-              className="input"
+              className="form-control"
               type="text"
               placeholder="Enter package name pattern..."
               value={filters.pattern}
@@ -28,154 +28,144 @@ const PackageFilters = ({
             />
           </div>
         </div>
-      </div>
-      <div className="column">
-        <div className="field">
-          <label className="label" htmlFor="publisher-filter">
-            Filter by Publisher
-          </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="publisher-filter"
-                value={filters.publisher}
-                onChange={(e) =>
-                  handleFilterChange("publisher", e.target.value)
-                }
-                disabled={isSearchMode}
-              >
-                <option value="">All Publishers</option>
-                <option value="omnios">omnios</option>
-                <option value="extra.omnios">extra.omnios</option>
-                <option value="ooce">ooce</option>
-              </select>
-            </div>
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="publisher-filter">
+              Filter by Publisher
+            </label>
+            <select
+              id="publisher-filter"
+              className="form-select"
+              value={filters.publisher}
+              onChange={(e) => handleFilterChange("publisher", e.target.value)}
+              disabled={isSearchMode}
+            >
+              <option value="">All Publishers</option>
+              <option value="omnios">omnios</option>
+              <option value="extra.omnios">extra.omnios</option>
+              <option value="ooce">ooce</option>
+            </select>
           </div>
         </div>
-      </div>
-      <div className="column">
-        <div className="field">
-          <label className="label" htmlFor="status-filter">
-            Filter by Status
-          </label>
-          <div className="control">
-            <div className="select is-fullwidth">
-              <select
-                id="status-filter"
-                value={filters.status}
-                onChange={(e) => handleFilterChange("status", e.target.value)}
-                disabled={isSearchMode}
-              >
-                <option value="">All Status</option>
-                <option value="installed">Installed</option>
-                <option value="frozen">Frozen</option>
-                <option value="manual">Manual</option>
-              </select>
-            </div>
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="status-filter">
+              Filter by Status
+            </label>
+            <select
+              id="status-filter"
+              className="form-select"
+              value={filters.status}
+              onChange={(e) => handleFilterChange("status", e.target.value)}
+              disabled={isSearchMode}
+            >
+              <option value="">All Status</option>
+              <option value="installed">Installed</option>
+              <option value="frozen">Frozen</option>
+              <option value="manual">Manual</option>
+            </select>
           </div>
         </div>
-      </div>
-      <div className="column is-narrow">
-        <div className="field">
-          <label className="label" htmlFor="show-all-toggle">
-            Show All
-          </label>
-          <div className="control">
-            <label className="switch is-medium" htmlFor="show-all-toggle">
+        <div className="col-auto">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="show-all-toggle">
+              Show All
+            </label>
+            <div className="form-check form-switch">
               <input
                 id="show-all-toggle"
+                className="form-check-input"
                 type="checkbox"
+                role="switch"
                 checked={filters.showAll}
                 onChange={(e) =>
                   handleFilterChange("showAll", e.target.checked)
                 }
                 disabled={isSearchMode}
               />
-              <span className="check" />
-              <span className="control-label">All Packages</span>
-            </label>
+              <label className="form-check-label" htmlFor="show-all-toggle">
+                All Packages
+              </label>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    {/* Search Row */}
-    <div className="columns">
-      <div className="column">
-        <div className="field">
-          <label className="label" htmlFor="search-query-input">
-            Search Available Packages
-          </label>
-          <div className="control has-icons-right">
-            <input
-              id="search-query-input"
-              className="input"
-              type="text"
-              placeholder="Search for packages..."
-              value={filters.searchQuery}
-              onChange={(e) =>
-                handleFilterChange("searchQuery", e.target.value)
-              }
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <span className="icon is-small is-right">
-              <i className="fas fa-search" />
-            </span>
+      {/* Search Row */}
+      <div className="row g-3">
+        <div className="col">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="search-query-input">
+              Search Available Packages
+            </label>
+            <div className="input-group">
+              <input
+                id="search-query-input"
+                className="form-control"
+                type="text"
+                placeholder="Search for packages..."
+                value={filters.searchQuery}
+                onChange={(e) =>
+                  handleFilterChange("searchQuery", e.target.value)
+                }
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+              />
+              <span className="input-group-text">
+                <i className="fas fa-search" />
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="column is-narrow">
-        <div className="field">
-          <label className="label" htmlFor="search-button">
-            Search
-          </label>
-          <button
-            id="search-button"
-            className="button is-info"
-            onClick={handleSearch}
-            disabled={loading}
-          >
-            <span className="icon">
-              <i className="fas fa-search" />
-            </span>
-            <span>Search</span>
-          </button>
+        <div className="col-auto">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="search-button">
+              Search
+            </label>
+            <button
+              id="search-button"
+              type="button"
+              className="btn btn-info"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              <i className="fas fa-search me-2" />
+              <span>Search</span>
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="column is-narrow">
-        <div className="field">
-          <label className="label" htmlFor="refresh-button">
-            Refresh
-          </label>
-          <button
-            id="refresh-button"
-            className="button is-info"
-            onClick={loadPackages}
-            disabled={loading}
-          >
-            <span className="icon">
-              <i className="fas fa-sync-alt" />
-            </span>
-            <span>Refresh</span>
-          </button>
+        <div className="col-auto">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="refresh-button">
+              Refresh
+            </label>
+            <button
+              id="refresh-button"
+              type="button"
+              className="btn btn-info"
+              onClick={loadPackages}
+              disabled={loading}
+            >
+              <i className="fas fa-sync-alt me-2" />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="column is-narrow">
-        <div className="field">
-          <label className="label" htmlFor="clear-button">
-            Clear
-          </label>
-          <button
-            id="clear-button"
-            className="button"
-            onClick={clearFilters}
-            disabled={loading}
-          >
-            <span className="icon">
-              <i className="fas fa-times" />
-            </span>
-            <span>Clear</span>
-          </button>
+        <div className="col-auto">
+          <div className="mb-3">
+            <label className="form-label" htmlFor="clear-button">
+              Clear
+            </label>
+            <button
+              id="clear-button"
+              type="button"
+              className="btn btn-secondary"
+              onClick={clearFilters}
+              disabled={loading}
+            >
+              <i className="fas fa-times me-2" />
+              <span>Clear</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
