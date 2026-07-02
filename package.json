@@ -1,7 +1,7 @@
 {
-  "name": "zoneweaver",
+  "name": "hyperweaver-server",
   "version": "0.8.1",
-  "description": "Zoneweaver API - NodeJS backend and Vite based frontend",
+  "description": "Hyperweaver Server - Node control plane that serves the Hyperweaver UI, authenticates users, and proxies/aggregates host agents",
   "hyperweaverUiVersion": "0.10.0",
   "main": "index.js",
   "type": "module",
@@ -18,8 +18,8 @@
     "format:check": "prettier --check ."
   },
   "keywords": [
+    "hyperweaver",
     "bhyve",
-    "react",
     "nodejs"
   ],
   "author": "Makr91",
