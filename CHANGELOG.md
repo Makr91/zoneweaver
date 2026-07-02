@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.0](https://github.com/Makr91/zoneweaver/compare/v0.8.1...v0.9.0) (2026-07-02)
+
+
+### Features
+
+* further preperation for splitting UI ([fe1f101](https://github.com/Makr91/zoneweaver/commit/fe1f1014eb914af3c8d3152b1052d346570c5f87))
+* moving UI out of repo ([ebb9215](https://github.com/Makr91/zoneweaver/commit/ebb9215e37c86b5e5a0c012804b24d466223f709))
+* no more bulma! ([bdc042e](https://github.com/Makr91/zoneweaver/commit/bdc042efe6b9a40fc108ef8792d5cb7b02658146))
+* prepartion for splitting frontend UI ([358bed7](https://github.com/Makr91/zoneweaver/commit/358bed7325c339f4da472e0f1461c3cd31b804d9))
+
+
+### Bug Fixes
+
+* pre-bulma-cutover ([f03f092](https://github.com/Makr91/zoneweaver/commit/f03f0922e41dff9500162724ec7e811efc29d34e))
+
 ## [0.8.1](https://github.com/Makr91/zoneweaver/compare/v0.8.0...v0.8.1) (2026-04-15)
 
 ### Bug Fixes
