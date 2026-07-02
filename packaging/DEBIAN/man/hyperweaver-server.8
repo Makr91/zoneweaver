@@ -1,9 +1,9 @@
 .Dd $Mdocdate$
-.Dt ZONEWEAVER 8
+.Dt HYPERWEAVER-SERVER 8
 .Os
 .Sh NAME
-.Nm zoneweaver
-.Nd zone hypervisor management frontend web interface
+.Nm hyperweaver-server
+.Nd hypervisor management control-plane web interface
 .Sh SYNOPSIS
 .Nm
 .Op Fl -help
@@ -11,12 +11,12 @@
 .Sh DESCRIPTION
 The
 .Nm
-utility provides a web-based frontend interface for managing Bhyve virtual
-machines and zones through Zoneweaver API servers. It serves as the user-facing
-component of the Zoneweaver zone hypervisor management platform.
+utility provides a web-based control-plane interface for managing Bhyve virtual
+machines and zones through Zoneweaver Agents. It serves as the user-facing
+component of the Hyperweaver hypervisor management platform.
 .Pp
 .Nm
-is a Node.js Express application serving a React-based web interface that 
+is a Node.js Express application serving a React-based web interface that
 provides comprehensive user and organization management capabilities including:
 .Bl -bullet -offset indent
 .It
@@ -24,7 +24,7 @@ User authentication and session management with JWT tokens
 .It
 Multi-tenant organization management and access control
 .It
-Zoneweaver API server configuration and connection management
+Zoneweaver Agent configuration and connection management
 .It
 Web-based dashboard for zone management operations
 .It
@@ -36,17 +36,17 @@ SSL/TLS encryption with automatic certificate generation
 .El
 .Pp
 The service uses JWT token authentication for web sessions and connects to
-Zoneweaver API servers for actual zone management operations.
+Zoneweaver Agents for actual zone management operations.
 .Sh CONFIGURATION
 .Nm
 reads its configuration from
-.Pa /etc/zoneweaver/config.yaml
+.Pa /etc/hyperweaver-server/config.yaml
 by default. The configuration file uses YAML format and controls all aspects
 of the service including network ports, SSL settings, database configuration,
 user authentication, and organization management parameters.
 .Pp
 See
-.Xr zoneweaver.yaml 5
+.Xr hyperweaver-server.yaml 5
 for detailed configuration file format documentation.
 .Sh SERVICE MANAGEMENT
 The
@@ -54,13 +54,13 @@ The
 service is managed through systemd. Use the following commands to control
 the service:
 .Pp
-.Dl # systemctl enable zoneweaver
-.Dl # systemctl disable zoneweaver
-.Dl # systemctl restart zoneweaver
+.Dl # systemctl enable hyperweaver-server
+.Dl # systemctl disable hyperweaver-server
+.Dl # systemctl restart hyperweaver-server
 .Pp
 Check service status:
 .Pp
-.Dl # systemctl status zoneweaver
+.Dl # systemctl status hyperweaver-server
 .Sh WEB INTERFACE
 The service provides a modern React-based web interface accessible through
 a standard web browser. The default access URL is:
@@ -72,7 +72,7 @@ Key web interface features include:
 .It
 User login and registration with organization management
 .It
-Dashboard with zone overview from connected Zoneweaver API Servers
+Dashboard with zone overview from connected Zoneweaver Agents
 .It
 Server configuration and connection management
 .It
@@ -97,7 +97,7 @@ User profile and account management
 .It Pa /api/organizations
 Organization creation and management
 .It Pa /api/servers
-Zoneweaver API server configuration
+Zoneweaver Agent configuration
 .It Pa /api/invitations
 User invitation and registration codes
 .It Pa /api/settings
@@ -112,16 +112,16 @@ through the web interface. Initial organization setup (if enabled in config):
 For existing organizations, users need an invitation code from an administrator.
 The first user in a new organization automatically becomes the admin.
 .Sh FILES
-.Bl -tag -width ".Pa /var/lib/zoneweaver/database/"
-.It Pa /etc/zoneweaver/config.yaml
+.Bl -tag -width ".Pa /var/lib/hyperweaver-server/database/"
+.It Pa /etc/hyperweaver-server/config.yaml
 Main configuration file
-.It Pa /etc/zoneweaver/ssl/
+.It Pa /etc/hyperweaver-server/ssl/
 SSL certificate directory (auto-generated if enabled)
-.It Pa /var/lib/zoneweaver/database/
+.It Pa /var/lib/hyperweaver-server/database/
 SQLite database directory for user and organization data
-.It Pa /var/log/zoneweaver/
+.It Pa /var/log/hyperweaver-server/
 Service log directory
-.It Pa /usr/share/zoneweaver/
+.It Pa /opt/hyperweaver-server/
 Installation directory
 .El
 .Sh EXIT STATUS
@@ -129,7 +129,7 @@ Installation directory
 .Sh EXAMPLES
 Start the service manually for testing:
 .Bd -literal -offset indent
-# cd /usr/share/zoneweaver
+# cd /opt/hyperweaver-server
 # node index.js
 .Ed
 .Pp
@@ -149,23 +149,23 @@ or to systemd journal when running under systemd management.
 Common diagnostic steps:
 .Bl -enum -offset indent
 .It
-Check systemd service status: 
-.Cm systemctl status zoneweaver
+Check systemd service status:
+.Cm systemctl status hyperweaver-server
 .It
-Review service logs: 
-.Cm journalctl -u zoneweaver
+Review service logs:
+.Cm journalctl -u hyperweaver-server
 .It
-Verify configuration syntax: 
-.Cm node -c /usr/share/zoneweaver/index.js
+Verify configuration syntax:
+.Cm node -c /opt/hyperweaver-server/index.js
 .It
 Test network connectivity to port 3443
 .It
 Verify database permissions and disk space
 .It
-Check Zoneweaver API server connectivity from web interface
+Check Zoneweaver Agent connectivity from web interface
 .El
 .Sh SEE ALSO
-.Xr zoneweaver.yaml 5 ,
+.Xr hyperweaver-server.yaml 5 ,
 .Xr zoneweaver-api 8 ,
 .Xr systemctl 1 ,
 .Xr journalctl 1
@@ -175,11 +175,11 @@ responses. Authentication uses industry-standard JWT token mechanisms with
 bcrypt hashing for secure password storage.
 .Sh HISTORY
 .Nm
-first appeared in Zoneweaver 0.0.1 as part of the zone hypervisor
+first appeared in Hyperweaver Server 0.0.1 as part of the hypervisor
 .\" x-release-please-version
 management platform.
 .Sh AUTHORS
-.An Zoneweaver Project
+.An Hyperweaver Project
 .Sh SECURITY
 .Nm
 implements several security measures:

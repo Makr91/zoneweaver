@@ -9,7 +9,7 @@ permalink: /license/
 
 {: .no_toc }
 
-Licensing information for Zoneweaver frontend.
+Licensing information for Hyperweaver Server frontend.
 
 ## Table of contents
 

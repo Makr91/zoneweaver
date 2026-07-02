@@ -9,7 +9,7 @@ permalink: /support/
 
 {: .no_toc }
 
-Getting help with Zoneweaver frontend.
+Getting help with Hyperweaver Server frontend.
 
 ## Table of contents
 

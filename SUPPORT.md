@@ -1,6 +1,6 @@
 # Getting Support
 
-Thank you for using Zoneweaver! This document outlines the various ways you can get help with the project.
+Thank you for using Hyperweaver Server! This document outlines the various ways you can get help with the project.
 
 ## Available Resources
 
@@ -8,17 +8,17 @@ Thank you for using Zoneweaver! This document outlines the various ways you can 
 
 Start with our comprehensive documentation:
 
-- **[Main Documentation](https://zoneweaver.startcloud.com/)** - Complete guides and API reference
-- **[Getting Started](https://zoneweaver.startcloud.com/docs/guides/getting-started/)** - Quick start guide
-- **[Installation Guide](https://zoneweaver.startcloud.com/docs/guides/production-installation/)** - Production setup
-- **[Configuration Reference](https://zoneweaver.startcloud.com/docs/configuration/)** - All configuration options
-- **[API Documentation](https://zoneweaver.startcloud.com/docs/api/)** - Interactive API reference
+- **[Main Documentation](https://hyperweaver.startcloud.com/)** - Complete guides and API reference
+- **[Getting Started](https://hyperweaver.startcloud.com/docs/guides/getting-started/)** - Quick start guide
+- **[Installation Guide](https://hyperweaver.startcloud.com/docs/guides/production-installation/)** - Production setup
+- **[Configuration Reference](https://hyperweaver.startcloud.com/docs/configuration/)** - All configuration options
+- **[API Documentation](https://hyperweaver.startcloud.com/docs/api/)** - Interactive API reference
 
 ### 🐛 Issues and Bug Reports
 
 For bugs and technical issues:
 
-- **[GitHub Issues](https://github.com/Makr91/zoneweaver/issues)** - Report bugs or request features
+- **[GitHub Issues](https://github.com/Makr91/hyperweaver-server/issues)** - Report bugs or request features
 - Use the appropriate issue template (bug report, feature request, question)
 - Search existing issues first to avoid duplicates
 
@@ -26,14 +26,14 @@ For bugs and technical issues:
 
 For general questions and discussions:
 
-- **[GitHub Discussions](https://github.com/Makr91/zoneweaver/discussions)** - Ask questions, share ideas
-- **[GitHub Issues](https://github.com/Makr91/zoneweaver/issues)** - Use the "question" template for specific inquiries
+- **[GitHub Discussions](https://github.com/Makr91/hyperweaver-server/discussions)** - Ask questions, share ideas
+- **[GitHub Issues](https://github.com/Makr91/hyperweaver-server/issues)** - Use the "question" template for specific inquiries
 
 ## Support Expectations
 
 ### Resource Limitations
 
-Please understand that Zoneweaver API is maintained with limited development resources:
+Please understand that Zoneweaver Agent is maintained with limited development resources:
 
 - **Response Time**: We aim to respond to issues within a few days, but response times may vary based on current workload and complexity
 - **Priority**: Critical security issues and bugs affecting system stability receive highest priority
@@ -41,7 +41,7 @@ Please understand that Zoneweaver API is maintained with limited development res
 
 ### Community-Driven Support
 
-The Zoneweaver API community is encouraged to:
+The Zoneweaver Agent community is encouraged to:
 
 - **Help each other** in discussions and issue comments
 - **Share solutions** to common problems
@@ -141,4 +141,4 @@ This support document may be updated as the project evolves and resources change
 
 ---
 
-**Remember**: Community involvement directly impacts the level of support available. Your contributions help make Zoneweaver API better for everyone!
+**Remember**: Community involvement directly impacts the level of support available. Your contributions help make Zoneweaver Agent better for everyone!

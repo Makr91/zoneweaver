@@ -1,6 +1,9 @@
-# Building Zoneweaver Debian Packages
+# Building Hyperweaver Server Debian Packages
 
-Production-ready Debian package build process with automated CI/CD via Release Please.
+Production-ready Debian package build for the Hyperweaver Server, with automated CI/CD via Release Please.
+
+The web UI is **not** built here — it is consumed as the published
+[hyperweaver-ui](https://github.com/MarkProminic/hyperweaver-ui) release artifact and unpacked into `./ui`.
 
 ## Prerequisites
 
@@ -14,18 +17,19 @@ sudo apt install nodejs npm dpkg-dev gdebi-core
 ### 1. Prepare Application
 
 ```bash
-
-# Clean any existing build artifacts
-
-# Check Check and Sync Frontend and Backend Versions
+# Sync version into swagger/config/manifest
 npm run sync-versions
 
 # Install dependencies
 npm ci
-cd web && npm ci && cd ..
 
-# Build frontend (this automatically syncs versions)
-npm run build
+# Fetch the pinned Hyperweaver UI artifact into ./ui
+UI_VERSION=$(node -p "require('./package.json').hyperweaverUiVersion")
+mkdir -p ui
+curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | tar -xz -C ui
+
+# Generate OpenAPI documentation
+npm run generate-docs
 
 # Install production dependencies only
 npm ci --omit=dev
@@ -36,59 +40,56 @@ npm ci --omit=dev
 ```bash
 # Extract version from package.json
 export VERSION=$(node -p "require('./package.json').version")
-export PACKAGE_NAME="zoneweaver"
+export PACKAGE_NAME="hyperweaver-server"
 export ARCH="amd64"
 
 # Create directory structure
-mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
+mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/hyperweaver-server,etc/hyperweaver-server,etc/systemd/system,var/lib/hyperweaver-server,var/log/hyperweaver-server,usr/share/man/man8,usr/share/man/man5,DEBIAN}
 ```
 
 ### 3. Copy Application Files
 
 ```bash
-# Application files to /opt/zoneweaver (IMPORTANT: include utils and scripts!)
-cp -r controllers models routes middleware config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"
+# Application files to /opt/hyperweaver-server (IMPORTANT: include utils and scripts!)
+cp -r controllers models routes auth config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/hyperweaver-server/"
+cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/hyperweaver-server/"
+cp -r ui "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/hyperweaver-server/ui"
 
-# Configuration files
-cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
+# Configuration file
+cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/hyperweaver-server/config.yaml"
 
 # Systemd service (with privileged port capabilities)
-cp packaging/DEBIAN/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
+cp packaging/DEBIAN/systemd/hyperweaver-server.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
 
 # DEBIAN control files
 cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
 
 # Man pages (compress following Debian Policy)
-gzip -9 -c packaging/DEBIAN/man/zoneweaver.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/zoneweaver.8.gz"
-gzip -9 -c packaging/DEBIAN/man/zoneweaver.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/zoneweaver.yaml.5.gz"
+gzip -9 -c packaging/DEBIAN/man/hyperweaver-server.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/hyperweaver-server.8.gz"
+gzip -9 -c packaging/DEBIAN/man/hyperweaver-server.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/hyperweaver-server.yaml.5.gz"
 ```
 
 ### 4. Generate Control File
 
 ```bash
-# Create control file with dynamic version
 cat > "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
-Package: zoneweaver
+Package: hyperweaver-server
 Version: ${VERSION}
 Section: misc
 Priority: optional
 Architecture: ${ARCH}
 Maintainer: Makr91 <makr91@users.noreply.github.com>
-Depends: nodejs (>= 20.0.0), sqlite3, openssl
-Description: Zoneweaver - Zone Hypervisor Management Interface
- Web-based management interface for Zoneweaver API hypervisors.
- Provides intuitive control over zones, networking, and storage
- through a modern React frontend and Node.js API backend.
-Homepage: https://github.com/Makr91/zoneweaver
+Depends: nodejs (>= 22.0.0), sqlite3, openssl
+Description: Hyperweaver Server - hypervisor control-plane web interface
+ Aggregates and proxies host agents (Zoneweaver Agent for Bhyve/OmniOS,
+ Hyperweaver Agent for VirtualBox) and serves the Hyperweaver UI.
+Homepage: https://github.com/Makr91/hyperweaver-server
 EOF
 ```
 
 ### 5. Set Permissions
 
 ```bash
-# Set proper permissions
 find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type d -exec chmod 755 {} \;
 find "${PACKAGE_NAME}_${VERSION}_${ARCH}" -type f -exec chmod 644 {} \;
 chmod 755 "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN"/{postinst,prerm,postrm}
@@ -104,10 +105,10 @@ dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION
 sudo gdebi -n "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
 
 # Start service
-sudo systemctl enable --now zoneweaver
+sudo systemctl enable --now hyperweaver-server
 
 # Check status
-sudo systemctl status zoneweaver
+sudo systemctl status hyperweaver-server
 ```
 
 ## Critical Build Notes
@@ -118,29 +119,26 @@ sudo systemctl status zoneweaver
 
 - `utils/` - Contains config loading utilities
 - `scripts/` - Contains version synchronization tools
-- `web/dist/` - Must build frontend first with `npm run build`
+- `ui/` - The fetched Hyperweaver UI artifact (see step 1)
 
 ### ✅ Single Source of Truth Versioning
 
-**Root `package.json` is the ONLY place to change version numbers.**
+**Root `package.json` is the ONLY place to change the Server version.**
 
-The `npm run sync-versions` script automatically synchronizes the version to:
+`npm run sync-versions` synchronizes the version to:
 
-- ✅ `web/package.json` - Frontend package version
 - ✅ `config/swagger.js` - API documentation version
-- ✅ `config.yaml` - Application config version
 - ✅ `packaging/config/production-config.yaml` - Production config version
 - ✅ `.release-please-manifest.json` - Release automation tracking
-- ✅ Vite build process - Injects version into frontend via `__APP_VERSION__`
 
-**To change version:** Only edit the `version` field in root `package.json`, then run `npm run sync-versions`
+The consumed UI version is pinned separately by `hyperweaverUiVersion` in `package.json`.
 
 ### 🔧 Systemd Service
 
 The service includes:
 
 - **Privileged port capabilities** (`CAP_NET_BIND_SERVICE`) for ports 80/443
-- **Environment variables** (`CONFIG_PATH=/etc/zoneweaver/config.yaml`)
+- **Environment variables** (`CONFIG_PATH=/etc/hyperweaver-server/config.yaml`)
 - **Security restrictions** (NoNewPrivileges, ProtectSystem, etc.)
 
 ## Automated CI/CD
@@ -150,7 +148,7 @@ The service includes:
 Every push to main triggers Release Please:
 
 1. **Creates release PR** with version bumps and changelog
-2. **Merges PR** → triggers package build
+2. **Merges PR** → triggers package build (`.github/workflows/prod-build.yml`)
 3. **Creates GitHub release** with `.deb` package attached
 4. **Uses semantic versioning** based on conventional commits
 
@@ -162,60 +160,54 @@ gh workflow run release-please.yml
 
 ## Package Information
 
-- **Service User**: `zoneweaver` (created during installation)
-- **Configuration**: `/etc/zoneweaver/config.yaml`
-- **Data Directory**: `/var/lib/zoneweaver/`
-- **Log Directory**: `/var/log/zoneweaver/`
-- **SSL Certificates**: `/etc/zoneweaver/ssl/` (auto-generated)
-- **JWT Secret**: `/etc/zoneweaver/.jwt-secret` (auto-generated)
-- **Service**: `systemctl {start|stop|status|restart} zoneweaver`
+- **Service User**: `hyperweaver-server` (created during installation)
+- **Configuration**: `/etc/hyperweaver-server/config.yaml`
+- **Data Directory**: `/var/lib/hyperweaver-server/`
+- **Log Directory**: `/var/log/hyperweaver-server/`
+- **SSL Certificates**: `/etc/hyperweaver-server/ssl/` (auto-generated)
+- **JWT Secret**: `/etc/hyperweaver-server/.jwt-secret` (auto-generated)
+- **Service**: `systemctl {start|stop|status|restart} hyperweaver-server`
 - **Default Access**: `https://localhost:3443`
-- **Manual Pages**: `man zoneweaver` and `man zoneweaver.yaml`
+- **Manual Pages**: `man hyperweaver-server` and `man hyperweaver-server.yaml`
 
 ## Troubleshooting
 
 ### Common Build Errors
 
-1. **Cannot find module '/opt/zoneweaver/utils/config.js'**
+1. **Cannot find module '/opt/hyperweaver-server/utils/config.js'**
    - ❌ Missing `utils` in copy command
    - ✅ Fix: Add `utils` to the cp command
 
-2. **Cannot stat 'web/dist'**
-   - ❌ Frontend not built
-   - ✅ Fix: Run `npm run build` before packaging
+2. **Blank page / UI not found**
+   - ❌ `ui/` not fetched before packaging
+   - ✅ Fix: Run the UI fetch in step 1 before copying `ui`
 
-3. **Version shows as 1.0.0 in frontend**
+3. **Version shows as unknown in frontend**
    - ❌ Version sync issue
-   - ✅ Fix: Run `npm run sync-versions` or rebuild
-
-4. **Files served from wrong location (web/assets instead of web/dist/assets)**
-   - ❌ Directory structure flattened during packaging
-   - ✅ Fix: Use `cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"` (not `/web/`)
-   - 🔍 Verify: Check that `/opt/zoneweaver/web/dist/assets/` exists after installation
+   - ✅ Fix: Run `npm run sync-versions`
 
 ### Service Issues
 
 ```bash
 # Check logs
-sudo journalctl -fu zoneweaver
+sudo journalctl -fu hyperweaver-server
 
 # Check config
-sudo cat /etc/zoneweaver/config.yaml
+sudo cat /etc/hyperweaver-server/config.yaml
 
 # Restart service
-sudo systemctl restart zoneweaver
+sudo systemctl restart hyperweaver-server
 ```
 
 ### Uninstall
 
 ```bash
-sudo systemctl stop zoneweaver
+sudo systemctl stop hyperweaver-server
 
-sudo apt remove zoneweaver
+sudo apt remove hyperweaver-server
 
 sudo apt autoremove
 
-### Purge DB and Configs
-
-sudo apt purge zoneweaver
+# Purge DB and Configs
+sudo apt purge hyperweaver-server
 ```

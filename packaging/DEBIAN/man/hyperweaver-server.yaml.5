@@ -1,19 +1,19 @@
 .Dd $Mdocdate$
-.Dt ZONEWEAVER.YAML 5
+.Dt HYPERWEAVER-SERVER.YAML 5
 .Os
 .Sh NAME
-.Nm zoneweaver.yaml
-.Nd configuration file for Zoneweaver frontend web interface
+.Nm hyperweaver-server.yaml
+.Nd configuration file for the Hyperweaver Server web interface
 .Sh DESCRIPTION
 The
 .Nm
-file is the main configuration file for the Zoneweaver frontend web interface.
+file is the main configuration file for the Hyperweaver Server web interface.
 It is written in YAML format and controls all aspects of the service
 operation including network settings, user authentication, organization
-management, email configuration, and Zoneweaver API integration.
+management, email configuration, and Zoneweaver Agent integration.
 .Pp
 The configuration file is typically located at:
-.Pa /etc/zoneweaver/config.yaml
+.Pa /etc/hyperweaver-server/config.yaml
 .Sh CONFIGURATION SECTIONS
 The configuration file is organized into logical sections that control
 different aspects of the frontend service operation.
@@ -21,7 +21,7 @@ different aspects of the frontend service operation.
 Basic application identification and settings.
 .Bl -tag -width "frontend_url"
 .It Cm name
-String specifying the application name (default: "Zoneweaver")
+String specifying the application name (default: "Hyperweaver")
 .It Cm version
 String specifying the application version (e.g., "0.7.5")
 .It Cm frontend_url
@@ -77,7 +77,7 @@ SMTP password or application-specific password
 Email message settings:
 .Bl -tag -width "from" -offset indent
 .It Cm from
-From address for outgoing emails (e.g., "Zoneweaver <noreply@example.com>")
+From address for outgoing emails (e.g., "Hyperweaver <noreply@example.com>")
 .El
 .El
 .Ss security
@@ -96,7 +96,7 @@ Boolean enabling new organization creation (default: true, disable after setup)
 Database configuration and storage settings.
 .Bl -tag -width "path"
 .It Cm path
-Filesystem path to SQLite database file (e.g., "/var/lib/zoneweaver/database/zoneweaver.db")
+Filesystem path to SQLite database file (e.g., "/var/lib/hyperweaver-server/database/hyperweaver-server.db")
 .El
 .Ss frontend
 Frontend-specific display and behavior settings.
@@ -128,11 +128,11 @@ Boolean to enable credential sharing (default: true)
 .El
 .El
 .Ss backend_servers
-Default Zoneweaver API server configurations (optional).
+Default Zoneweaver Agent configurations (optional).
 This is an array of server objects that can be pre-configured:
 .Bl -tag -width "protocol" -offset indent
 .It Cm hostname
-Zoneweaver API server hostname or IP
+Zoneweaver Agent hostname or IP
 .It Cm port
 Backend server port (usually 5000 or 5001)
 .It Cm protocol
@@ -158,7 +158,7 @@ Boolean enabling application logging (default: true)
 System resource limits and constraints.
 .Bl -tag -width "maxServersPerUser"
 .It Cm maxServersPerUser
-Maximum number of Zoneweaver API servers per user or organization (default: 10)
+Maximum number of Zoneweaver Agents per user or organization (default: 10)
 .El
 .Ss gravatar
 Gravatar service integration for user avatars.
@@ -167,21 +167,21 @@ Gravatar service integration for user avatars.
 Gravatar API key for enhanced avatar features (optional)
 .El
 .Sh FILES
-.Bl -tag -width ".Pa /var/lib/zoneweaver/"
-.It Pa /etc/zoneweaver/config.yaml
+.Bl -tag -width ".Pa /var/lib/hyperweaver-server/"
+.It Pa /etc/hyperweaver-server/config.yaml
 Default configuration file location
-.It Pa /etc/zoneweaver/ssl/
+.It Pa /etc/hyperweaver-server/ssl/
 SSL certificate directory
-.It Pa /var/lib/zoneweaver/database/
+.It Pa /var/lib/hyperweaver-server/database/
 Database storage directory
-.It Pa /var/log/zoneweaver/
+.It Pa /var/log/hyperweaver-server/
 Log file directory
 .El
 .Sh EXAMPLES
 Minimal configuration for testing:
 .Bd -literal -offset indent
 app:
-  name: Zoneweaver
+  name: Hyperweaver
   version: 0.7.5
 .\" x-release-please-version
   frontend_url: https://localhost:3443
@@ -199,16 +199,16 @@ security:
   allow_new_organizations: true
 
 database:
-  path: /var/lib/zoneweaver/database/zoneweaver.db
+  path: /var/lib/hyperweaver-server/database/hyperweaver-server.db
 .Ed
 .Pp
 Production configuration with email and security hardening:
 .Bd -literal -offset indent
 app:
-  name: Zoneweaver
+  name: Hyperweaver
   version: 0.7.5
 .\" x-release-please-version
-  frontend_url: https://zoneweaver.example.com
+  frontend_url: https://hyperweaver.example.com
 
 server:
   hostname: 0.0.0.0
@@ -217,8 +217,8 @@ server:
 ssl:
   enabled: true
   generate_ssl: false
-  key: /etc/ssl/private/zoneweaver.key
-  cert: /etc/ssl/certs/zoneweaver.crt
+  key: /etc/ssl/private/hyperweaver-server.key
+  cert: /etc/ssl/certs/hyperweaver-server.crt
 
 mail:
   smtp_connect:
@@ -229,7 +229,7 @@ mail:
     user: "noreply@example.com"
     password: "smtp-app-password"
   smtp_settings:
-    from: "Zoneweaver <noreply@example.com>"
+    from: "Hyperweaver <noreply@example.com>"
 
 security:
   jwt_secret: "very-long-secure-random-string-here"
@@ -239,7 +239,7 @@ security:
 
 cors:
   whitelist:
-    - https://zoneweaver.example.com
+    - https://hyperweaver.example.com
   options:
     credentials: true
 
@@ -254,7 +254,7 @@ logging:
 Configuration file syntax errors will prevent the service from starting.
 Check the systemd service logs for detailed error information:
 .Pp
-.Dl # journalctl -u zoneweaver
+.Dl # journalctl -u hyperweaver-server
 .Pp
 Common configuration issues:
 .Bl -bullet -offset indent
@@ -274,7 +274,7 @@ Weak or missing JWT secret configuration
 SMTP configuration errors preventing email invitations
 .El
 .Sh SEE ALSO
-.Xr zoneweaver 8 ,
+.Xr hyperweaver-server 8 ,
 .Xr yaml 7 ,
 .Xr systemctl 1 ,
 .Xr journalctl 1 ,

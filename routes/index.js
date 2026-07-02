@@ -3,10 +3,11 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import crypto from 'crypto';
 import axios from 'axios';
-import { authenticate, requireAdmin, requireSuperAdmin, optionalAuth } from '../auth/auth.js';
+import { authenticate, requireAdmin, requireSuperAdmin } from '../auth/auth.js';
 import AuthController from '../controllers/AuthController.js';
 import ServerController from '../controllers/ServerController.js';
 import SettingsController from '../controllers/SettingsController.js';
+import StatusController from '../controllers/StatusController.js';
 import { loadConfig } from '../utils/config.js';
 
 const router = express.Router();
@@ -52,19 +53,6 @@ const apiProxyLimiter = rateLimit({
     error:
       config.limits?.apiProxy?.message?.value ||
       'Too many API proxy requests, please try again later',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Real-time operations - Lenient (maintain VNC/terminal functionality)
-const realtimeLimiter = rateLimit({
-  windowMs: config.limits?.realtime?.windowMs?.value || 60 * 1000,
-  limit: config.limits?.realtime?.max?.value || 250,
-  message: {
-    error:
-      config.limits?.realtime?.message?.value ||
-      'Too many real-time requests, please try again later',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -362,313 +350,42 @@ router.delete(
   ServerController.removeServer
 );
 
-// Zoneweaver API proxy endpoints - Protected with API proxy rate limiting
+// ── Unified agent proxy (dual-mode plan §4) ────────────────────────────────
+// ALL /api/agents/:id/:path → resolve the agent by registry id → forward to it.
+// Sub-path authorization: the sensitive admin/superadmin surfaces that used to sit on
+// explicit (but catch-all-shadowed, so never enforced) /api/zapi sub-routes are gated
+// here for real, before the generic proxy runs.
+const AGENT_SUPERADMIN_PREFIXES = ['settings', 'server/restart'];
+const AGENT_ADMIN_PREFIXES = [
+  'system/zfs/arc',
+  'system/fault-management',
+  'system/logs',
+  'system/syslog',
+];
+
+const matchesAgentPrefix = (subPath, prefix) =>
+  subPath === prefix || subPath.startsWith(`${prefix}/`);
+
+const authorizeAgentSubPath = (req, res, next) => {
+  const subPath = Array.isArray(req.params.splat)
+    ? req.params.splat.join('/')
+    : req.params.splat || '';
+
+  if (AGENT_SUPERADMIN_PREFIXES.some(prefix => matchesAgentPrefix(subPath, prefix))) {
+    return requireSuperAdmin(req, res, next);
+  }
+  if (AGENT_ADMIN_PREFIXES.some(prefix => matchesAgentPrefix(subPath, prefix))) {
+    return requireAdmin(req, res, next);
+  }
+  return next();
+};
+
 router.all(
-  '/api/zapi/:protocol/:hostname/:port/*splat',
+  '/api/agents/:id/*splat',
   apiProxyLimiter,
   authenticate,
-  ServerController.proxyToZoneweaverAPI
-);
-
-// VLAN Management Routes - Protected with API proxy rate limiting
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/network/vlans',
-  apiProxyLimiter,
-  authenticate,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/network/vlans/:vlan',
-  apiProxyLimiter,
-  authenticate,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/network/vlans',
-  apiProxyLimiter,
-  authenticate,
-  ServerController.proxyToZoneweaverAPI
-);
-router.delete(
-  '/api/zapi/:protocol/:hostname/:port/network/vlans/:vlan',
-  apiProxyLimiter,
-  authenticate,
-  ServerController.proxyToZoneweaverAPI
-);
-
-// Zoneweaver API settings endpoints - Protected with admin rate limiting
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/settings',
-  adminLimiter,
-  authenticate,
-  requireSuperAdmin,
-  SettingsController.getZoneweaverAPISettings
-);
-router.put(
-  '/api/zapi/:protocol/:hostname/:port/settings',
-  adminLimiter,
-  authenticate,
-  requireSuperAdmin,
-  SettingsController.updateZoneweaverAPISettings
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/settings/backups',
-  adminLimiter,
-  authenticate,
-  requireSuperAdmin,
-  SettingsController.getZoneweaverAPIBackups
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/settings/restore/:filename',
-  adminLimiter,
-  authenticate,
-  requireSuperAdmin,
-  SettingsController.restoreZoneweaverAPIBackup
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/server/restart',
-  adminLimiter,
-  authenticate,
-  requireSuperAdmin,
-  SettingsController.restartZoneweaverAPIServer
-);
-
-// VNC proxy endpoints - Protected with real-time rate limiting
-router.all(
-  '/api/servers/:serverAddress/zones/:zoneName/vnc/*splat',
-  realtimeLimiter,
-  optionalAuth,
-  ServerController.proxyVncGeneral
-);
-
-// Zlogin proxy endpoints - Protected with real-time rate limiting
-router.post(
-  '/api/servers/:serverAddress/zones/:zoneName/zlogin/start',
-  realtimeLimiter,
-  authenticate,
-  ServerController.startZloginSession
-);
-router.get(
-  '/api/servers/:serverAddress/zlogin/sessions',
-  realtimeLimiter,
-  authenticate,
-  ServerController.getZloginSessions
-);
-router.get(
-  '/api/servers/:serverAddress/zlogin/sessions/:sessionId',
-  realtimeLimiter,
-  authenticate,
-  ServerController.getZloginSession
-);
-router.delete(
-  '/api/servers/:serverAddress/zlogin/sessions/:sessionId/stop',
-  realtimeLimiter,
-  authenticate,
-  ServerController.stopZloginSession
-);
-
-// Terminal proxy endpoints - Protected with real-time rate limiting
-router.post(
-  '/api/terminal/start',
-  realtimeLimiter,
-  authenticate,
-  ServerController.startTerminalSession
-);
-
-// Server-specific terminal proxy endpoints - Protected with real-time rate limiting (CodeQL flagged these)
-router.post(
-  '/api/servers/:serverAddress/terminal/start',
-  realtimeLimiter,
-  authenticate,
-  ServerController.startServerTerminalSession
-);
-router.get(
-  '/api/servers/:serverAddress/terminal/sessions',
-  realtimeLimiter,
-  authenticate,
-  ServerController.getServerTerminalSessions
-);
-router.get(
-  '/api/servers/:serverAddress/terminal/sessions/:terminalCookie/health',
-  realtimeLimiter,
-  authenticate,
-  ServerController.checkServerTerminalHealth
-);
-router.get(
-  '/api/servers/:serverAddress/terminal/sessions/:sessionId',
-  realtimeLimiter,
-  authenticate,
-  ServerController.getServerTerminalSession
-);
-router.delete(
-  '/api/servers/:serverAddress/terminal/sessions/:sessionId/stop',
-  realtimeLimiter,
-  authenticate,
-  ServerController.stopServerTerminalSession
-);
-
-// ZFS ARC Configuration endpoints - Protected with admin rate limiting
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/zfs/arc/config',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.put(
-  '/api/zapi/:protocol/:hostname/:port/system/zfs/arc/config',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/zfs/arc/validate',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/zfs/arc/reset',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-
-// Fault Management endpoints - Protected with admin rate limiting
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/fault-management/faults',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/fault-management/faults/:uuid',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/fault-management/config',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/fault-management/actions/acquit',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/fault-management/actions/repaired',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/fault-management/actions/replaced',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-
-// System Logs endpoints - Protected with admin rate limiting
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/logs/list',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/logs/:logname',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/logs/fault-manager/:type',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-
-// Log Streaming endpoints - Protected with admin rate limiting
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/logs/:logname/stream/start',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.delete(
-  '/api/zapi/:protocol/:hostname/:port/system/logs/stream/:sessionId/stop',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/logs/stream/sessions',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-
-// Syslog Configuration endpoints - Protected with admin rate limiting
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/syslog/config',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.put(
-  '/api/zapi/:protocol/:hostname/:port/system/syslog/config',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.get(
-  '/api/zapi/:protocol/:hostname/:port/system/syslog/facilities',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/syslog/validate',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/syslog/reload',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
-);
-router.post(
-  '/api/zapi/:protocol/:hostname/:port/system/syslog/switch',
-  adminLimiter,
-  authenticate,
-  requireAdmin,
-  ServerController.proxyToZoneweaverAPI
+  authorizeAgentSubPath,
+  ServerController.proxyToAgent
 );
 
 // Settings endpoints - Protected with admin rate limiting
@@ -768,6 +485,9 @@ router.post(
   requireSuperAdmin,
   AuthController.testMail
 );
+
+// Server identity/status — PUBLIC (login screen + dual-mode probe depend on it) [dual-mode plan §3.2]
+router.get('/api/status', standardLimiter, StatusController.getServerStatus);
 
 // Health check endpoint - Simple health status for restart monitoring
 router.get('/api/health', standardLimiter, (req, res) => {

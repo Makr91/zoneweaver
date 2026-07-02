@@ -10,7 +10,7 @@ permalink: /api/
 
 {: .no_toc }
 
-The Zoneweaver Frontend API provides comprehensive RESTful endpoints for user management, organization control, and server configuration. This API handles authentication, authorization, and configuration management for the Zoneweaver web interface.
+The Hyperweaver Server API provides comprehensive RESTful endpoints for user management, organization control, and server configuration. This API handles authentication, authorization, and configuration management for the Hyperweaver Server web interface.
 
 ## Table of contents
 
@@ -33,14 +33,14 @@ See the [Authentication Guide](../guides/authentication/) for detailed setup ins
 
 ## Base URL
 
-The API is served from your Zoneweaver frontend server:
+The API is served from your Hyperweaver Server frontend server:
 
 - **HTTPS (Recommended)**: `https://your-server:3443`
 - **HTTP**: `http://your-server:3443`
 
 ## OpenAPI Specification
 
-The Zoneweaver Frontend API is fully documented using OpenAPI 3.0 specification.
+The Hyperweaver Server API is fully documented using OpenAPI 3.0 specification.
 
 ### Interactive Documentation
 
@@ -49,7 +49,7 @@ The Zoneweaver Frontend API is fully documented using OpenAPI 3.0 specification.
 
 ### API Categories
 
-The Zoneweaver Frontend API is organized into the following categories:
+The Hyperweaver Server API is organized into the following categories:
 
 #### Authentication & Authorization
 
@@ -74,7 +74,7 @@ The Zoneweaver Frontend API is organized into the following categories:
 
 #### Server Configuration
 
-- Zoneweaver API server management
+- Zoneweaver Agent server management
 - Connection configuration and testing
 - Server health monitoring
 - API endpoint management
@@ -129,5 +129,5 @@ Successful responses follow this format:
 
 ## Related APIs
 
-- **[Zoneweaver-API](https://zoneweaver-api.startcloud.com/)** - Zone management and hypervisor control
-- **[Zoneweaver-API Reference](https://zoneweaver-api.startcloud.com/docs/api/)** - Backend API documentation
+- **[Zoneweaver Agent](https://zoneweaver-agent.startcloud.com/)** - Zone management and hypervisor control
+- **[Zoneweaver Agent Reference](https://zoneweaver-agent.startcloud.com/docs/api/)** - Backend API documentation

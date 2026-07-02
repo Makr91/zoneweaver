@@ -111,8 +111,8 @@ if (dialect === 'sqlite') {
 // SQLite needs none of these (it uses `storage`, set above).
 if (dialect !== 'sqlite') {
   sequelizeConfig.database =
-    dbConfig.database_name?.value || dbConfig.database_name || 'zoneweaver';
-  sequelizeConfig.user = dbConfig.user?.value || dbConfig.user || 'zoneweaver';
+    dbConfig.database_name?.value || dbConfig.database_name || 'hyperweaver_server';
+  sequelizeConfig.user = dbConfig.user?.value || dbConfig.user || 'hyperweaver_server';
   sequelizeConfig.password = dbConfig.password?.value || dbConfig.password || '';
 }
 

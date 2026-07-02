@@ -9,7 +9,7 @@ permalink: /acknowledgments/
 
 {: .no_toc }
 
-Acknowledgments and credits for Zoneweaver frontend.
+Acknowledgments and credits for Hyperweaver Server frontend.
 
 ## Table of contents
 

@@ -9,7 +9,7 @@ permalink: /code-of-conduct/
 
 {: .no_toc }
 
-Community guidelines and code of conduct for Zoneweaver frontend.
+Community guidelines and code of conduct for Hyperweaver Server frontend.
 
 ## Table of contents
 

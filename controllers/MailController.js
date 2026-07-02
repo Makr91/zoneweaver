@@ -115,14 +115,14 @@ class MailController {
       const mailOptions = {
         from: mailConfig.smtp_from.value,
         to: invitation.email,
-        subject: `Zoneweaver Organization Invitation - ${organizationName}`,
+        subject: `Hyperweaver Organization Invitation - ${organizationName}`,
         html: `
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Zoneweaver Invitation</title>
+            <title>Hyperweaver Invitation</title>
             <style>
               body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
               .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -137,11 +137,11 @@ class MailController {
           <body>
             <div class="container">
               <div class="header">
-                <h1>🎉 You're Invited to Zoneweaver!</h1>
+                <h1>🎉 You're Invited to Hyperweaver!</h1>
               </div>
               <div class="content">
                 <h2>Hello!</h2>
-                <p><strong>${inviterName}</strong> has invited you to join the <strong>${organizationName}</strong> organization on Zoneweaver.</p>
+                <p><strong>${inviterName}</strong> has invited you to join the <strong>${organizationName}</strong> organization on Hyperweaver.</p>
                 
                 <div class="org-info">
                   <h3>📋 Organization Details</h3>
@@ -150,7 +150,7 @@ class MailController {
                   <p><strong>Invitation expires:</strong> ${expirationDate}</p>
                 </div>
 
-                <p>Zoneweaver is a powerful platform for managing Solaris zones and bhyve virtual machines. By joining this organization, you'll have access to:</p>
+                <p>Hyperweaver is a powerful platform for managing Solaris zones and bhyve virtual machines. By joining this organization, you'll have access to:</p>
                 <ul>
                   <li>🖥️ Zone and VM management</li>
                   <li>📊 System monitoring and analytics</li>
@@ -165,14 +165,14 @@ class MailController {
                 <p><strong>What happens next?</strong></p>
                 <ol>
                   <li>Click the invitation link above</li>
-                  <li>Create your Zoneweaver account</li>
+                  <li>Create your Hyperweaver account</li>
                   <li>Start collaborating with your team!</li>
                 </ol>
 
                 <div class="footer">
                   <p><strong>Security Note:</strong> This invitation is unique to your email address and will expire on ${expirationDate}. If you didn't expect this invitation, you can safely ignore this email.</p>
                   <p>If you have any questions, please contact ${inviterName} or your system administrator.</p>
-                  <p>This email was sent by Zoneweaver. For more information, visit our documentation.</p>
+                  <p>This email was sent by Hyperweaver. For more information, visit our documentation.</p>
                 </div>
               </div>
             </div>
@@ -180,11 +180,11 @@ class MailController {
           </html>
         `,
         text: `
-Zoneweaver Organization Invitation
+Hyperweaver Organization Invitation
 
 Hello!
 
-${inviterName} has invited you to join the ${organizationName} organization on Zoneweaver.
+${inviterName} has invited you to join the ${organizationName} organization on Hyperweaver.
 
 Organization: ${organizationName}
 Invited by: ${inviterName}
@@ -193,11 +193,11 @@ Invitation expires: ${expirationDate}
 To accept this invitation and create your account, please visit:
 ${invitationLink}
 
-Zoneweaver is a powerful platform for managing Solaris zones and bhyve virtual machines. By joining this organization, you'll have access to zone and VM management, system monitoring, infrastructure administration tools, and collaborative team management.
+Hyperweaver is a powerful platform for managing Solaris zones and bhyve virtual machines. By joining this organization, you'll have access to zone and VM management, system monitoring, infrastructure administration tools, and collaborative team management.
 
 What happens next?
 1. Click the invitation link above
-2. Create your Zoneweaver account  
+2. Create your Hyperweaver account  
 3. Start collaborating with your team!
 
 Security Note: This invitation is unique to your email address and will expire on ${expirationDate}. If you didn't expect this invitation, you can safely ignore this email.
@@ -261,14 +261,14 @@ If you have any questions, please contact ${inviterName} or your system administ
       const mailOptions = {
         from: mailConfig.smtp_from.value,
         to: user.email,
-        subject: `Welcome to Zoneweaver - ${organizationName}`,
+        subject: `Welcome to Hyperweaver - ${organizationName}`,
         html: `
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Welcome to Zoneweaver</title>
+            <title>Welcome to Hyperweaver</title>
             <style>
               body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
               .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -282,13 +282,13 @@ If you have any questions, please contact ${inviterName} or your system administ
           <body>
             <div class="container">
               <div class="header">
-                <h1>🎉 Welcome to Zoneweaver!</h1>
+                <h1>🎉 Welcome to Hyperweaver!</h1>
               </div>
               <div class="content">
                 <h2>Hello ${user.username}!</h2>
                 <p>Your account has been successfully created and you're now a member of the <strong>${organizationName}</strong> organization.</p>
                 
-                <p>You can now access Zoneweaver to:</p>
+                <p>You can now access Hyperweaver to:</p>
                 <ul>
                   <li>🖥️ Manage zones and virtual machines</li>
                   <li>📊 Monitor system performance</li>
@@ -297,7 +297,7 @@ If you have any questions, please contact ${inviterName} or your system administ
                 </ul>
 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${loginUrl}" class="button">Login to Zoneweaver</a>
+                  <a href="${loginUrl}" class="button">Login to Hyperweaver</a>
                 </div>
 
                 <p><strong>Your Account Details:</strong></p>
@@ -318,13 +318,13 @@ If you have any questions, please contact ${inviterName} or your system administ
           </html>
         `,
         text: `
-Welcome to Zoneweaver!
+Welcome to Hyperweaver!
 
 Hello ${user.username}!
 
 Your account has been successfully created and you're now a member of the ${organizationName} organization.
 
-You can now access Zoneweaver to:
+You can now access Hyperweaver to:
 - Manage zones and virtual machines
 - Monitor system performance  
 - Administer infrastructure
@@ -336,7 +336,7 @@ Your Account Details:
 - Organization: ${organizationName}
 - Role: ${user.role}
 
-Login to Zoneweaver: ${loginUrl}
+Login to Hyperweaver: ${loginUrl}
 
 If you have any questions or need assistance, please contact your organization administrator or check our documentation.
 
@@ -404,19 +404,19 @@ Welcome aboard!
       const info = await transporter.sendMail({
         from: mailConfig.smtp_from.value,
         to: testEmail,
-        subject: 'Zoneweaver SMTP Test Email',
+        subject: 'Hyperweaver SMTP Test Email',
         html: `
           <h2>🧪 SMTP Configuration Test</h2>
-          <p>This is a test email to verify your Zoneweaver SMTP configuration.</p>
+          <p>This is a test email to verify your Hyperweaver SMTP configuration.</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
           <p><strong>From:</strong> ${mailConfig.smtp_from.value}</p>
           <p><strong>SMTP Host:</strong> ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}</p>
           <p>✅ If you received this email, your SMTP configuration is working correctly!</p>
         `,
         text: `
-Zoneweaver SMTP Test Email
+Hyperweaver SMTP Test Email
 
-This is a test email to verify your Zoneweaver SMTP configuration.
+This is a test email to verify your Hyperweaver SMTP configuration.
 
 Timestamp: ${new Date().toISOString()}
 From: ${mailConfig.smtp_from.value}

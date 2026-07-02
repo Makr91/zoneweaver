@@ -9,7 +9,7 @@ permalink: /configuration/
 
 {: .no_toc }
 
-Complete reference for configuring the Zoneweaver frontend using the configuration file.
+Complete reference for configuring the Hyperweaver Server frontend using the configuration file.
 
 ## Table of contents
 
@@ -24,7 +24,7 @@ Complete reference for configuring the Zoneweaver frontend using the configurati
 
 The main configuration file is located at:
 
-- **Package Installation**: `/etc/zoneweaver/config.yaml`
+- **Package Installation**: `/etc/hyperweaver-server/config.yaml`
 - **Development**: `config/config.yaml`
 
 ## Configuration Format
@@ -33,7 +33,7 @@ The configuration uses YAML format with the following structure:
 
 ```yaml
 app:
-  name: 'Zoneweaver'
+  name: 'Hyperweaver Server'
   version: '1.0.0'
   description: 'Zone Hypervisor Management Interface'
 
@@ -43,8 +43,8 @@ server:
 
 ssl:
   enabled: true
-  key_path: '/etc/zoneweaver/ssl/server.key'
-  cert_path: '/etc/zoneweaver/ssl/server.crt'
+  key_path: '/etc/hyperweaver-server/ssl/server.key'
+  cert_path: '/etc/hyperweaver-server/ssl/server.crt'
   force_ssl: true
 
 mail:
@@ -53,8 +53,8 @@ mail:
   smtp_secure: false
   smtp_auth_user: ''
   smtp_auth_pass: ''
-  from_email: 'noreply@zoneweaver.local'
-  from_name: 'Zoneweaver'
+  from_email: 'noreply@hyperweaver-server.local'
+  from_name: 'Hyperweaver Server'
 
 security:
   jwt_secret: 'auto-generated-secret'
@@ -64,7 +64,7 @@ security:
 
 database:
   dialect: 'sqlite'
-  storage: '/var/lib/zoneweaver/database/zoneweaver.db'
+  storage: '/var/lib/hyperweaver-server/database/hyperweaver-server.db'
   logging: false
 
 frontend:
@@ -86,7 +86,7 @@ environment: 'production'
 
 logging:
   level: 'info'
-  file: '/var/log/zoneweaver/zoneweaver.log'
+  file: '/var/log/hyperweaver-server/hyperweaver-server.log'
   max_size: '10MB'
   max_files: 5
 
@@ -109,7 +109,7 @@ Basic application metadata and identification.
 
 ```yaml
 app:
-  name: 'Zoneweaver'
+  name: 'Hyperweaver Server'
   version: '1.0.0'
   description: 'Zone Hypervisor Management Interface'
 ```
@@ -132,9 +132,9 @@ Configures HTTPS/TLS encryption (highly recommended for production).
 ```yaml
 ssl:
   enabled: true
-  key_path: '/etc/zoneweaver/ssl/server.key'
-  cert_path: '/etc/zoneweaver/ssl/server.crt'
-  ca_path: '/etc/zoneweaver/ssl/ca.crt' # Optional
+  key_path: '/etc/hyperweaver-server/ssl/server.key'
+  cert_path: '/etc/hyperweaver-server/ssl/server.crt'
+  ca_path: '/etc/hyperweaver-server/ssl/ca.crt' # Optional
   force_ssl: true # Redirect HTTP to HTTPS
   protocols: ['TLSv1.2', 'TLSv1.3'] # Supported protocols
 ```
@@ -148,10 +148,10 @@ mail:
   smtp_host: 'smtp.example.com'
   smtp_port: 587
   smtp_secure: true # Use TLS
-  smtp_auth_user: 'zoneweaver@example.com'
+  smtp_auth_user: 'hyperweaver-server@example.com'
   smtp_auth_pass: 'password'
-  from_email: 'noreply@zoneweaver.example.com'
-  from_name: 'Zoneweaver System'
+  from_email: 'noreply@hyperweaver-server.example.com'
+  from_name: 'Hyperweaver Server System'
 ```
 
 ### Security Configuration
@@ -175,7 +175,7 @@ Database connection and behavior settings.
 ```yaml
 database:
   dialect: 'sqlite'
-  storage: '/var/lib/zoneweaver/database/zoneweaver.db'
+  storage: '/var/lib/hyperweaver-server/database/hyperweaver-server.db'
   logging: false # Enable SQL query logging
   pool:
     max: 5 # Max connections
@@ -211,7 +211,7 @@ cors:
 
 ### Backend Servers Configuration
 
-Settings for connecting to Zoneweaver-API instances.
+Settings for connecting to Zoneweaver Agent instances.
 
 ```yaml
 backend_servers:
@@ -237,7 +237,7 @@ Application logging settings.
 ```yaml
 logging:
   level: 'info' # Log level
-  file: '/var/log/zoneweaver/zoneweaver.log'
+  file: '/var/log/hyperweaver-server/hyperweaver-server.log'
   console: false # Log to console
   max_size: '10MB' # Max log file size
   max_files: 5 # Max log files to keep
@@ -275,21 +275,21 @@ Configuration values can be overridden using environment variables:
 
 ```bash
 # Server configuration
-export ZONEWEAVER_SERVER_PORT=3443
-export ZONEWEAVER_SERVER_HOST=0.0.0.0
+export HYPERWEAVER_SERVER_SERVER_PORT=3443
+export HYPERWEAVER_SERVER_SERVER_HOST=0.0.0.0
 
 # SSL configuration
-export ZONEWEAVER_SSL_KEY_PATH=/path/to/key.pem
-export ZONEWEAVER_SSL_CERT_PATH=/path/to/cert.pem
+export HYPERWEAVER_SERVER_SSL_KEY_PATH=/path/to/key.pem
+export HYPERWEAVER_SERVER_SSL_CERT_PATH=/path/to/cert.pem
 
 # Database configuration
-export ZONEWEAVER_DATABASE_STORAGE=/custom/path/database.db
+export HYPERWEAVER_SERVER_DATABASE_STORAGE=/custom/path/database.db
 
 # Security configuration
-export ZONEWEAVER_SECURITY_JWT_SECRET=your-secret-key
+export HYPERWEAVER_SERVER_SECURITY_JWT_SECRET=your-secret-key
 ```
 
-Environment variables use the format: `ZONEWEAVER_SECTION_OPTION`
+Environment variables use the format: `HYPERWEAVER_SERVER_SECTION_OPTION`
 
 ## Production Recommendations
 
@@ -301,8 +301,8 @@ For production deployments:
    ssl:
      enabled: true
      force_ssl: true
-     key_path: /etc/ssl/private/zoneweaver.key
-     cert_path: /etc/ssl/certs/zoneweaver.crt
+     key_path: /etc/ssl/private/hyperweaver-server.key
+     cert_path: /etc/ssl/certs/hyperweaver-server.crt
    ```
 
 2. **Secure JWT Secret**:
@@ -321,7 +321,7 @@ For production deployments:
      smtp_host: 'your-smtp-server.com'
      smtp_port: 587
      smtp_secure: true
-     smtp_auth_user: 'zoneweaver@yourdomain.com'
+     smtp_auth_user: 'hyperweaver-server@yourdomain.com'
    ```
 
 4. **Set Resource Limits**:
@@ -349,9 +349,9 @@ Create backups of your configuration:
 
 ```bash
 # Create backup
-cp /etc/zoneweaver/config.yaml /etc/zoneweaver/config.yaml.backup
+cp /etc/hyperweaver-server/config.yaml /etc/hyperweaver-server/config.yaml.backup
 
 # Restore from backup
-cp /etc/zoneweaver/config.yaml.backup /etc/zoneweaver/config.yaml
-svcadm restart zoneweaver
+cp /etc/hyperweaver-server/config.yaml.backup /etc/hyperweaver-server/config.yaml
+svcadm restart hyperweaver-server
 ```

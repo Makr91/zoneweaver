@@ -10,7 +10,7 @@ permalink: /guides/installation/
 
 {: .no_toc }
 
-This guide covers different methods for installing and deploying Zoneweaver frontend in various environments.
+How to install and deploy Hyperweaver Server. The Server ships as a Debian `.deb`; the web UI is consumed as the versioned [Hyperweaver UI](https://github.com/MarkProminic/hyperweaver-ui) artifact (it is not built here).
 
 ## Table of contents
 
@@ -23,345 +23,101 @@ This guide covers different methods for installing and deploying Zoneweaver fron
 
 ## System Requirements
 
-### Minimum Requirements
-
-- **Operating System**: OmniOS, Linux, or other Unix-like system
-- **Node.js**: Version 18 or higher
-- **Memory**: 512MB RAM minimum, 1GB recommended
-- **Storage**: 1GB available disk space
-- **Network**: Internet access for package downloads
-
-### Recommended Production Environment
-
-- **CPU**: 2+ cores
-- **Memory**: 2GB+ RAM
-- **Storage**: 5GB+ available space (for logs and database)
-- **Network**: Dedicated network interface
-- **SSL**: Valid SSL certificates for HTTPS
+- **Operating System**: Debian / Ubuntu (x86_64)
+- **Node.js**: Version 22 or higher
+- **Memory**: 512 MB RAM minimum, 1 GB+ recommended
+- **Storage**: 1 GB+ available (logs + SQLite database)
+- **SSL**: Valid certificates for HTTPS in production
 
 ## Installation Methods
 
-### Option 1: Package Installation (Recommended)
-
-For OmniOS systems, use the official package:
+### Option 1: Debian Package (Recommended)
 
 ```bash
-# Update package repository
-pkg refresh
+# From a downloaded release asset
+sudo apt install ./hyperweaver-server_<version>_amd64.deb
 
-# Install Zoneweaver package
-pkg install zoneweaver
+# Or, once the STARTcloud apt repository is configured:
+sudo apt update
+sudo apt install hyperweaver-server
 
-# Enable and start service
-svcadm enable zoneweaver
-
-# Check service status
-svcs zoneweaver
+sudo systemctl enable --now hyperweaver-server
+systemctl status hyperweaver-server
 ```
 
-Package installation includes:
-
-- Zoneweaver application files
-- Configuration templates
-- SMF service manifest
-- Automatic dependency handling
+The package installs the app to `/opt/hyperweaver-server`, config to `/etc/hyperweaver-server`, a systemd unit, and auto-generates a JWT secret plus self-signed SSL certificates on first start.
 
 ### Option 2: From Source
 
-For development or custom deployments:
-
 ```bash
-# Clone repository
-git clone https://github.com/Makr91/zoneweaver.git
-cd zoneweaver
+git clone https://github.com/Makr91/hyperweaver-server.git
+cd hyperweaver-server
+npm ci
 
-# Install backend dependencies
-npm install
+# Fetch the pinned Hyperweaver UI artifact into ./ui
+UI_VERSION=$(node -p "require('./package.json').hyperweaverUiVersion")
+mkdir -p ui
+curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | tar -xz -C ui
 
-# Install frontend dependencies
-cd web
-npm install
-cd ..
-
-# Build frontend
-npm run build
-
-# Configure application
-cp packaging/config/production-config.yaml config/config.yaml
-# Edit config.yaml as needed
-
-# Start application
+cp packaging/config/production-config.yaml config.yaml   # then edit as needed
 npm start
 ```
 
-### Option 3: Development Setup
-
-For development and testing:
-
-```bash
-# Clone repository
-git clone https://github.com/Makr91/zoneweaver.git
-cd zoneweaver
-
-# Install all dependencies
-npm install
-cd web && npm install && cd ..
-
-# Start in development mode (with auto-reload)
-npm run dev
-```
-
-Development mode features:
-
-- Auto-restart on file changes
-- Detailed error logging
-- Hot reload for frontend changes
+For development, use `npm run dev` (nodemon; serves the UI from `./ui` and reloads on changes).
 
 ## Configuration
 
-### Configuration File Location
+Configuration file location:
 
-**Package Installation:**
+- **Package install**: `/etc/hyperweaver-server/config.yaml`
+- **Source install**: `./config.yaml`
 
-```bash
-/etc/zoneweaver/config.yaml
-```
+See the [Configuration Reference](../configuration/) for all options. The minimum useful settings are the server port/SSL, `authentication.jwt_secret`, and `database.storage`.
 
-**Source Installation:**
+### SSL Certificates
 
-```bash
-./config/config.yaml
-```
+By default the Server auto-generates self-signed certificates (`server.ssl_generate: true`). For production, point `server.ssl_key_path` / `server.ssl_cert_path` at real certificates and set `server.ssl_generate: false`.
 
-### Basic Configuration
-
-```yaml
-# Basic server settings
-server:
-  hostname: localhost
-  port: 3443
-  ssl:
-    enabled: true
-    generate_ssl: true # Auto-generate for testing
-    key: /etc/zoneweaver/ssl/key.pem
-    cert: /etc/zoneweaver/ssl/cert.pem
-
-# Application settings
-app:
-  name: Zoneweaver
-  version: 0.0.15
-  frontend_url: https://localhost:3443
-
-# Database location
-database:
-  path: /var/lib/zoneweaver/database/zoneweaver.db
-
-# Security settings
-security:
-  jwt_secret: 'CHANGE-THIS-TO-A-SECURE-RANDOM-STRING'
-  bcrypt_rounds: 10
-  sessionTimeout: 24
-  allow_new_organizations: true # Disable after setup
-```
-
-### SSL Certificate Setup
-
-#### Auto-Generated Certificates (Development)
-
-For testing and development:
-
-```yaml
-server:
-  ssl:
-    enabled: true
-    generate_ssl: true # Zoneweaver generates self-signed cert
-```
-
-#### Production Certificates
-
-For production deployments:
-
-```yaml
-server:
-  ssl:
-    enabled: true
-    generate_ssl: false
-    key: /etc/ssl/private/zoneweaver.key
-    cert: /etc/ssl/certs/zoneweaver.crt
-```
-
-Generate certificates:
+## Service Management (systemd)
 
 ```bash
-# Create certificate directory
-mkdir -p /etc/ssl/zoneweaver
-
-# Generate private key
-openssl genrsa -out /etc/ssl/zoneweaver/zoneweaver.key 2048
-
-# Generate certificate signing request
-openssl req -new -key /etc/ssl/zoneweaver/zoneweaver.key \
-  -out /etc/ssl/zoneweaver/zoneweaver.csr
-
-# Get certificate from your CA or generate self-signed:
-openssl x509 -req -days 365 \
-  -in /etc/ssl/zoneweaver/zoneweaver.csr \
-  -signkey /etc/ssl/zoneweaver/zoneweaver.key \
-  -out /etc/ssl/zoneweaver/zoneweaver.crt
-
-# Set permissions
-chmod 600 /etc/ssl/zoneweaver/zoneweaver.key
-chmod 644 /etc/ssl/zoneweaver/zoneweaver.crt
-```
-
-## Service Management
-
-### OmniOS (SMF)
-
-```bash
-# Enable service
-svcadm enable zoneweaver
-
-# Disable service
-svcadm disable zoneweaver
-
-# Restart service
-svcadm restart zoneweaver
-
-# Check service status
-svcs -xv zoneweaver
-
-# View service logs
-svcs -L zoneweaver
-tail -f /var/svc/log/application-zoneweaver:default.log
-```
-
-### Linux (systemd)
-
-Create service file `/etc/systemd/system/zoneweaver.service`:
-
-```ini
-[Unit]
-Description=Zoneweaver Frontend
-After=network.target
-
-[Service]
-Type=simple
-User=zoneweaver
-WorkingDirectory=/opt/zoneweaver
-ExecStart=/usr/bin/node index.js
-Restart=always
-RestartSec=10
-Environment=NODE_ENV=production
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Service management:
-
-```bash
-# Enable and start service
-systemctl enable --now zoneweaver
-
-# Check status
-systemctl status zoneweaver
-
-# View logs
-journalctl -u zoneweaver -f
+sudo systemctl enable --now hyperweaver-server   # enable + start
+sudo systemctl restart hyperweaver-server
+sudo systemctl status hyperweaver-server
+journalctl -u hyperweaver-server -f              # follow logs
 ```
 
 ## Directory Structure
 
-### Package Installation
-
-```
-/opt/zoneweaver/              # Application files
-/etc/zoneweaver/              # Configuration
-/var/lib/zoneweaver/          # Database and data
-/var/log/zoneweaver/          # Log files
-/var/run/zoneweaver/          # Runtime files
+```text
+/opt/hyperweaver-server/      # application files + fetched ui/
+/etc/hyperweaver-server/      # config.yaml, ssl/, .jwt-secret
+/var/lib/hyperweaver-server/  # SQLite database
+/var/log/hyperweaver-server/  # log files
 ```
 
-### Source Installation
-
-```
-./                            # Application root
-./config/                     # Configuration files
-./web/dist/                   # Built frontend files
-./logs/                       # Log files (if configured)
-./database/                   # Database files
-```
-
-## Database Setup
-
-Zoneweaver uses SQLite for user/organization data:
-
-### Automatic Setup
-
-Database is created automatically on first run with:
-
-- User tables
-- Organization tables
-- Server configuration tables
-- Session management tables
-
-### Manual Database Initialization
-
-If needed, initialize database manually:
+## Firewall
 
 ```bash
-# Navigate to application directory
-cd /opt/zoneweaver
+# Debian/Ubuntu (ufw)
+sudo ufw allow 3443/tcp
 
-# Initialize database
-node -e "
-const Database = require('./models/Database.js');
-Database.init().then(() => console.log('Database initialized'));
-"
+# firewalld
+sudo firewall-cmd --permanent --add-port=3443/tcp
+sudo firewall-cmd --reload
 ```
 
-## Firewall Configuration
-
-### OmniOS (ipfilter)
-
-```bash
-# Edit /etc/ipf/ipf.conf
-echo "pass in quick proto tcp from any to any port = 3443" >> /etc/ipf/ipf.conf
-
-# Reload firewall rules
-ipf -Fa -f /etc/ipf/ipf.conf
-```
-
-### Linux (iptables)
-
-```bash
-# Allow HTTPS traffic
-iptables -A INPUT -p tcp --dport 3443 -j ACCEPT
-
-# Save rules (varies by distribution)
-iptables-save > /etc/iptables/rules.v4
-```
-
-### Linux (firewalld)
-
-```bash
-# Open port for Zoneweaver
-firewall-cmd --permanent --add-port=3443/tcp
-firewall-cmd --reload
-```
-
-## Reverse Proxy Setup
+## Reverse Proxy (optional)
 
 ### Nginx
 
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name zoneweaver.example.com;
+    server_name hyperweaver.example.com;
 
-    ssl_certificate /etc/ssl/certs/zoneweaver.crt;
-    ssl_certificate_key /etc/ssl/private/zoneweaver.key;
+    ssl_certificate /etc/ssl/certs/hyperweaver-server.crt;
+    ssl_certificate_key /etc/ssl/private/hyperweaver-server.key;
 
     location / {
         proxy_pass https://127.0.0.1:3443;
@@ -377,116 +133,41 @@ server {
 }
 ```
 
-### Apache
-
-```apache
-<VirtualHost *:443>
-    ServerName zoneweaver.example.com
-
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/zoneweaver.crt
-    SSLCertificateKeyFile /etc/ssl/private/zoneweaver.key
-
-    ProxyPreserveHost On
-    ProxyRequests Off
-    ProxyPass / https://127.0.0.1:3443/
-    ProxyPassReverse / https://127.0.0.1:3443/
-</VirtualHost>
-```
+When running behind a proxy, set `frontend.trust_proxy` in the config to the number of proxies in front of the Server.
 
 ## Post-Installation
 
-### First Access
+1. Open `https://your-server:3443` and register the first (super-admin) user
+2. Harden: set `authentication.local_allow_new_organizations: false` after setup, and use a strong `jwt_secret`
+3. Add your Zoneweaver Agent(s) — see [Backend Integration](backend-integration/)
 
-1. **Navigate** to `https://your-server:3443`
-2. **Create Organization** (if enabled)
-3. **Register Admin User**
-4. **Configure Settings**
-5. **Add Zoneweaver API Servers**
+### Updates
 
-### Security Hardening
-
-1. **Disable Organization Creation**:
-
-   ```yaml
-   security:
-     allow_new_organizations: false
-   ```
-
-2. **Strong JWT Secret**:
-
-   ```bash
-   # Generate secure random string
-   openssl rand -hex 32
-   ```
-
-3. **Regular Updates**:
-
-   ```bash
-   # Package installation
-   pkg update zoneweaver
-
-   # Source installation
-   git pull origin main
-   npm install
-   npm run build
-   ```
+```bash
+sudo apt update && sudo apt install --only-upgrade hyperweaver-server
+```
 
 ## Troubleshooting
 
-### Installation Issues
-
-**Package Not Found**
+### Service won't start
 
 ```bash
-# Update package repository
-pkg refresh
-pkg search zoneweaver
+systemctl status hyperweaver-server
+journalctl -u hyperweaver-server -e
 ```
 
-**Node.js Version Issues**
+### Port already in use
 
 ```bash
-# Check Node.js version
-node --version
-
-# Update Node.js if needed
-pkg install nodejs-18
+sudo lsof -i :3443
 ```
 
-**Permission Denied**
+**SSL certificate errors** — verify the files exist and are readable:
 
 ```bash
-# Fix file permissions
-chown -R zoneweaver:zoneweaver /opt/zoneweaver
-chmod +x /opt/zoneweaver/index.js
-```
-
-### Service Issues
-
-**Service Won't Start**
-
-```bash
-# Check service status and logs
-svcs -xv zoneweaver
-tail -f /var/svc/log/application-zoneweaver:default.log
-```
-
-**Port Already in Use**
-
-```bash
-# Find process using port 3443
-lsof -i :3443
-netstat -tulpn | grep 3443
-```
-
-**SSL Certificate Errors**
-
-```bash
-# Verify certificate files exist and have correct permissions
-ls -la /etc/zoneweaver/ssl/
+ls -la /etc/hyperweaver-server/ssl/
 ```
 
 ---
 
-Next: [Authentication](authentication/) - Set up user management
+Next: [Authentication](authentication/) — set up user management

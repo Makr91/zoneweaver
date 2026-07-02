@@ -10,7 +10,7 @@ permalink: /guides/getting-started/
 
 {: .no_toc }
 
-This guide will walk you through setting up Zoneweaver frontend for the first time, from initial installation to configuring your first Zoneweaver API connection.
+This guide walks you through setting up Hyperweaver Server for the first time, from installation to connecting your first Zoneweaver Agent.
 
 ## Table of contents
 
@@ -23,197 +23,76 @@ This guide will walk you through setting up Zoneweaver frontend for the first ti
 
 ## Prerequisites
 
-Before starting, ensure you have:
-
-- **Node.js 18+** - Required for running the frontend server
-- **A Zoneweaver API Server** - The backend API that manages zones
-- **Network Access** - Frontend needs to communicate with backend servers
-- **SSL Certificates** (Recommended) - For secure HTTPS connections
+- **Node.js 22+** — required to run the Server
+- **A Zoneweaver Agent** — the host agent that actually manages the VMs (Bhyve/OmniOS)
+- **Network access** — the Server must reach each agent's `host:port`
+- **SSL certificates** (recommended) — for HTTPS
 
 ## Quick Start
 
-### 1. Installation
+### 1. Install
 
-#### Option A: From Package (Recommended)
+#### Option A: Debian package (recommended)
 
 ```bash
-# Install Zoneweaver package
-pkg install zoneweaver
-
-# Enable service
-svcadm enable zoneweaver
+sudo apt install ./hyperweaver-server_<version>_amd64.deb
+sudo systemctl enable --now hyperweaver-server
 ```
 
-#### Option B: From Source
+#### Option B: From source
 
 ```bash
-# Clone repository
-git clone https://github.com/Makr91/zoneweaver.git
-cd zoneweaver
-
-# Install dependencies
+git clone https://github.com/Makr91/hyperweaver-server.git
+cd hyperweaver-server
 npm install
-cd web && npm install && cd ..
 
-# Build frontend
-npm run build
+# Fetch the pinned Hyperweaver UI artifact into ./ui
+UI_VERSION=$(node -p "require('./package.json').hyperweaverUiVersion")
+mkdir -p ui
+curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | tar -xz -C ui
 
-# Start service
 npm start
 ```
 
-### 2. Initial Configuration
+### 2. Configure
 
-Edit the configuration file at `/etc/zoneweaver/config.yaml`:
+Edit `/etc/hyperweaver-server/config.yaml` (package install) or `./config.yaml` (source). Key settings:
 
-```yaml
-server:
-  hostname: localhost
-  port: 3443
-  ssl:
-    enabled: true
-    generate_ssl: true
-    key: /etc/zoneweaver/ssl/key.pem
-    cert: /etc/zoneweaver/ssl/cert.pem
-
-security:
-  allow_new_organizations: true
-  jwt_secret: 'your-secure-random-secret-here'
-
-database:
-  path: /var/lib/zoneweaver/database/zoneweaver.db
-```
+- `frontend.port` (default `3443`) and the `server.ssl_*` options
+- `authentication.jwt_secret` (auto-generated on package install)
+- `database.storage` (SQLite path)
 
 ### 3. First Access
 
-1. **Open your browser** and navigate to `https://your-server:3443`
-2. **Create Organization**: If `allow_new_organizations` is enabled, you'll see registration
-3. **Register Admin User**: Create your first admin account
-4. **Login**: Use your new credentials to access the dashboard
+1. Open `https://your-server:3443`
+2. Register the first user (becomes super-admin) and organization
+3. Log in
 
-### 4. Add Zoneweaver API
+### 4. Add a Zoneweaver Agent
 
-After logging in:
-
-1. Navigate to **Settings** → **Servers**
-2. Click **Add Server**
-3. Configure your Zoneweaver API:
-   - **Hostname**: Your Zoneweaver API Server address
-   - **Port**: Usually 5001 (HTTPS) or 5000 (HTTP)
-   - **Protocol**: HTTPS recommended
-   - **API Key**: Your Zoneweaver API API key
-
-## Configuration Options
-
-### Security Settings
-
-```yaml
-security:
-  jwt_secret: 'change-this-to-a-secure-random-string'
-  bcrypt_rounds: 10
-  sessionTimeout: 24 # Hours
-  allow_new_organizations: true # Allow new org creation
-```
-
-### Email Configuration
-
-```yaml
-mail:
-  smtp_connect:
-    host: smtp.example.com
-    port: 587
-    secure: false
-  smtp_auth:
-    user: 'your-email@example.com'
-    password: 'your-email-password'
-  smtp_settings:
-    from: 'Zoneweaver <noreply@example.com>'
-```
-
-### SSL/TLS Setup
-
-For production, use proper SSL certificates:
-
-```yaml
-server:
-  ssl:
-    enabled: true
-    generate_ssl: false # Use existing certificates
-    key: /path/to/private.key
-    cert: /path/to/certificate.crt
-```
-
-## User Management
-
-### Creating Users
-
-As an admin, you can:
-
-1. **Invite Users**: Send invitation codes via email
-2. **Direct Registration**: Share invitation codes manually
-3. **Organization Management**: Control user access per organization
-
-### Role Hierarchy
-
-- **Super Admin**: Global access, can manage all organizations
-- **Admin**: Organization-specific admin rights
-- **User**: Standard user with limited permissions
-
-## Zoneweaver API Integration
-
-### Backend Requirements
-
-Your Zoneweaver API must be:
-
-- **Accessible**: Network connectivity from frontend
-- **Configured**: Proper API key authentication
-- **Running**: Service active and responding
-
-### Testing Connection
-
-Use the built-in connection test:
-
-1. Go to **Settings** → **Servers**
-2. Click **Test Connection** on your server
-3. Verify successful API communication
+1. **Settings → Servers → Add Server**
+2. Enter the agent's **hostname**, **port**, **protocol**, and **API key** (or let the Server bootstrap one)
+3. **Test Connection**, then save
 
 ## Troubleshooting
 
-### Common Issues
+**Can't reach the web interface** — check port 3443 is open, verify SSL cert validity, and run `systemctl status hyperweaver-server`.
 
-**Cannot Access Web Interface**
+**Agent connection fails** — test reachability (`curl -k https://agent-host:5001/`), verify the API key, and confirm the Zoneweaver Agent is running.
 
-- Check port 3443 is open
-- Verify SSL certificate validity
-- Check service status: `svcs zoneweaver`
+**Blank UI** — the `ui/` artifact wasn't fetched (source installs); re-run the fetch from step 1.
 
-**Backend Connection Failed**
+### Logs
 
-- Test network connectivity: `curl https://backend:5001/api/`
-- Verify API key is correct
-- Check Zoneweaver API service status
-
-**User Registration Issues**
-
-- Ensure `allow_new_organizations: true` in config
-- Check email configuration for invitations
-- Verify database permissions
-
-### Log Locations
-
-- **Frontend Service**: `/var/log/zoneweaver/zoneweaver.log`
-- **System Logs**: `svcs -xv zoneweaver`
-- **Browser Console**: F12 Developer Tools
+- Service: `journalctl -u hyperweaver-server -f`
+- Application logs: `/var/log/hyperweaver-server/`
 
 ## Next Steps
 
-Once your basic setup is working:
-
-1. **[Configure Authentication](authentication/)** - Set up proper user management
-2. **[User Guide](../user-guide/)** - Learn the web interface
-3. **[Backend Integration](backend-integration/)** - Advanced Zoneweaver API configuration
-4. **[Installation Guide](installation/)** - Production deployment options
+1. **[Authentication](authentication/)** — user management, OIDC, and LDAP
+2. **[Backend Integration](backend-integration/)** — connecting Zoneweaver Agents in depth
+3. **[Installation](installation/)** — production deployment
 
 ---
 
-Need help? Check our [Support Documentation](../support/) or visit the [GitHub repository](https://github.com/Makr91/zoneweaver).
+Need help? See the [Support](../support/) page or the [GitHub repository](https://github.com/Makr91/hyperweaver-server).

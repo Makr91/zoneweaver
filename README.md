@@ -1,32 +1,16 @@
-<p align="center">
-  <img src="web/public/images/logo192.png" alt="Zoneweaver API Logo" width="25%">
-</p>
+# Hyperweaver Server
 
-# Zoneweaver
-
-Zoneweaver - NodeJS backend and Vite based frontend for managing Bhyve virtual machines via Zoneweaver API.
+Hyperweaver Server is the control-plane server for the Hyperweaver platform: it serves the [Hyperweaver UI](https://github.com/MarkProminic/hyperweaver-ui) and aggregates/proxies host agents (the Zoneweaver Agent for Bhyve/OmniOS) for user auth, monitoring, and browser-based console access.
 
 ## Platform Requirements
 
-### OmniOS/Illumos
-
-Zoneweaver requires a C++ compiler to build native dependencies (bcrypt). Install the required packages:
+Debian/Ubuntu (the Server ships as a `.deb`):
 
 ```bash
-# Install GCC 14 compiler
-pfexec pkg install developer/gcc14
-
-# Install dependencies with gmake
-MAKE=gmake npm install
-```
-
-### Debian/Ubuntu
-
-```bash
-# Install build essentials
+# Build essentials for native dependencies (bcrypt)
 sudo apt-get install build-essential
 
-# Install dependencies normally
+# Install dependencies
 npm install
 ```
 

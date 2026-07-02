@@ -12,6 +12,7 @@ import db from './models/index.js';
 import { specs, swaggerUi } from './config/swagger.js';
 import { loadConfig } from './utils/config.js';
 import { log, createRequestLogger, generateRequestId } from './utils/Logger.js';
+import { startAgentHealthPoller } from './utils/agentHealthPoller.js';
 
 // Initialize passport after database is ready
 let passport;
@@ -45,9 +46,6 @@ const staticFileLimiter = rateLimit({
 const app = express();
 const port = process.env.PORT || config.frontend.port.value;
 
-// Track active VNC sessions for WebSocket fallback
-const activeVncSessions = new Map();
-
 // CORS configuration from YAML
 const corsOptions = {
   origin: config.security.cors.allow_origin.value,
@@ -62,7 +60,7 @@ app.use(express.json({ limit: '50mb' })); // Support large JSON payloads
 
 // Note: Multer middleware removed — proxy servers stream data directly without buffering
 
-// Serve the Hyperweaver UI build artifact (fetched into ./ui by scripts/fetch-ui.js)
+// Serve the Hyperweaver UI build artifact (fetched into ./ui by CI during packaging)
 app.use(express.static('./ui'));
 
 // Database and models initialization - wait for migrations to complete
@@ -85,7 +83,7 @@ app.use(
   session({
     secret: config.authentication.jwt_secret.value, // Use existing JWT secret
     store: sessionStore,
-    name: 'zoneweaver.sid', // Session cookie name
+    name: 'hyperweaver-server.sid', // Session cookie name
     resave: false,
     saveUninitialized: false, // Don't save empty sessions
     cookie: {
@@ -136,6 +134,9 @@ log.app.info('Session middleware configured for OIDC support');
   }
 })();
 
+// Start the background agent health/capability poller (D11 — the Server owns freshness)
+startAgentHealthPoller();
+
 // Add request logging middleware
 app.use((req, res, next) => {
   req.requestId = generateRequestId();
@@ -148,32 +149,6 @@ app.use((req, res, next) => {
       logger.success(res.statusCode);
     }
   });
-
-  next();
-});
-
-// Middleware to track VNC console requests for WebSocket fallback
-app.use('/api/servers/:serverAddress/zones/:zoneName/vnc/console', (req, res, next) => {
-  void res;
-  const { serverAddress, zoneName } = req.params;
-  const clientId = req.ip || req.connection.remoteAddress;
-
-  log.websocket.debug('VNC Console: Tracking session', {
-    zoneName,
-    serverAddress,
-    clientId,
-  });
-
-  // Store the mapping for WebSocket fallback
-  activeVncSessions.set(clientId, { serverAddress, zoneName });
-
-  // Clean up old sessions after 5 minutes
-  setTimeout(
-    () => {
-      activeVncSessions.delete(clientId);
-    },
-    5 * 60 * 1000
-  );
 
   next();
 });
@@ -213,7 +188,7 @@ app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   swaggerUi.setup(dynamicSpecs, {
     explorer: true,
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Zoneweaver API Documentation',
+    customSiteTitle: 'Hyperweaver Server API Documentation',
     swaggerOptions: {
       url: `${protocol}://${host}/api-docs/swagger.json`,
     },
@@ -244,11 +219,19 @@ app.get('*splat', staticFileLimiter, (req, res) => {
 });
 
 /**
- * Get authenticated server credentials from "hostname:port" address string
+ * Resolve a registered agent by registry id for a WebSocket upgrade (dual-mode plan §4.2).
+ * Applies the same role guard as the REST proxy (§6.2): non-agent rows are excluded.
  */
-const getAuthenticatedServer = address => {
-  const [hostname, serverPort] = address.split(':');
-  return ServerModel.getServerByHostPort(hostname, parseInt(serverPort));
+const resolveAgentForWs = async id => {
+  if (!serverModelReady || !ServerModel) {
+    return null;
+  }
+  const server = await ServerModel.withScope('withApiKey').findByPk(parseInt(id));
+  if (server?.capabilities?.role && server.capabilities.role !== 'agent') {
+    log.websocket.warn('WebSocket upgrade rejected: registered backend is not an agent', { id });
+    return null;
+  }
+  return server;
 };
 
 /**
@@ -260,7 +243,7 @@ const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, lo
   const backendWs = new WebSocket(backendUrl, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      'User-Agent': 'Zoneweaver-Proxy/1.0',
+      'User-Agent': 'Hyperweaver-Server/1.0',
     },
   });
 
@@ -284,122 +267,30 @@ const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, lo
 };
 
 /**
- * Handle terminal/zlogin WebSocket upgrade by resolving server from referer
+ * Proxy a simple (non-VNC) session WS upgrade for /api/agents/:id/{backendPath}.
+ * backendPath is the agent's root-mounted path (zlogin/term/ssh/logs-stream/tasks).
  */
-const handleSessionUpgrade = async (
-  sessionType,
-  sessionId,
-  serverAddress,
-  request,
-  socket,
-  head
-) => {
-  if (!serverModelReady || !ServerModel) {
-    log.websocket.error(`WebSocket ${sessionType}: ServerModel not initialized`, { sessionId });
-    socket.destroy();
-    return;
-  }
-
-  const server = await getAuthenticatedServer(serverAddress);
+const handleAgentWsUpgrade = async (id, backendPath, request, socket, head, logContext) => {
+  const server = await resolveAgentForWs(id);
   if (!server || !server.api_key) {
-    log.websocket.error(`WebSocket ${sessionType}: No server or API key`, {
-      sessionId,
-      serverAddress,
-    });
+    log.websocket.error('WebSocket: agent not found or missing API key', { id, backendPath });
     socket.destroy();
     return;
   }
 
-  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/${sessionType}/${sessionId}`;
-  log.websocket.info(`WebSocket ${sessionType}: Connecting`, { backendUrl });
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/${backendPath}`;
+  log.websocket.info('WebSocket: connecting to agent backend', { ...logContext, backendUrl });
 
   await createSimpleWsProxy(request, socket, head, backendUrl, server.api_key, {
-    sessionType,
-    sessionId,
+    ...logContext,
+    id,
   });
 };
 
 /**
- * Handle task output stream WebSocket upgrade
+ * Create VNC WebSocket proxy with binary subprotocol support for a resolved agent.
  */
-const handleTaskStreamUpgrade = async (serverAddr, taskId, request, socket, head) => {
-  if (!serverModelReady || !ServerModel) {
-    log.websocket.error('WebSocket task stream: ServerModel not initialized', { taskId });
-    socket.destroy();
-    return;
-  }
-
-  const server = await getAuthenticatedServer(serverAddr);
-  if (!server || !server.api_key) {
-    log.websocket.error('WebSocket task stream: No server or API key', { taskId });
-    socket.destroy();
-    return;
-  }
-
-  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/tasks/${taskId}/stream`;
-  log.websocket.info('WebSocket task stream: Connecting', { backendUrl });
-
-  await createSimpleWsProxy(request, socket, head, backendUrl, server.api_key, {
-    type: 'task-stream',
-    taskId,
-  });
-};
-
-/**
- * Resolve VNC target from URL (direct match or websockify fallback)
- */
-const resolveVncTarget = (url, request) => {
-  const directMatch = url.pathname.match(
-    /^\/api\/servers\/(?<addr>[^/]+)\/zones\/(?<zone>[^/]+)\/vnc\/websockify/
-  );
-  if (directMatch) {
-    return { serverAddress: directMatch.groups.addr, zoneName: directMatch.groups.zone };
-  }
-
-  if (url.pathname !== '/websockify') {
-    return null;
-  }
-
-  log.websocket.debug('WebSocket fallback: websockify detected', {
-    referer: request.headers.referer,
-    origin: request.headers.origin,
-  });
-
-  // A bare /websockify upgrade carries no server address in the path; recover the
-  // target from the VNC session tracked for this client when the console was opened.
-  const clientId = request.connection.remoteAddress || request.socket.remoteAddress;
-  const storedSession = activeVncSessions.get(clientId);
-  if (storedSession) {
-    log.websocket.info('WebSocket fallback: found stored session', storedSession);
-    return storedSession;
-  }
-
-  log.websocket.debug('WebSocket fallback: no VNC target found', { clientId });
-  return null;
-};
-
-/**
- * Create VNC WebSocket proxy with binary subprotocol support
- */
-const createVncWsProxy = async (vncTarget, request, socket, head) => {
-  const { serverAddress, zoneName } = vncTarget;
-  const [hostname, serverPort] = serverAddress.split(':');
-
-  log.websocket.info('WebSocket upgrade for VNC', { zoneName, hostname, serverPort });
-
-  if (!serverModelReady || !ServerModel) {
-    log.websocket.error('WebSocket VNC: ServerModel not initialized', { zoneName });
-    socket.destroy();
-    return;
-  }
-
-  const server = await ServerModel.getServerByHostPort(hostname, parseInt(serverPort));
-  if (!server || !server.api_key) {
-    log.websocket.error('WebSocket VNC: No server or API key', { hostname, serverPort });
-    socket.destroy();
-    return;
-  }
-
+const createVncWsProxy = async (server, zoneName, request, socket, head) => {
   const { WebSocket, WebSocketServer } = await import('ws');
   const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`;
 
@@ -416,7 +307,7 @@ const createVncWsProxy = async (vncTarget, request, socket, head) => {
   const backendWs = new WebSocket(backendUrl, ['binary'], {
     headers: {
       Authorization: `Bearer ${server.api_key}`,
-      'User-Agent': 'Zoneweaver-Proxy/1.0',
+      'User-Agent': 'Hyperweaver-Server/1.0',
     },
     perMessageDeflate: false,
     extensions: {},
@@ -485,66 +376,89 @@ const createVncWsProxy = async (vncTarget, request, socket, head) => {
 };
 
 /**
- * Handle WebSocket upgrade for VNC proxy, terminal sessions, and task streams
+ * Proxy a VNC websockify WS upgrade for /api/agents/:id/zones/:zone/vnc/websockify.
+ */
+const handleAgentVncUpgrade = async (id, zoneName, request, socket, head) => {
+  const server = await resolveAgentForWs(id);
+  if (!server || !server.api_key) {
+    log.websocket.error('WebSocket VNC: agent not found or missing API key', { id, zoneName });
+    socket.destroy();
+    return;
+  }
+  await createVncWsProxy(server, zoneName, request, socket, head);
+};
+
+/**
+ * Handle WebSocket upgrades for the unified agent namespace (dual-mode plan §4.2):
+ * zlogin, term, ssh, logs/stream, tasks/:id/stream, and VNC websockify — all keyed by
+ * registry id. The UI derives these paths itself; agents keep returning raw sessions.
  */
 const handleWebSocketUpgrade = async (request, socket, head) => {
   try {
     const url = new URL(request.url, `https://${request.headers.host}`);
+    const { pathname } = url;
 
-    const zloginMatch = url.pathname.match(
-      /^\/api\/servers\/(?<addr>[^/]+)\/zlogin\/(?<sessionId>[^/]+)/
+    // /api/agents/:id/zones/:zone/vnc/websockify
+    const vncMatch = pathname.match(
+      /^\/api\/agents\/(?<id>[^/]+)\/zones\/(?<zone>[^/]+)\/vnc\/websockify/
     );
-    if (zloginMatch) {
-      await handleSessionUpgrade(
-        'zlogin',
-        zloginMatch.groups.sessionId,
-        zloginMatch.groups.addr,
-        request,
-        socket,
-        head
-      );
+    if (vncMatch) {
+      await handleAgentVncUpgrade(vncMatch.groups.id, vncMatch.groups.zone, request, socket, head);
       return;
     }
 
-    const termMatch = url.pathname.match(
-      /^\/api\/servers\/(?<addr>[^/]+)\/term\/(?<sessionId>[^/]+)/
-    );
-    if (termMatch) {
-      await handleSessionUpgrade(
-        'term',
-        termMatch.groups.sessionId,
-        termMatch.groups.addr,
-        request,
-        socket,
-        head
-      );
-      return;
-    }
-
-    const taskMatch = url.pathname.match(
-      /^\/api\/servers\/(?<addr>[^/]+)\/tasks\/(?<taskId>[a-fA-F0-9-]+)\/stream/
+    // /api/agents/:id/tasks/:taskId/stream
+    const taskMatch = pathname.match(
+      /^\/api\/agents\/(?<id>[^/]+)\/tasks\/(?<taskId>[a-fA-F0-9-]+)\/stream/
     );
     if (taskMatch) {
-      await handleTaskStreamUpgrade(
-        taskMatch.groups.addr,
-        taskMatch.groups.taskId,
+      await handleAgentWsUpgrade(
+        taskMatch.groups.id,
+        `tasks/${taskMatch.groups.taskId}/stream`,
         request,
         socket,
-        head
+        head,
+        { type: 'task-stream', taskId: taskMatch.groups.taskId }
       );
       return;
     }
 
-    const vncTarget = resolveVncTarget(url, request);
-    if (!vncTarget) {
-      log.websocket.debug('WebSocket upgrade rejected: URL does not match any pattern', {
-        pathname: url.pathname,
-      });
-      socket.destroy();
+    // /api/agents/:id/logs/stream/:sessionId
+    const logsMatch = pathname.match(
+      /^\/api\/agents\/(?<id>[^/]+)\/logs\/stream\/(?<sessionId>[^/]+)/
+    );
+    if (logsMatch) {
+      await handleAgentWsUpgrade(
+        logsMatch.groups.id,
+        `logs/stream/${logsMatch.groups.sessionId}`,
+        request,
+        socket,
+        head,
+        { type: 'logs-stream', sessionId: logsMatch.groups.sessionId }
+      );
       return;
     }
 
-    await createVncWsProxy(vncTarget, request, socket, head);
+    // /api/agents/:id/(zlogin|term|ssh)/:sessionId
+    const sessionMatch = pathname.match(
+      /^\/api\/agents\/(?<id>[^/]+)\/(?<type>zlogin|term|ssh)\/(?<sessionId>[^/]+)/
+    );
+    if (sessionMatch) {
+      await handleAgentWsUpgrade(
+        sessionMatch.groups.id,
+        `${sessionMatch.groups.type}/${sessionMatch.groups.sessionId}`,
+        request,
+        socket,
+        head,
+        { type: sessionMatch.groups.type, sessionId: sessionMatch.groups.sessionId }
+      );
+      return;
+    }
+
+    log.websocket.debug('WebSocket upgrade rejected: no /api/agents pattern matched', {
+      pathname,
+    });
+    socket.destroy();
   } catch (error) {
     log.websocket.error('WebSocket upgrade error', { error: error.message });
     socket.destroy();
@@ -582,7 +496,7 @@ const generateSSLCertificatesIfNeeded = async () => {
     }
 
     // Generate SSL certificate using OpenSSL
-    const opensslCmd = `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -subj "/C=US/ST=State/L=City/O=Zoneweaver/CN=localhost"`;
+    const opensslCmd = `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -subj "/C=US/ST=State/L=City/O=Hyperweaver/CN=localhost"`;
 
     execSync(opensslCmd, { stdio: 'pipe' });
 

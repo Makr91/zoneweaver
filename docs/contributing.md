@@ -9,7 +9,7 @@ permalink: /contributing/
 
 {: .no_toc }
 
-Guidelines for contributing to Zoneweaver frontend development.
+Guidelines for contributing to Hyperweaver Server frontend development.
 
 ## Table of contents
 

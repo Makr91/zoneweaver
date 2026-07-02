@@ -5,17 +5,17 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Zoneweaver API',
+      title: 'Hyperweaver Server API',
       version: '0.8.1', // x-release-please-version
       description:
-        'API for Zoneweaver - Web management interface for Bhyve virtual machines via Zoneweaver API',
+        'API for Hyperweaver Server - control-plane web interface that aggregates and proxies agents (Zoneweaver Agent for Bhyve/OmniOS)',
       license: {
         name: 'GPL-3.0',
         url: 'https://www.gnu.org/licenses/gpl-3.0.html',
       },
       contact: {
-        name: 'Zoneweaver Project',
-        url: 'https://github.com/Makr91/zoneweaver',
+        name: 'Hyperweaver Project',
+        url: 'https://github.com/Makr91/hyperweaver-server',
       },
     },
     servers: [

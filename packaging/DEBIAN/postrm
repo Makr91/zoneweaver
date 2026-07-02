@@ -4,23 +4,23 @@ set -e
 case "$1" in
     remove)
         # Keep user, data, and config for potential reinstall
-        echo "Zoneweaver removed but user and data preserved"
+        echo "Hyperweaver Server removed but user and data preserved"
         ;;
     purge)
         # Remove everything including user and data
-        echo "Purging Zoneweaver completely..."
+        echo "Purging Hyperweaver Server completely..."
         
         # Remove system user
-        if getent passwd zoneweaver > /dev/null 2>&1; then
-            deluser zoneweaver || true
+        if getent passwd hyperweaver-server > /dev/null 2>&1; then
+            deluser hyperweaver-server || true
         fi
         
         # Remove data directories (user confirmation should happen via apt/dpkg)
-        rm -rf /var/lib/zoneweaver
-        rm -rf /var/log/zoneweaver
-        rm -rf /etc/zoneweaver
+        rm -rf /var/lib/hyperweaver-server
+        rm -rf /var/log/hyperweaver-server
+        rm -rf /etc/hyperweaver-server
         
-        echo "Zoneweaver completely removed"
+        echo "Hyperweaver Server completely removed"
         ;;
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         # Do nothing for these cases

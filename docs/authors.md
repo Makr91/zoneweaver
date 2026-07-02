@@ -9,7 +9,7 @@ permalink: /authors/
 
 {: .no_toc }
 
-Contributors and authors of Zoneweaver frontend.
+Contributors and authors of Hyperweaver Server frontend.
 
 ## Table of contents
 

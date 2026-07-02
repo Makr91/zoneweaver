@@ -31,11 +31,14 @@ _sections:
   Integrations:
     description: 'Configure third-party service integrations and API connections.'
     icon: 'fas fa-puzzle-piece'
+  Agents:
+    description: 'Configure how the Server polls registered agents for health and capabilities.'
+    icon: 'fas fa-network-wired'
 
 frontend:
   name:
     type: string
-    value: Zoneweaver
+    value: Hyperweaver
     description: 'Application display name'
     section: 'Frontend'
     required: true
@@ -135,7 +138,7 @@ mail:
     order: 5
   smtp_from:
     type: string
-    value: 'Zoneweaver <noreply@localhost>'
+    value: 'Hyperweaver <noreply@localhost>'
     description: 'From address for outgoing emails (must be authorized by SMTP server)'
     section: 'Mail'
     required: true
@@ -168,21 +171,21 @@ server:
     show_when: [true]
   ssl_key_path:
     type: string
-    value: '/etc/zoneweaver/ssl/key.pem'
+    value: '/etc/hyperweaver-server/ssl/key.pem'
     description: 'Path to SSL private key file'
     required: false
     depends_on: ssl_enabled
     show_when: [true]
   ssl_cert_path:
     type: string
-    value: '/etc/zoneweaver/ssl/cert.pem'
+    value: '/etc/hyperweaver-server/ssl/cert.pem'
     description: 'Path to SSL certificate file'
     required: false
     depends_on: ssl_enabled
     show_when: [true]
   ssl_ca_path:
     type: string
-    value: '/etc/zoneweaver/ssl/ca.pem'
+    value: '/etc/hyperweaver-server/ssl/ca.pem'
     description: 'Path to SSL Certificate Authority (CA) file for certificate chain validation'
     required: false
     depends_on: ssl_enabled
@@ -244,7 +247,7 @@ logging:
 
   log_directory:
     type: string
-    value: '/var/log/zoneweaver'
+    value: '/var/log/hyperweaver-server'
     description: 'Directory for log files (must be writable by application)'
     section: 'Logging'
     subsection: 'General'
@@ -643,7 +646,7 @@ authentication:
 
   jwt_issuer:
     type: string
-    value: 'zoneweaver'
+    value: 'hyperweaver-server'
     description: 'JWT token issuer identifier'
     section: 'Authentication'
     subsection: 'JWT Settings'
@@ -1021,7 +1024,7 @@ database:
   # SQLite specific settings
   storage:
     type: string
-    value: '/var/lib/zoneweaver/database/zoneweaver.db'
+    value: '/var/lib/hyperweaver-server/database/hyperweaver-server.db'
     description: 'SQLite database file path (absolute path recommended)'
     section: 'Database'
     subsection: 'SQLite Configuration'
@@ -1061,7 +1064,7 @@ database:
 
   user:
     type: string
-    value: zoneweaver
+    value: hyperweaver_server
     description: 'Database username for authentication'
     section: 'Database'
     subsection: 'Network Database'
@@ -1085,7 +1088,7 @@ database:
 
   database_name:
     type: string
-    value: zoneweaver
+    value: hyperweaver_server
     description: 'Name of the database to connect to'
     section: 'Database'
     subsection: 'Network Database'
@@ -1161,6 +1164,28 @@ database:
     description: 'Log SQL queries to console (for debugging - may impact performance)'
     section: 'Database'
     subsection: 'General'
+    required: true
+    order: 2
+
+# Agent capability polling — the Server aggregates agents and owns health/capability
+# freshness (architecture D11). Poll GET {agent}/status on this interval.
+agents:
+  poll_interval:
+    type: integer
+    value: 60000
+    min: 10000
+    max: 600000
+    description: 'How often (ms) the Server polls each registered agent /status for health and capabilities'
+    section: 'Agents'
+    required: true
+    order: 1
+  poll_timeout:
+    type: integer
+    value: 5000
+    min: 1000
+    max: 60000
+    description: 'Per-agent /status poll timeout in milliseconds'
+    section: 'Agents'
     required: true
     order: 2
 

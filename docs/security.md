@@ -9,7 +9,7 @@ permalink: /security/
 
 {: .no_toc }
 
-Security policies and vulnerability reporting for Zoneweaver frontend.
+Security policies and vulnerability reporting for Hyperweaver Server frontend.
 
 ## Table of contents
 

@@ -4,11 +4,11 @@
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-If you discover a security vulnerability in Zoneweaver, please report it responsibly:
+If you discover a security vulnerability in Hyperweaver Server, please report it responsibly:
 
 ### Preferred Method: Security Advisory
 
-1. Go to the [GitHub Security Advisory page](https://github.com/Makr91/zoneweaver/security/advisories)
+1. Go to the [GitHub Security Advisory page](https://github.com/Makr91/hyperweaver-server/security/advisories)
 2. Click "Report a vulnerability"
 3. Fill out the advisory form with detailed information
 4. Submit the advisory
@@ -40,9 +40,9 @@ Due to limited development resources, please understand that:
 - **Medium**: Standard timeline (DoS, information disclosure)
 - **Low**: Lower priority (minor information leaks)
 
-## Security Considerations for Zoneweaver API
+## Security Considerations for Zoneweaver Agent
 
-Given that Zoneweaver API manages system-level operations on OmniOS, please pay special attention to:
+Given that Zoneweaver Agent manages system-level operations on OmniOS, please pay special attention to:
 
 ### High-Risk Areas
 
@@ -71,7 +71,7 @@ To maintain security:
 
 ## Security Features
 
-Zoneweaver API includes several security features:
+Zoneweaver Agent includes several security features:
 
 - **API Key Authentication**: Bcrypt-hashed keys with configurable rounds
 - **CORS Protection**: Whitelist-based origin validation
@@ -81,7 +81,7 @@ Zoneweaver API includes several security features:
 
 ## Acknowledgments
 
-We appreciate the security research community's efforts in making Zoneweaver API more secure. Responsible disclosure helps protect all users.
+We appreciate the security research community's efforts in making Zoneweaver Agent more secure. Responsible disclosure helps protect all users.
 
 ### Hall of Fame
 
@@ -95,4 +95,4 @@ This security policy may be updated as the project evolves. Check back periodica
 
 ---
 
-**Remember**: Security is a shared responsibility. Your vigilance and responsible reporting help keep the entire Zoneweaver community safe.
+**Remember**: Security is a shared responsibility. Your vigilance and responsible reporting help keep the entire Hyperweaver Server community safe.

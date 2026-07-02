@@ -1,4 +1,4 @@
-<!-- Custom head content for Zoneweaver Documentation -->
+<!-- Custom head content for Hyperweaver Server Documentation -->
 <link rel="icon" type="image/x-icon" href="{{ '/web/public/favicon.ico' | relative_url }}" />
 <link
   rel="apple-touch-icon"
@@ -17,7 +17,9 @@
     if (window.location.pathname.includes('/releases/')) {
       var releaseDiv = document.getElementById('latest-release-content');
       if (releaseDiv) {
-        fetch('https://raw.githubusercontent.com/Makr91/zoneweaver/refs/heads/main/package.json')
+        fetch(
+          'https://raw.githubusercontent.com/Makr91/hyperweaver-server/refs/heads/main/package.json'
+        )
           .then(function (response) {
             return response.json();
           })
@@ -28,14 +30,14 @@
             // var p5pLink = document.querySelector('a[href*="zoneweaver.p5p"]');
             // if (p5pLink) {
             //   p5pLink.href =
-            //     'https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver-' +
+            //     'https://github.com/Makr91/hyperweaver-server/releases/latest/download/zoneweaver-' +
             //     data.version +
             //     '.p5p';
             // }
-            var debLink = document.querySelector('a[href*="zoneweaver.deb"]');
+            var debLink = document.querySelector('a[href*="hyperweaver-server.deb"]');
             if (debLink) {
               debLink.href =
-                'https://github.com/Makr91/zoneweaver/releases/latest/download/zoneweaver_' +
+                'https://github.com/Makr91/hyperweaver-server/releases/latest/download/hyperweaver-server_' +
                 data.version +
                 '_amd64.deb';
             }
@@ -51,7 +53,9 @@
     if (window.location.pathname.includes('/changelog/')) {
       var releaseDiv = document.getElementById('latest-release-content');
       if (releaseDiv) {
-        fetch('https://raw.githubusercontent.com/Makr91/zoneweaver/refs/heads/main/package.json')
+        fetch(
+          'https://raw.githubusercontent.com/Makr91/hyperweaver-server/refs/heads/main/package.json'
+        )
           .then(function (response) {
             return response.json();
           })
@@ -70,7 +74,7 @@
     if (window.location.pathname.includes('/security/')) {
       var versionsDiv = document.getElementById('supported-versions-content');
       if (versionsDiv) {
-        fetch('https://api.github.com/repos/Makr91/zoneweaver/releases')
+        fetch('https://api.github.com/repos/Makr91/hyperweaver-server/releases')
           .then(function (response) {
             return response.json();
           })

@@ -68,6 +68,18 @@ export default sequelize => {
         defaultValue: false,
         columnName: 'allow_insecure',
       },
+      capabilities: {
+        // Slim /status payload harvested from the agent (role, hypervisors, features, console, auth, …)
+        type: DataTypes.JSON,
+        allowNull: true,
+        columnName: 'capabilities',
+      },
+      last_seen: {
+        // Last successful /status poll; stale => agent unreachable (not auto-deactivated)
+        type: DataTypes.DATE,
+        allowNull: true,
+        columnName: 'last_seen',
+      },
     },
     {
       // Table options
@@ -161,29 +173,18 @@ export default sequelize => {
     return this.update({ is_active: true });
   };
 
-  Server.prototype.testConnection = async function () {
+  // Poll the agent's public /status endpoint (dual-mode plan §3.1): slim identity +
+  // capabilities, no API key required, no zoneadm exec (unlike the fat /stats).
+  Server.prototype.fetchStatus = async function (timeoutMs = 5000) {
+    const serverUrl = this.getServerUrl();
     try {
-      const serverUrl = this.getServerUrl();
-
-      const response = await axios.get(`${serverUrl}/stats`, {
-        headers: {
-          Authorization: `Bearer ${this.api_key}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 5000,
+      const response = await axios.get(`${serverUrl}/status`, {
+        timeout: timeoutMs,
         httpsAgent: new https.Agent({
           rejectUnauthorized: !this.allow_insecure,
         }),
       });
-
-      // Update last used on successful test
-      await this.updateLastUsed();
-
-      return {
-        success: true,
-        status: response.status,
-        data: response.data,
-      };
+      return { success: true, status: response.status, data: response.data };
     } catch (error) {
       return {
         success: false,
@@ -191,6 +192,28 @@ export default sequelize => {
         status: error.response?.status || null,
       };
     }
+  };
+
+  // Harvest + persist capabilities and freshness from /status (D11 health loop). On
+  // failure, leave capabilities as-is and do NOT refresh last_seen (it ages → stale).
+  Server.prototype.refreshStatus = async function (timeoutMs = 5000) {
+    const result = await this.fetchStatus(timeoutMs);
+    if (result.success) {
+      try {
+        await this.update({ capabilities: result.data, last_seen: new Date() });
+      } catch (error) {
+        log.server.warn('Failed to persist agent status', { error: error.message });
+      }
+    }
+    return result;
+  };
+
+  Server.prototype.testConnection = async function () {
+    const result = await this.fetchStatus();
+    if (result.success) {
+      await this.updateLastUsed();
+    }
+    return result;
   };
 
   // Encode path segments with special handling for FMRI service paths
@@ -455,8 +478,12 @@ export default sequelize => {
 
       await transaction.commit();
 
-      // Return server without API key
-      return await this.findByPk(server.id);
+      // Harvest capabilities immediately (best-effort; an unreachable agent must not fail the add)
+      const created = await this.findByPk(server.id);
+      if (created) {
+        await created.refreshStatus();
+      }
+      return created;
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -590,21 +617,6 @@ export default sequelize => {
    */
   Server.getServer = function (hostname, port, protocol) {
     return this.findByHostPortProtocol(hostname, port, protocol);
-  };
-
-  /**
-   * Get the registered server for a hostname+port, regardless of protocol.
-   * The dedicated console/terminal/zlogin/VNC routes only receive hostname:port
-   * (no protocol), so they resolve the row here and use its stored protocol.
-   * Mirrors findByHostPortProtocol's scope so api_key is present.
-   * @param {string} hostname - Server hostname
-   * @param {number} port - Server port
-   * @returns {Promise<Object|null>} Server record (with api_key) or null
-   */
-  Server.getServerByHostPort = function (hostname, port) {
-    return this.withScope('withApiKey').findOne({
-      where: { hostname, port },
-    });
   };
 
   /**

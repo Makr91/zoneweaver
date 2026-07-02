@@ -1,26 +1,26 @@
 [Unit]
-Description=Zoneweaver Zone Hypervisor Management Interface
+Description=Hyperweaver Server Zone Hypervisor Management Interface
 After=network.target
 Wants=network.target
 
 [Service]
 Type=simple
-User=zoneweaver
-Group=zoneweaver
-WorkingDirectory=/opt/zoneweaver
+User=hyperweaver-server
+Group=hyperweaver-server
+WorkingDirectory=/opt/hyperweaver-server
 ExecStart=/usr/bin/node index.js
 Restart=on-failure
 RestartSec=10
 
 # Environment variables
 Environment=NODE_ENV=production
-Environment=CONFIG_PATH=/etc/zoneweaver/config.yaml
+Environment=CONFIG_PATH=/etc/hyperweaver-server/config.yaml
 
 # Security settings
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=/var/lib/zoneweaver /var/log/zoneweaver
+ReadWritePaths=/var/lib/hyperweaver-server /var/log/hyperweaver-server
 
 # Allow binding to privileged ports (< 1024)
 AmbientCapabilities=CAP_NET_BIND_SERVICE
@@ -29,7 +29,7 @@ CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=zoneweaver
+SyslogIdentifier=hyperweaver-server
 
 # Resource limits
 MemoryMax=512M

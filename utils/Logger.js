@@ -1,7 +1,7 @@
 /**
- * @fileoverview Centralized Logging System for Zoneweaver
+ * @fileoverview Centralized Logging System for Hyperweaver Server
  * @description Winston-based logging with clean daily rotation
- * @author Zoneweaver Team
+ * @author Hyperweaver Project
  */
 
 import winston from 'winston';
@@ -20,7 +20,7 @@ const config = loadConfig();
 const loggingConfig = config.logging || {
   level: { value: 'info' },
   console_enabled: { value: true },
-  log_directory: { value: '/var/log/zoneweaver' },
+  log_directory: { value: '/var/log/hyperweaver-server' },
   file_rotation: {
     max_size: { value: 50 },
     max_files: { value: 5 },
@@ -38,7 +38,7 @@ const getValue = configItem => {
 };
 
 // Ensure log directory and subdirectories exist
-const logDir = getValue(loggingConfig.log_directory) || '/var/log/zoneweaver';
+const logDir = getValue(loggingConfig.log_directory) || '/var/log/hyperweaver-server';
 const currentDir = path.join(logDir, 'current');
 const archivesDir = path.join(logDir, 'archives');
 const metaDir = path.join(logDir, '.meta'); // Hidden directory for audit files
@@ -170,7 +170,7 @@ const createCategoryLogger = (category, filename) => {
   return winston.createLogger({
     level: categoryLevel,
     format: logFormat,
-    defaultMeta: { category, service: 'zoneweaver' },
+    defaultMeta: { category, service: 'hyperweaver-server' },
     transports,
     exitOnError: false,
     silent: getValue(loggingConfig.level) === 'silent',
@@ -242,7 +242,7 @@ export const appLogger = winston.createLogger({
   level: getValue(loggingConfig.level) || 'info',
   format: logFormat,
   transports: [appTransport, errorTransport],
-  defaultMeta: { category: 'app', service: 'zoneweaver' },
+  defaultMeta: { category: 'app', service: 'hyperweaver-server' },
   exitOnError: false,
 });
 

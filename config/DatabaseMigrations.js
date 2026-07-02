@@ -1,5 +1,5 @@
 /**
- * @fileoverview Database Migration Utilities for Zoneweaver Frontend
+ * @fileoverview Database Migration Utilities for Hyperweaver Server
  * @description Handles database schema migrations and updates for authentication features
  */
 
@@ -491,6 +491,20 @@ class DatabaseMigrations {
         name: 'created_by',
         definition: {
           type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+      },
+      {
+        name: 'capabilities',
+        definition: {
+          type: DataTypes.JSON,
+          allowNull: true,
+        },
+      },
+      {
+        name: 'last_seen',
+        definition: {
+          type: DataTypes.DATE,
           allowNull: true,
         },
       },

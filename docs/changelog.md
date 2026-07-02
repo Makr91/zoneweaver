@@ -9,7 +9,7 @@ permalink: /changelog/
 
 {: .no_toc }
 
-Release history and changes for Zoneweaver frontend.
+Release history and changes for Hyperweaver Server frontend.
 
 ## Table of contents
 

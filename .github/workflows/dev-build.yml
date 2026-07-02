@@ -45,7 +45,7 @@ jobs:
             DEV_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
           fi
           echo "VERSION=$DEV_VERSION" >> $GITHUB_ENV
-          echo "PACKAGE_NAME=zoneweaver-dev" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=hyperweaver-server-dev" >> $GITHUB_ENV
           echo "ARCH=amd64" >> $GITHUB_ENV
 
       - name: Install Node.js dependencies
@@ -83,40 +83,39 @@ jobs:
 
       - name: Create Debian package structure
         run: |
-          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
+          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/hyperweaver-server,etc/hyperweaver-server,etc/systemd/system,var/lib/hyperweaver-server,var/log/hyperweaver-server,usr/share/man/man8,usr/share/man/man5,DEBIAN}
 
       - name: Copy application files to Debian package
         run: |
-          cp -r controllers models routes auth config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-          cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-          cp -r ui "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/ui"
+          cp -r controllers models routes auth config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/hyperweaver-server/"
+          cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/hyperweaver-server/"
+          cp -r ui "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/hyperweaver-server/ui"
 
       - name: Copy configuration files to Debian package
         run: |
-          cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/zoneweaver/config.yaml"
-          cp packaging/DEBIAN/systemd/zoneweaver.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
+          cp packaging/config/production-config.yaml "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/hyperweaver-server/config.yaml"
+          cp packaging/DEBIAN/systemd/hyperweaver-server.service "${PACKAGE_NAME}_${VERSION}_${ARCH}/etc/systemd/system/"
           cp packaging/DEBIAN/postinst packaging/DEBIAN/prerm packaging/DEBIAN/postrm "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/"
 
       - name: Install man pages
         run: |
-          gzip -9 -c packaging/DEBIAN/man/zoneweaver.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/zoneweaver.8.gz"
-          gzip -9 -c packaging/DEBIAN/man/zoneweaver.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/zoneweaver.yaml.5.gz"
+          gzip -9 -c packaging/DEBIAN/man/hyperweaver-server.8 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man8/hyperweaver-server.8.gz"
+          gzip -9 -c packaging/DEBIAN/man/hyperweaver-server.yaml.5 > "${PACKAGE_NAME}_${VERSION}_${ARCH}/usr/share/man/man5/hyperweaver-server.yaml.5.gz"
 
       - name: Create Debian control file
         run: |
           cat > "${PACKAGE_NAME}_${VERSION}_${ARCH}/DEBIAN/control" << EOF
-          Package: zoneweaver-dev
+          Package: hyperweaver-server-dev
           Version: ${VERSION}
           Section: misc
           Priority: optional
           Architecture: ${ARCH}
           Maintainer: Makr91 <makr91@users.noreply.github.com>
           Depends: nodejs (>= 22.0.0), sqlite3, openssl
-          Conflicts: zoneweaver
-          Description: Zoneweaver (Development) - Zone Hypervisor Management Interface
-           Web-based management interface for Zoneweaver API hypervisors.
-           This is a development build for testing purposes only.
-          Homepage: https://github.com/Makr91/zoneweaver
+          Conflicts: hyperweaver-server
+          Description: Hyperweaver Server (Development) - hypervisor control-plane web interface
+           Development build for testing only.
+          Homepage: https://github.com/Makr91/hyperweaver-server
           EOF
 
       - name: Set Debian package permissions
@@ -128,11 +127,6 @@ jobs:
       - name: Build Debian package
         run: |
           dpkg-deb --build "${PACKAGE_NAME}_${VERSION}_${ARCH}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
-
-      #      # OmniOS Build Steps (PARKED — uncomment to resume dev .p5p builds; packaging/omnios/ is kept)
-      #      - name: Build dev package on OmniOS
-      #        run: |
-      #          ssh ghrunner@omnios.packages.startcloud.com "cd /local/builds/zoneweaver-dev && export PATH=/opt/ooce/bin:/opt/ooce/node-22/bin:\$PATH && export MAKE=gmake && export DEV_VERSION=${VERSION} && chmod +x packaging/omnios/build.sh && ./packaging/omnios/build.sh"
 
       - name: Install GitHub CLI
         run: |

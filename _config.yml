@@ -1,9 +1,9 @@
 # Basic Jekyll settings
-title: Zoneweaver Documentation
-description: Documentation for Zoneweaver - Zone Hypervisor Management Frontend
+title: Hyperweaver Server Documentation
+description: Documentation for Hyperweaver Server - the control-plane server for the Hyperweaver platform
 baseurl: '/docs' # Served in-app at /docs (built into web/dist/docs)
 url: '' # Served in-app under baseurl; no fixed public domain
-repository: Makr91/zoneweaver # for github-metadata
+repository: Makr91/hyperweaver-server # for github-metadata
 
 permalink: pretty
 
@@ -92,13 +92,13 @@ search_enabled: true # Enable the built-in search
 # Aux links for header
 aux_links:
   'View on GitHub':
-    - 'https://github.com/Makr91/zoneweaver'
+    - 'https://github.com/Makr91/hyperweaver-server'
   'Zoneweaver API':
     - 'https://zoneweaver-api.startcloud.com'
 aux_links_new_tab: true
 
 # Footer content
-footer_content: 'Copyright &copy; 2025 Zoneweaver Project. Distributed under the GPL-3.0 license.'
+footer_content: 'Copyright &copy; 2025 Hyperweaver Project. Distributed under the GPL-3.0 license.'
 
 # Back to top link
 back_to_top: true
@@ -111,7 +111,7 @@ last_edit_time_format: '%b %e %Y at %I:%M %p' # uses ruby's time format: https:/
 # Footer "Edit this page on GitHub" link text
 gh_edit_link: true # show or hide edit this page link
 gh_edit_link_text: 'Edit this page on GitHub'
-gh_edit_repository: 'https://github.com/Makr91/zoneweaver' # the github URL for your repo
+gh_edit_repository: 'https://github.com/Makr91/hyperweaver-server' # the github URL for your repo
 gh_edit_branch: 'main' # the branch that your docs is served from
 gh_edit_source: docs # the source that your files originate from
 gh_edit_view_mode: 'tree' # "tree" or "edit" if you want the user to jump into the editor immediately
