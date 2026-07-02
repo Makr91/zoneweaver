@@ -6,7 +6,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'Hyperweaver Server API',
-      version: '0.8.1', // x-release-please-version
+      version: '1.0.0', // x-release-please-version
       description:
         'API for Hyperweaver Server - control-plane web interface that aggregates and proxies agents (Zoneweaver Agent for Bhyve/OmniOS)',
       license: {

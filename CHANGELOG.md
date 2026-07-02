@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0](https://github.com/Makr91/hyperweaver-server/compare/v0.8.1...v1.0.0) (2026-07-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* dual-mode breaking cut — /api/status, capability health poll, unified /api/agents/{id} namespace
+
+### Features
+
+* dual-mode breaking cut — /api/status, capability health poll, unified /api/agents/{id} namespace ([fae59a1](https://github.com/Makr91/hyperweaver-server/commit/fae59a1c4d6f468eb898f6cfc73eb34a84e8a13d))
+* further preperation for splitting UI ([fe1f101](https://github.com/Makr91/hyperweaver-server/commit/fe1f1014eb914af3c8d3152b1052d346570c5f87))
+* moving UI out of repo ([ebb9215](https://github.com/Makr91/hyperweaver-server/commit/ebb9215e37c86b5e5a0c012804b24d466223f709))
+* no more bulma! ([bdc042e](https://github.com/Makr91/hyperweaver-server/commit/bdc042efe6b9a40fc108ef8792d5cb7b02658146))
+* prepartion for splitting frontend UI ([358bed7](https://github.com/Makr91/hyperweaver-server/commit/358bed7325c339f4da472e0f1461c3cd31b804d9))
+
+
+### Bug Fixes
+
+* ignore generated CHANGELOG.md and ui/ artifact in prettier; rename package identity to hyperweaver-server ([0d9fb2a](https://github.com/Makr91/hyperweaver-server/commit/0d9fb2af127073ebcdf431fbef15cc1bf0e3cf83))
+* pre-bulma-cutover ([f03f092](https://github.com/Makr91/hyperweaver-server/commit/f03f0922e41dff9500162724ec7e811efc29d34e))
+
 ## [0.8.1](https://github.com/Makr91/zoneweaver/compare/v0.8.0...v0.8.1) (2026-04-15)
 
 ### Bug Fixes
