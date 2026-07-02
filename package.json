@@ -1,6 +1,6 @@
 {
   "name": "hyperweaver-server",
-  "version": "0.8.1",
+  "version": "1.0.0",
   "description": "Hyperweaver Server - Node control plane that serves the Hyperweaver UI, authenticates users, and proxies/aggregates host agents",
   "hyperweaverUiVersion": "0.10.0",
   "main": "index.js",
