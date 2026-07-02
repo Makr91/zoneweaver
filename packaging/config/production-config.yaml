@@ -1,5 +1,5 @@
-# Zoneweaver Production Configuration
-# This file is installed to /etc/zoneweaver/config.yaml
+# Hyperweaver Server Production Configuration
+# This file is installed to /etc/hyperweaver-server/config.yaml
 # All settings use metadata format for configuration-driven UI
 
 # Section metadata - descriptions for each settings category
@@ -506,38 +506,6 @@ limits:
       description: 'Error message shown when API proxy rate limit is exceeded'
       section: 'Performance'
       subsection: 'API Proxy Rate Limits'
-      required: true
-      order: 3
-
-  realtime:
-    windowMs:
-      type: integer
-      value: 60000
-      description: 'Time window in milliseconds (60000 = 1 minute)'
-      section: 'Performance'
-      subsection: 'Real-time Rate Limits'
-      required: true
-      validation:
-        min: 10000
-        max: 600000
-      order: 1
-    max:
-      type: integer
-      value: 250
-      description: 'Maximum real-time requests (VNC, terminal, WebSocket) per time window'
-      section: 'Performance'
-      subsection: 'Real-time Rate Limits'
-      required: true
-      validation:
-        min: 50
-        max: 10000
-      order: 2
-    message:
-      type: string
-      value: 'Too many real-time requests, please try again later'
-      description: 'Error message shown when real-time rate limit is exceeded'
-      section: 'Performance'
-      subsection: 'Real-time Rate Limits'
       required: true
       order: 3
 
