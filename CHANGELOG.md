@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/Makr91/hyperweaver-server/compare/v0.9.0...v0.9.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* remove orphaned realtime rate-limit config and stale zoneweaver config header ([faece2d](https://github.com/Makr91/hyperweaver-server/commit/faece2d3226c351f23b7c2491558dc4d7623f172))
+
 ## [0.9.0](https://github.com/Makr91/hyperweaver-server/compare/v0.8.1...v0.9.0) (2026-07-02)
 
 
