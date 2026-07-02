@@ -781,13 +781,13 @@ router.get('/api/health', standardLimiter, (req, res) => {
   });
 });
 
-// Serve static files from the Vite app build directory - Protected with static file rate limiting (CodeQL flagged)
-router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'web/dist')));
+// Serve the Hyperweaver UI build artifact (fetched into ./ui) - Protected with static file rate limiting (CodeQL flagged)
+router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'ui')));
 
 // Catch all handler: send back Vite's index.html file for client-side routing - Protected with static file rate limiting (CodeQL flagged)
 router.get('/ui/*splat', staticFileLimiter, (req, res) => {
   void req;
-  res.sendFile(path.join(process.cwd(), 'web/dist/index.html'));
+  res.sendFile(path.join(process.cwd(), 'ui/index.html'));
 });
 
 export default router;

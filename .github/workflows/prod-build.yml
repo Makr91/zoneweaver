@@ -43,11 +43,12 @@ jobs:
       - name: Install Node.js dependencies
         run: npm ci
 
-      - name: Install web dependencies
-        run: cd web && npm ci
-
-      - name: Build frontend
-        run: npm run build
+      - name: Fetch Hyperweaver UI artifact
+        run: |
+          UI_VERSION=$(node -p "require('./package.json').hyperweaverUiVersion")
+          echo "Fetching Hyperweaver UI v${UI_VERSION}"
+          mkdir -p ui
+          curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | tar -xz -C ui
 
       - name: Generate OpenAPI documentation
         run: npm run generate-docs
@@ -66,8 +67,8 @@ jobs:
         env:
           JEKYLL_ENV: production
 
-      - name: Bundle documentation into web build
-        run: cp -r _site web/dist/docs
+      - name: Bundle documentation into UI
+        run: cp -r _site ui/docs
 
       - name: Set Debian package variables
         run: |
@@ -78,13 +79,13 @@ jobs:
 
       - name: Create Debian package structure
         run: |
-          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver/web,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
+          mkdir -p "${PACKAGE_NAME}_${VERSION}_${ARCH}"/{opt/zoneweaver,etc/zoneweaver,etc/systemd/system,var/lib/zoneweaver,var/log/zoneweaver,usr/share/man/man8,usr/share/man/man5,DEBIAN}
 
       - name: Copy application files to Debian package
         run: |
           cp -r controllers models routes auth config utils scripts index.js package.json "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
           cp -r node_modules "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/"
-          cp -r web/dist "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/web/dist"
+          cp -r ui "${PACKAGE_NAME}_${VERSION}_${ARCH}/opt/zoneweaver/ui"
 
       - name: Copy configuration files to Debian package
         run: |
@@ -169,13 +170,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${TAG_NAME}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
-
-      - name: Package and upload Hyperweaver UI artifact
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          tar -czf "hyperweaver-ui-${VERSION}.tar.gz" -C web/dist .
-          gh release upload "${TAG_NAME}" "hyperweaver-ui-${VERSION}.tar.gz" --clobber
 
       #      - name: Upload OmniOS package to release (PARKED)
       #        env:

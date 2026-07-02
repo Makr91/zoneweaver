@@ -21,16 +21,14 @@ core
 
 # production
 /build
-web/dist
+
+# Fetched Hyperweaver UI artifact (downloaded by scripts/fetch-ui.js)
+/ui/
 
 # Debian packaging artifacts
 zoneweaver_*_*/
 zoneweaver-dev_*_*/
 *.deb
-
-# Vite build cache
-web/.vite
-web/node_modules/.vite
 
 # misc
 .DS_Store

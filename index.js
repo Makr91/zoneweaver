@@ -62,8 +62,8 @@ app.use(express.json({ limit: '50mb' })); // Support large JSON payloads
 
 // Note: Multer middleware removed — proxy servers stream data directly without buffering
 
-// Serve static files from the React app build
-app.use(express.static('./web/dist'));
+// Serve the Hyperweaver UI build artifact (fetched into ./ui by scripts/fetch-ui.js)
+app.use(express.static('./ui'));
 
 // Database and models initialization - wait for migrations to complete
 const ServerModel = db.server;
@@ -240,7 +240,7 @@ app.get('/api-docs/swagger.json', (req, res) => {
 // Handle React Router routes - serve index.html for all non-API routes - Protected with static file rate limiting (CodeQL flagged)
 app.get('*splat', staticFileLimiter, (req, res) => {
   void req;
-  res.sendFile('./web/dist/index.html', { root: '.' });
+  res.sendFile('./ui/index.html', { root: '.' });
 });
 
 /**

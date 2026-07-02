@@ -55,7 +55,7 @@ mkdir -p "$DESTDIR"
 #   config/
 #   utils/
 #   scripts/
-#   web/dist/
+#   ui/
 #   node_modules/
 #   startup.sh
 #   shutdown.sh
@@ -65,7 +65,7 @@ mkdir -p "$DESTDIR"
 # /var/log/zoneweaver/
 
 build_app() {
-    logmsg "Building Zoneweaver frontend"
+    logmsg "Preparing Zoneweaver server build"
     
     # Set up environment for OmniOS/Solaris
     export MAKE=gmake
@@ -81,12 +81,12 @@ build_app() {
     
     # Install dependencies
     MAKE=gmake logcmd npm ci
-    pushd web >/dev/null
-    MAKE=gmake logcmd npm ci
-    popd >/dev/null
     
-    # Build frontend
-    logcmd npm run build
+    # Fetch the Hyperweaver UI artifact into ui/
+    UI_VERSION=$(node -p "require('./package.json').hyperweaverUiVersion")
+    logmsg "Fetching Hyperweaver UI v${UI_VERSION}"
+    rm -rf ui && mkdir -p ui
+    curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | gtar -xz -C ui
     
     # Install production dependencies only
     MAKE=gmake logcmd npm ci --omit=dev
@@ -112,10 +112,9 @@ install_app() {
         fi
     done
     
-    # Copy built frontend
-    if [ -d "$SRCDIR/web/dist" ]; then
-        logcmd mkdir -p web
-        logcmd cp -r $SRCDIR/web/dist web/
+    # Copy fetched Hyperweaver UI
+    if [ -d "$SRCDIR/ui" ]; then
+        logcmd cp -r $SRCDIR/ui ui
     fi
     
     # Copy node_modules (production only)

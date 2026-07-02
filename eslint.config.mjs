@@ -7,7 +7,7 @@ export default [
   // Ignore patterns
   {
     ignores: [
-      'web/**/*', // Frontend has its own ESLint config
+      'ui/**/*', // Fetched Hyperweaver UI build artifact
       'node_modules/**/*', // Dependencies
       'dist/**/*', // Build output
       'build/**/*', // Build output

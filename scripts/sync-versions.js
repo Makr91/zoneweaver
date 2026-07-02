@@ -3,12 +3,11 @@
 import fs from 'fs';
 
 /**
- * Synchronize version between root package.json, web/package.json, and web/.env
- * This ensures both frontend and backend always have the same version
+ * Synchronize the server version across its swagger config, production config,
+ * and the release-please manifest.
  */
 
 const rootPackagePath = './package.json';
-const webPackagePath = './web/package.json';
 const swaggerConfigPath = './config/swagger.js';
 const productionConfigPath = './packaging/config/production-config.yaml';
 const releasePleaseManifestPath = './.release-please-manifest.json';
@@ -18,12 +17,7 @@ try {
   const rootPackage = JSON.parse(fs.readFileSync(rootPackagePath, 'utf8'));
   const rootVersion = rootPackage.version;
 
-  // 1. Update web package.json
-  const webPackage = JSON.parse(fs.readFileSync(webPackagePath, 'utf8'));
-  webPackage.version = rootVersion;
-  fs.writeFileSync(webPackagePath, `${JSON.stringify(webPackage, null, 2)}\n`);
-
-  // 2. Update swagger config
+  // Update swagger config
   let swaggerConfig = fs.readFileSync(swaggerConfigPath, 'utf8');
   swaggerConfig = swaggerConfig.replace(
     /version:\s*['"`][^'"`]*['"`]/g,
@@ -53,7 +47,6 @@ try {
 
   console.log(`✅ Synchronized versions to ${rootVersion}`);
   console.log(`   - Root: ${rootVersion}`);
-  console.log(`   - Web:  ${rootVersion}`);
   console.log(`   - Swagger: ${rootVersion}`);
   console.log(`   - Production Config: ${rootVersion}`);
   console.log(`   - Release Please Manifest: ${rootVersion}`);

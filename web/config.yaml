@@ -1,8 +1,0 @@
-# Hyperweaver UI — local dev-server configuration (read by vite.config.js).
-# These values only affect `vite` / `vite preview` during development; the built
-# SPA talks to whichever backend serves it at runtime, not to anything in here.
-server:
-  # Port the Vite dev server listens on.
-  port: 3000
-  # Backend that the dev server proxies /api (and console WebSockets) to.
-  api_target: http://localhost:3443
