@@ -2,7 +2,7 @@
   "name": "zoneweaver",
   "version": "0.8.1",
   "description": "Zoneweaver API - NodeJS backend and Vite based frontend",
-  "hyperweaverUiVersion": "0.9.0",
+  "hyperweaverUiVersion": "0.10.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
