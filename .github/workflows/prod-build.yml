@@ -143,18 +143,18 @@ jobs:
 
       - name: Upload Debian package to repository server
         run: |
-          rsync -av hyperweaver-server_*.deb startcloud@172.17.204.177:/tmp/
+          rsync -av hyperweaver-server_*.deb startcloud@66.6.204.177:/tmp/
 
       - name: Add package to repository pool
         run: |
-          ssh startcloud@172.17.204.177 "
+          ssh startcloud@66.6.204.177 "
             mkdir -p /local/public/debian/pool/main/h/hyperweaver-server
             cp /tmp/hyperweaver-server_*.deb /local/public/debian/pool/main/h/hyperweaver-server/
           "
 
       - name: Create multi-suite directory structure
         run: |
-          ssh startcloud@172.17.204.177 "
+          ssh startcloud@66.6.204.177 "
             cd /local/public/debian
             mkdir -p dists/bookworm/main/binary-amd64
             mkdir -p dists/trixie/main/binary-amd64
@@ -162,7 +162,7 @@ jobs:
 
       - name: Update repository Packages files for all suites
         run: |
-          ssh startcloud@172.17.204.177 "
+          ssh startcloud@66.6.204.177 "
             cd /local/public/debian
             for suite in bookworm trixie; do
               dpkg-scanpackages --arch amd64 pool/ > dists/\$suite/main/binary-amd64/Packages
@@ -172,7 +172,7 @@ jobs:
 
       - name: Generate Release files for all suites
         run: |
-          ssh startcloud@172.17.204.177 "
+          ssh startcloud@66.6.204.177 "
             cd /local/public/debian
             for suite in bookworm trixie; do
               cd dists/\$suite
@@ -183,7 +183,7 @@ jobs:
 
       - name: Create stable distribution with proper Release file
         run: |
-          ssh startcloud@172.17.204.177 "
+          ssh startcloud@66.6.204.177 "
             cd /local/public/debian/dists
             rm -rf stable 2>/dev/null || true
             cp -r trixie stable
@@ -193,7 +193,7 @@ jobs:
 
       - name: Sign repository for all suites including stable
         run: |
-          ssh startcloud@172.17.204.177 "
+          ssh startcloud@66.6.204.177 "
             cd /local/public/debian
             for suite in bookworm trixie stable; do
               cd dists/\$suite
@@ -208,4 +208,4 @@ jobs:
 
       - name: Cleanup temporary files
         run: |
-          ssh startcloud@172.17.204.177 "rm -f /tmp/hyperweaver-server_*.deb"
+          ssh startcloud@66.6.204.177 "rm -f /tmp/hyperweaver-server_*.deb"

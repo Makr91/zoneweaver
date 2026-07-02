@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0](https://github.com/Makr91/hyperweaver-server/compare/v0.8.1...v1.0.0) (2026-07-02)
+## [0.9.0](https://github.com/Makr91/hyperweaver-server/compare/v0.8.1...v0.9.0) (2026-07-02)
 
 
 ### ⚠ BREAKING CHANGES
