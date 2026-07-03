@@ -1092,15 +1092,17 @@ class SettingsController {
    * @returns {{ field?: Object, error?: string }}
    */
   static resolveCollectionField(config, dottedPath) {
-    const unsafe = ['__proto__', 'prototype', 'constructor'];
     const segments = String(dottedPath || '').split('.');
 
-    if (segments.length === 0 || segments.some(seg => !seg || unsafe.includes(seg))) {
+    if (segments.length === 0 || segments.some(seg => !seg)) {
       return { error: 'Invalid collection path' };
     }
 
     let node = config;
     for (const seg of segments) {
+      if (seg === '__proto__' || seg === 'constructor' || seg === 'prototype') {
+        return { error: 'Invalid collection path' };
+      }
       if (!node || typeof node !== 'object') {
         return { error: `Collection not found: ${dottedPath}` };
       }
