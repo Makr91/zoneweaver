@@ -2,7 +2,7 @@
   "name": "hyperweaver-server",
   "version": "0.9.4",
   "description": "Hyperweaver Server - Node control plane that serves the Hyperweaver UI, authenticates users, and proxies/aggregates host agents",
-  "hyperweaverUiVersion": "0.10.5",
+  "hyperweaverUiVersion": "0.10.6",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -33,7 +33,7 @@
     "axios": "^1.15.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.2",

@@ -771,6 +771,10 @@ class SettingsController {
     // Helper function to set nested value by path
     const setNestedValue = (obj, keyPath, value) => {
       const keys = keyPath.split('.');
+      const unsafe = ['__proto__', 'prototype', 'constructor'];
+      if (keys.some(seg => unsafe.includes(seg))) {
+        throw new Error(`Unsafe config key path: ${keyPath}`);
+      }
       let current = obj;
 
       // Navigate to the parent object
@@ -949,10 +953,18 @@ class SettingsController {
     try {
       const { filename } = req.params;
       const configDir = path.dirname(SettingsController.configPath);
-      const backupPath = path.join(configDir, filename);
 
-      // Verify backup file exists and is a valid backup
-      if (!filename.startsWith('config.yaml.backup.') || !fs.existsSync(backupPath)) {
+      // Sanitize with basename + strict allowlist to block path traversal
+      const safeName = path.basename(filename);
+      if (!/^config\.yaml\.backup\.\d+$/.test(safeName)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Backup file not found',
+        });
+      }
+
+      const backupPath = path.join(configDir, safeName);
+      if (!fs.existsSync(backupPath)) {
         return res.status(404).json({
           success: false,
           message: 'Backup file not found',
@@ -967,7 +979,7 @@ class SettingsController {
       fs.copyFileSync(backupPath, SettingsController.configPath);
 
       log.settings.info('Configuration restored from backup', {
-        filename,
+        filename: safeName,
         user: req.user.username,
         role: req.user.role,
         backupCreated: path.basename(restoreBackupPath),
@@ -1029,10 +1041,18 @@ class SettingsController {
     try {
       const { filename } = req.params;
       const configDir = path.dirname(SettingsController.configPath);
-      const backupPath = path.join(configDir, filename);
 
-      // Verify backup file exists and is a valid backup
-      if (!filename.startsWith('config.yaml.backup.') || !fs.existsSync(backupPath)) {
+      // Sanitize with basename + strict allowlist to block path traversal
+      const safeName = path.basename(filename);
+      if (!/^config\.yaml\.backup\.\d+$/.test(safeName)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Backup file not found',
+        });
+      }
+
+      const backupPath = path.join(configDir, safeName);
+      if (!fs.existsSync(backupPath)) {
         return res.status(404).json({
           success: false,
           message: 'Backup file not found',
@@ -1043,7 +1063,7 @@ class SettingsController {
       fs.unlinkSync(backupPath);
 
       log.settings.info('Backup deleted', {
-        filename,
+        filename: safeName,
         user: req.user.username,
         role: req.user.role,
       });
@@ -1337,6 +1357,10 @@ class SettingsController {
   static updateCollectionItem(req, res) {
     try {
       const { key } = req.params;
+      const unsafe = ['__proto__', 'prototype', 'constructor'];
+      if (!key || unsafe.includes(key)) {
+        return res.status(400).json({ success: false, message: 'Invalid item key' });
+      }
       const { values } = req.body;
       const config = loadConfig();
       const { field, error } = SettingsController.resolveCollectionField(config, req.params.path);
@@ -1392,6 +1416,10 @@ class SettingsController {
   static deleteCollectionItem(req, res) {
     try {
       const { key } = req.params;
+      const unsafe = ['__proto__', 'prototype', 'constructor'];
+      if (!key || unsafe.includes(key)) {
+        return res.status(400).json({ success: false, message: 'Invalid item key' });
+      }
       const config = loadConfig();
       const { field, error } = SettingsController.resolveCollectionField(config, req.params.path);
       if (error) {
