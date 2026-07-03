@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.4](https://github.com/Makr91/hyperweaver-server/compare/v0.9.3...v0.9.4) (2026-07-03)
+
+
+### Bug Fixes
+
+* dev ci/cd ([6ea77a0](https://github.com/Makr91/hyperweaver-server/commit/6ea77a03fc7b3b850091d7cd5352517f506524fd))
+* pin Hyperweaver UI 0.10.4 ([0caf5e5](https://github.com/Makr91/hyperweaver-server/commit/0caf5e576390b06c4ffc015093ca3ddbad6fe8ad))
+* pin Hyperweaver UI 0.10.4 ([6a436c1](https://github.com/Makr91/hyperweaver-server/commit/6a436c10178d6fbe852e01533bf7b983b194f1f9))
+* serve /docs from the UI artifact and retire the Jekyll pipeline ([77c48cb](https://github.com/Makr91/hyperweaver-server/commit/77c48cb8aa10cf70a9624899937800cc3dd8bfa1))
+
 ## [0.9.3](https://github.com/Makr91/hyperweaver-server/compare/v0.9.2...v0.9.3) (2026-07-03)
 
 
