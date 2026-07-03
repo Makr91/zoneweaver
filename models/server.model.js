@@ -161,21 +161,9 @@ export default sequelize => {
     return `${this.protocol}://${this.hostname}:${this.port}`;
   };
 
-  Server.prototype.getDisplayName = function () {
-    return `${this.hostname}:${this.port} (${this.protocol})`;
-  };
-
   // Instance methods
   Server.prototype.updateLastUsed = function () {
     return this.update({ last_used: new Date() });
-  };
-
-  Server.prototype.deactivate = function () {
-    return this.update({ is_active: false });
-  };
-
-  Server.prototype.activate = function () {
-    return this.update({ is_active: true });
   };
 
   // Poll the agent's public /status endpoint (dual-mode plan §3.1): slim identity +
@@ -487,12 +475,6 @@ export default sequelize => {
     }
   };
 
-  Server.findByHostPortProtocol = function (hostname, port, protocol) {
-    return this.withScope('withApiKey').findOne({
-      where: { hostname, port, protocol },
-    });
-  };
-
   Server.getAllServers = function () {
     return this.withScope('byLastUsed').findAll();
   };
@@ -612,56 +594,6 @@ export default sequelize => {
         throw new Error(`Bootstrap failed: ${error.message}`, { cause: error });
       }
     }
-  };
-
-  Server.makeRequest = async function (hostname, port, protocol, path, options = {}) {
-    const server = await this.findByHostPortProtocol(hostname, port, protocol);
-    if (!server) {
-      throw new Error(`Server ${hostname}:${port} not found`);
-    }
-
-    return server.makeRequest(path, options);
-  };
-
-  // ===== MISSING METHODS FROM ORIGINAL SQLite ServerModel =====
-  // These methods were lost during the SQLite-to-Sequelize conversion
-
-  /**
-   * Get server by hostname, port, and protocol
-   * @param {string} hostname - Server hostname
-   * @param {number} port - Server port
-   * @param {string} protocol - Server protocol
-   * @returns {Promise<Object|null>} Server record or null
-   */
-  Server.getServer = function (hostname, port, protocol) {
-    return this.findByHostPortProtocol(hostname, port, protocol);
-  };
-
-  /**
-   * Get API key for a server
-   * @param {string} hostname - Server hostname
-   * @param {number} port - Server port
-   * @param {string} protocol - Server protocol
-   * @returns {Promise<string|null>} API key or null
-   */
-  Server.getApiKey = async function (hostname, port, protocol) {
-    const server = await this.findByHostPortProtocol(hostname, port, protocol);
-    return server?.api_key || null;
-  };
-
-  /**
-   * Update last used timestamp for a server (static version)
-   * @param {string} hostname - Server hostname
-   * @param {number} port - Server port
-   * @param {string} protocol - Server protocol
-   * @returns {Promise<boolean>} Success status
-   */
-  Server.updateLastUsed = async function (hostname, port, protocol) {
-    const [updated] = await this.update(
-      { last_used: new Date() },
-      { where: { hostname, port, protocol } }
-    );
-    return updated > 0;
   };
 
   /**
