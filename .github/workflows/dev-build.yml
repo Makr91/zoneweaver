@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
@@ -57,26 +57,6 @@ jobs:
           echo "Fetching Hyperweaver UI v${UI_VERSION}"
           mkdir -p ui
           curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | tar -xz -C ui
-
-      - name: Generate OpenAPI documentation
-        run: npm run generate-docs
-
-      - name: Install Ruby and Jekyll for documentation build
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ruby-full build-essential zlib1g-dev libffi-dev
-          sudo gem install bundler
-          bundle config set --local path 'vendor/bundle'
-          bundle config set --local without 'development'
-          bundle install
-
-      - name: Build documentation site with Jekyll
-        run: bundle exec jekyll build
-        env:
-          JEKYLL_ENV: production
-
-      - name: Bundle documentation into UI
-        run: cp -r _site ui/docs
 
       - name: Install production dependencies
         run: npm ci --omit=dev
