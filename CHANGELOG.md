@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.3](https://github.com/Makr91/hyperweaver-server/compare/v0.9.2...v0.9.3) (2026-07-03)
+
+
+### Bug Fixes
+
+* finish zoneweaver-agent rename references and retire zapi-era JWT audience ([17e7e14](https://github.com/Makr91/hyperweaver-server/commit/17e7e142d77b81350562b7a5684b4edba3d49604))
+* stuff ([da36d27](https://github.com/Makr91/hyperweaver-server/commit/da36d2750d41af7e145f701c938fe9ba3926d4fc))
+* Updating frontend to help implement new WS TIcketing system ([854714b](https://github.com/Makr91/hyperweaver-server/commit/854714b7bf8e281aea06f5a412ee04f4b670ff3a))
+
 ## [0.9.2](https://github.com/Makr91/hyperweaver-server/compare/v0.9.1...v0.9.2) (2026-07-03)
 
 
