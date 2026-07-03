@@ -94,7 +94,7 @@ aux_links:
   'View on GitHub':
     - 'https://github.com/Makr91/hyperweaver-server'
   'Zoneweaver API':
-    - 'https://zoneweaver-api.startcloud.com'
+    - 'https://zoneweaver-agent.startcloud.com'
 aux_links_new_tab: true
 
 # Footer content

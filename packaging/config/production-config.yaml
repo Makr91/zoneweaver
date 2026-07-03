@@ -623,7 +623,7 @@ authentication:
 
   jwt_audience:
     type: string
-    value: 'zoneweaver-api'
+    value: 'hyperweaver-ui'
     description: 'JWT token audience identifier'
     section: 'Authentication'
     subsection: 'JWT Settings'

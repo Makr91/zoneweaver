@@ -287,7 +287,7 @@ export default sequelize => {
         dataSize = JSON.stringify(options.data).length;
       }
 
-      log.server.info('Starting zoneweaver-api request', {
+      log.server.info('Starting agent request', {
         server: `${this.hostname}:${this.port}`,
         path,
         method: options.method || 'GET',
