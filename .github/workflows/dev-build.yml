@@ -136,7 +136,7 @@ jobs:
           gh release upload "v${VERSION}-dev" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: 'development-packages'
           path: '*.deb'
