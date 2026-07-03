@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.5](https://github.com/Makr91/hyperweaver-server/compare/v0.9.4...v0.9.5) (2026-07-03)
+
+
+### Bug Fixes
+
+* block prototype pollution in collection path traversal ([58b2eb1](https://github.com/Makr91/hyperweaver-server/commit/58b2eb106f2e55cf35a0de0f91ba74925ca94d89))
+* bump dev build and release please ([e2ec93d](https://github.com/Makr91/hyperweaver-server/commit/e2ec93dc8e046de88a1cd604d57f7263ec3ea7e0))
+* github template issues ([f93597e](https://github.com/Makr91/hyperweaver-server/commit/f93597ed5a58fefaf476ca9899d1b653600053f6))
+* last two codeql issues ([a7a1b47](https://github.com/Makr91/hyperweaver-server/commit/a7a1b47fc323e74b50f73189cb6b83f16b9b6bfc))
+* updating deps and addressing codeql issues ([5fd3d1a](https://github.com/Makr91/hyperweaver-server/commit/5fd3d1a3b126191e63f7484a9cd1b7b83da9e76d))
+
 ## [0.9.4](https://github.com/Makr91/hyperweaver-server/compare/v0.9.3...v0.9.4) (2026-07-03)
 
 
