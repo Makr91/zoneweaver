@@ -50,25 +50,8 @@ jobs:
           mkdir -p ui
           curl -fsSL "https://github.com/MarkProminic/hyperweaver-ui/releases/download/v${UI_VERSION}/hyperweaver-ui-${UI_VERSION}.tar.gz" | tar -xz -C ui
 
-      - name: Generate OpenAPI documentation
+      - name: Generate OpenAPI spec (published as a release asset)
         run: npm run generate-docs
-
-      - name: Install Ruby and Jekyll for documentation build
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ruby-full build-essential zlib1g-dev libffi-dev
-          sudo gem install bundler
-          bundle config set --local path 'vendor/bundle'
-          bundle config set --local without 'development'
-          bundle install
-
-      - name: Build documentation site with Jekyll
-        run: bundle exec jekyll build
-        env:
-          JEKYLL_ENV: production
-
-      - name: Bundle documentation into UI
-        run: cp -r _site ui/docs
 
       - name: Set Debian package variables
         run: |
@@ -135,11 +118,11 @@ jobs:
             sudo apt install gh -y
           fi
 
-      - name: Upload Debian package to release
+      - name: Upload Debian package and OpenAPI spec to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${TAG_NAME}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" --clobber
+          gh release upload "${TAG_NAME}" "${PACKAGE_NAME}_${VERSION}_${ARCH}.deb" openapi.json --clobber
 
       - name: Upload Debian package to repository server
         run: |

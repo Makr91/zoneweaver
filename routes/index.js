@@ -508,6 +508,20 @@ router.get('/api/health', standardLimiter, (req, res) => {
   });
 });
 
+// Docs ship inside the Hyperweaver UI artifact (as ui/docs) and are served by the
+// root static mount in index.js. Static wins for every existing file, so this
+// handler only fires when the docs are NOT bundled (e.g. a dev checkout, or a UI
+// artifact built before docs bundling) — say so plainly instead of falling through
+// to the SPA catch-all, which would render a blank app shell.
+router.use('/docs', staticFileLimiter, (req, res) => {
+  void req;
+  res.status(503).json({
+    error: 'Documentation not bundled in this build',
+    details:
+      'The docs site is bundled into the Hyperweaver UI artifact (ui/docs) at UI build time; serve a UI artifact that includes it (hyperweaverUiVersion >= 0.10.5).',
+  });
+});
+
 // Serve the Hyperweaver UI build artifact (fetched into ./ui) - Protected with static file rate limiting (CodeQL flagged)
 router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'ui')));
 

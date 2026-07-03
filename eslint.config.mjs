@@ -14,11 +14,6 @@ export default [
       'coverage/**/*', // Test coverage
       '**/*.min.js', // Minified/vendored files anywhere (not just repo root)
       'packaging/**/*', // Packaging files
-      'docs/**/*', // Documentation
-      '_sass/**/*', // Jekyll sass files
-      '_site/**/*', // Jekyll build output (generated site + vendored theme/lunr JS)
-      'vendor/**/*', // Jekyll Ruby gem bundle
-      '.jekyll-cache/**/*', // Jekyll build cache
       'logs/**/*', // Log files
       '**/*.log', // Log files
     ],
