@@ -269,8 +269,10 @@ const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, lo
 /**
  * Proxy a simple (non-VNC) session WS upgrade for /api/agents/:id/{backendPath}.
  * backendPath is the agent's root-mounted path (zlogin/term/ssh/logs-stream/tasks).
+ * search is the client's query string, forwarded verbatim so the agent-minted WS
+ * ticket (?ticket=…) reaches the agent for verification.
  */
-const handleAgentWsUpgrade = async (id, backendPath, request, socket, head, logContext) => {
+const handleAgentWsUpgrade = async (id, backendPath, search, request, socket, head, logContext) => {
   const server = await resolveAgentForWs(id);
   if (!server || !server.api_key) {
     log.websocket.error('WebSocket: agent not found or missing API key', { id, backendPath });
@@ -278,7 +280,7 @@ const handleAgentWsUpgrade = async (id, backendPath, request, socket, head, logC
     return;
   }
 
-  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/${backendPath}`;
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/${backendPath}${search}`;
   log.websocket.info('WebSocket: connecting to agent backend', { ...logContext, backendUrl });
 
   await createSimpleWsProxy(request, socket, head, backendUrl, server.api_key, {
@@ -290,9 +292,9 @@ const handleAgentWsUpgrade = async (id, backendPath, request, socket, head, logC
 /**
  * Create VNC WebSocket proxy with binary subprotocol support for a resolved agent.
  */
-const createVncWsProxy = async (server, zoneName, request, socket, head) => {
+const createVncWsProxy = async (server, zoneName, search, request, socket, head) => {
   const { WebSocket, WebSocketServer } = await import('ws');
-  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/websockify`;
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/websockify${search}`;
 
   log.websocket.info('Connecting to backend VNC WebSocket', { backendUrl });
 
@@ -378,14 +380,14 @@ const createVncWsProxy = async (server, zoneName, request, socket, head) => {
 /**
  * Proxy a VNC websockify WS upgrade for /api/agents/:id/zones/:zone/vnc/websockify.
  */
-const handleAgentVncUpgrade = async (id, zoneName, request, socket, head) => {
+const handleAgentVncUpgrade = async (id, zoneName, search, request, socket, head) => {
   const server = await resolveAgentForWs(id);
   if (!server || !server.api_key) {
     log.websocket.error('WebSocket VNC: agent not found or missing API key', { id, zoneName });
     socket.destroy();
     return;
   }
-  await createVncWsProxy(server, zoneName, request, socket, head);
+  await createVncWsProxy(server, zoneName, search, request, socket, head);
 };
 
 /**
@@ -396,14 +398,22 @@ const handleAgentVncUpgrade = async (id, zoneName, request, socket, head) => {
 const handleWebSocketUpgrade = async (request, socket, head) => {
   try {
     const url = new URL(request.url, `https://${request.headers.host}`);
-    const { pathname } = url;
+    // search is forwarded verbatim to the agent backend (WS ticket auth rides ?ticket=…)
+    const { pathname, search } = url;
 
     // /api/agents/:id/zones/:zone/vnc/websockify
     const vncMatch = pathname.match(
       /^\/api\/agents\/(?<id>[^/]+)\/zones\/(?<zone>[^/]+)\/vnc\/websockify/
     );
     if (vncMatch) {
-      await handleAgentVncUpgrade(vncMatch.groups.id, vncMatch.groups.zone, request, socket, head);
+      await handleAgentVncUpgrade(
+        vncMatch.groups.id,
+        vncMatch.groups.zone,
+        search,
+        request,
+        socket,
+        head
+      );
       return;
     }
 
@@ -415,6 +425,7 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
       await handleAgentWsUpgrade(
         taskMatch.groups.id,
         `tasks/${taskMatch.groups.taskId}/stream`,
+        search,
         request,
         socket,
         head,
@@ -431,6 +442,7 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
       await handleAgentWsUpgrade(
         logsMatch.groups.id,
         `logs/stream/${logsMatch.groups.sessionId}`,
+        search,
         request,
         socket,
         head,
@@ -447,6 +459,7 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
       await handleAgentWsUpgrade(
         sessionMatch.groups.id,
         `${sessionMatch.groups.type}/${sessionMatch.groups.sessionId}`,
+        search,
         request,
         socket,
         head,
