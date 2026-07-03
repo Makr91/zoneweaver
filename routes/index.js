@@ -342,6 +342,13 @@ router.get('/api/invitations/validate/:code', standardLimiter, AuthController.va
 router.post('/api/servers', adminLimiter, authenticate, requireAdmin, ServerController.addServer);
 router.get('/api/servers', adminLimiter, authenticate, ServerController.getAllServers);
 router.post('/api/servers/test', adminLimiter, authenticate, ServerController.testServer);
+router.patch(
+  '/api/servers/:serverId',
+  adminLimiter,
+  authenticate,
+  requireAdmin,
+  ServerController.updateServer
+);
 router.delete(
   '/api/servers/:serverId',
   adminLimiter,

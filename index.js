@@ -237,7 +237,15 @@ const resolveAgentForWs = async id => {
 /**
  * Create bidirectional WebSocket proxy for simple (non-VNC) sessions
  */
-const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, logContext) => {
+const createSimpleWsProxy = async (
+  request,
+  socket,
+  head,
+  backendUrl,
+  apiKey,
+  allowInsecure,
+  logContext
+) => {
   const { WebSocket, WebSocketServer } = await import('ws');
   const wss = new WebSocketServer({ noServer: true });
   const backendWs = new WebSocket(backendUrl, {
@@ -245,6 +253,8 @@ const createSimpleWsProxy = async (request, socket, head, backendUrl, apiKey, lo
       Authorization: `Bearer ${apiKey}`,
       'User-Agent': 'Hyperweaver-Server/1.0',
     },
+    // Honored for wss:// (passed through to https.request), ignored for ws://
+    rejectUnauthorized: !allowInsecure,
   });
 
   backendWs.on('error', err => {
@@ -283,10 +293,18 @@ const handleAgentWsUpgrade = async (id, backendPath, search, request, socket, he
   const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/${backendPath}${search}`;
   log.websocket.info('WebSocket: connecting to agent backend', { ...logContext, backendUrl });
 
-  await createSimpleWsProxy(request, socket, head, backendUrl, server.api_key, {
-    ...logContext,
-    id,
-  });
+  await createSimpleWsProxy(
+    request,
+    socket,
+    head,
+    backendUrl,
+    server.api_key,
+    server.allow_insecure,
+    {
+      ...logContext,
+      id,
+    }
+  );
 };
 
 /**
@@ -314,6 +332,8 @@ const createVncWsProxy = async (server, zoneName, search, request, socket, head)
     perMessageDeflate: false,
     extensions: {},
     compression: 'DISABLED',
+    // Honored for wss:// (passed through to https.request), ignored for ws://
+    rejectUnauthorized: !server.allow_insecure,
   });
 
   backendWs.on('error', err => {
@@ -406,9 +426,11 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
       /^\/api\/agents\/(?<id>[^/]+)\/zones\/(?<zone>[^/]+)\/vnc\/websockify/
     );
     if (vncMatch) {
+      // Decode the pathname segment exactly once — createVncWsProxy re-encodes it once;
+      // the agent decodes once, so passing the raw segment through double-encodes it.
       await handleAgentVncUpgrade(
         vncMatch.groups.id,
-        vncMatch.groups.zone,
+        decodeURIComponent(vncMatch.groups.zone),
         search,
         request,
         socket,

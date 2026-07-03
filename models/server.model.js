@@ -213,14 +213,6 @@ export default sequelize => {
     return result;
   };
 
-  Server.prototype.testConnection = async function () {
-    const result = await this.fetchStatus();
-    if (result.success) {
-      await this.updateLastUsed();
-    }
-    return result;
-  };
-
   // Encode path segments with special handling for FMRI service paths
   const encodeFmriPath = pathStr => {
     if (
@@ -540,6 +532,27 @@ export default sequelize => {
     }
   };
 
+  // Probe a backend's public /status directly — no registry row required (the
+  // add-form's Test Connection runs before the server exists). Same result shape
+  // as fetchStatus.
+  Server.probeStatus = async function (hostname, port, protocol, allowInsecure = false) {
+    try {
+      const response = await axios.get(`${protocol}://${hostname}:${port}/status`, {
+        timeout: 5000,
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: !allowInsecure,
+        }),
+      });
+      return { success: true, status: response.status, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message,
+        status: error.response?.status || null,
+      };
+    }
+  };
+
   Server.bootstrapApiKey = async function ({
     hostname,
     port,
@@ -659,21 +672,6 @@ export default sequelize => {
   Server.removeServer = async function (serverId) {
     const deleted = await this.destroy({ where: { id: serverId } });
     return deleted > 0;
-  };
-
-  /**
-   * Test server connectivity (static version)
-   * @param {string} hostname - Server hostname
-   * @param {number} port - Server port
-   * @param {string} protocol - Server protocol
-   * @returns {Promise<Object>} Test result
-   */
-  Server.testServer = async function (hostname, port, protocol) {
-    const server = await this.findByHostPortProtocol(hostname, port, protocol);
-    if (!server) {
-      return { success: false, error: 'Server not found' };
-    }
-    return server.testConnection();
   };
 
   return Server;
