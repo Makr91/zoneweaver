@@ -125,8 +125,13 @@ export default sequelize => {
             exclude: ['api_key'],
           },
         },
-        // Include API key (for internal operations)
+        // Include API key (for internal operations). Still scoped to active rows —
+        // a deactivated server must not resolve for proxying/WS (the empty-attrs
+        // form would otherwise drop the defaultScope's is_active filter).
         withApiKey: {
+          where: {
+            is_active: true,
+          },
           attributes: {},
         },
         // Order by last used
