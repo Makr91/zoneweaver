@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.2](https://github.com/Makr91/hyperweaver-server/compare/v0.9.1...v0.9.2) (2026-07-03)
+
+
+### Bug Fixes
+
+* bump bundled Hyperweaver UI to 0.10.1 ([29cec0b](https://github.com/Makr91/hyperweaver-server/commit/29cec0b101725a5f875e8c3447497074b0d6a649))
+* releasing latest UI ([c4629a7](https://github.com/Makr91/hyperweaver-server/commit/c4629a7711fc5077c3ecb15ff6addab72ade5a1b))
+
 ## [0.9.1](https://github.com/Makr91/hyperweaver-server/compare/v0.9.0...v0.9.1) (2026-07-02)
 
 
