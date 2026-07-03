@@ -771,15 +771,14 @@ class SettingsController {
     // Helper function to set nested value by path
     const setNestedValue = (obj, keyPath, value) => {
       const keys = keyPath.split('.');
-      const unsafe = ['__proto__', 'prototype', 'constructor'];
-      if (keys.some(seg => unsafe.includes(seg))) {
-        throw new Error(`Unsafe config key path: ${keyPath}`);
-      }
       let current = obj;
 
       // Navigate to the parent object
       for (let i = 0; i < keys.length - 1; i++) {
         const key = keys[i];
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          throw new Error(`Unsafe config key path: ${keyPath}`);
+        }
         if (!current[key]) {
           current[key] = {};
         }
@@ -787,6 +786,9 @@ class SettingsController {
       }
 
       const finalKey = keys[keys.length - 1];
+      if (finalKey === '__proto__' || finalKey === 'constructor' || finalKey === 'prototype') {
+        throw new Error(`Unsafe config key path: ${keyPath}`);
+      }
 
       // If the target is a metadata object with a 'value' property, update it
       if (
@@ -1290,9 +1292,15 @@ class SettingsController {
   static createCollectionItem(req, res) {
     try {
       const { key, values } = req.body;
-      const unsafe = ['__proto__', 'prototype', 'constructor'];
 
-      if (!key || !/^[a-z0-9_]+$/i.test(key) || unsafe.includes(key)) {
+      if (
+        !key ||
+        typeof key !== 'string' ||
+        key === '__proto__' ||
+        key === 'constructor' ||
+        key === 'prototype' ||
+        !/^[a-z0-9_]+$/i.test(key)
+      ) {
         return res.status(400).json({
           success: false,
           message: 'Item key must contain only letters, numbers, and underscores',
@@ -1357,8 +1365,7 @@ class SettingsController {
   static updateCollectionItem(req, res) {
     try {
       const { key } = req.params;
-      const unsafe = ['__proto__', 'prototype', 'constructor'];
-      if (!key || unsafe.includes(key)) {
+      if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') {
         return res.status(400).json({ success: false, message: 'Invalid item key' });
       }
       const { values } = req.body;
@@ -1416,8 +1423,7 @@ class SettingsController {
   static deleteCollectionItem(req, res) {
     try {
       const { key } = req.params;
-      const unsafe = ['__proto__', 'prototype', 'constructor'];
-      if (!key || unsafe.includes(key)) {
+      if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') {
         return res.status(400).json({ success: false, message: 'Invalid item key' });
       }
       const config = loadConfig();
