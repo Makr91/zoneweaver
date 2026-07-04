@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.6](https://github.com/Makr91/hyperweaver-server/compare/v0.9.5...v0.9.6) (2026-07-04)
+
+
+### Bug Fixes
+
+* dead code sweep ([3e1b718](https://github.com/Makr91/hyperweaver-server/commit/3e1b718e4f6847f10cdc3f19596e278103b2404f))
+* UI, API, Docs OIDC CHnages ([04bab86](https://github.com/Makr91/hyperweaver-server/commit/04bab86a4df8c037b0386d08d26b121e4d7539ba))
+
 ## [0.9.5](https://github.com/Makr91/hyperweaver-server/compare/v0.9.4...v0.9.5) (2026-07-03)
 
 
