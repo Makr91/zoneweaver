@@ -189,6 +189,15 @@ class DatabaseMigrations {
           allowNull: true,
         },
       },
+      {
+        // App-JWT revocation cutoff (real SLO / logout). Null for existing users = no
+        // revocation in effect; set to now() on logout so pre-logout tokens are rejected.
+        name: 'tokens_valid_after',
+        definition: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+      },
     ];
 
     const columnResults = await Promise.all(

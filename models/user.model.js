@@ -78,6 +78,14 @@ export default sequelize => {
         allowNull: true,
         columnName: 'linked_at',
       },
+      // App-JWT revocation cutoff (real SLO). Any app JWT whose `iat` is older than this is
+      // rejected by the jwt strategy + verifyToken. Set to now() on every logout (local,
+      // RP-initiated, OIDC back-channel, admin force-logout) — see AuthController logout paths.
+      tokens_valid_after: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        columnName: 'tokens_valid_after',
+      },
     },
     {
       // Table options

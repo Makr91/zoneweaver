@@ -11,6 +11,10 @@ import { log } from '../utils/Logger.js';
 // Load config directly to avoid circular dependency with index.js
 const config = loadConfig();
 
+// Discovered OIDC provider Configurations (openid-client), keyed by provider name. Populated at
+// setup; read by the oidcTokenRefresh middleware for the token endpoint + server metadata.
+const oidcConfigurations = new Map();
+
 /**
  * Passport.js configuration for ZoneWeaver
  */
@@ -30,16 +34,31 @@ passport.use(
         const { user: UserModel } = db;
         const user = await UserModel.findByPk(payload.userId);
 
-        if (!user) {
+        // Reject missing AND deactivated users — a deactivated account's JWT must die
+        // immediately, not live out its 24h (this is the "still active" check the fresh
+        // findByPk exists for).
+        if (!user || user.is_active === false) {
           return done(null, false, { message: 'Invalid token - user not found' });
         }
 
-        // Return user object in same format as existing middleware
+        // Real SLO: reject any token issued before the user's revocation cutoff (set to now()
+        // on every logout). payload.iat is seconds since epoch; tokens_valid_after is a Date.
+        if (
+          user.tokens_valid_after &&
+          payload.iat &&
+          payload.iat * 1000 < new Date(user.tokens_valid_after).getTime()
+        ) {
+          return done(null, false, { message: 'Token revoked' });
+        }
+
+        // Return user object in same format as existing middleware (+ auth_provider, C1:
+        // prefer the JWT claim, fall back to the user's stored base provider for legacy tokens).
         return done(null, {
           userId: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
+          auth_provider: payload.auth_provider || user.auth_provider || 'local',
         });
       } catch (error) {
         log.auth.error('JWT Strategy error', { error: error.message });
@@ -281,23 +300,16 @@ const handleExternalUser = async (provider, profile) => {
     const email = extractProfileEmail(profile, provider);
     const subject = extractProfileSubject(profile, provider);
 
+    // Credentials are stored under the FULL provider identity — 'ldap' or 'oidc-<name>' (the
+    // configured oidc_providers yaml key) — so each provider gets its own subject namespace:
+    // two IdPs issuing the same `sub` must NOT resolve to the same credential (cross-provider
+    // login-as / wrong-user back-channel revocation). users.auth_provider keeps the BASE type
+    // (contract C1); only the credential rows carry the specific provider.
+
     log.auth.debug('External user identified', { provider, email, subject });
 
     // 1. Check if credential already exists (existing external user)
     log.auth.debug('Looking for existing credential', { provider, subject });
-
-    const allCredentials = await CredentialModel.findAll({
-      where: { provider },
-      attributes: ['id', 'provider', 'subject', 'user_id', 'external_email'],
-    });
-    log.auth.debug('All credentials in DB for provider', {
-      provider,
-      credentials: allCredentials.map(c => ({
-        id: c.id,
-        subject: c.subject,
-        email: c.external_email,
-      })),
-    });
 
     const credential = await CredentialModel.findByProviderAndSubject(provider, subject);
     log.auth.debug('Credential search result', {
@@ -321,6 +333,18 @@ const handleExternalUser = async (provider, profile) => {
     // 2. Check if user exists by email (link external account to existing user)
     let user = await UserModel.findByEmail(email);
     if (user) {
+      // §4 (do-NOT-copy from BoxVault): require a provider-verified email before linking an
+      // OIDC identity onto an existing account — otherwise an attacker who registers an OIDC
+      // account with the victim's (unverified) email could take over the victim's local account.
+      // Subject-based linking (branch 1 above) is unaffected; this gate guards only email linking.
+      if (provider.startsWith('oidc-') && profile.email_verified !== true) {
+        log.auth.warn('Refusing to link OIDC identity to existing account: email not verified', {
+          provider,
+          email,
+        });
+        throw new Error('Cannot link this identity: the provider did not verify the email address');
+      }
+
       log.auth.info('Linking external account to existing user', { provider, email });
 
       const baseProvider = getBaseProvider(provider);
@@ -508,7 +532,17 @@ const setupSingleOidcProvider = async (providerName, providerConfig) => {
     responseType,
   });
 
-  const oidcConfig = await client.discovery(new URL(issuer), clientId, clientSecret);
+  // Authenticate to the token endpoint with client_secret_basic (HTTP Basic). Be explicit:
+  // the STARTcloud IdP registers every secret'd client as CLIENT_SECRET_BASIC only, and relying
+  // on openid-client's default auth method yields an invalid_client "authentication_method"
+  // mismatch at the token exchange. Matches the refresh/revoke middleware (also Basic).
+  const oidcConfig = await client.discovery(
+    new URL(issuer),
+    clientId,
+    clientSecret,
+    client.ClientSecretBasic(clientSecret)
+  );
+  oidcConfigurations.set(providerName, oidcConfig);
 
   const strategyName = `oidc-${providerName}`;
   passport.use(
@@ -519,8 +553,10 @@ const setupSingleOidcProvider = async (providerName, providerConfig) => {
         config: oidcConfig,
         scope,
         callbackURL: `${config.frontend.frontend_url.value}/api/auth/oidc/callback`,
+        // Pass req so the verify callback can stash the OIDC tokens in express-session.
+        passReqToCallback: true,
       },
-      async (tokens, verified) => {
+      async (req, tokens, verified) => {
         try {
           log.auth.info('OIDC authentication successful for provider', { providerName });
 
@@ -538,6 +574,38 @@ const setupSingleOidcProvider = async (providerName, providerConfig) => {
             providerName,
             username: result.username,
           });
+
+          // SAFE token model (contract §4): stash the OIDC tokens SERVER-SIDE in the session —
+          // NEVER in the app JWT. FavoritesController + the oidcTokenRefresh middleware read
+          // req.session.oidc; the browser only ever receives its normal app JWT. `sid` is kept for
+          // OIDC back-channel-logout correlation (T9); `expires_at` drives the refresh check.
+          if (req.session) {
+            // Fresh session id at the login privilege boundary (fixation guard). Safe here:
+            // the openid-client state key was already consumed before the verify callback,
+            // and the oidcProvider/oidcSilent flags were read by the controller beforehand.
+            await new Promise((resolve, reject) => {
+              req.session.regenerate(err => (err ? reject(err) : resolve()));
+            });
+            let expiresAt = Date.now() + 30 * 60 * 1000;
+            if (typeof tokens.expires_in === 'number') {
+              expiresAt = Date.now() + tokens.expires_in * 1000;
+            } else if (typeof userinfo.exp === 'number') {
+              expiresAt = userinfo.exp * 1000;
+            }
+            req.session.oidc = {
+              // Bind the stash to the user it was minted for. Every consumer (favorites,
+              // refresh, logout) verifies this against the requesting JWT's userId — without
+              // it, a shared browser session could serve one account's IdP tokens to another
+              // account's app JWT (cross-account claims/favorites leak).
+              userId: result.id,
+              provider: strategyName,
+              access_token: tokens.access_token,
+              id_token: tokens.id_token,
+              refresh_token: tokens.refresh_token,
+              expires_at: expiresAt,
+              sid: userinfo.sid,
+            };
+          }
 
           return verified(null, result);
         } catch (error) {
@@ -629,5 +697,13 @@ const setupOidcProviders = async () => {
 // Initialize strategies if enabled
 await setupLdapStrategy();
 await setupOidcProviders();
+
+/**
+ * Get the discovered OIDC Configuration for a provider (used by the token-refresh middleware
+ * to reach the token endpoint + server metadata).
+ * @param {string} providerName - Provider identifier (without the `oidc-` prefix)
+ * @returns {import('openid-client').Configuration|undefined}
+ */
+export const getOidcConfiguration = providerName => oidcConfigurations.get(providerName);
 
 export default passport;

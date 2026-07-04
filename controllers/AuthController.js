@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../index.js';
 import { log } from '../utils/Logger.js';
 import { testLdapConnection } from '../auth/ldapClient.js';
+import { buildRpLogoutUrl, revokeOidcGrant, verifyLogoutToken } from '../auth/oidcLogout.js';
 
 // Access Sequelize models
 const { user: UserModel, organization: OrganizationModel, invitation: InvitationModel } = db;
@@ -256,6 +257,23 @@ class AuthController {
       // Check if this is the first user (super-admin)
       const isFirstUser = await UserModel.isFirstUser();
 
+      // Local self-service registration gate. When local_registration_enabled is explicitly
+      // false, refuse the local /register path so users register through the identity provider
+      // instead (the UI routes "Register" to ?register → prompt=create). Exempt: the first-user
+      // (super-admin) bootstrap, and INVITED registrations — the gate targets self-service
+      // signups only, and a bogus inviteCode still fails invite validation downstream (400).
+      if (
+        !isFirstUser &&
+        !inviteCode &&
+        config.authentication?.local_registration_enabled?.value === false
+      ) {
+        return res.status(403).json({
+          success: false,
+          message:
+            'Local registration is disabled. Please register through your identity provider.',
+        });
+      }
+
       // Resolve organization context for registration
       const orgResult = await resolveRegistrationOrganization(
         isFirstUser,
@@ -461,20 +479,28 @@ class AuthController {
       // Update last login
       await user.update({ last_login: new Date() });
 
-      // Generate JWT token
+      // Generate JWT token. auth_provider (C1) is the user-identity axis, carried as a
+      // non-sensitive claim so /api/auth/verify can surface it without a DB round-trip.
+      const authProvider = user.auth_provider || 'local';
       const token = jwt.sign(
         {
           userId: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
+          auth_provider: authProvider,
         },
         config.authentication.jwt_secret.value,
         { expiresIn: '24h' }
       );
 
-      // Set session if using express-session
+      // Fresh session id at the login privilege boundary (session-fixation guard).
+      // Regeneration also drops any OIDC token stash a previous login left in this browser
+      // session — otherwise the new identity could read the previous user's IdP claims.
       if (req.session) {
+        await new Promise((resolve, reject) => {
+          req.session.regenerate(err => (err ? reject(err) : resolve()));
+        });
         req.session.userId = user.id;
         req.session.username = user.username;
         req.session.role = user.role;
@@ -489,6 +515,7 @@ class AuthController {
           username: user.username,
           email: user.email,
           role: user.role,
+          auth_provider: authProvider,
           organizationId: user.organization_id,
           lastLogin: user.last_login,
         },
@@ -598,20 +625,26 @@ class AuthController {
 
       const user = await authenticatePromise;
 
-      // Generate JWT token
+      // Generate JWT token (auth_provider = 'ldap' — the user-identity axis, C1)
       const token = jwt.sign(
         {
           userId: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
+          auth_provider: 'ldap',
         },
         config.authentication.jwt_secret.value,
         { expiresIn: '24h' }
       );
 
-      // Set session if using express-session
+      // Fresh session id at the login privilege boundary (fixation guard); also drops any
+      // OIDC token stash a previous login left behind (cross-account guard — same reasoning
+      // as the local login path).
       if (req.session) {
+        await new Promise((resolve, reject) => {
+          req.session.regenerate(err => (err ? reject(err) : resolve()));
+        });
         req.session.userId = user.id;
         req.session.username = user.username;
         req.session.role = user.role;
@@ -632,8 +665,8 @@ class AuthController {
           username: user.username,
           email: user.email,
           role: user.role,
+          auth_provider: 'ldap',
           organizationId: user.organization_id,
-          authProvider: 'ldap',
           lastLogin: user.last_login,
         },
       });
@@ -742,6 +775,30 @@ class AuthController {
         req.session.oidcProvider = provider;
       }
 
+      // Optional auth-request hints (mutually exclusive; register wins):
+      //  - ?register / ?screen_hint=register → prompt=create: land the user on the IdP's
+      //    registration form (OIDC "Initiating User Registration"; the STARTcloud IdP's
+      //    RegistrationHintDetector honors it). This is how "Register" routes to the provider.
+      //  - ?silent (or ?prompt=none) → prompt=none: seamless SSO. If the browser already has an
+      //    IdP session the IdP returns a code with no UI (auto-login); otherwise it returns
+      //    login_required, which handleOidcCallback turns into a quiet fall-back to /ui/login.
+      const wantsRegister =
+        req.query.register !== undefined || req.query.screen_hint === 'register';
+      const wantsSilent =
+        !wantsRegister && (req.query.silent !== undefined || req.query.prompt === 'none');
+      let authOptions;
+      if (wantsRegister) {
+        authOptions = { prompt: 'create' };
+      } else if (wantsSilent) {
+        authOptions = { prompt: 'none' };
+      }
+
+      // Remember whether this was a silent attempt so the callback can distinguish a
+      // "not signed in at the IdP" outcome (benign) from a real OIDC failure.
+      if (req.session) {
+        req.session.oidcSilent = wantsSilent;
+      }
+
       // Use passport to authenticate with specific OIDC provider
       const passport = (await import('passport')).default;
       const strategyName = `oidc-${provider}`;
@@ -749,9 +806,11 @@ class AuthController {
       log.auth.info('Starting OIDC authentication flow', {
         provider,
         strategyName,
+        register: wantsRegister,
+        silent: wantsSilent,
       });
 
-      return passport.authenticate(strategyName)(req, res, next);
+      return passport.authenticate(strategyName, authOptions)(req, res, next);
     } catch (error) {
       log.auth.error('OIDC start login error', {
         error: error.message,
@@ -815,10 +874,14 @@ class AuthController {
     try {
       // Get provider from session (stored when authentication started)
       const provider = req.session?.oidcProvider;
+      // Was this a silent (prompt=none) attempt? If so, "not signed in at the IdP" is the
+      // expected answer, not a failure — fall back to the login page quietly (no error flash).
+      const silent = req.session?.oidcSilent === true;
 
-      // Clear provider from session
+      // Clear provider + silent flag from session
       if (req.session) {
         delete req.session.oidcProvider;
+        delete req.session.oidcSilent;
       }
 
       if (!provider) {
@@ -850,9 +913,29 @@ class AuthController {
 
       return passport.authenticate(strategyName, {
         session: false,
-        failureRedirect: `/ui/login?error=oidc_failed&provider=${provider}`,
+        // Silent attempts must fail QUIET: passport handles strategy-level failures (e.g.
+        // access_denied) via this redirect directly, so the silent case needs the benign
+        // marker here too — the error-callback below only sees thrown errors.
+        failureRedirect: silent
+          ? '/ui/login?sso=unavailable'
+          : `/ui/login?error=oidc_failed&provider=${provider}`,
       })(req, res, err => {
         if (err) {
+          // Silent SSO: the IdP reports no usable session (login / interaction / consent /
+          // account-selection required). That's the "not signed in" answer, not a failure —
+          // fall back to the login page with a benign marker so the UI shows it without an
+          // error and (per its one-shot guard) doesn't loop.
+          const oidcErr = err.error || err.code;
+          const benignSilent = [
+            'login_required',
+            'interaction_required',
+            'consent_required',
+            'account_selection_required',
+          ].includes(oidcErr);
+          if (silent && benignSilent) {
+            log.auth.info('Silent OIDC auth: no active provider session', { provider, oidcErr });
+            return res.redirect('/ui/login?sso=unavailable');
+          }
           log.auth.error('OIDC callback error', {
             provider,
             error: err.message,
@@ -863,17 +946,23 @@ class AuthController {
         const { user } = req;
 
         if (!user) {
+          // In silent mode a fail (e.g. access_denied) also means "not signed in" — quiet fallback.
+          if (silent) {
+            log.auth.info('Silent OIDC auth: not authenticated at provider', { provider });
+            return res.redirect('/ui/login?sso=unavailable');
+          }
           log.auth.error('OIDC callback: No user object found', { provider });
           return res.redirect(`/ui/login?error=oidc_failed&provider=${provider}`);
         }
 
-        // Generate JWT token for OIDC user
+        // Generate JWT token for OIDC user. auth_provider = `oidc-<name>` (C1, user-identity axis).
         const token = jwt.sign(
           {
             userId: user.id,
             username: user.username,
             email: user.email,
             role: user.role,
+            auth_provider: `oidc-${provider}`,
           },
           config.authentication.jwt_secret.value,
           { expiresIn: config.authentication.jwt_expiration?.value || '24h' }
@@ -892,8 +981,11 @@ class AuthController {
           email: user.email,
         });
 
-        // Redirect to frontend with token (frontend will handle storage)
-        // Use the request's protocol and host to build the correct redirect URL
+        // Hand the app JWT to the SPA via the URL FRAGMENT (#token=) — the agreed design (§5.2 #1
+        // / §5.1 #2): fragments aren't sent in Referer headers or written to server access logs,
+        // so the bearer token doesn't leak. REQUIRES the UI's AuthCallback to read location.hash
+        // (NOT ?token=/searchParams) — a coordinated flip both repos ship together. Only the app
+        // JWT rides here; the OIDC tokens stay server-side in req.session.oidc (§4).
         const { protocol } = req;
         const host = req.get('host');
         const frontendUrl = `${protocol}://${host}`;
@@ -901,7 +993,7 @@ class AuthController {
         log.auth.debug('OIDC redirect URL', {
           frontendUrl: `${frontendUrl}/ui/auth/callback`,
         });
-        return res.redirect(`${frontendUrl}/ui/auth/callback?token=${encodeURIComponent(token)}`);
+        return res.redirect(`${frontendUrl}/ui/auth/callback#token=${encodeURIComponent(token)}`);
       });
     } catch (error) {
       log.auth.error('OIDC callback error', { error: error.message });
@@ -944,27 +1036,173 @@ class AuthController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static logout(req, res) {
+  static async logout(req, res) {
     try {
-      // Destroy session if using express-session
+      const userId = req.user?.userId || req.session?.userId;
+      const sessionOidc = req.session?.oidc;
+      // Two modes (BoxVault-style toggle): FEDERATED (default) logs out of the IdP too —
+      // revokes the OIDC grant + returns the RP-initiated end-session URL, ending SSO everywhere;
+      // LOCAL logs out of Hyperweaver only and leaves the STARTcloud SSO session intact for a
+      // seamless re-login. Selected by `local` (POST body or ?local=true). The UI wires the toggle.
+      const localOnly = req.body?.local === true || req.query?.local === 'true';
+
+      // BOTH modes revoke this user's app JWTs (real SLO — set the revocation cutoff so every
+      // token issued before now is rejected next request; session.destroy alone would not, since
+      // app-auth is stateless Bearer JWT). This is what actually ends the Hyperweaver session.
+      if (userId) {
+        try {
+          await UserModel.update({ tokens_valid_after: new Date() }, { where: { id: userId } });
+        } catch (revokeError) {
+          log.auth.warn('Failed to set token revocation cutoff on logout', {
+            error: revokeError.message,
+            userId,
+          });
+        }
+      }
+
+      // FEDERATED only: best-effort revoke the grant at the provider + build the RP-initiated
+      // end-session URL (returned as redirect_url). LOCAL skips both, so the IdP SSO survives.
+      // The session's OIDC stash is only acted on when it belongs to THIS user — a shared
+      // browser session can hold another account's tokens (JWT user ≠ session OIDC user).
+      let redirectUrl = null;
+      if (!localOnly && sessionOidc?.provider && sessionOidc.userId === userId) {
+        await revokeOidcGrant(sessionOidc);
+        redirectUrl = buildRpLogoutUrl(sessionOidc);
+      }
+
+      // Destroy the app session (clears req.session.oidc + local session state) in both modes.
       if (req.session) {
-        req.session.destroy(err => {
-          if (err) {
-            log.auth.error('Session destruction error', { error: err.message });
-          }
+        await new Promise(resolve => {
+          req.session.destroy(err => {
+            if (err) {
+              log.auth.error('Session destruction error', { error: err.message });
+            }
+            resolve();
+          });
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
-        message: 'Logout successful',
+        message: localOnly ? 'Logged out of Hyperweaver' : 'Logout successful',
+        scope: localOnly ? 'local' : 'federated',
+        redirect_url: redirectUrl,
       });
     } catch (error) {
       log.auth.error('Logout error', { error: error.message });
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Internal server error during logout',
       });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/auth/oidc/backchannel-logout:
+   *   post:
+   *     summary: OIDC Back-Channel Logout receiver
+   *     description: Server-to-server endpoint the OIDC provider POSTs a signed logout_token to when a user's SSO session ends. Verifies the token and revokes the matched user's app JWTs (real Single Logout). Public (no app auth) — trust comes from the token's signature/aud.
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/x-www-form-urlencoded:
+   *           schema:
+   *             type: object
+   *             required: [logout_token]
+   *             properties:
+   *               logout_token:
+   *                 type: string
+   *                 description: Signed OIDC back-channel logout token (JWT)
+   *     responses:
+   *       200:
+   *         description: Logout processed (user tokens revoked if matched)
+   *       400:
+   *         description: Missing or invalid logout_token
+   */
+  static async handleBackchannelLogout(req, res) {
+    // Spec: back-channel logout responses must not be cached.
+    res.set('Cache-Control', 'no-store');
+
+    const logoutToken = req.body?.logout_token;
+    if (!logoutToken) {
+      return res
+        .status(400)
+        .json({ error: 'invalid_request', error_description: 'missing logout_token' });
+    }
+
+    try {
+      const { providerName, sub, sid } = await verifyLogoutToken(logoutToken);
+
+      // Correlate to a hyperweaver user via the stored federated credential — keyed by the
+      // FULL provider identity ('oidc-<name>'), so a logout_token from provider X can never
+      // revoke a user linked through provider Y with a colliding subject.
+      const { credential: CredentialModel } = db;
+      const credential = sub
+        ? await CredentialModel.findByProviderAndSubject(`oidc-${providerName}`, sub)
+        : null;
+      const user = credential ? await UserModel.findByPk(credential.user_id) : null;
+
+      if (user) {
+        // Real SLO (model (a), per-user): revoke all this user's app JWTs.
+        await user.update({ tokens_valid_after: new Date() });
+        log.auth.info('Back-channel logout: revoked user app tokens', {
+          providerName,
+          userId: user.id,
+          sid,
+        });
+      } else {
+        // Valid token but no local user — nothing to revoke; still a 200 (spec).
+        log.auth.warn('Back-channel logout: no matching local user', { providerName, sub, sid });
+      }
+
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      log.auth.warn('Back-channel logout rejected', { error: error.message });
+      return res.status(400).json({ error: 'invalid_request', error_description: error.message });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/auth/oidc/issuers:
+   *   get:
+   *     summary: Get trusted OIDC issuer URLs (public)
+   *     description: List the issuer URLs of enabled OIDC providers (C5), for client-side use.
+   *     tags: [Authentication]
+   *     responses:
+   *       200:
+   *         description: Trusted issuers
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 issuers:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       provider: { type: string }
+   *                       issuer: { type: string }
+   *       500:
+   *         description: Internal server error
+   */
+  static getOidcIssuers(req, res) {
+    void req;
+    try {
+      const oidcProviders = config.authentication?.oidc_providers?.value || {};
+      const issuers = [];
+      Object.entries(oidcProviders).forEach(([providerName, providerConfig]) => {
+        if (providerConfig.enabled?.value && providerConfig.issuer?.value) {
+          issuers.push({ provider: providerName, issuer: providerConfig.issuer.value });
+        }
+      });
+      return res.json({ issuers });
+    } catch (error) {
+      log.auth.error('Get trusted issuers error', { error: error.message });
+      return res.status(500).json({ issuers: [] });
     }
   }
 
@@ -1283,24 +1521,43 @@ class AuthController {
 
       const decoded = jwt.verify(token, config.authentication.jwt_secret.value);
 
-      // Get fresh user data
+      // Get fresh user data. Deactivated accounts fail verification immediately — their
+      // JWTs must not live out the remaining lifetime (mirrors the jwt strategy).
       const user = await UserModel.findByPk(decoded.userId);
 
-      if (!user) {
+      if (!user || user.is_active === false) {
         return res.status(401).json({
           success: false,
           message: 'Invalid token - user not found',
         });
       }
 
+      // Real SLO: reject tokens issued before the user's revocation cutoff (set on logout).
+      if (
+        user.tokens_valid_after &&
+        decoded.iat &&
+        decoded.iat * 1000 < new Date(user.tokens_valid_after).getTime()
+      ) {
+        return res.status(401).json({
+          success: false,
+          message: 'Token revoked',
+        });
+      }
+
       return res.json({
         success: true,
         valid: true,
+        // C6: always deliver the aggregate-root label post-login (toggle-independent), so the
+        // UI has the real name even when public_datacenter_label suppresses it pre-auth.
+        datacenter_label: config.branding?.datacenter_label?.value || 'Hyperweaver',
         user: {
           id: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
+          // C1: prefer the JWT's specific value (e.g. `oidc-<name>`); fall back to the user's
+          // stored base provider for pre-existing tokens minted before this claim existed.
+          auth_provider: decoded.auth_provider || user.auth_provider || 'local',
         },
       });
     } catch (error) {
@@ -1673,8 +1930,11 @@ class AuthController {
         });
       }
 
+      // Deactivate AND revoke: setting the token cutoff kills the user's outstanding app
+      // JWTs on their next request (admin force-logout) — is_active alone would leave any
+      // already-issued token working until the auth layer's inactive check catches it.
       const [affectedRows] = await UserModel.update(
-        { is_active: false },
+        { is_active: false, tokens_valid_after: new Date() },
         { where: { id: userId, is_active: true } }
       );
       const success = affectedRows > 0;
@@ -2109,6 +2369,10 @@ class AuthController {
       res.json({
         success: true,
         methods,
+        // Whether the local self-service /register form should be shown. When false, the UI
+        // routes "Register" to the identity provider (?register → prompt=create). Defaults true.
+        local_registration_enabled:
+          config.authentication?.local_registration_enabled?.value !== false,
       });
     } catch (error) {
       log.auth.error('Get auth methods error', { error: error.message });

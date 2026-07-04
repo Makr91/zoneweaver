@@ -1,4 +1,5 @@
 import axios from 'axios';
+import https from 'https';
 import db from '../models/index.js';
 import { log } from '../utils/Logger.js';
 
@@ -589,6 +590,13 @@ class ServerController {
         timeout: streamConfig.timeout,
         maxBodyLength: streamConfig.maxBodyLength || Infinity,
         maxContentLength: Infinity,
+        // Honor allow_insecure on streaming forwards too (this path previously set no agent, so
+        // it ignored the flag). Fresh agent, no keep-alive / session cache → fails closed.
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: !server.allow_insecure,
+          keepAlive: false,
+          maxCachedSessions: 0,
+        }),
         ...(streamConfig.maxRedirects !== undefined && { maxRedirects: streamConfig.maxRedirects }),
       });
 

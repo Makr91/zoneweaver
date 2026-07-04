@@ -1,0 +1,82 @@
+name: Bump Hyperweaver UI pin
+
+# Keeps hyperweaverUiVersion (package.json) in sync with the latest hyperweaver-ui
+# release, opening a `fix:` PR whenever this backend is behind. Merging that PR lets
+# release-please cut a patch release that rebuilds against the new UI artifact (which
+# bundles the current docs at /docs).
+#
+# Triggers, most to least immediate:
+#   - repository_dispatch (hyperweaver-ui-release): instant, if the UI repo notifies
+#     us on release (optional — the UI side sends the dispatch; not required here).
+#   - schedule: a daily safety net so a release is picked up even without a dispatch.
+#   - workflow_dispatch: manual, with an optional explicit version.
+#
+# Token: uses PIN_BUMP_TOKEN (a PAT) if present so the PR triggers CI; otherwise falls
+# back to GITHUB_TOKEN, which requires "Allow GitHub Actions to create and approve pull
+# requests" (Settings -> Actions -> General) and won't auto-run CI on the PR.
+
+on:
+  repository_dispatch:
+    types: [hyperweaver-ui-release]
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'hyperweaver-ui version to pin (blank = latest release)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    name: Open UI pin-bump PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Resolve target hyperweaver-ui version
+        id: ver
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${DISPATCH_VERSION:-$INPUT_VERSION}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(gh release view --repo MarkProminic/hyperweaver-ui --json tagName -q .tagName | sed 's/^v//')
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not resolve a hyperweaver-ui version"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Target hyperweaver-ui version: $VERSION"
+
+      - name: Pin hyperweaverUiVersion in package.json
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          CURRENT=$(node -p "require('./package.json').hyperweaverUiVersion")
+          echo "Current: ${CURRENT}  ->  Target: ${VERSION}"
+          sed -i "s/\"hyperweaverUiVersion\": \"[^\"]*\"/\"hyperweaverUiVersion\": \"${VERSION}\"/" package.json
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PIN_BUMP_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: automation/bump-hyperweaver-ui
+          delete-branch: true
+          commit-message: 'fix: bump hyperweaverUiVersion to ${{ steps.ver.outputs.version }}'
+          title: 'fix: bump hyperweaverUiVersion to ${{ steps.ver.outputs.version }}'
+          body: |
+            Automated pin bump to **[hyperweaver-ui ${{ steps.ver.outputs.version }}](https://github.com/MarkProminic/hyperweaver-ui/releases/tag/v${{ steps.ver.outputs.version }})**.
+
+            Merging cuts a patch release that rebuilds this backend against the new UI
+            artifact (which bundles the current Hyperweaver docs at `/docs`).
+
+            _Opened automatically by `.github/workflows/bump-ui-pin.yml`._

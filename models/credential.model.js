@@ -25,13 +25,14 @@ export default function (sequelize) {
         columnName: 'user_id',
       },
       provider: {
+        // Full provider identity: 'ldap' or 'oidc-<name>' where <name> is the configured
+        // oidc_providers yaml key (e.g. 'oidc-startcloud'). Per-provider subject namespaces —
+        // two IdPs issuing the same `sub` must never resolve to the same credential (that
+        // would allow cross-provider login-as and wrong-user back-channel revocation).
         type: DataTypes.STRING(50),
         allowNull: false,
         validate: {
-          isIn: {
-            args: [['ldap', 'oidc', 'oauth2', 'saml']],
-            msg: 'Provider must be a valid authentication provider type',
-          },
+          notEmpty: true,
         },
       },
       subject: {

@@ -175,6 +175,8 @@ export default sequelize => {
         timeout: timeoutMs,
         httpsAgent: new https.Agent({
           rejectUnauthorized: !this.allow_insecure,
+          keepAlive: false,
+          maxCachedSessions: 0,
         }),
       });
       return { success: true, status: response.status, data: response.data };
@@ -323,6 +325,12 @@ export default sequelize => {
 
       const agent = new https.Agent({
         rejectUnauthorized: !this.allow_insecure,
+        // Fail CLOSED when allow_insecure is toggled back off: no keep-alive socket reuse and no
+        // TLS session cache, so a connection once accepted under rejectUnauthorized:false can
+        // never be resumed on an abbreviated handshake (which skips cert re-validation → the
+        // "still loads over self-signed until restart" fail-open).
+        keepAlive: false,
+        maxCachedSessions: 0,
       });
 
       log.server.debug('Making axios request');
@@ -523,6 +531,8 @@ export default sequelize => {
         timeout: 5000,
         httpsAgent: new https.Agent({
           rejectUnauthorized: !allowInsecure,
+          keepAlive: false,
+          maxCachedSessions: 0,
         }),
       });
       return { success: true, status: response.status, data: response.data };

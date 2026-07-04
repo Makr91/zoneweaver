@@ -71,6 +71,11 @@ const options = {
               description: 'User role/permission level',
               example: 'admin',
             },
+            auth_provider: {
+              type: 'string',
+              description: "User identity source (C1): 'local', 'ldap', or 'oidc-<provider>'",
+              example: 'oidc-startcloud',
+            },
             organizationId: {
               type: 'integer',
               description: 'Organization ID (null for super-admin)',

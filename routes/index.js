@@ -3,11 +3,14 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import crypto from 'crypto';
 import axios from 'axios';
-import { authenticate, requireAdmin, requireSuperAdmin } from '../auth/auth.js';
+import { authenticate, optionalAuth, requireAdmin, requireSuperAdmin } from '../auth/auth.js';
 import AuthController from '../controllers/AuthController.js';
 import ServerController from '../controllers/ServerController.js';
 import SettingsController from '../controllers/SettingsController.js';
 import StatusController from '../controllers/StatusController.js';
+import * as FavoritesController from '../controllers/FavoritesController.js';
+import ConfigController from '../controllers/ConfigController.js';
+import { oidcTokenRefresh } from '../auth/oidcTokenRefresh.js';
 import { loadConfig } from '../utils/config.js';
 
 const router = express.Router();
@@ -88,8 +91,21 @@ router.post('/api/auth/login', authLimiter, AuthController.login);
 router.post('/api/auth/ldap', authLimiter, AuthController.ldapLogin);
 // Multiple OIDC provider routes
 router.get('/api/auth/oidc/callback', standardLimiter, AuthController.handleOidcCallback);
+// OIDC Back-Channel Logout receiver (server-to-server; IdP POSTs a signed logout_token). Public
+// — trust is the token signature/aud, not an app session. Needs its own urlencoded parser
+// because the app only mounts express.json() globally. Registered before the GET :provider
+// route for clarity (no collision — this is POST).
+router.post(
+  '/api/auth/oidc/backchannel-logout',
+  standardLimiter,
+  express.urlencoded({ extended: false }),
+  AuthController.handleBackchannelLogout
+);
+// Trusted OIDC issuers (C5, public). MUST precede the GET :provider route so 'issuers' isn't
+// captured as a provider name.
+router.get('/api/auth/oidc/issuers', standardLimiter, AuthController.getOidcIssuers);
 router.get('/api/auth/oidc/:provider', standardLimiter, AuthController.startOidcLogin);
-router.post('/api/auth/logout', standardLimiter, AuthController.logout);
+router.post('/api/auth/logout', standardLimiter, optionalAuth, AuthController.logout);
 router.get('/api/auth/profile', standardLimiter, authenticate, AuthController.getProfile);
 router.post('/api/auth/change-password', authLimiter, authenticate, AuthController.changePassword);
 router.delete(
@@ -101,6 +117,38 @@ router.delete(
 router.get('/api/auth/verify', standardLimiter, AuthController.verifyToken);
 router.get('/api/auth/setup-status', standardLimiter, AuthController.checkSetupStatus);
 router.get('/api/auth/methods', standardLimiter, AuthController.getAuthMethods);
+
+// Favorites + OIDC userinfo claims (profile dropdown). The OIDC access token is read
+// server-side from req.session.oidc (never the app JWT, §4); oidcTokenRefresh refreshes it
+// when near expiry. authenticate first (valid app session), then the refresh middleware.
+router.get(
+  '/api/userinfo/claims',
+  standardLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  FavoritesController.getUserInfoClaims
+);
+router.get(
+  '/api/userinfo/favorites',
+  standardLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  FavoritesController.getEnrichedFavorites
+);
+router.get(
+  '/api/favorites',
+  standardLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  FavoritesController.getFavorites
+);
+router.post(
+  '/api/favorites/save',
+  standardLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  FavoritesController.saveFavorites
+);
 router.post(
   '/api/auth/ldap/test',
   adminLimiter,
@@ -495,6 +543,9 @@ router.post(
 
 // Server identity/status — PUBLIC (login screen + dual-mode probe depend on it) [dual-mode plan §3.2]
 router.get('/api/status', standardLimiter, StatusController.getServerStatus);
+
+// Ticket-system config (C4) — PUBLIC (profile dropdown help-desk link)
+router.get('/api/config/ticket', standardLimiter, ConfigController.getTicketConfig);
 
 // Health check endpoint - Simple health status for restart monitoring
 router.get('/api/health', standardLimiter, (req, res) => {

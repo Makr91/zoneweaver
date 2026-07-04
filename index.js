@@ -2,17 +2,61 @@ import express from 'express';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
+import crypto from 'crypto';
 import { setTimeout as delay } from 'timers/promises';
 import cors from 'cors';
+import axios from 'axios';
 import session from 'express-session';
 import SequelizeStore from './utils/SequelizeSessionStore.js';
 import rateLimit from 'express-rate-limit';
 import router from './routes/index.js';
+import ServerController from './controllers/ServerController.js';
 import db from './models/index.js';
 import { specs, swaggerUi } from './config/swagger.js';
 import { loadConfig } from './utils/config.js';
 import { log, createRequestLogger, generateRequestId } from './utils/Logger.js';
 import { startAgentHealthPoller } from './utils/agentHealthPoller.js';
+
+// Dark Swagger theme shared with the Hyperweaver UI + docs site (config/swagger-theme.css).
+// Read once at module load; injected as swagger-ui-express customCss on /api-docs and
+// on the selected-agent shell below.
+const swaggerCustomCss = fs.readFileSync(
+  new URL('./config/swagger-theme.css', import.meta.url),
+  'utf8'
+);
+
+// Themed shell for the selected-agent API docs (/agent/api-docs). It loads swagger-ui's
+// assets from /api-docs (already served) and its spec from the same-origin relay, reading
+// the selected host id from ?server= in the browser.
+const agentApiDocsHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agent API Documentation</title>
+<link rel="stylesheet" href="/api-docs/swagger-ui.css" />
+<style>${swaggerCustomCss}</style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="/api-docs/swagger-ui-bundle.js"></script>
+<script>
+window.onload = function () {
+  var params = new URLSearchParams(window.location.search);
+  var server = params.get('server');
+  var specUrl = '/agent/api-docs/swagger.json' + (server ? '?server=' + encodeURIComponent(server) : '');
+  window.ui = SwaggerUIBundle({
+    url: specUrl,
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [SwaggerUIBundle.presets.apis],
+    layout: 'BaseLayout',
+    tryItOutEnabled: true,
+  });
+};
+</script>
+</body>
+</html>`;
 
 // Initialize passport after database is ready
 let passport;
@@ -28,6 +72,18 @@ process.on('uncaughtException', err => {
 
 // Load configuration from YAML file
 const config = loadConfig();
+
+// Fail-fast on a weak/placeholder JWT secret (contract §4 — do NOT copy BoxVault's
+// allowInsecureKeySizes:true / unreplaced-literal). HS256 signs BOTH the app JWT and the
+// express-session cookie below, so a missing, placeholder, or short secret forges every session.
+const jwtSecret = config.authentication?.jwt_secret?.value;
+if (!jwtSecret || jwtSecret === '__JWT_SECRET_FROM_FILE__' || jwtSecret.length < 32) {
+  log.app.error(
+    'FATAL: authentication.jwt_secret is missing, the unreplaced placeholder, or too weak ' +
+      '(minimum 32 characters). Set a strong random secret before starting. Refusing to start.'
+  );
+  process.exit(1);
+}
 
 // 🛡️ Static File Rate Limiting Configuration (CodeQL Security Fix)
 // Create rate limiter for static file serving endpoints
@@ -79,13 +135,24 @@ const sessionStore = new SessionStore({
   expiration: 30 * 60 * 1000, // Session expires after 30 minutes (good for OAuth flows)
 });
 
+// Key separation: derive the session-cookie signing key from the JWT secret instead of
+// reusing it verbatim — one master secret in config, two independent per-purpose keys.
+const sessionSecret = crypto
+  .createHash('sha256')
+  .update(`hyperweaver-session:${jwtSecret}`)
+  .digest('hex');
+
 app.use(
   session({
-    secret: config.authentication.jwt_secret.value, // Use existing JWT secret
+    secret: sessionSecret,
     store: sessionStore,
     name: 'hyperweaver-server.sid', // Session cookie name
     resave: false,
     saveUninitialized: false, // Don't save empty sessions
+    // Sliding expiration: re-stamp the 30-minute cookie on every request (the store's touch()
+    // follows it), so the session — and the OIDC token stash that powers favorites — survives
+    // active use instead of dying a fixed 30 minutes after login. Idle 30 min still expires.
+    rolling: true,
     cookie: {
       secure: config.server.ssl_enabled.value, // Use HTTPS cookies if SSL is enabled
       httpOnly: true, // Prevent XSS
@@ -187,7 +254,7 @@ app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
 
   swaggerUi.setup(dynamicSpecs, {
     explorer: true,
-    customCss: '.swagger-ui .topbar { display: none }',
+    customCss: swaggerCustomCss,
     customSiteTitle: 'Hyperweaver Server API Documentation',
     swaggerOptions: {
       url: `${protocol}://${host}/api-docs/swagger.json`,
@@ -210,6 +277,62 @@ app.get('/api-docs/swagger.json', (req, res) => {
   };
   res.setHeader('Content-Type', 'application/json');
   res.send(dynamicSpecs);
+});
+
+// ── Selected-agent API docs (Aggregated mode) ──────────────────────────────
+// The Hyperweaver UI's "Agent API" reference opens /agent/api-docs?server={id},
+// where id is the host selected in the navbar. This themed shell loads swagger-ui
+// from /api-docs and its spec from the relay below.
+app.get('/agent/api-docs', (req, res) => {
+  void req;
+  res.type('html').send(agentApiDocsHtml);
+});
+
+// Relay: fetch the selected agent's own OpenAPI spec server-side (no browser CORS,
+// and NAT'd agents still work since the Server reaches them), then point "Try it out"
+// back through this Server's authenticated agent proxy.
+app.get('/agent/api-docs/swagger.json', async (req, res) => {
+  const id = req.query.server;
+  const stub = message => ({
+    openapi: '3.0.0',
+    info: { title: 'Agent API — unavailable', version: '0.0.0', description: message },
+    paths: {},
+  });
+  res.setHeader('Content-Type', 'application/json');
+  if (!id) {
+    return res.send(
+      stub('No agent selected — pick a host in the navbar, then open the Agent API reference.')
+    );
+  }
+  try {
+    const agent = await ServerController.getAgentById(id);
+    if (!agent) {
+      return res.status(404).send(stub(`No registered agent with id ${id}.`));
+    }
+    if (agent.capabilities?.role && agent.capabilities.role !== 'agent') {
+      return res.status(409).send(stub('The selected backend is not an agent.'));
+    }
+    const specResponse = await axios.get(
+      `${agent.protocol}://${agent.hostname}:${agent.port}/api-docs/swagger.json`,
+      {
+        timeout: 10000,
+        httpsAgent: new https.Agent({ rejectUnauthorized: !agent.allow_insecure }),
+      }
+    );
+    const spec = specResponse.data;
+    spec.servers = [
+      {
+        url: `${req.protocol}://${req.get('host')}/api/agents/${agent.id}`,
+        description: `${agent.entity_name || agent.hostname} — via Hyperweaver Server (authorize with your JWT to try requests)`,
+      },
+    ];
+    return res.send(spec);
+  } catch (error) {
+    log.app.warn('Agent API docs relay failed', { id, error: error.message });
+    return res
+      .status(502)
+      .send(stub(`Could not load the selected agent's API spec: ${error.message}`));
+  }
 });
 
 // Handle React Router routes - serve index.html for all non-API routes - Protected with static file rate limiting (CodeQL flagged)

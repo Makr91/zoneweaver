@@ -72,11 +72,18 @@ class StatusController {
   static getServerStatus(req, res) {
     void req;
     const config = loadConfig();
-    res.json({
+    const payload = {
       role: 'server',
       version,
       auth: enabledAuthMethods(config),
-    });
+    };
+    // C6: expose the aggregate-root label pre-auth ONLY when the operator opts in
+    // (public_datacenter_label). When off, the UI falls back to a generic label pre-auth and
+    // reads the real one post-login from /api/auth/verify.
+    if (config.branding?.public_datacenter_label?.value) {
+      payload.datacenter_label = config.branding?.datacenter_label?.value || 'Hyperweaver';
+    }
+    res.json(payload);
   }
 }
 
