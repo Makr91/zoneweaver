@@ -5,6 +5,12 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { authenticate, optionalAuth, requireAdmin, requireSuperAdmin } from '../auth/auth.js';
 import AuthController from '../controllers/AuthController.js';
+import LdapController from '../controllers/LdapController.js';
+import OidcController from '../controllers/OidcController.js';
+import UserManagementController from '../controllers/UserManagementController.js';
+import OrganizationController from '../controllers/OrganizationController.js';
+import InvitationController from '../controllers/InvitationController.js';
+import MailController from '../controllers/MailController.js';
 import ServerController from '../controllers/ServerController.js';
 import SettingsController from '../controllers/SettingsController.js';
 import StatusController from '../controllers/StatusController.js';
@@ -88,9 +94,9 @@ const staticFileLimiter = rateLimit({
 // Authentication endpoints - Protected with strict rate limiting
 router.post('/api/auth/register', authLimiter, AuthController.register);
 router.post('/api/auth/login', authLimiter, AuthController.login);
-router.post('/api/auth/ldap', authLimiter, AuthController.ldapLogin);
+router.post('/api/auth/ldap', authLimiter, LdapController.ldapLogin);
 // Multiple OIDC provider routes
-router.get('/api/auth/oidc/callback', standardLimiter, AuthController.handleOidcCallback);
+router.get('/api/auth/oidc/callback', standardLimiter, OidcController.handleOidcCallback);
 // OIDC Back-Channel Logout receiver (server-to-server; IdP POSTs a signed logout_token). Public
 // — trust is the token signature/aud, not an app session. Needs its own urlencoded parser
 // because the app only mounts express.json() globally. Registered before the GET :provider
@@ -99,12 +105,12 @@ router.post(
   '/api/auth/oidc/backchannel-logout',
   standardLimiter,
   express.urlencoded({ extended: false }),
-  AuthController.handleBackchannelLogout
+  OidcController.handleBackchannelLogout
 );
 // Trusted OIDC issuers (C5, public). MUST precede the GET :provider route so 'issuers' isn't
 // captured as a provider name.
-router.get('/api/auth/oidc/issuers', standardLimiter, AuthController.getOidcIssuers);
-router.get('/api/auth/oidc/:provider', standardLimiter, AuthController.startOidcLogin);
+router.get('/api/auth/oidc/issuers', standardLimiter, OidcController.getOidcIssuers);
+router.get('/api/auth/oidc/:provider', standardLimiter, OidcController.startOidcLogin);
 router.post('/api/auth/logout', standardLimiter, optionalAuth, AuthController.logout);
 router.get('/api/auth/profile', standardLimiter, authenticate, AuthController.getProfile);
 router.post('/api/auth/change-password', authLimiter, authenticate, AuthController.changePassword);
@@ -112,7 +118,7 @@ router.delete(
   '/api/auth/delete-account',
   authLimiter,
   authenticate,
-  AuthController.deleteSelfAccount
+  UserManagementController.deleteSelfAccount
 );
 router.get('/api/auth/verify', standardLimiter, AuthController.verifyToken);
 router.get('/api/auth/setup-status', standardLimiter, AuthController.checkSetupStatus);
@@ -154,7 +160,7 @@ router.post(
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  AuthController.testLdap
+  LdapController.testLdap
 );
 
 // This needs to be moved out of this file!
@@ -261,35 +267,35 @@ router.get(
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.getAllUsers
+  UserManagementController.getAllUsers
 );
 router.put(
   '/api/admin/users/role',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.updateUserRole
+  UserManagementController.updateUserRole
 );
 router.delete(
   '/api/admin/users/:userId',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.deactivateUser
+  UserManagementController.deactivateUser
 );
 router.put(
   '/api/admin/users/:userId/reactivate',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.reactivateUser
+  UserManagementController.reactivateUser
 );
 router.delete(
   '/api/admin/users/:userId/delete',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  AuthController.deleteUser
+  UserManagementController.deleteUser
 );
 
 // Organization endpoints - Protected with admin rate limiting
@@ -298,54 +304,54 @@ router.get(
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  AuthController.getAllOrganizations
+  OrganizationController.getAllOrganizations
 );
 router.get(
   '/api/organizations/:id',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.getOrganization
+  OrganizationController.getOrganization
 );
 router.put(
   '/api/organizations/:id',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.updateOrganization
+  OrganizationController.updateOrganization
 );
 router.get(
   '/api/organizations/:id/users',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.getOrganizationUsers
+  OrganizationController.getOrganizationUsers
 );
 router.get(
   '/api/organizations/:id/stats',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.getOrganizationStats
+  OrganizationController.getOrganizationStats
 );
 router.get(
   '/api/organizations/check/:name',
   standardLimiter,
-  AuthController.checkOrganizationExists
+  OrganizationController.checkOrganizationExists
 );
 router.put(
   '/api/organizations/:orgId/deactivate',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  AuthController.deactivateOrganization
+  OrganizationController.deactivateOrganization
 );
 router.delete(
   '/api/organizations/:orgId',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  AuthController.deleteOrganization
+  OrganizationController.deleteOrganization
 );
 
 // Invitation endpoints - Protected with admin rate limiting
@@ -354,37 +360,41 @@ router.post(
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.sendInvitation
+  InvitationController.sendInvitation
 );
 router.post(
   '/api/invitations',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.createInvitation
+  InvitationController.createInvitation
 );
 router.get(
   '/api/invitations',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.getInvitations
+  InvitationController.getInvitations
 );
 router.post(
   '/api/invitations/:id/resend',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.resendInvitation
+  InvitationController.resendInvitation
 );
 router.delete(
   '/api/invitations/:id',
   adminLimiter,
   authenticate,
   requireAdmin,
-  AuthController.revokeInvitation
+  InvitationController.revokeInvitation
 );
-router.get('/api/invitations/validate/:code', standardLimiter, AuthController.validateInvitation);
+router.get(
+  '/api/invitations/validate/:code',
+  standardLimiter,
+  InvitationController.validateInvitation
+);
 
 // Server management endpoints - Protected with admin rate limiting
 router.post('/api/servers', adminLimiter, authenticate, requireAdmin, ServerController.addServer);
@@ -549,7 +559,7 @@ router.post(
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  AuthController.testMail
+  MailController.testMail
 );
 
 // Server identity/status — PUBLIC (login screen + dual-mode probe depend on it) [dual-mode plan §3.2]
