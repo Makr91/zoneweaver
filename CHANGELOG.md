@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.7](https://github.com/Makr91/hyperweaver-server/compare/v0.9.6...v0.9.7) (2026-07-06)
+
+
+### Bug Fixes
+
+* refactoring huge files ([39c2236](https://github.com/Makr91/hyperweaver-server/commit/39c22368542cdcca5a206830777e7c4b5e75ac51))
+* refactoring huge files ([2e1a939](https://github.com/Makr91/hyperweaver-server/commit/2e1a939b04161176c3bed49e6a6a57c7418e6829))
+* server.force_secure 308 redirect with pinned HTTPS port, product-naming pass across meta-docs and user-facing strings, resetSettings rewritten to real config keys, dead helper removal, sync-versions stamps dev config and preserves release-please marker, packaging gitignore patterns ([6dca2af](https://github.com/Makr91/hyperweaver-server/commit/6dca2af94a736e3d9a5f4b00ae6c4a3195f583fb))
+* server.force_secure 308 redirect with pinned HTTPS port, product-naming pass across meta-docs and user-facing strings, resetSettings rewritten to real config keys, dead helper removal, sync-versions stamps dev config and preserves release-please marker, packaging gitignore patterns ([e8dd912](https://github.com/Makr91/hyperweaver-server/commit/e8dd9125b2d975043ffccb8a967a2bfaa2d0a3ae))
+
 ## [0.9.6](https://github.com/Makr91/hyperweaver-server/compare/v0.9.5...v0.9.6) (2026-07-04)
 
 
