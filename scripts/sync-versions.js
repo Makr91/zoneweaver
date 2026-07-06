@@ -60,7 +60,9 @@ try {
   console.log(`   - Root: ${rootVersion}`);
   console.log(`   - Swagger: ${rootVersion}`);
   console.log(`   - Production Config: ${rootVersion}`);
-  console.log(`   - Dev Config: ${fs.existsSync(devConfigPath) ? rootVersion : 'not present (CI)'}`);
+  console.log(
+    `   - Dev Config: ${fs.existsSync(devConfigPath) ? rootVersion : 'not present (CI)'}`
+  );
   console.log(`   - Release Please Manifest: ${rootVersion}`);
   console.log(`   - Vite: Using define to inject version at build time`);
 } catch (error) {

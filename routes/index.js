@@ -416,6 +416,17 @@ const AGENT_ADMIN_PREFIXES = [
   'system/fault-management',
   'system/logs',
   'system/syslog',
+  // Host power actions (the host-power surface) — admin per Mark's ruling (2026-07-05):
+  // admins may power hosts, plain users may not. Matches the UI's canPowerOffHosts level.
+  // Read-only /system/host/status and /uptime stay ungated.
+  'system/host/shutdown',
+  'system/host/restart',
+  'system/host/poweroff',
+  'system/host/halt',
+  // Hosts-file read/write and database maintenance (vacuum/analyze/cleanup) — system
+  // configuration surfaces, admin like the rest of this list.
+  'system/hosts',
+  'database',
 ];
 
 const matchesAgentPrefix = (subPath, prefix) =>

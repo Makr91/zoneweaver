@@ -797,7 +797,7 @@ class ServerController {
    * /api/agents/{id}/{path}:
    *   get:
    *     summary: Proxy any request to a registered agent by id
-   *     description: Forwards the request (any HTTP method) to the agent identified by its registry id. The sub-path is passed through verbatim to the agent's root-mounted API. Settings and server-restart sub-paths require super-admin; ZFS ARC, fault-management, logs, and syslog sub-paths require admin.
+   *     description: Forwards the request (any HTTP method) to the agent identified by its registry id. The sub-path is passed through verbatim to the agent's root-mounted API. Settings and server-restart sub-paths require super-admin; host power-action, ZFS ARC, fault-management, logs, syslog, hosts-file, and database-maintenance sub-paths require admin.
    *     tags: [Agent Proxy]
    *     security:
    *       - JwtAuth: []
