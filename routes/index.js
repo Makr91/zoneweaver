@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { authenticate, optionalAuth, requireAdmin, requireSuperAdmin } from '../auth/auth.js';
 import AuthController from '../controllers/AuthController.js';
+import RegistrationController from '../controllers/RegistrationController.js';
+import AccountController from '../controllers/AccountController.js';
 import LdapController from '../controllers/LdapController.js';
 import OidcController from '../controllers/OidcController.js';
 import UserManagementController from '../controllers/UserManagementController.js';
@@ -13,6 +15,9 @@ import InvitationController from '../controllers/InvitationController.js';
 import MailController from '../controllers/MailController.js';
 import ServerController from '../controllers/ServerController.js';
 import SettingsController from '../controllers/SettingsController.js';
+import SslController from '../controllers/SslController.js';
+import BackupController from '../controllers/BackupController.js';
+import CollectionController from '../controllers/CollectionController.js';
 import StatusController from '../controllers/StatusController.js';
 import * as FavoritesController from '../controllers/FavoritesController.js';
 import ConfigController from '../controllers/ConfigController.js';
@@ -92,7 +97,7 @@ const staticFileLimiter = rateLimit({
 });
 
 // Authentication endpoints - Protected with strict rate limiting
-router.post('/api/auth/register', authLimiter, AuthController.register);
+router.post('/api/auth/register', authLimiter, RegistrationController.register);
 router.post('/api/auth/login', authLimiter, AuthController.login);
 router.post('/api/auth/ldap', authLimiter, LdapController.ldapLogin);
 // Multiple OIDC provider routes
@@ -112,8 +117,13 @@ router.post(
 router.get('/api/auth/oidc/issuers', standardLimiter, OidcController.getOidcIssuers);
 router.get('/api/auth/oidc/:provider', standardLimiter, OidcController.startOidcLogin);
 router.post('/api/auth/logout', standardLimiter, optionalAuth, AuthController.logout);
-router.get('/api/auth/profile', standardLimiter, authenticate, AuthController.getProfile);
-router.post('/api/auth/change-password', authLimiter, authenticate, AuthController.changePassword);
+router.get('/api/auth/profile', standardLimiter, authenticate, AccountController.getProfile);
+router.post(
+  '/api/auth/change-password',
+  authLimiter,
+  authenticate,
+  AccountController.changePassword
+);
 router.delete(
   '/api/auth/delete-account',
   authLimiter,
@@ -121,7 +131,7 @@ router.delete(
   UserManagementController.deleteSelfAccount
 );
 router.get('/api/auth/verify', standardLimiter, AuthController.verifyToken);
-router.get('/api/auth/setup-status', standardLimiter, AuthController.checkSetupStatus);
+router.get('/api/auth/setup-status', standardLimiter, RegistrationController.checkSetupStatus);
 router.get('/api/auth/methods', standardLimiter, AuthController.getAuthMethods);
 
 // Favorites + OIDC userinfo claims (profile dropdown). The OIDC access token is read
@@ -484,7 +494,7 @@ router.post(
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.uploadSSLFile
+  SslController.uploadSSLFile
 );
 router.post(
   '/api/settings/reset',
@@ -505,21 +515,21 @@ router.get(
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.getBackups
+  BackupController.getBackups
 );
 router.post(
   '/api/settings/restore/:filename',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.restoreFromBackup
+  BackupController.restoreFromBackup
 );
 router.delete(
   '/api/settings/backups/:filename',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.deleteBackup
+  BackupController.deleteBackup
 );
 
 // Config collection management endpoints (keyed maps, e.g. OIDC providers)
@@ -529,28 +539,28 @@ router.get(
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.getCollection
+  CollectionController.getCollection
 );
 router.post(
   '/api/settings/collections/:path',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.createCollectionItem
+  CollectionController.createCollectionItem
 );
 router.put(
   '/api/settings/collections/:path/:key',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.updateCollectionItem
+  CollectionController.updateCollectionItem
 );
 router.delete(
   '/api/settings/collections/:path/:key',
   adminLimiter,
   authenticate,
   requireSuperAdmin,
-  SettingsController.deleteCollectionItem
+  CollectionController.deleteCollectionItem
 );
 
 // Mail testing endpoint - Protected with admin rate limiting
