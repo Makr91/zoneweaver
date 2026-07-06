@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.8](https://github.com/Makr91/hyperweaver-server/compare/v0.9.7...v0.9.8) (2026-07-06)
+
+
+### Bug Fixes
+
+* 0.10.11 UI Bump ([75a946d](https://github.com/Makr91/hyperweaver-server/commit/75a946d22463f3c194138b26cbe930d2bac401ca))
+* bump ([5809648](https://github.com/Makr91/hyperweaver-server/commit/58096485fe4ca09625822b6a012854a5edd5f0b7))
+* re-point routes to split auth controllers, host-power proxy gate at admin per ruling, pin hyperweaver-ui 0.10.9 ([f9d1285](https://github.com/Makr91/hyperweaver-server/commit/f9d12857cc95944c02f283b4083e634187bfbeb3))
+* split SettingsController and AuthController below 1000 lines, verbatim extraction into Ssl/Backup/Collection/Registration/Account controllers, routes re-pointed ([a58b6f6](https://github.com/Makr91/hyperweaver-server/commit/a58b6f638b28157e3133faa093f176db3ccbb8be))
+* ui bump ([d27d98b](https://github.com/Makr91/hyperweaver-server/commit/d27d98b3ae57c27d53f1ea32e5100a65ebe40273))
+
 ## [0.9.7](https://github.com/Makr91/hyperweaver-server/compare/v0.9.6...v0.9.7) (2026-07-06)
 
 
