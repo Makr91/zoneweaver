@@ -48,7 +48,7 @@ const adminLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// External API proxy - Restrictive (protect downstream Zoneweaver servers)
+// External API proxy - Restrictive (protect downstream agents)
 const apiProxyLimiter = rateLimit({
   windowMs: config.limits?.apiProxy?.windowMs?.value || 60 * 1000,
   limit: config.limits?.apiProxy?.max?.value || 2000,

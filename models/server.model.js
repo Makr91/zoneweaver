@@ -578,7 +578,7 @@ export default sequelize => {
           message: response.data.message,
         };
       }
-      throw new Error('Invalid response from Zoneweaver API Server');
+      throw new Error('Invalid response from the agent');
     } catch (error) {
       if (error.response) {
         const errorMessage =
@@ -594,12 +594,11 @@ export default sequelize => {
           );
         }
 
-        throw new Error(`Zoneweaver API Server error: ${errorMessage}`, { cause: error });
+        throw new Error(`Agent error: ${errorMessage}`, { cause: error });
       } else if (error.code === 'ECONNREFUSED') {
-        throw new Error(
-          'Cannot connect to Zoneweaver API Server. Please check if the server is running.',
-          { cause: error }
-        );
+        throw new Error('Cannot connect to the agent. Please check if it is running.', {
+          cause: error,
+        });
       } else {
         throw new Error(`Bootstrap failed: ${error.message}`, { cause: error });
       }

@@ -150,9 +150,9 @@ class MailController {
                   <p><strong>Invitation expires:</strong> ${expirationDate}</p>
                 </div>
 
-                <p>Hyperweaver is a powerful platform for managing Solaris zones and bhyve virtual machines. By joining this organization, you'll have access to:</p>
+                <p>Hyperweaver is a powerful platform for managing virtual machines across your hypervisor hosts. By joining this organization, you'll have access to:</p>
                 <ul>
-                  <li>🖥️ Zone and VM management</li>
+                  <li>🖥️ Machine management</li>
                   <li>📊 System monitoring and analytics</li>
                   <li>🔧 Infrastructure administration tools</li>
                   <li>👥 Collaborative team management</li>
@@ -193,7 +193,7 @@ Invitation expires: ${expirationDate}
 To accept this invitation and create your account, please visit:
 ${invitationLink}
 
-Hyperweaver is a powerful platform for managing Solaris zones and bhyve virtual machines. By joining this organization, you'll have access to zone and VM management, system monitoring, infrastructure administration tools, and collaborative team management.
+Hyperweaver is a powerful platform for managing virtual machines across your hypervisor hosts. By joining this organization, you'll have access to machine management, system monitoring, infrastructure administration tools, and collaborative team management.
 
 What happens next?
 1. Click the invitation link above
@@ -290,7 +290,7 @@ If you have any questions, please contact ${inviterName} or your system administ
                 
                 <p>You can now access Hyperweaver to:</p>
                 <ul>
-                  <li>🖥️ Manage zones and virtual machines</li>
+                  <li>🖥️ Manage virtual machines</li>
                   <li>📊 Monitor system performance</li>
                   <li>🔧 Administer infrastructure</li>
                   <li>👥 Collaborate with your team</li>
@@ -325,7 +325,7 @@ Hello ${user.username}!
 Your account has been successfully created and you're now a member of the ${organizationName} organization.
 
 You can now access Hyperweaver to:
-- Manage zones and virtual machines
+- Manage virtual machines
 - Monitor system performance  
 - Administer infrastructure
 - Collaborate with your team

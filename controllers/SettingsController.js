@@ -3,11 +3,7 @@ import path from 'path';
 import multer from 'multer';
 import * as YAML from 'yaml';
 import { loadConfig, getConfigFilePath } from '../utils/config.js';
-import db from '../models/index.js';
 import { log } from '../utils/Logger.js';
-
-// Access Sequelize models
-const { server: ServerModel } = db;
 
 /**
  * Settings Controller - Manages Hyperweaver Server system settings
@@ -18,26 +14,11 @@ class SettingsController {
     return getConfigFilePath();
   }
 
-  static async getZoneweaverAPIServerInfo() {
-    // Get first server from database instead of config
-    const server = await ServerModel.findOne({
-      order: [['created_at', 'ASC']],
-    });
-    if (!server) {
-      throw new Error('No Zoneweaver API servers found in database');
-    }
-    return {
-      hostname: server.hostname,
-      port: server.port,
-      protocol: server.protocol,
-    };
-  }
-
   /**
    * @swagger
    * /api/settings:
    *   get:
-   *     summary: Get Zoneweaver system settings (Super-admin only)
+   *     summary: Get Hyperweaver Server system settings (Super-admin only)
    *     description: Retrieve current system configuration settings from config.yaml
    *     tags: [System Settings]
    *     security:
@@ -58,7 +39,7 @@ class SettingsController {
    *                   properties:
    *                     appName:
    *                       type: string
-   *                       example: "Zoneweaver"
+   *                       example: "Hyperweaver"
    *                     appVersion:
    *                       type: string
    *                       example: "2.0.0"
@@ -116,7 +97,7 @@ class SettingsController {
    *                             type: string
    *                     databasePath:
    *                       type: string
-   *                       example: "./data/zoneweaver.db"
+   *                       example: "/var/lib/hyperweaver-server/database/hyperweaver-server.db"
    *                     gravatarApiKey:
    *                       type: string
    *                       example: ""
@@ -181,7 +162,7 @@ class SettingsController {
    * @swagger
    * /api/settings:
    *   put:
-   *     summary: Update Zoneweaver system settings (Super-admin only)
+   *     summary: Update Hyperweaver Server system settings (Super-admin only)
    *     description: Update system configuration settings and save to config.yaml
    *     tags: [System Settings]
    *     security:
@@ -195,7 +176,7 @@ class SettingsController {
    *             properties:
    *               appName:
    *                 type: string
-   *                 example: "Zoneweaver"
+   *                 example: "Hyperweaver"
    *               appVersion:
    *                 type: string
    *                 example: "2.0.0"
@@ -242,7 +223,7 @@ class SettingsController {
    *                 example: ["https://localhost:3000"]
    *               databasePath:
    *                 type: string
-   *                 example: "./data/zoneweaver.db"
+   *                 example: "/var/lib/hyperweaver-server/database/hyperweaver-server.db"
    *               gravatarApiKey:
    *                 type: string
    *                 example: ""
@@ -346,7 +327,7 @@ class SettingsController {
    * /api/settings/reset:
    *   post:
    *     summary: Reset system settings to defaults (Super-admin only)
-   *     description: Reset all Zoneweaver system settings to default values while preserving critical server configurations
+   *     description: Reset all Hyperweaver Server system settings to default values while preserving critical server configurations
    *     tags: [System Settings]
    *     security:
    *       - JwtAuth: []
@@ -389,50 +370,26 @@ class SettingsController {
    */
   static resetSettings(req, res) {
     try {
-      // Create backup first
-      const backupPath = `${SettingsController.configPath}.backup.${Date.now()}`;
-      fs.copyFileSync(SettingsController.configPath, backupPath);
-
-      // Load current config to preserve server-specific settings
-      const configFile = fs.readFileSync(SettingsController.configPath, 'utf8');
-      const config = YAML.parse(configFile);
-
-      // Reset to defaults while preserving critical server settings
-      config.app = {
-        name: 'Zoneweaver',
-        version: '2.0.0',
+      // Reset the tunable defaults while preserving critical settings (network, SSL,
+      // database, auth providers). Keys follow this config's real metadata layout —
+      // updateConfigValues sets the .value on each metadata field, and
+      // writeConfigWithBackup snapshots the current file first. frontend.version is
+      // release-managed and deliberately not reset.
+      const defaults = {
+        'frontend.name': 'Hyperweaver',
+        'frontend.auto_refresh_interval': 5,
+        'frontend.enable_notifications': true,
+        'frontend.enable_dark_mode': true,
+        'limits.max_servers_per_user': 10,
+        'authentication.local_session_timeout': 24,
+        'authentication.local_allow_new_organizations': true,
+        'logging.level': 'info',
+        'logging.console_enabled': true,
       };
 
-      config.limits = {
-        maxServersPerUser: 10,
-      };
-
-      config.frontend = {
-        autoRefreshInterval: 5,
-        enableNotifications: true,
-        enableDarkMode: true,
-      };
-
-      // Reset authentication settings to defaults while preserving structure
-      if (config.authentication) {
-        config.authentication.strategies = config.authentication.strategies || {};
-        config.authentication.strategies.local = config.authentication.strategies.local || {};
-        config.authentication.strategies.local.session_timeout = 24;
-        config.authentication.strategies.local.allow_new_organizations = true;
-      }
-
-      config.logging = {
-        level: 'info',
-        enabled: true,
-      };
-
-      // Write reset config
-      const resetYaml = YAML.stringify(config, {
-        indent: 2,
-        lineWidth: 120,
-      });
-
-      fs.writeFileSync(SettingsController.configPath, resetYaml, 'utf8');
+      const currentConfig = loadConfig();
+      const updatedConfig = SettingsController.updateConfigValues(currentConfig, defaults);
+      const backupPath = SettingsController.writeConfigWithBackup(updatedConfig);
 
       log.settings.info('Settings reset to defaults', {
         user: req.user.username,
@@ -458,8 +415,8 @@ class SettingsController {
    * @swagger
    * /api/settings/restart:
    *   post:
-   *     summary: Restart Zoneweaver server (Super-admin only)
-   *     description: Restart the Zoneweaver application server (requires process manager like PM2)
+   *     summary: Restart Hyperweaver Server (Super-admin only)
+   *     description: Restart the Hyperweaver Server application (requires a process manager such as systemd)
    *     tags: [System Settings]
    *     security:
    *       - JwtAuth: []
@@ -588,7 +545,7 @@ class SettingsController {
    *                 filePath:
    *                   type: string
    *                   description: Path where the file was saved
-   *                   example: "/etc/zoneweaver/ssl/certificate.crt"
+   *                   example: "/etc/hyperweaver-server/ssl/certificate.crt"
    *       400:
    *         description: Invalid file or missing parameters
    *         content:
@@ -663,7 +620,7 @@ class SettingsController {
           const config = loadConfig();
 
           // Determine SSL directory - use configured path or default
-          let sslDir = '/etc/zoneweaver/ssl';
+          let sslDir = '/etc/hyperweaver-server/ssl';
 
           // Try to infer SSL directory from existing config paths
           if (config.server?.ssl_cert_path?.value) {
@@ -919,7 +876,7 @@ class SettingsController {
    * /api/settings/restore/{filename}:
    *   post:
    *     summary: Restore configuration from backup (Super-admin only)
-   *     description: Restore Zoneweaver configuration from a specific backup file
+   *     description: Restore Hyperweaver Server configuration from a specific backup file
    *     tags: [System Settings]
    *     security:
    *       - JwtAuth: []

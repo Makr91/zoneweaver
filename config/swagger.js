@@ -190,8 +190,8 @@ const options = {
             },
             hostname: {
               type: 'string',
-              description: 'Server hostname or IP address',
-              example: 'zoneweaver-api-host.example.com',
+              description: 'Agent hostname or IP address',
+              example: 'agent-host.example.com',
             },
             port: {
               type: 'integer',
@@ -206,13 +206,13 @@ const options = {
             },
             entityName: {
               type: 'string',
-              description: 'Display name for the server',
-              example: 'Production Zoneweaver API Server',
+              description: 'Display name for the agent',
+              example: 'Production Agent',
             },
             description: {
               type: 'string',
               description: 'Server description',
-              example: 'Main production server for zone management',
+              example: 'Main production server for machine management',
               nullable: true,
             },
             createdAt: {

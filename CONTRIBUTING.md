@@ -15,7 +15,7 @@ Before creating an issue, please:
 1. **Search existing issues** to avoid duplicates
 2. **Use the appropriate issue template** (bug report, feature request, etc.)
 3. **Provide detailed information** to help us understand and prioritize the issue
-4. **Include system information** (OmniOS version, Node.js version, etc.)
+4. **Include system information** (OS version, Node.js version, etc.)
 
 ### Submitting Pull Requests
 
@@ -32,9 +32,10 @@ We appreciate all pull requests! To ensure smooth collaboration:
 
 1. Clone your fork of the repository
 2. Install dependencies: `npm install`
-3. Copy `config/config.yaml.example` to `config/config.yaml` and configure for development
-4. Run in development mode: `npm run dev`
-5. Access the API documentation at `http://localhost:5000/api-docs`
+3. Copy `packaging/config/production-config.yaml` to `./config.yaml` and configure for development
+4. Fetch the pinned UI artifact into `./ui` (see [README.md](README.md))
+5. Run in development mode: `npm run dev`
+6. Access the API documentation at `https://localhost:3443/api-docs`
 
 ### Code Style Guidelines
 
@@ -56,7 +57,7 @@ We appreciate all pull requests! To ensure smooth collaboration:
 
 **Feature Contributions:**
 
-- New zone management features
+- New machine management features
 - Enhanced monitoring capabilities
 - API improvements
 - Better error handling

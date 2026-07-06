@@ -26,8 +26,8 @@ core
 /ui/
 
 # Debian packaging artifacts
-zoneweaver_*_*/
-zoneweaver-dev_*_*/
+hyperweaver-server_*_*/
+hyperweaver-server-dev_*_*/
 *.deb
 
 # misc

@@ -433,9 +433,9 @@ const handleAgentWsUpgrade = async (id, backendPath, search, request, socket, he
 /**
  * Create VNC WebSocket proxy with binary subprotocol support for a resolved agent.
  */
-const createVncWsProxy = async (server, zoneName, search, request, socket, head) => {
+const createVncWsProxy = async (server, machineName, search, request, socket, head) => {
   const { WebSocket, WebSocketServer } = await import('ws');
-  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/zones/${encodeURIComponent(zoneName)}/vnc/websockify${search}`;
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/machines/${encodeURIComponent(machineName)}/vnc/websockify${search}`;
 
   log.websocket.info('Connecting to backend VNC WebSocket', { backendUrl });
 
@@ -461,17 +461,17 @@ const createVncWsProxy = async (server, zoneName, search, request, socket, head)
 
   backendWs.on('error', err => {
     log.websocket.error('Backend VNC WebSocket connection failed', {
-      zoneName,
+      machineName,
       error: err.message,
     });
     socket.destroy();
   });
 
   wss.handleUpgrade(request, socket, head, clientWs => {
-    log.websocket.info('Client VNC WebSocket established', { zoneName });
+    log.websocket.info('Client VNC WebSocket established', { machineName });
 
     backendWs.on('open', () => {
-      log.websocket.info('Backend VNC WebSocket connected', { zoneName });
+      log.websocket.info('Backend VNC WebSocket connected', { machineName });
 
       clientWs.on('message', (data, isBinary) => {
         if (backendWs.readyState === WebSocket.OPEN) {
@@ -486,24 +486,24 @@ const createVncWsProxy = async (server, zoneName, search, request, socket, head)
       });
 
       clientWs.on('close', () => {
-        log.websocket.info('Client VNC WebSocket disconnected', { zoneName });
+        log.websocket.info('Client VNC WebSocket disconnected', { machineName });
         backendWs.close();
       });
 
       clientWs.on('error', err => {
-        log.websocket.error('Client VNC WebSocket error', { zoneName, error: err.message });
+        log.websocket.error('Client VNC WebSocket error', { machineName, error: err.message });
         backendWs.close();
       });
 
       backendWs.on('close', () => {
-        log.websocket.info('Backend VNC WebSocket closed', { zoneName });
+        log.websocket.info('Backend VNC WebSocket closed', { machineName });
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.close();
         }
       });
 
       backendWs.on('error', err => {
-        log.websocket.error('Backend VNC WebSocket error', { zoneName, error: err.message });
+        log.websocket.error('Backend VNC WebSocket error', { machineName, error: err.message });
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.close();
         }
@@ -512,7 +512,7 @@ const createVncWsProxy = async (server, zoneName, search, request, socket, head)
 
     backendWs.on('error', err => {
       log.websocket.error('Failed to connect to backend VNC WebSocket', {
-        zoneName,
+        machineName,
         error: err.message,
       });
       clientWs.close();
@@ -521,16 +521,16 @@ const createVncWsProxy = async (server, zoneName, search, request, socket, head)
 };
 
 /**
- * Proxy a VNC websockify WS upgrade for /api/agents/:id/zones/:zone/vnc/websockify.
+ * Proxy a VNC websockify WS upgrade for /api/agents/:id/machines/:machineName/vnc/websockify.
  */
-const handleAgentVncUpgrade = async (id, zoneName, search, request, socket, head) => {
+const handleAgentVncUpgrade = async (id, machineName, search, request, socket, head) => {
   const server = await resolveAgentForWs(id);
   if (!server || !server.api_key) {
-    log.websocket.error('WebSocket VNC: agent not found or missing API key', { id, zoneName });
+    log.websocket.error('WebSocket VNC: agent not found or missing API key', { id, machineName });
     socket.destroy();
     return;
   }
-  await createVncWsProxy(server, zoneName, search, request, socket, head);
+  await createVncWsProxy(server, machineName, search, request, socket, head);
 };
 
 /**
@@ -544,16 +544,16 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
     // search is forwarded verbatim to the agent backend (WS ticket auth rides ?ticket=…)
     const { pathname, search } = url;
 
-    // /api/agents/:id/zones/:zone/vnc/websockify
+    // /api/agents/:id/machines/:machineName/vnc/websockify
     const vncMatch = pathname.match(
-      /^\/api\/agents\/(?<id>[^/]+)\/zones\/(?<zone>[^/]+)\/vnc\/websockify/
+      /^\/api\/agents\/(?<id>[^/]+)\/machines\/(?<machine>[^/]+)\/vnc\/websockify/
     );
     if (vncMatch) {
       // Decode the pathname segment exactly once — createVncWsProxy re-encodes it once;
       // the agent decodes once, so passing the raw segment through double-encodes it.
       await handleAgentVncUpgrade(
         vncMatch.groups.id,
-        decodeURIComponent(vncMatch.groups.zone),
+        decodeURIComponent(vncMatch.groups.machine),
         search,
         request,
         socket,
@@ -702,16 +702,43 @@ const generateSSLCertificatesIfNeeded = async () => {
         log.app.info('HTTPS Server started', { port });
       });
 
-      // Optional: Redirect HTTP to HTTPS
-      const httpApp = express();
-      httpApp.use((req, res) => {
-        res.redirect(`https://${req.headers.host}${req.url}`);
-      });
+      // server.force_secure (AGREED cross-repo contract, sync file 2026-07-05; default true):
+      // true  → the plain-HTTP port serves ONLY 308 redirects to the HTTPS listener
+      //         (client's host kept, HTTPS port pinned, path+query preserved; WS upgrades
+      //         are dropped — no upgrade handler on this listener).
+      // false → dual-serve: the HTTP port serves the full app + WS upgrades alongside HTTPS.
+      const forceSecure = config.server.force_secure?.value !== false;
+      if (forceSecure) {
+        const redirectApp = express();
+        redirectApp.use((req, res) => {
+          // Strip any port from the Host header (IPv6 bracket form included), then pin
+          // the HTTPS listener's port — the old Host-verbatim redirect pointed at :443
+          // regardless of where the HTTPS server actually listens.
+          const rawHost = req.headers.host || config.server.hostname.value;
+          const hostname = rawHost.startsWith('[')
+            ? rawHost.replace(/^(?<bracketed>\[[^\]]+\]).*$/, '$<bracketed>')
+            : rawHost.replace(/:\d+$/, '');
+          const portSuffix = Number(port) === 443 ? '' : `:${port}`;
+          res.redirect(308, `https://${hostname}${portSuffix}${req.url}`);
+        });
 
-      const httpServer = http.createServer(httpApp);
-      httpServer.listen(80, () => {
-        log.app.info('HTTP Server started - redirecting to HTTPS', { port: 80 });
-      });
+        const httpServer = http.createServer(redirectApp);
+        httpServer.listen(80, () => {
+          log.app.info('HTTP Server started - 308 redirect to HTTPS (force_secure)', {
+            port: 80,
+            httpsPort: port,
+          });
+        });
+      } else {
+        const httpServer = http.createServer(app);
+        httpServer.on('upgrade', handleWebSocketUpgrade);
+        httpServer.listen(80, () => {
+          log.app.info('HTTP Server started - dual-serve mode (force_secure=false)', {
+            port: 80,
+            httpsPort: port,
+          });
+        });
+      }
     } catch (error) {
       log.app.error('SSL Certificate Error', { error: error.message });
       log.app.warn('Falling back to HTTP server...');

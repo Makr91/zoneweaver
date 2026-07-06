@@ -15,7 +15,7 @@ A clear and concise description of what you want to happen.
 Describe the problem or limitation you're experiencing:
 
 - What currently doesn't work or is difficult to achieve?
-- How does this limitation affect your use of Zoneweaver Agent?
+- How does this limitation affect your use of Hyperweaver Server?
 
 ## Proposed Solution
 
@@ -40,10 +40,10 @@ Provide specific examples of how this feature would be used:
 
 ```bash
 # Current limitation:
-curl -X GET "http://localhost:5000/api/current-endpoint"
+curl -k -X GET "https://localhost:3443/api/current-endpoint"
 
 # Proposed feature:
-curl -X GET "http://localhost:5000/api/new-feature-endpoint"
+curl -k -X GET "https://localhost:3443/api/new-feature-endpoint"
 ```
 
 **Example 2:**
@@ -67,7 +67,7 @@ Describe a practical scenario where this feature would be beneficial.
 
 **Affected Areas:**
 
-- [ ] Zone management
+- [ ] Machine management
 - [ ] API endpoints
 - [ ] Authentication/security
 - [ ] Configuration

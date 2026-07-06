@@ -20,12 +20,12 @@ Please describe the tests you ran to verify your changes:
 
 - [ ] Manual testing performed
 - [ ] Automated tests added/updated
-- [ ] Tested on OmniOS environment
+- [ ] Tested on Debian/Ubuntu environment
 - [ ] API documentation tested (if applicable)
 
 **Test Configuration:**
 
-- OmniOS Version:
+- OS Version:
 - Node.js Version:
 - Installation Method: (package/source)
 
@@ -48,7 +48,7 @@ Please describe the tests you ran to verify your changes:
 
 **Areas Affected:**
 
-- [ ] Zone management
+- [ ] Machine management
 - [ ] API endpoints
 - [ ] Authentication/security
 - [ ] Configuration

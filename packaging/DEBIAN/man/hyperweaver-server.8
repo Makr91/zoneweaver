@@ -11,9 +11,10 @@
 .Sh DESCRIPTION
 The
 .Nm
-utility provides a web-based control-plane interface for managing Bhyve virtual
-machines and zones through Zoneweaver Agents. It serves as the user-facing
-component of the Hyperweaver hypervisor management platform.
+utility provides a web-based control-plane interface for managing virtual
+machines through host agents (Zoneweaver Agent for Bhyve/OmniOS, Hyperweaver
+Agent for VirtualBox). It serves as the user-facing component of the
+Hyperweaver hypervisor management platform.
 .Pp
 .Nm
 is a Node.js Express application serving a React-based web interface that
@@ -24,9 +25,9 @@ User authentication and session management with JWT tokens
 .It
 Multi-tenant organization management and access control
 .It
-Zoneweaver Agent configuration and connection management
+Host agent configuration and connection management
 .It
-Web-based dashboard for zone management operations
+Web-based dashboard for machine management operations
 .It
 User invitation and registration system with email notifications
 .It
@@ -36,7 +37,7 @@ SSL/TLS encryption with automatic certificate generation
 .El
 .Pp
 The service uses JWT token authentication for web sessions and connects to
-Zoneweaver Agents for actual zone management operations.
+host agents for actual machine management operations.
 .Sh CONFIGURATION
 .Nm
 reads its configuration from
@@ -72,7 +73,7 @@ Key web interface features include:
 .It
 User login and registration with organization management
 .It
-Dashboard with zone overview from connected Zoneweaver Agents
+Dashboard with machine overview from connected host agents
 .It
 Server configuration and connection management
 .It
@@ -80,7 +81,7 @@ User and organization administration
 .It
 Settings and configuration management
 .It
-Zone management operations through connected backends
+Machine management operations through connected backends
 .El
 .Sh API ENDPOINTS
 The service provides REST API endpoints for user and organization management.
@@ -97,7 +98,7 @@ User profile and account management
 .It Pa /api/organizations
 Organization creation and management
 .It Pa /api/servers
-Zoneweaver Agent configuration
+Host agent registry and configuration
 .It Pa /api/invitations
 User invitation and registration codes
 .It Pa /api/settings
@@ -162,7 +163,7 @@ Test network connectivity to port 3443
 .It
 Verify database permissions and disk space
 .It
-Check Zoneweaver Agent connectivity from web interface
+Check host agent connectivity from web interface
 .El
 .Sh SEE ALSO
 .Xr hyperweaver-server.yaml 5 ,

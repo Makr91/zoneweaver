@@ -11,11 +11,11 @@ const serverCache = new Map();
 const CACHE_TTL = 30000; // 30 seconds
 
 /**
- * Server controller for managing Zoneweaver API connections
- * This replaces the per-user API key system with application-level server management
+ * Server controller for managing registered host agents
+ * This replaces the per-user API key system with application-level agent management
  * NOTE TO AI:
  * Do not ever hardcode limits, timeouts, anything that is valuable to put in the production-config.yaml via the configloader
- * This application is 50% gui and 50% proxy server to a backend API called zoneweaver-api
+ * This application is 50% gui and 50% proxy server to the host agents (zoneweaver-agent for Bhyve/OmniOS, hyperweaver-agent for VirtualBox)
  */
 class ServerController {
   /**
@@ -41,8 +41,8 @@ class ServerController {
    * @swagger
    * /api/servers:
    *   post:
-   *     summary: Add a new Zoneweaver API Server
-   *     description: Add a Zoneweaver API server for zone management (Admin only)
+   *     summary: Register a new agent
+   *     description: Register a host agent for machine management (Admin only)
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -56,11 +56,11 @@ class ServerController {
    *             properties:
    *               hostname:
    *                 type: string
-   *                 description: Server hostname or IP address
-   *                 example: "zoneweaver-api-host.example.com"
+   *                 description: Agent hostname or IP address
+   *                 example: "agent-host.example.com"
    *               port:
    *                 type: integer
-   *                 description: Server port number
+   *                 description: Agent port number
    *                 example: 5001
    *               protocol:
    *                 type: string
@@ -69,15 +69,15 @@ class ServerController {
    *                 example: "https"
    *               entityName:
    *                 type: string
-   *                 description: Display name for the server
-   *                 example: "Production Zoneweaver API Server"
+   *                 description: Display name for the agent
+   *                 example: "Production Agent"
    *               description:
    *                 type: string
    *                 description: Optional server description
-   *                 example: "Main production server for zone management"
+   *                 example: "Main production server for machine management"
    *               apiKey:
    *                 type: string
-   *                 description: Existing Zoneweaver API API key (optional - will bootstrap if not provided)
+   *                 description: Existing agent API key (optional - will bootstrap if not provided)
    *                 example: "wh_abc123def456..."
    *               allowInsecure:
    *                 type: boolean
@@ -176,8 +176,8 @@ class ServerController {
    * @swagger
    * /api/servers:
    *   get:
-   *     summary: Get all Zoneweaver API Servers
-   *     description: Retrieve list of all configured Zoneweaver API servers
+   *     summary: Get all registered agents
+   *     description: Retrieve list of all registered host agents
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -231,8 +231,8 @@ class ServerController {
    * @swagger
    * /api/servers/test:
    *   post:
-   *     summary: Test Zoneweaver API Server connectivity
-   *     description: Test connection to a Zoneweaver API server
+   *     summary: Test agent connectivity
+   *     description: Test connection to a host agent
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -246,8 +246,8 @@ class ServerController {
    *             properties:
    *               hostname:
    *                 type: string
-   *                 description: Server hostname or IP address
-   *                 example: "zoneweaver-api-host.example.com"
+   *                 description: Agent hostname or IP address
+   *                 example: "agent-host.example.com"
    *               port:
    *                 type: integer
    *                 description: Server port number
@@ -343,8 +343,8 @@ class ServerController {
    * @swagger
    * /api/servers/{serverId}:
    *   delete:
-   *     summary: Remove a Zoneweaver API Server
-   *     description: Remove a Zoneweaver API server from Zoneweaver (Admin only)
+   *     summary: Remove a registered agent
+   *     description: Remove a registered agent from the Server (Admin only)
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -440,8 +440,8 @@ class ServerController {
    * @swagger
    * /api/servers/{serverId}:
    *   patch:
-   *     summary: Update a Zoneweaver API Server
-   *     description: Update settings for a Zoneweaver API server (Admin only). Only allow_insecure is editable.
+   *     summary: Update a registered agent
+   *     description: Update settings for a registered agent (Admin only). Only allow_insecure is editable.
    *     tags: [Server Management]
    *     security:
    *       - JwtAuth: []
@@ -815,7 +815,7 @@ class ServerController {
    *         schema:
    *           type: string
    *         description: Agent API path to forward to
-   *         example: "zones"
+   *         example: "machines"
    *     responses:
    *       200:
    *         description: Response from the agent (varies by endpoint)

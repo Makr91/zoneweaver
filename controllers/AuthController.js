@@ -10,7 +10,7 @@ import { buildRpLogoutUrl, revokeOidcGrant, verifyLogoutToken } from '../auth/oi
 const { user: UserModel, organization: OrganizationModel, invitation: InvitationModel } = db;
 
 /**
- * Authentication controller for Zoneweaver user management
+ * Authentication controller for Hyperweaver Server user management
  */
 /**
  * Resolve organization context for registration.

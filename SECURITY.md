@@ -40,17 +40,17 @@ Due to limited development resources, please understand that:
 - **Medium**: Standard timeline (DoS, information disclosure)
 - **Low**: Lower priority (minor information leaks)
 
-## Security Considerations for Zoneweaver Agent
+## Security Considerations for Hyperweaver Server
 
-Given that Zoneweaver Agent manages system-level operations on OmniOS, please pay special attention to:
+Given that Hyperweaver Server authenticates users and proxies privileged host-agent APIs, please pay special attention to:
 
 ### High-Risk Areas
 
-- **API Key Authentication**: Bypasses or privilege escalation
-- **Zone Management**: Unauthorized zone creation/modification/deletion
-- **File System Operations**: Path traversal or unauthorized file access
-- **Command Execution**: Any potential for command injection
-- **Network Operations**: Unauthorized network configuration changes
+- **Authentication**: JWT, session, OIDC, or LDAP bypasses and privilege escalation
+- **Agent Proxy Authorization**: Bypassing the admin/super-admin gates on proxied agent sub-paths
+- **Machine Management**: Unauthorized machine creation/modification/deletion through the proxy
+- **Stored Agent Credentials**: Exposure of the agent API keys held in the registry
+- **Session Handling**: Fixation, cross-account leakage of server-side OIDC token stashes
 
 ### Configuration Security
 
@@ -65,23 +65,24 @@ To maintain security:
 
 1. **Keep Updated**: Always run the latest stable version
 2. **Secure Configuration**: Follow the [security configuration guide](/docs/configuration/)
-3. **API Key Management**: Rotate API keys regularly, use strong keys
+3. **Secret Management**: Use a strong JWT secret (32+ characters) and rotate agent API keys regularly
 4. **Network Security**: Use HTTPS, restrict network access appropriately
 5. **Monitor Logs**: Watch for suspicious activity in application logs
 
 ## Security Features
 
-Zoneweaver Agent includes several security features:
+Hyperweaver Server includes several security features:
 
-- **API Key Authentication**: Bcrypt-hashed keys with configurable rounds
+- **JWT Authentication**: Bcrypt-hashed passwords, token revocation on logout (real single logout)
+- **Role-Based Access Control**: Super Admin / Admin / User with multi-tenant organization isolation
+- **Rate Limiting**: Tiered limits on authentication, admin, proxy, and static endpoints
 - **CORS Protection**: Whitelist-based origin validation
-- **SSL/TLS Support**: Configurable HTTPS with custom certificates
-- **Input Validation**: Parameter validation and sanitization
-- **Audit Logging**: API key usage tracking
+- **SSL/TLS Support**: Configurable HTTPS with automatic certificate generation and HTTP→HTTPS 308 redirect (force_secure)
+- **Server-Side OIDC Tokens**: IdP tokens never reach the browser; sessions are regenerated at login
 
 ## Acknowledgments
 
-We appreciate the security research community's efforts in making Zoneweaver Agent more secure. Responsible disclosure helps protect all users.
+We appreciate the security research community's efforts in making Hyperweaver Server more secure. Responsible disclosure helps protect all users.
 
 ### Hall of Fame
 

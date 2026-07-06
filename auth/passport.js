@@ -16,7 +16,7 @@ const config = loadConfig();
 const oidcConfigurations = new Map();
 
 /**
- * Passport.js configuration for ZoneWeaver
+ * Passport.js configuration for Hyperweaver Server
  */
 
 // JWT Strategy - matches existing custom middleware behavior exactly

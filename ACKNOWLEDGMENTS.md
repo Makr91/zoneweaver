@@ -1,6 +1,6 @@
 # Acknowledgments
 
-Zoneweaver Agent is built using many excellent open-source projects and tools. We are grateful to the developers and communities behind these projects.
+Hyperweaver Server is built using many excellent open-source projects and tools. We are grateful to the developers and communities behind these projects.
 
 ## Core Dependencies
 
@@ -22,7 +22,7 @@ Zoneweaver Agent is built using many excellent open-source projects and tools. W
 
 - Repository: [github.com/kelektiv/node.bcrypt.js](https://github.com/kelektiv/node.bcrypt.js)
 - License: MIT
-- Usage: Secure API key hashing
+- Usage: Secure password hashing
 
 **cors** - Node.js CORS middleware
 
@@ -30,11 +30,11 @@ Zoneweaver Agent is built using many excellent open-source projects and tools. W
 - License: MIT
 - Usage: Cross-Origin Resource Sharing support
 
-**helmet** - Security middleware for Express.js
+**Passport.js** - Authentication middleware for Node.js
 
-- Repository: [github.com/helmetjs/helmet](https://github.com/helmetjs/helmet)
+- Website: [passportjs.org](https://www.passportjs.org/)
 - License: MIT
-- Usage: HTTP security headers
+- Usage: JWT, LDAP, and OIDC authentication strategies
 
 **swagger-ui-express** - Swagger UI Express middleware
 
@@ -80,7 +80,7 @@ Zoneweaver Agent is built using many excellent open-source projects and tools. W
 
 - Website: [omnios.org](https://omnios.org/)
 - License: CDDL/GPL
-- Usage: Target operating system and platform
+- Usage: Platform of the Bhyve hosts managed through the Zoneweaver Agent
 
 ## Tools and Ecosystem
 
@@ -152,9 +152,9 @@ Zoneweaver Agent is built using many excellent open-source projects and tools. W
 
 ## Special Recognition
 
-**Open Source Community** - The broader open-source software community whose collaborative spirit makes projects like Zoneweaver Agent possible.
+**Open Source Community** - The broader open-source software community whose collaborative spirit makes projects like Hyperweaver Server possible.
 
-**OmniOS Community** - For creating and maintaining the excellent OmniOS platform that Zoneweaver Agent is designed for.
+**OmniOS Community** - For creating and maintaining the excellent OmniOS platform that the Zoneweaver Agent targets.
 
 **Early Users and Testers** - Community members who provided valuable feedback during development and testing phases.
 

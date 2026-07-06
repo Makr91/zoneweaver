@@ -33,7 +33,7 @@ For general questions and discussions:
 
 ### Resource Limitations
 
-Please understand that Zoneweaver Agent is maintained with limited development resources:
+Please understand that Hyperweaver Server is maintained with limited development resources:
 
 - **Response Time**: We aim to respond to issues within a few days, but response times may vary based on current workload and complexity
 - **Priority**: Critical security issues and bugs affecting system stability receive highest priority
@@ -41,7 +41,7 @@ Please understand that Zoneweaver Agent is maintained with limited development r
 
 ### Community-Driven Support
 
-The Zoneweaver Agent community is encouraged to:
+The Hyperweaver Server community is encouraged to:
 
 - **Help each other** in discussions and issue comments
 - **Share solutions** to common problems
@@ -83,7 +83,7 @@ To get the best assistance:
 ### For Bug Reports
 
 1. **Use the bug report template**
-2. **Include system information** (OmniOS version, Node.js version, etc.)
+2. **Include system information** (OS version, Node.js version, etc.)
 3. **Provide reproduction steps** with expected vs. actual behavior
 4. **Include relevant logs** and error messages
 5. **Test with the latest version** when possible
@@ -141,4 +141,4 @@ This support document may be updated as the project evolves and resources change
 
 ---
 
-**Remember**: Community involvement directly impacts the level of support available. Your contributions help make Zoneweaver Agent better for everyone!
+**Remember**: Community involvement directly impacts the level of support available. Your contributions help make Hyperweaver Server better for everyone!

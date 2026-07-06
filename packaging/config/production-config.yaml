@@ -190,6 +190,13 @@ server:
     required: false
     depends_on: ssl_enabled
     show_when: [true]
+  force_secure:
+    type: boolean
+    value: true
+    description: 'When SSL is enabled, the plain-HTTP port (80) serves only 308 redirects to the HTTPS listener. Disable to dual-serve the full app (including WebSockets) over both HTTP and HTTPS.'
+    required: false
+    depends_on: ssl_enabled
+    show_when: [true]
 
 security:
   cors:
@@ -319,7 +326,7 @@ logging:
       type: select
       value: warn
       options: ['error', 'warn', 'info', 'debug']
-      description: 'Zoneweaver API proxy request logging level'
+      description: 'Agent proxy request logging level'
       section: 'Logging'
       subsection: 'Categories'
       required: true

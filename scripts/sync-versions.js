@@ -4,12 +4,13 @@ import fs from 'fs';
 
 /**
  * Synchronize the server version across its swagger config, production config,
- * and the release-please manifest.
+ * the local dev config, and the release-please manifest.
  */
 
 const rootPackagePath = './package.json';
 const swaggerConfigPath = './config/swagger.js';
 const productionConfigPath = './packaging/config/production-config.yaml';
+const devConfigPath = './config.yaml';
 const releasePleaseManifestPath = './.release-please-manifest.json';
 
 try {
@@ -30,12 +31,22 @@ try {
     let productionConfig = fs.readFileSync(productionConfigPath, 'utf8');
     productionConfig = productionConfig.replace(
       /(?<prefix>version:[^\S\n]*\n[^\S\n]+value:[^\S\n]*)[^\n]*/,
-      `$<prefix>${rootVersion}`
+      `$<prefix>${rootVersion} # x-release-please-version`
     );
     fs.writeFileSync(productionConfigPath, productionConfig);
   }
 
-  // 5. Update release-please manifest (if exists)
+  // 5. Update the local dev config (gitignored — present on dev checkouts, absent in CI)
+  if (fs.existsSync(devConfigPath)) {
+    let devConfig = fs.readFileSync(devConfigPath, 'utf8');
+    devConfig = devConfig.replace(
+      /(?<prefix>version:[^\S\n]*\n[^\S\n]+value:[^\S\n]*)[^\n]*/,
+      `$<prefix>${rootVersion}`
+    );
+    fs.writeFileSync(devConfigPath, devConfig);
+  }
+
+  // 6. Update release-please manifest (if exists)
   if (fs.existsSync(releasePleaseManifestPath)) {
     const releasePleaseManifest = JSON.parse(fs.readFileSync(releasePleaseManifestPath, 'utf8'));
     releasePleaseManifest['.'] = rootVersion;
@@ -49,6 +60,7 @@ try {
   console.log(`   - Root: ${rootVersion}`);
   console.log(`   - Swagger: ${rootVersion}`);
   console.log(`   - Production Config: ${rootVersion}`);
+  console.log(`   - Dev Config: ${fs.existsSync(devConfigPath) ? rootVersion : 'not present (CI)'}`);
   console.log(`   - Release Please Manifest: ${rootVersion}`);
   console.log(`   - Vite: Using define to inject version at build time`);
 } catch (error) {

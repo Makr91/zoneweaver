@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask a question about Hyperweaver Agent
+about: Ask a question about Hyperweaver Server
 title: '[QUESTION] '
 labels: 'question'
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 
 ## Question
 
-What would you like to know about Hyperweaver Agent?
+What would you like to know about Hyperweaver Server?
 
 ## Context
 
@@ -22,18 +22,18 @@ Provide context about what you're trying to achieve:
 
 **System Information:**
 
-- OS: [e.g., OmniOS r151048]
+- OS: [e.g., Debian 12]
 - Node.js Version: [e.g., 22.x]
-- Hyperweaver Agent Version: [e.g., 0.0.26]
+- Hyperweaver Server Version: [e.g., 0.9.6]
 - Installation Method: [package/source]
 
 ## What You've Tried
 
 Please describe what you've already attempted:
 
-- [ ] Checked the [documentation](https://hyperweaver-agent.startcloud.com/)
+- [ ] Checked the [documentation](https://hyperweaver.startcloud.com/)
 - [ ] Searched existing issues and discussions
-- [ ] Tried the interactive [API documentation](https://hyperweaver-agent.startcloud.com/docs/api/)
+- [ ] Tried the interactive API documentation (`/api-docs` on your server)
 
 **Specific attempts:**
 
@@ -50,14 +50,15 @@ If your question involves code, please provide examples:
 ```yaml
 # Your relevant configuration
 server:
-  http_port: 5000
+  port:
+    value: 3443
 ```
 
 **API Request:**
 
 ```bash
-curl -X GET "http://localhost:5000/api/..." \
-     -H "Authorization: Bearer wh_..." \
+curl -k -X GET "https://localhost:3443/api/..." \
+     -H "Authorization: Bearer <jwt>" \
      -H "Content-Type: application/json"
 ```
 
@@ -87,7 +88,7 @@ Any other details that might be helpful:
 - [ ] Installation/Setup
 - [ ] Configuration
 - [ ] API Usage
-- [ ] Zone Management
+- [ ] Machine Management
 - [ ] Authentication
 - [ ] Networking
 - [ ] Storage/Database

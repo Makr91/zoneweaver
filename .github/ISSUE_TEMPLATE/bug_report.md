@@ -14,17 +14,16 @@ A clear and concise description of what the bug is.
 
 **System Information:**
 
-- OS: [e.g., OmniOS r151048]
+- OS: [e.g., Debian 12]
 - Node.js Version: [e.g., 22.x]
-- Hyperweaver Agent Version: [e.g., 0.0.26]
+- Hyperweaver Server Version: [e.g., 0.9.6]
 - Installation Method: [package/source]
 
 **Configuration:**
 
-- HTTP Port: [e.g., 5000]
-- HTTPS Port: [e.g., 5001]
+- Port: [e.g., 3443]
 - Database: [e.g., SQLite]
-- Authentication: [e.g., API Key]
+- Authentication: [e.g., Local/LDAP/OIDC]
 
 ## Steps to Reproduce
 
@@ -56,8 +55,8 @@ Paste error messages here
 **Request:**
 
 ```bash
-curl -X GET "http://localhost:5000/api/..." \
-     -H "Authorization: Bearer wh_..." \
+curl -k -X GET "https://localhost:3443/api/..." \
+     -H "Authorization: Bearer <jwt>" \
      -H "Content-Type: application/json"
 ```
 
@@ -86,7 +85,7 @@ Add any other context about the problem here.
 
 **Affected Functionality:**
 
-- [ ] Zone management
+- [ ] Machine management
 - [ ] API authentication
 - [ ] Network operations
 - [ ] Storage management

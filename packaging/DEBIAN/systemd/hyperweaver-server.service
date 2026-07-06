@@ -1,5 +1,5 @@
 [Unit]
-Description=Hyperweaver Server Zone Hypervisor Management Interface
+Description=Hyperweaver Server Hypervisor Management Interface
 After=network.target
 Wants=network.target
 
