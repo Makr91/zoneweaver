@@ -448,6 +448,71 @@ SMTP Host: ${mailConfig.smtp_host.value}:${mailConfig.smtp_port.value}
       });
     }
   }
+
+  /**
+   * @swagger
+   * /api/mail/test:
+   *   post:
+   *     summary: Test SMTP mail configuration (Super-admin only)
+   *     description: Test the SMTP configuration by attempting to connect to the mail server and send a test email.
+   *     tags: [Mail Testing]
+   *     security:
+   *       - JwtAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [testEmail]
+   *             properties:
+   *               testEmail:
+   *                 type: string
+   *                 format: email
+   *                 description: Email address to send the test message to.
+   *                 example: "admin@example.com"
+   *     responses:
+   *       200:
+   *         description: SMTP connection test completed successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Test email sent successfully"
+   *       400:
+   *         description: SMTP connection failed or validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Insufficient permissions (Super-admin required)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static async testMail(req, res) {
+    await MailController.testSmtpConnection(req, res);
+  }
 }
 
 export default MailController;
