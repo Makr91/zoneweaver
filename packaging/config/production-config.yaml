@@ -1188,7 +1188,7 @@ integrations:
 ticket_system:
   enabled:
     type: boolean
-    value: false
+    value: true
     description: 'Enable the help-desk / ticket link in the profile dropdown'
     section: 'Integrations'
     subsection: 'Ticket System'
@@ -1196,7 +1196,7 @@ ticket_system:
     order: 1
   base_url:
     type: string
-    value: ''
+    value: 'https://xd.prominic.net/app/apprequest.nsf/router?openagent'
     description: 'Base URL of your ticket system (e.g., https://support.example.com)'
     section: 'Integrations'
     subsection: 'Ticket System'
@@ -1204,7 +1204,7 @@ ticket_system:
     order: 2
   req_type:
     type: string
-    value: ''
+    value: 'sso'
     description: 'Ticket request type / category identifier (system-specific)'
     section: 'Integrations'
     subsection: 'Ticket System'
@@ -1212,7 +1212,7 @@ ticket_system:
     order: 3
   context:
     type: string
-    value: ''
+    value: 'https://github.com/Makr91/hyperweaver-server'
     description: 'Ticket system context / queue identifier (system-specific)'
     section: 'Integrations'
     subsection: 'Ticket System'

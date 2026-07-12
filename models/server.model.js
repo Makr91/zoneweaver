@@ -134,8 +134,16 @@ export default sequelize => {
           },
           attributes: {},
         },
-        // Order by last used
+        // Order by last used. Declares the active-only filter and api_key exclusion
+        // explicitly — a named scope must not depend on the default scope surviving
+        // withScope (same reason withApiKey re-declares is_active above).
         byLastUsed: {
+          where: {
+            is_active: true,
+          },
+          attributes: {
+            exclude: ['api_key'],
+          },
           order: [
             ['last_used', 'DESC'],
             ['created_at', 'DESC'],
@@ -247,32 +255,62 @@ export default sequelize => {
       .join('/');
   };
 
+  // Resolve the per-request timeout: explicit option wins; file uploads get the
+  // long configured window, everything else the configured default.
+  const resolveRequestTimeout = (options, isFileUpload) => {
+    if (options.timeout) {
+      return options.timeout;
+    }
+    const config = loadConfig();
+    if (isFileUpload) {
+      return config.limits?.api_timeouts?.file_upload?.value || 1800000; // 30 min default
+    }
+    return config.limits?.api_timeouts?.default_request?.value || 60000; // 1 min default
+  };
+
+  // Data-size descriptor for request logging
+  const describeDataSize = data => {
+    if (data instanceof FormData) {
+      return 'FormData (multipart)';
+    }
+    return data ? JSON.stringify(data).length : 0;
+  };
+
+  // Bearer auth + JSON default; caller headers forwarded except those that would
+  // interfere with authentication (multipart uploads are handled via streaming)
+  const buildRequestHeaders = (apiKey, extraHeaders) => {
+    const requestHeaders = {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    };
+    if (extraHeaders) {
+      Object.keys(extraHeaders).forEach(key => {
+        if (!['authorization', 'x-api-key'].includes(key.toLowerCase())) {
+          requestHeaders[key] = extraHeaders[key];
+        }
+      });
+    }
+    return requestHeaders;
+  };
+
+  // Normalize an axios failure. Carries the agent's error body through (data) so
+  // the proxy can forward it verbatim; the Go agent keys its error text as `error`.
+  const toFailureResult = error => ({
+    success: false,
+    error: error.response?.data?.message || error.response?.data?.error || error.message,
+    status: error.response?.status || null,
+    data: error.response?.data,
+  });
+
   Server.prototype.makeRequest = async function (path, options = {}) {
     const timestamp = new Date().toISOString();
     const serverUrl = this.getServerUrl();
     const startTime = Date.now();
 
     try {
-      // Load config for timeout settings
-      const config = loadConfig();
-
       // Detect file upload operations that need extended timeouts
       const isFileUpload = path.includes('artifacts/upload') || path.includes('filesystem/upload');
-
-      // Use configurable timeouts: 30min for uploads, 1min for everything else
-      const requestTimeout =
-        options.timeout ||
-        (isFileUpload
-          ? config.limits?.api_timeouts?.file_upload?.value || 1800000 // 30 min default
-          : config.limits?.api_timeouts?.default_request?.value || 60000); // 1 min default
-
-      // Determine data size for logging
-      let dataSize = 0;
-      if (options.data instanceof FormData) {
-        dataSize = 'FormData (multipart)';
-      } else if (options.data) {
-        dataSize = JSON.stringify(options.data).length;
-      }
+      const requestTimeout = resolveRequestTimeout(options, isFileUpload);
 
       log.server.info('Starting agent request', {
         server: `${this.hostname}:${this.port}`,
@@ -280,34 +318,14 @@ export default sequelize => {
         method: options.method || 'GET',
         hasData: !!options.data,
         hasParams: !!options.params,
-        dataSize,
+        dataSize: describeDataSize(options.data),
         timeout: requestTimeout,
         isFileUpload,
         isFormData: options.data instanceof FormData,
       });
 
       const encodedPath = encodeFmriPath(path);
-
-      // Build request headers - handle FormData specially
-      const requestHeaders = {
-        Authorization: `Bearer ${this.api_key}`,
-      };
-
-      // For regular data, set application/json (multipart uploads now handled via streaming)
-      if (!requestHeaders['Content-Type'] && !requestHeaders['content-type']) {
-        requestHeaders['Content-Type'] = 'application/json';
-      }
-
-      if (options.headers) {
-        Object.keys(options.headers).forEach(key => {
-          const lowerKey = key.toLowerCase();
-          // Skip problematic headers that would interfere with authentication
-          if (!['authorization', 'x-api-key'].includes(lowerKey)) {
-            requestHeaders[key] = options.headers[key];
-          }
-        });
-      }
-
+      const requestHeaders = buildRequestHeaders(this.api_key, options.headers);
       const finalUrl = `${serverUrl}/${encodedPath}`;
 
       log.server.debug('Request details', {
@@ -366,13 +384,11 @@ export default sequelize => {
       return { success: true, data: response.data, status: response.status };
     } catch (error) {
       const totalDuration = Date.now() - startTime;
-      const errorMsg = error.response?.data?.message || error.message;
-      const status = error.response?.status;
 
       log.server.error('Request failed', {
         error: error.message,
         code: error.code,
-        status,
+        status: error.response?.status,
         responseData: error.response?.data,
         duration: `${totalDuration}ms`,
         isTimeout: error.code === 'ECONNABORTED' || error.message.includes('timeout'),
@@ -382,11 +398,7 @@ export default sequelize => {
         requestData: options.data,
       });
 
-      return {
-        success: false,
-        error: errorMsg,
-        status: status || null,
-      };
+      return toFailureResult(error);
     }
   };
 

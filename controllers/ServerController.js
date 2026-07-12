@@ -786,10 +786,14 @@ class ServerController {
       return res.status(result.status || 200).json(result.data);
     }
     const status = result.status || 500;
-    return res.status(status).json({
-      success: false,
-      message: result.error || 'Proxy request failed',
-    });
+    // Agent error bodies pass through verbatim (409 machines[], validation detail);
+    // the substitute shape is only for bodyless failures (network error / timeout).
+    return res.status(status).json(
+      result.data ?? {
+        success: false,
+        message: result.error || 'Proxy request failed',
+      }
+    );
   }
 
   /**

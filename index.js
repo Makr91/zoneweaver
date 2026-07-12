@@ -431,13 +431,22 @@ const handleAgentWsUpgrade = async (id, backendPath, search, request, socket, he
 };
 
 /**
- * Create VNC WebSocket proxy with binary subprotocol support for a resolved agent.
+ * Create a binary-safe WebSocket proxy (VNC websockify, RDP bridge) for a resolved
+ * agent. Both streams are raw binary protocols: frames relay with their binary flag
+ * intact and compression stays off end to end.
  */
-const createVncWsProxy = async (server, machineName, search, request, socket, head) => {
+const createBinaryWsProxy = async (
+  server,
+  backendUrl,
+  subprotocols,
+  request,
+  socket,
+  head,
+  logContext
+) => {
   const { WebSocket, WebSocketServer } = await import('ws');
-  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/machines/${encodeURIComponent(machineName)}/vnc/websockify${search}`;
 
-  log.websocket.info('Connecting to backend VNC WebSocket', { backendUrl });
+  log.websocket.info('Connecting to backend binary WebSocket', { ...logContext, backendUrl });
 
   const wss = new WebSocketServer({
     noServer: true,
@@ -447,7 +456,7 @@ const createVncWsProxy = async (server, machineName, search, request, socket, he
       Array.from(protocols).includes('binary') ? 'binary' : Array.from(protocols)[0] || null,
   });
 
-  const backendWs = new WebSocket(backendUrl, ['binary'], {
+  const backendWs = new WebSocket(backendUrl, subprotocols, {
     headers: {
       Authorization: `Bearer ${server.api_key}`,
       'User-Agent': 'Hyperweaver-Server/1.0',
@@ -460,18 +469,18 @@ const createVncWsProxy = async (server, machineName, search, request, socket, he
   });
 
   backendWs.on('error', err => {
-    log.websocket.error('Backend VNC WebSocket connection failed', {
-      machineName,
+    log.websocket.error('Backend binary WebSocket connection failed', {
+      ...logContext,
       error: err.message,
     });
     socket.destroy();
   });
 
   wss.handleUpgrade(request, socket, head, clientWs => {
-    log.websocket.info('Client VNC WebSocket established', { machineName });
+    log.websocket.info('Client binary WebSocket established', logContext);
 
     backendWs.on('open', () => {
-      log.websocket.info('Backend VNC WebSocket connected', { machineName });
+      log.websocket.info('Backend binary WebSocket connected', logContext);
 
       clientWs.on('message', (data, isBinary) => {
         if (backendWs.readyState === WebSocket.OPEN) {
@@ -486,24 +495,30 @@ const createVncWsProxy = async (server, machineName, search, request, socket, he
       });
 
       clientWs.on('close', () => {
-        log.websocket.info('Client VNC WebSocket disconnected', { machineName });
+        log.websocket.info('Client binary WebSocket disconnected', logContext);
         backendWs.close();
       });
 
       clientWs.on('error', err => {
-        log.websocket.error('Client VNC WebSocket error', { machineName, error: err.message });
+        log.websocket.error('Client binary WebSocket error', {
+          ...logContext,
+          error: err.message,
+        });
         backendWs.close();
       });
 
       backendWs.on('close', () => {
-        log.websocket.info('Backend VNC WebSocket closed', { machineName });
+        log.websocket.info('Backend binary WebSocket closed', logContext);
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.close();
         }
       });
 
       backendWs.on('error', err => {
-        log.websocket.error('Backend VNC WebSocket error', { machineName, error: err.message });
+        log.websocket.error('Backend binary WebSocket error', {
+          ...logContext,
+          error: err.message,
+        });
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.close();
         }
@@ -511,8 +526,8 @@ const createVncWsProxy = async (server, machineName, search, request, socket, he
     });
 
     backendWs.on('error', err => {
-      log.websocket.error('Failed to connect to backend VNC WebSocket', {
-        machineName,
+      log.websocket.error('Failed to connect to backend binary WebSocket', {
+        ...logContext,
         error: err.message,
       });
       clientWs.close();
@@ -522,6 +537,7 @@ const createVncWsProxy = async (server, machineName, search, request, socket, he
 
 /**
  * Proxy a VNC websockify WS upgrade for /api/agents/:id/machines/:machineName/vnc/websockify.
+ * The agent's websockify side speaks the 'binary' subprotocol.
  */
 const handleAgentVncUpgrade = async (id, machineName, search, request, socket, head) => {
   const server = await resolveAgentForWs(id);
@@ -530,13 +546,38 @@ const handleAgentVncUpgrade = async (id, machineName, search, request, socket, h
     socket.destroy();
     return;
   }
-  await createVncWsProxy(server, machineName, search, request, socket, head);
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/machines/${encodeURIComponent(machineName)}/vnc/websockify${search}`;
+  await createBinaryWsProxy(server, backendUrl, ['binary'], request, socket, head, {
+    type: 'vnc',
+    machineName,
+  });
+};
+
+/**
+ * Proxy a browser-RDP (RDCleanPath) WS upgrade for
+ * /api/agents/:id/machines/:machineName/rdp-bridge. The agent's ?ticket= auth and
+ * ?target=console|guest ride the forwarded query string verbatim; the agent
+ * negotiates no subprotocol, so none is requested backend-side.
+ */
+const handleAgentRdpUpgrade = async (id, machineName, search, request, socket, head) => {
+  const server = await resolveAgentForWs(id);
+  if (!server || !server.api_key) {
+    log.websocket.error('WebSocket RDP: agent not found or missing API key', { id, machineName });
+    socket.destroy();
+    return;
+  }
+  const backendUrl = `${server.protocol.replace('http', 'ws')}://${server.hostname}:${server.port}/machines/${encodeURIComponent(machineName)}/rdp-bridge${search}`;
+  await createBinaryWsProxy(server, backendUrl, [], request, socket, head, {
+    type: 'rdp-bridge',
+    machineName,
+  });
 };
 
 /**
  * Handle WebSocket upgrades for the unified agent namespace (dual-mode plan §4.2):
- * zlogin, term, ssh, logs/stream, tasks/:id/stream, and VNC websockify — all keyed by
- * registry id. The UI derives these paths itself; agents keep returning raw sessions.
+ * zlogin, term, ssh, logs/stream, tasks/:id/stream, VNC websockify, and the browser-RDP
+ * bridge — all keyed by registry id. The UI derives these paths itself; agents keep
+ * returning raw sessions.
  */
 const handleWebSocketUpgrade = async (request, socket, head) => {
   try {
@@ -554,6 +595,23 @@ const handleWebSocketUpgrade = async (request, socket, head) => {
       await handleAgentVncUpgrade(
         vncMatch.groups.id,
         decodeURIComponent(vncMatch.groups.machine),
+        search,
+        request,
+        socket,
+        head
+      );
+      return;
+    }
+
+    // /api/agents/:id/machines/:machineName/rdp-bridge (browser-RDP RDCleanPath)
+    const rdpMatch = pathname.match(
+      /^\/api\/agents\/(?<id>[^/]+)\/machines\/(?<machine>[^/]+)\/rdp-bridge/
+    );
+    if (rdpMatch) {
+      // Same single-decode rule as VNC above: the handler re-encodes the segment once.
+      await handleAgentRdpUpgrade(
+        rdpMatch.groups.id,
+        decodeURIComponent(rdpMatch.groups.machine),
         search,
         request,
         socket,
