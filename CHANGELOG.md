@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.9](https://github.com/Makr91/hyperweaver-server/compare/v0.9.8...v0.9.9) (2026-07-17)
+
+
+### Bug Fixes
+
+* bump hyperweaverUiVersion to 0.10.11 ([08fda1c](https://github.com/Makr91/hyperweaver-server/commit/08fda1c2005357721de6bbee3eb2020dbd123546))
+* bump hyperweaverUiVersion to 0.10.11 ([b86b2d5](https://github.com/Makr91/hyperweaver-server/commit/b86b2d5cafa5a6e1391ae55e12e9b5b0c77aaa09))
+* updating api shapes ([fe3083b](https://github.com/Makr91/hyperweaver-server/commit/fe3083ba703a6f8d13bfcf442e019ca556ad30bf))
+* updating api shapes ([cb634d7](https://github.com/Makr91/hyperweaver-server/commit/cb634d7665278bf8b931c63855e20c5b087ef9fd))
+* version ([ccd9af5](https://github.com/Makr91/hyperweaver-server/commit/ccd9af57da8b82a6fe0fb375bfa10444a64a6780))
+
 ## [0.9.8](https://github.com/Makr91/hyperweaver-server/compare/v0.9.7...v0.9.8) (2026-07-06)
 
 
