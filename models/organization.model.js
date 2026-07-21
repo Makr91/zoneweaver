@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { DataTypes, sql } from '@sequelize/core';
 
 export default sequelize => {
@@ -38,6 +39,17 @@ export default sequelize => {
             msg: 'Organization code must be alphanumeric',
           },
         },
+      },
+      org_uuid: {
+        /**
+         * Stable org identity used by the multi-tenancy layer. For local orgs a random
+         * UUID minted at create; for orgs mirrored from the IdP's organizations claim it
+         * is the IdP's org uuid verbatim — the cross-app contract key.
+         */
+        type: DataTypes.STRING(36),
+        allowNull: true,
+        unique: true,
+        columnName: 'org_uuid',
       },
     },
     {
@@ -100,6 +112,11 @@ export default sequelize => {
 
       // Hooks
       hooks: {
+        beforeCreate: organization => {
+          if (!organization.org_uuid) {
+            organization.org_uuid = crypto.randomUUID();
+          }
+        },
         // Handle cascading deletes properly
         beforeDestroy: async (organization, options) => {
           const { transaction } = options;
@@ -147,6 +164,12 @@ export default sequelize => {
   Organization.findByOrganizationCode = function (organizationCode) {
     return this.findOne({
       where: { organization_code: organizationCode },
+    });
+  };
+
+  Organization.findByOrgUuid = function (orgUuid) {
+    return this.withScope('withInactive').findOne({
+      where: { org_uuid: orgUuid },
     });
   };
 

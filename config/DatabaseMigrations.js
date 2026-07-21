@@ -5,6 +5,8 @@
  * an existing installation's schema must change, and call them from runMigrations.
  */
 
+import crypto from 'crypto';
+import { DataTypes } from '@sequelize/core';
 import { log } from '../utils/Logger.js';
 
 /**
@@ -187,14 +189,56 @@ class DatabaseMigrations {
   }
 
   /**
-   * Run all pending migrations. Currently none — the full schema is model-defined and
-   * created by initializeTables; future schema changes add their migration method above
-   * and call it here.
+   * Add org_uuid to organizations on existing installations and mint a UUID for every
+   * row that lacks one (new rows get theirs from the model's beforeCreate hook).
+   * No-ops on fresh installs (no organizations table yet — sync creates it complete).
+   * @returns {Promise<boolean>} True if migration successful
+   */
+  async migrateOrganizationOrgUuid() {
+    const exists = await this.tableExists('organizations');
+    if (!exists) {
+      return true;
+    }
+
+    const added = await this.addColumnIfNotExists('organizations', 'org_uuid', {
+      type: DataTypes.STRING(36),
+      allowNull: true,
+    });
+    if (!added) {
+      return false;
+    }
+
+    try {
+      const [rows] = await this.sequelize.query(
+        'SELECT id FROM organizations WHERE org_uuid IS NULL'
+      );
+      await Promise.all(
+        rows.map(row =>
+          this.sequelize.query('UPDATE organizations SET org_uuid = ? WHERE id = ?', {
+            replacements: [crypto.randomUUID(), row.id],
+          })
+        )
+      );
+      if (rows.length > 0) {
+        log.database.info('Backfilled org_uuid for existing organizations', {
+          count: rows.length,
+        });
+      }
+      return true;
+    } catch (error) {
+      log.database.error('Failed to backfill org_uuid', { error: error.message });
+      return false;
+    }
+  }
+
+  /**
+   * Run all pending migrations. The full schema is model-defined and created by
+   * initializeTables; migrations here only reshape existing installations.
    * @returns {Promise<boolean>} True if all migrations successful
    */
   async runMigrations() {
-    log.database.info('No pending database migrations');
-    return true;
+    const orgUuidOk = await this.migrateOrganizationOrgUuid();
+    return orgUuidOk;
   }
 
   /**
@@ -214,17 +258,18 @@ class DatabaseMigrations {
   }
 
   /**
-   * Full database setup: initialize tables and run migrations
-   * @description Complete database setup process for new and existing installations
+   * Full database setup. Migrations run FIRST (they reshape existing tables — sync would
+   * otherwise trip creating model indexes on columns the old schema lacks, e.g. the
+   * org_uuid unique index), then sync creates anything missing for fresh installs.
    * @returns {Promise<boolean>} True if setup successful
    */
   async setupDatabase() {
     try {
       log.database.info('Setting up database schema');
 
-      await this.initializeTables();
-
       await this.runMigrations();
+
+      await this.initializeTables();
 
       log.database.info('Database setup completed successfully');
       return true;

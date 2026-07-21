@@ -1,5 +1,6 @@
 import db from '../../models/index.js';
 import { log } from '../../utils/Logger.js';
+import { filterVisibleServers } from '../../utils/orgVisibility.js';
 
 const { server: ServerModel } = db;
 
@@ -174,13 +175,13 @@ export const addServer = async (req, res) => {
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 export const getAllServers = async (req, res) => {
-  void req;
   try {
     const servers = await ServerModel.getAllServers();
+    const visible = await filterVisibleServers(req, servers);
 
     return res.json({
       success: true,
-      servers,
+      servers: visible,
     });
   } catch (error) {
     log.server.error('Get servers error', { error: error.message });

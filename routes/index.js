@@ -19,6 +19,14 @@ import StatusController from '../controllers/StatusController.js';
 import * as FavoritesController from '../controllers/FavoritesController.js';
 import ConfigController from '../controllers/ConfigController.js';
 import { oidcTokenRefresh } from '../auth/oidcTokenRefresh.js';
+import { orgAuthorizeAgent } from '../utils/orgAccess.js';
+import {
+  getServerOrgs,
+  setServerOrgs,
+  getMachineOrgs,
+  setMachineOrgs,
+} from '../controllers/OrgAccessController.js';
+import { proxyToBoxVault } from '../controllers/BoxVaultController.js';
 import {
   authLimiter,
   adminLimiter,
@@ -246,7 +254,13 @@ router.get(
 );
 
 router.post('/api/servers', adminLimiter, authenticate, requireAdmin, ServerController.addServer);
-router.get('/api/servers', adminLimiter, authenticate, ServerController.getAllServers);
+router.get(
+  '/api/servers',
+  adminLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  ServerController.getAllServers
+);
 router.post('/api/servers/test', adminLimiter, authenticate, ServerController.testServer);
 router.patch(
   '/api/servers/:serverId',
@@ -261,6 +275,53 @@ router.delete(
   authenticate,
   requireAdmin,
   ServerController.removeServer
+);
+
+/**
+ * Org assignment (D15 self-service): guarded in the controller — local admins always,
+ * otherwise OWNER/ADMIN of an owning org (agent orgs), or agent-org/machine-org managers
+ * (machine orgs). oidcTokenRefresh keeps the session's org claims current.
+ */
+router.get(
+  '/api/servers/:serverId/orgs',
+  adminLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  getServerOrgs
+);
+router.put(
+  '/api/servers/:serverId/orgs',
+  adminLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  setServerOrgs
+);
+router.get(
+  '/api/servers/:serverId/machines/:machineName/orgs',
+  adminLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  getMachineOrgs
+);
+router.put(
+  '/api/servers/:serverId/machines/:machineName/orgs',
+  adminLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  setMachineOrgs
+);
+
+/**
+ * BoxVault proxy: forwards with the LOGGED-IN USER's OIDC access token — BoxVault
+ * authorizes org-private boxes from the token's organizations claim. No server-wide
+ * BoxVault credential exists anywhere.
+ */
+router.all(
+  '/api/boxvault/*splat',
+  apiProxyLimiter,
+  authenticate,
+  oidcTokenRefresh,
+  proxyToBoxVault
 );
 
 /**
@@ -308,7 +369,9 @@ router.all(
   '/api/agents/:id/*splat',
   apiProxyLimiter,
   authenticate,
+  oidcTokenRefresh,
   authorizeAgentSubPath,
+  orgAuthorizeAgent,
   ServerController.proxyToAgent
 );
 

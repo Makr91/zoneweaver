@@ -130,6 +130,8 @@ const modelFiles = [
   'invitation.model.js',
   'server.model.js',
   'credential.model.js',
+  'serverOrg.model.js',
+  'machineOrg.model.js',
 ];
 
 // Initialize models - handle async imports properly

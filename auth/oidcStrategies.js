@@ -106,6 +106,7 @@ const setupSingleOidcProvider = async (providerName, providerConfig) => {
               refresh_token: tokens.refresh_token,
               expires_at: expiresAt,
               sid: userinfo.sid,
+              organizations: Array.isArray(userinfo.organizations) ? userinfo.organizations : [],
             };
           }
 

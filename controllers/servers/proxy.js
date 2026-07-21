@@ -3,6 +3,7 @@ import https from 'https';
 import db from '../../models/index.js';
 import { log } from '../../utils/Logger.js';
 import { serverCache, CACHE_TTL } from './cache.js';
+import { filterProxyResponse, stampCreatedMachine } from '../../utils/orgAccess.js';
 
 const { server: ServerModel } = db;
 
@@ -266,7 +267,10 @@ export const proxyStandardRequest = async (req, res, proxyConfig, fileOpInfo) =>
   }
 
   if (result.success) {
-    return res.status(result.status || 200).json(result.data);
+    if (req.orgAccess?.stampCreate && req.method === 'POST' && path === 'machines') {
+      await stampCreatedMachine(req, server.id, result.data);
+    }
+    return res.status(result.status || 200).json(filterProxyResponse(req, result.data));
   }
   const status = result.status || 500;
   return res.status(status).json(

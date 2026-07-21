@@ -82,7 +82,26 @@ const oidcTokenRefresh = async (req, res, next) => {
         ? Date.now() + newTokens.expires_in * 1000
         : Date.now() + 30 * 60 * 1000;
 
-    // Persist refreshed tokens back into the session (server-side only).
+    // Persist refreshed tokens back into the session (server-side only). Refreshed
+    // id_token claims carry current org membership — decode (payload only; the token
+    // arrived over TLS from the authenticated token endpoint) and update the stash so
+    // invitation/removal changes take effect within a refresh window, not next login.
+    let { organizations } = oidc;
+    if (newTokens.id_token) {
+      try {
+        const payload = JSON.parse(
+          Buffer.from(newTokens.id_token.split('.')[1], 'base64url').toString('utf8')
+        );
+        if (Array.isArray(payload.organizations)) {
+          ({ organizations } = payload);
+        }
+      } catch (decodeError) {
+        log.auth.warn('Could not decode refreshed id_token claims', {
+          error: decodeError.message,
+        });
+      }
+    }
+
     req.session.oidc = {
       ...oidc,
       access_token: newTokens.access_token,
@@ -90,6 +109,7 @@ const oidcTokenRefresh = async (req, res, next) => {
       // Some providers don't return a new refresh token on refresh — keep the old one.
       refresh_token: newTokens.refresh_token || oidc.refresh_token,
       expires_at: expiresAt,
+      organizations,
     };
 
     log.auth.info('OIDC access token refreshed', { providerName });

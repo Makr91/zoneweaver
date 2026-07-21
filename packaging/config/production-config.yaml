@@ -1176,6 +1176,15 @@ agents:
 
 # Third-party integrations
 integrations:
+  boxvault:
+    url:
+      type: string
+      value: ''
+      description: "Base URL of the BoxVault instance (e.g. https://boxvault.example.com). Requests to /api/boxvault/* are forwarded there with the logged-in user's OIDC access token, so BoxVault authorizes org-private boxes per user. Empty disables the proxy."
+      section: 'Integrations'
+      subsection: 'BoxVault'
+      required: false
+      order: 1
   gravatar:
     api_key:
       type: string
