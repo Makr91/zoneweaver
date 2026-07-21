@@ -379,7 +379,7 @@ const options = {
       },
     ],
   },
-  apis: ['./controllers/*.js', './routes/*.js', './models/*.js'], // paths to files containing OpenAPI definitions
+  apis: ['./controllers/**/*.js', './routes/**/*.js', './models/**/*.js'],
 };
 
 const specs = swaggerJsdoc(options);

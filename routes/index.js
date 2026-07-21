@@ -1,8 +1,5 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import path from 'path';
-import crypto from 'crypto';
-import axios from 'axios';
 import { authenticate, optionalAuth, requireAdmin, requireSuperAdmin } from '../auth/auth.js';
 import AuthController from '../controllers/AuthController.js';
 import RegistrationController from '../controllers/RegistrationController.js';
@@ -22,98 +19,37 @@ import StatusController from '../controllers/StatusController.js';
 import * as FavoritesController from '../controllers/FavoritesController.js';
 import ConfigController from '../controllers/ConfigController.js';
 import { oidcTokenRefresh } from '../auth/oidcTokenRefresh.js';
-import { loadConfig } from '../utils/config.js';
+import {
+  authLimiter,
+  adminLimiter,
+  apiProxyLimiter,
+  standardLimiter,
+  staticFileLimiter,
+} from './limiters.js';
+import gravatarRouter from './gravatar.js';
 
 const router = express.Router();
 
-// Only Routes should be defined here!
-
-// 🛡️ Rate Limiting Configuration (CodeQL Security Fix)
-// Configurable tiered approach based on endpoint sensitivity and resource usage
-
-// Load configuration from config.yaml
-const config = loadConfig();
-
-// Authentication - Strict (prevent brute force attacks)
-const authLimiter = rateLimit({
-  windowMs: config.limits?.authentication?.windowMs?.value || 15 * 60 * 1000,
-  limit: config.limits?.authentication?.max?.value || 25,
-  message: {
-    error:
-      config.limits?.authentication?.message?.value ||
-      'Too many authentication attempts, please try again later',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Admin operations - Moderate (protect admin functions)
-const adminLimiter = rateLimit({
-  windowMs: config.limits?.admin?.windowMs?.value || 15 * 60 * 1000,
-  limit: config.limits?.admin?.max?.value || 500,
-  message: {
-    error:
-      config.limits?.admin?.message?.value || 'Too many admin requests, please try again later',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// External API proxy - Restrictive (protect downstream agents)
-const apiProxyLimiter = rateLimit({
-  windowMs: config.limits?.apiProxy?.windowMs?.value || 60 * 1000,
-  limit: config.limits?.apiProxy?.max?.value || 2000,
-  message: {
-    error:
-      config.limits?.apiProxy?.message?.value ||
-      'Too many API proxy requests, please try again later',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Standard operations - Normal (general purpose)
-const standardLimiter = rateLimit({
-  windowMs: config.limits?.standard?.windowMs?.value || 15 * 60 * 1000,
-  limit: config.limits?.standard?.max?.value || 1000,
-  message: {
-    error: config.limits?.standard?.message?.value || 'Too many requests, please try again later',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Static file serving - High limit (prevent file system abuse, CodeQL flagged endpoints)
-const staticFileLimiter = rateLimit({
-  windowMs: config.limits?.staticFiles?.windowMs?.value || 15 * 60 * 1000,
-  limit: config.limits?.staticFiles?.max?.value || 5000,
-  message: {
-    error:
-      config.limits?.staticFiles?.message?.value ||
-      'Too many static file requests, please try again later',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Authentication endpoints - Protected with strict rate limiting
 router.post('/api/auth/register', authLimiter, RegistrationController.register);
 router.post('/api/auth/login', authLimiter, AuthController.login);
 router.post('/api/auth/ldap', authLimiter, LdapController.ldapLogin);
-// Multiple OIDC provider routes
 router.get('/api/auth/oidc/callback', standardLimiter, OidcController.handleOidcCallback);
-// OIDC Back-Channel Logout receiver (server-to-server; IdP POSTs a signed logout_token). Public
-// — trust is the token signature/aud, not an app session. Needs its own urlencoded parser
-// because the app only mounts express.json() globally. Registered before the GET :provider
-// route for clarity (no collision — this is POST).
+/**
+ * OIDC Back-Channel Logout receiver (server-to-server; IdP POSTs a signed logout_token).
+ * Public — trust is the token signature/aud, not an app session. Needs its own urlencoded
+ * parser because the app only mounts express.json() globally. Registered before the GET
+ * :provider route for clarity (no collision — this is POST).
+ */
 router.post(
   '/api/auth/oidc/backchannel-logout',
   standardLimiter,
   express.urlencoded({ extended: false }),
   OidcController.handleBackchannelLogout
 );
-// Trusted OIDC issuers (C5, public). MUST precede the GET :provider route so 'issuers' isn't
-// captured as a provider name.
+/**
+ * Trusted OIDC issuers (C5, public). MUST precede the GET :provider route so 'issuers'
+ * isn't captured as a provider name.
+ */
 router.get('/api/auth/oidc/issuers', standardLimiter, OidcController.getOidcIssuers);
 router.get('/api/auth/oidc/:provider', standardLimiter, OidcController.startOidcLogin);
 router.post('/api/auth/logout', standardLimiter, optionalAuth, AuthController.logout);
@@ -134,9 +70,11 @@ router.get('/api/auth/verify', standardLimiter, AuthController.verifyToken);
 router.get('/api/auth/setup-status', standardLimiter, RegistrationController.checkSetupStatus);
 router.get('/api/auth/methods', standardLimiter, AuthController.getAuthMethods);
 
-// Favorites + OIDC userinfo claims (profile dropdown). The OIDC access token is read
-// server-side from req.session.oidc (never the app JWT, §4); oidcTokenRefresh refreshes it
-// when near expiry. authenticate first (valid app session), then the refresh middleware.
+/**
+ * Favorites + OIDC userinfo claims (profile dropdown). The OIDC access token is read
+ * server-side from req.session.oidc (never the app JWT, §4); oidcTokenRefresh refreshes it
+ * when near expiry. authenticate first (valid app session), then the refresh middleware.
+ */
 router.get(
   '/api/userinfo/claims',
   standardLimiter,
@@ -173,105 +111,8 @@ router.post(
   LdapController.testLdap
 );
 
-// This needs to be moved out of this file!
-/**
- * @swagger
- * /api/profile/{identifier}:
- *   get:
- *     summary: Get Gravatar profile information
- *     description: Retrieve Gravatar profile data for a given email address or username
- *     tags: [Utilities]
- *     parameters:
- *       - in: path
- *         name: identifier
- *         required: true
- *         schema:
- *           type: string
- *         description: Email address or username to lookup
- *         example: "user@example.com"
- *     responses:
- *       200:
- *         description: Gravatar profile retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 hash:
- *                   type: string
- *                   description: Gravatar hash for the profile
- *                   example: "abc123def456..."
- *                 display_name:
- *                   type: string
- *                   description: Display name from Gravatar
- *                   example: "John Doe"
- *                 profile_url:
- *                   type: string
- *                   description: Gravatar profile URL
- *                   example: "https://gravatar.com/johndoe"
- *                 avatar_url:
- *                   type: string
- *                   description: Avatar image URL
- *                   example: "https://secure.gravatar.com/avatar/abc123def456"
- *                 avatar_alt_text:
- *                   type: string
- *                   description: Alt text for avatar
- *                   example: "John Doe's avatar"
- *       400:
- *         description: Invalid identifier
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Invalid identifier format"
- *       404:
- *         description: Profile not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Profile not found"
- *       500:
- *         description: Internal server error or Gravatar API error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Gravatar API request failed"
- */
-router.get('/api/profile/:identifier', standardLimiter, async (req, res) => {
-  const { identifier } = req.params;
+router.use(gravatarRouter);
 
-  try {
-    const appConfig = loadConfig();
-    const apiKey = appConfig.integrations?.gravatar?.api_key?.value;
-
-    const hash = crypto.createHash('sha256').update(identifier.trim().toLowerCase()).digest('hex');
-
-    const response = await axios.get(`https://api.gravatar.com/v3/profiles/${hash}`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    res.status(error.response ? error.response.status : 500).json({
-      error: error.message,
-    });
-  }
-});
-
-// Admin endpoints - Protected with admin rate limiting
 router.get(
   '/api/admin/users',
   adminLimiter,
@@ -308,7 +149,6 @@ router.delete(
   UserManagementController.deleteUser
 );
 
-// Organization endpoints - Protected with admin rate limiting
 router.get(
   '/api/organizations',
   adminLimiter,
@@ -364,7 +204,6 @@ router.delete(
   OrganizationController.deleteOrganization
 );
 
-// Invitation endpoints - Protected with admin rate limiting
 router.post(
   '/api/invitations/send',
   adminLimiter,
@@ -406,7 +245,6 @@ router.get(
   InvitationController.validateInvitation
 );
 
-// Server management endpoints - Protected with admin rate limiting
 router.post('/api/servers', adminLimiter, authenticate, requireAdmin, ServerController.addServer);
 router.get('/api/servers', adminLimiter, authenticate, ServerController.getAllServers);
 router.post('/api/servers/test', adminLimiter, authenticate, ServerController.testServer);
@@ -425,26 +263,26 @@ router.delete(
   ServerController.removeServer
 );
 
-// ── Unified agent proxy (dual-mode plan §4) ────────────────────────────────
-// ALL /api/agents/:id/:path → resolve the agent by registry id → forward to it.
-// Sub-path authorization: the sensitive admin/superadmin surfaces that used to sit on
-// explicit (but catch-all-shadowed, so never enforced) /api/zapi sub-routes are gated
-// here for real, before the generic proxy runs.
+/**
+ * Unified agent proxy (dual-mode plan §4): ALL /api/agents/:id/:path → resolve the agent
+ * by registry id → forward to it. Sub-path authorization: the sensitive admin/superadmin
+ * surfaces that used to sit on explicit (but catch-all-shadowed, so never enforced)
+ * /api/zapi sub-routes are gated here for real, before the generic proxy runs.
+ * Host power actions are admin per Mark's ruling: admins may power hosts, plain users may
+ * not (matches the UI's canPowerOffHosts level); read-only /system/host/status and /uptime
+ * stay ungated. Hosts-file read/write and database maintenance are system configuration
+ * surfaces, admin like the rest.
+ */
 const AGENT_SUPERADMIN_PREFIXES = ['settings', 'server/restart'];
 const AGENT_ADMIN_PREFIXES = [
   'system/zfs/arc',
   'system/fault-management',
   'system/logs',
   'system/syslog',
-  // Host power actions (the host-power surface) — admin per Mark's ruling (2026-07-05):
-  // admins may power hosts, plain users may not. Matches the UI's canPowerOffHosts level.
-  // Read-only /system/host/status and /uptime stay ungated.
   'system/host/shutdown',
   'system/host/restart',
   'system/host/poweroff',
   'system/host/halt',
-  // Hosts-file read/write and database maintenance (vacuum/analyze/cleanup) — system
-  // configuration surfaces, admin like the rest of this list.
   'system/hosts',
   'database',
 ];
@@ -474,7 +312,6 @@ router.all(
   ServerController.proxyToAgent
 );
 
-// Settings endpoints - Protected with admin rate limiting
 router.get(
   '/api/settings',
   adminLimiter,
@@ -532,8 +369,6 @@ router.delete(
   BackupController.deleteBackup
 );
 
-// Config collection management endpoints (keyed maps, e.g. OIDC providers)
-// - Protected with admin rate limiting. :path is a dotted config path.
 router.get(
   '/api/settings/collections/:path',
   adminLimiter,
@@ -563,7 +398,6 @@ router.delete(
   CollectionController.deleteCollectionItem
 );
 
-// Mail testing endpoint - Protected with admin rate limiting
 router.post(
   '/api/mail/test',
   adminLimiter,
@@ -572,13 +406,10 @@ router.post(
   MailController.testMail
 );
 
-// Server identity/status — PUBLIC (login screen + dual-mode probe depend on it) [dual-mode plan §3.2]
 router.get('/api/status', standardLimiter, StatusController.getServerStatus);
 
-// Ticket-system config (C4) — PUBLIC (profile dropdown help-desk link)
 router.get('/api/config/ticket', standardLimiter, ConfigController.getTicketConfig);
 
-// Health check endpoint - Simple health status for restart monitoring
 router.get('/api/health', standardLimiter, (req, res) => {
   void req;
   res.json({
@@ -590,11 +421,13 @@ router.get('/api/health', standardLimiter, (req, res) => {
   });
 });
 
-// Docs ship inside the Hyperweaver UI artifact (as ui/docs) and are served by the
-// root static mount in index.js. Static wins for every existing file, so this
-// handler only fires when the docs are NOT bundled (e.g. a dev checkout, or a UI
-// artifact built before docs bundling) — say so plainly instead of falling through
-// to the SPA catch-all, which would render a blank app shell.
+/**
+ * Docs ship inside the Hyperweaver UI artifact (as ui/docs) and are served by the root
+ * static mount in index.js. Static wins for every existing file, so this handler only
+ * fires when the docs are NOT bundled (e.g. a dev checkout, or a UI artifact built before
+ * docs bundling) — say so plainly instead of falling through to the SPA catch-all, which
+ * would render a blank app shell.
+ */
 router.use('/docs', staticFileLimiter, (req, res) => {
   void req;
   res.status(503).json({
@@ -604,10 +437,8 @@ router.use('/docs', staticFileLimiter, (req, res) => {
   });
 });
 
-// Serve the Hyperweaver UI build artifact (fetched into ./ui) - Protected with static file rate limiting (CodeQL flagged)
 router.use('/ui', staticFileLimiter, express.static(path.join(process.cwd(), 'ui')));
 
-// Catch all handler: send back Vite's index.html file for client-side routing - Protected with static file rate limiting (CodeQL flagged)
 router.get('/ui/*splat', staticFileLimiter, (req, res) => {
   void req;
   res.sendFile(path.join(process.cwd(), 'ui/index.html'));

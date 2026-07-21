@@ -12,10 +12,10 @@
     "dev": "nodemon index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:all": "npm run lint",
-    "lint:fix:all": "npm run lint:fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format": "prettier --write . --log-level warn",
+    "format:check": "prettier --check .",
+    "quality": "npm run lint && npm run format:check",
+    "quality:fix": "npm run lint:fix && npm run format"
   },
   "keywords": [
     "hyperweaver",

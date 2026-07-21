@@ -1,185 +1,24 @@
 /**
  * @fileoverview Centralized Logging System for Hyperweaver Server
  * @description Winston-based logging with clean daily rotation
- * @author Hyperweaver Project
  */
 
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { loadConfig } from './config.js';
+import {
+  loggingConfig,
+  getValue,
+  effectiveLogDir,
+  effectiveCurrentDir,
+  effectiveArchivesDir,
+  effectiveMetaDir,
+  logFormat,
+  consoleFormat,
+  createCategoryLogger,
+} from './loggerCore.js';
 
-// Get current directory for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Get logging configuration from config.yaml
-const config = loadConfig();
-const loggingConfig = config.logging || {
-  level: { value: 'info' },
-  console_enabled: { value: true },
-  log_directory: { value: '/var/log/hyperweaver-server' },
-  file_rotation: {
-    max_size: { value: 50 },
-    max_files: { value: 5 },
-  },
-  performance_threshold_ms: { value: 1000 },
-  categories: {},
-};
-
-// Extract values from metadata format
-const getValue = configItem => {
-  if (typeof configItem === 'object' && configItem !== null && 'value' in configItem) {
-    return configItem.value;
-  }
-  return configItem;
-};
-
-// Ensure log directory and subdirectories exist
-const logDir = getValue(loggingConfig.log_directory) || '/var/log/hyperweaver-server';
-const currentDir = path.join(logDir, 'current');
-const archivesDir = path.join(logDir, 'archives');
-const metaDir = path.join(logDir, '.meta'); // Hidden directory for audit files
-
-// Check if we can create/write to the log directory
-let effectiveLogDir = logDir;
-let effectiveCurrentDir = currentDir;
-let effectiveArchivesDir = archivesDir;
-let effectiveMetaDir = metaDir;
-
-try {
-  // Try to create main directory structure
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
-  }
-  if (!fs.existsSync(currentDir)) {
-    fs.mkdirSync(currentDir, { recursive: true, mode: 0o755 });
-  }
-  if (!fs.existsSync(archivesDir)) {
-    fs.mkdirSync(archivesDir, { recursive: true, mode: 0o755 });
-  }
-  if (!fs.existsSync(metaDir)) {
-    fs.mkdirSync(metaDir, { recursive: true, mode: 0o755 });
-  }
-
-  // Test write permissions
-  const testFile = path.join(logDir, '.write-test');
-  fs.writeFileSync(testFile, 'test');
-  fs.unlinkSync(testFile);
-} catch {
-  // Fallback to local logs directory if can't create system directory
-  const fallbackDir = path.join(__dirname, '..', 'logs');
-  effectiveLogDir = fallbackDir;
-  effectiveCurrentDir = path.join(fallbackDir, 'current');
-  effectiveArchivesDir = path.join(fallbackDir, 'archives');
-  effectiveMetaDir = path.join(fallbackDir, '.meta');
-
-  if (!fs.existsSync(fallbackDir)) {
-    fs.mkdirSync(fallbackDir, { recursive: true });
-  }
-  if (!fs.existsSync(effectiveCurrentDir)) {
-    fs.mkdirSync(effectiveCurrentDir, { recursive: true });
-  }
-  if (!fs.existsSync(effectiveArchivesDir)) {
-    fs.mkdirSync(effectiveArchivesDir, { recursive: true });
-  }
-  if (!fs.existsSync(effectiveMetaDir)) {
-    fs.mkdirSync(effectiveMetaDir, { recursive: true });
-  }
-
-  console.warn(`Could not create log directory ${logDir}, using ${fallbackDir}`);
-}
-
-/**
- * Common log format configuration - optimized for production
- */
-const logFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss.SSS',
-  }),
-  winston.format.errors({ stack: true }),
-  winston.format.json()
-);
-
-/**
- * Console format for development - simplified and colorized
- */
-const consoleFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'HH:mm:ss',
-  }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(({ level, message, timestamp, category, ...meta }) => {
-    const categoryStr = category ? `[${category}]` : '';
-    const metaStr = Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta, null, 0)}` : '';
-    return `${timestamp} ${categoryStr} ${level}: ${message}${metaStr}`;
-  })
-);
-
-/**
- * Create a logger for a specific category with organized directory structure
- * @param {string} category - Log category name
- * @param {string} filename - Log filename (without extension)
- * @returns {winston.Logger} Configured winston logger
- */
-const createCategoryLogger = (category, filename) => {
-  const categoryConfig = loggingConfig.categories?.[category];
-  const categoryLevel = getValue(categoryConfig) || getValue(loggingConfig.level) || 'info';
-  const transports = [];
-
-  // Category-specific daily rotating file transport with organized structure
-  const categoryTransport = new DailyRotateFile({
-    filename: path.join(effectiveCurrentDir, `${filename}-%DATE%.log`),
-    datePattern: 'YYYY-MM-DD',
-    level: categoryLevel,
-    format: logFormat,
-    maxSize: `${getValue(loggingConfig.file_rotation?.max_size) || 50}m`,
-    maxFiles: getValue(loggingConfig.file_rotation?.max_files) || '14d',
-    zippedArchive: true, // Compress old files
-    auditFile: path.join(effectiveMetaDir, `${filename}-audit.json`), // Store audit files in .meta/
-    createSymlink: true,
-    symlinkName: path.join('..', `${filename}.log`), // Relative path to create symlink in parent directory
-  });
-
-  // Move compressed archives to archives/ folder
-  categoryTransport.on('archive', zipFilename => {
-    try {
-      const archiveFilename = path.basename(zipFilename);
-      const archivePath = path.join(effectiveArchivesDir, archiveFilename);
-      fs.renameSync(zipFilename, archivePath);
-    } catch {
-      // Ignore errors - file might already be moved
-    }
-  });
-
-  transports.push(categoryTransport);
-
-  // Console transport only if enabled and not in production
-  const consoleEnabled = getValue(loggingConfig.console_enabled) !== false;
-  if (consoleEnabled && process.env.NODE_ENV !== 'production') {
-    transports.push(
-      new winston.transports.Console({
-        level: categoryLevel,
-        format: consoleFormat,
-      })
-    );
-  }
-
-  return winston.createLogger({
-    level: categoryLevel,
-    format: logFormat,
-    defaultMeta: { category, service: 'hyperweaver-server' },
-    transports,
-    exitOnError: false,
-    silent: getValue(loggingConfig.level) === 'silent',
-  });
-};
-
-/**
- * Category-specific loggers
- */
 export const monitoringLogger = createCategoryLogger('monitoring', 'monitoring');
 export const databaseLogger = createCategoryLogger('database', 'database');
 export const apiRequestLogger = createCategoryLogger('api', 'api-requests');
@@ -189,9 +28,6 @@ export const authLogger = createCategoryLogger('auth', 'auth');
 export const websocketLogger = createCategoryLogger('websocket', 'websocket');
 export const performanceLogger = createCategoryLogger('performance', 'performance');
 
-/**
- * General application logger with organized structure
- */
 const appTransport = new DailyRotateFile({
   filename: path.join(effectiveCurrentDir, 'application-%DATE%.log'),
   datePattern: 'YYYY-MM-DD',
@@ -217,14 +53,13 @@ const errorTransport = new DailyRotateFile({
   symlinkName: path.join('..', 'error.log'),
 });
 
-// Move compressed archives to archives/ folder
 appTransport.on('archive', zipFilename => {
   try {
     const archiveFilename = path.basename(zipFilename);
     const archivePath = path.join(effectiveArchivesDir, archiveFilename);
     fs.renameSync(zipFilename, archivePath);
   } catch {
-    // Ignore errors - file might already be moved
+    void 0;
   }
 });
 
@@ -234,7 +69,7 @@ errorTransport.on('archive', zipFilename => {
     const archivePath = path.join(effectiveArchivesDir, archiveFilename);
     fs.renameSync(zipFilename, archivePath);
   } catch {
-    // Ignore errors - file might already be moved
+    void 0;
   }
 });
 
@@ -246,7 +81,6 @@ export const appLogger = winston.createLogger({
   exitOnError: false,
 });
 
-// Add console output for development
 const consoleEnabled = getValue(loggingConfig.console_enabled) !== false;
 if (consoleEnabled && process.env.NODE_ENV !== 'production') {
   appLogger.add(
@@ -256,7 +90,6 @@ if (consoleEnabled && process.env.NODE_ENV !== 'production') {
   );
 }
 
-// Keep additional loggers for backward compatibility
 export const proxyLogger = createCategoryLogger('proxy', 'proxy');
 export const mailLogger = createCategoryLogger('mail', 'mail');
 export const serverLogger = createCategoryLogger('server', 'server');
@@ -267,7 +100,8 @@ export const terminalLogger = createCategoryLogger('terminal', 'terminal');
 export const zloginLogger = createCategoryLogger('zlogin', 'zlogin');
 
 /**
- * Helper function to safely log with fallback to console
+ * Helper function to safely log with fallback to console. Strips circular references
+ * and truncates very large string values before handing meta to winston.
  * @param {winston.Logger} logger - Winston logger instance
  * @param {string} level - Log level
  * @param {string} message - Log message
@@ -275,27 +109,24 @@ export const zloginLogger = createCategoryLogger('zlogin', 'zlogin');
  */
 const safeLog = (logger, level, message, meta = {}) => {
   try {
-    // Remove circular references and large objects
     const safeMeta = JSON.parse(
-      JSON.stringify(meta, (_key, value) => {
-        void _key;
-        // Skip very large values
+      JSON.stringify(meta, (key, value) => {
+        void key;
         if (typeof value === 'string' && value.length > 1000) {
           return `${value.substring(0, 1000)}... (truncated)`;
         }
-        // Skip circular references
         if (typeof value === 'object' && value !== null) {
           const seen = new WeakSet();
           return JSON.parse(
-            JSON.stringify(value, (_k, v) => {
-              void _k;
-              if (typeof v === 'object' && v !== null) {
-                if (seen.has(v)) {
+            JSON.stringify(value, (innerKey, innerValue) => {
+              void innerKey;
+              if (typeof innerValue === 'object' && innerValue !== null) {
+                if (seen.has(innerValue)) {
                   return '[Circular]';
                 }
-                seen.add(v);
+                seen.add(innerValue);
               }
-              return v;
+              return innerValue;
             })
           );
         }
@@ -305,7 +136,6 @@ const safeLog = (logger, level, message, meta = {}) => {
 
     logger[level](message, safeMeta);
   } catch {
-    // Fallback to console if winston fails
     if (console[level]) {
       console[level](`[${level.toUpperCase()}] ${message}`, meta);
     }
@@ -446,9 +276,8 @@ export const createTimer = operation => {
   return {
     end: (meta = {}) => {
       const end = process.hrtime.bigint();
-      const duration = Number(end - start) / 1000000; // Convert nanoseconds to milliseconds
+      const duration = Number(end - start) / 1000000;
 
-      // Only log to performance category if exceeds threshold
       const thresholdMs = getValue(loggingConfig.performance_threshold_ms) || 1000;
       if (duration >= thresholdMs) {
         performanceLogger.warn(`Slow operation detected: ${operation}`, {
@@ -459,13 +288,13 @@ export const createTimer = operation => {
         });
       }
 
-      return Math.round(duration * 100) / 100; // Return rounded duration
+      return Math.round(duration * 100) / 100;
     },
   };
 };
 
 /**
- * Request logging middleware helper
+ * Request logging middleware helper. Static-asset requests are not logged.
  * @param {string} requestId - Unique request identifier
  * @param {Object} req - Express request object
  * @returns {Object} Request logger with timing
@@ -482,7 +311,6 @@ export const createRequestLogger = (requestId, req) => {
     userAgent: req.get('User-Agent'),
   };
 
-  // Only log non-static requests
   if (!req.path.startsWith('/static') && !req.path.match(/\.(?:js|css|png|jpg|ico)$/)) {
     apiRequestLogger.info('Request started', logData);
   }
@@ -491,7 +319,6 @@ export const createRequestLogger = (requestId, req) => {
     success: (statusCode, meta = {}) => {
       const duration = Date.now() - start;
 
-      // Skip logging for static assets
       if (req.path.startsWith('/static') || req.path.match(/\.(?:js|css|png|jpg|ico)$/)) {
         return;
       }
@@ -526,7 +353,6 @@ export const createRequestLogger = (requestId, req) => {
 export const generateRequestId = () =>
   `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-// Log startup message
 log.app.info('Logger initialized', {
   logDirectory: effectiveLogDir,
   consoleEnabled: getValue(loggingConfig.console_enabled),
