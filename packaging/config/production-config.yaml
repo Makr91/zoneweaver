@@ -45,7 +45,7 @@ frontend:
     order: 1
   version:
     type: string
-    value: 0.9.9 # x-release-please-version
+    value: 0.9.10 # x-release-please-version
     description: 'Current application version'
     section: 'Frontend'
     required: true

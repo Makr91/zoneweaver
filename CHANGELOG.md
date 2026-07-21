@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.10](https://github.com/Makr91/hyperweaver-server/compare/v0.9.9...v0.9.10) (2026-07-21)
+
+
+### Bug Fixes
+
+* org multi-tenancy (D15) — org-scoped agents/machines with proxy enforcement, org-filtered registry, machine-scoped ws-ticket mint policy, per-user BoxVault proxy, organizations claim capture, org_uuid migration ([de27535](https://github.com/Makr91/hyperweaver-server/commit/de275354b68be1322760a046eb9104712fb8f173))
+* org multi-tenancy hardening + org_uuids annotations, CSRF origin guard, dependency bumps (express-rate-limit 8.6.0, ws 8.21.1, setup-node v7), CI lint script name ([161269d](https://github.com/Makr91/hyperweaver-server/commit/161269d0f1a02d7144c99409b54dee2a8794e923))
+* org multi-tenancy hardening + org_uuids annotations, CSRF origin guard, dependency bumps (express-rate-limit 8.6.0, ws 8.21.1, setup-node v7), CI lint script name ([4416fd4](https://github.com/Makr91/hyperweaver-server/commit/4416fd4c3c9c8f60d3f42a8ba475b34fdd8bb60b))
+* split oversized files to 500-line rule (mechanical moves, swagger stays with handlers), widen swagger scan to subdirs, align lint/format scripts with zoneweaver-agent ([606d6a4](https://github.com/Makr91/hyperweaver-server/commit/606d6a455ad158fd8bce6f7e62d9455d9f8d8e87))
+* split oversized files to 500-line rule (mechanical moves, swagger stays with handlers), widen swagger scan to subdirs, align lint/format scripts with zoneweaver-agent and removing old database migrations since no one else runs this yet ([d2ed8b3](https://github.com/Makr91/hyperweaver-server/commit/d2ed8b34707d6c05a5baccc9c878a8b850276ac4))
+* updating api shapes ([8987d38](https://github.com/Makr91/hyperweaver-server/commit/8987d38f8fb4f21cbc61a20cd9ddd07cc04deb50))
+
 ## [0.9.9](https://github.com/Makr91/hyperweaver-server/compare/v0.9.8...v0.9.9) (2026-07-17)
 
 
