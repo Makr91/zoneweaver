@@ -268,6 +268,7 @@ const authorizeVmMachinePath = (req, res, access, subPath, machineName) => {
 const authorizeVmAgentSurface = (req, access, subPath) => {
   if (subPath === 'machines' && req.method === 'GET') {
     access.filterMachines = true;
+    access.decorateMachines = true;
     return 'allow';
   }
   if (subPath === 'machines' && req.method === 'POST') {
@@ -351,6 +352,9 @@ export const orgAuthorizeAgent = async (req, res, next) => {
           return deny(res, ROLE_DENIED);
         }
       }
+      if (subPath === 'machines' && req.method === 'GET') {
+        access.decorateMachines = true;
+      }
       return next();
     }
 
@@ -383,7 +387,7 @@ export const orgAuthorizeAgent = async (req, res, next) => {
   }
 };
 
-const machineIdentifier = item =>
+export const machineIdentifier = item =>
   item?.name ?? item?.machine_name ?? item?.zone_name ?? item?.machineName ?? null;
 
 /**

@@ -4,6 +4,7 @@ import db from '../../models/index.js';
 import { log } from '../../utils/Logger.js';
 import { serverCache, CACHE_TTL } from './cache.js';
 import { filterProxyResponse, stampCreatedMachine } from '../../utils/orgAccess.js';
+import { decorateMachinesResponse } from '../../utils/orgVisibility.js';
 
 const { server: ServerModel } = db;
 
@@ -270,7 +271,11 @@ export const proxyStandardRequest = async (req, res, proxyConfig, fileOpInfo) =>
     if (req.orgAccess?.stampCreate && req.method === 'POST' && path === 'machines') {
       await stampCreatedMachine(req, server.id, result.data);
     }
-    return res.status(result.status || 200).json(filterProxyResponse(req, result.data));
+    let responseBody = filterProxyResponse(req, result.data);
+    if (req.orgAccess?.decorateMachines) {
+      responseBody = await decorateMachinesResponse(req, server.id, responseBody);
+    }
+    return res.status(result.status || 200).json(responseBody);
   }
   const status = result.status || 500;
   return res.status(status).json(

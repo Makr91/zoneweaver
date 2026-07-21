@@ -5,27 +5,37 @@
  */
 
 import db from '../models/index.js';
-import { getUserOrgAccess, resolveAgentAccess, isManagerRole } from './orgAccess.js';
+import {
+  getUserOrgAccess,
+  resolveAgentAccess,
+  isManagerRole,
+  machineIdentifier,
+} from './orgAccess.js';
 
 const { serverOrg: ServerOrgModel, machineOrg: MachineOrgModel } = db;
 
+const isLocalPrivileged = req => req.user?.role === 'admin' || req.user?.role === 'super-admin';
+
 /**
- * Which agents is this user allowed to SEE in the registry list? Unassigned agents are
- * open to all; owned agents require org membership or a machine sticker on that agent.
+ * Filter the registry list to the agents this user may SEE (unassigned agents are open
+ * to all; owned agents require org membership or a machine sticker on that agent) and
+ * annotate every visible row with `org_uuids` (the agent's owning orgs, `[]` =
+ * unassigned/open). Privacy: local admins/super-admins get the full owning-org list;
+ * everyone else sees only the intersection with their OWN orgs — foreign org uuids on
+ * shared hosts never leak (D15).
  * @param {import('express').Request} req
  * @param {Array<Object>} servers - servers rows
- * @returns {Promise<Array<Object>>} Visible subset
+ * @returns {Promise<Array<Object>>} Visible subset as plain objects with org_uuids
  */
-export const filterVisibleServers = async (req, servers) => {
+export const filterAndAnnotateServers = async (req, servers) => {
   const userAccess = await getUserOrgAccess(req);
-  if (userAccess.bypass) {
-    return servers;
-  }
-
   const orgUuids = [...userAccess.orgs.keys()];
-  const [allAgentOrgRows, machineServerIds] = await Promise.all([
+
+  const [allAgentOrgRows, machineOrgRows] = await Promise.all([
     ServerOrgModel.findAll({ where: {} }),
-    orgUuids.length > 0 ? MachineOrgModel.findAll({ where: { org_uuid: orgUuids } }) : [],
+    !userAccess.bypass && orgUuids.length > 0
+      ? MachineOrgModel.findAll({ where: { org_uuid: orgUuids } })
+      : [],
   ]);
 
   const ownedServers = new Map();
@@ -36,18 +46,69 @@ export const filterVisibleServers = async (req, servers) => {
     ownedServers.get(row.server_id).add(row.org_uuid);
   }
 
-  const machineVisible = new Set(machineServerIds.map(row => row.server_id));
+  const machineVisible = new Set(machineOrgRows.map(row => row.server_id));
 
-  return servers.filter(server => {
-    const owners = ownedServers.get(server.id);
-    if (!owners) {
-      return true;
-    }
-    if (machineVisible.has(server.id)) {
-      return true;
-    }
-    return orgUuids.some(uuid => owners.has(uuid));
+  const visible =
+    userAccess.bypass === true
+      ? servers
+      : servers.filter(server => {
+          const owners = ownedServers.get(server.id);
+          if (!owners) {
+            return true;
+          }
+          if (machineVisible.has(server.id)) {
+            return true;
+          }
+          return orgUuids.some(uuid => owners.has(uuid));
+        });
+
+  const fullLists = userAccess.bypass || isLocalPrivileged(req);
+  return visible.map(server => {
+    const owners = [...(ownedServers.get(server.id) ?? [])];
+    return {
+      ...server.toJSON(),
+      org_uuids: fullLists ? owners : owners.filter(uuid => userAccess.orgs.has(uuid)),
+    };
   });
+};
+
+/**
+ * Decorate a proxied GET machines list with each machine's `org_uuids` from
+ * machine_orgs (`[]` = unassigned). Same privacy rule as the registry annotation:
+ * full lists for local admins/super-admins, caller's-orgs intersection otherwise.
+ * @param {import('express').Request} req
+ * @param {number} serverId
+ * @param {*} data - Agent machines-list response body ({machines, total} or array)
+ * @returns {Promise<*>} Decorated body (same shape)
+ */
+export const decorateMachinesResponse = async (req, serverId, data) => {
+  const rows = await MachineOrgModel.findForServer(serverId);
+  const byMachine = new Map();
+  for (const row of rows) {
+    if (!byMachine.has(row.machine_name)) {
+      byMachine.set(row.machine_name, []);
+    }
+    byMachine.get(row.machine_name).push(row.org_uuid);
+  }
+
+  const fullLists = isLocalPrivileged(req);
+  const userOrgs = req.orgAccess?.userOrgs ?? new Map();
+  const decorate = item => {
+    const name = machineIdentifier(item);
+    const owners = (name !== null && byMachine.get(name)) || [];
+    return {
+      ...item,
+      org_uuids: fullLists ? owners : owners.filter(uuid => userOrgs.has(uuid)),
+    };
+  };
+
+  if (Array.isArray(data)) {
+    return data.map(decorate);
+  }
+  if (data && Array.isArray(data.machines)) {
+    return { ...data, machines: data.machines.map(decorate) };
+  }
+  return data;
 };
 
 /**

@@ -1,6 +1,6 @@
 import db from '../../models/index.js';
 import { log } from '../../utils/Logger.js';
-import { filterVisibleServers } from '../../utils/orgVisibility.js';
+import { filterAndAnnotateServers } from '../../utils/orgVisibility.js';
 
 const { server: ServerModel } = db;
 
@@ -177,7 +177,7 @@ export const addServer = async (req, res) => {
 export const getAllServers = async (req, res) => {
   try {
     const servers = await ServerModel.getAllServers();
-    const visible = await filterVisibleServers(req, servers);
+    const visible = await filterAndAnnotateServers(req, servers);
 
     return res.json({
       success: true,

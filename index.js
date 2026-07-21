@@ -18,6 +18,7 @@ import { log, createRequestLogger, generateRequestId } from './utils/Logger.js';
 import { startAgentHealthPoller } from './utils/agentHealthPoller.js';
 import { handleWebSocketUpgrade } from './utils/wsProxy.js';
 import { generateSSLCertificatesIfNeeded } from './utils/sslSetup.js';
+import { csrfProtection } from './auth/csrfProtection.js';
 
 /**
  * Dark Swagger theme shared with the Hyperweaver UI + docs site (config/swagger-theme.css).
@@ -204,6 +205,8 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use(csrfProtection);
 
 app.use(router);
 
